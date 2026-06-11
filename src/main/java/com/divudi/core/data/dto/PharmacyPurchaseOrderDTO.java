@@ -240,6 +240,61 @@ public class PharmacyPurchaseOrderDTO implements Serializable {
         this.checkedByName = checkedByName != null ? checkedByName.toString() : null;
     }
 
+    // Constructor for PO request search list (issue #21011 / #20299)
+    // Fields: billId, insId (req number), deptId, createdAt, departmentName, supplierName,
+    //         paymentMethod, cancelled, creatorName, netTotal
+    public PharmacyPurchaseOrderDTO(
+            Long billId,
+            String insId,
+            String deptId,
+            Date createdAt,
+            String departmentName,
+            String supplierName,
+            Object paymentMethod,
+            Boolean cancelled,
+            String creatorName,
+            Double netTotal) {
+        this.billId = billId;
+        this.billNumber = insId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.departmentName = departmentName;
+        this.supplierName = supplierName;
+        this.paymentMethod = paymentMethod != null ? paymentMethod.toString() : null;
+        this.cancelled = cancelled != null ? cancelled : false;
+        this.creatorName = creatorName;
+        this.netTotal = netTotal;
+    }
+
+    // Constructor for PO approval search list (issue #21011 / #20299)
+    // Fields: billId, deptId, referenceBillId, referenceBillDeptId, createdAt,
+    //         departmentName, approverName, supplierName, paymentMethod, cancelled, netTotal
+    public PharmacyPurchaseOrderDTO(
+            Long billId,
+            String deptId,
+            Long referenceBillId,
+            String referenceBillDeptId,
+            Date createdAt,
+            String departmentName,
+            String approverName,
+            String supplierName,
+            Object paymentMethod,
+            Boolean cancelled,
+            Double netTotal) {
+        this.billId = billId;
+        this.billNumber = deptId;
+        this.deptId = deptId;
+        this.referenceBillId = referenceBillId;
+        this.referenceBillDeptId = referenceBillDeptId;
+        this.createdAt = createdAt;
+        this.departmentName = departmentName;
+        this.approverName = approverName;
+        this.supplierName = supplierName;
+        this.paymentMethod = paymentMethod != null ? paymentMethod.toString() : null;
+        this.cancelled = cancelled != null ? cancelled : false;
+        this.netTotal = netTotal;
+    }
+
     // Constructor for pending purchase orders (to finalize) - 10 parameters without checkedBy fields
     // Used for fillOnlySavedPharmacyPo() JPQL query
     public PharmacyPurchaseOrderDTO(

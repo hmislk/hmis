@@ -29,13 +29,13 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa ml-3" />
-                                <p:outputLabel value="From Date" class="mx-3" >
-                                </p:outputLabel>
+                                <p:outputLabel value="From Date" class="mx-3" for="fromDate"/>
                             </h:panelGroup>
                             <p:calendar
                                 class="w-100"
                                 inputStyleClass="w-100"
                                 id="fromDate"
+                                ariaLabel="From Date"
                                 value="#{pharmacyReportController.fromDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
@@ -43,13 +43,13 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa ml-3" />
-                                <p:outputLabel value="To Date" class="mx-3" >
-                                </p:outputLabel>
+                                <p:outputLabel value="To Date" class="mx-3" for="toDate"/>
                             </h:panelGroup>
                             <p:calendar
                                 class="w-100"
                                 inputStyleClass="w-100"
                                 id="toDate"
+                                ariaLabel="To Date"
                                 value="#{pharmacyReportController.toDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
@@ -82,12 +82,12 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university ml-3" />
-                                <p:outputLabel value="Institution" class="mx-3" >
-                                </p:outputLabel>
+                                <p:outputLabel value="Institution" class="mx-3" for="phmIns"/>
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="phmIns"
                                 class="w-100"
+                                ariaLabel="Institution"
                                 value="#{pharmacyReportController.institution}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions"/>
@@ -98,12 +98,13 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt ml-3" />
-                                <p:outputLabel value="Site" class="mx-3"></p:outputLabel>
+                                <p:outputLabel value="Site" class="mx-3" for="phmSite"/>
                             </h:panelGroup>
                             <p:selectOneMenu
                                 id="phmSite"
                                 class="w-100"
                                 styleClass="w-100"
+                                ariaLabel="Site"
                                 value="#{pharmacyReportController.site}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites"/>
@@ -114,8 +115,7 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building ml-3" />
-                                <p:outputLabel value="Department" class="mx-3">
-                                </p:outputLabel>
+                                <p:outputLabel value="Department" class="mx-3" for="phmDept"/>
                             </h:panelGroup>
                             <h:panelGroup id="phmDept">
 
@@ -123,6 +123,7 @@
                                 <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
                                     value="#{pharmacyReportController.department}"
+                                    ariaLabel="Department"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments"/>
@@ -137,6 +138,7 @@
                                 <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
                                     value="#{pharmacyReportController.department}"
+                                    ariaLabel="Department"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments"/>
@@ -151,6 +153,7 @@
                                 <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
                                     value="#{pharmacyReportController.department}"
+                                    ariaLabel="Department"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments"/>
@@ -165,6 +168,7 @@
                                 <p:selectOneMenu
                                     rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
                                     value="#{pharmacyReportController.department}"
+                                    ariaLabel="Department"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments"/>
@@ -178,13 +182,13 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-pills ml-3" />
-                                <p:outputLabel value="Item" class="mx-3">
-                                </p:outputLabel>
+                                <p:outputLabel value="Item" class="mx-3" for="phmItem"/>
                             </h:panelGroup>
                             <p:autoComplete
                                 id="phmItem"
                                 class="w-100"
                                 inputStyleClass="w-100"
+                                ariaLabel="Item"
                                 value="#{pharmacyReportController.item}"
                                 completeMethod="#{itemController.completeItem}"
                                 var="itm"
@@ -199,10 +203,13 @@
                         </p:panelGrid>
 
                         <div class="d-flex align-items-center">
-                            <p:commandButton class="ui-button-warning mx-1" 
-                                             icon="fas fa-cogs" 
-                                             ajax="false"  
-                                             value="Process" 
+                            <p:commandButton class="ui-button-warning mx-1"
+                                             icon="fas fa-cogs"
+                                             value="Process"
+                                             widgetVar="wBtnProcess"
+                                             update="@form :growl"
+                                             onstart="PF('wBtnProcess').disable()"
+                                             oncomplete="PF('wBtnProcess').enable()"
                                              action="#{pharmacyReportController.processCostOfGoodSoldReport()}">
                             </p:commandButton>
                            

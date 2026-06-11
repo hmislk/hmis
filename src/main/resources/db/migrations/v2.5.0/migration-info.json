@@ -1,0 +1,28 @@
+{
+  "version": "v2.5.0",
+  "description": "Performance indexes for Bill (x4) and StockHistory (x1) — fixes severe query degradation on RMH production",
+  "issue": "#20727 — formalise indexes applied directly to RMH prod on 2026-05-14",
+  "author": "Dr M H B Ariyaratne",
+  "date": "2026-05-23",
+  "type": "performance",
+  "tables_affected": ["bill", "stockhistory"],
+  "data_changes": false,
+  "requires_downtime": false,
+  "estimated_duration_minutes": 10,
+  "indexes_added": [
+    "bill.idx_bill_institution_billtype_dtype_retired (INSTITUTION_ID, BILLTYPE, DTYPE, RETIRED)",
+    "bill.idx_bill_institution_billtype_retired_createdat (INSTITUTION_ID, BILLTYPE, RETIRED, CREATEDAT)",
+    "bill.idx_bill_institution_paymentmethod_retired_createdat (INSTITUTION_ID, PAYMENTMETHOD, RETIRED, CREATEDAT)",
+    "bill.idx_bill_dept_billdate_billtype (DEPARTMENT_ID, BILLDATE, BILLTYPE)",
+    "stockhistory.idx_stockhistory_historytype_dept_createdat (HISTORYTYPE, DEPARTMENT_ID, CREATEDAT)"
+  ],
+  "indexes_dropped": [],
+  "performance_impact": {
+    "before": "COUNT on Bill: 1.26M rows scanned 3,600x/day at avg 6.91s (24,892s total); SUM(NETTOTAL) by billtype: 231k rows, 1,505x/day; SUM by payment method: full scan, 1,120x/day; COUNT by dept+date: 1.58B rows examined; StockHistory MonthlyRecord: no index on HISTORYTYPE",
+    "after": "All five queries use targeted index range scans — RMH prod verified with EXPLAIN after applying indexes directly on 2026-05-14",
+    "improvement": "Estimated 70-90% reduction in DB query time for these hot paths"
+  },
+  "note": "RMH production (Azure managed MySQL 10.0.0.105) already has all five indexes applied directly. This migration is a formalisation — all steps will SKIP cleanly on RMH prod.",
+  "tested_on": "rmh production (direct apply + EXPLAIN verified on 2026-05-14)",
+  "rollback": "rollback.sql"
+}

@@ -1544,7 +1544,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
             tbi.setPharmaceuticalBillItem(null);
 
-            if (tbi.getPrescription() != null) {
+            if (tbi.hasPrescription()) {
                 if (tbi.getPrescription().getId() == null) {
                     prescriptionFacade.create(tbi.getPrescription());
                 } else {
@@ -1618,7 +1618,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
                 getBillItemFacade().create(newBil);
             }
 
-            if (tbi.getPrescription() != null) {
+            if (tbi.hasPrescription()) {
                 if (tbi.getPrescription().getId() == null) {
                     prescriptionFacade.create(tbi.getPrescription());
                 } else {
@@ -1626,7 +1626,9 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
                 }
 
                 newBil.setPrescription(tbi.getPrescription());
-                tbi.getPrescription().setPatient(patient);
+                if (patient != null && patient.getId() != null) {
+                    tbi.getPrescription().setPatient(patient);
+                }
                 tbi.getPrescription().setCreatedAt(new Date());
                 tbi.getPrescription().setCreater(sessionController.getWebUser());
                 tbi.getPrescription().setInstitution(sessionController.getInstitution());

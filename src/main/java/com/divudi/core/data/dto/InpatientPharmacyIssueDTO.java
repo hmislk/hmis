@@ -62,6 +62,8 @@ public class InpatientPharmacyIssueDTO implements Serializable {
         return billTypeAtomic == BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED
                 || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION
                 || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION
+                || billTypeAtomic == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
                 || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION
                 || billTypeAtomic == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN;
     }

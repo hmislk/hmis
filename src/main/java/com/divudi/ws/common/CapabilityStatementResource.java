@@ -134,9 +134,20 @@ public class CapabilityStatementResource {
                 .add(resource("Inward Discount Matrix", "/api/inward-discount-matrix",
                         "Manage inward discount matrix entries for services/investigations and pharmacy. "
                         + "Supports scope=service|pharmacy to restrict category types. "
+                        + "Optional creditCompanyId filters or sets a credit-company-specific override row. "
                         + "Lookup sub-paths for resolving names to IDs: "
                         + "/admission-types/search, /payment-schemes/search, "
-                        + "/pharmaceutical-item-categories/search, /payment-methods. "
+                        + "/pharmaceutical-item-categories/search, /payment-methods, /credit-companies/search. "
+                        + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Price Adjustment", "/api/inward-price-adjustment",
+                        "Manage inward price adjustment (margin) matrix entries for services, investigations, and pharmacy. "
+                        + "Supports scope=service|pharmacy to restrict category types. "
+                        + "Optional creditCompanyId sets a credit-company-specific margin override. "
+                        + "Price range lookup: fromPrice/toPrice define the gross value range to which the margin applies. "
+                        + "Lookup sub-paths: /categories/search?scope=service|pharmacy, /departments/search, "
+                        + "/payment-methods, /credit-companies/search. "
                         + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
@@ -169,6 +180,33 @@ public class CapabilityStatementResource {
                         "LIMS middleware integration",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Machines (Analyzers)", "/api/machines",
+                        "CRUD for Machine (analyzer) entities. "
+                        + "GET lists active machines (supports ?query=&size=). "
+                        + "GET /{id} returns a single machine. "
+                        + "POST creates a machine (required: name; optional: code, description); returns 409 when duplicate name exists. "
+                        + "PUT /{id} updates name, code, or description. "
+                        + "DELETE /{id} soft-retires the machine.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Analyzer Tests", "/api/machines/{machineId}/tests",
+                        "CRUD for analyzer test Items (itemType=AnalyzerTest) linked to a Machine. "
+                        + "GET lists tests for the machine (supports ?query=&size=). "
+                        + "GET /{id} returns a single test. "
+                        + "POST creates a test (required: name, code); returns 409 when duplicate code exists for the machine. "
+                        + "PUT /{id} updates name or code. "
+                        + "DELETE /{id} soft-retires the test. "
+                        + "The code field matches analyzer output codes used by the LIMS middleware.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Patient Samples", "/api/patient-samples",
+                        "Search and retrieval of PatientSample records. "
+                        + "GET /search supports ?sampleId=&patientName=&fromDate=&toDate=&billNumber=&size= (dates: yyyy-MM-dd). "
+                        + "GET /{id} returns full sample detail including automation workflow fields "
+                        + "(sentToAnalyzer, receivedFromAnalyzer, sampleCollected, sampleReceivedAtLab, etc.) "
+                        + "and linked patientInvestigation, machine, test, and investigationComponent.",
+                        "API Key",
+                        "GET"))
                 .add(resource("Middleware", "/api/middleware",
                         "General middleware endpoints",
                         "API Key",
@@ -227,6 +265,16 @@ public class CapabilityStatementResource {
                         "User role CRUD and role-level privilege assignment with optional department scope.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Subscriptions", "/api/subscriptions",
+                        "Manage notification trigger subscriptions (who receives which notification, in which department). "
+                        + "GET /subscriptions lists subscriptions (filters: triggerType, userId, departmentId, applicationWide=true). "
+                        + "GET /subscriptions/trigger-types lists all available TriggerType values (name, label, medium, parent). "
+                        + "POST /subscriptions creates a subscription (body: userId, triggerType, and EITHER departmentId OR applicationWide:true); "
+                        + "returns already_exists when an identical non-retired subscription exists. "
+                        + "DELETE /subscriptions/{id} soft-retires a subscription. "
+                        + "An application-wide subscription (null department) matches every department across the whole application.",
+                        "API Key",
+                        "GET", "POST", "DELETE"))
                                 .add(resource("Investigations", "/api/investigations",
                         "Investigation master management including search, create, update, and activate/deactivate for item import workflows",
                         "API Key",
@@ -252,6 +300,34 @@ public class CapabilityStatementResource {
                         + "POST /recalculate?institutionId=X recalculates item totals for all items with CC fees.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("SAP Integration - Billing", "/api/sap/billing",
+                        "Bidirectional SAP S/4HANA Cloud FI integration. "
+                        + "POST /push/{billId} pushes an HMIS bill to SAP as a journal entry (debit AR, credit revenue). "
+                        + "GET /status/{billId} returns the push status and SAP document number. "
+                        + "POST /confirm receives a payment confirmation webhook from SAP. "
+                        + "GET /confirm/status/{billId} returns the confirmation status. "
+                        + "Auth: Finance header.",
+                        "API Key (Finance header)",
+                        "GET", "POST"))
+                .add(resource("Dynamic Forms", "/api/forms",
+                        "Design and manage dynamic clinical form templates and capture filled values. "
+                        + "Templates: GET /forms/templates lists all; GET /forms/templates/{id} returns one with field count; POST creates; PUT updates; DELETE retires. "
+                        + "Fields: GET /forms/templates/{id}/fields; POST adds a field (componentPresentationType, componentDataType, editHtml, viewHtml, choices). "
+                        + "PUT /forms/fields/{id} updates; DELETE /forms/fields/{id} retires. "
+                        + "Choices: GET /forms/fields/{id}/choices; POST adds; PUT /forms/choices/{id} updates; DELETE /forms/choices/{id} retires. "
+                        + "Filled data: GET /forms/entries/{admissionId} lists all PatientFormEntry records for an admission; "
+                        + "GET /forms/entries/{entryId}/values lists all CaptureComponent values for a filled entry.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("SAP Integration - Inventory", "/api/sap/inventory",
+                        "SAP S/4HANA Cloud MM inventory sync. "
+                        + "GET /sync?fromDate=yyyy-MM-dd&toDate=yyyy-MM-dd fetches SAP goods-receipt material documents "
+                        + "and matches them to HMIS pharmacy items by code or barcode (configurable). "
+                        + "fromDate defaults to last-sync watermark; toDate defaults to today. "
+                        + "Read-only audit sync — does not create GRN bills. "
+                        + "Auth: Finance header.",
+                        "API Key (Finance header)",
+                        "GET"))
                 .add(resource("FHIR Patient", "/api/fhir/Patient",
                         "FHIR R5 Patient search, read, create, update",
                         "API Key (use FHIR header, not Finance)",

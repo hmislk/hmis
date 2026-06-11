@@ -1295,7 +1295,7 @@ public class ReportsTransfer implements Serializable {
                     .append("b.createdAt, ")
                     .append("CASE WHEN b.patientEncounter IS NOT NULL THEN COALESCE(b.patientEncounter.bhtNo, '') ELSE '' END, ")
                     .append("COALESCE(cb.deptId, ''), ")
-                    .append("CASE WHEN b.billFinanceDetails IS NOT NULL THEN COALESCE(b.billFinanceDetails.totalPurchaseValue, 0.0) ELSE 0.0 END, ")
+                    .append("COALESCE(bfd.totalPurchaseValue, 0.0), ")
                     .append("COALESCE(b.total, 0.0), ")
                     .append("COALESCE(b.margin, 0.0), ")
                     .append("COALESCE(b.discount, 0.0), ")
@@ -1303,6 +1303,7 @@ public class ReportsTransfer implements Serializable {
                     .append(") ")
                     .append("FROM Bill b ")
                     .append("LEFT JOIN b.cancelledBill cb ")
+                    .append("LEFT JOIN b.billFinanceDetails bfd ")
                     .append("WHERE b.createdAt BETWEEN :fd AND :td ")
                     .append("AND b.department=:fdept ");
 

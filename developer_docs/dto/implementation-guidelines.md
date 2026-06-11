@@ -246,6 +246,7 @@ facade.findLightsByJpql(jpql, params)     // Missing TemporalType when using Dat
 4. **Using wrong facade method for DTO queries** → `findByJpql()` instead of `findLightsByJpql()`
 5. **Missing explicit cast** → Type safety issues with DTO constructor queries
 6. **Accessing properties through null relationships** → Silent query failures (most common issue!)
+6a. **`BigDecimal` constructor param for a `double`/`Double` column** → loud `IllegalArgumentException: argument type mismatch` at construction time (see § Numeric Type Mismatch)
 7. **Including cancellation details in list DTOs** → Unnecessary complexity and performance issues
 8. **Using derived/calculated properties in JPQL** → JPQL only supports persisted fields, not getter methods (see below)
 
@@ -278,12 +279,26 @@ public PharmacyPurchaseOrderDTO(
 | `int` (primitive) | `Integer` (wrapper) | ✅ Works |
 | `Long` | `Long` | ✅ Works |
 | `String` | `String` | ✅ Works |
+| `double` (primitive) | `Double` (wrapper) | ✅ Works |
+| `Double` (wrapper) | `Double` (wrapper) | ✅ Works |
+| `double` / `Double` | **`BigDecimal`** | ❌ **`IllegalArgumentException: argument type mismatch`** — see next section |
 
-**Note:** Primitive-to-wrapper auto-boxing works correctly in EclipseLink JPQL. The more common issue is **null relationship access** (see next section).
+**Note:** Primitive-to-*matching*-wrapper auto-boxing works correctly in EclipseLink JPQL
+(`boolean`→`Boolean`, `double`→`Double`). EclipseLink does **not** perform cross-type
+numeric conversion when invoking the DTO constructor — a `double` column will not flow into
+a `BigDecimal` parameter. The two most common DTO query failures are **null relationship
+access** (silent, returns 0 rows) and **numeric type mismatch** (loud `SEVERE`
+`argument type mismatch`, see below).
 
 ### Debugging Silent Failures
 
-When COUNT returns results but DTO query returns 0:
+First, check **which kind** of failure it is:
+- **Loud** `SEVERE ... argument type mismatch` in server.log → numeric/type mismatch between
+  the projected column and the constructor parameter (see § Numeric Type Mismatch). Most often
+  a `double`/`Double` column bound to a `BigDecimal` parameter.
+- **Silent** (no exception, just `result size = 0`) → null relationship access (below).
+
+When COUNT returns results but DTO query returns 0 (silent case):
 
 1. **Check for null relationship access** - This is the #1 cause! `b.cancelledBill.createdAt` fails if `cancelledBill` is null
 2. **Test with minimal constructor** - Create a 4-param constructor with just basic fields (id, deptId, createdAt, netTotal). If it works, the issue is with additional fields
@@ -291,6 +306,71 @@ When COUNT returns results but DTO query returns 0:
 4. **Check parameter order** - Must match query SELECT order exactly
 5. **Check constructor parameter types** - Use wrapper types (`Boolean`, not `boolean`)
 6. **Remove relationship traversals one by one** - Identify which nullable relationship is causing the failure
+
+### 🚨 CRITICAL: Numeric Type Mismatch Causes `argument type mismatch` (loud failure)
+
+**Symptom (server.log):**
+```text
+SEVERE  javax.persistence.PersistenceException: java.lang.IllegalArgumentException: argument type mismatch
+  ...
+  Caused by: java.lang.IllegalArgumentException: argument type mismatch
+    at ...Constructor.newInstance(...)
+    at org.eclipse.persistence.queries.ReportQueryResult.processConstructorItem(...)
+```
+The COUNT query returns the correct number, but the DTO query throws at construction time
+and the controller logs `DTO result size = 0`. **Unlike null-relationship failures, this one
+throws a SEVERE exception** — grep the log for `argument type mismatch`.
+
+**Root cause:** EclipseLink builds the DTO via reflective `Constructor.newInstance(...)`,
+passing each projected column's *Java type as produced by the query*. It does **not**
+convert `Double` → `BigDecimal` (or `Integer` → `Long`, etc.). If the entity field is
+primitive `double` (or the projection yields `Double`) but the constructor parameter is
+`BigDecimal`, the reflective call fails.
+
+Most HMIS monetary/quantity fields on `Bill`, `BillItem`, `PharmaceuticalBillItem`, etc.
+are **primitive `double`** (e.g. `Bill.total`, `Bill.netTotal`, `Bill.discount`,
+`Bill.margin`). A JPQL projection over them yields `Double`.
+
+**❌ WRONG — `BigDecimal` constructor parameter for a `double` column:**
+```java
+public BillListReportDTO(Long id, ..., BigDecimal total, BigDecimal netTotal) { ... }
+// JPQL: SELECT new ...BillListReportDTO(b.id, ..., b.total, b.netTotal) FROM Bill b
+//                                                  ^^^^^^^ double -> BigDecimal => mismatch
+```
+
+**✅ SOLUTION 1 (preferred): make the constructor parameter `Double`, convert inside.**
+The DTO field can stay `BigDecimal` — convert in the constructor body:
+```java
+public BillListReportDTO(Long id, ..., Double total, Double netTotal) {
+    this.total    = total    != null ? BigDecimal.valueOf(total)    : null;
+    this.netTotal = netTotal != null ? BigDecimal.valueOf(netTotal) : null;
+}
+```
+
+**✅ SOLUTION 2: keep the field/param `Double` end-to-end** if the report doesn't need
+`BigDecimal` precision (most list/display reports don't).
+
+#### Pitfalls when fixing this
+
+- **Don't create two constructors of the same arity** that differ only by `BigDecimal`
+  vs `Double` numeric params. EclipseLink matches the constructor by **argument count
+  first** and may bind the wrong overload, re-introducing the mismatch. Keep exactly **one**
+  constructor per arity. (Per rule #1 you normally never modify an existing constructor —
+  but if it was added for the *current* feature and has no other caller, changing its
+  numeric params from `BigDecimal` to `Double` is the correct fix, not an add-only overload.
+  Verify with a `grep` for `new <DtoName>(` and the JPQL `new ...<DtoName>(` string that it
+  truly has a single caller.)
+- **`COALESCE(b.total, 0)` projects an `Integer` literal type**, which can also mismatch a
+  `Double`/`BigDecimal` parameter. Use a typed literal: `COALESCE(b.total, 0.0)`.
+- After applying any automated (CodeRabbit/Codex) numeric fix, re-confirm the entity field's
+  declared type (`grep "private .* total"` on the entity) — primitive `double` vs boxed
+  `Double` vs `BigDecimal` is the whole game here.
+
+**Reference:** issue #21247 inpatient service bill list — `BillListReportDTO` +
+`InwardReportControllerBht.fetchServiceBillDtos()`. `Bill.total/discount/netTotal/margin`
+are primitive `double`; the DTO constructor originally declared them `BigDecimal` →
+`argument type mismatch`. Fixed by switching the constructor params to `Double` (converting
+to `BigDecimal` internally) and using `COALESCE(..., 0.0)` literals.
 
 ### 🚨 CRITICAL: Null Relationship Access Causes Silent Query Failures
 
@@ -366,18 +446,87 @@ public class PurchaseOrderListDTO {
 
 **If user needs cancellation details:** Provide a "View Details" action that navigates to the full bill view where all cancellation information is available.
 
+### ✅ SOLUTION 3 (Standard): COALESCE on every nullable LEFT JOIN String — always apply this
+
+Even when LEFT JOINs are present, a `null` value flowing into a `String` DTO constructor
+parameter causes that row to be dropped in some EclipseLink versions. **Always wrap every
+LEFT JOIN String field in `COALESCE(..., '')`** to guarantee rows are never silently omitted.
+
+```java
+// ✅ CORRECT — COALESCE on every nullable LEFT JOIN String
+String sql = "SELECT new com.divudi.core.data.dto.PharmacySaleSearchDTO("
+        + "b.id, b.deptId, b.department.name, b.createdAt, "
+        + "COALESCE(creatorPerson.name, ''), "     // nullable LEFT JOIN
+        + "COALESCE(patientPerson.name, ''), "     // nullable LEFT JOIN
+        + "COALESCE(refDoctorPerson.name, ''), "   // nullable LEFT JOIN
+        + "b.paymentMethod, "
+        + "COALESCE(ps.name, ''), "               // nullable LEFT JOIN
+        + "b.total, b.discount, b.netTotal, "
+        + "b.refunded, b.cancelled) "
+        + "FROM Bill b "
+        + "LEFT JOIN b.creater creater "
+        + "LEFT JOIN creater.webUserPerson creatorPerson "
+        + "LEFT JOIN b.patient patient "
+        + "LEFT JOIN patient.person patientPerson "
+        + "LEFT JOIN b.referredBy referredBy "
+        + "LEFT JOIN referredBy.person refDoctorPerson "
+        + "LEFT JOIN b.paymentScheme ps "
+        + "WHERE ...";
+```
+
+**Rule:** Every column from a LEFT-joined table that is a `String` in the DTO constructor
+**must** be wrapped in `COALESCE(expr, '')`. Numeric and boolean fields from the root entity
+(`b.total`, `b.cancelled`) are safe without COALESCE.
+
+### Row-limit parameter pattern
+
+When exposing a DTO fetch method that should respect the user's configured row limit,
+accept `int maxResult` directly (from `searchController.getMaxResult()`) rather than a
+boolean `maxNum` flag. Pass `0` or a negative value to mean "unlimited".
+
+```java
+// ✅ Preferred — caller controls the limit
+public void fetchSaleSearchDtosFromNativeBills(int maxResult) {
+    ...
+    if (maxResult > 0) {
+        saleBillDtos = (List<PharmacySaleSearchDTO>)
+                billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
+    } else {
+        saleBillDtos = (List<PharmacySaleSearchDTO>)
+                billFacade.findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+}
+
+// ✅ Backward-compat shim keeps old callers working
+@Deprecated
+public void fetchSaleSearchDtosFromNativeBills(boolean maxNum) {
+    fetchSaleSearchDtosFromNativeBills(maxNum ? 25 : 0);
+}
+```
+
+### No subqueries in DTO fetch methods
+
+Do **not** add JPQL subqueries (e.g. `b.id IN (SELECT bi.bill.id FROM BillItem bi WHERE ...)`)
+inside DTO constructor queries. Subqueries inside `SELECT new DTO(...)` are not supported by
+EclipseLink and subqueries in the `WHERE` clause of a constructor query degrade performance
+significantly for large tables. If item-level filtering is required, discuss an alternative
+approach before implementing.
+
 ### Best Practices Summary
 
-1. **Always use wrapper types** (`Boolean`, `Integer`, `Long`) for DTO constructor parameters
+1. **Always use wrapper types** (`Boolean`, `Integer`, `Long`, `Double`) for DTO constructor parameters
+1a. **Match the numeric wrapper to the entity field** — primitive `double` → `Double` param, never `BigDecimal` (convert to `BigDecimal` inside the constructor if the field needs it); use `COALESCE(x, 0.0)` not `COALESCE(x, 0)`
 2. **Avoid nullable relationship traversal** - accessing `b.cancelledBill.createdAt` fails silently if `cancelledBill` is null
 3. **Use LEFT JOIN with explicit aliases** if you must access nullable relationships
-4. **Use COALESCE** for nullable String fields to provide default values
+4. **Always COALESCE every LEFT JOIN String field** — wrap with `COALESCE(expr, '')` to prevent silent row drops
 5. **Test COUNT separately** to verify data exists before troubleshooting DTO construction
 6. **Add debug logging** when implementing new DTO queries to catch silent failures early
 7. **Match parameter types exactly** - don't rely on implicit conversions with `Object`
 8. **Avoid cancellation details in list DTOs** - use boolean flags, let users navigate to details for full info
 9. **Test with minimal constructor first** - if a 4-param constructor works but 11-param fails, the issue is with the additional fields
 10. **Only use persisted fields in JPQL** - derived properties like `nameWithTitle` are not valid (see below)
+11. **Accept `int maxResult` not `boolean maxNum`** - lets the caller pass `searchController.getMaxResult()` directly
+12. **No subqueries in DTO fetch methods** - discuss alternatives before adding `WHERE b.id IN (SELECT ...)`
 
 ## 🚨 CRITICAL: Derived/Calculated Properties Cannot Be Used in JPQL
 

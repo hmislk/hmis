@@ -94,6 +94,22 @@ public class EnumController implements Serializable {
         return pettyCashBillTypes;
     }
 
+    List<InwardChargeType> roomChargeType;
+
+    public List<InwardChargeType> getRoomChargeType() {
+        if (roomChargeType == null) {
+            roomChargeType = new ArrayList<>();
+            roomChargeType.add(InwardChargeType.AdministrationCharge);
+            roomChargeType.add(InwardChargeType.LinenCharges);
+            roomChargeType.add(InwardChargeType.MaintainCharges);
+            roomChargeType.add(InwardChargeType.MedicalCareICU);
+            roomChargeType.add(InwardChargeType.MOCharges);
+            roomChargeType.add(InwardChargeType.NursingCharges);
+            roomChargeType.add(InwardChargeType.RoomCharges);
+        }
+        return roomChargeType;
+    }
+
     public Sex[] getSex() {
         return Sex.values();
     }
@@ -760,7 +776,9 @@ public class EnumController implements Serializable {
     }
 
     public InwardChargeType[] getInwardChargeTypesForSetting() {
-        return InwardChargeType.values();
+        return Arrays.stream(InwardChargeType.values())
+                .filter(InwardChargeType::isAllowToSetItems)
+                .toArray(InwardChargeType[]::new);
     }
 
     public PatientEncounterComponentType[] getPatientEncounterComponentTypes() {

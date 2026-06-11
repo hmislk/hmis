@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -106,12 +106,13 @@
                                         <p:commandButton
                                             id="btnIssue"
                                             accesskey="s"
-                                            value="Settle Issue"
-                                            icon="pi pi-check"
+                                            value="Save"
+                                            icon="fas fa-floppy-disk"
                                             class="ui-button-success m-1"
                                             ajax="false"
-                                            action="#{pharmacyIssueController.settleDisposalIssueBill()}"
-                                            onclick="return confirm('Are you sure you want to issue this disposal bill?');" />
+                                            action="#{pharmacyIssueController.saveDisposalIssueDraft()}"
+                                            onclick="return confirm('Save this disposal issue draft?');"
+                                            rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssue')}" />
                                     </div>
                                 </div>
                             </f:facet>
@@ -135,7 +136,7 @@
                                                     maxResults="10"
                                                     minQueryLength="3"
                                                     value="#{pharmacyIssueController.stockDto}"
-                                                    completeMethod="#{pharmacyIssueController.completeAvailableStocksWithConsumptionFilter}"
+                                                    queryDelay="300" completeMethod="#{pharmacyIssueController.completeAvailableStocksWithConsumptionFilter}"
                                                     converter="#{pharmacyIssueController.stockDtoConverter}"
                                                     var="i"
                                                     itemLabel="#{i.itemName}"

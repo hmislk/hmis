@@ -20,11 +20,13 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.UserNotification;
 import com.divudi.core.entity.Notification;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Sms;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.NotificationFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.facade.UserNotificationFacade;
+import com.divudi.service.NotificationPushService;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -78,6 +80,8 @@ public class UserNotificationController implements Serializable {
     PharmacySaleBhtController pharmacySaleBhtController;
     @Inject
     SmsManagerEjb smsManager;
+    @Inject
+    NotificationPushService notificationPushService;
     private Date date;
     private boolean todayNotification;
     private boolean seenedNotifiaction;
@@ -86,7 +90,29 @@ public class UserNotificationController implements Serializable {
     private boolean canceldRequests;
 
     public String navigateToRecivedNotification() {
-        return "/Notification/user_notifications";
+        fillLoggedUserNotifications();
+        return "/Notification/user_notifications?faces-redirect=true";
+    }
+
+    public int getUnseenCount() {
+        if (sessionController == null || sessionController.getLoggedUser() == null) {
+            return 0;
+        }
+        try {
+            String jpql = "select count(un) "
+                    + " from UserNotification un "
+                    + " where un.webUser=:wu "
+                    + " and un.retired=:ret "
+                    + " and un.seen=:seen";
+            Map m = new HashMap();
+            m.put("ret", false);
+            m.put("seen", false);
+            m.put("wu", sessionController.getLoggedUser());
+            long count = getFacade().findLongByJpql(jpql, m);
+            return count > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public String navigateToSentNotification() {
@@ -343,7 +369,8 @@ public class UserNotificationController implements Serializable {
             String jpql = "select un "
                     + " from UserNotification un "
                     + " where un.webUser=:wu "
-                    + " and un.retired=:ret";
+                    + " and un.retired=:ret "
+                    + " order by un.id desc";
             Map m = new HashMap();
             m.put("ret", false);
             m.put("wu", sessionController.getLoggedUser());
@@ -353,6 +380,35 @@ public class UserNotificationController implements Serializable {
             // Avoid breaking page rendering when notifications query fails
             items = null;
             return items;
+        }
+    }
+
+    /**
+     * Called by the menu WebSocket push (p:remoteCommand). Refreshes the badge
+     * list and surfaces the newest unread notification as a transient, non-modal
+     * toast. A growl/toast is used deliberately so it never steals focus or blocks
+     * a user who is mid-way through entering a bill.
+     */
+    public void onPushRefreshNotifications() {
+        fillLoggedUserNotifications();
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+        UserNotification latest = null;
+        for (UserNotification un : items) {
+            if (un.getNotification() == null || un.isSeen()) {
+                continue;
+            }
+            if (latest == null
+                    || (un.getId() != null && latest.getId() != null && un.getId() > latest.getId())) {
+                latest = un;
+            }
+        }
+        if (latest != null && latest.getNotification().getMessage() != null
+                && !latest.getNotification().getMessage().isEmpty()) {
+            FacesMessage fm = new FacesMessage(FacesMessage.SEVERITY_INFO,
+                    "New Notification", latest.getNotification().getMessage());
+            FacesContext.getCurrentInstance().addMessage(null, fm);
         }
     }
 
@@ -423,7 +479,7 @@ public class UserNotificationController implements Serializable {
         if (notification == null) {
             return;
         }
-        if (notification.getPatientRoom() == null) {
+        if (notification.getPatientRoom() == null && notification.getPatientEncounter() == null) {
             if (notification.getBill() == null) {
                 return;
             }
@@ -439,7 +495,7 @@ public class UserNotificationController implements Serializable {
         if (n == null) {
             return;
         }
-        if (n.getBill() == null && n.getPatientRoom() == null) {
+        if (n.getBill() == null && n.getPatientRoom() == null && n.getPatientEncounter() == null) {
             return;
         }
 
@@ -465,6 +521,15 @@ public class UserNotificationController implements Serializable {
             }
         } else if (n.getPatientRoom() != null) {
             todept = n.getPatientRoom().getRoomFacilityCharge().getDepartment();
+        } else if (n.getPatientEncounter() != null) {
+            PatientEncounter pe = n.getPatientEncounter();
+            if (pe.getCurrentPatientRoom() != null
+                    && pe.getCurrentPatientRoom().getRoomFacilityCharge() != null) {
+                todept = pe.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+            }
+            if (todept == null) {
+                todept = pe.getDepartment();
+            }
         }
 
         List<WebUser> notificationUsers = triggerSubscriptionController.fillSubscribedUsersByDepartment(n.getTriggerType(), todept);
@@ -487,6 +552,7 @@ public class UserNotificationController implements Serializable {
                     nun.setNotification(n);
                     nun.setWebUser(u);
                     getFacade().create(nun);
+                    notificationPushService.pushToUser(u.getId());
                 }
                 break;
         }
@@ -580,6 +646,9 @@ public class UserNotificationController implements Serializable {
     }
 
     public List<UserNotification> getItems() {
+        if (items == null) {
+            fillLoggedUserNotifications();
+        }
         return items;
     }
 

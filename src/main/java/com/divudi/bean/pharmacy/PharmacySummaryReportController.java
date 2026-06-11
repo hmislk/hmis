@@ -10,6 +10,7 @@ import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
+import com.divudi.core.data.dto.PharmacyMovementOutByItemDTO;
 import com.divudi.core.data.reports.SummaryReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
@@ -326,6 +327,8 @@ public class PharmacySummaryReportController implements Serializable {
 
     private List<HistoricalRecord> historicalRecords;
 
+    private boolean includeArchived = false;
+
     //transferOuts;
     //adjustments;
 // </editor-fold>
@@ -469,6 +472,9 @@ public class PharmacySummaryReportController implements Serializable {
      * @return The total stock value at retail rate, or 0.0 if calculation fails
      */
     private double calculateStockValueAtRetailRate(Date date, Department dept) {
+        if (includeArchived) {
+            return stockHistoryFacade.calculateStockValueAtRetailRateOptimized(date, dept != null ? dept.getId() : null, true);
+        }
         try {
             Map<String, Object> params = new HashMap<>();
             StringBuilder jpql = new StringBuilder();
@@ -582,6 +588,9 @@ public class PharmacySummaryReportController implements Serializable {
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
 
             btas.add(BillTypeAtomic.PHARMACY_GRN);
             btas.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
@@ -786,8 +795,7 @@ public class PharmacySummaryReportController implements Serializable {
                     processMovementOutWithStockReportByBillType();
                     break;
                 case BY_ITEM:
-                    processMovementOutWithStockReportByItem();
-                    addCurrentItemStock(pharmacyBundle);
+                    processMovementOutWithStockReportByItemDto();
                     break;
                 default:
                     JsfUtil.addErrorMessage("Unsupported report view type: " + reportViewType.getLabel());
@@ -952,6 +960,9 @@ public class PharmacySummaryReportController implements Serializable {
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
@@ -988,6 +999,9 @@ public class PharmacySummaryReportController implements Serializable {
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
@@ -1840,6 +1854,55 @@ public class PharmacySummaryReportController implements Serializable {
             pharmacyBundle = new PharmacyBundle(pbis);
             pharmacyBundle.groupSaleDetailsByItems();
         }, SummaryReports.PHARMACY_MOVEMENT_OUT_REPORT, sessionController.getLoggedUser());
+    }
+
+    /**
+     * DTO-based BY_ITEM movement-out report. Aggregates per item in the database,
+     * then fills current stock and the last supplier in one batched query each
+     * (no per-item N+1).
+     */
+    public void processMovementOutWithStockReportByItemDto() {
+        reportTimerController.trackReportExecution(() -> {
+            List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
+            List<PharmacyMovementOutByItemDTO> dtos = billService.fetchPharmacyMovementOutByItemDTOs(
+                    fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+            pharmacyBundle = new PharmacyBundle(dtos);
+            addCurrentStockAndSuppliers(pharmacyBundle);
+            pharmacyBundle.summarizeMovementOutByItem();
+        }, SummaryReports.PHARMACY_MOVEMENT_OUT_REPORT, sessionController.getLoggedUser());
+    }
+
+    /**
+     * Fills each row's current stock and last supplier using one batched query
+     * each, keyed by item id (no per-item N+1).
+     */
+    private void addCurrentStockAndSuppliers(PharmacyBundle bundle) {
+        if (bundle == null || bundle.getRows() == null || bundle.getRows().isEmpty()) {
+            return;
+        }
+        List<Long> itemIds = new ArrayList<>();
+        for (PharmacyRow pr : bundle.getRows()) {
+            if (pr.getItem() != null && pr.getItem().getId() != null) {
+                itemIds.add(pr.getItem().getId());
+            }
+        }
+        if (itemIds.isEmpty()) {
+            return;
+        }
+
+        Map<Long, Double> stockByItem = billService.fetchCurrentStockByItemIds(itemIds, institution, site, department);
+        Map<Long, String> lastSupplierByItem = billService.fetchLastSupplierByItemIds(itemIds);
+
+        for (PharmacyRow pr : bundle.getRows()) {
+            if (pr.getItem() == null || pr.getItem().getId() == null) {
+                continue;
+            }
+            Long itemId = pr.getItem().getId();
+            Double stock = stockByItem.get(itemId);
+            pr.setStockQty(stock != null ? stock : 0.0);
+            String supplier = lastSupplierByItem.get(itemId);
+            pr.setSuppliers(supplier != null ? supplier : "");
+        }
     }
 
     public void processPharmacyIncomeAndCostReportByBill() {
@@ -3951,6 +4014,14 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void setFloatRows(List<IncomeRow> floatRows) {
         this.floatRows = floatRows;
+    }
+
+    public boolean isIncludeArchived() {
+        return includeArchived;
+    }
+
+    public void setIncludeArchived(boolean includeArchived) {
+        this.includeArchived = includeArchived;
     }
 
     public void retireHistoricalRecord(HistoricalRecord hr) {

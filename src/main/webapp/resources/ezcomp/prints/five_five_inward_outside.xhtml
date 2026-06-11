@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!--
+        5 inch x 5 inch bill for Inward Outside Charges.
+        Tuned for impact / dot-matrix printers (e.g. Epson LX/FX series):
+        a single clean sans-serif font, solid black text, no background fills.
+    -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" required="true" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean" default="false" />
+    </cc:interface>
+
+    <cc:implementation>
+        <style>
+            .five-outside-bill {
+                width: 12.7cm; /* 5 inch */
+                font-family: Arial, "Liberation Sans", sans-serif;
+                color: #000;
+                font-size: 12px;
+                line-height: 1.35;
+                padding: 0.3cm;
+                box-sizing: border-box;
+            }
+            .five-outside-bill table { width: 100%; border-collapse: collapse; }
+            .five-outside-bill .sep { border-top: 1px solid #000; margin: 4px 0; }
+            .five-outside-bill .title { text-align: center; font-weight: bold; font-size: 14px; }
+            .five-outside-bill .inst { text-align: center; font-weight: bold; font-size: 15px; }
+            .five-outside-bill .items th, .five-outside-bill .items td { padding: 2px 0; }
+            @media print {
+                .five-outside-bill {
+                    width: 12.7cm !important;
+                    min-height: 12.7cm; /* 5 inch */
+                    page-break-after: always;
+                }
+            }
+        </style>
+
+        <div class="five-outside-bill">
+
+            <div class="inst">
+                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+            </div>
+            <div style="text-align: center; font-size: 11px;">
+                <h:outputLabel value="#{cc.attrs.bill.department.address}" />
+            </div>
+            <div style="text-align: center; font-size: 11px;">
+                <h:outputLabel value="#{cc.attrs.bill.department.telephone1}" />
+                <h:outputLabel value=" / " rendered="#{cc.attrs.bill.department.telephone2 ne null}" />
+                <h:outputLabel value="#{cc.attrs.bill.department.telephone2}" />
+            </div>
+
+            <div class="title" style="margin-top: 4px;">
+                <h:outputLabel value="OUTSIDE CHARGE BILL" />
+                <h:outputLabel value=" **Duplicate**" rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value=" **Cancelled**" rendered="#{cc.attrs.bill.cancelled eq true}" />
+            </div>
+
+            <div class="sep"></div>
+
+            <table>
+                <tr>
+                    <td style="width: 18%;">Bill No</td>
+                    <td style="width: 3%;">:</td>
+                    <td style="width: 32%;"><h:outputLabel value="#{cc.attrs.bill.deptId}" /></td>
+                    <td style="width: 15%;">Date</td>
+                    <td style="width: 3%;">:</td>
+                    <td style="width: 29%;">
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="dd/MM/yyyy hh:mm a" timeZone="Asia/Colombo" />
+                        </h:outputLabel>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td>:</td>
+                    <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" /></td>
+                </tr>
+                <tr>
+                    <td>BHT No</td>
+                    <td>:</td>
+                    <td><h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" /></td>
+                    <td>Room</td>
+                    <td>:</td>
+                    <td>
+                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom ne null}">
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" />
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom eq null}">
+                            <h:outputLabel value="Not assigned" />
+                        </h:panelGroup>
+                    </td>
+                </tr>
+                <h:panelGroup rendered="#{cc.attrs.bill.fromInstitution ne null}">
+                    <tr>
+                        <td>From</td>
+                        <td>:</td>
+                        <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" /></td>
+                    </tr>
+                </h:panelGroup>
+            </table>
+
+            <div class="sep"></div>
+
+            <table class="items">
+                <thead>
+                    <tr style="font-weight: bold; border-bottom: 1px solid #000;">
+                        <th style="text-align: left; width: 8%;">No</th>
+                        <th style="text-align: left;">Charge</th>
+                        <th style="text-align: right; width: 28%;">Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" varStatus="s">
+                        <tr>
+                            <td style="text-align: left;">#{s.index + 1}</td>
+                            <td style="text-align: left; text-transform: capitalize;">
+                                <h:outputLabel value="#{bip.inwardChargeType.label}" />
+                            </td>
+                            <td style="text-align: right;">
+                                <h:outputLabel value="#{bip.netValue}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </tbody>
+            </table>
+
+            <div class="sep"></div>
+
+            <table>
+                <tr style="font-weight: bold; font-size: 13px;">
+                    <td style="text-align: left;">Net Total</td>
+                    <td style="text-align: right;">
+                        <h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </td>
+                </tr>
+            </table>
+
+            <h:panelGroup rendered="#{cc.attrs.bill.comments ne null and not empty cc.attrs.bill.comments}">
+                <div style="font-size: 11px; margin-top: 4px;">
+                    <h:outputLabel value="Note: #{cc.attrs.bill.comments}" />
+                </div>
+            </h:panelGroup>
+
+            <table style="margin-top: 10px; font-size: 11px;">
+                <tr>
+                    <td style="text-align: left;">Billed by : <h:outputLabel value="#{cc.attrs.bill.creater.name}" /></td>
+                    <td style="text-align: right;">Signature : ______________</td>
+                </tr>
+            </table>
+
+        </div>
+    </cc:implementation>
+</html>

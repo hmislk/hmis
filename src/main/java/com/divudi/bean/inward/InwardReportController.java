@@ -23,6 +23,7 @@ import com.divudi.core.data.dto.InwardIncomeDoctorSpecialtyDTO;
 import com.divudi.core.data.dto.IpIncomeCategoryWiseRowDTO;
 import com.divudi.core.data.dto.MonthServiceCountDTO;
 import com.divudi.core.data.dto.MonthlySurgeryCountDTO;
+import com.divudi.core.data.dto.AdmissionCategoryWiseAdmissionDTO;
 import com.divudi.core.data.dto.IpUnsettledInvoiceDTO;
 import com.divudi.core.data.dto.PaymentTypeAdmissionDTO;
 import com.divudi.core.data.dto.SurgeryCountDoctorWiseDTO;
@@ -109,6 +110,20 @@ import java.util.Base64;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.*;
+import org.apache.poi.xddf.usermodel.chart.AxisCrosses;
+import org.apache.poi.xddf.usermodel.chart.AxisPosition;
+import org.apache.poi.xddf.usermodel.chart.BarDirection;
+import org.apache.poi.xddf.usermodel.chart.ChartTypes;
+import org.apache.poi.xddf.usermodel.chart.LegendPosition;
+import org.apache.poi.xddf.usermodel.chart.MarkerStyle;
+import org.apache.poi.xddf.usermodel.chart.XDDFBarChartData;
+import org.apache.poi.xddf.usermodel.chart.XDDFCategoryAxis;
+import org.apache.poi.xddf.usermodel.chart.XDDFChartLegend;
+import org.apache.poi.xddf.usermodel.chart.XDDFDataSource;
+import org.apache.poi.xddf.usermodel.chart.XDDFDataSourcesFactory;
+import org.apache.poi.xddf.usermodel.chart.XDDFLineChartData;
+import org.apache.poi.xddf.usermodel.chart.XDDFNumericalDataSource;
+import org.apache.poi.xddf.usermodel.chart.XDDFValueAxis;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import com.itextpdf.html2pdf.HtmlConverter;
@@ -268,6 +283,7 @@ public class InwardReportController implements Serializable {
     private RoomCategory roomCategory;
     private Staff consultant;
     private List<IpUnsettledInvoiceDTO> unsettledInvoicesList;
+    private List<AdmissionCategoryWiseAdmissionDTO> admissionCategoryWiseAdmissionList;
     private Item surgeryItem;
 
     // for specialty/doctor wise income
@@ -851,6 +867,13 @@ public class InwardReportController implements Serializable {
         jpql.append(" ORDER BY b.staff.speciality.name, b.staff.person.name ");
 
         List<SurgeryCountDoctorWiseDTO> rawList = (List<SurgeryCountDoctorWiseDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        
+        // Post-process to set the doctor name with title
+        for (SurgeryCountDoctorWiseDTO dto : rawList) {
+            if (dto.getStaff() != null && dto.getStaff().getPerson() != null) {
+                dto.setDoctorName(dto.getStaff().getPerson().getNameWithTitle());
+            }
+        }
 
         // Group by specialty and doctor, count surgeries month-wise
         Map<String, Map<Long, SurgeryCountDoctorWiseDTO>> specialtyDoctorMap = new LinkedHashMap<>();
@@ -1153,6 +1176,142 @@ public class InwardReportController implements Serializable {
         Image img = Image.getInstance(baos.toByteArray());
         img.setWidthPercentage(100);
         return img;
+    }
+
+    private List<SurgeryCountDoctorWiseDTO> getDoctorChartRows() {
+        if (billList == null) {
+            return new ArrayList<>();
+        }
+        return billList.stream()
+                .filter(dto -> !dto.isSubtotal() && !dto.isGrandTotal())
+                .collect(Collectors.toList());
+    }
+
+    private List<SurgeryCountDoctorWiseDTO> getSpecialtyChartRows() {
+        if (billList == null) {
+            return new ArrayList<>();
+        }
+        return billList.stream()
+                .filter(SurgeryCountDoctorWiseDTO::isSubtotal)
+                .collect(Collectors.toList());
+    }
+
+    private int[] writeChartDataBlock(XSSFSheet sheet,
+            int startRow,
+            String seriesHeader,
+            List<SurgeryCountDoctorWiseDTO> rows,
+            boolean useSpecialtyName) {
+        int headerRowIndex = startRow;
+        Row headerRow = sheet.createRow(startRow++);
+        headerRow.createCell(0).setCellValue(seriesHeader);
+        for (int i = 0; i < MONTH_LABELS.length; i++) {
+            headerRow.createCell(i + 1).setCellValue(MONTH_LABELS[i]);
+        }
+
+        int firstDataRow = startRow;
+        for (SurgeryCountDoctorWiseDTO dto : rows) {
+            Row row = sheet.createRow(startRow++);
+            String label = useSpecialtyName
+                    ? (dto.getSpecialityName() != null ? dto.getSpecialityName() : "")
+                    : (dto.getDoctorName() != null ? dto.getDoctorName() : "");
+            row.createCell(0).setCellValue(label);
+
+            int[] monthValues = {
+                dto.getJanuary(), dto.getFebruary(), dto.getMarch(),
+                dto.getApril(), dto.getMay(), dto.getJune(),
+                dto.getJuly(), dto.getAugust(), dto.getSeptember(),
+                dto.getOctober(), dto.getNovember(), dto.getDecember()
+            };
+            for (int i = 0; i < monthValues.length; i++) {
+                row.createCell(i + 1).setCellValue(monthValues[i]);
+            }
+        }
+
+        int lastDataRow = startRow - 1;
+        return new int[]{headerRowIndex, firstDataRow, lastDataRow};
+    }
+
+    private void addLineChart(XSSFSheet sheet,
+            XSSFDrawing drawing,
+            int col,
+            int row,
+            int[] block,
+            String title) {
+        if (block[1] > block[2]) {
+            return;
+        }
+
+        XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, col, row, col + 12, row + 20);
+        XSSFChart chart = drawing.createChart(anchor);
+        chart.setTitleText(title);
+        chart.setTitleOverlay(false);
+
+        XDDFChartLegend legend = chart.getOrAddLegend();
+        legend.setPosition(LegendPosition.RIGHT);
+
+        XDDFCategoryAxis xAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+        XDDFValueAxis yAxis = chart.createValueAxis(AxisPosition.LEFT);
+        yAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+
+        XDDFDataSource<String> categories = XDDFDataSourcesFactory.fromStringCellRange(
+                sheet, new CellRangeAddress(block[0], block[0], 1, 12));
+        XDDFLineChartData data = (XDDFLineChartData) chart.createData(ChartTypes.LINE, xAxis, yAxis);
+
+        for (int r = block[1]; r <= block[2]; r++) {
+            XDDFNumericalDataSource<Double> values = XDDFDataSourcesFactory.fromNumericCellRange(
+                    sheet, new CellRangeAddress(r, r, 1, 12));
+            XDDFLineChartData.Series series = (XDDFLineChartData.Series) data.addSeries(categories, values);
+            String seriesName = "";
+            if (sheet.getRow(r) != null && sheet.getRow(r).getCell(0) != null) {
+                seriesName = sheet.getRow(r).getCell(0).getStringCellValue();
+            }
+            series.setTitle(seriesName, null);
+            series.setSmooth(false);
+            series.setMarkerStyle(MarkerStyle.CIRCLE);
+        }
+
+        chart.plot(data);
+    }
+
+    private void addBarChart(XSSFSheet sheet,
+            XSSFDrawing drawing,
+            int col,
+            int row,
+            int[] block,
+            String title) {
+        if (block[1] > block[2]) {
+            return;
+        }
+
+        XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, col, row, col + 12, row + 20);
+        XSSFChart chart = drawing.createChart(anchor);
+        chart.setTitleText(title);
+        chart.setTitleOverlay(false);
+
+        XDDFChartLegend legend = chart.getOrAddLegend();
+        legend.setPosition(LegendPosition.TOP);
+
+        XDDFCategoryAxis xAxis = chart.createCategoryAxis(AxisPosition.BOTTOM);
+        XDDFValueAxis yAxis = chart.createValueAxis(AxisPosition.LEFT);
+        yAxis.setCrosses(AxisCrosses.AUTO_ZERO);
+
+        XDDFDataSource<String> categories = XDDFDataSourcesFactory.fromStringCellRange(
+                sheet, new CellRangeAddress(block[0], block[0], 1, 12));
+        XDDFBarChartData data = (XDDFBarChartData) chart.createData(ChartTypes.BAR, xAxis, yAxis);
+        data.setBarDirection(BarDirection.COL);
+
+        for (int r = block[1]; r <= block[2]; r++) {
+            XDDFNumericalDataSource<Double> values = XDDFDataSourcesFactory.fromNumericCellRange(
+                    sheet, new CellRangeAddress(r, r, 1, 12));
+            XDDFBarChartData.Series series = (XDDFBarChartData.Series) data.addSeries(categories, values);
+            String seriesName = "";
+            if (sheet.getRow(r) != null && sheet.getRow(r).getCell(0) != null) {
+                seriesName = sheet.getRow(r).getCell(0).getStringCellValue();
+            }
+            series.setTitle(seriesName, null);
+        }
+
+        chart.plot(data);
     }
     private static final String[] MONTH_LABELS
             = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
@@ -1565,6 +1724,35 @@ public class InwardReportController implements Serializable {
                 sheet.setColumnWidth(i, colWidths[i]);
             }
 
+                // ── Charts sheet (native Excel charts) ─────────────────────────────
+                XSSFSheet chartSheet = workbook.createSheet("Charts");
+                XSSFDrawing drawing = chartSheet.createDrawingPatriarch();
+
+                List<SurgeryCountDoctorWiseDTO> doctorChartRows = getDoctorChartRows();
+                List<SurgeryCountDoctorWiseDTO> specialtyChartRows = getSpecialtyChartRows();
+
+                int chartRowStart = 0;
+                if (!doctorChartRows.isEmpty()) {
+                int[] doctorBlock = writeChartDataBlock(
+                    chartSheet, chartRowStart, "Doctor", doctorChartRows, false);
+                int doctorChartsStart = doctorBlock[2] + 2;
+                addLineChart(chartSheet, drawing, 0, doctorChartsStart, doctorBlock,
+                    "Doctor Wise Surgery Trend - Year " + reportYear);
+                addBarChart(chartSheet, drawing, 0, doctorChartsStart + 22, doctorBlock,
+                    "Doctor Wise Surgery Count - Year " + reportYear);
+                chartRowStart = doctorChartsStart + 45;
+                }
+
+                if (!specialtyChartRows.isEmpty()) {
+                int[] specialtyBlock = writeChartDataBlock(
+                    chartSheet, chartRowStart, "Speciality", specialtyChartRows, true);
+                int specialtyChartsStart = specialtyBlock[2] + 2;
+                addLineChart(chartSheet, drawing, 0, specialtyChartsStart, specialtyBlock,
+                    "Specialty Wise Surgery Trend - Year " + reportYear);
+                addBarChart(chartSheet, drawing, 0, specialtyChartsStart + 22, specialtyBlock,
+                    "Specialty Wise Surgery Count - Year " + reportYear);
+                }
+
             // ── Write workbook to byte array first, then stream ────────────────────
             // Avoids "IOException never thrown" by separating workbook.write()
             // from the JSF response stream handling
@@ -1855,11 +2043,13 @@ public class InwardReportController implements Serializable {
 
             jpql.append(" Select new com.divudi.core.data.dto.MonthServiceCountDTO(")
                     .append(" FUNCTION('MONTH', a.dateOfDischarge), ")
-                    .append(" s.item.category.name, ")
+                    .append(" COALESCE(c.name, 'Uncategorized'), ")
                     .append(" count(s) ")
                     .append(") ")
                     .append(" from PatientEncounter s ")
                     .append(" join s.parentEncounter a ")
+                    .append(" left join s.item i ")
+                    .append(" left join i.category c ")
                     .append(" Where s.retired = false ")
                     .append(" and a.discharged = true ")
                     .append(" and a.dateOfDischarge is not null ")
@@ -1902,7 +2092,7 @@ public class InwardReportController implements Serializable {
                 params.put("site", site);
             }
 
-            jpql.append(" Group By FUNCTION('MONTH', a.dateOfDischarge), s.item.category.name ");
+            jpql.append(" Group By FUNCTION('MONTH', a.dateOfDischarge), COALESCE(c.name, 'Uncategorized') ");
 
         } else if (reportType.equals("DETAIL")) {
 
@@ -2321,6 +2511,518 @@ public class InwardReportController implements Serializable {
             }
         }
         return result;
+    }
+
+    public void processAdmissionCategoryWiseAdmissionReport() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Admission From Date and Admission To Date are required.");
+            admissionCategoryWiseAdmissionList = new ArrayList<>();
+            return;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append("SELECT new com.divudi.core.data.dto.AdmissionCategoryWiseAdmissionDTO(")
+                .append("ad.id, ")
+                .append("ad.bhtNo, ")
+                .append("ad.patient.person.name, ")
+                .append("ad.patient.person.title, ")
+                .append("ad.admissionType, ")
+                .append("ad.paymentMethod, ")
+                .append("ad.paymentFinalized")
+                .append(") FROM Admission ad ");
+
+        if (roomCategory != null) {
+            jpql.append("LEFT JOIN ad.currentPatientRoom room ")
+                    .append("LEFT JOIN room.roomFacilityCharge rfc ");
+        }
+
+        jpql.append("WHERE ad.retired = :ret ")
+                .append("AND ad.dateOfAdmission BETWEEN :fd AND :td ");
+
+        params.put("ret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if (dischargeFromDate != null && dischargeToDate != null) {
+            jpql.append("AND ad.dateOfDischarge BETWEEN :dfd AND :dtd ");
+            params.put("dfd", dischargeFromDate);
+            params.put("dtd", dischargeToDate);
+        }
+
+        if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
+            jpql.append("AND ad.finalBill IS NOT NULL ")
+                    .append("AND ad.finalBill.createdAt BETWEEN :iafd AND :iatd ");
+            params.put("iafd", invoiceApprovedFromDate);
+            params.put("iatd", invoiceApprovedToDate);
+        }
+
+        if (institution != null) {
+            jpql.append("AND ad.institution = :inst ");
+            params.put("inst", institution);
+        }
+        if (site != null) {
+            jpql.append("AND ad.department.site = :site ");
+            params.put("site", site);
+        }
+        if (department != null) {
+            jpql.append("AND ad.department = :dept ");
+            params.put("dept", department);
+        }
+        if (consultant != null) {
+            jpql.append("AND ad.referringConsultant = :cons ");
+            params.put("cons", consultant);
+        }
+        if (serviceCenter != null) {
+            jpql.append("AND ad.department = :sc ");
+            params.put("sc", serviceCenter);
+        }
+        if (sponsor != null) {
+            jpql.append("AND ad.creditCompany = :sponsor ");
+            params.put("sponsor", sponsor);
+        }
+        if (admissionType != null) {
+            jpql.append("AND ad.admissionType = :at ");
+            params.put("at", admissionType);
+        }
+        if (paymentMethod != null) {
+            jpql.append("AND ad.paymentMethod = :pm ");
+            params.put("pm", paymentMethod);
+        }
+        if (roomCategory != null) {
+            jpql.append("AND rfc.roomCategory = :rc ");
+            params.put("rc", roomCategory);
+        }
+        if (admissionStatus != null && admissionStatus != ANY_STATUS) {
+            switch (admissionStatus) {
+                case ADMITTED_BUT_NOT_DISCHARGED:
+                    jpql.append("AND ad.discharged = :dis AND ad.paymentFinalized = FALSE ");
+                    params.put("dis", false);
+                    break;
+                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                    jpql.append("AND ad.discharged = :dis AND ad.paymentFinalized = FALSE ");
+                    params.put("dis", true);
+                    break;
+                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                    jpql.append("AND ad.discharged = :dis AND ad.paymentFinalized = TRUE ");
+                    params.put("dis", true);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        jpql.append("ORDER BY ad.admissionType.name, ad.bhtNo ");
+
+        try {
+            admissionCategoryWiseAdmissionList = (List<AdmissionCategoryWiseAdmissionDTO>) peFacade.findLightsByJpql(
+                    jpql.toString(), params, TemporalType.TIMESTAMP);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error loading admission category wise report: " + e.getMessage());
+            admissionCategoryWiseAdmissionList = new ArrayList<>();
+            return;
+        }
+
+        if (admissionCategoryWiseAdmissionList == null || admissionCategoryWiseAdmissionList.isEmpty()) {
+            admissionCategoryWiseAdmissionList = new ArrayList<>();
+            return;
+        }
+
+        enrichAdmissionCategoryWiseFinancials(admissionCategoryWiseAdmissionList);
+    }
+
+    private void enrichAdmissionCategoryWiseFinancials(List<AdmissionCategoryWiseAdmissionDTO> rows) {
+        List<Long> encounterIds = rows.stream()
+                .filter(dto -> dto != null && dto.getAdmissionId() != null)
+                .map(AdmissionCategoryWiseAdmissionDTO::getAdmissionId)
+                .collect(Collectors.toList());
+
+        if (encounterIds.isEmpty()) {
+            return;
+        }
+
+        List<PatientEncounter> encounters = peFacade.findByJpql(
+                "SELECT pe FROM PatientEncounter pe WHERE pe.id IN :ids",
+                Collections.singletonMap("ids", encounterIds));
+
+        Map<Long, PatientEncounter> encounterById = (encounters == null)
+                ? Collections.emptyMap()
+                : encounters.stream().collect(Collectors.toMap(PatientEncounter::getId, pe -> pe));
+
+        List<PatientEncounter> allChildren = peFacade.findByJpql(
+                "SELECT pe FROM PatientEncounter pe WHERE pe.parentEncounter.id IN :ids AND pe.retired = false",
+                Collections.singletonMap("ids", encounterIds));
+        Map<Long, List<PatientEncounter>> childrenByParentId = (allChildren == null)
+                ? Collections.emptyMap()
+                : allChildren.stream()
+                        .filter(pe -> pe.getParentEncounter() != null)
+                        .collect(Collectors.groupingBy(pe -> pe.getParentEncounter().getId()));
+
+        Map<Long, Bill> finalBillByEncounterId = batchFetchFinalBillsByEncounterIds(encounterIds);
+        Map<Long, Double> depositByEncounterId = batchFetchDepositTotalsByEncounterIds(encounterIds);
+        Map<Long, Double> paidByCompanyByEncounterId = batchFetchPaidByCompanyByEncounterIds(encounterIds);
+        Map<Long, Double> paidByPatientByEncounterId = batchFetchPaidByPatientByEncounterIds(encounterIds);
+
+        for (AdmissionCategoryWiseAdmissionDTO dto : rows) {
+            if (dto == null || dto.getAdmissionId() == null) {
+                continue;
+            }
+
+            Long id = dto.getAdmissionId();
+            PatientEncounter pe = encounterById.get(id);
+            Bill finalBill = finalBillByEncounterId.get(id);
+            List<PatientEncounter> children = childrenByParentId.getOrDefault(id, Collections.emptyList());
+
+            double invoiceAmount;
+            double professionalFees = 0.0;
+            double hospitalAmount = 0.0;
+            double discount = 0.0;
+            double sponsorAmount = 0.0;
+            double patientAmount = 0.0;
+
+            if (finalBill != null) {
+                invoiceAmount = finalBill.getNetTotal();
+                professionalFees = finalBill.getProfessionalFee();
+                hospitalAmount = finalBill.getHospitalFee();
+                discount = finalBill.getDiscount();
+                sponsorAmount = finalBill.getSettledAmountBySponsor();
+                patientAmount = finalBill.getSettledAmountByPatient();
+            } else if (pe != null) {
+                invoiceAmount = inwardBeanController.calculateInwardTotal(pe, children);
+                discount = pe.getDiscount();
+            } else {
+                invoiceAmount = 0.0;
+            }
+
+            if (sponsorAmount == 0.0 && patientAmount == 0.0 && invoiceAmount > 0.0) {
+                if (dto.getPaymentMethod() == PaymentMethod.Credit) {
+                    sponsorAmount = invoiceAmount;
+                } else {
+                    patientAmount = invoiceAmount;
+                }
+            }
+
+            double advance = depositByEncounterId.getOrDefault(id, 0.0);
+            double paidByCompany = paidByCompanyByEncounterId.getOrDefault(id, 0.0);
+            double paidByPatient = paidByPatientByEncounterId.getOrDefault(id, 0.0);
+            double totalCollected = advance + paidByCompany;
+
+            dto.setAdvance(advance);
+            dto.setProfessionalFees(professionalFees);
+            dto.setHospitalAmount(hospitalAmount);
+            dto.setSponsorAmount(sponsorAmount);
+            dto.setPatientAmount(patientAmount);
+            dto.setDiscount(discount);
+            dto.setInvoiceAmount(invoiceAmount);
+            dto.setBillBalance(Math.max(0.0, invoiceAmount - totalCollected));
+            dto.setPatientBalance(Math.max(0.0, patientAmount - paidByPatient));
+        }
+    }
+
+    private Map<Long, Bill> batchFetchFinalBillsByEncounterIds(List<Long> encounterIds) {
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String jpql = "SELECT b FROM BilledBill b "
+                + "WHERE b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billType = :bt "
+                + "AND b.patientEncounter.id IN :ids "
+                + "ORDER BY b.patientEncounter.id, b.id DESC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.InwardFinalBill);
+        params.put("ids", encounterIds);
+
+        List<Bill> bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        Map<Long, Bill> result = new HashMap<>();
+        if (bills != null) {
+            for (Bill bill : bills) {
+                if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getId() != null) {
+                    result.putIfAbsent(bill.getPatientEncounter().getId(), bill);
+                }
+            }
+        }
+        return result;
+    }
+
+    private Map<Long, Double> batchFetchDepositTotalsByEncounterIds(List<Long> encounterIds) {
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String jpql = "SELECT b.patientEncounter.id, SUM(ABS(p.paidValue)) "
+                + "FROM Payment p "
+                + "JOIN p.bill b "
+                + "WHERE p.retired = false "
+                + "AND b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.patientEncounter.id IN :ids "
+                + "GROUP BY b.patientEncounter.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.INWARD_DEPOSIT);
+        params.put("ids", encounterIds);
+
+        return mapEncounterDoubleAggregate(billFacade.findObjectsArrayByJpql(jpql, params, TemporalType.TIMESTAMP));
+    }
+
+    private Map<Long, Double> batchFetchPaidByCompanyByEncounterIds(List<Long> encounterIds) {
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String jpql = "SELECT b.patientEncounter.id, SUM(b.netTotal) "
+                + "FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billTypeAtomic IN :bts "
+                + "AND b.patientEncounter.id IN :ids "
+                + "GROUP BY b.patientEncounter.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bts", Arrays.asList(
+                BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED,
+                BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION));
+        params.put("ids", encounterIds);
+
+        return mapEncounterDoubleAggregate(billFacade.findObjectsArrayByJpql(jpql, params, TemporalType.TIMESTAMP));
+    }
+
+    private Map<Long, Double> batchFetchPaidByPatientByEncounterIds(List<Long> encounterIds) {
+        if (encounterIds == null || encounterIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        String jpql = "SELECT b.patientEncounter.id, SUM(b.netTotal) "
+                + "FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billType = :btp "
+                + "AND b.paymentMethod <> :pm "
+                + "AND b.patientEncounter.id IN :ids "
+                + "GROUP BY b.patientEncounter.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillType.InwardPaymentBill);
+        params.put("pm", PaymentMethod.Credit);
+        params.put("ids", encounterIds);
+
+        return mapEncounterDoubleAggregate(billFacade.findObjectsArrayByJpql(jpql, params, TemporalType.TIMESTAMP));
+    }
+
+    private Map<Long, Double> mapEncounterDoubleAggregate(List<Object[]> rows) {
+        Map<Long, Double> result = new HashMap<>();
+        if (rows == null) {
+            return result;
+        }
+        for (Object[] row : rows) {
+            if (row == null || row.length < 2 || row[0] == null) {
+                continue;
+            }
+            Long id = ((Number) row[0]).longValue();
+            Double value = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
+            result.put(id, Math.max(0.0, value));
+        }
+        return result;
+    }
+
+    public StreamedContent getAdmissionCategoryWiseAdmissionExcel() {
+        if (admissionCategoryWiseAdmissionList == null || admissionCategoryWiseAdmissionList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data available to export.");
+            return null;
+        }
+
+        try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            XSSFSheet sheet = wb.createSheet("Admission Category Wise");
+
+            String[] headers = {
+                "No", "BHT", "Patient Name", "Admission Category", "Advance",
+                "Professional Fees", "Hospital Amount", "Sponsor Amount", "Patient Amount",
+                "Discount", "Invoice Amount", "Bill Balance", "Patient Balance"
+            };
+
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                headerRow.createCell(i).setCellValue(headers[i]);
+            }
+
+            CreationHelper helper = wb.getCreationHelper();
+            CellStyle moneyStyle = wb.createCellStyle();
+            moneyStyle.setDataFormat(helper.createDataFormat().getFormat("#,##0.00"));
+
+            int rowNum = 1;
+            int idx = 1;
+            for (AdmissionCategoryWiseAdmissionDTO dto : admissionCategoryWiseAdmissionList) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(idx++);
+                row.createCell(1).setCellValue(dto.getBhtNo() != null ? dto.getBhtNo() : "");
+                row.createCell(2).setCellValue(dto.getPatientName() != null ? dto.getPatientName() : "");
+                row.createCell(3).setCellValue(dto.getCategoryName() != null ? dto.getCategoryName() : "");
+
+                for (int col = 4; col <= 12; col++) {
+                    Cell moneyCell = row.createCell(col);
+                    moneyCell.setCellStyle(moneyStyle);
+                }
+                row.getCell(4).setCellValue(dto.getAdvance());
+                row.getCell(5).setCellValue(dto.getProfessionalFees());
+                row.getCell(6).setCellValue(dto.getHospitalAmount());
+                row.getCell(7).setCellValue(dto.getSponsorAmount());
+                row.getCell(8).setCellValue(dto.getPatientAmount());
+                row.getCell(9).setCellValue(dto.getDiscount());
+                row.getCell(10).setCellValue(dto.getInvoiceAmount());
+                row.getCell(11).setCellValue(dto.getBillBalance());
+                row.getCell(12).setCellValue(dto.getPatientBalance());
+            }
+
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            wb.write(out);
+            byte[] bytes = out.toByteArray();
+            return DefaultStreamedContent.builder()
+                    .name("Admission_Category_Wise_Admission.xlsx")
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> new ByteArrayInputStream(bytes))
+                    .build();
+
+        } catch (IOException e) {
+            java.util.logging.Logger.getLogger(InwardReportController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Excel generation failed", e);
+            JsfUtil.addErrorMessage("Failed to generate Excel: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public void downloadAdmissionCategoryWiseAdmissionPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        String dates = CommonFunctions.dateRangeForFileName(
+                fromDate, toDate,
+                sessionController.getApplicationPreference().getLongDateFormat());
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+        SimpleDateFormat sdt = new SimpleDateFormat("dd MMM yyyy HH:mm");
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            Document document = new Document(com.lowagie.text.PageSize.A4.rotate());
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
+            document.open();
+
+            String institutionName = sessionController.getInstitution() != null
+                    ? sessionController.getInstitution().getName()
+                    : "No Logged Institution";
+
+            document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Admission Category Wise Admission Report",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            if (admissionCategoryWiseAdmissionList == null || admissionCategoryWiseAdmissionList.isEmpty()) {
+                document.add(new Paragraph("No admissions for the selected criteria.",
+                        FontFactory.getFont(FontFactory.HELVETICA, 12)));
+                document.close();
+                context.responseComplete();
+                return;
+            }
+
+            PdfPTable infoTable = buildAdmissionCategoryWiseInfoTable(sdt);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+
+            PdfPTable table = new PdfPTable(13);
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(10);
+            float[] columnWidths = {0.8f, 1.5f, 2.5f, 1.8f, 1.2f, 1.4f, 1.4f, 1.3f, 1.3f, 1.1f, 1.3f, 1.3f, 1.3f};
+            table.setWidths(columnWidths);
+
+            addAdmissionCategoryWiseHeaderRow(table);
+
+            int idx = 1;
+            for (AdmissionCategoryWiseAdmissionDTO row : admissionCategoryWiseAdmissionList) {
+                addAdmissionCategoryWiseRow(table, row, idx++);
+            }
+
+            document.add(table);
+            document.close();
+
+            byte[] bytes = baos.toByteArray();
+            response.reset();
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=Admission_Category_Wise_Admission_" + dates + ".pdf");
+            response.setContentLength(bytes.length);
+
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(bytes);
+                out.flush();
+            }
+
+            context.responseComplete();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+        }
+    }
+
+    private PdfPTable buildAdmissionCategoryWiseInfoTable(SimpleDateFormat sdt) throws DocumentException {
+        PdfPTable info = new PdfPTable(2);
+        info.setWidthPercentage(60);
+        info.setSpacingBefore(5);
+        info.setWidths(new float[]{1f, 2f});
+
+        addInfoCell(info, "Institution:", institution != null ? institution.getName() : "All");
+        addInfoCell(info, "Site:", site != null ? site.getName() : "All");
+        addInfoCell(info, "Department:", department != null ? department.getName() : "All");
+        addInfoCell(info, "Admission Category:", admissionType != null ? admissionType.getName() : "All");
+        addInfoCell(info, "From Date:", fromDate != null ? sdt.format(fromDate) : "-");
+        addInfoCell(info, "To Date:", toDate != null ? sdt.format(toDate) : "-");
+        addInfoCell(info, "Generated:", sdt.format(new Date()));
+        return info;
+    }
+
+    private void addAdmissionCategoryWiseHeaderRow(PdfPTable table) {
+        java.awt.Color headerBg = new java.awt.Color(33, 37, 41);
+        com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, java.awt.Color.WHITE);
+
+        String[] headers = {
+            "#", "BHT", "Patient Name", "Category", "Advance", "Prof. Fees", "Hospital",
+            "Sponsor", "Patient", "Discount", "Invoice", "Bill Bal.", "Patient Bal."
+        };
+
+        for (String h : headers) {
+            PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
+            cell.setBackgroundColor(headerBg);
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cell.setPadding(3);
+            table.addCell(cell);
+        }
+    }
+
+    private void addAdmissionCategoryWiseRow(PdfPTable table, AdmissionCategoryWiseAdmissionDTO row, int idx) {
+        com.lowagie.text.Font normal = FontFactory.getFont(FontFactory.HELVETICA, 7);
+
+        table.addCell(new Phrase(String.valueOf(idx), normal));
+        table.addCell(new Phrase(nullSafe(row.getBhtNo()), normal));
+        table.addCell(new Phrase(nullSafe(row.getPatientName()), normal));
+        table.addCell(new Phrase(nullSafe(row.getCategoryName()), normal));
+        table.addCell(new Phrase(formatAmount(row.getAdvance()), normal));
+        table.addCell(new Phrase(formatAmount(row.getProfessionalFees()), normal));
+        table.addCell(new Phrase(formatAmount(row.getHospitalAmount()), normal));
+        table.addCell(new Phrase(formatAmount(row.getSponsorAmount()), normal));
+        table.addCell(new Phrase(formatAmount(row.getPatientAmount()), normal));
+        table.addCell(new Phrase(formatAmount(row.getDiscount()), normal));
+        table.addCell(new Phrase(formatAmount(row.getInvoiceAmount()), normal));
+        table.addCell(new Phrase(formatAmount(row.getBillBalance()), normal));
+        table.addCell(new Phrase(formatAmount(row.getPatientBalance()), normal));
     }
 
     public void downloadIpUnsettledInvoicesPdf() {
@@ -5446,6 +6148,14 @@ public class InwardReportController implements Serializable {
     public void setUnsettledInvoicesList(List<IpUnsettledInvoiceDTO> unsettledInvoicesList) {
         this.unsettledInvoicesList = unsettledInvoicesList;
 
+    }
+
+    public List<AdmissionCategoryWiseAdmissionDTO> getAdmissionCategoryWiseAdmissionList() {
+        return admissionCategoryWiseAdmissionList;
+    }
+
+    public void setAdmissionCategoryWiseAdmissionList(List<AdmissionCategoryWiseAdmissionDTO> admissionCategoryWiseAdmissionList) {
+        this.admissionCategoryWiseAdmissionList = admissionCategoryWiseAdmissionList;
     }
 
     public List<SurgeryCountSurgeryWiseDTO> getSurgeryCountSurgeryWiseList() {

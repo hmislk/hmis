@@ -44,7 +44,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -97,6 +99,7 @@ public class TransferIssueForRequestsController implements Serializable {
     private Long requestedBillId;
     private Bill issuedBill;
     private boolean printPreview;
+    private boolean draftMode;
 
     private List<BillItem> billItems;
     private BillItem selectedBillItem;
@@ -129,6 +132,11 @@ public class TransferIssueForRequestsController implements Serializable {
     public String navigateToPharmacyIssueForRequestsById() {
         if (requestedBillId == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
+            return "";
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Use Save Finalize Approve Workflow for Issue for Requests", false)
+                && hasPendingIssueForDepartment()) {
+            JsfUtil.addErrorMessage("There is already a pending issue for this department. Please Finalize or Approve it before starting a new one.");
             return "";
         }
         requestedBill = billFacade.find(requestedBillId);
@@ -204,6 +212,7 @@ public class TransferIssueForRequestsController implements Serializable {
         requestedBill = null;
         issuedBill = null;
         printPreview = false;
+        draftMode = false;
         billItems = null;
         userStockContainer = null;
         selectedBillItem = null;
@@ -403,6 +412,361 @@ public class TransferIssueForRequestsController implements Serializable {
         }
     }
 
+    // =========================================================================
+    // Draft Workflow: Save → Finalize → Approve for Issue for Requests
+    // =========================================================================
+
+    public boolean isDraftMode() {
+        return draftMode;
+    }
+
+    public void setDraftMode(boolean draftMode) {
+        this.draftMode = draftMode;
+    }
+
+    public boolean hasPendingIssueForDepartment() {
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.PHARMACY_ISSUE_PRE);
+        params.put("dept", sessionController.getDepartment());
+        params.put("checked", false);
+        long count = getBillFacade().findLongByJpql(
+                "SELECT COUNT(b) FROM Bill b WHERE b.retired=false "
+                + "AND b.billTypeAtomic=:bta AND b.department=:dept AND b.checked=:checked",
+                params);
+        return count > 0;
+    }
+
+    /**
+     * Loads a saved PHARMACY_ISSUE_PRE bill for editing (Finalize or Approve).
+     */
+    public String loadDraftIssueForEditing(Bill draft) {
+        makeNull();
+        issuedBill = draft;
+        draftMode = true;
+        requestedBill = draft.getReferenceBill();
+        Map<String, Object> params = new HashMap<>();
+        params.put("bill", draft);
+        billItems = getBillItemFacade().findByJpql(
+                "SELECT bi FROM BillItem bi WHERE bi.bill=:bill AND bi.retired=false ORDER BY bi.searialNo",
+                params);
+        return "/pharmacy/pharmacy_transfer_issue?faces-redirect=true";
+    }
+
+    /**
+     * Saves the current items as a PHARMACY_ISSUE_PRE bill without moving stock.
+     */
+    public void saveDraftIssue() {
+        if (getIssuedBill().getToDepartment() == null) {
+            JsfUtil.addErrorMessage("Please select a department to issue to");
+            return;
+        }
+        if (getIssuedBill().getToStaff() == null) {
+            JsfUtil.addErrorMessage("Please select a staff to issue to");
+            return;
+        }
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No items to save");
+            return;
+        }
+
+        // Retire removed items on re-save
+        if (getIssuedBill().getId() != null) {
+            Map<String, Object> retireParams = new HashMap<>();
+            retireParams.put("billId", getIssuedBill().getId());
+            List<BillItem> persistedItems = getBillItemFacade().findByJpql(
+                    "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId AND bi.retired = false",
+                    retireParams);
+            java.util.Set<Long> sessionIds = new java.util.HashSet<>();
+            for (BillItem bi : getBillItems()) {
+                if (bi.getId() != null) {
+                    sessionIds.add(bi.getId());
+                }
+            }
+            for (BillItem persisted : persistedItems) {
+                if (!sessionIds.contains(persisted.getId())) {
+                    persisted.setRetired(true);
+                    persisted.setRetireComments("Removed during draft edit");
+                    getBillItemFacade().edit(persisted);
+                }
+            }
+        }
+
+        getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE_PRE);
+        getIssuedBill().setBillType(BillType.PharmacyTransferIssue);
+        getIssuedBill().setInstitution(sessionController.getInstitution());
+        getIssuedBill().setDepartment(sessionController.getDepartment());
+        getIssuedBill().setFromInstitution(sessionController.getInstitution());
+        getIssuedBill().setFromDepartment(sessionController.getDepartment());
+        if (requestedBill != null) {
+            getIssuedBill().setToInstitution(requestedBill.getFromInstitution());
+            getIssuedBill().setToDepartment(requestedBill.getFromDepartment());
+            getIssuedBill().setDepartmentType(requestedBill.getDepartmentType());
+        }
+        getIssuedBill().setCreater(sessionController.getLoggedUser());
+        getIssuedBill().setCreatedAt(Calendar.getInstance().getTime());
+        getIssuedBill().setCompleted(false);
+        getIssuedBill().setChecked(false);
+
+        saveBill();
+
+        // Remove zero-qty items before persisting
+        List<BillItem> nonZeroItems = new ArrayList<>();
+        for (BillItem bi : getBillItems()) {
+            if (bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getQty() != 0.0) {
+                nonZeroItems.add(bi);
+            }
+        }
+        setBillItems(nonZeroItems);
+
+        for (BillItem bi : getBillItems()) {
+            updateBillItemRateAndValue(bi);
+            bi.setBill(getIssuedBill());
+            bi.setCreatedAt(Calendar.getInstance().getTime());
+            bi.setCreater(sessionController.getLoggedUser());
+            if (bi.getId() == null) {
+                getBillItemFacade().create(bi);
+                if (bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getId() == null) {
+                    getPharmaceuticalBillItemFacade().create(bi.getPharmaceuticalBillItem());
+                }
+            } else {
+                getBillItemFacade().edit(bi);
+                if (bi.getPharmaceuticalBillItem() != null) {
+                    getPharmaceuticalBillItemFacade().edit(bi.getPharmaceuticalBillItem());
+                }
+            }
+            getBillItemFacade().edit(bi);
+        }
+
+        getIssuedBill().setBillItems(getBillItems());
+        calculateBillTotalsForTransferIssue(getIssuedBill());
+        getIssuedBill().setNetTotal(calculateBillNetTotal());
+        getBillFacade().edit(getIssuedBill());
+
+        // Release UserStock locks — stock is not yet committed
+        userStockController.retiredAllUserStockContainer(sessionController.getLoggedUser());
+        userStockContainer = null;
+
+        draftMode = true;
+        JsfUtil.addSuccessMessage("Issue draft saved successfully.");
+    }
+
+    /**
+     * Finalizes the current PHARMACY_ISSUE_PRE draft (sets completed=true).
+     */
+    public void finalizeDraftIssue() {
+        if (getIssuedBill() == null || getIssuedBill().getId() == null) {
+            JsfUtil.addErrorMessage("No draft to finalize. Please save first.");
+            return;
+        }
+        Bill fresh = getBillFacade().findWithoutCache(getIssuedBill().getId());
+        if (fresh == null || fresh.isRetired()) {
+            JsfUtil.addErrorMessage("Draft bill not found.");
+            return;
+        }
+        if (fresh.isCompleted()) {
+            JsfUtil.addErrorMessage("This draft has already been finalized.");
+            return;
+        }
+        fresh.setCompleted(true);
+        fresh.setCompletedAt(new Date());
+        fresh.setCompletedBy(sessionController.getLoggedUser());
+        getBillFacade().edit(fresh);
+        issuedBill = fresh;
+        JsfUtil.addSuccessMessage("Issue draft finalized successfully.");
+    }
+
+    /**
+     * Approves the PHARMACY_ISSUE_PRE draft: moves stock and converts to PHARMACY_ISSUE.
+     */
+    public synchronized void approveDraftIssue() {
+        if (getIssuedBill() == null || getIssuedBill().getId() == null) {
+            JsfUtil.addErrorMessage("No finalized draft to approve.");
+            return;
+        }
+
+        // Concurrency guard: reload and check checked flag before doing anything
+        Bill fresh = getBillFacade().findWithoutCache(getIssuedBill().getId());
+        if (fresh == null || fresh.isRetired()) {
+            JsfUtil.addErrorMessage("Draft bill not found.");
+            return;
+        }
+        if (!fresh.isCompleted()) {
+            JsfUtil.addErrorMessage("This draft must be finalized before it can be approved.");
+            return;
+        }
+        if (fresh.isChecked()) {
+            JsfUtil.addErrorMessage("This draft has already been approved.");
+            return;
+        }
+
+        // Mark checked=true BEFORE stock loop so a concurrent approve will see it and abort
+        fresh.setChecked(true);
+        fresh.setCheckeAt(new Date());
+        fresh.setCheckedBy(sessionController.getLoggedUser());
+        getBillFacade().edit(fresh);
+        issuedBill = fresh;
+
+        // Load items fresh from DB
+        Map<String, Object> params = new HashMap<>();
+        params.put("bill", fresh);
+        List<BillItem> freshItems = getBillItemFacade().findByJpql(
+                "SELECT bi FROM BillItem bi WHERE bi.bill=:bill AND bi.retired=false ORDER BY bi.searialNo",
+                params);
+
+        for (BillItem bi : freshItems) {
+            if (bi.getPharmaceuticalBillItem() == null
+                    || bi.getPharmaceuticalBillItem().getItemBatch() == null) {
+                continue;
+            }
+            if (bi.getPharmaceuticalBillItem().getQty() == 0.0) {
+                continue;
+            }
+            BillItem originalOrderItem = bi.getReferanceBillItem();
+            // Qty is stored negative (stock out); deductFromStock expects positive magnitude
+            double qtyToDeduct = Math.abs(bi.getPharmaceuticalBillItem().getQty());
+
+            boolean deducted = pharmacyBean.deductFromStock(
+                    bi.getPharmaceuticalBillItem().getStock(),
+                    qtyToDeduct,
+                    bi.getPharmaceuticalBillItem(),
+                    sessionController.getDepartment());
+
+            if (deducted) {
+                Stock staffStock = pharmacyBean.addToStock(
+                        bi.getPharmaceuticalBillItem(),
+                        qtyToDeduct,
+                        fresh.getToStaff());
+                bi.getPharmaceuticalBillItem().setStaffStock(staffStock);
+
+                if (originalOrderItem != null) {
+                    BillItem freshOrderItem = billItemFacade.findWithoutCache(originalOrderItem.getId());
+                    Double currentIssued = freshOrderItem.getIssuedPhamaceuticalItemQty();
+                    double currentIssuedValue = (currentIssued != null) ? currentIssued : 0.0;
+                    BigDecimal userEnteredQty = bi.getBillItemFinanceDetails() != null
+                            ? bi.getBillItemFinanceDetails().getQuantity() : null;
+                    double issuedQtyThisTime = (userEnteredQty != null)
+                            ? Math.abs(userEnteredQty.doubleValue()) : qtyToDeduct;
+                    freshOrderItem.setIssuedPhamaceuticalItemQty(currentIssuedValue + issuedQtyThisTime);
+                    Double remaining = freshOrderItem.getRemainingQty();
+                    double currentRemaining = (remaining != null) ? remaining : freshOrderItem.getQty();
+                    freshOrderItem.setRemainingQty(currentRemaining - issuedQtyThisTime);
+                    billItemFacade.editAndCommit(freshOrderItem);
+                    getBillItemFacade().edit(freshOrderItem);
+                }
+            }
+            getPharmaceuticalBillItemFacade().edit(bi.getPharmaceuticalBillItem());
+        }
+
+        // Assign bill numbers
+        String deptId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ISSUE);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Department Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsDeptYearCount(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ISSUE);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
+            deptId = getBillNumberBean().departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ISSUE);
+        } else if (sessionController.getApplicationPreference().isDepNumGenFromToDepartment()) {
+            deptId = getBillNumberBean().departmentBillNumberGenerator(sessionController.getDepartment(),
+                    fresh.getToDepartment(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+        } else {
+            deptId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getDepartment(),
+                    BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+        }
+
+        String insId;
+        if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Institution Code + Year + Yearly Number", false)) {
+            insId = getBillNumberBean().institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_ISSUE);
+        } else if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Issue - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            insId = deptId;
+        } else {
+            insId = getBillNumberBean().institutionBillNumberGenerator(sessionController.getInstitution(),
+                    BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI);
+        }
+
+        fresh.setDeptId(deptId);
+        fresh.setInsId(insId);
+        fresh.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE);
+
+        // Calculate finance totals from freshItems (avoid lazy-loading the full bill collection
+        // which includes CascadeType.ALL + orphanRemoval and could cause unintended deletions)
+        if (fresh.getBillFinanceDetails() == null) {
+            fresh.setBillFinanceDetails(new BillFinanceDetails());
+        }
+        double retailTotal = 0.0, purchaseTotal = 0.0, costTotal = 0.0;
+        for (BillItem bi : freshItems) {
+            if (bi.getPharmaceuticalBillItem() == null || bi.getPharmaceuticalBillItem().getItemBatch() == null) {
+                continue;
+            }
+            double qty = bi.getPharmaceuticalBillItem().getQty();
+            retailTotal += bi.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * qty;
+            purchaseTotal += bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * qty;
+            costTotal += bi.getPharmaceuticalBillItem().getItemBatch().getCostRate() * qty;
+        }
+        fresh.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(retailTotal));
+        fresh.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseTotal));
+        fresh.getBillFinanceDetails().setTotalCostValue(BigDecimal.valueOf(costTotal));
+
+        getBillFacade().edit(fresh);
+
+        // Update the transfer request reference
+        if (requestedBill != null) {
+            requestedBill.getForwardReferenceBills().add(fresh);
+            getBillFacade().edit(requestedBill);
+
+            // Check if transfer request is now fully issued
+            Bill freshRequest = getBillFacade().findWithoutCache(requestedBill.getId());
+            if (freshRequest != null && !freshRequest.isFullyIssued() && isFullyIssued(freshRequest)) {
+                freshRequest.setFullyIssued(true);
+                freshRequest.setFullyIssuedAt(new Date());
+                freshRequest.setFullyIssuedBy(sessionController.getLoggedUser());
+                getBillFacade().edit(freshRequest);
+                requestedBill.setFullyIssued(true);
+            }
+        }
+
+        billItems = freshItems;
+        issuedBill = fresh;
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Issue approved successfully. Bill number: " + deptId);
+    }
+
+    /**
+     * Cancels a saved/finalized PHARMACY_ISSUE_PRE draft (retires it before approval).
+     */
+    public void cancelPendingIssue() {
+        if (getIssuedBill() == null || getIssuedBill().getId() == null) {
+            JsfUtil.addErrorMessage("No draft to cancel.");
+            return;
+        }
+        Bill fresh = getBillFacade().findWithoutCache(getIssuedBill().getId());
+        if (fresh == null) {
+            JsfUtil.addErrorMessage("Draft bill not found.");
+            return;
+        }
+        if (fresh.isChecked()) {
+            JsfUtil.addErrorMessage("Approved issues cannot be cancelled.");
+            return;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("bill", fresh);
+        List<BillItem> items = getBillItemFacade().findByJpql(
+                "SELECT bi FROM BillItem bi WHERE bi.bill=:bill AND bi.retired=false", params);
+        for (BillItem bi : items) {
+            bi.setRetired(true);
+            bi.setRetireComments("Issue draft cancelled");
+            getBillItemFacade().edit(bi);
+        }
+        fresh.setRetired(true);
+        fresh.setRetireComments("Issue draft cancelled by " + sessionController.getLoggedUser().getWebUserPerson().getName());
+        getBillFacade().edit(fresh);
+        makeNull();
+        JsfUtil.addSuccessMessage("Issue draft cancelled.");
+    }
+
     public synchronized void settle() {
         if (getIssuedBill() != null && getIssuedBill().getId() != null) {
             JsfUtil.addErrorMessage("This bill has already been saved.");
@@ -421,6 +785,16 @@ public class TransferIssueForRequestsController implements Serializable {
             return;
         }
         for (BillItem bi : getBillItems()) {
+            // Single source of truth for the issued quantity (#21266 RC6): the
+            // user-entered qty lives in BillItemFinanceDetails.quantity, but the
+            // stock movement below uses pbi.qty - which still holds the REQUESTED
+            // qty from item generation if a UI edit did not sync it. Stock then
+            // moved by the requested qty while updateBillItemRateAndValue()
+            // rewrote the persisted line to the user-entered qty AFTER the stock
+            // ops (pbi 4912145, 2026-05-20: stock moved 2, line said 1). Sync
+            // pbi/billItem qty from the user-entered value BEFORE validating or
+            // moving any stock, keeping the positive pre-settle sign convention.
+            syncStockQtyFromUserEnteredQty(bi);
             if (bi.getPharmaceuticalBillItem().getItemBatch() != null) {
                 if (bi.getPharmaceuticalBillItem().getStock().getStock() < bi.getPharmaceuticalBillItem().getQty()) {
                     JsfUtil.addErrorMessage("Available quantity is less than issued quantity in " + bi.getPharmaceuticalBillItem().getItemBatch().getItem().getName());
@@ -641,6 +1015,31 @@ public class TransferIssueForRequestsController implements Serializable {
 
     }
 
+    /**
+     * Copies the user-entered quantity (BillItemFinanceDetails.quantity, in
+     * packs) onto the fields the settle stock operations read - pbi.qty (units),
+     * pbi.qtyPacks and billItem.qty (packs) - so the quantity that moves stock
+     * is always the quantity that gets persisted (#21266 RC6). Values are set
+     * POSITIVE to match the pre-settle convention expected by the validation
+     * and zero-removal checks; settle() negates them later. Lines without
+     * finance details or a quantity are left untouched (conservative fallback).
+     */
+    private void syncStockQtyFromUserEnteredQty(BillItem bi) {
+        if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+        if (f == null || f.getQuantity() == null) {
+            return;
+        }
+        double packs = Math.abs(f.getQuantity().doubleValue());
+        double unitsPerPack = (f.getUnitsPerPack() != null && f.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0)
+                ? f.getUnitsPerPack().doubleValue() : 1.0;
+        bi.getPharmaceuticalBillItem().setQty(packs * unitsPerPack);
+        bi.getPharmaceuticalBillItem().setQtyPacks(packs);
+        bi.setQty(packs);
+    }
+
     private void updateBillItemRateAndValue(BillItem b) {
         BillItemFinanceDetails f = b.getBillItemFinanceDetails();
         double rate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
@@ -693,6 +1092,14 @@ public class TransferIssueForRequestsController implements Serializable {
             if (f.getPurchaseRate() == null) {
                 f.setPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()));
             }
+            // Recompute valuation fields from the user-entered quantity. They are
+            // set at item-generation time from the REQUESTED qty and were never
+            // updated when the user changed the issuing qty (#21266 RC6:
+            // valueAtPurchaseRate stayed 990 = 2 x 495 while the line qty became
+            // 1). Positive sign, matching the generation-time convention.
+            f.setValueAtPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()).multiply(qtyInUnits));
+            f.setValueAtRetailRate(BigDecimal.valueOf(batch.getRetailsaleRate()).multiply(qtyInUnits));
+            f.setValueAtCostRate(costRate.multiply(qtyInUnits));
         } else {
             f.setLineCostRate(BigDecimal.ZERO);
             f.setLineCost(BigDecimal.ZERO);
@@ -845,6 +1252,8 @@ public class TransferIssueForRequestsController implements Serializable {
             bill.getBillFinanceDetails().setLineGrossTotal(lineGrossTotal);
             bill.getBillFinanceDetails().setNetTotal(netTotal);
             bill.getBillFinanceDetails().setLineNetTotal(lineNetTotal);
+            bill.getBillFinanceDetails().setBillNetTotal(BigDecimal.ZERO);
+            bill.getBillFinanceDetails().setBillGrossTotal(BigDecimal.ZERO);
         }
 
 //        getBillFacade().edit(bill);

@@ -78,6 +78,16 @@ public class StockDTO implements Serializable {
         this(stockId, itemBatchId, itemId, itemName, code, genericName, (Double) retailRate, (Double) stockQty, dateOfExpire);
     }
 
+    // Optimized FEFO discharge-issue projection: ids + name/code/generic + retail
+    // AND purchase rate (for COGS) + stock + expiry. (issue #21334)
+    // ItemBatch.purcahseRate is primitive double on the entity, so EclipseLink
+    // requires an exact-type constructor parameter for the projection.
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, double retailRate, double purchaseRate, double stockQty, Date dateOfExpire) {
+        this(stockId, itemBatchId, itemId, itemName, code, genericName, (Double) retailRate, (Double) stockQty, dateOfExpire);
+        this.purchaseRate = purchaseRate;
+    }
+
     // Same as above, with allowFractions
     public StockDTO(Long id, String itemName, String code, String genericName,
                     Double retailRate, Double stockQty, Date dateOfExpire,

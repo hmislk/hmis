@@ -3545,7 +3545,8 @@ public class HumanResourceBean {
         String sql = "Select s From StaffSalary s "
                 + " where s.retired=false "
                 + " and s.staff=:s "
-                + " and s.salaryCycle=:sal ";
+                + " and s.salaryCycle=:sal "
+                + " and s.transAdvanceSalary=0 ";
 
         HashMap hm = new HashMap<>();
         hm.put("sal", salaryCycle);

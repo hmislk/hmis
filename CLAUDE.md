@@ -24,6 +24,12 @@
 9. **🚨 JPQL FIRST, NATIVE SQL LAST**: Always use JPQL for database queries. Native SQL (`nativeScalarQuery`, `executeNativeSql`) is only permitted when there is a significant, demonstrated performance constraint that JPQL cannot address. Never reach for native SQL just because JPQL is harder to write.
 10. **🚨 USE `findLongByJpql` FOR COUNT QUERIES**: Always use `findLongByJpql` (not `findDoubleByJpql`) for JPQL `COUNT(...)` queries. `COUNT` returns a `Long`; using `findDoubleByJpql` causes a silent `ClassCastException` caught internally, returning `0.0` every time and making the check always pass.
 
+### persistence.xml — Local JNDI Lifecycle
+17. **🚨 RESTORE LOCAL JNDI AFTER EVERY PUSH**: Immediately after every `git push`, replace the CI/CD placeholders in `persistence.xml` back to the local JNDI names — `${JDBC_DATASOURCE}` → `jdbc/coop` and `${JDBC_AUDIT_DATASOURCE}` → `jdbc/ruhunuAudit`. Leave the change **unstaged**. Do this without being asked. The developer needs local Payara to connect right away for testing.
+
+### Security — Credentials & Sensitive Data
+18. **🚨 NEVER COMMIT CREDENTIALS OR SENSITIVE DATA**: Do NOT write passwords, API keys, database usernames, IP addresses, hostnames, or SSH connection strings into any file inside the project folder — including `developer_docs/`, `tmp/`, `wiki-docs/`, migration scripts, or any other tracked or untracked file. These belong exclusively in secure storage **outside** the project directory (e.g. `C:\Credentials\`). If a doc needs to reference how to connect to a database, write a generic description and point to the external credentials file — never inline the actual values.
+
 ### Deployment
 16. **🚨 NEVER DEPLOY MANUALLY AS ROOT**: NEVER use `sudo` or root to copy WARs, run `asadmin`, or touch Payara's application/log directories directly. Root-owned files in `/opt/payara5/glassfish/domains/domain1/` (applications, generated, logs) block all future CI/CD deployments — `asadmin undeploy` and `deploy` will fail with permission errors. **All deployments MUST go through GitHub Actions CI/CD.** If a manual fix is absolutely needed, use `appuser` only. See [Deployment Recovery Guide](developer_docs/deployment/deployment-recovery-guide.md).
 
@@ -41,8 +47,11 @@
 - [Deployment Recovery Guide](developer_docs/deployment/deployment-recovery-guide.md) - How to recover when root-owned files break CI/CD deployment
 
 ### When Working on UI/XHTML
-- [UI Development Handbook](developer_docs/ui/comprehensive-ui-guidelines.md) - Complete UI reference
+- [UI Development Handbook](developer_docs/ui/comprehensive-ui-guidelines.md) - Complete UI reference. **Authoring data-entry pages**: every actionable button needs a stable `id`; cap `p:autoComplete` with `maxResults`; guard the Enter key so it never clears/submits the form; make settle/issue/receive double-click-safe (JS `confirm()` + server-side re-entrancy guard). See § Accessibility-first development and § Data-entry components.
 - [Icon Management](developer_docs/ui/icon-management.md) - Standard icons and sizing
+
+### When Testing with Playwright (E2E verification)
+- [Playwright E2E Testing Workflow](developer_docs/testing/playwright-e2e-workflow.md) - Login + department selection, committing PrimeFaces inputs with real key events (plain `fill()` does not commit), date-filtered lists need Search clicked, confirm-dialog & double-click handling, DB verification. **Accessibility-first**: if Playwright can't find a control, fix the page (stable id/title), not the test.
 
 ### When Working on JSF/AJAX
 - [JSF AJAX Update Guidelines](developer_docs/jsf/ajax-update-guidelines.md) - Critical AJAX rules
