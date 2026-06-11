@@ -128,6 +128,7 @@
                                             id="acItem"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.item}"
                                             forceSelection="true"
+                                            onkeydown="if (event.keyCode === 13) { var pnl = document.getElementById(this.id.replace(/_input$/, '_panel')); var panelOpen = pnl &amp;&amp; pnl.style.display !== 'none'; event.preventDefault(); if (!panelOpen) { return false; } }"
                                             completeMethod="#{pharmacyDirectPurchaseController.completeItemsFilteredByDepartmentType}"
                                             var="vt"
                                             maxResults="20"
@@ -157,6 +158,8 @@
                                             id="txtQty"
                                             class="w-100 m-1 text-end"
                                             autocomplete="off"
+                                            onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                            onkeyup="if (event.keyCode === 13) { event.preventDefault(); var addBtnId = '#{p:resolveFirstComponentWithId('btnAdd',view).clientId}'; this.blur(); setTimeout(function () { document.getElementById(addBtnId).click(); }, 350); }"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.quantity}">
                                             <p:ajax
                                                 event="blur"
@@ -176,6 +179,8 @@
                                             autocomplete="off"
                                             id="txtFreeQty"
                                             class="w-100 m-1 text-end"
+                                            onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                            onkeyup="if (event.keyCode === 13) { event.preventDefault(); var addBtnId = '#{p:resolveFirstComponentWithId('btnAdd',view).clientId}'; this.blur(); setTimeout(function () { document.getElementById(addBtnId).click(); }, 350); }"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.freeQuantity}">
                                             <!--<f:convertNumber integerOnly="#{!pharmacyDirectPurchaseController.currentBillItem.item.allowFractions}" />-->
                                             <p:ajax
@@ -195,6 +200,8 @@
                                             id="txtPrate"
                                             autocomplete="off"
                                             class="w-100 m-1 text-end"
+                                            onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                            onkeyup="if (event.keyCode === 13) { event.preventDefault(); var addBtnId = '#{p:resolveFirstComponentWithId('btnAdd',view).clientId}'; this.blur(); setTimeout(function () { document.getElementById(addBtnId).click(); }, 350); }"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
                                             <p:ajax 
                                                 event="blur"
@@ -220,6 +227,8 @@
                                             autocomplete="off"
                                             onfocus="this.select()"
                                             class="w-100 m-1 text-end"
+                                            onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                            onkeyup="if (event.keyCode === 13) { event.preventDefault(); var addBtnId = '#{p:resolveFirstComponentWithId('btnAdd',view).clientId}'; this.blur(); setTimeout(function () { document.getElementById(addBtnId).click(); }, 350); }"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineDiscountRate}">
                                             <p:ajax 
                                                 event="blur"
@@ -243,6 +252,8 @@
                                             id="txtRetailRate"
                                             onfocus="this.select()"
                                             class="w-100 m-1 text-end"
+                                            onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                            onkeyup="if (event.keyCode === 13) { event.preventDefault(); var addBtnId = '#{p:resolveFirstComponentWithId('btnAdd',view).clientId}'; this.blur(); setTimeout(function () { document.getElementById(addBtnId).click(); }, 350); }"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRate}">
                                             <f:convertNumber pattern="#,##0.00" />
                                             <p:ajax 
@@ -278,6 +289,8 @@
                                             autocomplete="off"
                                             class="w-100 m-1"
                                             id="tmp"
+                                            onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                            onkeyup="if (event.keyCode === 13) { event.preventDefault(); var addBtnId = '#{p:resolveFirstComponentWithId('btnAdd',view).clientId}'; this.blur(); setTimeout(function () { document.getElementById(addBtnId).click(); }, 350); }"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />
                                     </div>
 
@@ -654,6 +667,7 @@
                                                 inputStyleClass="w-100"
                                                 value="#{pharmacyDirectPurchaseController.currentExpense.item}"
                                                 forceSelection="true"
+                                                onkeydown="if (event.keyCode === 13) { var pnl = document.getElementById(this.id.replace(/_input$/, '_panel')); var panelOpen = pnl &amp;&amp; pnl.style.display !== 'none'; event.preventDefault(); if (!panelOpen) { return false; } }"
                                                 minQueryLength="3" queryDelay="300" completeMethod="#{itemController.completeExpenseItem}"
                                                 var="ex"
                                                 itemLabel="#{ex.name}"
@@ -675,15 +689,19 @@
                                                 class="w-100 m-1 text-end"
                                                 onfocus="this.select()"
                                                 styleClass="numericTxt"
+                                                onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                                onkeyup="if (event.keyCode === 13) { event.preventDefault(); document.getElementById('#{p:resolveFirstComponentWithId('btnAddExpense',view).clientId}').click(); }"
                                                 value="#{pharmacyDirectPurchaseController.currentExpense.rate}" />
                                         </div>
                                         <div class="col-3">
                                             <h:outputLabel 
                                                 class="w-100 m-1"
                                                 value="Description"/><br/>
-                                            <p:inputText 
+                                            <p:inputText
                                                 class="w-100 m-1"
-                                                maxlength="250" 
+                                                maxlength="250"
+                                                onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                                onkeyup="if (event.keyCode === 13) { event.preventDefault(); document.getElementById('#{p:resolveFirstComponentWithId('btnAddExpense',view).clientId}').click(); }"
                                                 value="#{pharmacyDirectPurchaseController.currentExpense.descreption}" />
                                         </div>
                                         <div class="col-2">
@@ -785,6 +803,7 @@
                                         converter="deal"
                                         value="#{pharmacyDirectPurchaseController.bill.fromInstitution}"
                                         forceSelection="true"
+                                        onkeydown="if (event.keyCode === 13) { var pnl = document.getElementById(this.id.replace(/_input$/, '_panel')); var panelOpen = pnl &amp;&amp; pnl.style.display !== 'none'; event.preventDefault(); if (!panelOpen) { return false; } }"
                                         completeMethod="#{dealerController.completeActiveDealor}"
                                         var="vt"
                                         maxResults="10"
@@ -797,6 +816,7 @@
                                         value="#{pharmacyDirectPurchaseController.bill.referenceInstitution}"
                                         completeMethod="#{institutionController.completeCompany}"
                                         forceSelection="true"
+                                        onkeydown="if (event.keyCode === 13) { var pnl = document.getElementById(this.id.replace(/_input$/, '_panel')); var panelOpen = pnl &amp;&amp; pnl.style.display !== 'none'; event.preventDefault(); if (!panelOpen) { return false; } }"
                                         var="vt"
                                         itemLabel="#{vt.name}"
                                         itemValue="#{vt}" />
