@@ -4,21 +4,22 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:o="http://omnifaces.org/ui">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
                     <!-- Real-time push: refreshes the notification list when new notifications arrive -->
-                    <f:websocket channel="notifications"
-                                 user="#{sessionController.loggedUser.id}"
-                                 onmessage="onNotificationListPush"
-                                 connected="#{sessionController.loggedUser != null}" />
+                    <o:socket channel="notifications"
+                              user="#{sessionController.loggedUser.id}"
+                              onmessage="onNotificationListPush"
+                              rendered="#{sessionController.loggedUser != null}" />
                     <p:remoteCommand name="refreshNotificationList"
                                      update="reNot"
                                      action="#{userNotificationController.fillLoggedUserNotifications}" />
                     <script type="text/javascript">
-                        function onNotificationListPush(message) {
+                        function onNotificationListPush(message, channel, event) {
                             refreshNotificationList();
                         }
                     </script>
