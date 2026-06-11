@@ -20,6 +20,7 @@ public class PharmacyReturnApprovalConfigController implements Serializable {
 
     private boolean grnReturnApprovalRequired;
     private boolean directPurchaseReturnApprovalRequired;
+    private boolean directPurchaseApprovalRequired;
 
     public PharmacyReturnApprovalConfigController() {
     }
@@ -27,12 +28,14 @@ public class PharmacyReturnApprovalConfigController implements Serializable {
     public void loadCurrentConfig() {
         grnReturnApprovalRequired = configOptionApplicationController.getBooleanValueByKey("GRN Return - Approval Required", true);
         directPurchaseReturnApprovalRequired = configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return - Approval Required", true);
+        directPurchaseApprovalRequired = configOptionApplicationController.getBooleanValueByKey("Use Save Finalize Approve Workflow for Direct Purchase", false);
     }
 
     public void saveConfig() {
         try {
             configOptionApplicationController.setBooleanValueByKey("GRN Return - Approval Required", grnReturnApprovalRequired);
             configOptionApplicationController.setBooleanValueByKey("Direct Purchase Return - Approval Required", directPurchaseReturnApprovalRequired);
+            configOptionApplicationController.setBooleanValueByKey("Use Save Finalize Approve Workflow for Direct Purchase", directPurchaseApprovalRequired);
 
             JsfUtil.addSuccessMessage("Procurement return configuration saved successfully");
 
@@ -56,5 +59,13 @@ public class PharmacyReturnApprovalConfigController implements Serializable {
 
     public void setDirectPurchaseReturnApprovalRequired(boolean directPurchaseReturnApprovalRequired) {
         this.directPurchaseReturnApprovalRequired = directPurchaseReturnApprovalRequired;
+    }
+
+    public boolean isDirectPurchaseApprovalRequired() {
+        return directPurchaseApprovalRequired;
+    }
+
+    public void setDirectPurchaseApprovalRequired(boolean directPurchaseApprovalRequired) {
+        this.directPurchaseApprovalRequired = directPurchaseApprovalRequired;
     }
 }

@@ -2395,8 +2395,7 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     public boolean validateStockAvailability(BillItem billItem, boolean showMessages, boolean allowAutoCorrect) {
-        if (billItem == null || billItem.getPharmaceuticalBillItem() == null
-                || billItem.getPharmaceuticalBillItem().getStock() == null) {
+        if (billItem == null || billItem.getPharmaceuticalBillItem() == null) {
             if (showMessages) {
                 JsfUtil.addErrorMessage("Stock information not available for item: "
                         + (billItem != null && billItem.getItem() != null ? billItem.getItem().getName() : "Unknown"));
@@ -2406,6 +2405,24 @@ public class GrnReturnWorkflowController implements Serializable {
 
         PharmaceuticalBillItem phi = billItem.getPharmaceuticalBillItem();
         BillItemFinanceDetails fd = billItem.getBillItemFinanceDetails();
+
+        if (phi.getStock() == null) {
+            // The original GRN line had zero quantity, so no Stock record was
+            // ever created for it (the receive loop skips qty+freeQty==0
+            // lines). Such a line carries forward into the return bill with
+            // qty 0 and has nothing to return, so it should not block the
+            // whole return.
+            double requestedQty = fd != null && fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
+            double requestedFreeQty = fd != null && fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
+            if (requestedQty == 0.0 && requestedFreeQty == 0.0) {
+                return true;
+            }
+            if (showMessages) {
+                JsfUtil.addErrorMessage("Stock information not available for item: "
+                        + (billItem.getItem() != null ? billItem.getItem().getName() : "Unknown"));
+            }
+            return false;
+        }
 
         if (fd == null) {
             return true; // No quantities to validate
@@ -2465,6 +2482,16 @@ public class GrnReturnWorkflowController implements Serializable {
                     fd.setTotalQuantityByUnits(BigDecimal.valueOf(availableForThisItem).negate());
                     fd.setTotalQuantity(BigDecimal.valueOf(availableForThisItem).negate());
                 }
+
+                // Keep PharmaceuticalBillItem.qty/freeQty (always stored in units,
+                // see syncQuantitiesAfterQuantityChange) in sync with the
+                // auto-corrected fd quantities. updateStock() at approval reads
+                // phi.getQty()/getFreeQty(), not fd - if these are left at their
+                // stale pre-correction values, a re-finalize after auto-correction
+                // approves the OLD (too-large) quantity instead of the corrected
+                // one (#21266 RC-followup).
+                phi.setQty(availableForThisItem);
+                phi.setFreeQty(0.0);
             }
             return false;
         }
