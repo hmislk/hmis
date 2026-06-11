@@ -289,72 +289,72 @@
 
                         <!-- Wrapper div for horizontal scroll -->
                     
-                        <p:dataTable id="tbl" value="#{inwardReportController.patientEncounters}" var="pe" paginator="false" rows="10" class="w-100">
+                        <p:dataTable id="tbl" value="#{inwardReportController.patientEncounters}" var="pe" rowIndexVar="row" paginator="false" rows="10" class="w-100">
                              <f:facet name="header">
                                  <h:outputLabel value="Admission Discharge Report" styleClass="font-bold text-2xl"/>
                             </f:facet>
                                     <p:column headerText="S.No" style="width: 150px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{row + 1}" />
                                     </p:column>
                                     <p:column headerText="MRN" style="width: 180px;">
                                         <h:outputText value="#{pe.patient.phn}" />
                                     </p:column>
                                     <p:column headerText="Patient Name" style="width: 200px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.patient.person.name}" />
                                     </p:column>
                                     <p:column headerText="Mobile No" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.patient.mobileNumberStringTransient}" />
                                     </p:column>
                                     <p:column headerText="Admission No" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.bhtNo}" />
                                     </p:column>
                                     <p:column headerText="House No/Post Box" style="width: 200px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.patient.person.address}" />
                                     </p:column>
                                     <p:column headerText="Street / Village" style="width: 200px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.patient.person.address}" />
                                     </p:column>
                                     <p:column headerText="Locality / Post Office" style="width: 200px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.patient.person.address}" />
                                     </p:column>
                                     <p:column headerText="District" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.patient.person.address}" />
                                     </p:column>
                                     <p:column headerText="City" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.patient.person.address}" />
                                     </p:column>
                                     <p:column headerText="State" style="width: 150px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.patient.person.address}" />
                                     </p:column>
                                     <p:column headerText="Country" style="width: 150px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.patient.person.address}" />
                                     </p:column>
                                     <p:column headerText="PIN" style="width: 120px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.patient.person.address}" />
                                     </p:column>
                                     <p:column headerText="Admission Note" style="width: 250px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.comments}" />
                                     </p:column>
                                     <p:column headerText="Sponsor Bed Type" style="width: 180px;">
                                         <h:outputText value="" />
                                     </p:column>
                                     <p:column headerText="Admission Category" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.admissionType.name}" />
                                     </p:column>
                                     <p:column headerText="Age" style="width: 100px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.patient.age}" />
                                     </p:column>
                                     <p:column headerText="Gender" style="width: 100px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.patient.person.nameWithTitle}" />
                                     </p:column>
                                     <p:column headerText="Department" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.department.name}" />
                                     </p:column>
                                     <p:column headerText="Admission Date" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.dateOfAdmission}" />
                                     </p:column>
                                     <p:column headerText="Expected Date of Discharge" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.dateOfDischarge}" />
                                     </p:column>
                                     <p:column headerText="IP Number" style="width: 150px;">
                                         <h:outputText value="" />
@@ -366,19 +366,19 @@
                                         <h:outputText value="" />
                                     </p:column>
                                     <p:column headerText="Discharge Date" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.dateOfDischarge}" />
                                     </p:column>
                                     <p:column headerText="Discharge Type" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.dischargeCondition.category.name}" />
                                     </p:column>
                                     <p:column headerText="Ward / Bed" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.currentPatientRoom.roomFacilityCharge.name}" />
                                     </p:column>
                                     <p:column headerText="Consultant" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.referringConsultant.name}" />
                                     </p:column>
                                     <p:column headerText="Sponsor" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.creditCompany.name}" />
                                     </p:column>
                                     <p:column headerText="Plan" style="width: 180px;">
                                         <h:outputText value="" />
@@ -405,49 +405,49 @@
                                         <h:outputText value="" />
                                     </p:column>
                                     <p:column headerText="Sponsor Amount" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.totalCompanyPaidAtFinalProcessing}" />
                                     </p:column>
                                     <p:column headerText="Patient Amount" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.totalPatientPaidAtFinalProcessing}" />
                                     </p:column>
                                     <p:column headerText="Discount" style="width: 120px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.discount}" />
                                     </p:column>
                                     <p:column headerText="Invoice Amount" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.netTotal}" />
                                     </p:column>
                                     <p:column headerText="Bill Balance" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.amountDueAtFinalProcessing}" />
                                     </p:column>
                                     <p:column headerText="Patient Balance" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.amountDueAtFinalProcessing}" />
                                     </p:column>
                                     <p:column headerText="Admission User" style="width: 180px;">
                                         <h:outputText value="" />
                                     </p:column>
                                     <p:column headerText="Discharge User" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.clinicalDischargedBy}" />
                                     </p:column>
                                     <p:column headerText="Received Date" style="width: 180px;">
                                         <h:outputText value="" />
                                     </p:column>
                                     <p:column headerText="Length of Stay (LOS) Days" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.dateOfAdmission} - #{pe.clinicalDischargeDateTime}" />
                                     </p:column>
                                     <p:column headerText="TAT" style="width: 120px;">
                                         <h:outputText value="" />
                                     </p:column>
                                     <p:column headerText="Billing TAT" style="width: 180px;">
-                                        <h:outputText value="" />   
+                                        <h:outputText value="#{pe.clinicalDischargeDateTime} - #{pe.finalBill.createdAt}" />   
                                     </p:column>
                                     <p:column headerText="Admission Type" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.admissionType.name}" />
                                     </p:column>
                                     <p:column headerText="Final Bill By" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.finalBill.creater.name}" />
                                     </p:column>
                                     <p:column headerText="Final Bill Date Time" style="width: 180px;">
-                                        <h:outputText value="" />
+                                        <h:outputText value="#{pe.finalBill.createdAt}" />
                                     </p:column>
                                 </p:dataTable>
                     </p:panel>
