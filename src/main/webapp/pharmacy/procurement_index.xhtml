@@ -14,6 +14,20 @@
         </div>
 
         <div class="row">
+            <div class="col-12 d-flex justify-content-end">
+                <p:commandButton
+                    id="procurementConfigButton"
+                    value="Config"
+                    icon="fa fa-cog"
+                    title="Procurement Return Configuration"
+                    type="button"
+                    class="ui-button-secondary"
+                    onclick="PF('procurementReturnConfigDialog').show();"
+                    rendered="#{webUserController.hasPrivilege('PharmacyGrnApprove') or webUserController.hasPrivilege('PharmacyDirectPurchaseApprove')}" />
+            </div>
+        </div>
+
+        <div class="row">
             <div class="col-2">
                 <h:form>
                     <p:accordionPanel activeIndex="0">
@@ -177,6 +191,73 @@
                 </ui:insert>
             </div>
         </div>
+
+        <p:dialog id="procurementReturnConfigDialog"
+                  header="Procurement Return Configuration"
+                  widgetVar="procurementReturnConfigDialog"
+                  modal="true"
+                  width="600"
+                  height="auto"
+                  resizable="true"
+                  closeOnEscape="true">
+
+            <p:ajax event="open" listener="#{pharmacyReturnApprovalConfigController.loadCurrentConfig}" update="procurementReturnConfigForm" />
+
+            <h:form id="procurementReturnConfigForm">
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <h6><i class="fas fa-check-circle"></i> Return Approval Settings</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox
+                                        id="grnReturnApprovalRequired"
+                                        value="#{pharmacyReturnApprovalConfigController.grnReturnApprovalRequired}" />
+                                    <p:outputLabel for="grnReturnApprovalRequired" value="GRN Return - Approval Required" class="ms-2" />
+                                    <small class="form-text text-muted d-block">When enabled (default), a GRN Return must be Finalized and then separately Approved before stock and payments are processed. When disabled, Finalize completes the return immediately.</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox
+                                        id="directPurchaseReturnApprovalRequired"
+                                        value="#{pharmacyReturnApprovalConfigController.directPurchaseReturnApprovalRequired}" />
+                                    <p:outputLabel for="directPurchaseReturnApprovalRequired" value="Direct Purchase Return - Approval Required" class="ms-2" />
+                                    <small class="form-text text-muted d-block">When enabled (default), a Direct Purchase Return must be Finalized and then separately Approved before stock and payments are processed. When disabled, Finalize completes the return immediately.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <p:messages id="procurementReturnConfigMessages" showDetail="true" closable="true" />
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Apply &amp; Close"
+                                        icon="fas fa-save"
+                                        class="ui-button-success"
+                                        ajax="false"
+                                        action="#{pharmacyReturnApprovalConfigController.saveConfig}" />
+                                    <p:commandButton
+                                        value="Cancel"
+                                        icon="fas fa-times"
+                                        class="ui-button-secondary"
+                                        onclick="PF('procurementReturnConfigDialog').hide(); return false;"
+                                        type="button" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </h:form>
+        </p:dialog>
 
     </ui:define>
 
