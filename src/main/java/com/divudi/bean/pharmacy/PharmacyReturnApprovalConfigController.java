@@ -1,6 +1,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
 import javax.inject.Named;
 import javax.faces.view.ViewScoped;
@@ -17,6 +18,8 @@ public class PharmacyReturnApprovalConfigController implements Serializable {
 
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private WebUserController webUserController;
 
     private boolean grnReturnApprovalRequired;
     private boolean directPurchaseReturnApprovalRequired;
@@ -32,6 +35,14 @@ public class PharmacyReturnApprovalConfigController implements Serializable {
     }
 
     public void saveConfig() {
+        // Server-side guard: the Config button is privilege-gated in the UI,
+        // but the dialog form itself is always in the component tree, so the
+        // action is invocable without it. Mirror the button's rendered check.
+        if (!webUserController.hasPrivilege("PharmacyGrnApprove")
+                && !webUserController.hasPrivilege("PharmacyDirectPurchaseApprove")) {
+            JsfUtil.addErrorMessage("You do not have permission to modify procurement return configuration.");
+            return;
+        }
         try {
             configOptionApplicationController.setBooleanValueByKey("GRN Return - Approval Required", grnReturnApprovalRequired);
             configOptionApplicationController.setBooleanValueByKey("Direct Purchase Return - Approval Required", directPurchaseReturnApprovalRequired);
