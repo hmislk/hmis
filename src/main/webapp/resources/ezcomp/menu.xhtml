@@ -1413,8 +1413,11 @@
                 </p:submenu>
 
                 <!--            Store Section-->
-                <p:submenu   
-                    id="smStore"  icon="fa fa-fw fa-store"  rendered="#{webUserController.hasPrivilege('Store')}">                                                           
+                <!-- Stores menu temporarily hidden for production hotfix (#21423).
+                     Forced to not render regardless of privilege; remove this override
+                     once a configuration toggle for hiding the Stores menu is in place. -->
+                <p:submenu
+                    id="smStore"  icon="fa fa-fw fa-store"  rendered="false">
                     <p:submenu label="BHT Issue" icon="fas fa-procedures" rendered="#{webUserController.hasPrivilege('StoreIssueInwardBilling')}">
                         <p:menuitem ajax="false" action="/store/store_retail_sale_bht?faces-redirect=true"  value="Inward Billing"
                                     rendered="#{webUserController.hasPrivilege('StoreIssueInwardBilling')}"

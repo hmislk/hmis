@@ -32,6 +32,10 @@
                                     ajax="false" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
+                                <!-- Transfer Receive cancellation temporarily disabled (#21419 COGS remediation).
+                                     Cancelling a Transfer Receive bill causes the COGS report to show
+                                     incorrect figures. Re-enable once the COGS variance is fixed. -->
+                                <!--
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receives can be Cancelled', true)}" >
                                     <p:commandButton
                                         id="btnToCancel"
@@ -45,6 +49,7 @@
                                         <f:setPropertyActionListener target="#{transferReceiveCancellationController.originalReceiveBillId}" value="#{pharmacyBillSearch.bill.id}" />
                                     </p:commandButton>
                                 </h:panelGroup>
+                                -->
                                 <p:commandButton
                                     value="Back"
                                     icon="fas fa-arrow-left"

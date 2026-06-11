@@ -22,9 +22,14 @@
                                 <p:printer target="gpBillPreview" ></p:printer>
 
                             </p:commandButton>
+                            <!-- GRN Return cancellation temporarily disabled (#21266 stock remediation).
+                                 Cancelling a GRN Return has caused stock data errors in production.
+                                 Re-enable only after all stock discrepancy issues are settled. -->
+                            <!--
                             <p:commandButton value="Cancel" ajax="false"
-                                             action="pharmacy_cancel_grn_return" 
+                                             action="pharmacy_cancel_grn_return"
                                              disabled="#{pharmacyBillSearch.bill.cancelled}"/>
+                            -->
 
 
                         </f:facet>

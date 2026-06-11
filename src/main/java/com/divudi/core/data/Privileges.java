@@ -707,7 +707,49 @@ public enum Privileges {
     DeleteData("Delete Data"),
     BillCancel("Bill Cancel"),
     BillRefund("Bill Refund"), //</editor-fold>
-    AiChat("AI Chat")
+    AiChat("AI Chat"),
+    // Inward
+    InwardFormTemplateAdmin("Inward Form Template Admin"),
+    InwardFormFill("Inward Form Fill"),
+    InwardDocumentUpload("Inward Document Upload"),
+    InpatientClinicalDischarge("Inpatient Clinical Discharge"),
+    // Pharmacy workflow
+    PharmacyDischargeMedicineIssue("Pharmacy Discharge Medicine Issue"),
+    PharmacyIssueForRequestSave("Pharmacy Issue For Request Save"),
+    PharmacyIssueForRequestFinalize("Pharmacy Issue For Request Finalize"),
+    PharmacyIssueForRequestApprove("Pharmacy Issue For Request Approve"),
+    PharmacyReceiveFinalize("Pharmacy Receive Finalize"),
+    PharmacyReceiveApprove("Pharmacy Receive Approve"),
+    PharmacyDisposalIssueFinalize("Pharmacy Disposal Issue Finalize"),
+    PharmacyDisposalIssueApprove("Pharmacy Disposal Issue Approve"),
+    PharmacyDirectPurchaseSave("Pharmacy Direct Purchase Save"),
+    PharmacyDirectPurchaseFinalize("Pharmacy Direct Purchase Finalize"),
+    PharmacyDirectPurchaseApprove("Pharmacy Direct Purchase Approve"),
+    ArchiveOldStockHistory("Archive Old StockHistory Records"),
+    ArchiveOldItemBatch("Archive Old ItemBatch Records"),
+    // Cashier / petty cash
+    PettyCashEditFinancialYear("Petty Cash Edit Financial Year"),
+    PettyCashCancellationApproval("Petty-Cash Cancellation Approval"),
+    CashierHandoverStatusReport("Cashier Handover Status Report"),
+    SettleHandoverProofMissing("Settle Handover Proof Missing"),
+    SettleNonCashPayments("Settle Non-Cash Payments"),
+    ViewAllShiftShortageBills("View All Shift Shortage Bills"),
+    // Clinical
+    ClinicalPatientBlacklist("Clinical Patient Blacklist"),
+    ClinicalPatientPseudonymise("Clinical Patient Pseudonymise"),
+    // Admin
+    AdminPatientRelationships("Manage Patient Relationships"),
+    AdminInactivePatients("Manage Inactive Patients"),
+    MergePatients("Merge Patients"),
+    // Fund transfer
+    RequestFundTransfer("Request Float Transfer"),
+    IssueFundTransfer("Issue Float Transfer"),
+    ReceiveFundTransfer("Receive Float Transfer"),
+    DeclineFundTransfer("Decline Float Transfer"),
+    ProcessFundTransferRequest("Process Float Transfer Request"),
+    CancelOwnFundTransfer("Cancel Own Float Transfer"),
+    CancelOthersFundTransfer("Cancel Others Float Transfer"),
+    ViewFundTransferReports("View Float Transfer Reports")
     ;
 
     private final String label;
@@ -1013,6 +1055,10 @@ public enum Privileges {
             case InwardAppointmentUpdate:
             case InwardAppointmentCancel:
             case InpatientClinicalAssessment:
+            case InpatientClinicalDischarge:
+            case InwardFormTemplateAdmin:
+            case InwardFormFill:
+            case InwardDocumentUpload:
                 return "Inward";
 
             default:

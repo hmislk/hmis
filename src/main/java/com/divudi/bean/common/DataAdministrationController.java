@@ -31,6 +31,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BillNumberFacade;
 import com.divudi.core.facade.AuditDatabaseFacade;
 import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.DatabaseMigrationFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.ItemBatchFacade;
@@ -234,6 +235,8 @@ public class DataAdministrationController implements Serializable {
     @EJB
     AuditDatabaseFacade auditDatabaseFacade;
     @EJB
+    DatabaseMigrationFacade databaseMigrationFacade;
+    @EJB
     CategoryFacade categoryFacade;
     @EJB
     ItemBatchFacade itemBatchFacade;
@@ -363,6 +366,37 @@ public class DataAdministrationController implements Serializable {
             return "Unknown exception";
         }
         return throwable.getMessage() != null ? throwable.getMessage() : throwable.getClass().getName();
+    }
+
+    /**
+     * TEMPORARY admin function for dual-version operation at Ruhunu: this
+     * production build uses GenerationType.AUTO (EclipseLink SEQUENCE table)
+     * while the newer development build uses GenerationType.IDENTITY
+     * (AUTO_INCREMENT), and both write to the same main and audit databases,
+     * so their independent ID allocators collide (Duplicate entry ... for key
+     * 'REPORTLOG.PRIMARY'). This raises the SEQUENCE rows above every existing
+     * ID and pushes all AUTO_INCREMENT counters one billion higher, giving
+     * each build its own range. THIS application server must be restarted
+     * after running. Remove once this build is upgraded to IDENTITY ID
+     * generation. See developer_docs/database/dual-version-id-allocator-separation.md
+     */
+    public void separateIdAllocatorsForDualVersionOperation() {
+        StringBuilder feedback = new StringBuilder();
+        feedback.append("=== Main Database ===<br/>");
+        try {
+            feedback.append(String.join("<br/>", databaseMigrationFacade.separateIdAllocatorsForDualVersionOperation()));
+        } catch (Exception e) {
+            feedback.append("Error: ").append(getExceptionMessage(e));
+        }
+        feedback.append("<br/><br/>=== Audit Database ===<br/>");
+        try {
+            feedback.append(String.join("<br/>", auditDatabaseFacade.separateIdAllocatorsForDualVersionOperation()));
+        } catch (Exception e) {
+            feedback.append("Error: ").append(getExceptionMessage(e));
+        }
+        feedback.append("<br/><br/>IMPORTANT: Restart THIS application server now. ")
+                .append("It still holds a preallocated ID block in memory and will keep colliding until restarted.");
+        executionFeedback = feedback.toString();
     }
 
     public void refresh() {

@@ -30,6 +30,8 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.BillService;
 import com.divudi.core.data.PaymentMethod;
@@ -83,6 +85,8 @@ public class GrnReturnWorkflowController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
+    @EJB
+    private StockFacade stockFacade;
     @EJB
     private PharmacyBean pharmacyBean;
     @EJB
@@ -658,6 +662,61 @@ public class GrnReturnWorkflowController implements Serializable {
         }
     }
 
+    /**
+     * Compares every item's in-session return quantities (paid + free) against
+     * the quantities persisted at finalization, read fresh from the database
+     * (L2 bypass). Any difference blocks the approval with a per-item message.
+     *
+     * Finalize validated stock for the FINALIZED quantities; approving anything
+     * else would issue a return that no one finalized (#21266 RC4).
+     *
+     * @return true when every quantity matches the finalized bill.
+     */
+    private boolean approvalQuantitiesMatchFinalized() {
+        if (currentBill == null || currentBill.getId() == null) {
+            JsfUtil.addErrorMessage("No finalized bill found to compare quantities against");
+            return false;
+        }
+        if (billItems == null || billItems.isEmpty()) {
+            return true;
+        }
+        boolean allMatch = true;
+        for (BillItem bi : billItems) {
+            if (bi == null || bi.isRetired() || bi.getId() == null) {
+                continue;
+            }
+            BillItem finalizedItem = billItemFacade.findWithoutCache(bi.getId());
+            if (finalizedItem == null || finalizedItem.getBillItemFinanceDetails() == null) {
+                continue;
+            }
+            BillItemFinanceDetails sessionFd = bi.getBillItemFinanceDetails();
+            BillItemFinanceDetails finalizedFd = finalizedItem.getBillItemFinanceDetails();
+
+            double sessionQty = sessionFd != null && sessionFd.getQuantity() != null
+                    ? Math.abs(sessionFd.getQuantity().doubleValue()) : 0.0;
+            double sessionFreeQty = sessionFd != null && sessionFd.getFreeQuantity() != null
+                    ? Math.abs(sessionFd.getFreeQuantity().doubleValue()) : 0.0;
+            double finalizedQty = finalizedFd.getQuantity() != null
+                    ? Math.abs(finalizedFd.getQuantity().doubleValue()) : 0.0;
+            double finalizedFreeQty = finalizedFd.getFreeQuantity() != null
+                    ? Math.abs(finalizedFd.getFreeQuantity().doubleValue()) : 0.0;
+
+            if (Math.abs(sessionQty - finalizedQty) > 0.0001
+                    || Math.abs(sessionFreeQty - finalizedFreeQty) > 0.0001) {
+                String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
+                JsfUtil.addErrorMessage("Cannot approve: quantity for \"" + itemName
+                        + "\" (" + String.format("%.2f", sessionQty)
+                        + (sessionFreeQty > 0 ? " + " + String.format("%.2f", sessionFreeQty) + " free" : "")
+                        + ") does not match the finalized quantity ("
+                        + String.format("%.2f", finalizedQty)
+                        + (finalizedFreeQty > 0 ? " + " + String.format("%.2f", finalizedFreeQty) + " free" : "")
+                        + "). The return must be corrected and re-finalized.");
+                allMatch = false;
+            }
+        }
+        return allMatch;
+    }
+
     public void approve() {
         if (!isAuthorized("APPROVE", "ApproveGrnReturn")) {
             return;
@@ -683,9 +742,19 @@ public class GrnReturnWorkflowController implements Serializable {
             return;
         }
 
-        // Validate stock availability before approving
-        if (!validateAllItemsStockAvailability(true)) {
-            JsfUtil.addErrorMessage("Cannot approve: Stock validation failed. Please correct the quantities and try again.");
+        // The quantities being approved must be exactly the quantities that were
+        // FINALIZED (persisted by finalizeRequest). If they differ - approver
+        // edits, or a failed earlier Approve that auto-reduced quantities - the
+        // return must be rejected and sent back for re-finalization, never
+        // approved with silently changed quantities (#21266 RC4).
+        if (!approvalQuantitiesMatchFinalized()) {
+            return;
+        }
+
+        // Validate stock availability before approving. allowAutoCorrect=false:
+        // at approval, validation must never mutate quantities.
+        if (!validateAllItemsStockAvailability(true, false)) {
+            JsfUtil.addErrorMessage("Cannot approve: insufficient stock for the finalized quantities. The return must be corrected and re-finalized.");
             return;
         }
 
@@ -708,7 +777,16 @@ public class GrnReturnWorkflowController implements Serializable {
                 return;
             }
 
-            updateStock();  // Stock handling happens only at approval stage
+            if (!updateStock()) {
+                // Roll back completed status — stock deduction failed for one or more items
+                currentBill.setCompleted(false);
+                currentBill.setCompletedBy(null);
+                currentBill.setCompletedAt(null);
+                currentBill.setApproveAt(null);
+                currentBill.setApproveUser(null);
+                billFacade.edit(currentBill);
+                return;
+            }
 
             // Create payment for the return - ALL payment methods require payment records for healthcare compliance
             // Payment validation was performed at method start, so we can proceed with confidence
@@ -847,6 +925,9 @@ public class GrnReturnWorkflowController implements Serializable {
             currentBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN_RETURN);
             currentBill.setInstitution(sessionController.getInstitution());
             currentBill.setDepartment(sessionController.getDepartment());
+            if (sessionController.getDepartment() != null) {
+                currentBill.setDepartmentType(sessionController.getDepartment().getDepartmentType());
+            }
             currentBill.setCreater(sessionController.getLoggedUser());
             currentBill.setCreatedAt(new Date());
 
@@ -954,31 +1035,70 @@ public class GrnReturnWorkflowController implements Serializable {
         }
     }
 
-    // Stock handling - only at approval stage
-    private void updateStock() {
+    // Stock handling - only at approval stage. Returns false (and shows an error) if any item fails.
+    private boolean updateStock() {
+        // Phase 1: pre-deduction availability check — reads fresh DB stock for every
+        // item and accumulates total requested qty per stock record.  No mutations are
+        // made here, so a failure leaves the database completely unchanged.
+        Map<Long, Double> requestedByStockId = new HashMap<>();
+        Map<Long, String> itemNameByStockId = new HashMap<>();
         for (BillItem bi : billItems) {
-            // Skip only retired items or items with truly zero quantities
+            if (bi.isRetired()) {
+                continue;
+            }
+            PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
+            if (phi == null || phi.getStock() == null || phi.getStock().getId() == null) {
+                continue;
+            }
+            double absQty = Math.abs(phi.getQty()) + Math.abs(phi.getFreeQty());
+            if (absQty == 0) {
+                continue;
+            }
+            Long stockId = phi.getStock().getId();
+            requestedByStockId.merge(stockId, absQty, Double::sum);
+            itemNameByStockId.putIfAbsent(stockId,
+                    bi.getItem() != null ? bi.getItem().getName() : "Unknown");
+        }
+
+        boolean preCheckPassed = true;
+        for (Map.Entry<Long, Double> entry : requestedByStockId.entrySet()) {
+            Long stockId = entry.getKey();
+            double totalRequested = entry.getValue();
+            Stock freshStock = stockFacade.find(stockId);
+            double available = (freshStock != null && freshStock.getStock() != null)
+                    ? freshStock.getStock() : 0.0;
+            if (available < totalRequested) {
+                String itemName = itemNameByStockId.getOrDefault(stockId, "Unknown");
+                LOGGER.log(Level.WARNING,
+                        "Pre-deduction stock check failed for item: {0}, available: {1}, requested: {2}",
+                        new Object[]{itemName, available, totalRequested});
+                JsfUtil.addErrorMessage("Cannot approve: insufficient stock for \""
+                        + itemName + "\". Available: " + String.format("%.2f", available)
+                        + ", Requested: " + String.format("%.2f", totalRequested) + ".");
+                preCheckPassed = false;
+            }
+        }
+        if (!preCheckPassed) {
+            return false;
+        }
+
+        // Phase 2: all items passed the pre-check — proceed with deductions.
+        for (BillItem bi : billItems) {
             if (bi.isRetired()) {
                 continue;
             }
 
             PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
-            double totalQty = phi.getQty() + phi.getFreeQty();
+            double absQty = Math.abs(phi.getQty()) + Math.abs(phi.getFreeQty());
 
-            // Skip stock processing for zero quantity items (no stock impact)
-            if (totalQty == 0) {
+            if (absQty == 0) {
                 continue;
             }
 
-            // For returns: make quantities negative before saving, use absolute value for stock deduction
-            double absQty = Math.abs(totalQty);
             phi.setQty(-Math.abs(phi.getQty()));
             phi.setFreeQty(-Math.abs(phi.getFreeQty()));
-
-            // Save the pharmaceutical bill item with negative quantities
             pharmaceuticalBillItemFacade.edit(phi);
 
-            // Deduct from stock for return (use absolute value)
             boolean returnFlag = pharmacyBean.deductFromStock(
                     phi.getStock(),
                     absQty,
@@ -987,11 +1107,19 @@ public class GrnReturnWorkflowController implements Serializable {
             );
 
             if (!returnFlag) {
-                LOGGER.log(Level.WARNING, "Unable to deduct stock for item: {0}", bi.getItem().getName());
-                // Reset quantities if stock deduction failed
-                phi.setQty(0);
-                phi.setFreeQty(0);
+                // Pre-check passed but deductFromStock still failed — concurrent transaction
+                // drained the stock between our check and this deduction.
+                String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
+                double available = phi.getStock() != null ? phi.getStock().getStock() : 0;
+                LOGGER.log(Level.WARNING,
+                        "Stock deduction failed after pre-check for item: {0}, available: {1}, requested: {2}",
+                        new Object[]{itemName, available, absQty});
+                phi.setQty(Math.abs(phi.getQty()));
+                phi.setFreeQty(Math.abs(phi.getFreeQty()));
                 pharmaceuticalBillItemFacade.edit(phi);
+                JsfUtil.addErrorMessage("Cannot approve: insufficient stock for \"" + itemName
+                        + "\". Available: " + available + ", Requested: " + absQty + ".");
+                return false;
             }
         }
 
@@ -999,7 +1127,6 @@ public class GrnReturnWorkflowController implements Serializable {
         if (currentBill != null && currentBill.getBillFinanceDetails() != null) {
             BillFinanceDetails bfd = currentBill.getBillFinanceDetails();
 
-            // Negate the purchase, cost, and retail values at bill level
             if (bfd.getTotalPurchaseValue() != null) {
                 bfd.setTotalPurchaseValue(bfd.getTotalPurchaseValue().abs().negate());
             }
@@ -1010,9 +1137,9 @@ public class GrnReturnWorkflowController implements Serializable {
                 bfd.setTotalRetailSaleValue(bfd.getTotalRetailSaleValue().abs().negate());
             }
 
-            // Save the updated bill with corrected finance details
             billFacade.edit(currentBill);
         }
+        return true;
     }
 
     // Validation methods
@@ -1921,6 +2048,9 @@ public class GrnReturnWorkflowController implements Serializable {
         currentBill.setCreater(sessionController.getLoggedUser());
         currentBill.setInstitution(sessionController.getInstitution());
         currentBill.setDepartment(sessionController.getDepartment());
+        if (sessionController.getDepartment() != null) {
+            currentBill.setDepartmentType(sessionController.getDepartment().getDepartmentType());
+        }
 
         //Copy Payment Method Details from GRN to GRN Return
         currentBill.setPaymentMethod(originalGrn.getPaymentMethod());
@@ -2132,6 +2262,12 @@ public class GrnReturnWorkflowController implements Serializable {
      * @return true if stock is sufficient, false otherwise
      */
     public boolean validateStockAvailability(BillItem billItem, boolean showMessages) {
+        // Default keeps the legacy draft-stage behaviour (auto-corrects the
+        // quantity down to available stock so the user can re-submit).
+        return validateStockAvailability(billItem, showMessages, true);
+    }
+
+    public boolean validateStockAvailability(BillItem billItem, boolean showMessages, boolean allowAutoCorrect) {
         if (billItem == null || billItem.getPharmaceuticalBillItem() == null
                 || billItem.getPharmaceuticalBillItem().getStock() == null) {
             if (showMessages) {
@@ -2176,8 +2312,13 @@ public class GrnReturnWorkflowController implements Serializable {
                 JsfUtil.addErrorMessage("Insufficient stock for " + itemName + " (Batch: " + stockBatch + "). "
                         + "Current stock: " + String.format("%.2f", currentStock)
                         + ", Total return quantity (including other items): " + String.format("%.2f", totalStockUsageFromCurrentReturn));
-
-                // Reset quantity to available stock minus other usages
+            }
+            // Draft-stage convenience only: rewrite the quantity down to what is
+            // available so the user can review and re-submit. MUST never run at
+            // approval - a validator that mutates quantities let a failed Approve
+            // silently reduce the return, so a second click approved quantities
+            // that no longer matched the finalized bill (#21266 RC4).
+            if (allowAutoCorrect) {
                 double availableForThisItem = Math.max(0, currentStock - (totalStockUsageFromCurrentReturn - totalReturnQtyInUnits));
 
                 if (isAmppItem) {
@@ -2264,6 +2405,10 @@ public class GrnReturnWorkflowController implements Serializable {
      * Finalize, and Approve operations
      */
     public boolean validateAllItemsStockAvailability(boolean showMessages) {
+        return validateAllItemsStockAvailability(showMessages, true);
+    }
+
+    public boolean validateAllItemsStockAvailability(boolean showMessages, boolean allowAutoCorrect) {
         if (billItems == null || billItems.isEmpty()) {
             return true;
         }
@@ -2288,7 +2433,7 @@ public class GrnReturnWorkflowController implements Serializable {
                 continue;
             }
 
-            if (!validateStockAvailability(bi, showMessages)) {
+            if (!validateStockAvailability(bi, showMessages, allowAutoCorrect)) {
                 allValid = false;
             }
         }
