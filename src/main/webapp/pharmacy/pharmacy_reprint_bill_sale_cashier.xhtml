@@ -101,17 +101,22 @@
                                         rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
                                     </p:commandButton>
 
+                                    <!-- Cashier sale bill cancellation temporarily disabled (#21419 COGS remediation).
+                                         Cancelling this bill causes the COGS report to show incorrect figures.
+                                         Re-enable once the COGS variance is fixed. -->
+                                    <!--
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Accept Sale for Cashier Bill can be Cancelled', true)}">
-                                        <p:commandButton 
-                                            ajax="false" 
+                                        <p:commandButton
+                                            ajax="false"
                                             value="To Cancel"
                                             icon="fa fa-cancel"
                                             class="ui-button-danger m-1"
-                                            action="pharmacy_cancel_bill_retail?faces-redirect=true" 
+                                            action="pharmacy_cancel_bill_retail?faces-redirect=true"
                                             disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.refunded}"
-                                            rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
+                                            rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">
                                         </p:commandButton>
                                     </h:panelGroup>
+                                    -->
                                 </div>
                             </div>
                         </f:facet>
