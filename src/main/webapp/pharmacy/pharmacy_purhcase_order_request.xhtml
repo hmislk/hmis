@@ -86,14 +86,16 @@
                                         width="6em"
                                         class="text-end px-1"
                                         style="padding: 0px;"> 
-                                        <p:inputText 
-                                            autocomplete="off"  
-                                            id="qty" 
-                                            value="#{bi.billItemFinanceDetails.quantity}" 
-                                            style="padding: 0;" 
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="qty"
+                                            value="#{bi.billItemFinanceDetails.quantity}"
+                                            style="padding: 0;"
                                             label="Qty"
                                             class="text-end w-100"
-                                            onfocus="this.select()">  
+                                            onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                            onkeyup="if (event.keyCode === 13) { event.preventDefault(); this.blur(); }"
+                                            onfocus="this.select()">
                                             <f:convertNumber pattern="0.#" ></f:convertNumber>
                                             <p:ajax 
                                                 event="blur" 
@@ -108,14 +110,16 @@
                                         headerText="Free Qty"
                                         class="text-end px-1"
                                         style="padding: 0px;"> 
-                                        <p:inputText 
-                                            autocomplete="off" 
-                                            id="freeQty" 
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="freeQty"
                                             onfocus="this.select()"
                                             class="text-end w-100"
-                                            value="#{bi.billItemFinanceDetails.freeQuantity}" 
-                                            style="padding: 0;" 
-                                            label="Qty">  
+                                            onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                            onkeyup="if (event.keyCode === 13) { event.preventDefault(); this.blur(); }"
+                                            value="#{bi.billItemFinanceDetails.freeQuantity}"
+                                            style="padding: 0;"
+                                            label="Qty">
                                             <f:convertNumber pattern="0.#" ></f:convertNumber>
                                             <f:ajax 
                                                 event="blur" 
@@ -135,9 +139,11 @@
                                             <p:inputText
                                                 id="txtRetailRate"
                                                 onfocus="this.select()"
-                                                autocomplete="off" 
-                                                style="padding: 0;" 
-                                                value="#{bi.billItemFinanceDetails.lineGrossRate}" 
+                                                autocomplete="off"
+                                                style="padding: 0;"
+                                                onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                                onkeyup="if (event.keyCode === 13) { event.preventDefault(); this.blur(); }"
+                                                value="#{bi.billItemFinanceDetails.lineGrossRate}"
                                                 class="w-100 text-end">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                                 <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty" listener="#{purchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
@@ -220,11 +226,12 @@
                                     <p:outputLabel value="Supplier"
                                                    class="form-label"
                                                    for="acSupplier"></p:outputLabel>
-                                    <p:autoComplete 
+                                    <p:autoComplete
                                         id="acSupplier"
-                                        converter="deal" 
-                                        value="#{purchaseOrderRequestController.currentBill.toInstitution}"  
+                                        converter="deal"
+                                        value="#{purchaseOrderRequestController.currentBill.toInstitution}"
                                         forceSelection="true"
+                                        onkeydown="if (event.keyCode === 13) { var pnl = document.getElementById(this.id.replace(/_input$/, '_panel')); var panelOpen = pnl &amp;&amp; pnl.style.display !== 'none'; event.preventDefault(); if (!panelOpen) { return false; } }"
                                         class="w-100"
                                         inputStyleClass="w-100"
                                         completeMethod="#{dealerController.completeActiveDealor}"
@@ -388,6 +395,7 @@
                                         id="exItem"
                                         value="#{purchaseOrderRequestController.currentBillItem.item}"
                                         forceSelection="true"
+                                        onkeydown="if (event.keyCode === 13) { var pnl = document.getElementById(this.id.replace(/_input$/, '_panel')); var panelOpen = pnl &amp;&amp; pnl.style.display !== 'none'; event.preventDefault(); if (!panelOpen) { return false; } }"
                                         class="w-75"
                                         maxResults="50"
                                         scrollHeight="600"
