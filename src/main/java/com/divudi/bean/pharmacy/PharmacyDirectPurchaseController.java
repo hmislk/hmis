@@ -1409,7 +1409,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         bill = (com.divudi.core.entity.BilledBill) freshBill;
 
         JsfUtil.addSuccessMessage("Direct Purchase finalized. It is now pending approval.");
-        printPreview = false;
+        printPreview = true;
     }
 
     public void approveDirectPurchaseDraft() {
@@ -1503,6 +1503,14 @@ public class PharmacyDirectPurchaseController implements Serializable {
             Stock stock = getPharmacyBean().addToStockForCosting(i, Math.abs(addingQty), getSessionController().getDepartment());
             i.getPharmaceuticalBillItem().setLastPurchaseRate(lastPurchaseRate);
             i.getPharmaceuticalBillItem().setStock(stock);
+            // Persist the stock link explicitly. Unlike the settle path (where
+            // the bill and items are an in-memory graph fully merged at the end),
+            // here the items were reloaded from DB and the detached bill's lazy
+            // billItems collection does not carry this change through the final
+            // bill merge - without this edit, phi.stock stays NULL in the DB and
+            // a later Direct Purchase Return fails with "Stock information not
+            // available for item".
+            getBillItemFacade().edit(i);
             getBill().getBillItems().add(i);
         }
 
