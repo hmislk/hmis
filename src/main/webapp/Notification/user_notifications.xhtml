@@ -17,7 +17,7 @@
                               rendered="#{sessionController.loggedUser != null}" />
                     <p:remoteCommand name="refreshNotificationList"
                                      update="reNot"
-                                     action="#{userNotificationController.fillLoggedUserNotifications}" />
+                                     action="#{userNotificationController.filterNotificationsByCriteria}" />
                     <script type="text/javascript">
                         function onNotificationListPush(message, channel, event) {
                             refreshNotificationList();
@@ -37,12 +37,15 @@
                     <!-- Bulk-clear confirmation dialog -->
                     <p:dialog minHeight="100" width="400" header="Confirm Clear"
                               widgetVar="confirmationDialog" modal="true">
-                        <p class="my-2">Are you sure you want to clear the selected notifications?</p>
+                        <p class="my-2">This will remove ALL notifications currently listed below.
+                            To clear only some, filter the list first. Continue?</p>
                         <div class="d-flex mt-2 justify-content-end">
-                            <p:commandButton class="mx-2 ui-button-warning" ajax="false" value="Yes"
+                            <p:commandButton id="btnClearYes" class="mx-2 ui-button-danger" ajax="false"
+                                             value="Yes, Clear Listed"
                                              action="#{userNotificationController.clearNotificationsByCriteria()}"
                                              onclick="PF('confirmationDialog').hide();" />
-                            <p:commandButton value="No" onclick="PF('confirmationDialog').hide();" />
+                            <p:commandButton id="btnClearNo" value="No" type="button"
+                                             onclick="PF('confirmationDialog').hide();" />
                         </div>
                     </p:dialog>
 
@@ -51,11 +54,33 @@
                         <!-- Filter / action bar -->
                         <div class="d-flex justify-content-end align-items-center my-2">
                             <h:panelGroup id="criteria">
-                                Today :<p:selectBooleanCheckbox class="mx-2" value="#{userNotificationController.todayNotification}" />
-                                Seen :<p:selectBooleanCheckbox class="mx-2" value="#{userNotificationController.seenedNotifiaction}" />
-                                Completed :<p:selectBooleanCheckbox class="mx-2" value="#{userNotificationController.completedNotification}" />
-                                Not Completed :<p:selectBooleanCheckbox class="mx-2" value="#{userNotificationController.notCompeletedNotifiaction}" />
-                                Canceled :<p:selectBooleanCheckbox class="mx-2" value="#{userNotificationController.canceldRequests}" />
+                                <p:outputLabel for="cbToday" value="Today Only" styleClass="mx-1" />
+                                <p:selectBooleanCheckbox id="cbToday" styleClass="mx-2"
+                                                         value="#{userNotificationController.todayNotification}" />
+
+                                <p:outputLabel for="cmbSeen" value="Seen" styleClass="mx-1" />
+                                <p:selectOneMenu id="cmbSeen" styleClass="mx-2"
+                                                 value="#{userNotificationController.seenFilter}">
+                                    <f:selectItem itemLabel="All" itemValue="ALL" />
+                                    <f:selectItem itemLabel="Unseen" itemValue="UNSEEN" />
+                                    <f:selectItem itemLabel="Seen" itemValue="SEEN" />
+                                </p:selectOneMenu>
+
+                                <p:outputLabel for="cmbCompletion" value="Status" styleClass="mx-1" />
+                                <p:selectOneMenu id="cmbCompletion" styleClass="mx-2"
+                                                 value="#{userNotificationController.completionFilter}">
+                                    <f:selectItem itemLabel="All" itemValue="ALL" />
+                                    <f:selectItem itemLabel="Pending" itemValue="PENDING" />
+                                    <f:selectItem itemLabel="Completed" itemValue="COMPLETED" />
+                                </p:selectOneMenu>
+
+                                <p:outputLabel for="cbCancelled" value="Cancelled Bills Only" styleClass="mx-1" />
+                                <p:selectBooleanCheckbox id="cbCancelled" styleClass="mx-2"
+                                                         value="#{userNotificationController.canceldRequests}" />
+
+                                <p:outputLabel for="cbShowCleared" value="Show Cleared" styleClass="mx-1" />
+                                <p:selectBooleanCheckbox id="cbShowCleared" styleClass="mx-2"
+                                                         value="#{userNotificationController.showCleared}" />
                             </h:panelGroup>
 
                             <p:commandButton id="btnFilter" class="m-2 ui-button-success"
@@ -63,7 +88,8 @@
                                              icon="fa-solid fa-filter" value="Filter"
                                              action="#{userNotificationController.filterNotificationsByCriteria()}" />
 
-                            <p:commandButton class="m-2 ui-button-danger" icon="fas fa-trash" value="Clear"
+                            <p:commandButton id="btnClear" class="m-2 ui-button-danger" type="button"
+                                             icon="fas fa-trash" value="Clear Listed"
                                              onclick="PF('confirmationDialog').show();" />
                         </div>
 
@@ -170,9 +196,16 @@
                                                     <!-- Sets current via AJAX, then opens the shared dialog -->
                                                     <p:commandButton id="btnRemove" class="ui-button-danger mx-2"
                                                                      icon="fas fa-trash" process="@this"
+                                                                     rendered="#{not un.retired}"
                                                                      oncomplete="PF('dlgRemove').show();">
                                                         <f:setPropertyActionListener value="#{un}" target="#{userNotificationController.current}" />
                                                     </p:commandButton>
+                                                    <!-- Shown when listing cleared notifications -->
+                                                    <p:commandButton id="btnRestore" class="ui-button-success mx-2"
+                                                                     icon="fas fa-rotate-left" value="Restore"
+                                                                     process="@this" update="reNot"
+                                                                     rendered="#{un.retired}"
+                                                                     action="#{userNotificationController.restoreUserNotification(un)}" />
                                                 </div>
                                             </div>
                                         </div>
