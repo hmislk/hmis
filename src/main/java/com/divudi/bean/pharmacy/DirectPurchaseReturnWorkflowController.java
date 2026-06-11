@@ -413,6 +413,10 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             }
             BillItem finalizedItem = billItemFacade.findWithoutCache(bi.getId());
             if (finalizedItem == null || finalizedItem.getBillItemFinanceDetails() == null) {
+                String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
+                JsfUtil.addErrorMessage("Cannot approve: finalized data for \"" + itemName
+                        + "\" could not be reloaded. The return must be corrected and re-finalized.");
+                allMatch = false;
                 continue;
             }
             BillItemFinanceDetails sessionFd = bi.getBillItemFinanceDetails();
@@ -1806,6 +1810,15 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
     // Validation method called during quantity changes (similar to legacy onEdit pattern)
     public boolean validateReturnQuantities(BillItem billItem) {
+        return validateReturnQuantities(billItem, true);
+    }
+
+    /**
+     * @param allowAutoCorrect when false (approval stage), quantities are
+     * never rewritten - a violation fails validation instead of being
+     * silently reduced to the remaining/available amount (#21266 RC4).
+     */
+    public boolean validateReturnQuantities(BillItem billItem, boolean allowAutoCorrect) {
         if (billItem == null || billItem.getBillItemFinanceDetails() == null || billItem.getReferanceBillItem() == null) {
             return false;
         }
@@ -1819,7 +1832,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         double remainingFreeQty = getRemainingFreeQtyToReturn(billItem.getReferanceBillItem());
 
         // Validate stock availability - critical check
-        if (!validateStockAvailability(billItem, true)) {
+        if (!validateStockAvailability(billItem, true, allowAutoCorrect)) {
             isValid = false;
         }
 
@@ -1843,10 +1856,12 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
             // Allow exact match (>=) instead of just (>)
             if (currentTotalQtyInUnits > remainingTotalQty) {
-                // Convert back to packs for AMPP items when setting the corrected value
-                double correctedQtyInPacks = isAmppItem ? Math.max(0, remainingTotalQty / unitsPerPack) : Math.max(0, remainingTotalQty);
-                fd.setQuantity(BigDecimal.valueOf(correctedQtyInPacks));
-                fd.setFreeQuantity(BigDecimal.ZERO);
+                if (allowAutoCorrect) {
+                    // Convert back to packs for AMPP items when setting the corrected value
+                    double correctedQtyInPacks = isAmppItem ? Math.max(0, remainingTotalQty / unitsPerPack) : Math.max(0, remainingTotalQty);
+                    fd.setQuantity(BigDecimal.valueOf(correctedQtyInPacks));
+                    fd.setFreeQuantity(BigDecimal.ZERO);
+                }
                 JsfUtil.addErrorMessage("Cannot return more than remaining quantity. Remaining: "
                         + (isAmppItem ? (remainingTotalQty / unitsPerPack) + " packs" : remainingTotalQty + " units"));
                 isValid = false;
@@ -1862,17 +1877,21 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
             // Allow exact match (>=) instead of just (>)
             if (currentQtyInUnits > remainingQty) {
-                // Convert back to packs for AMPP items when setting the corrected value
-                double correctedQtyInPacks = isAmppItem ? Math.max(0, remainingQty / unitsPerPack) : Math.max(0, remainingQty);
-                fd.setQuantity(BigDecimal.valueOf(correctedQtyInPacks));
+                if (allowAutoCorrect) {
+                    // Convert back to packs for AMPP items when setting the corrected value
+                    double correctedQtyInPacks = isAmppItem ? Math.max(0, remainingQty / unitsPerPack) : Math.max(0, remainingQty);
+                    fd.setQuantity(BigDecimal.valueOf(correctedQtyInPacks));
+                }
                 JsfUtil.addErrorMessage("Cannot return more than remaining quantity. Remaining: "
                         + (isAmppItem ? (remainingQty / unitsPerPack) + " packs" : remainingQty + " units"));
                 isValid = false;
             }
             if (currentFreeQtyInUnits > remainingFreeQty) {
-                // Convert back to packs for AMPP items when setting the corrected value
-                double correctedFreeQtyInPacks = isAmppItem ? Math.max(0, remainingFreeQty / unitsPerPack) : Math.max(0, remainingFreeQty);
-                fd.setFreeQuantity(BigDecimal.valueOf(correctedFreeQtyInPacks));
+                if (allowAutoCorrect) {
+                    // Convert back to packs for AMPP items when setting the corrected value
+                    double correctedFreeQtyInPacks = isAmppItem ? Math.max(0, remainingFreeQty / unitsPerPack) : Math.max(0, remainingFreeQty);
+                    fd.setFreeQuantity(BigDecimal.valueOf(correctedFreeQtyInPacks));
+                }
                 JsfUtil.addErrorMessage("Cannot return more than remaining free quantity. Remaining: "
                         + (isAmppItem ? (remainingFreeQty / unitsPerPack) + " packs" : remainingFreeQty + " units"));
                 isValid = false;
@@ -2159,8 +2178,9 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 continue;
             }
 
-            // Re-validate quantities at approval stage (additional security check)
-            if (!validateReturnQuantities(bi)) {
+            // Re-validate quantities at approval stage (additional security check).
+            // allowAutoCorrect=false: approval must never rewrite finalized quantities (#21266 RC4).
+            if (!validateReturnQuantities(bi, false)) {
                 isValid = false;
             }
 
