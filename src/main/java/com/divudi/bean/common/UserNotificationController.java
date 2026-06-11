@@ -20,6 +20,8 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.UserNotification;
 import com.divudi.core.entity.Notification;
+import com.divudi.bean.inward.BhtSummeryController;
+import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Sms;
 import com.divudi.core.entity.WebUser;
@@ -82,6 +84,8 @@ public class UserNotificationController implements Serializable {
     SmsManagerEjb smsManager;
     @Inject
     NotificationPushService notificationPushService;
+    @Inject
+    BhtSummeryController bhtSummeryController;
     private Date date;
     private boolean todayNotification;
     private boolean seenedNotifiaction;
@@ -153,7 +157,7 @@ public class UserNotificationController implements Serializable {
                 return;
             }
             for (UserNotification un : items) {
-                if (un.getNotification().getBill().isCancelled()) {
+                if (un.getNotification().getBill() != null && un.getNotification().getBill().isCancelled()) {
                     un.setRetired(true);
                     un.setRetiredAt(new Date());
                     getFacade().edit(un);
@@ -220,6 +224,14 @@ public class UserNotificationController implements Serializable {
             if (items == null) {
                 return;
             }
+            // Compare dates ignoring time (use java.util.Calendar to truncate)
+            java.util.Calendar todayCal = java.util.Calendar.getInstance();
+            todayCal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+            todayCal.set(java.util.Calendar.MINUTE, 0);
+            todayCal.set(java.util.Calendar.SECOND, 0);
+            todayCal.set(java.util.Calendar.MILLISECOND, 0);
+            Date todayMidnight = todayCal.getTime();
+
             Iterator<UserNotification> iterator = items.iterator();
             while (iterator.hasNext()) {
                 UserNotification notification = iterator.next();
@@ -227,7 +239,8 @@ public class UserNotificationController implements Serializable {
                     continue;
                 }
 
-                if (!notification.getNotification().getCreatedAt().equals(getDate())) {
+                Date createdAt = notification.getNotification().getCreatedAt();
+                if (createdAt == null || createdAt.before(todayMidnight)) {
                     iterator.remove();
                 }
             }
@@ -258,6 +271,11 @@ public class UserNotificationController implements Serializable {
             while (iterator.hasNext()) {
                 UserNotification notification = iterator.next();
                 if (notification.getNotification() == null) {
+                    continue;
+                }
+                // Skip notifications without bills (e.g., discharge notifications) — they can't be "cancelled"
+                if (notification.getNotification().getBill() == null) {
+                    iterator.remove();
                     continue;
                 }
 
@@ -348,7 +366,9 @@ public class UserNotificationController implements Serializable {
             JsfUtil.addErrorMessage("You can't Access On Current Department !");
             return;
         }
-        if (un.getNotification().getBill() == null) {
+        // Allow removal of both bill-based and PatientRoom-based notifications
+        if (un.getNotification().getBill() == null && un.getNotification().getPatientRoom() == null
+                && un.getNotification().getPatientEncounter() == null) {
             return;
         }
         un.setRetired(true);
@@ -416,6 +436,22 @@ public class UserNotificationController implements Serializable {
         un.setSeen(true);
         getFacade().edit(un);
 
+        // Handle PatientRoom-based (discharge) notifications
+        if (un.getNotification().getPatientRoom() != null) {
+            PatientRoom pr = un.getNotification().getPatientRoom();
+            if (pr.getPatientEncounter() != null) {
+                bhtSummeryController.setPatientEncounter(pr.getPatientEncounter());
+                return bhtSummeryController.navigateToInpatientProfile();
+            }
+            return "";
+        }
+
+        // Handle PatientEncounter-based notifications
+        if (un.getNotification().getPatientEncounter() != null) {
+            bhtSummeryController.setPatientEncounter(un.getNotification().getPatientEncounter());
+            return bhtSummeryController.navigateToInpatientProfile();
+        }
+
         if (un.getNotification().getBill() == null) {
             return "";
         }
@@ -442,9 +478,6 @@ public class UserNotificationController implements Serializable {
 
         if (!todept.equals(sessionController.getLoggedUser().getDepartment())) {
             JsfUtil.addErrorMessage("You can't Access On Current Department !");
-            return "";
-        }
-        if (un.getNotification().getBill() == null) {
             return "";
         }
         Bill bill = un.getNotification().getBill();
