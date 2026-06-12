@@ -54,6 +54,7 @@ hs_err_pid*.log
 *-caveat-the-messages-below-*.txt
 claude-*.jsonl
 .claude-session*
+[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9][0-9]*-*.txt
 
 # Claude Code temporary working directories
 tmpclaude-*
@@ -75,6 +76,9 @@ node_modules/
 /package-lock.json
 /automate_login_and_screenshot.js
 /open_browser_for_interaction.js
+/CODE-CHANGES-SUMMARY.md
+/COMPILATION-FIX.md
+/PERFORMANCE-FIX-SUMMARY.md
 
 # Codex AI temporary backup files
 .codex-backup/
@@ -93,3 +97,15 @@ db/
 
 # GitHub issues scratch workspace
 github-issues/
+
+# Wiki documentation lives in sibling repo ../hmis.wiki — not here
+wiki-docs/
+
+# User-facing documentation (belongs in wiki or developer_docs/)
+user_documentation/
+
+# One-off SQL migration scripts
+sql-scripts/
+
+# Project management artifacts
+pm/
