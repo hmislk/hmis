@@ -366,6 +366,12 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             return;
         }
 
+        // Sync bifd.quantity / bi.qty / pbi.qty from the authoritative source before validating.
+        // bifd.QUANTITY may have been stored negative by calculateLineTotal while bi.qty and
+        // pbi.qty are kept positive — reconcile everything to the absolute value of bifd.QUANTITY,
+        // falling back to bi.qty if bifd is null or zero.
+        syncQuantitiesBeforeFinalize();
+
         // Validate stock availability before finalizing
         if (!validateAllItemsStockAvailability(true)) {
             JsfUtil.addErrorMessage("Cannot finalize: Stock validation failed. Please correct the quantities and try again.");
@@ -1934,6 +1940,67 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
 
         return true;
+    }
+
+    /**
+     * Reconciles bi.qty, pbi.qty, and bifd.QUANTITY so they all reflect the
+     * same absolute return quantity before stock validation and finalization.
+     *
+     * bifd.QUANTITY is the form-bound field the user edits. bi.qty and pbi.qty
+     * are set positively at request creation and may diverge when calculateLineTotal
+     * negates bifd.QUANTITY for DB storage. This method drives from the absolute
+     * value of bifd.QUANTITY (or bi.qty as fallback) and calls
+     * syncQuantitiesAfterQuantityChange + calculateLineTotal to re-align all fields.
+     */
+    private void syncQuantitiesBeforeFinalize() {
+        if (billItems == null) {
+            return;
+        }
+        for (BillItem bi : billItems) {
+            if (bi == null || bi.isRetired()) {
+                continue;
+            }
+            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+            PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
+            if (fd == null || phi == null) {
+                continue;
+            }
+
+            // Determine the intended return quantity from the most reliable source.
+            // bifd.QUANTITY is what the user last edited (may be negative from calculateLineTotal).
+            // bi.qty is always stored positive by calculateLineTotal.
+            // Use abs(bifd.QUANTITY) if non-zero; otherwise fall back to abs(bi.qty).
+            BigDecimal rawBifd = fd.getQuantity();
+            double biQty = bi.getQty() != null ? bi.getQty() : 0.0;
+            double absReturnQty;
+            if (rawBifd != null && rawBifd.compareTo(BigDecimal.ZERO) != 0) {
+                absReturnQty = Math.abs(rawBifd.doubleValue());
+            } else {
+                absReturnQty = Math.abs(biQty);
+            }
+
+            BigDecimal rawBifdFree = fd.getFreeQuantity();
+            double absFreeQty = rawBifdFree != null ? Math.abs(rawBifdFree.doubleValue()) : 0.0;
+
+            boolean isAmpp = bi.getItem() instanceof Ampp;
+            BigDecimal upp = fd.getUnitsPerPack() != null && fd.getUnitsPerPack().compareTo(BigDecimal.ZERO) != 0
+                    ? fd.getUnitsPerPack() : BigDecimal.ONE;
+
+            // Normalise bifd.QUANTITY to the absolute value (positive) so validation
+            // and calculateLineTotal both see the same number regardless of prior negation.
+            fd.setQuantity(BigDecimal.valueOf(absReturnQty));
+            fd.setFreeQuantity(BigDecimal.valueOf(absFreeQty));
+
+            // Sync pbi.qty in units (for AMPP multiply packs × unitsPerPack).
+            double qtyInUnits = isAmpp ? absReturnQty * upp.doubleValue() : absReturnQty;
+            double freeQtyInUnits = isAmpp ? absFreeQty * upp.doubleValue() : absFreeQty;
+            phi.setQty(qtyInUnits);
+            phi.setFreeQty(freeQtyInUnits);
+
+            // calculateLineTotal will negate the quantities for storage but we need
+            // them positive going into validateAllItemsStockAvailability which calls abs().
+            calculateLineTotal(bi);
+        }
     }
 
     /**
