@@ -802,6 +802,11 @@ public class TransferIssueForRequestsController implements Serializable {
             // moving any stock, keeping the positive pre-settle sign convention.
             syncStockQtyFromUserEnteredQty(bi);
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            if (pbi == null) {
+                // createEmptyBillItem() leaves pharmaceuticalBillItem unset when no stock
+                // was available at generation time - nothing to validate or settle for it.
+                continue;
+            }
             if (pbi.getItemBatch() == null) {
                 if (pbi.getQty() > 0) {
                     String name = bi.getItem() != null ? bi.getItem().getName() : "An item";
@@ -834,7 +839,7 @@ public class TransferIssueForRequestsController implements Serializable {
         //Remove Zero Qty Item
         List<BillItem> billItemList = new ArrayList<>();
         for (BillItem bi : getBillItems()) {
-            if (bi.getPharmaceuticalBillItem().getQty() != 0.0) {
+            if (bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getQty() != 0.0) {
                 billItemList.add(bi);
             }
         }
