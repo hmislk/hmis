@@ -90,3 +90,6 @@ lib/unknown/
 
 # One-time database migration scripts (docs kept in developer_docs/)
 db/
+
+# GitHub issues scratch workspace
+github-issues/
