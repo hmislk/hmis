@@ -924,6 +924,14 @@ public class PharmacyBean {
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
             s.setStock(qty);
             ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            // The ItemBatch may be a minimal DTO-constructed object (id set, but no item/dateOfExpire).
+            // Load the full entity so metadata fields on the Staff Stock row are populated correctly.
+            if (ib != null && ib.getItem() == null && ib.getId() != null) {
+                ItemBatch full = itemBatchFacade.find(ib.getId());
+                if (full != null) {
+                    ib = full;
+                }
+            }
             Item i = null;
             if (ib != null) {
                 i = ib.getItem();
@@ -1061,6 +1069,12 @@ public class PharmacyBean {
             s.setStaff(staff);
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
             ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            if (ib != null && ib.getItem() == null && ib.getId() != null) {
+                ItemBatch full = itemBatchFacade.find(ib.getId());
+                if (full != null) {
+                    ib = full;
+                }
+            }
             Item i = null;
             if (ib != null) {
                 i = ib.getItem();
