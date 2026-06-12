@@ -9062,12 +9062,14 @@ public class PharmacyController implements Serializable {
         List<Object[]> retailResults = getBillItemFacade().findAggregates(baseJpql, paramsRetail, TemporalType.TIMESTAMP);
 
         Map<Long, Double> retailByDept = new HashMap<>();
-        for (Object[] row : retailResults) {
+        if (retailResults != null) {
+            for (Object[] row : retailResults) {
             Department dept = (Department) row[0];
             Double qty = row[1] instanceof BigDecimal
                     ? ((BigDecimal) row[1]).doubleValue()
                     : ((Number) row[1]).doubleValue();
-            retailByDept.put(dept.getId(), qty);
+                retailByDept.put(dept.getId(), qty);
+            }
         }
 
         // --- Query 2: Wholesale Sale by Department ---
@@ -9080,12 +9082,14 @@ public class PharmacyController implements Serializable {
         List<Object[]> wholesaleResults = getBillItemFacade().findAggregates(baseJpql, paramsWholesale, TemporalType.TIMESTAMP);
 
         Map<Long, Double> wholesaleByDept = new HashMap<>();
-        for (Object[] row : wholesaleResults) {
+        if (wholesaleResults != null) {
+            for (Object[] row : wholesaleResults) {
             Department dept = (Department) row[0];
             Double qty = row[1] instanceof BigDecimal
                     ? ((BigDecimal) row[1]).doubleValue()
                     : ((Number) row[1]).doubleValue();
-            wholesaleByDept.put(dept.getId(), qty);
+                wholesaleByDept.put(dept.getId(), qty);
+            }
         }
 
         // --- Query 3: Inpatient Issue by Department ---
@@ -9098,12 +9102,14 @@ public class PharmacyController implements Serializable {
         List<Object[]> inpatientResults = getBillItemFacade().findAggregates(baseJpql, paramsInpatient, TemporalType.TIMESTAMP);
 
         Map<Long, Double> inpatientByDept = new HashMap<>();
-        for (Object[] row : inpatientResults) {
-            Department dept = (Department) row[0];
-            Double qty = row[1] instanceof BigDecimal
-                    ? ((BigDecimal) row[1]).doubleValue()
-                    : ((Number) row[1]).doubleValue();
-            inpatientByDept.put(dept.getId(), qty);
+        if (inpatientResults != null) {
+            for (Object[] row : inpatientResults) {
+                Department dept = (Department) row[0];
+                Double qty = row[1] instanceof BigDecimal
+                        ? ((BigDecimal) row[1]).doubleValue()
+                        : ((Number) row[1]).doubleValue();
+                inpatientByDept.put(dept.getId(), qty);
+            }
         }
 
         // --- Collect all unique departments ---
@@ -9118,17 +9124,23 @@ public class PharmacyController implements Serializable {
 
         // Build a lookup map from the query results
         Map<Long, Department> deptLookup = new HashMap<>();
-        for (Object[] row : retailResults) {
-            Department d = (Department) row[0];
-            deptLookup.putIfAbsent(d.getId(), d);
+        if (retailResults != null) {
+            for (Object[] row : retailResults) {
+                Department d = (Department) row[0];
+                deptLookup.putIfAbsent(d.getId(), d);
+            }
         }
-        for (Object[] row : wholesaleResults) {
-            Department d = (Department) row[0];
-            deptLookup.putIfAbsent(d.getId(), d);
+        if (wholesaleResults != null) {
+            for (Object[] row : wholesaleResults) {
+                Department d = (Department) row[0];
+                deptLookup.putIfAbsent(d.getId(), d);
+            }
         }
-        for (Object[] row : inpatientResults) {
-            Department d = (Department) row[0];
-            deptLookup.putIfAbsent(d.getId(), d);
+        if (inpatientResults != null) {
+            for (Object[] row : inpatientResults) {
+                Department d = (Department) row[0];
+                deptLookup.putIfAbsent(d.getId(), d);
+            }
         }
 
         for (Long deptId : allDeptIds) {
