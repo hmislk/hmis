@@ -10,10 +10,12 @@ import com.divudi.bean.common.ItemController;
 import com.divudi.bean.pharmacy.MeasurementUnitController;
 import com.divudi.bean.pharmacy.VmpController;
 import com.divudi.core.data.ItemType;
+import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.clinical.PrescriptionTemplateType;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.clinical.ClinicalEntity;
 import com.divudi.core.entity.clinical.PrescriptionTemplate;
 import com.divudi.core.entity.lab.Antibiotic;
 import com.divudi.core.entity.pharmacy.MeasurementUnit;
@@ -24,6 +26,7 @@ import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.entity.pharmacy.Vtm;
 import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.ClinicalEntityFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.MeasurementUnitFacade;
 import com.divudi.core.facade.PrescriptionTemplateFacade;
@@ -63,6 +66,9 @@ public class FavouriteMedicineApiService implements Serializable {
     @EJB
     private MeasurementUnitFacade measurementUnitFacade;
 
+    @EJB
+    private ClinicalEntityFacade clinicalEntityFacade;
+
     // =================== CONTROLLER INJECTIONS ===================
 
     @Inject
@@ -84,6 +90,9 @@ public class FavouriteMedicineApiService implements Serializable {
      */
     public PrescriptionTemplate createFavouriteMedicine(WebUser user, Map<String, Object> requestData) {
         try {
+            // Determine whether this is a FavouriteMedicine or a FavouriteDiagnosis entry
+            PrescriptionTemplateType templateType = parseTemplateType((String) requestData.get("type"));
+
             // Extract required fields
             String itemName = (String) requestData.get("itemName");
             String itemType = (String) requestData.get("itemType");
@@ -136,10 +145,41 @@ public class FavouriteMedicineApiService implements Serializable {
 
             // Create the prescription template
             PrescriptionTemplate template = new PrescriptionTemplate();
-            template.setType(PrescriptionTemplateType.FavouriteMedicine);
+            template.setType(templateType);
             template.setForWebUser(user);
             template.setItem(item);
-            template.setForItem(item); // Default to same item
+
+            if (templateType == PrescriptionTemplateType.FavouriteDiagnosis) {
+                // forItem = the diagnosis this medicine is being suggested for
+                String forItemName = (String) requestData.get("forItemName");
+                if (forItemName == null || forItemName.trim().isEmpty()) {
+                    throw new IllegalArgumentException("forItemName (the diagnosis name) is required for type=FavouriteDiagnosis");
+                }
+
+                ClinicalEntity diagnosis = findClinicalEntityByName(forItemName.trim());
+                if (diagnosis == null) {
+                    StringBuilder errorMessage = new StringBuilder();
+                    errorMessage.append("Diagnosis not found: ").append(forItemName);
+
+                    List<ClinicalEntity> similarDiagnoses = searchDiagnoses(forItemName.trim(), 5);
+                    if (!similarDiagnoses.isEmpty()) {
+                        errorMessage.append(". Did you mean: ");
+                        for (int i = 0; i < similarDiagnoses.size(); i++) {
+                            if (i > 0) {
+                                errorMessage.append(", ");
+                            }
+                            errorMessage.append(similarDiagnoses.get(i).getName());
+                        }
+                        errorMessage.append("?");
+                    }
+
+                    throw new IllegalArgumentException(errorMessage.toString());
+                }
+
+                template.setForItem(diagnosis);
+            } else {
+                template.setForItem(item); // Default to same item
+            }
 
             // Set age range (convert years to days)
             template.setFromDays(convertYearsToDays(fromYears));
@@ -152,7 +192,7 @@ public class FavouriteMedicineApiService implements Serializable {
             Double orderNo = getDoubleValue(requestData.get("orderNo"));
             if (orderNo == null) {
                 // Auto-generate order number
-                orderNo = getNextOrderNumber(user);
+                orderNo = getNextOrderNumber(user, templateType);
             }
             template.setOrderNo(orderNo);
 
@@ -181,7 +221,9 @@ public class FavouriteMedicineApiService implements Serializable {
 
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("user", user);
-            parameters.put("type", PrescriptionTemplateType.FavouriteMedicine);
+            // Defaults to FavouriteMedicine for backward compatibility; pass type=FavouriteDiagnosis
+            // to search favourite-diagnosis entries instead
+            parameters.put("type", parseTemplateType((String) searchCriteria.get("type")));
 
             // Add filters based on search criteria
             String query = (String) searchCriteria.get("query");
@@ -302,12 +344,14 @@ public class FavouriteMedicineApiService implements Serializable {
 
         String jpql = "SELECT p FROM PrescriptionTemplate p " +
                      "WHERE p.id = :id AND p.retired = false " +
-                     "AND p.forWebUser = :user AND p.type = :type";
+                     "AND p.forWebUser = :user " +
+                     "AND p.type IN (:favouriteMedicine, :favouriteDiagnosis)";
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("id", id);
         parameters.put("user", user);
-        parameters.put("type", PrescriptionTemplateType.FavouriteMedicine);
+        parameters.put("favouriteMedicine", PrescriptionTemplateType.FavouriteMedicine);
+        parameters.put("favouriteDiagnosis", PrescriptionTemplateType.FavouriteDiagnosis);
 
         PrescriptionTemplate template = prescriptionTemplateFacade.findFirstByJpql(jpql, parameters);
 
@@ -1050,26 +1094,87 @@ public class FavouriteMedicineApiService implements Serializable {
         if (sex != null && !sex.trim().isEmpty()) {
             // TODO: Set sex enum if needed
         }
-
-        String forItemName = (String) requestData.get("forItemName");
-        if (forItemName != null && !forItemName.trim().isEmpty()) {
-            // TODO: Find and set forItem if different from main item
-        }
     }
 
     /**
-     * Get next order number for user's favourite medicines
+     * Get next order number for user's favourite medicines (or favourite diagnoses)
      */
-    private Double getNextOrderNumber(WebUser user) {
+    private Double getNextOrderNumber(WebUser user, PrescriptionTemplateType type) {
         String jpql = "SELECT MAX(p.orderNo) FROM PrescriptionTemplate p " +
                      "WHERE p.retired = false AND p.forWebUser = :user " +
                      "AND p.type = :type";
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("user", user);
-        parameters.put("type", PrescriptionTemplateType.FavouriteMedicine);
+        parameters.put("type", type);
 
         Double maxOrder = prescriptionTemplateFacade.findDoubleByJpql(jpql, parameters);
         return (maxOrder != null ? maxOrder + 1.0 : 1.0);
+    }
+
+    /**
+     * Parse the "type" request field to a PrescriptionTemplateType.
+     * Defaults to FavouriteMedicine when not provided, for backward compatibility.
+     * Only FavouriteMedicine and FavouriteDiagnosis are accepted via the API.
+     */
+    private PrescriptionTemplateType parseTemplateType(String type) {
+        if (type == null || type.trim().isEmpty()) {
+            return PrescriptionTemplateType.FavouriteMedicine;
+        }
+
+        switch (type.trim().toLowerCase()) {
+            case "favouritemedicine":
+                return PrescriptionTemplateType.FavouriteMedicine;
+            case "favouritediagnosis":
+                return PrescriptionTemplateType.FavouriteDiagnosis;
+            default:
+                throw new IllegalArgumentException("Invalid type: " + type + ". Must be one of: FavouriteMedicine, FavouriteDiagnosis");
+        }
+    }
+
+    // =================== DIAGNOSIS (CLINICAL ENTITY) OPERATIONS ===================
+
+    /**
+     * Search diagnoses (ClinicalEntity with SymanticType.Disease_or_Syndrome) by name
+     * Used to resolve forItemName when creating FavouriteDiagnosis entries
+     */
+    public List<ClinicalEntity> searchDiagnoses(String query, Integer limit) {
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String jpql = "SELECT c FROM ClinicalEntity c WHERE c.retired = false " +
+                     "AND c.symanticType = :symanticType " +
+                     "AND UPPER(c.name) LIKE :query " +
+                     "ORDER BY c.name";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("symanticType", SymanticType.Disease_or_Syndrome);
+        parameters.put("query", "%" + query.trim().toUpperCase() + "%");
+
+        if (limit != null && limit > 0) {
+            return clinicalEntityFacade.findByJpql(jpql, parameters, limit);
+        } else {
+            return clinicalEntityFacade.findByJpql(jpql, parameters);
+        }
+    }
+
+    /**
+     * Find a diagnosis (ClinicalEntity with SymanticType.Disease_or_Syndrome) by exact name
+     */
+    public ClinicalEntity findClinicalEntityByName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return null;
+        }
+
+        String jpql = "SELECT c FROM ClinicalEntity c WHERE c.retired = false " +
+                     "AND c.symanticType = :symanticType " +
+                     "AND UPPER(c.name) = :name";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("symanticType", SymanticType.Disease_or_Syndrome);
+        parameters.put("name", name.trim().toUpperCase());
+
+        return clinicalEntityFacade.findFirstByJpql(jpql, parameters);
     }
 }
