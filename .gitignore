@@ -114,3 +114,6 @@ sql-scripts/
 
 # Project management artifacts
 pm/
+
+# AI prompt scratch files
+prompts/
