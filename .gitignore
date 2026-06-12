@@ -87,3 +87,6 @@ node_modules/
 
 # Unknown/broken binary libraries
 lib/unknown/
+
+# One-time database migration scripts (docs kept in developer_docs/)
+db/
