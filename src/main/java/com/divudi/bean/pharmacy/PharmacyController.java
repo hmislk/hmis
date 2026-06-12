@@ -33,6 +33,7 @@ import com.divudi.core.data.dto.AmpDto;
 import com.divudi.core.data.dto.ConsumptionBillDto;
 import com.divudi.core.data.dto.ConsumptionBillItemDto;
 import com.divudi.core.data.dto.ConsumptionCategoryItemDto;
+import com.divudi.core.data.dto.DepartmentSaleIssueDTO;
 import com.divudi.core.data.dto.PharmacyGrnItemDTO;
 import com.divudi.core.data.dto.BeforeStockTakingDTO;
 import com.divudi.core.data.dto.PharmacyGrnReturnItemDTO;
@@ -1180,6 +1181,7 @@ public class PharmacyController implements Serializable {
         createDepartmentSaleDto();
         createBatchDetailsDto();  // Add batch details with expiry information
         createInstitutionBhtIssue(); // TODO: Fix this
+        createDepartmentSaleIssueDto();
         createDepartmentTransferIssueDto();
         createDepartmentTransferReceiveDto();
         createDepartmentDisposeIssueDto();
@@ -2132,6 +2134,8 @@ public class PharmacyController implements Serializable {
         transferIssuesByDepartment = null;
         transferReceivesByDepartment = null;
         disposeIssuesByDepartment = null;
+        departmentSaleIssueDtos = null;
+        grantDepartmentSaleIssueTotalQty = 0.0;
         grns = null;
         pendingGrns = null;
         institutionWholeSales = null;
@@ -8692,7 +8696,7 @@ public class PharmacyController implements Serializable {
         m.put("btas", billTypeAtomics);
         sql = "select i.bill.department,"
                 + " sum(i.netValue),"
-                + " sum(i.qty) "
+                + " sum(i.pharmaceuticalBillItem.qty) "
                 + " from BillItem i "
                 + " where i.bill.department.institution=:ins"
                 + " and i.item=:itm "
@@ -8985,6 +8989,180 @@ public class PharmacyController implements Serializable {
         m.put("dep", sessionController.getDepartment());
 
         disposeIssuesByDepartment = (List<com.divudi.core.data.dto.PharmacyDisposeIssueByDepartmentDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Creates a consolidated department-wise view of retail sale, wholesale
+     * sale, and inpatient issue quantities for the currently selected pharmacy
+     * item and date range.
+     *
+     * Uses PharmaceuticalBillItem.qty (PBI qty) which carries the correct sign
+     * — negative for outgoing (sale, issue), positive for incoming
+     * (cancellation, return). The sign is reverted for display so that all
+     * quantities are shown as positive numbers.
+     *
+     * Includes all bill types where stock movement occurs, including
+     * cancellations and returns. The net PBI qty is obtained by summing all
+     * matching BillItems — the sign naturally handles the netting.
+     */
+    public void createDepartmentSaleIssueDto() {
+        List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
+
+        if (relatedItems == null || relatedItems.isEmpty()) {
+            departmentSaleIssueDtos = new ArrayList<>();
+            grantDepartmentSaleIssueTotalQty = 0.0;
+            return;
+        }
+
+        // --- Retail Sale bill types (including cancellations and returns) ---
+        List<BillTypeAtomic> retailBtas = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS
+        );
+
+        // --- Wholesale Sale bill types (including cancellations and returns) ---
+        List<BillTypeAtomic> wholesaleBtas = Arrays.asList(
+                BillTypeAtomic.PHARMACY_WHOLESALE,
+                BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_WHOLESALE_REFUND
+        );
+
+        // --- Inpatient Issue bill types (including cancellations and returns) ---
+        List<BillTypeAtomic> inpatientBtas = Arrays.asList(
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
+        );
+
+        String baseJpql = "SELECT pbi.billItem.bill.department, sum(pbi.qty) "
+                + "FROM PharmaceuticalBillItem pbi "
+                + "WHERE (pbi.billItem.bill.retired is null or pbi.billItem.bill.retired = false) "
+                + "AND pbi.billItem.item in :items "
+                + "AND pbi.billItem.bill.billTypeAtomic in :btas "
+                + "AND pbi.billItem.createdAt between :frm and :to "
+                + "GROUP BY pbi.billItem.bill.department";
+
+        // --- Query 1: Retail Sale by Department ---
+        Map<String, Object> paramsRetail = new HashMap<>();
+        paramsRetail.put("items", relatedItems);
+        paramsRetail.put("btas", retailBtas);
+        paramsRetail.put("frm", getFromDate());
+        paramsRetail.put("to", getToDate());
+
+        List<Object[]> retailResults = getBillItemFacade().findAggregates(baseJpql, paramsRetail, TemporalType.TIMESTAMP);
+
+        Map<Long, Double> retailByDept = new HashMap<>();
+        if (retailResults != null) {
+            for (Object[] row : retailResults) {
+            Department dept = (Department) row[0];
+            Double qty = row[1] instanceof BigDecimal
+                    ? ((BigDecimal) row[1]).doubleValue()
+                    : ((Number) row[1]).doubleValue();
+                retailByDept.put(dept.getId(), qty);
+            }
+        }
+
+        // --- Query 2: Wholesale Sale by Department ---
+        Map<String, Object> paramsWholesale = new HashMap<>();
+        paramsWholesale.put("items", relatedItems);
+        paramsWholesale.put("btas", wholesaleBtas);
+        paramsWholesale.put("frm", getFromDate());
+        paramsWholesale.put("to", getToDate());
+
+        List<Object[]> wholesaleResults = getBillItemFacade().findAggregates(baseJpql, paramsWholesale, TemporalType.TIMESTAMP);
+
+        Map<Long, Double> wholesaleByDept = new HashMap<>();
+        if (wholesaleResults != null) {
+            for (Object[] row : wholesaleResults) {
+            Department dept = (Department) row[0];
+            Double qty = row[1] instanceof BigDecimal
+                    ? ((BigDecimal) row[1]).doubleValue()
+                    : ((Number) row[1]).doubleValue();
+                wholesaleByDept.put(dept.getId(), qty);
+            }
+        }
+
+        // --- Query 3: Inpatient Issue by Department ---
+        Map<String, Object> paramsInpatient = new HashMap<>();
+        paramsInpatient.put("items", relatedItems);
+        paramsInpatient.put("btas", inpatientBtas);
+        paramsInpatient.put("frm", getFromDate());
+        paramsInpatient.put("to", getToDate());
+
+        List<Object[]> inpatientResults = getBillItemFacade().findAggregates(baseJpql, paramsInpatient, TemporalType.TIMESTAMP);
+
+        Map<Long, Double> inpatientByDept = new HashMap<>();
+        if (inpatientResults != null) {
+            for (Object[] row : inpatientResults) {
+                Department dept = (Department) row[0];
+                Double qty = row[1] instanceof BigDecimal
+                        ? ((BigDecimal) row[1]).doubleValue()
+                        : ((Number) row[1]).doubleValue();
+                inpatientByDept.put(dept.getId(), qty);
+            }
+        }
+
+        // --- Collect all unique departments ---
+        Set<Long> allDeptIds = new HashSet<>();
+        allDeptIds.addAll(retailByDept.keySet());
+        allDeptIds.addAll(wholesaleByDept.keySet());
+        allDeptIds.addAll(inpatientByDept.keySet());
+
+        // --- Build consolidated DTO list (reverting sign for display) ---
+        departmentSaleIssueDtos = new ArrayList<>();
+        grantDepartmentSaleIssueTotalQty = 0.0;
+
+        // Build a lookup map from the query results
+        Map<Long, Department> deptLookup = new HashMap<>();
+        if (retailResults != null) {
+            for (Object[] row : retailResults) {
+                Department d = (Department) row[0];
+                deptLookup.putIfAbsent(d.getId(), d);
+            }
+        }
+        if (wholesaleResults != null) {
+            for (Object[] row : wholesaleResults) {
+                Department d = (Department) row[0];
+                deptLookup.putIfAbsent(d.getId(), d);
+            }
+        }
+        if (inpatientResults != null) {
+            for (Object[] row : inpatientResults) {
+                Department d = (Department) row[0];
+                deptLookup.putIfAbsent(d.getId(), d);
+            }
+        }
+
+        for (Long deptId : allDeptIds) {
+            Department dept = deptLookup.get(deptId);
+            if (dept == null) {
+                continue;
+            }
+
+            // Revert sign: PBI qty is negative for outgoing (sale/issue),
+            // positive for incoming (cancellation/return). For display we want
+            // positive numbers representing what went out to each channel.
+            Double retailQty = retailByDept.containsKey(deptId) ? -retailByDept.get(deptId) : 0.0;
+            Double wholesaleQty = wholesaleByDept.containsKey(deptId) ? -wholesaleByDept.get(deptId) : 0.0;
+            Double inpatientQty = inpatientByDept.containsKey(deptId) ? -inpatientByDept.get(deptId) : 0.0;
+
+            DepartmentSaleIssueDTO dto = new DepartmentSaleIssueDTO(dept, retailQty, wholesaleQty, inpatientQty);
+            departmentSaleIssueDtos.add(dto);
+            grantDepartmentSaleIssueTotalQty += dto.getTotalQty();
+        }
+
+        // Sort by department name for consistent display
+        departmentSaleIssueDtos.sort(Comparator.comparing(d -> d.getDepartment().getName()));
     }
 
     public List<Object[]> calDepartmentSalesAllInstitutions(List<Institution> institutions) {
@@ -9507,6 +9685,22 @@ public class PharmacyController implements Serializable {
         this.institutionBhtIssue = institutionBhtIssue;
     }
 
+    public List<DepartmentSaleIssueDTO> getDepartmentSaleIssueDtos() {
+        return departmentSaleIssueDtos;
+    }
+
+    public void setDepartmentSaleIssueDtos(List<DepartmentSaleIssueDTO> departmentSaleIssueDtos) {
+        this.departmentSaleIssueDtos = departmentSaleIssueDtos;
+    }
+
+    public double getGrantDepartmentSaleIssueTotalQty() {
+        return grantDepartmentSaleIssueTotalQty;
+    }
+
+    public void setGrantDepartmentSaleIssueTotalQty(double grantDepartmentSaleIssueTotalQty) {
+        this.grantDepartmentSaleIssueTotalQty = grantDepartmentSaleIssueTotalQty;
+    }
+
     public void createInstitutionBhtIssue() {
         List<Institution> insList = getCompany();
 
@@ -9519,7 +9713,17 @@ public class PharmacyController implements Serializable {
             List<DepartmentSale> list = new ArrayList<>();
             double totalValue = 0;
             double totalQty = 0;
-            List<Object[]> objs = calDepartmentBhtIssue(ins, Arrays.asList(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE, BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD));
+            List<Object[]> objs = calDepartmentBhtIssue(ins, Arrays.asList(
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
+                    BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
+                    BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                    BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
+            ));
 
             for (Object[] obj : objs) {
                 DepartmentSale r = new DepartmentSale();
@@ -9534,20 +9738,22 @@ public class PharmacyController implements Serializable {
                 }
                 r.setSaleValue(saleValue);
 
-                // Safe casting for saleQty - handle BigDecimal from SUM() function
+                // Safe casting for saleQty - handle BigDecimal from SUM() function.
+                // PBI qty is negative for outgoing issues; revert sign for display
+                // so the BHT Issue tab/block shows positive issued quantities.
                 double saleQty = 0.0;
                 if (obj[2] instanceof BigDecimal) {
-                    saleQty = ((BigDecimal) obj[2]).doubleValue();
+                    saleQty = -((BigDecimal) obj[2]).doubleValue();
                 } else if (obj[2] instanceof Number) {
-                    saleQty = ((Number) obj[2]).doubleValue();
+                    saleQty = -((Number) obj[2]).doubleValue();
                 }
                 r.setSaleQty(saleQty);
                 list.add(r);
                 //Total Institution Stock
                 totalValue += r.getSaleValue();
-                totalQty += r.getSaleQty();
+                totalQty += saleQty;
                 grantBhtValue += r.getSaleValue();
-                grantBhtIssueQty += r.getSaleQty();
+                grantBhtIssueQty += saleQty;
 
             }
 
@@ -9575,6 +9781,8 @@ public class PharmacyController implements Serializable {
     private List<com.divudi.core.data.dto.PharmacyTransferIssueByDepartmentDTO> transferIssuesByDepartment;
     private List<com.divudi.core.data.dto.PharmacyTransferReceiveByDepartmentDTO> transferReceivesByDepartment;
     private List<com.divudi.core.data.dto.PharmacyDisposeIssueByDepartmentDTO> disposeIssuesByDepartment;
+    private List<DepartmentSaleIssueDTO> departmentSaleIssueDtos;
+    private double grantDepartmentSaleIssueTotalQty;
 
     private List<ConsumptionBillDto> consumptionBillDtos;
     private List<ConsumptionBillItemDto> consumptionBillItemDtos;

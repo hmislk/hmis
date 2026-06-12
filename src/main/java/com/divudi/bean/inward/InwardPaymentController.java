@@ -774,6 +774,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                     }
                     PatientDeposit pd = patientDepositService.getDepositOfThePatient(patient, sessionController.getDepartment());
                     paymentMethodData.getPatient_deposit().setPatientDepost(pd);
+                    paymentMethodData.getPatient_deposit().setTotalValue(0.0);
                 }
             }
         }

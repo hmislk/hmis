@@ -655,6 +655,21 @@ public class GrnReturnWorkflowController implements Serializable {
             processZeroQuantityItems();
 
             saveBill(true);
+
+            // When approval is not required, complete (approve) the return
+            // immediately after finalization instead of leaving it pending
+            // for a separate approval step (#21404).
+            if (!configOptionApplicationController.getBooleanValueByKey("GRN Return - Approval Required", true)) {
+                if (!validateAllItemsStockAvailability(true, false)) {
+                    JsfUtil.addErrorMessage("Cannot finalize: insufficient stock for the return quantities.");
+                    return;
+                }
+                if (validateApproval()) {
+                    completeApproval("GRN Return Request Finalized and Approved Successfully");
+                }
+                return;
+            }
+
             // Ensure the bill items are properly associated with the current bill for print preview
             ensureBillItemsForPreview();
             printPreview = true;
@@ -763,86 +778,100 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         if (validateApproval()) {
-            // Process zero quantity items before approval
-            processZeroQuantityItems();
-
-            // Approve re-submits the same form, so JSF rebinds fd.quantity / fd.freeQuantity
-            // to the positive number shown in the inputs. Re-apply the stock-out sign and
-            // persist each line so the approved bill keeps the correct sign. (hmislk/hmis#21052)
-            normalizeReturnFinanceSigns();
-            if (billItems != null) {
-                for (BillItem bi : billItems) {
-                    if (bi == null || bi.isRetired() || bi.getId() == null) {
-                        continue;
-                    }
-                    billItemFacade.edit(bi);
-                }
-            }
-
-            // Mark the current bill as completed (approved)
-            currentBill.setCompleted(true);
-            currentBill.setCompletedBy(sessionController.getLoggedUser());
-            currentBill.setCompletedAt(new Date());
-            currentBill.setApproveAt(new Date());
-            currentBill.setApproveUser(sessionController.getLoggedUser());
-
-            // Save the bill with completed status
-            try {
-                billFacade.edit(currentBill);
-            } catch (Exception e) {
-                JsfUtil.addErrorMessage("Error saving bill: " + e.getMessage());
-                return;
-            }
-
-            if (!updateStock()) {
-                // Roll back completed status — stock deduction failed for one or more items
-                currentBill.setCompleted(false);
-                currentBill.setCompletedBy(null);
-                currentBill.setCompletedAt(null);
-                currentBill.setApproveAt(null);
-                currentBill.setApproveUser(null);
-                billFacade.edit(currentBill);
-                return;
-            }
-
-            // Create payment for the return - ALL payment methods require payment records for healthcare compliance
-            // Payment validation was performed at method start, so we can proceed with confidence
-            if (currentBill.getPaymentMethod() != null) {
-                try {
-                    List<Payment> returnPayments = paymentService.createPayment(currentBill, getPaymentMethodData());
-                    if (returnPayments != null && !returnPayments.isEmpty()) {
-                        JsfUtil.addSuccessMessage("Payment created successfully for GRN return.");
-                    } else {
-                        // This should not happen since validation was done upfront, but handle defensively
-                        String errorMsg = "Unexpected payment creation failure - no payments were created for "
-                                + currentBill.getPaymentMethod().getLabel();
-                        JsfUtil.addErrorMessage(errorMsg);
-                        LOGGER.log(Level.SEVERE, errorMsg + " for bill: " + currentBill.getInsId()
-                                + " - This should not occur after successful validation");
-                    }
-                } catch (Exception e) {
-                    // This should not happen since validation was done upfront, but handle defensively
-                    String errorMsg = "Unexpected error creating payment for GRN return: " + e.getMessage();
-                    JsfUtil.addErrorMessage(errorMsg);
-                    LOGGER.log(Level.SEVERE, errorMsg + " - This should not occur after successful validation", e);
-                }
-            }
-
-            // Check if the original GRN is fully returned and mark it as fullReturned
-            Bill originalGrnBill = currentBill.getReferenceBill();
-            if (originalGrnBill != null && isGrnFullyReturned(originalGrnBill)) {
-                originalGrnBill.setFullReturned(true);
-                originalGrnBill.setFullReturnedBy(sessionController.getLoggedUser());
-                originalGrnBill.setFullReturnedAt(new Date());
-                billFacade.edit(originalGrnBill);
-                JsfUtil.addSuccessMessage("Original GRN has been fully returned and marked as complete.");
-            }
-
-            // Ensure bill items are properly associated for print preview
-            ensureBillItemsForPreview();
-            printPreview = true;
-            JsfUtil.addSuccessMessage("GRN Return Approved Successfully");
+            completeApproval("GRN Return Approved Successfully");
         }
+    }
+
+    /**
+     * Performs the actual approval completion: marks the bill completed,
+     * deducts stock, creates payment, and updates the original GRN's
+     * full-returned status. Shared by approve() and by finalizeRequest()
+     * when the "GRN Return - Approval Required" config is disabled (#21404).
+     *
+     * Callers must have already run validateApproval() (and, for the
+     * finalize-without-approval path, saveBill(true) so getCheckedBy() is
+     * set, since validateApproval() requires the request to be finalized).
+     */
+    private void completeApproval(String successMessage) {
+        // Process zero quantity items before approval
+        processZeroQuantityItems();
+
+        // Approve re-submits the same form, so JSF rebinds fd.quantity / fd.freeQuantity
+        // to the positive number shown in the inputs. Re-apply the stock-out sign and
+        // persist each line so the approved bill keeps the correct sign. (hmislk/hmis#21052)
+        normalizeReturnFinanceSigns();
+        if (billItems != null) {
+            for (BillItem bi : billItems) {
+                if (bi == null || bi.isRetired() || bi.getId() == null) {
+                    continue;
+                }
+                billItemFacade.edit(bi);
+            }
+        }
+
+        // Mark the current bill as completed (approved)
+        currentBill.setCompleted(true);
+        currentBill.setCompletedBy(sessionController.getLoggedUser());
+        currentBill.setCompletedAt(new Date());
+        currentBill.setApproveAt(new Date());
+        currentBill.setApproveUser(sessionController.getLoggedUser());
+
+        // Save the bill with completed status
+        try {
+            billFacade.edit(currentBill);
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving bill: " + e.getMessage());
+            return;
+        }
+
+        if (!updateStock()) {
+            // Roll back completed status — stock deduction failed for one or more items
+            currentBill.setCompleted(false);
+            currentBill.setCompletedBy(null);
+            currentBill.setCompletedAt(null);
+            currentBill.setApproveAt(null);
+            currentBill.setApproveUser(null);
+            billFacade.edit(currentBill);
+            return;
+        }
+
+        // Create payment for the return - ALL payment methods require payment records for healthcare compliance
+        // Payment validation was performed at method start, so we can proceed with confidence
+        if (currentBill.getPaymentMethod() != null) {
+            try {
+                List<Payment> returnPayments = paymentService.createPayment(currentBill, getPaymentMethodData());
+                if (returnPayments != null && !returnPayments.isEmpty()) {
+                    JsfUtil.addSuccessMessage("Payment created successfully for GRN return.");
+                } else {
+                    // This should not happen since validation was done upfront, but handle defensively
+                    String errorMsg = "Unexpected payment creation failure - no payments were created for "
+                            + currentBill.getPaymentMethod().getLabel();
+                    JsfUtil.addErrorMessage(errorMsg);
+                    LOGGER.log(Level.SEVERE, errorMsg + " for bill: " + currentBill.getInsId()
+                            + " - This should not occur after successful validation");
+                }
+            } catch (Exception e) {
+                // This should not happen since validation was done upfront, but handle defensively
+                String errorMsg = "Unexpected error creating payment for GRN return: " + e.getMessage();
+                JsfUtil.addErrorMessage(errorMsg);
+                LOGGER.log(Level.SEVERE, errorMsg + " - This should not occur after successful validation", e);
+            }
+        }
+
+        // Check if the original GRN is fully returned and mark it as fullReturned
+        Bill originalGrnBill = currentBill.getReferenceBill();
+        if (originalGrnBill != null && isGrnFullyReturned(originalGrnBill)) {
+            originalGrnBill.setFullReturned(true);
+            originalGrnBill.setFullReturnedBy(sessionController.getLoggedUser());
+            originalGrnBill.setFullReturnedAt(new Date());
+            billFacade.edit(originalGrnBill);
+            JsfUtil.addSuccessMessage("Original GRN has been fully returned and marked as complete.");
+        }
+
+        // Ensure bill items are properly associated for print preview
+        ensureBillItemsForPreview();
+        printPreview = true;
+        JsfUtil.addSuccessMessage(successMessage);
     }
 
     /**
@@ -2366,8 +2395,7 @@ public class GrnReturnWorkflowController implements Serializable {
     }
 
     public boolean validateStockAvailability(BillItem billItem, boolean showMessages, boolean allowAutoCorrect) {
-        if (billItem == null || billItem.getPharmaceuticalBillItem() == null
-                || billItem.getPharmaceuticalBillItem().getStock() == null) {
+        if (billItem == null || billItem.getPharmaceuticalBillItem() == null) {
             if (showMessages) {
                 JsfUtil.addErrorMessage("Stock information not available for item: "
                         + (billItem != null && billItem.getItem() != null ? billItem.getItem().getName() : "Unknown"));
@@ -2377,6 +2405,24 @@ public class GrnReturnWorkflowController implements Serializable {
 
         PharmaceuticalBillItem phi = billItem.getPharmaceuticalBillItem();
         BillItemFinanceDetails fd = billItem.getBillItemFinanceDetails();
+
+        if (phi.getStock() == null) {
+            // The original GRN line had zero quantity, so no Stock record was
+            // ever created for it (the receive loop skips qty+freeQty==0
+            // lines). Such a line carries forward into the return bill with
+            // qty 0 and has nothing to return, so it should not block the
+            // whole return.
+            double requestedQty = fd != null && fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
+            double requestedFreeQty = fd != null && fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
+            if (requestedQty == 0.0 && requestedFreeQty == 0.0) {
+                return true;
+            }
+            if (showMessages) {
+                JsfUtil.addErrorMessage("Stock information not available for item: "
+                        + (billItem.getItem() != null ? billItem.getItem().getName() : "Unknown"));
+            }
+            return false;
+        }
 
         if (fd == null) {
             return true; // No quantities to validate
@@ -2436,6 +2482,16 @@ public class GrnReturnWorkflowController implements Serializable {
                     fd.setTotalQuantityByUnits(BigDecimal.valueOf(availableForThisItem).negate());
                     fd.setTotalQuantity(BigDecimal.valueOf(availableForThisItem).negate());
                 }
+
+                // Keep PharmaceuticalBillItem.qty/freeQty (always stored in units,
+                // see syncQuantitiesAfterQuantityChange) in sync with the
+                // auto-corrected fd quantities. updateStock() at approval reads
+                // phi.getQty()/getFreeQty(), not fd - if these are left at their
+                // stale pre-correction values, a re-finalize after auto-correction
+                // approves the OLD (too-large) quantity instead of the corrected
+                // one (#21266 RC-followup).
+                phi.setQty(availableForThisItem);
+                phi.setFreeQty(0.0);
             }
             return false;
         }

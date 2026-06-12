@@ -950,6 +950,7 @@ public class PurchaseOrderRequestController implements Serializable {
     public void saveBillComponent() {
         for (BillItem b : getBillItems()) {
             b.setBill(getCurrentBill());
+            resyncPharmaceuticalBillItemIfEmpty(b);
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
             } else {
@@ -958,10 +959,32 @@ public class PurchaseOrderRequestController implements Serializable {
         }
     }
 
+    // A duplicate-line removal can leave the surviving BillItem with a lazily
+    // created all-zero PharmaceuticalBillItem while its BillItemFinanceDetails
+    // still holds the real quantities; downstream approval/GRN reads the PBI,
+    // so rebuild it from the finance details before persisting (issue #21417)
+    private void resyncPharmaceuticalBillItemIfEmpty(BillItem b) {
+        if (b == null || b.isRetired() || b.getBillItemFinanceDetails() == null) {
+            return;
+        }
+        PharmaceuticalBillItem pbi = b.getPharmaceuticalBillItem();
+        if (pbi.getQty() != 0 || pbi.getFreeQty() != 0) {
+            return;
+        }
+        BigDecimal qtyByUnits = b.getBillItemFinanceDetails().getQuantityByUnits();
+        BigDecimal freeQtyByUnits = b.getBillItemFinanceDetails().getFreeQuantityByUnits();
+        boolean financeDetailsHaveQty = (qtyByUnits != null && qtyByUnits.compareTo(BigDecimal.ZERO) > 0)
+                || (freeQtyByUnits != null && freeQtyByUnits.compareTo(BigDecimal.ZERO) > 0);
+        if (financeDetailsHaveQty) {
+            calculateLineValues(b);
+        }
+    }
+
     public void finalizeBillComponent() {
         getBillItems().removeIf(BillItem::isRetired);
         for (BillItem b : getBillItems()) {
             b.setBill(getCurrentBill());
+            resyncPharmaceuticalBillItemIfEmpty(b);
             BigDecimal qUnits = (b.getBillItemFinanceDetails() != null && b.getBillItemFinanceDetails().getQuantityByUnits() != null)
                     ? b.getBillItemFinanceDetails().getQuantityByUnits() : BigDecimal.ZERO;
             BigDecimal fqUnits = (b.getBillItemFinanceDetails() != null && b.getBillItemFinanceDetails().getFreeQuantityByUnits() != null)
@@ -1025,7 +1048,11 @@ public class PurchaseOrderRequestController implements Serializable {
         }
     }
 
-    private boolean saveRequestWithoutMessage() {
+    // synchronized: concurrent saves from the same session (Enter-key defaultCommand
+    // racing a button click) both saw billItem.id == null and persisted the same
+    // in-memory BillItem twice, creating duplicate rows sharing one
+    // BillItemFinanceDetails (issue #21417)
+    private synchronized boolean saveRequestWithoutMessage() {
         if (getCurrentBill().isChecked()) {
             JsfUtil.addErrorMessage("Cannot save a finalized bill");
             return false;
@@ -1094,7 +1121,7 @@ public class PurchaseOrderRequestController implements Serializable {
         return allItems;
     }
 
-    public void finalizeRequest() {
+    public synchronized void finalizeRequest() {
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill");
             return;
