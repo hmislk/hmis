@@ -386,9 +386,7 @@ public class GrnReturnWorkflowController implements Serializable {
         // Load the bill with all its items using billService
         try {
             currentBill = billService.reloadBill(currentBill);
-            if (currentBill != null && currentBill.getBillItems() != null) {
-                // Ensure bill items are loaded for preview
-                ensureBillItemsForPreview();
+            if (currentBill != null) {
                 printPreview = true;
                 return "/pharmacy/pharmacy_reprint_grn_return?faces-redirect=true";
             } else {
@@ -613,8 +611,6 @@ public class GrnReturnWorkflowController implements Serializable {
 //            return;
 //        }
         saveBill(false);
-        // Ensure bill items are properly associated for any subsequent operations
-        ensureBillItemsForPreview();
         JsfUtil.addSuccessMessage("GRN Return Request Saved Successfully");
     }
 
@@ -655,8 +651,6 @@ public class GrnReturnWorkflowController implements Serializable {
             processZeroQuantityItems();
 
             saveBill(true);
-            // Ensure the bill items are properly associated with the current bill for print preview
-            ensureBillItemsForPreview();
             printPreview = true;
             JsfUtil.addSuccessMessage("GRN Return Request Finalized Successfully");
         }
@@ -821,8 +815,6 @@ public class GrnReturnWorkflowController implements Serializable {
                 JsfUtil.addSuccessMessage("Original GRN has been fully returned and marked as complete.");
             }
 
-            // Ensure bill items are properly associated for print preview
-            ensureBillItemsForPreview();
             printPreview = true;
             JsfUtil.addSuccessMessage("GRN Return Approved Successfully");
         }
@@ -1351,32 +1343,6 @@ public class GrnReturnWorkflowController implements Serializable {
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error removing item: " + e.getMessage());
             e.printStackTrace();
-        }
-    }
-
-    private void ensureBillItemsForPreview() {
-        if (currentBill != null) {
-            // Ensure the current bill has its billItems collection properly populated
-            // The print preview component expects bill.billItems to be available
-            try {
-                if (currentBill.getBillItems() == null) {
-                    // Initialize the collection if it's null
-                    currentBill.setBillItems(new ArrayList<>());
-                }
-
-                // Clear and repopulate with current bill items
-                currentBill.getBillItems().clear();
-
-                // Add all current bill items that are not retired
-                for (BillItem bi : billItems) {
-                    if (bi != null && !bi.isRetired()) {
-                        currentBill.getBillItems().add(bi);
-                    }
-                }
-            } catch (Exception e) {
-                // If there's an issue with the billItems collection, log it but don't fail
-                JsfUtil.addErrorMessage("Warning: Could not properly associate items for preview: " + e.getMessage());
-            }
         }
     }
 
@@ -2061,8 +2027,6 @@ public class GrnReturnWorkflowController implements Serializable {
         // This will make item deletion much more reliable
         try {
             saveBill(false); // Save but don't finalize
-            // Ensure bill items are properly associated for any subsequent operations
-            ensureBillItemsForPreview();
             JsfUtil.addSuccessMessage("GRN Return created successfully. You can now modify quantities and remove items as needed.");
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error creating GRN Return: " + e.getMessage());
