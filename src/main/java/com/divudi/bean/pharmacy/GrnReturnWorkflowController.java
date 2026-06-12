@@ -438,18 +438,19 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         try {
-            // Mark the bill as cancelled in the database
-            currentBill.setCancelled(true);
-
-            // Set cancellation metadata if bill has been saved to database
-            if (currentBill.getCreatedAt() != null) {
-                currentBill.setEditedAt(new Date());
-                currentBill.setEditor(sessionController.getLoggedUser());
+            // Reload from DB to ensure EclipseLink sees the full persistent billItems
+            // collection — editing the session-scoped bill directly can trigger orphan-removal
+            // DELETEs on BillItem rows that are still referenced by PharmaceuticalBillItem.
+            Bill freshBill = billFacade.find(currentBill.getId());
+            if (freshBill == null) {
+                JsfUtil.addErrorMessage("Cannot cancel: GRN Return no longer exists.");
+                return "";
             }
-
-            // Save the cancelled bill to database
-            billFacade.edit(currentBill);
-
+            freshBill.setCancelled(true);
+            freshBill.setEditedAt(new Date());
+            freshBill.setEditor(sessionController.getLoggedUser());
+            billFacade.edit(freshBill);
+            currentBill = freshBill;
             JsfUtil.addSuccessMessage("GRN Return cancelled successfully.");
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error cancelling GRN Return: " + e.getMessage());
@@ -745,9 +746,8 @@ public class GrnReturnWorkflowController implements Serializable {
             return;
         }
 
-        // Validate stock availability before approving. allowAutoCorrect=false:
-        // at approval, validation must never mutate quantities.
-        if (!validateAllItemsStockAvailability(true, false)) {
+        // Validate stock availability before approving.
+        if (!validateAllItemsStockAvailability(true)) {
             JsfUtil.addErrorMessage("Cannot approve: insufficient stock for the finalized quantities. The return must be corrected and re-finalized.");
             return;
         }
@@ -756,16 +756,22 @@ public class GrnReturnWorkflowController implements Serializable {
             // Process zero quantity items before approval
             processZeroQuantityItems();
 
-            // Mark the current bill as completed (approved)
-            currentBill.setCompleted(true);
-            currentBill.setCompletedBy(sessionController.getLoggedUser());
-            currentBill.setCompletedAt(new Date());
-            currentBill.setApproveAt(new Date());
-            currentBill.setApproveUser(sessionController.getLoggedUser());
-
-            // Save the bill with completed status
+            // Reload from DB before editing to avoid orphan-removal FK violations:
+            // currentBill.billItems (JPA collection) is empty in the session bean,
+            // so merging it directly would trigger DELETE on all persisted BillItems.
+            Bill freshForApprove = billFacade.find(currentBill.getId());
+            if (freshForApprove == null) {
+                JsfUtil.addErrorMessage("Cannot approve: bill no longer exists.");
+                return;
+            }
+            freshForApprove.setCompleted(true);
+            freshForApprove.setCompletedBy(sessionController.getLoggedUser());
+            freshForApprove.setCompletedAt(new Date());
+            freshForApprove.setApproveAt(new Date());
+            freshForApprove.setApproveUser(sessionController.getLoggedUser());
             try {
-                billFacade.edit(currentBill);
+                billFacade.edit(freshForApprove);
+                currentBill = freshForApprove;
             } catch (Exception e) {
                 JsfUtil.addErrorMessage("Error saving bill: " + e.getMessage());
                 return;
@@ -773,12 +779,16 @@ public class GrnReturnWorkflowController implements Serializable {
 
             if (!updateStock()) {
                 // Roll back completed status — stock deduction failed for one or more items
-                currentBill.setCompleted(false);
-                currentBill.setCompletedBy(null);
-                currentBill.setCompletedAt(null);
-                currentBill.setApproveAt(null);
-                currentBill.setApproveUser(null);
-                billFacade.edit(currentBill);
+                Bill freshForRollback = billFacade.find(currentBill.getId());
+                if (freshForRollback != null) {
+                    freshForRollback.setCompleted(false);
+                    freshForRollback.setCompletedBy(null);
+                    freshForRollback.setCompletedAt(null);
+                    freshForRollback.setApproveAt(null);
+                    freshForRollback.setApproveUser(null);
+                    billFacade.edit(freshForRollback);
+                    currentBill = freshForRollback;
+                }
                 return;
             }
 
@@ -972,7 +982,28 @@ public class GrnReturnWorkflowController implements Serializable {
         if (currentBill.getId() == null) {
             billFacade.create(currentBill);
         } else {
-            billFacade.edit(currentBill);
+            // Reload from DB before editing to avoid orphan-removal FK violations on the
+            // billItems @OneToMany(orphanRemoval=true): the session bill's JPA collection
+            // is empty, so merging directly would DELETE all persisted BillItems.
+            Bill freshForSave = billFacade.find(currentBill.getId());
+            if (freshForSave != null) {
+                freshForSave.setChecked(currentBill.isChecked());
+                freshForSave.setCheckedBy(currentBill.getCheckedBy());
+                freshForSave.setCheckeAt(currentBill.getCheckeAt());
+                freshForSave.setComments(currentBill.getComments());
+                freshForSave.setPaymentMethod(currentBill.getPaymentMethod());
+                freshForSave.setNetTotal(currentBill.getNetTotal());
+                freshForSave.setTotal(currentBill.getTotal());
+                freshForSave.setEditedAt(new Date());
+                freshForSave.setEditor(sessionController.getLoggedUser());
+                if (currentBill.getBillFinanceDetails() != null) {
+                    freshForSave.setBillFinanceDetails(currentBill.getBillFinanceDetails());
+                }
+                billFacade.edit(freshForSave);
+                currentBill = freshForSave;
+            } else {
+                billFacade.edit(currentBill);
+            }
         }
 
         saveBillItems();
@@ -2224,12 +2255,6 @@ public class GrnReturnWorkflowController implements Serializable {
      * @return true if stock is sufficient, false otherwise
      */
     public boolean validateStockAvailability(BillItem billItem, boolean showMessages) {
-        // Default keeps the legacy draft-stage behaviour (auto-corrects the
-        // quantity down to available stock so the user can re-submit).
-        return validateStockAvailability(billItem, showMessages, true);
-    }
-
-    public boolean validateStockAvailability(BillItem billItem, boolean showMessages, boolean allowAutoCorrect) {
         if (billItem == null || billItem.getPharmaceuticalBillItem() == null
                 || billItem.getPharmaceuticalBillItem().getStock() == null) {
             if (showMessages) {
@@ -2247,19 +2272,6 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         double currentStock = phi.getStock().getStock();
-        double returnQty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
-        double returnFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
-
-        // Convert to units if AMPP item
-        boolean isAmppItem = billItem.getItem() instanceof Ampp;
-        double unitsPerPack = 1.0;
-        if (isAmppItem && fd.getUnitsPerPack() != null) {
-            unitsPerPack = fd.getUnitsPerPack().doubleValue();
-        }
-
-        double returnQtyInUnits = isAmppItem ? returnQty * unitsPerPack : returnQty;
-        double returnFreeQtyInUnits = isAmppItem ? returnFreeQty * unitsPerPack : returnFreeQty;
-        double totalReturnQtyInUnits = returnQtyInUnits + returnFreeQtyInUnits;
 
         // Calculate total stock usage by this item AND other items in the same return using the same stock
         double totalStockUsageFromCurrentReturn = calculateTotalStockUsageFromCurrentReturn(phi.getStock(), billItem);
@@ -2273,24 +2285,8 @@ public class GrnReturnWorkflowController implements Serializable {
 
                 JsfUtil.addErrorMessage("Insufficient stock for " + itemName + " (Batch: " + stockBatch + "). "
                         + "Current stock: " + String.format("%.2f", currentStock)
-                        + ", Total return quantity (including other items): " + String.format("%.2f", totalStockUsageFromCurrentReturn));
-            }
-            // Draft-stage convenience only: rewrite the quantity down to what is
-            // available so the user can review and re-submit. MUST never run at
-            // approval - a validator that mutates quantities let a failed Approve
-            // silently reduce the return, so a second click approved quantities
-            // that no longer matched the finalized bill (#21266 RC4).
-            if (allowAutoCorrect) {
-                double availableForThisItem = Math.max(0, currentStock - (totalStockUsageFromCurrentReturn - totalReturnQtyInUnits));
-
-                if (isAmppItem) {
-                    double availableInPacks = availableForThisItem / unitsPerPack;
-                    fd.setQuantity(BigDecimal.valueOf(availableInPacks));
-                    fd.setFreeQuantity(BigDecimal.ZERO);
-                } else {
-                    fd.setQuantity(BigDecimal.valueOf(availableForThisItem));
-                    fd.setFreeQuantity(BigDecimal.ZERO);
-                }
+                        + ", Total return quantity (including other items): " + String.format("%.2f", totalStockUsageFromCurrentReturn)
+                        + ". Please correct the return quantity.");
             }
             return false;
         }
@@ -2367,10 +2363,6 @@ public class GrnReturnWorkflowController implements Serializable {
      * Finalize, and Approve operations
      */
     public boolean validateAllItemsStockAvailability(boolean showMessages) {
-        return validateAllItemsStockAvailability(showMessages, true);
-    }
-
-    public boolean validateAllItemsStockAvailability(boolean showMessages, boolean allowAutoCorrect) {
         if (billItems == null || billItems.isEmpty()) {
             return true;
         }
@@ -2395,7 +2387,7 @@ public class GrnReturnWorkflowController implements Serializable {
                 continue;
             }
 
-            if (!validateStockAvailability(bi, showMessages, allowAutoCorrect)) {
+            if (!validateStockAvailability(bi, showMessages)) {
                 allValid = false;
             }
         }

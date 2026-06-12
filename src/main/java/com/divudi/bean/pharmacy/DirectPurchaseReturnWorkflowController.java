@@ -287,18 +287,19 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
 
         try {
-            // Mark the bill as cancelled in the database
-            currentBill.setCancelled(true);
-
-            // Set cancellation metadata if bill has been saved to database
-            if (currentBill.getCreatedAt() != null) {
-                currentBill.setEditedAt(new Date());
-                currentBill.setEditor(sessionController.getLoggedUser());
+            // Reload from DB to ensure EclipseLink sees the full persistent billItems
+            // collection — editing the session-scoped bill directly can trigger orphan-removal
+            // DELETEs on BillItem rows that are still referenced by PharmaceuticalBillItem.
+            Bill freshBill = billFacade.find(currentBill.getId());
+            if (freshBill == null) {
+                JsfUtil.addErrorMessage("Cannot cancel: Direct Purchase Return no longer exists.");
+                return "";
             }
-
-            // Save the cancelled bill to database
-            billFacade.edit(currentBill);
-
+            freshBill.setCancelled(true);
+            freshBill.setEditedAt(new Date());
+            freshBill.setEditor(sessionController.getLoggedUser());
+            billFacade.edit(freshBill);
+            currentBill = freshBill;
             JsfUtil.addSuccessMessage("Direct Purchase Return cancelled successfully.");
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error cancelling Direct Purchase Return: " + e.getMessage());
@@ -366,13 +367,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             return;
         }
 
-        // Sync bifd.quantity / bi.qty / pbi.qty from the authoritative source before validating.
-        // bifd.QUANTITY may have been stored negative by calculateLineTotal while bi.qty and
-        // pbi.qty are kept positive — reconcile everything to the absolute value of bifd.QUANTITY,
-        // falling back to bi.qty if bifd is null or zero.
-        syncQuantitiesBeforeFinalize();
-
-        // Validate stock availability before finalizing
+        // Validate stock availability before finalizing.
         if (!validateAllItemsStockAvailability(true)) {
             JsfUtil.addErrorMessage("Cannot finalize: Stock validation failed. Please correct the quantities and try again.");
             return;
@@ -477,9 +472,8 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             return;
         }
 
-        // Validate stock availability before approving. allowAutoCorrect=false:
-        // at approval, validation must never mutate quantities.
-        if (!validateAllItemsStockAvailability(true, false)) {
+        // Validate stock availability before approving.
+        if (!validateAllItemsStockAvailability(true)) {
             JsfUtil.addErrorMessage("Cannot approve: insufficient stock for the finalized quantities. The return must be corrected and re-finalized.");
             return;
         }
@@ -488,16 +482,22 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             // Process zero quantity items before approval
             processZeroQuantityItems();
 
-            // Mark the current bill as completed (approved)
-            currentBill.setCompleted(true);
-            currentBill.setCompletedBy(sessionController.getLoggedUser());
-            currentBill.setCompletedAt(new Date());
-            currentBill.setApproveAt(new Date());
-            currentBill.setApproveUser(sessionController.getLoggedUser());
-
-            // Save the bill with completed status
+            // Reload from DB before editing to avoid orphan-removal FK violations:
+            // currentBill.billItems (JPA collection) is empty in the session bean,
+            // so merging it directly would trigger DELETE on all persisted BillItems.
+            Bill freshForApprove = billFacade.find(currentBill.getId());
+            if (freshForApprove == null) {
+                JsfUtil.addErrorMessage("Cannot approve: bill no longer exists.");
+                return;
+            }
+            freshForApprove.setCompleted(true);
+            freshForApprove.setCompletedBy(sessionController.getLoggedUser());
+            freshForApprove.setCompletedAt(new Date());
+            freshForApprove.setApproveAt(new Date());
+            freshForApprove.setApproveUser(sessionController.getLoggedUser());
             try {
-                billFacade.edit(currentBill);
+                billFacade.edit(freshForApprove);
+                currentBill = freshForApprove;
             } catch (Exception e) {
                 JsfUtil.addErrorMessage("Error saving bill: " + e.getMessage());
                 return;
@@ -662,7 +662,28 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         if (currentBill.getId() == null) {
             billFacade.create(currentBill);
         } else {
-            billFacade.edit(currentBill);
+            // Reload from DB before editing to avoid orphan-removal FK violations on the
+            // billItems @OneToMany(orphanRemoval=true): the session bill's JPA collection
+            // is empty, so merging directly would DELETE all persisted BillItems.
+            Bill freshForSave = billFacade.find(currentBill.getId());
+            if (freshForSave != null) {
+                freshForSave.setChecked(currentBill.isChecked());
+                freshForSave.setCheckedBy(currentBill.getCheckedBy());
+                freshForSave.setCheckeAt(currentBill.getCheckeAt());
+                freshForSave.setComments(currentBill.getComments());
+                freshForSave.setPaymentMethod(currentBill.getPaymentMethod());
+                freshForSave.setNetTotal(currentBill.getNetTotal());
+                freshForSave.setTotal(currentBill.getTotal());
+                freshForSave.setEditedAt(new Date());
+                freshForSave.setEditor(sessionController.getLoggedUser());
+                if (currentBill.getBillFinanceDetails() != null) {
+                    freshForSave.setBillFinanceDetails(currentBill.getBillFinanceDetails());
+                }
+                billFacade.edit(freshForSave);
+                currentBill = freshForSave;
+            } else {
+                billFacade.edit(currentBill);
+            }
         }
 
         saveBillItems();
@@ -1788,7 +1809,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         double remainingQty = getRemainingQtyToReturn(billItem.getReferanceBillItem());
         double remainingFreeQty = getRemainingFreeQtyToReturn(billItem.getReferanceBillItem());
 
-        // Validate stock availability - critical check
+        // Validate stock availability - critical check.
         if (!validateStockAvailability(billItem, true)) {
             isValid = false;
         }
@@ -1868,12 +1889,6 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
      * @return true if stock is sufficient, false otherwise
      */
     public boolean validateStockAvailability(BillItem billItem, boolean showMessages) {
-        // Default keeps the legacy draft-stage behaviour (auto-corrects the
-        // quantity down to available stock so the user can re-submit).
-        return validateStockAvailability(billItem, showMessages, true);
-    }
-
-    public boolean validateStockAvailability(BillItem billItem, boolean showMessages, boolean allowAutoCorrect) {
         if (billItem == null || billItem.getPharmaceuticalBillItem() == null
                 || billItem.getPharmaceuticalBillItem().getStock() == null) {
             if (showMessages) {
@@ -1891,19 +1906,6 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
 
         double currentStock = phi.getStock().getStock();
-        double returnQty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
-        double returnFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
-
-        // Convert to units if AMPP item
-        boolean isAmppItem = billItem.getItem() instanceof Ampp;
-        double unitsPerPack = 1.0;
-        if (isAmppItem && fd.getUnitsPerPack() != null) {
-            unitsPerPack = fd.getUnitsPerPack().doubleValue();
-        }
-
-        double returnQtyInUnits = isAmppItem ? returnQty * unitsPerPack : returnQty;
-        double returnFreeQtyInUnits = isAmppItem ? returnFreeQty * unitsPerPack : returnFreeQty;
-        double totalReturnQtyInUnits = returnQtyInUnits + returnFreeQtyInUnits;
 
         // Calculate total stock usage by this item AND other items in the same return using the same stock
         double totalStockUsageFromCurrentReturn = calculateTotalStockUsageFromCurrentReturn(phi.getStock(), billItem);
@@ -1917,90 +1919,13 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
                 JsfUtil.addErrorMessage("Insufficient stock for " + itemName + " (Batch: " + stockBatch + "). "
                         + "Current stock: " + String.format("%.2f", currentStock)
-                        + ", Total return quantity (including other items): " + String.format("%.2f", totalStockUsageFromCurrentReturn));
-            }
-            // Draft-stage convenience only: rewrite the quantity down to what is
-            // available so the user can review and re-submit. MUST never run at
-            // approval - a validator that mutates quantities let a failed Approve
-            // silently reduce the return, so a second click approved quantities
-            // that no longer matched the finalized bill (#21266 RC4).
-            if (allowAutoCorrect) {
-                double availableForThisItem = Math.max(0, currentStock - (totalStockUsageFromCurrentReturn - totalReturnQtyInUnits));
-
-                if (isAmppItem) {
-                    double availableInPacks = availableForThisItem / unitsPerPack;
-                    fd.setQuantity(BigDecimal.valueOf(availableInPacks));
-                    fd.setFreeQuantity(BigDecimal.ZERO);
-                } else {
-                    fd.setQuantity(BigDecimal.valueOf(availableForThisItem));
-                    fd.setFreeQuantity(BigDecimal.ZERO);
-                }
+                        + ", Total return quantity (including other items): " + String.format("%.2f", totalStockUsageFromCurrentReturn)
+                        + ". Please correct the return quantity.");
             }
             return false;
         }
 
         return true;
-    }
-
-    /**
-     * Reconciles bi.qty, pbi.qty, and bifd.QUANTITY so they all reflect the
-     * same absolute return quantity before stock validation and finalization.
-     *
-     * bifd.QUANTITY is the form-bound field the user edits. bi.qty and pbi.qty
-     * are set positively at request creation and may diverge when calculateLineTotal
-     * negates bifd.QUANTITY for DB storage. This method drives from the absolute
-     * value of bifd.QUANTITY (or bi.qty as fallback) and calls
-     * syncQuantitiesAfterQuantityChange + calculateLineTotal to re-align all fields.
-     */
-    private void syncQuantitiesBeforeFinalize() {
-        if (billItems == null) {
-            return;
-        }
-        for (BillItem bi : billItems) {
-            if (bi == null || bi.isRetired()) {
-                continue;
-            }
-            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
-            PharmaceuticalBillItem phi = bi.getPharmaceuticalBillItem();
-            if (fd == null || phi == null) {
-                continue;
-            }
-
-            // Determine the intended return quantity from the most reliable source.
-            // bifd.QUANTITY is what the user last edited (may be negative from calculateLineTotal).
-            // bi.qty is always stored positive by calculateLineTotal.
-            // Use abs(bifd.QUANTITY) if non-zero; otherwise fall back to abs(bi.qty).
-            BigDecimal rawBifd = fd.getQuantity();
-            double biQty = bi.getQty() != null ? bi.getQty() : 0.0;
-            double absReturnQty;
-            if (rawBifd != null && rawBifd.compareTo(BigDecimal.ZERO) != 0) {
-                absReturnQty = Math.abs(rawBifd.doubleValue());
-            } else {
-                absReturnQty = Math.abs(biQty);
-            }
-
-            BigDecimal rawBifdFree = fd.getFreeQuantity();
-            double absFreeQty = rawBifdFree != null ? Math.abs(rawBifdFree.doubleValue()) : 0.0;
-
-            boolean isAmpp = bi.getItem() instanceof Ampp;
-            BigDecimal upp = fd.getUnitsPerPack() != null && fd.getUnitsPerPack().compareTo(BigDecimal.ZERO) != 0
-                    ? fd.getUnitsPerPack() : BigDecimal.ONE;
-
-            // Normalise bifd.QUANTITY to the absolute value (positive) so validation
-            // and calculateLineTotal both see the same number regardless of prior negation.
-            fd.setQuantity(BigDecimal.valueOf(absReturnQty));
-            fd.setFreeQuantity(BigDecimal.valueOf(absFreeQty));
-
-            // Sync pbi.qty in units (for AMPP multiply packs × unitsPerPack).
-            double qtyInUnits = isAmpp ? absReturnQty * upp.doubleValue() : absReturnQty;
-            double freeQtyInUnits = isAmpp ? absFreeQty * upp.doubleValue() : absFreeQty;
-            phi.setQty(qtyInUnits);
-            phi.setFreeQty(freeQtyInUnits);
-
-            // calculateLineTotal will negate the quantities for storage but we need
-            // them positive going into validateAllItemsStockAvailability which calls abs().
-            calculateLineTotal(bi);
-        }
     }
 
     /**
@@ -2072,10 +1997,6 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
      * Finalize, and Approve operations
      */
     public boolean validateAllItemsStockAvailability(boolean showMessages) {
-        return validateAllItemsStockAvailability(showMessages, true);
-    }
-
-    public boolean validateAllItemsStockAvailability(boolean showMessages, boolean allowAutoCorrect) {
         if (billItems == null || billItems.isEmpty()) {
             return true;
         }
@@ -2100,7 +2021,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 continue;
             }
 
-            if (!validateStockAvailability(bi, showMessages, allowAutoCorrect)) {
+            if (!validateStockAvailability(bi, showMessages)) {
                 allValid = false;
             }
         }
@@ -2118,7 +2039,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         boolean isValid = true;
         boolean hasItemsWithQuantities = false;
 
-        // Validate stock availability first - this is critical
+        // Validate stock availability first - this is critical.
         if (!validateAllItemsStockAvailability(true)) {
             JsfUtil.addErrorMessage("Stock validation failed during finalization");
             isValid = false;
@@ -2787,11 +2708,18 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
 
         try {
-            // Mark the bill as cancelled
-            returnBillToClose.setCancelled(true);
+            // Reload from DB to avoid orphan-removal FK violations (same pattern as cancel).
+            Bill freshToClose = billFacade.find(returnBillToClose.getId());
+            if (freshToClose == null) {
+                JsfUtil.addErrorMessage("Cannot close: direct purchase return no longer exists.");
+                return;
+            }
+            freshToClose.setCancelled(true);
+            freshToClose.setEditedAt(new Date());
+            freshToClose.setEditor(sessionController.getLoggedUser());
 
             // Save the changes
-            billFacade.edit(returnBillToClose);
+            billFacade.edit(freshToClose);
 
             // Refresh the lists
             fillDirectPurchaseReturnsToFinalize();

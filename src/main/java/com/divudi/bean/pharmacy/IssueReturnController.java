@@ -1234,11 +1234,8 @@ public class IssueReturnController implements Serializable {
         }
         double qty = bi.getQty();
 
-        // Comprehensive validation with auto-correction for user input
-        if (!validateItemReturnQuantity(bi, true)) {
-            // Validation failed, quantity has been auto-corrected
-            // Re-calculate with the corrected quantity
-            qty = bi.getQty();
+        if (!validateItemReturnQuantity(bi, false)) {
+            return;
         }
 
         // Get rates from item batch - these are always in units
