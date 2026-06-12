@@ -100,6 +100,9 @@ db/
 # GitHub issues scratch workspace
 github-issues/
 
+# Miscellaneous docs (content moved to developer_docs/ or wiki)
+docs/
+
 # Wiki documentation lives in sibling repo ../hmis.wiki — not here
 wiki-docs/
 
