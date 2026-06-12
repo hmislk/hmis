@@ -378,6 +378,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
             processZeroQuantityItems();
 
             saveBill(true);
+            currentBill = billService.reloadBill(currentBill);
             printPreview = true;
             JsfUtil.addSuccessMessage("Direct Purchase Return Request Finalized Successfully");
         }
@@ -538,6 +539,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 JsfUtil.addSuccessMessage("Original Direct Purchase has been fully returned and marked as complete.");
             }
 
+            currentBill = billService.reloadBill(currentBill);
             printPreview = true;
             JsfUtil.addSuccessMessage("Direct Purchase Return Approved Successfully");
         }

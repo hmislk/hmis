@@ -652,6 +652,7 @@ public class GrnReturnWorkflowController implements Serializable {
             processZeroQuantityItems();
 
             saveBill(true);
+            currentBill = billService.reloadBill(currentBill);
             printPreview = true;
             JsfUtil.addSuccessMessage("GRN Return Request Finalized Successfully");
         }
@@ -825,6 +826,7 @@ public class GrnReturnWorkflowController implements Serializable {
                 JsfUtil.addSuccessMessage("Original GRN has been fully returned and marked as complete.");
             }
 
+            currentBill = billService.reloadBill(currentBill);
             printPreview = true;
             JsfUtil.addSuccessMessage("GRN Return Approved Successfully");
         }
