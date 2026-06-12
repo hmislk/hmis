@@ -123,12 +123,17 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             JsfUtil.addErrorMessage("Select BHT");
             return;
         }
+        
+        paymentListener();
+
+    }
+    
+    public void paymentListener(){
         due = getFinalBillDue();
         finalBillTotal = getFinalBillNetTotal();
         patient = current.getPatientEncounter().getPatient();
         paymentMethod = null;
         paymentMethodData = new PaymentMethodData();
-
     }
 
     /** Navigate to the inward patient co-payment collection page, requiring an active shift. */
