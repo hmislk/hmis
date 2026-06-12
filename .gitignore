@@ -27,6 +27,7 @@ nb-configuration.xml
 
 # Claude Code local settings
 .claude/settings.local.json
+.claude/settings.local.json.tmp*
 
 # Wiki sync temporary directories
 wiki/
@@ -63,7 +64,14 @@ tmpclaude-*
 # Playwright MCP screenshots / artifacts
 .playwright-mcp/
 
-# Ad-hoc artifacts dropped at repo root (screenshots, scratch configs)
+# Node modules (ad-hoc npm dependencies at project root)
+node_modules/
+
+# Ad-hoc artifacts dropped at repo root (screenshots, scratch configs, scripts)
 /*.png
 /*.yml
 /*.yaml
+/package.json
+/package-lock.json
+/automate_login_and_screenshot.js
+/open_browser_for_interaction.js
