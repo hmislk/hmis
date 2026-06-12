@@ -354,7 +354,8 @@
                                         No department sale or issue data available for the selected period.
                                     </div>
                                 </h:panelGroup>
-                                <div class="table-responsive" rendered="#{not empty pharmacyController.departmentSaleIssueDtos}">
+                                <ui:fragment rendered="#{not empty pharmacyController.departmentSaleIssueDtos}">
+                                    <div class="table-responsive">
                                     <table class="table table-striped table-bordered" style="font-size: 12px;">
                                         <thead class="table-dark">
                                             <tr>
@@ -408,7 +409,8 @@
                                             </tr>
                                         </tfoot>
                                     </table>
-                                </div>
+                                    </div>
+                                </ui:fragment>
                             </p:panel>
                         </h:panelGroup>
                         <h:panelGroup
@@ -962,7 +964,8 @@
                                     No department sale or issue data available for the selected period.
                                 </div>
                             </h:panelGroup>
-                            <div class="table-responsive" rendered="#{not empty pharmacyController.departmentSaleIssueDtos}">
+                            <ui:fragment rendered="#{not empty pharmacyController.departmentSaleIssueDtos}">
+                                <div class="table-responsive">
                                 <table class="table table-striped table-bordered" id="tblDepartmentSaleIssueHistoryInTabs">
                                     <thead class="table-dark">
                                         <tr>
@@ -1016,7 +1019,8 @@
                                         </tr>
                                     </tfoot>
                                 </table>
-                            </div>
+                                </div>
+                            </ui:fragment>
                         </p:tab>
 
                         <p:tab

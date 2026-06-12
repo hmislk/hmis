@@ -360,17 +360,17 @@ public class UserNotificationController implements Serializable {
      * a user who is mid-way through entering a bill.
      */
     public void onPushRefreshNotifications() {
-        // When on the notification page, the page-level o:socket already
-        // handles list refresh via filterNotificationsByCriteria(). Avoid
-        // overwriting the filtered items list with the default unfiltered
-        // 20-row query from fillLoggedUserNotifications() — the menu socket
-        // and page socket share the same channel, so both fire on each push
-        // event and whichever AJAX response arrives last wins (issue #21424).
+        // On the notification page the user may have active filters — use
+        // filterNotificationsByCriteria() instead of fillLoggedUserNotifications()
+        // so the filtered list is preserved across push events. The page no
+        // longer has its own o:socket (removed per PR #21424 review) — the
+        // menu socket is the sole handler for push refresh.
         String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
         if (viewId != null && viewId.contains("user_notifications")) {
-            return;
+            filterNotificationsByCriteria();
+        } else {
+            fillLoggedUserNotifications();
         }
-        fillLoggedUserNotifications();
         if (items == null || items.isEmpty()) {
             return;
         }

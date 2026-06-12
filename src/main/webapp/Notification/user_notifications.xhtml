@@ -10,20 +10,6 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <!-- Real-time push: refreshes the notification list when new notifications arrive -->
-                    <o:socket channel="notifications"
-                              user="#{sessionController.loggedUser.id}"
-                              onmessage="onNotificationListPush"
-                              rendered="#{sessionController.loggedUser != null}" />
-                    <p:remoteCommand name="refreshNotificationList"
-                                     update="reNot"
-                                     action="#{userNotificationController.filterNotificationsByCriteria}" />
-                    <script type="text/javascript">
-                        function onNotificationListPush(message, channel, event) {
-                            refreshNotificationList();
-                        }
-                    </script>
-
                     <!-- Single remove-confirmation dialog shared across all rows -->
                     <p:dialog header="Remove Notification" widgetVar="dlgRemove" modal="true" width="350">
                         <p:inputTextarea class="w-100" placeholder="Comment (optional)"
