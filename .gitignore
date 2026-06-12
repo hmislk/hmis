@@ -75,3 +75,15 @@ node_modules/
 /package-lock.json
 /automate_login_and_screenshot.js
 /open_browser_for_interaction.js
+
+# Codex AI temporary backup files
+.codex-backup/
+
+# Compiled Java classes (should only exist in target/)
+*.class
+
+# Backup files
+*.backup
+
+# Unknown/broken binary libraries
+lib/unknown/
