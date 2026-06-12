@@ -1512,7 +1512,7 @@ public class PharmacyStockTakeController implements Serializable {
         } catch (Exception e) {
             physicalCountBill = null;
             JsfUtil.addErrorMessage("Upload failed: " + e.getMessage());
-            throw new RuntimeException("Upload failed", e);
+            return null;
         }
     }
 
