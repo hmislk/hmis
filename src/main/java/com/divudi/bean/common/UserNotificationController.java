@@ -95,7 +95,7 @@ public class UserNotificationController implements Serializable {
 
     public String navigateToRecivedNotification() {
         resetFilters();
-        fillLoggedUserNotifications();
+        filterNotificationsByCriteria();
         return "/Notification/user_notifications?faces-redirect=true";
     }
 
@@ -310,7 +310,7 @@ public class UserNotificationController implements Serializable {
                 todept = n.getPatientRoom().getRoomFacilityCharge().getDepartment();
             }
         } else if (n.getPatientEncounter() == null) {
-            // Not a bill, room or encounter based notification - nothing we know how to remove
+            JsfUtil.addErrorMessage("This notification type cannot be removed here.");
             return;
         }
         // PatientEncounter-based (clinical/final discharge) notifications have no
@@ -360,6 +360,16 @@ public class UserNotificationController implements Serializable {
      * a user who is mid-way through entering a bill.
      */
     public void onPushRefreshNotifications() {
+        // When on the notification page, the page-level o:socket already
+        // handles list refresh via filterNotificationsByCriteria(). Avoid
+        // overwriting the filtered items list with the default unfiltered
+        // 20-row query from fillLoggedUserNotifications() — the menu socket
+        // and page socket share the same channel, so both fire on each push
+        // event and whichever AJAX response arrives last wins (issue #21424).
+        String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
+        if (viewId != null && viewId.contains("user_notifications")) {
+            return;
+        }
         fillLoggedUserNotifications();
         if (items == null || items.isEmpty()) {
             return;

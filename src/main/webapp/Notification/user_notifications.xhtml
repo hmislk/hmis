@@ -90,6 +90,7 @@
 
                             <p:commandButton id="btnClear" class="m-2 ui-button-danger" type="button"
                                              icon="fas fa-trash" value="Clear Listed"
+                                             rendered="#{not userNotificationController.showCleared}"
                                              onclick="PF('confirmationDialog').show();" />
                         </div>
 
