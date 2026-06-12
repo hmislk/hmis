@@ -21,7 +21,7 @@
                                         <p:panelGrid columns="2" styleClass="ui-panelgrid-blank"
                                                      columnClasses="text-right pr-3 font-weight-bold,text-left">
                                             <h:outputText value="Summary:" style="font-weight:bold; color: #6c757d;"/>
-                                            <h:outputText value="#{pharmacyStockTakeController.nativeSqlSummary}"
+                                            <h:outputText value="Items: #{pharmacyStockTakeController.physicalCountBill.billItems.size()}"
                                                           style="color: #495057;"/>
                                         </p:panelGrid>
                                     </div>
@@ -51,7 +51,7 @@
 
                                 <p:separator/>
 
-                                <p:dataTable value="#{pharmacyStockTakeController.nativeSqlReviewData}"
+                                <p:dataTable value="#{pharmacyStockTakeController.physicalCountBill.billItems}"
                                              var="row"
                                              rows="25"
                                              paginator="true"
