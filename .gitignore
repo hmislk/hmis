@@ -72,6 +72,8 @@ node_modules/
 /*.png
 /*.yml
 /*.yaml
+/*.sql
+/*.py
 /package.json
 /package-lock.json
 /automate_login_and_screenshot.js
