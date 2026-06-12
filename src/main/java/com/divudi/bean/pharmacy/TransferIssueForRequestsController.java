@@ -878,14 +878,6 @@ public class TransferIssueForRequestsController implements Serializable {
             billItemsInIssue.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(billItemsInIssue);
 
-            //Checking User Stock Entity
-            if (!userStockController.isStockAvailable(tmpPh.getStock(), Math.abs(tmpPh.getQty()), getSessionController().getLoggedUser())) {
-                billItemsInIssue.setTmpQty(0);
-                getBillItemFacade().edit(billItemsInIssue);
-                getIssuedBill().getBillItems().add(billItemsInIssue);
-                continue;
-            }
-
             //Remove Department Stock
             boolean returnFlag = pharmacyBean.deductFromStock(billItemsInIssue.getPharmaceuticalBillItem().getStock(),
                     Math.abs(billItemsInIssue.getPharmaceuticalBillItem().getQty()),
