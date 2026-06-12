@@ -791,6 +791,16 @@ public class TransferIssueForRequestsController implements Serializable {
         // The in-memory Stock object was captured at page-load time and may be stale — a retail
         // sale or concurrent issue after page load will not be reflected in it.
         for (BillItem bi : getBillItems()) {
+            // Single source of truth for the issued quantity (#21266 RC6): the
+            // user-entered qty lives in BillItemFinanceDetails.quantity, but the
+            // stock movement below uses pbi.qty - which still holds the REQUESTED
+            // qty from item generation if a UI edit did not sync it. Stock then
+            // moved by the requested qty while updateBillItemRateAndValue()
+            // rewrote the persisted line to the user-entered qty AFTER the stock
+            // ops (pbi 4912145, 2026-05-20: stock moved 2, line said 1). Sync
+            // pbi/billItem qty from the user-entered value BEFORE validating or
+            // moving any stock, keeping the positive pre-settle sign convention.
+            syncStockQtyFromUserEnteredQty(bi);
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
             if (pbi.getItemBatch() == null) {
                 if (pbi.getQty() > 0) {
@@ -1021,6 +1031,31 @@ public class TransferIssueForRequestsController implements Serializable {
 
     }
 
+    /**
+     * Copies the user-entered quantity (BillItemFinanceDetails.quantity, in
+     * packs) onto the fields the settle stock operations read - pbi.qty (units),
+     * pbi.qtyPacks and billItem.qty (packs) - so the quantity that moves stock
+     * is always the quantity that gets persisted (#21266 RC6). Values are set
+     * POSITIVE to match the pre-settle convention expected by the validation
+     * and zero-removal checks; settle() negates them later. Lines without
+     * finance details or a quantity are left untouched (conservative fallback).
+     */
+    private void syncStockQtyFromUserEnteredQty(BillItem bi) {
+        if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+        if (f == null || f.getQuantity() == null) {
+            return;
+        }
+        double packs = Math.abs(f.getQuantity().doubleValue());
+        double unitsPerPack = (f.getUnitsPerPack() != null && f.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0)
+                ? f.getUnitsPerPack().doubleValue() : 1.0;
+        bi.getPharmaceuticalBillItem().setQty(packs * unitsPerPack);
+        bi.getPharmaceuticalBillItem().setQtyPacks(packs);
+        bi.setQty(packs);
+    }
+
     private void updateBillItemRateAndValue(BillItem b) {
         BillItemFinanceDetails f = b.getBillItemFinanceDetails();
         double rate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
@@ -1073,6 +1108,14 @@ public class TransferIssueForRequestsController implements Serializable {
             if (f.getPurchaseRate() == null) {
                 f.setPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()));
             }
+            // Recompute valuation fields from the user-entered quantity. They are
+            // set at item-generation time from the REQUESTED qty and were never
+            // updated when the user changed the issuing qty (#21266 RC6:
+            // valueAtPurchaseRate stayed 990 = 2 x 495 while the line qty became
+            // 1). Positive sign, matching the generation-time convention.
+            f.setValueAtPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()).multiply(qtyInUnits));
+            f.setValueAtRetailRate(BigDecimal.valueOf(batch.getRetailsaleRate()).multiply(qtyInUnits));
+            f.setValueAtCostRate(costRate.multiply(qtyInUnits));
         } else {
             f.setLineCostRate(BigDecimal.ZERO);
             f.setLineCost(BigDecimal.ZERO);

@@ -123,12 +123,17 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             JsfUtil.addErrorMessage("Select BHT");
             return;
         }
+        
+        paymentListener();
+
+    }
+    
+    public void paymentListener(){
         due = getFinalBillDue();
         finalBillTotal = getFinalBillNetTotal();
         patient = current.getPatientEncounter().getPatient();
         paymentMethod = null;
         paymentMethodData = new PaymentMethodData();
-
     }
 
     /** Navigate to the inward patient co-payment collection page, requiring an active shift. */
@@ -774,6 +779,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                     }
                     PatientDeposit pd = patientDepositService.getDepositOfThePatient(patient, sessionController.getDepartment());
                     paymentMethodData.getPatient_deposit().setPatientDepost(pd);
+                    paymentMethodData.getPatient_deposit().setTotalValue(0.0);
                 }
             }
         }

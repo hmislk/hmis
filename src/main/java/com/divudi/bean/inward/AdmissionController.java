@@ -1342,6 +1342,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return "/inward/inpatient_search?faces-redirect=true";
     }
 
+    public void onInstitutionForSearchChange() {
+        site = null;
+        loggedDepartment = null;
+    }
+
+    public void onSiteForSearchChange() {
+        loggedDepartment = null;
+    }
+
     public void listCurrentInpatients() {
         String sql;
         HashMap h = new HashMap();
