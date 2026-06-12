@@ -52,3 +52,19 @@ claude-*.jsonl
 
 # Claude Code temporary working directories
 tmpclaude-*
+
+# Playwright MCP session data
+.playwright-mcp/
+
+# Claude Code session state files (YAML artifacts from AI sessions)
+*-auto.yml
+*-pre-process.yml
+*-result.yml
+*-state.yml
+*-autocomplete.yml
+
+# Debug/investigation screenshots at project root
+/*.png
+
+# Test results directory
+/test-results/
