@@ -380,9 +380,11 @@ public class PracticeBookingController implements Serializable {
             logger.log(Level.FINE, "No prescription text to set");
         }
 
-        getPatientEncounterController().fillEncounterMedicines(opdVisit);
-        for(ClinicalFindingValue cli :patientEncounterController.getEncounterMedicines()){
-        }
+        // Auto-load the prescribed medicines onto the retail sale bill, mirroring
+        // the inward prescription-to-dispensing conversion on the admission profile.
+        List<ClinicalFindingValue> encounterMedicines
+                = getPatientEncounterController().fillEncounterMedicines(opdVisit);
+        getPharmacySaleController().addBillItemsFromEncounterMedicines(encounterMedicines);
         return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
     }
 
