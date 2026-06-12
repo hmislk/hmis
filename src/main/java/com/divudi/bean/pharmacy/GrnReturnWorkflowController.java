@@ -1340,10 +1340,8 @@ public class GrnReturnWorkflowController implements Serializable {
                     pharmaceuticalBillItemFacade.edit(phi);
                 }
 
-                // Remove from current list to refresh the display
+                // Remove from current display list only; never touch the entity collection
                 billItems.remove(bi);
-                // Remove from Bill's bill item list
-                currentBill.getBillItems().remove(bi);
                 JsfUtil.addSuccessMessage("Item retired and removed from return: " + itemName);
             }
 

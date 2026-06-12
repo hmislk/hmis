@@ -357,13 +357,14 @@ public class IssueReturnController implements Serializable {
      * @return true if all return quantities are valid, false otherwise
      */
     public boolean validateReturnQuantities() {
-        if (returnBillItems == null || returnBillItems.isEmpty()) {
+        List<BillItem> activeItems = getReturnBillItems();
+        if (activeItems == null || activeItems.isEmpty()) {
             JsfUtil.addErrorMessage("No items found to return");
             return false;
         }
 
         boolean hasErrors = false;
-        for (BillItem returnItem : returnBillItems) {
+        for (BillItem returnItem : activeItems) {
             if (returnItem == null || returnItem.getReferanceBillItem() == null) {
                 continue;
             }
@@ -604,8 +605,6 @@ public class IssueReturnController implements Serializable {
                 i.setBill(null);
                 i.setRetired(true);
                 billItemFacade.edit(i);
-                getReturnBill().getBillItems().remove(i);
-                returnBill = billService.reloadBill(returnBill);
                 continue;
             }
 
@@ -1119,7 +1118,12 @@ public class IssueReturnController implements Serializable {
     }
 
     public List<BillItem> getReturnBillItems() {
-        return returnBillItems;
+        if (returnBillItems == null) {
+            return returnBillItems;
+        }
+        return returnBillItems.stream()
+                .filter(bi -> bi != null && !bi.isRetired())
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public void setReturnBillItems(List<BillItem> returnBillItems) {
@@ -1355,8 +1359,8 @@ public class IssueReturnController implements Serializable {
         if (returnBillItems == null || returnBillItems.isEmpty()) {
             return;
         }
-        // Always calculate from returnBillItems for issue returns
-        calculateReturnBillTotalFromItems(returnBillItems);
+        List<BillItem> activeItems = getReturnBillItems();
+        calculateReturnBillTotalFromItems(activeItems);
     }
 
     /**
