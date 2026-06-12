@@ -880,7 +880,6 @@ public class GrnReturnWorkflowController implements Serializable {
                 bi.setRetired(true);
                 bi.setRetirer(sessionController.getLoggedUser());
                 bi.setRetiredAt(new Date());
-                bi.setBill(null); // Set bill reference to null as requested
 
                 // If the item already exists in database, update it
                 if (bi.getId() != null) {
@@ -1342,14 +1341,13 @@ public class GrnReturnWorkflowController implements Serializable {
             // If the item is not saved (no ID), simply remove it from the list
             if (bi.getId() == null) {
                 billItems.remove(bi);
-                bi.setBill(null);
                 JsfUtil.addSuccessMessage("Item removed from return list: " + itemName);
             } else {
-                // If already saved, mark as retired and remove from database
+                // If already saved, mark as retired — keep bill reference intact so
+                // the FK stays valid and EclipseLink orphan-removal never fires.
                 bi.setRetired(true);
                 bi.setRetirer(sessionController.getLoggedUser());
                 bi.setRetiredAt(new Date());
-                bi.setBill(null); // Set bill as null as requested
 
                 // Update the bill item in database
                 billItemFacade.edit(bi);

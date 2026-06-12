@@ -593,7 +593,6 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 bi.setRetired(true);
                 bi.setRetirer(sessionController.getLoggedUser());
                 bi.setRetiredAt(new Date());
-                bi.setBill(null); // Set bill reference to null as requested
 
                 // If the item already exists in database, update it
                 if (bi.getId() != null) {
@@ -980,7 +979,6 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 bi.setRetired(true);
                 bi.setRetirer(sessionController.getLoggedUser());
                 bi.setRetiredAt(new Date());
-                bi.setBill(null); // Set bill as null as requested
 
                 // Update the bill item in database
                 billItemFacade.edit(bi);
