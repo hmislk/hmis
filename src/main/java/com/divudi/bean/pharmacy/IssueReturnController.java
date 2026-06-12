@@ -1119,7 +1119,7 @@ public class IssueReturnController implements Serializable {
 
     public List<BillItem> getReturnBillItems() {
         if (returnBillItems == null) {
-            return returnBillItems;
+            return java.util.Collections.emptyList();
         }
         return returnBillItems.stream()
                 .filter(bi -> bi != null && !bi.isRetired())
@@ -1356,10 +1356,10 @@ public class IssueReturnController implements Serializable {
     }
 
     public void calculateBillTotal() {
-        if (returnBillItems == null || returnBillItems.isEmpty()) {
+        List<BillItem> activeItems = getReturnBillItems();
+        if (activeItems.isEmpty()) {
             return;
         }
-        List<BillItem> activeItems = getReturnBillItems();
         calculateReturnBillTotalFromItems(activeItems);
     }
 
