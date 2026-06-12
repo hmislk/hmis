@@ -9044,13 +9044,13 @@ public class PharmacyController implements Serializable {
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
         );
 
-        String baseJpql = "SELECT i.bill.department, sum(i.pharmaceuticalBillItem.qty) "
-                + "FROM BillItem i "
-                + "WHERE (i.bill.retired is null or i.bill.retired = false) "
-                + "AND i.item in :items "
-                + "AND i.bill.billTypeAtomic in :btas "
-                + "AND i.createdAt between :frm and :to "
-                + "GROUP BY i.bill.department";
+        String baseJpql = "SELECT pbi.billItem.bill.department, sum(pbi.qty) "
+                + "FROM PharmaceuticalBillItem pbi "
+                + "WHERE (pbi.billItem.bill.retired is null or pbi.billItem.bill.retired = false) "
+                + "AND pbi.billItem.item in :items "
+                + "AND pbi.billItem.bill.billTypeAtomic in :btas "
+                + "AND pbi.billItem.createdAt between :frm and :to "
+                + "GROUP BY pbi.billItem.bill.department";
 
         // --- Query 1: Retail Sale by Department ---
         Map<String, Object> paramsRetail = new HashMap<>();
@@ -9738,20 +9738,22 @@ public class PharmacyController implements Serializable {
                 }
                 r.setSaleValue(saleValue);
 
-                // Safe casting for saleQty - handle BigDecimal from SUM() function
+                // Safe casting for saleQty - handle BigDecimal from SUM() function.
+                // PBI qty is negative for outgoing issues; revert sign for display
+                // so the BHT Issue tab/block shows positive issued quantities.
                 double saleQty = 0.0;
                 if (obj[2] instanceof BigDecimal) {
-                    saleQty = ((BigDecimal) obj[2]).doubleValue();
+                    saleQty = -((BigDecimal) obj[2]).doubleValue();
                 } else if (obj[2] instanceof Number) {
-                    saleQty = ((Number) obj[2]).doubleValue();
+                    saleQty = -((Number) obj[2]).doubleValue();
                 }
                 r.setSaleQty(saleQty);
                 list.add(r);
                 //Total Institution Stock
                 totalValue += r.getSaleValue();
-                totalQty += r.getSaleQty();
+                totalQty += saleQty;
                 grantBhtValue += r.getSaleValue();
-                grantBhtIssueQty += r.getSaleQty();
+                grantBhtIssueQty += saleQty;
 
             }
 
