@@ -639,6 +639,31 @@ public class RoomChangeController implements Serializable {
         createGuardianRoom();
     }
 
+    public void addNewGuardianRoom() {
+        if (getNewRoomFacilityCharge() == null) {
+            JsfUtil.addErrorMessage("Please select a room facility");
+            return;
+        }
+
+        GuardianRoom newGuardianRoom = new GuardianRoom();
+        newGuardianRoom = (GuardianRoom) getInwardBean().savePatientRoom(
+                newGuardianRoom, getNewRoomFacilityCharge(), current, changeAt,
+                getSessionController().getLoggedUser());
+
+        if (newGuardianRoom == null) {
+            JsfUtil.addErrorMessage("Failed to add guardian room");
+            return;
+        }
+
+        recordRoomAuditEvent(newGuardianRoom, "Guardian Room Added", null);
+        notificationController.createNotification(newGuardianRoom, "Admit");
+
+        JsfUtil.addSuccessMessage("Successfully Added Guardian Room");
+        newRoomFacilityCharge = null;
+        changeAt = null;
+        createGuardianRoom();
+    }
+
     public List<Admission> getSelectedItems() {
         selectedItems = getFacade().findByJpql("select c from Admission c where c.retired=false and c.discharged!=true and (c.bhtNo) like '%" + getSelectText().toUpperCase() + "%' or (c.patient.person.name) like '%" + getSelectText().toUpperCase() + "%' order by c.bhtNo");
         return selectedItems;

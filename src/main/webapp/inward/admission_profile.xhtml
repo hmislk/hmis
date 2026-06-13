@@ -557,7 +557,7 @@
                                         disabled="#{admissionController.current.discharged eq true}"
                                         value="Add New Room"
                                         ajax="false"
-                                        action="#{admissionController.navigateToRoomChange}"
+                                        action="#{admissionController.navigateToAddRoom}"
                                         icon="fa fa-plus-circle"
                                         class="w-100 ui-button-success">
                                         <f:setPropertyActionListener
@@ -572,7 +572,7 @@
                                         value="Add Guardian Room"
                                         ajax="false"
                                         disabled="#{admissionController.current.discharged eq true}"
-                                        action="#{admissionController.navigateToGuardianRoomChange}"
+                                        action="#{admissionController.navigateToAddGuardianRoom}"
                                         icon="fa fa-user-plus"
                                         class="w-100 ui-button-success">
                                         <f:setPropertyActionListener
