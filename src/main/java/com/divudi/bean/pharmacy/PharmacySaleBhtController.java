@@ -1768,21 +1768,20 @@ public class PharmacySaleBhtController implements Serializable {
         itemForSubstitution = bi;
         selectedSubstituteStock = null;
         substituteStocks = new ArrayList<>();
-        if (bi != null && bi.getItem() instanceof Amp) {
-            Amp amp = (Amp) bi.getItem();
-            if (amp.getVmp() != null) {
-                List<Amp> amps = vmpController.ampsOfVmp(amp.getVmp());
-                for (Amp substituteAmp : amps) {
-                    List<Stock> stocks = pharmacyBean.getStockByQty(substituteAmp, sessionController.getDepartment());
-                    if (stocks != null) {
-                        for (Stock stock : stocks) {
-                            if (stock.getStock() > 0 && stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null) {
-                                Date currentDate = new Date();
-                                if (stock.getItemBatch().getDateOfExpire().after(currentDate)) {
-                                    substituteStocks.add(stock);
-                                }
-                            }
-                        }
+        if (bi == null || bi.getItem() == null) {
+            return;
+        }
+        List<Amp> amps = pharmacyBean.resolveAmps(bi.getItem());
+        Date currentDate = new Date();
+        for (Amp substituteAmp : amps) {
+            List<Stock> stocks = pharmacyBean.getStockByQty(substituteAmp, sessionController.getDepartment());
+            if (stocks != null) {
+                for (Stock stock : stocks) {
+                    if (stock.getStock() > 0
+                            && stock.getItemBatch() != null
+                            && stock.getItemBatch().getDateOfExpire() != null
+                            && stock.getItemBatch().getDateOfExpire().after(currentDate)) {
+                        substituteStocks.add(stock);
                     }
                 }
             }
@@ -2651,7 +2650,22 @@ public class PharmacySaleBhtController implements Serializable {
 
             // Resolve VTM/VMP/AMP/ATM to concrete AMP candidates with stock priority:
             // 1. Exact requested AMP  2. Same-strength sibling AMP  3. Any available AMP
-            List<Amp> candidateAmps = pharmacyBean.resolveAmps(requestedItem);
+            // For AMP requests also include VMP siblings so substitution can fire when
+            // the exact brand is out of stock.
+            List<Amp> candidateAmps = new ArrayList<>(pharmacyBean.resolveAmps(requestedItem));
+            if (requestedItem instanceof Amp) {
+                Vmp vmp = ((Amp) requestedItem).getVmp();
+                if (vmp != null) {
+                    List<Amp> siblings = pharmacyBean.findAmpsForVmp(vmp);
+                    if (siblings != null) {
+                        for (Amp sibling : siblings) {
+                            if (!sibling.getId().equals(requestedItem.getId())) {
+                                candidateAmps.add(sibling);
+                            }
+                        }
+                    }
+                }
+            }
             Double requestedStrength = requestedItem.getStrengthOfAnIssueUnit();
 
             Amp exactAmp = null;
