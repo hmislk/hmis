@@ -1,0 +1,32 @@
+site_name: CareCode HIMS Documentation
+site_description: Public documentation generated automatically from the GitHub Wiki.
+site_url: https://hmislk.github.io/hmis/
+
+repo_url: https://github.com/hmislk/hmis
+repo_name: hmislk/hmis
+
+docs_dir: docs
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.superfences
