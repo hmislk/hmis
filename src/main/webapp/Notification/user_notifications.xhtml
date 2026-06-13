@@ -183,7 +183,7 @@
                                                  style="border-left:1px solid black;border-right:1px solid black;">
                                                 <p:outputLabel class="mx-4" style="font-weight:bolder"
                                                                value="#{un.notification.createdAt}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}  HH:mm a" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}  HH:mm a" timeZone="Asia/Colombo" />
                                                 </p:outputLabel>
                                             </div>
                                             <div class="col-3 d-flex align-items-center">

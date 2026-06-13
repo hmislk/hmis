@@ -383,7 +383,15 @@ public class UserNotificationController implements Serializable {
     }
 
     public String navigateToCurrentNotificationRequest(UserNotification un) {
+        if (un == null || un.getNotification() == null) {
+            JsfUtil.addErrorMessage("Invalid notification");
+            return "";
+        }
         un.setSeen(true);
+        un.setRetired(true);
+        un.setRetiredAt(new Date());
+        un.setRetirer(sessionController.getLoggedUser());
+        un.setRetireComments("Viewed");
         getFacade().edit(un);
 
         // Handle PatientRoom-based (discharge) notifications
