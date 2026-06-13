@@ -215,7 +215,7 @@
                                                          styleClass="ui-button-info me-1"
                                                          ajax="false"
                                                          title="Create OPD bill for #{bsc.bill.patient.person.nameWithTitle} - No #{bsc.serialNo}"
-                                                         onclick="this.disabled=true;"
+                                                         onclick="if (!confirm('Create OPD bill for this patient?')) return false;"
                                                          action="#{practiceBookingController.issueServices()}">
                                             <f:setPropertyActionListener value="#{bsc}"
                                                                          target="#{practiceBookingController.billSession}"/>
@@ -227,7 +227,7 @@
                                                          styleClass="ui-button-info"
                                                          ajax="false"
                                                          title="Create pharmacy bill for #{bsc.bill.patient.person.nameWithTitle} - No #{bsc.serialNo}"
-                                                         onclick="this.disabled=true;"
+                                                         onclick="if (!confirm('Create pharmacy bill for this patient?')) return false;"
                                                          action="#{practiceBookingController.issuePharmacyBill()}"
                                                          actionListener="#{pharmacySaleController.resetAll()}">
                                             <f:setPropertyActionListener value="#{bsc}"
