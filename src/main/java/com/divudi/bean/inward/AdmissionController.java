@@ -750,6 +750,24 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return "/inward/inward_room_change?faces-redirect=true";
     }
 
+    public String navigateToAddRoom() {
+        roomChangeController.createPatientRoom();
+        roomChangeController.setInstitution(sessionController.getInstitution());
+        roomChangeController.setNewRoomFacilityCharge(null);
+        roomChangeController.setChangeAt(null);
+        roomChangeController.setNewConsultant(null);
+        roomChangeController.setNewPrimeConsultant(null);
+        return "/inward/inward_add_room?faces-redirect=true";
+    }
+
+    public String navigateToAddGuardianRoom() {
+        roomChangeController.createGuardianRoom();
+        roomChangeController.setInstitution(sessionController.getInstitution());
+        roomChangeController.setNewRoomFacilityCharge(null);
+        roomChangeController.setChangeAt(null);
+        return "/inward/inward_add_guardian_room?faces-redirect=true";
+    }
+
     public String navigateToGuardianRoomChange() {
 //         roomChangeController.recreate();
         roomChangeController.createGuardianRoom();
