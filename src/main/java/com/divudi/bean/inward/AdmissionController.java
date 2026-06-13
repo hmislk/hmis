@@ -783,6 +783,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             params.put("enc", current);
             activeRooms = patientRoomFacade.findByJpql(jpql, params);
         } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to load active rooms for admission ID: "
+                    + (current != null ? current.getId() : null), e);
             JsfUtil.addErrorMessage("Unable to load current room assignments.");
         }
         return activeRooms;
