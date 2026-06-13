@@ -775,30 +775,10 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
-                                        value="Forms"
-                                        ajax="false"
-                                        rendered="#{webUserController.hasPrivilege('InwardFormFill')}"
-                                        action="#{inwardFormController.navigateToInwardFormsFromAdmissionProfile(admissionController.current)}"
-                                        icon="fa fa-wpforms"
-                                        class="w-100">
-                                    </p:commandButton>
-                                </div>
-                                <div class="col-6">
-                                    <p:commandButton
                                         value="Diagnosis Card"
                                         ajax="false"
                                         action="#{admissionController.navigateToInpatientDiagnosisCard()}"
                                         icon="fa fa-diagnoses"
-                                        class="w-100">
-                                    </p:commandButton>
-                                </div>
-                                <div class="col-6">
-                                    <p:commandButton
-                                        value="Documents"
-                                        ajax="false"
-                                        rendered="#{webUserController.hasPrivilege('InwardDocumentUpload')}"
-                                        action="#{admissionController.navigateToInpatientDocuments()}"
-                                        icon="fa fa-file-alt"
                                         class="w-100">
                                     </p:commandButton>
                                 </div>
@@ -957,6 +937,31 @@
                                         <f:setPropertyActionListener
                                             value="#{admissionController.current}"
                                             target="#{searchController.patientEncounter}" />
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </p:panel>
+
+                        <p:panel header="Documents" class="m-1">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Fill Forms"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardFormFill')}"
+                                        action="#{inwardFormController.navigateToInwardFormsFromAdmissionProfile(admissionController.current)}"
+                                        icon="fa fa-wpforms"
+                                        class="w-100">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Documents"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardDocumentUpload')}"
+                                        action="#{admissionController.navigateToInpatientDocuments()}"
+                                        icon="fa fa-file-alt"
+                                        class="w-100">
                                     </p:commandButton>
                                 </div>
                             </div>
