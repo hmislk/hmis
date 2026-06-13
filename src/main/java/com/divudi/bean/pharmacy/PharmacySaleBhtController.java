@@ -2673,9 +2673,11 @@ public class PharmacySaleBhtController implements Serializable {
 
             Amp sameStrengthAmp = null;
             List<StockQty> sameStrengthStockQtys = null;
+            Date sameStrengthEarliestExpiry = null;
 
             Amp fallbackAmp = null;
             List<StockQty> fallbackStockQtys = null;
+            Date fallbackEarliestExpiry = null;
 
             for (Amp candidate : candidateAmps) {
                 Double ampStrength = candidate.getStrengthOfAnIssueUnit();
@@ -2692,6 +2694,13 @@ public class PharmacySaleBhtController implements Serializable {
                     continue;
                 }
 
+                // getStockByQty returns batches ORDER BY dateOfExpire, so first entry is earliest
+                Date candidateEarliestExpiry = null;
+                StockQty first = stockQtys.get(0);
+                if (first.getStock() != null && first.getStock().getItemBatch() != null) {
+                    candidateEarliestExpiry = first.getStock().getItemBatch().getDateOfExpire();
+                }
+
                 boolean isExact = (requestedItem instanceof Amp)
                         && requestedItem.getId() != null
                         && requestedItem.getId().equals(candidate.getId());
@@ -2702,12 +2711,20 @@ public class PharmacySaleBhtController implements Serializable {
                     exactAmp = candidate;
                     exactStockQtys = stockQtys;
                     break; // exact match is optimal
-                } else if (isSameStrength && sameStrengthAmp == null) {
+                } else if (isSameStrength
+                        && (sameStrengthAmp == null
+                        || (candidateEarliestExpiry != null && (sameStrengthEarliestExpiry == null
+                        || candidateEarliestExpiry.before(sameStrengthEarliestExpiry))))) {
                     sameStrengthAmp = candidate;
                     sameStrengthStockQtys = stockQtys;
-                } else if (fallbackAmp == null) {
+                    sameStrengthEarliestExpiry = candidateEarliestExpiry;
+                } else if (!isSameStrength
+                        && (fallbackAmp == null
+                        || (candidateEarliestExpiry != null && (fallbackEarliestExpiry == null
+                        || candidateEarliestExpiry.before(fallbackEarliestExpiry))))) {
                     fallbackAmp = candidate;
                     fallbackStockQtys = stockQtys;
+                    fallbackEarliestExpiry = candidateEarliestExpiry;
                 }
             }
 
