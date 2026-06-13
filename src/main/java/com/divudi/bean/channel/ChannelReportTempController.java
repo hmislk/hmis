@@ -248,14 +248,16 @@ public class ChannelReportTempController implements Serializable {
         sql += " from Bill b "
                 + " where b.retired=false ";
 
-        if (b.getClass().equals(BilledBill.class)) {
-            sql += " and b.singleBillSession.sessionDate between :fromDate and :toDate ";
-        }
-        if (b.getClass().equals(CancelledBill.class)) {
-            sql += " and b.createdAt between :fromDate and :toDate ";
-        }
-        if (b.getClass().equals(RefundBill.class)) {
-            sql += " and b.createdAt between :fromDate and :toDate ";
+        if (b != null) {
+            if (b.getClass().equals(BilledBill.class)) {
+                sql += " and b.singleBillSession.sessionDate between :fromDate and :toDate ";
+            }
+            if (b.getClass().equals(CancelledBill.class)) {
+                sql += " and b.createdAt between :fromDate and :toDate ";
+            }
+            if (b.getClass().equals(RefundBill.class)) {
+                sql += " and b.createdAt between :fromDate and :toDate ";
+            }
         }
 
         if (billTypes != null) {

@@ -215,6 +215,7 @@
                                                          styleClass="ui-button-info me-1"
                                                          ajax="false"
                                                          title="Create OPD bill for #{bsc.bill.patient.person.nameWithTitle} - No #{bsc.serialNo}"
+                                                         onclick="this.disabled=true;"
                                                          action="#{practiceBookingController.issueServices()}">
                                             <f:setPropertyActionListener value="#{bsc}"
                                                                          target="#{practiceBookingController.billSession}"/>
@@ -226,11 +227,12 @@
                                                          styleClass="ui-button-info"
                                                          ajax="false"
                                                          title="Create pharmacy bill for #{bsc.bill.patient.person.nameWithTitle} - No #{bsc.serialNo}"
+                                                         onclick="this.disabled=true;"
                                                          action="#{practiceBookingController.issuePharmacyBill()}"
                                                          actionListener="#{pharmacySaleController.resetAll()}">
                                             <f:setPropertyActionListener value="#{bsc}"
                                                                          target="#{practiceBookingController.billSession}"/>
-                                            <f:setPropertyActionListener value="#{practiceBookingController.opdVisit.patient}"
+                                            <f:setPropertyActionListener value="#{bsc.bill.patient}"
                                                                          target="#{pharmacySaleController.patient}"/>
                                         </p:commandButton>
                                     </p:column>
