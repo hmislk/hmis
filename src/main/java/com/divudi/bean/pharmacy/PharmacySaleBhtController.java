@@ -2642,39 +2642,84 @@ public class PharmacySaleBhtController implements Serializable {
             if (i.getQty() == null) {
                 continue;
             }
-            Item item = i.getItem();
-            Double requestingQty = i.getQty();
-
-            List<Stock> usedStocks = new ArrayList<>();
-
-            if (item instanceof Amp) {
-
-            } else if (item instanceof Vmp) {
-
-            } else if (item instanceof Ampp) {
-                JsfUtil.addErrorMessage("No Supported Yet");
-                return;
-            } else if (item instanceof Vmpp) {
-                JsfUtil.addErrorMessage("No Supported Yet");
-                return;
-            }
+            Item requestedItem = i.getItem();
 
             double billedIssue = getPharmacyCalculation().getBilledInwardPharmacyRequest(i, BillType.PharmacyBhtPre);
             double cancelledIssue = getPharmacyCalculation().getCancelledInwardPharmacyRequest(i, BillType.PharmacyBhtPre);
             double refundedIssue = getPharmacyCalculation().getRefundedInwardPharmacyRequest(i, BillType.PharmacyBhtPre);
-
             double issuableQty = Math.abs(i.getQty()) - (Math.abs(billedIssue) - (Math.abs(cancelledIssue) + Math.abs(refundedIssue)));
 
-            List<StockQty> stockQtys = pharmacyBean.getStockByQty(i.getItem(), issuableQty, getSessionController().getDepartment());
+            // Resolve VTM/VMP/AMP/ATM to concrete AMP candidates with stock priority:
+            // 1. Exact requested AMP  2. Same-strength sibling AMP  3. Any available AMP
+            List<Amp> candidateAmps = pharmacyBean.resolveAmps(requestedItem);
+            Double requestedStrength = requestedItem.getStrengthOfAnIssueUnit();
 
-            if (stockQtys != null && !stockQtys.isEmpty()) {
+            Amp exactAmp = null;
+            List<StockQty> exactStockQtys = null;
 
-                for (StockQty sq : stockQtys) {
+            Amp sameStrengthAmp = null;
+            List<StockQty> sameStrengthStockQtys = null;
+
+            Amp fallbackAmp = null;
+            List<StockQty> fallbackStockQtys = null;
+
+            for (Amp candidate : candidateAmps) {
+                Double ampStrength = candidate.getStrengthOfAnIssueUnit();
+                double candidateQty;
+                if (requestedStrength != null && requestedStrength > 0
+                        && ampStrength != null && ampStrength > 0) {
+                    candidateQty = Math.ceil(issuableQty * requestedStrength / ampStrength);
+                } else {
+                    candidateQty = issuableQty;
+                }
+
+                List<StockQty> stockQtys = pharmacyBean.getStockByQty((Item) candidate, candidateQty, getSessionController().getDepartment());
+                if (stockQtys == null || stockQtys.isEmpty()) {
+                    continue;
+                }
+
+                boolean isExact = (requestedItem instanceof Amp)
+                        && requestedItem.getId() != null
+                        && requestedItem.getId().equals(candidate.getId());
+                boolean isSameStrength = (requestedStrength == null || ampStrength == null)
+                        || (requestedStrength.doubleValue() == ampStrength.doubleValue());
+
+                if (isExact) {
+                    exactAmp = candidate;
+                    exactStockQtys = stockQtys;
+                    break; // exact match is optimal
+                } else if (isSameStrength && sameStrengthAmp == null) {
+                    sameStrengthAmp = candidate;
+                    sameStrengthStockQtys = stockQtys;
+                } else if (fallbackAmp == null) {
+                    fallbackAmp = candidate;
+                    fallbackStockQtys = stockQtys;
+                }
+            }
+
+            // Pick best available candidate
+            final List<StockQty> selectedStockQtys;
+            final boolean isSubstitute;
+
+            if (exactAmp != null) {
+                selectedStockQtys = exactStockQtys;
+                isSubstitute = false;
+            } else if (sameStrengthAmp != null) {
+                selectedStockQtys = sameStrengthStockQtys;
+                isSubstitute = true;
+            } else if (fallbackAmp != null) {
+                selectedStockQtys = fallbackStockQtys;
+                isSubstitute = true;
+            } else {
+                selectedStockQtys = null;
+                isSubstitute = false;
+            }
+
+            if (selectedStockQtys != null && !selectedStockQtys.isEmpty()) {
+                for (StockQty sq : selectedStockQtys) {
                     if (sq.getQty() == 0) {
                         continue;
                     }
-
-                    //Checking User Stock Entity
                     if (!userStockController.isStockAvailable(sq.getStock(), sq.getQty(), getSessionController().getLoggedUser())) {
                         JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
                         continue;
@@ -2685,34 +2730,34 @@ public class PharmacySaleBhtController implements Serializable {
                     billItem.getPharmaceuticalBillItem().setQty(0 - sq.getQty());
                     billItem.getPharmaceuticalBillItem().setStock(sq.getStock());
                     billItem.getPharmaceuticalBillItem().setItemBatch(sq.getStock().getItemBatch());
-
                     billItem.setItem(sq.getStock().getItemBatch().getItem());
                     billItem.setQty(sq.getQty());
                     billItem.setDescreption(i.getDescreption());
-
                     billItem.getPharmaceuticalBillItem().setDoe(sq.getStock().getItemBatch().getDateOfExpire());
                     billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
                     billItem.getPharmaceuticalBillItem().setItemBatch(sq.getStock().getItemBatch());
                     billItem.setGrossValue(sq.getStock().getItemBatch().getRetailsaleRate() * sq.getQty());
                     billItem.setNetValue(sq.getQty() * sq.getStock().getItemBatch().getRetailsaleRate());
-
                     billItem.setInwardChargeType(InwardChargeType.Medicine);
                     billItem.getPharmaceuticalBillItem().setBillItem(billItem);
-                    billItem.setItem(sq.getStock().getItemBatch().getItem());
                     billItem.setReferanceBillItem(i);
                     billItem.setSearialNo(getBillItems().size() + 1);
+                    if (isSubstitute) {
+                        billItem.setAutoSubstituted(true);
+                        billItem.setRequestedItemName(requestedItem.getName());
+                    }
                     calculateRates(billItem);
                     billItems.add(billItem);
-
                 }
             } else {
+                // No stock found for any AMP — add placeholder for manual resolution
                 billItem = new BillItem();
                 billItem.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
                 billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - issuableQty);
                 billItem.getPharmaceuticalBillItem().setQty(0 - issuableQty);
                 billItem.getPharmaceuticalBillItem().setStock(null);
                 billItem.getPharmaceuticalBillItem().setItemBatch(null);
-                billItem.setItem(i.getItem());
+                billItem.setItem(requestedItem);
                 billItem.setQty(issuableQty);
                 billItem.setDescreption(i.getDescreption());
                 billItem.setInwardChargeType(InwardChargeType.Medicine);
@@ -2722,7 +2767,6 @@ public class PharmacySaleBhtController implements Serializable {
                 calculateRates(billItem);
                 billItems.add(billItem);
             }
-
         }
 
         calCurrentBillItemTotal(billItems);

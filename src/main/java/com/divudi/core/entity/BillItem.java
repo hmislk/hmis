@@ -213,6 +213,10 @@ public class BillItem implements Serializable, RetirableEntity {
     double transWithOutCCFee;
     @Transient
     boolean transRefund;
+    @Transient
+    private boolean autoSubstituted = false;
+    @Transient
+    private String requestedItemName = null;
 
     public double getVat() {
         return vat;
@@ -996,6 +1000,22 @@ public class BillItem implements Serializable, RetirableEntity {
 
     public void setTransRefund(boolean transRefund) {
         this.transRefund = transRefund;
+    }
+
+    public boolean isAutoSubstituted() {
+        return autoSubstituted;
+    }
+
+    public void setAutoSubstituted(boolean autoSubstituted) {
+        this.autoSubstituted = autoSubstituted;
+    }
+
+    public String getRequestedItemName() {
+        return requestedItemName;
+    }
+
+    public void setRequestedItemName(String requestedItemName) {
+        this.requestedItemName = requestedItemName;
     }
 
     public double getVatPlusNetValue() {
