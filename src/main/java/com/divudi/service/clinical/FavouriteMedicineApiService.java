@@ -98,13 +98,30 @@ public class FavouriteMedicineApiService implements Serializable {
             String itemType = (String) requestData.get("itemType");
             Double fromYears = getDoubleValue(requestData.get("fromYears"));
             Double toYears = getDoubleValue(requestData.get("toYears"));
+            Double fromKg = getDoubleValue(requestData.get("fromKg"));
+            Double toKg = getDoubleValue(requestData.get("toKg"));
 
-            if (itemName == null || itemType == null || fromYears == null || toYears == null) {
-                throw new IllegalArgumentException("Required fields missing: itemName, itemType, fromYears, toYears");
+            if (itemName == null || itemType == null) {
+                throw new IllegalArgumentException("Required fields missing: itemName, itemType");
             }
 
-            if (fromYears < 0 || toYears < 0 || fromYears >= toYears) {
-                throw new IllegalArgumentException("Invalid age range: fromYears must be less than toYears and both must be >= 0");
+            boolean hasAgeRange = fromYears != null && toYears != null;
+            boolean hasWeightRange = fromKg != null && toKg != null;
+
+            if (!hasAgeRange && !hasWeightRange) {
+                throw new IllegalArgumentException("Required fields missing: provide either fromYears+toYears (age range) or fromKg+toKg (weight range)");
+            }
+
+            if (hasAgeRange) {
+                if (fromYears < 0 || toYears < 0 || fromYears >= toYears) {
+                    throw new IllegalArgumentException("Invalid age range: fromYears must be less than toYears and both must be >= 0");
+                }
+            }
+
+            if (hasWeightRange) {
+                if (fromKg < 0 || toKg < 0 || fromKg >= toKg) {
+                    throw new IllegalArgumentException("Invalid weight range: fromKg must be less than toKg and both must be >= 0");
+                }
             }
 
             // Find or create the item based on type
@@ -181,9 +198,17 @@ public class FavouriteMedicineApiService implements Serializable {
                 template.setForItem(item); // Default to same item
             }
 
-            // Set age range (convert years to days)
-            template.setFromDays(convertYearsToDays(fromYears));
-            template.setToDays(convertYearsToDays(toYears));
+            // Set age range (convert years to days); default to 0-120 yr when only weight range given
+            template.setFromDays(convertYearsToDays(fromYears != null ? fromYears : 0.0));
+            template.setToDays(convertYearsToDays(toYears != null ? toYears : 120.0));
+
+            // Set weight range when provided
+            if (fromKg != null) {
+                template.setFromKg(fromKg);
+            }
+            if (toKg != null) {
+                template.setToKg(toKg);
+            }
 
             // Set optional fields
             setOptionalFields(template, requestData);
@@ -392,6 +417,26 @@ public class FavouriteMedicineApiService implements Serializable {
                 if (template.getFromDays() >= template.getToDays()) {
                     throw new IllegalArgumentException("fromYears must be less than toYears");
                 }
+            }
+
+            // Update weight range if provided
+            Double fromKg = getDoubleValue(updateData.get("fromKg"));
+            Double toKg = getDoubleValue(updateData.get("toKg"));
+            if (fromKg != null) {
+                if (fromKg < 0) {
+                    throw new IllegalArgumentException("fromKg must be >= 0");
+                }
+                template.setFromKg(fromKg);
+            }
+            if (toKg != null) {
+                if (toKg < 0) {
+                    throw new IllegalArgumentException("toKg must be >= 0");
+                }
+                template.setToKg(toKg);
+            }
+            if (template.getFromKg() != null && template.getToKg() != null
+                    && template.getFromKg() >= template.getToKg()) {
+                throw new IllegalArgumentException("fromKg must be less than toKg");
             }
 
             // Update other optional fields

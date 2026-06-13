@@ -230,6 +230,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     boolean billPreview = false;
     boolean fromOpdEncounter = false;
     String opdEncounterComments = "";
+    String prescriptionHtml;
     int patientSearchTab = 0;
 
     Staff toStaff;
@@ -4467,6 +4468,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         userStockContainer = null;
         fromOpdEncounter = false;
         opdEncounterComments = null;
+        prescriptionHtml = null;
         patientSearchTab = 0;
         errorMessage = "";
         comment = null;
@@ -4781,6 +4783,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void setOpdEncounterComments(String opdEncounterComments) {
         this.opdEncounterComments = opdEncounterComments;
+    }
+
+    public String getPrescriptionHtml() {
+        return prescriptionHtml;
+    }
+
+    public void setPrescriptionHtml(String prescriptionHtml) {
+        this.prescriptionHtml = prescriptionHtml;
     }
 
     public int getPatientSearchTab() {

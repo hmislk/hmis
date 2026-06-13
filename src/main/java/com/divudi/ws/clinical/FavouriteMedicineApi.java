@@ -877,6 +877,10 @@ public class FavouriteMedicineApi {
         map.put("fromYears", favouriteMedicineService.convertDaysToYears(template.getFromDays()));
         map.put("toYears", favouriteMedicineService.convertDaysToYears(template.getToDays()));
 
+        // Weight range
+        map.put("fromKg", template.getFromKg());
+        map.put("toKg", template.getToKg());
+
         // Category
         if (template.getCategory() != null) {
             map.put("categoryName", template.getCategory().getName());
