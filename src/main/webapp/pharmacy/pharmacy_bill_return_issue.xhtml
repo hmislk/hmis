@@ -197,7 +197,8 @@
                                                     title="Delete selected items from return"
                                                     action="#{issueReturnController.deleteSelectedItems()}"
                                                     disabled="#{issueReturnController.originalBill.fullReturned}"
-                                                    ajax="false">
+                                                    update="itemList :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('messages',view).clientId}"
+                                                    process="itemList @this">
                                                     <p:confirm header="Confirmation"
                                                                message="Are you sure you want to delete the selected items?"
                                                                icon="pi pi-exclamation-triangle"/>
