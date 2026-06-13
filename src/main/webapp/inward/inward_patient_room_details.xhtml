@@ -207,16 +207,16 @@
                                         <p:column headerText="Actions" style="width:240px;">
                                             <div class="d-flex gap-1 flex-wrap">
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    update="@form"
                                                     icon="fa fa-save"
                                                     title="Save Changes"
                                                     class="ui-button-info"
                                                     disabled="#{bhtSummeryController.patientEncounter.discharged}"
                                                     action="#{bhtSummeryController.updatePatientRoom(rm)}">
                                                 </p:commandButton>
-                                                
+
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    update="@form"
                                                     icon="fa fa-calculator"
                                                     title="Update Charges from Room Rates"
                                                     disabled="#{bhtSummeryController.patientEncounter.discharged}"
@@ -225,25 +225,45 @@
                                                 </p:commandButton>
                                                 
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    process="@this"
+                                                    update="@form"
                                                     icon="fa fa-check-square"
                                                     title="Discharge from Room"
+                                                    rendered="#{not rm.discharged}"
                                                     disabled="#{bhtSummeryController.patientEncounter.discharged}"
                                                     class="ui-button-warning"
                                                     action="#{roomChangeController.dischargeWithCurrentTime(rm)}">
+                                                    <p:confirm header="Confirm Discharge"
+                                                               message="Are you sure you want to discharge from this room?"
+                                                               icon="fa fa-exclamation-triangle"/>
                                                 </p:commandButton>
-                                                
+
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    process="@this"
+                                                    update="@form"
                                                     icon="fa fa-times-circle"
                                                     title="Cancel Room Discharge"
+                                                    rendered="#{rm.discharged}"
                                                     disabled="#{bhtSummeryController.patientEncounter.discharged}"
                                                     class="ui-button-danger"
                                                     action="#{roomChangeController.dischargeCancel(rm)}">
+                                                    <p:confirm header="Confirm Cancel Discharge"
+                                                               message="Are you sure you want to cancel this room discharge?"
+                                                               icon="fa fa-exclamation-triangle"/>
                                                 </p:commandButton>
-                                                
+
                                                 <p:commandButton
                                                     ajax="false"
+                                                    icon="fa fa-print"
+                                                    title="Print Discharge Receipt"
+                                                    rendered="#{rm.discharged}"
+                                                    class="ui-button-info"
+                                                    action="#{roomChangeController.navigateToRoomDischargeReceipt(rm)}">
+                                                </p:commandButton>
+
+                                                <p:commandButton
+                                                    process="@this"
+                                                    update="@form"
                                                     icon="fa fa-trash"
                                                     title="Remove Room"
                                                     disabled="#{bhtSummeryController.patientEncounter.discharged}"
