@@ -549,8 +549,39 @@
                                     </ui:repeat>
                                 </div>
 
+                                <!-- Add New Room Buttons -->
+                                <div class="col-6">
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('InwardRoomRoomChange')}"
+                                        disabled="#{admissionController.current.discharged eq true}"
+                                        value="Add New Room"
+                                        ajax="false"
+                                        action="#{admissionController.navigateToRoomChange}"
+                                        icon="fa fa-plus-circle"
+                                        class="w-100 ui-button-success">
+                                        <f:setPropertyActionListener
+                                            value="#{admissionController.current}"
+                                            target="#{roomChangeController.current}" />
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}"
+                                        value="Add Guardian Room"
+                                        ajax="false"
+                                        disabled="#{admissionController.current.discharged eq true}"
+                                        action="#{admissionController.navigateToGuardianRoomChange}"
+                                        icon="fa fa-user-plus"
+                                        class="w-100 ui-button-success">
+                                        <f:setPropertyActionListener
+                                            value="#{admissionController.current}"
+                                            target="#{roomChangeController.current}" />
+                                    </p:commandButton>
+                                </div>
+
                                 <div class="col-12">
                                     <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}"
                                         value="Room Details"
                                         ajax="false"
                                         action="#{admissionController.navigateToPatientRoomDetails()}"
@@ -560,6 +591,7 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('InwardRoomRoomChange')}"
                                         disabled="#{admissionController.current.discharged eq true}"
                                         value="Room Change"
                                         ajax="false"
@@ -573,6 +605,7 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}"
                                         value="Guardian Room Change"
                                         ajax="false"
                                         disabled="#{admissionController.current.discharged eq true}"

@@ -245,6 +245,9 @@ public class RoomChangeController implements Serializable {
         current.setRoomAdmitted(true);
         ejbFacade.edit(current);
 
+        recordRoomAuditEvent(getCurrentPatientRoom(), "Room Admitted", null);
+        notificationController.createNotification(getCurrentPatientRoom(), "Admit");
+
         JsfUtil.addSuccessMessage("Room admitted successfully");
 
     }
@@ -284,6 +287,10 @@ public class RoomChangeController implements Serializable {
             return;
         }
 
+        String beforeState = "roomFacilityCharge=" + (pR.getRoomFacilityCharge() != null ? pR.getRoomFacilityCharge().getName() : "null")
+                + ", admittedAt=" + pR.getAdmittedAt()
+                + ", discharged=" + pR.isDischarged();
+
         pR.setRetirer(getSessionController().getLoggedUser());
         pR.setRetired(true);
         pR.setRetiredAt(new Date());
@@ -297,6 +304,8 @@ public class RoomChangeController implements Serializable {
             getCurrent().setCurrentPatientRoom(pR.getPreviousRoom());
             getEjbFacade().edit(getCurrent());
         }
+
+        recordRoomAuditEvent(pR, "Room Removed", beforeState);
     }
 
     public void discharge(PatientRoom pR) {
@@ -317,6 +326,8 @@ public class RoomChangeController implements Serializable {
             encounter.setRoomDischargedBy(getSessionController().getLoggedUser());
             patientEncounterFacade.edit(encounter);
         }
+
+        recordRoomAuditEvent(pR, "Room Discharged", null);
     }
 
     public void dischargeWithCurrentTime(PatientRoom pR) {
@@ -374,6 +385,7 @@ public class RoomChangeController implements Serializable {
 
         // Record audit event
         recordRoomAuditEvent(pR, "Room Discharge Cancelled", beforeState);
+        notificationController.createNotification(pR, "CancelDischarge");
 
         JsfUtil.addSuccessMessage("Room Discharge Cancelled");
     }
@@ -438,11 +450,13 @@ public class RoomChangeController implements Serializable {
             JsfUtil.addErrorMessage("No Patient Room Detected");
             return;
         }
+        String beforeState = "room=" + (pR.getRoomFacilityCharge() != null ? pR.getRoomFacilityCharge().getName() : "null");
         pR.setRetired(true);
         pR.setRetiredAt(new Date());
         pR.setRetirer(sessionController.getWebUser());
         getPatientRoomFacade().edit(pR);
         bhtSummeryController.setPatientRooms(null);
+        recordRoomAuditEvent(pR, "Room Removed", beforeState);
     }
 
     public void removeGuardianRoom(PatientRoom pR) {
@@ -452,6 +466,7 @@ public class RoomChangeController implements Serializable {
             return;
         }
 
+        String beforeState = "room=" + (pR.getRoomFacilityCharge() != null ? pR.getRoomFacilityCharge().getName() : "null");
         pR.setRetirer(getSessionController().getLoggedUser());
         pR.setRetired(true);
         pR.setRetiredAt(new Date());
@@ -464,6 +479,7 @@ public class RoomChangeController implements Serializable {
             getPatientRoomFacade().edit(pR.getPreviousRoom());
         }
 
+        recordRoomAuditEvent(pR, "Guardian Room Removed", beforeState);
     }
 
     public void recreate() {
@@ -532,6 +548,9 @@ public class RoomChangeController implements Serializable {
         // Save consultant information
         saveConsultantInfo(newPatientRoom);
 
+        recordRoomAuditEvent(newPatientRoom, "Room Changed", "previousRoom=" + (oldPatientRoom.getRoomFacilityCharge() != null ? oldPatientRoom.getRoomFacilityCharge().getName() : "null"));
+        notificationController.createNotification(newPatientRoom, "Change");
+
         if (newConsultant != null || newPrimeConsultant != null) {
             JsfUtil.addSuccessMessage("Room changed with consultant details");
         } else {
@@ -565,7 +584,10 @@ public class RoomChangeController implements Serializable {
         // Save consultant information
         saveConsultantInfo(newPatientRoom);
 
-        JsfUtil.addSuccessMessage("Successfully Room Changed");
+        recordRoomAuditEvent(newPatientRoom, "Room Added", null);
+        notificationController.createNotification(newPatientRoom, "Admit");
+
+        JsfUtil.addSuccessMessage("Successfully Room Added");
 
         newRoomFacilityCharge = null;
         changeAt = null;
@@ -611,7 +633,10 @@ public class RoomChangeController implements Serializable {
             getPatientRoomFacade().edit(oldGaurdianRoom);
         }
 
-        JsfUtil.addSuccessMessage("Successfully Room Changed");
+        recordRoomAuditEvent(newGuardianRoom, "Guardian Room Changed", oldGaurdianRoom != null ? "previousRoom=" + (oldGaurdianRoom.getRoomFacilityCharge() != null ? oldGaurdianRoom.getRoomFacilityCharge().getName() : "null") : "first guardian room");
+        notificationController.createNotification(newGuardianRoom, "Change");
+
+        JsfUtil.addSuccessMessage("Successfully Guardian Room Changed");
         newRoomFacilityCharge = null;
         changeAt = null;
         createGuardianRoom();
