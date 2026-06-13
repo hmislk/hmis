@@ -7,17 +7,6 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
-    <h:head>
-        <title>Room Discharge Receipt</title>
-        <script type="text/javascript">
-            //<![CDATA[
-            function printReceipt() {
-                window.print();
-            }
-            //]]>
-        </script>
-    </h:head>
-
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
@@ -47,14 +36,14 @@
                                     value="Print"
                                     icon="fa fa-print"
                                     class="ui-button-info"
-                                    onclick="printReceipt()">
+                                    onclick="window.print();">
                                 </p:commandButton>
                                 <p:commandButton
                                     type="button"
-                                    value="Print Previous"
+                                    value="Print Copy"
                                     icon="fa fa-copy"
                                     class="ui-button-secondary"
-                                    onclick="printReceipt()">
+                                    onclick="window.print();">
                                 </p:commandButton>
                             </div>
                             <p:commandButton
@@ -100,7 +89,7 @@
                                     <td class="fw-bold">Admission Date</td>
                                     <td>
                                         <h:outputText value="#{roomChangeController.roomForReceipt.patientEncounter.dateOfAdmission}">
-                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm" timeZone="Asia/Colombo"/>
                                         </h:outputText>
                                     </td>
                                 </tr>
@@ -127,13 +116,13 @@
                                     <td class="fw-bold">Admitted At</td>
                                     <td>
                                         <h:outputText value="#{roomChangeController.roomForReceipt.admittedAt}">
-                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm" timeZone="Asia/Colombo"/>
                                         </h:outputText>
                                     </td>
                                     <td class="fw-bold">Discharged At</td>
                                     <td>
                                         <h:outputText value="#{roomChangeController.roomForReceipt.dischargedAt}">
-                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm" timeZone="Asia/Colombo"/>
                                         </h:outputText>
                                     </td>
                                 </tr>

@@ -417,14 +417,11 @@ public class RoomChangeController implements Serializable {
                     + ", dischargedAt=" + pr.getDischargedAt()
                     + ", dischargedBy=" + (pr.getDischargedBy() != null ? pr.getDischargedBy().getName() : "null");
             auditEvent.setAfterJson(afterState);
-            auditEventApplicationController.logAuditEvent(auditEvent);
-
-            // Mark as completed
             auditEvent.setEventStatus("Completed");
             auditEvent.setEventDuration(new Date().getTime() - auditEvent.getEventDataTime().getTime());
             auditEventApplicationController.logAuditEvent(auditEvent);
         } catch (Exception e) {
-            // Silently fail — audit failure should not block the user action
+            // Silently fail â€" audit failure should not block the user action
         }
     }
 

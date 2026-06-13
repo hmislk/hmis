@@ -534,7 +534,7 @@
                                                     <i class="fa-solid fa-clock me-1"/>
                                                     Admitted:
                                                     <h:outputText value="#{room.admittedAt}">
-                                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm" timeZone="Asia/Colombo"/>
                                                     </h:outputText>
                                                 </div>
                                             </div>
@@ -552,6 +552,7 @@
                                 <!-- Add New Room Buttons -->
                                 <div class="col-6">
                                     <p:commandButton
+                                        id="btnAddNewRoom"
                                         rendered="#{webUserController.hasPrivilege('InwardRoomRoomChange')}"
                                         disabled="#{admissionController.current.discharged eq true}"
                                         value="Add New Room"
@@ -566,6 +567,7 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
+                                        id="btnAddGuardianRoom"
                                         rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}"
                                         value="Add Guardian Room"
                                         ajax="false"
@@ -581,6 +583,7 @@
 
                                 <div class="col-12">
                                     <p:commandButton
+                                        id="btnRoomDetails"
                                         rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}"
                                         value="Room Details"
                                         ajax="false"
@@ -591,6 +594,7 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
+                                        id="btnRoomChange"
                                         rendered="#{webUserController.hasPrivilege('InwardRoomRoomChange')}"
                                         disabled="#{admissionController.current.discharged eq true}"
                                         value="Room Change"
@@ -605,6 +609,7 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
+                                        id="btnGuardianRoomChange"
                                         rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}"
                                         value="Guardian Room Change"
                                         ajax="false"
