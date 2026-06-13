@@ -1344,6 +1344,16 @@ public class PatientEncounterController implements Serializable {
             encounterMedicines = new ArrayList<>();
         }
 
+        // The medicine selected via the "Medicine" autocomplete (acMedicine). Favourite
+        // lookups are scoped to this item so "Add Favourite" applies to the selected medicine.
+        Item selectedMedicine = getEncounterMedicine().getPrescription() != null
+                ? getEncounterMedicine().getPrescription().getItem() : null;
+
+        if (selectedMedicine == null) {
+            JsfUtil.addErrorMessage("Please select a medicine first");
+            return;
+        }
+
         List<PrescriptionTemplate> favouriteMedicines = new ArrayList<>();
         String lookupMethod = "";
 
@@ -1359,7 +1369,7 @@ public class PatientEncounterController implements Serializable {
         // Method 2: By Patient Weight Group (if weight is available)
         if (patientWeight != null && patientWeight > 0) {
             favouriteMedicines = favouriteController.listFavouriteItems(
-                    null,
+                    selectedMedicine,
                     PrescriptionTemplateType.FavouriteMedicine,
                     patientWeight,
                     null
@@ -1372,7 +1382,7 @@ public class PatientEncounterController implements Serializable {
         // Method 3: By Patient Age Group (fallback when weight is not available or no weight-based favourites found)
         if (favouriteMedicines.isEmpty() && patientAgeInDays != null && patientAgeInDays > 0) {
             favouriteMedicines = favouriteController.listFavouriteItems(
-                    null,
+                    selectedMedicine,
                     PrescriptionTemplateType.FavouriteMedicine,
                     null,
                     patientAgeInDays
@@ -1382,13 +1392,27 @@ public class PatientEncounterController implements Serializable {
             }
         }
 
+        // Method 4: No age/weight restriction — fallback when patient DOB and weight are not
+        // recorded so the doctor still gets the favourite configuration.
+        if (favouriteMedicines.isEmpty()) {
+            favouriteMedicines = favouriteController.listFavouriteItems(
+                    selectedMedicine,
+                    PrescriptionTemplateType.FavouriteMedicine,
+                    null,
+                    null
+            );
+            if (!favouriteMedicines.isEmpty()) {
+                lookupMethod = "medicine templates (no age/weight filter)";
+            }
+        }
+
         // Check if any favourites were found
         if (favouriteMedicines == null || favouriteMedicines.isEmpty()) {
-            String message = "No favourite medicines found";
+            String message = "No favourite configuration found for " + selectedMedicine.getName();
             if (patientWeight != null && patientWeight > 0) {
-                message += " for weight " + patientWeight + " kg";
+                message += " at weight " + patientWeight + " kg";
             } else if (patientAgeInDays != null && patientAgeInDays > 0) {
-                message += " for age " + (patientAgeInDays / 365) + " years";
+                message += " at age " + (patientAgeInDays / 365) + " years";
             }
             JsfUtil.addWarningMessage(message);
             return;
@@ -1527,7 +1551,7 @@ public class PatientEncounterController implements Serializable {
         }
 
         // Method 2: By Patient Age Group (fallback when weight is not available or no weight-based favourites found)
-        if (diagnosisMedicineList == null || diagnosisMedicineList.isEmpty() && patientAgeInDays != null && patientAgeInDays > 0) {
+        if ((diagnosisMedicineList == null || diagnosisMedicineList.isEmpty()) && patientAgeInDays != null && patientAgeInDays > 0) {
             System.out.println("DEBUG: Step 1 - Finding medicine list by age group: " + patientAgeInDays + " days");
             diagnosisMedicineList = favouriteController.listFavouriteItems(
                     selectedDiagnosis,
@@ -1536,8 +1560,25 @@ public class PatientEncounterController implements Serializable {
                     patientAgeInDays
             );
             System.out.println("DEBUG: Age-based lookup found " + (diagnosisMedicineList != null ? diagnosisMedicineList.size() : "null") + " medicine recommendations");
-            if (diagnosisMedicineList!=null && !diagnosisMedicineList.isEmpty()) {
+            if (diagnosisMedicineList != null && !diagnosisMedicineList.isEmpty()) {
                 lookupMethod = "age group (" + (patientAgeInDays / 365) + " years)";
+            }
+        }
+
+        // Method 3: No age/weight restriction — used when patient weight and DOB are not
+        // recorded (ageInDays == null or 0).  Returns all FavouriteDiagnosis templates for
+        // this diagnosis regardless of age range so the doctor still gets suggestions.
+        if (diagnosisMedicineList == null || diagnosisMedicineList.isEmpty()) {
+            System.out.println("DEBUG: Step 1 - No age/weight data available; fetching all templates for diagnosis");
+            diagnosisMedicineList = favouriteController.listFavouriteItems(
+                    selectedDiagnosis,
+                    PrescriptionTemplateType.FavouriteDiagnosis,
+                    null,
+                    null
+            );
+            System.out.println("DEBUG: Unrestricted lookup found " + (diagnosisMedicineList != null ? diagnosisMedicineList.size() : "null") + " medicine recommendations");
+            if (diagnosisMedicineList != null && !diagnosisMedicineList.isEmpty()) {
+                lookupMethod = "diagnosis templates (no age/weight filter)";
             }
         }
 
@@ -1578,6 +1619,17 @@ public class PatientEncounterController implements Serializable {
                     System.out.println("DEBUG: Age-based medicine config found " + (medicineConfigs != null ? medicineConfigs.size() : "null") + " results");
                 }
 
+                // Try no-filter if weight and age are both unavailable/zero
+                if (medicineConfigs == null || medicineConfigs.isEmpty()) {
+                    medicineConfigs = favouriteController.listFavouriteItems(
+                            diagnosisTemplate.getItem(),
+                            PrescriptionTemplateType.FavouriteMedicine,
+                            null,
+                            null
+                    );
+                    System.out.println("DEBUG: No-filter medicine config found " + (medicineConfigs != null ? medicineConfigs.size() : "null") + " results");
+                }
+
                 // Use the first valid configuration found
                 if (medicineConfigs != null && !medicineConfigs.isEmpty()) {
                     PrescriptionTemplate medicineTemplate = medicineConfigs.get(0);
@@ -1586,7 +1638,11 @@ public class PatientEncounterController implements Serializable {
                                      " with dose=" + medicineTemplate.getDose() +
                                      ", frequency=" + (medicineTemplate.getFrequencyUnit() != null ? medicineTemplate.getFrequencyUnit().getName() : "null"));
                 } else {
-                    System.out.println("DEBUG: No detailed configuration found for " + diagnosisTemplate.getItem().getName() + " - skipping");
+                    // No separate FavouriteMedicine configuration exists for this medicine -
+                    // fall back to the dose/frequency/duration already stored on the
+                    // FavouriteDiagnosis template itself.
+                    System.out.println("DEBUG: No separate FavouriteMedicine configuration found for " + diagnosisTemplate.getItem().getName() + " - using FavouriteDiagnosis template directly");
+                    favouriteMedicines.add(diagnosisTemplate);
                 }
             }
         }
@@ -2165,6 +2221,7 @@ public class PatientEncounterController implements Serializable {
         for (DocumentTemplate t : dts) {
             if (t.isDefaultTemplate()) {
                 ClinicalFindingValue cfv = new ClinicalFindingValue();
+                cfv.setClinicalFindingValueType(ClinicalFindingValueType.VisitPrescription);
                 cfv.setEncounter(encounter);
                 cfv.setDocumentTemplate(t);
                 cfv.setStringValue(t.getName());
@@ -2323,6 +2380,9 @@ public class PatientEncounterController implements Serializable {
         }
         if (encounterPrescreption != null) {
             encounterPrescreption.setLobValue(generateDocumentFromTemplate(encounterPrescreption.getDocumentTemplate(), current));
+            if (encounterPrescreption.getClinicalFindingValueType() == null) {
+                encounterPrescreption.setClinicalFindingValueType(ClinicalFindingValueType.VisitPrescription);
+            }
             if (encounterPrescreption.getId() == null) {
                 clinicalFindingValueFacade.create(encounterPrescreption);
             } else {
@@ -2339,7 +2399,7 @@ public class PatientEncounterController implements Serializable {
             }
             if (prescTemplate != null) {
                 encounterPrescreption = new ClinicalFindingValue();
-                encounterPrescreption.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
+                encounterPrescreption.setClinicalFindingValueType(ClinicalFindingValueType.VisitPrescription);
                 encounterPrescreption.setDocumentTemplate(prescTemplate);
                 encounterPrescreption.setEncounter(current);
                 encounterPrescreption.setLobValue(generateDocumentFromTemplate(prescTemplate, current));
@@ -3842,9 +3902,31 @@ public class PatientEncounterController implements Serializable {
     }
 
     private List<ClinicalFindingValue> fillEncounterPrescreptions(PatientEncounter encounter) {
-        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
-        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitPrescription);
-        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+        List<ClinicalFindingValue> vs = new ArrayList<>();
+        if (encounterFindingValues == null) {
+            encounterFindingValues = fillEncounterFindingValues(encounter);
+        }
+        if (encounterFindingValues == null) {
+            encounterFindingValues = new ArrayList<>();
+        }
+        for (ClinicalFindingValue v : encounterFindingValues) {
+            if (v == null) {
+                continue;
+            }
+            if (v.getClinicalFindingValueType() == ClinicalFindingValueType.VisitPrescription) {
+                vs.add(v);
+                continue;
+            }
+            // Legacy prescriptions were persisted with a null or VisitDocument type;
+            // recognise them through their document template type instead.
+            boolean legacyType = v.getClinicalFindingValueType() == null
+                    || v.getClinicalFindingValueType() == ClinicalFindingValueType.VisitDocument;
+            if (legacyType && v.getDocumentTemplate() != null
+                    && v.getDocumentTemplate().getType() == DocumentTemplateType.Prescription) {
+                vs.add(v);
+            }
+        }
+        return vs;
     }
 
     private List<ClinicalFindingValue> fillPlanOfAction(PatientEncounter encounter) {

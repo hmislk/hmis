@@ -3246,13 +3246,17 @@ public class AnthropicApiService implements Serializable {
                 });
 
         appendModule(sb, "Clinical - Favourite Medicines", "/clinical/favourite_medicines",
-                "Manage clinician favourite medicine templates. "
+                "Manage clinician favourite medicine templates and favourite-diagnosis "
+                + "medicine suggestions (PrescriptionTemplate types FavouriteMedicine / FavouriteDiagnosis). "
+                + "POST/GET accept type=FavouriteMedicine (default) or type=FavouriteDiagnosis. "
+                + "For FavouriteDiagnosis, forItemName (resolved via /entities/diagnoses) is required "
+                + "and is set as the diagnosis (forItem); itemName/itemType is the suggested medicine. "
                 + "/validate (bulk entity validation) is live. "
                 + "/parse and /suggest are not yet implemented (return 501).",
                 githubUrl(branch, "developer_docs/API_CLINICAL_FAVOURITE_MEDICINES.md"),
                 new String[][]{
-                    {"GET",    "/clinical/favourite_medicines",              "List favourite medicine templates"},
-                    {"POST",   "/clinical/favourite_medicines",              "Create a new template"},
+                    {"GET",    "/clinical/favourite_medicines",              "List favourite medicine/diagnosis templates. Use type=FavouriteDiagnosis for diagnosis suggestions"},
+                    {"POST",   "/clinical/favourite_medicines",              "Create a new template. Set type=FavouriteDiagnosis + forItemName=<diagnosis name> for diagnosis suggestions"},
                     {"GET",    "/clinical/favourite_medicines/{id}",         "Get template by ID"},
                     {"PUT",    "/clinical/favourite_medicines/{id}",         "Update a template"},
                     {"DELETE", "/clinical/favourite_medicines/{id}",         "Retire a template"},
@@ -3260,7 +3264,8 @@ public class AnthropicApiService implements Serializable {
                     {"POST",   "/clinical/favourite_medicines/suggest",      "Not implemented (501) — reserved for future auto-suggest"},
                     {"POST",   "/clinical/favourite_medicines/validate",     "Bulk-validate a set of medicine entities"},
                     {"GET",    "/clinical/favourite_medicines/entities/vtms","List/search Virtual Therapeutic Moieties"},
-                    {"GET",    "/clinical/favourite_medicines/entities/amps", "List/search Actual Medicinal Products"}
+                    {"GET",    "/clinical/favourite_medicines/entities/amps", "List/search Actual Medicinal Products"},
+                    {"GET",    "/clinical/favourite_medicines/entities/diagnoses", "List/search diagnoses (ClinicalEntity, Disease_or_Syndrome) for use as forItemName"}
                 });
 
         // ── FHIR ──────────────────────────────────────────────────────────────

@@ -331,6 +331,7 @@ public enum Privileges {
     StoreReports("Store Reports"),
     StoreSummery("Store Summary"),
     StoreAdministration("Store Administration"),
+    PharmacyItemNameEdit("Pharmacy Item Name Edit"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Channel">
@@ -1018,7 +1019,8 @@ public enum Privileges {
             case PharmacyGrnFinalize:
             case PharmacyGrnApprove:
             case PrintOriginalPoBillFromReprint:
-            case PrintOriginalGrnBillFromReprint:    
+            case PrintOriginalGrnBillFromReprint:
+            case PharmacyItemNameEdit:
 
                 return "Pharmacy";
 

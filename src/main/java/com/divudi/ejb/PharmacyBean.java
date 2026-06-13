@@ -1342,9 +1342,11 @@ public class PharmacyBean {
         Map<String, Object> m = new HashMap<>();
         m.put("vtm", vtm);
         m.put("ret", false);
-        String jpql = "select vpi from VirtualProductIngredient vpi "
+
+        // Primary path: VirtualProductIngredient join table
+        String vpiJpql = "select vpi from VirtualProductIngredient vpi "
                 + " where vpi.retired=:ret and vpi.vtm=:vtm";
-        List<VirtualProductIngredient> vpis = virtualProductIngredientFacade.findByJpql(jpql, m);
+        List<VirtualProductIngredient> vpis = virtualProductIngredientFacade.findByJpql(vpiJpql, m);
         List<Amp> allAmps = new ArrayList<>();
         if (vpis != null) {
             for (VirtualProductIngredient vpi : vpis) {
@@ -1353,6 +1355,22 @@ public class PharmacyBean {
                     if (amps != null) {
                         allAmps.addAll(amps);
                     }
+                }
+            }
+        }
+        if (!allAmps.isEmpty()) {
+            return allAmps;
+        }
+
+        // Fallback: VirtualProductIngredient table is unpopulated on many deployments.
+        // VMPs carry a direct vtm reference (VMP.VTM_ID) — use that instead.
+        String vmpJpql = "select vmp from Vmp vmp where vmp.retired=:ret and vmp.vtm=:vtm";
+        List<Vmp> vmps = vmpFacade.findByJpql(vmpJpql, m);
+        if (vmps != null) {
+            for (Vmp vmp : vmps) {
+                List<Amp> amps = findAmpsForVmp(vmp);
+                if (amps != null) {
+                    allAmps.addAll(amps);
                 }
             }
         }

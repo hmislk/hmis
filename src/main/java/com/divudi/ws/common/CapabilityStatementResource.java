@@ -80,7 +80,9 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Clinical Favourite Medicines", "/api/clinical/favourite_medicines",
-                        "Clinical favourite medicine management",
+                        "Clinical favourite medicine templates and favourite-diagnosis medicine suggestions "
+                        + "(type=FavouriteMedicine default, or type=FavouriteDiagnosis). "
+                        + "Includes /entities/diagnoses for searching diagnoses to use as forItemName.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Membership", "/api/apiMembership",
