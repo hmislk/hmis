@@ -93,9 +93,9 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="fw-bold">Age / Gender</td>
+                                    <td class="fw-bold">Age</td>
                                     <td>
-                                        <h:outputText value="#{roomChangeController.roomForReceipt.patientEncounter.patient.person.nameOfAgeAndGender}"/>
+                                        <h:outputText value="#{roomChangeController.roomForReceipt.patientEncounter.patient.person.ageAsString}"/>
                                     </td>
                                     <td class="fw-bold">Admission Date</td>
                                     <td>
@@ -152,13 +152,11 @@
                                 <tr>
                                     <td style="width:25%;" class="fw-bold">Discharged By</td>
                                     <td style="width:25%;">
-                                        <h:outputText value="#{roomChangeController.roomForReceipt.dischargedBy.nameWithInitials}"/>
+                                        <h:outputText value="#{roomChangeController.roomForReceipt.dischargedBy.name}"/>
                                     </td>
-                                    <td style="width:25%;" class="fw-bold">Printed At</td>
+                                    <td style="width:25%;" class="fw-bold">Printed By</td>
                                     <td style="width:25%;">
-                                        <h:outputText value="#{now}">
-                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
-                                        </h:outputText>
+                                        <h:outputText value="#{sessionController.loggedUser.name}"/>
                                     </td>
                                 </tr>
                             </table>
@@ -167,7 +165,6 @@
                             <div class="text-center mt-4 text-muted" style="font-size:0.75rem;">
                                 <hr/>
                                 <p class="mb-0">This is a computer-generated receipt.</p>
-                                <p>Printed by: <h:outputText value="#{sessionController.loggedUser.nameWithInitials}"/></p>
                             </div>
                         </div>
                     </h:panelGroup>
