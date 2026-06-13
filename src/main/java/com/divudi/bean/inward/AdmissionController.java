@@ -762,6 +762,32 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return bhtSummeryController.navigateToPatientRoomDetails();
     }
 
+    /**
+     * Returns the list of currently active (non-discharged, non-retired)
+     * PatientRoom and GuardianRoom records for the current admission.
+     * Used by the dashboard "Room Management" panel to display current room
+     * assignments.
+     */
+    public List<com.divudi.core.entity.inward.PatientRoom> getActivePatientRooms() {
+        if (current == null) {
+            return java.util.Collections.emptyList();
+        }
+        List<com.divudi.core.entity.inward.PatientRoom> activeRooms = new java.util.ArrayList<>();
+        try {
+            String jpql = "SELECT pr FROM PatientRoom pr "
+                    + "WHERE pr.retired = false "
+                    + "AND pr.discharged = false "
+                    + "AND pr.patientEncounter = :enc "
+                    + "ORDER BY pr.createdAt";
+            java.util.HashMap<String, Object> params = new java.util.HashMap<>();
+            params.put("enc", current);
+            activeRooms = patientRoomFacade.findByJpql(jpql, params);
+        } catch (Exception e) {
+            // Silently return empty list on error
+        }
+        return activeRooms;
+    }
+
     public String navigateToAddBabyAdmission() {
         parentAdmission = current;
         Admission ad = new Admission();

@@ -512,6 +512,43 @@
 
                         <p:panel header="Room Management" class="m-1">
                             <div class="row g-2">
+                                <!-- Current Room Assignments -->
+                                <div class="col-12">
+                                    <h:panelGroup rendered="#{empty admissionController.activePatientRooms}" layout="block">
+                                        <div class="text-center py-2 text-muted small">
+                                            <i class="fa-solid fa-info-circle me-1"/>
+                                            Not admitted to any room
+                                        </div>
+                                    </h:panelGroup>
+                                    <ui:repeat value="#{admissionController.activePatientRooms}" var="room">
+                                        <div class="d-flex align-items-center justify-content-between p-2 mb-1 border rounded" style="background: #f0f8ff;">
+                                            <div>
+                                                <div class="fw-semibold small">
+                                                    <i class="fa-solid fa-bed text-primary me-1"/>
+                                                    <h:outputText value="#{room.roomFacilityCharge.name}"/>
+                                                    <h:panelGroup rendered="#{room.patientRoomClass eq 'class com.divudi.core.entity.inward.GuardianRoom'}">
+                                                        <span class="badge bg-success ms-1" style="font-size:0.65rem;">Guardian</span>
+                                                    </h:panelGroup>
+                                                </div>
+                                                <div class="text-muted" style="font-size:0.72rem;">
+                                                    <i class="fa-solid fa-clock me-1"/>
+                                                    Admitted:
+                                                    <h:outputText value="#{room.admittedAt}">
+                                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <p:commandButton
+                                                value="View"
+                                                ajax="false"
+                                                icon="fa-solid fa-arrow-right"
+                                                class="ui-button-sm ui-button-info"
+                                                action="#{admissionController.navigateToPatientRoomDetails()}">
+                                            </p:commandButton>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+
                                 <div class="col-12">
                                     <p:commandButton
                                         value="Room Details"

@@ -66,6 +66,8 @@ public class RoomChangeController implements Serializable {
     NotificationController notificationController;
     @Inject
     private InwardBeanController inwardBean;
+    @Inject
+    private com.divudi.bean.common.AuditEventApplicationController auditEventApplicationController;
 
     @EJB
     private AdmissionFacade ejbFacade;
@@ -84,6 +86,7 @@ public class RoomChangeController implements Serializable {
 
     private List<PatientRoom> patientRoom;
     private PatientRoom currentPatientRoom;
+    private PatientRoom roomForReceipt;
     List<Admission> selectedItems;
     private Admission current;
     private List<Admission> items = null;
@@ -323,7 +326,7 @@ public class RoomChangeController implements Serializable {
         List<PatientRoom> rooms = bhtSummeryController.getPatientRooms();
         if (rooms != null) {
             if (rooms.size() > 1) {
-                int currentRoomIndex = rooms.indexOf(patientRoom);
+                int currentRoomIndex = rooms.indexOf(pR);
                 if (currentRoomIndex > 0) {
                     PatientRoom previousRoom = rooms.get(currentRoomIndex - 1);
 
@@ -349,12 +352,85 @@ public class RoomChangeController implements Serializable {
             encounter.setRoomDischargedBy(getSessionController().getLoggedUser());
             patientEncounterFacade.edit(encounter);
         }
+
+        // Record audit event
+        recordRoomAuditEvent(pR, "Room Discharged", null);
+
+        JsfUtil.addSuccessMessage("Successfully Discharged from Room");
     }
 
     public void dischargeCancel(PatientRoom pR) {
+        if (pR == null) {
+            return;
+        }
+        // Capture state before cancel for audit
+        String beforeState = "discharged=true, dischargedAt=" + pR.getDischargedAt()
+                + ", dischargedBy=" + (pR.getDischargedBy() != null ? pR.getDischargedBy().getName() : "null");
+
         pR.setDischarged(false);
         pR.setDischargedBy(null);
+        pR.setDischargedAt(null);
         getPatientRoomFacade().edit(pR);
+
+        // Record audit event
+        recordRoomAuditEvent(pR, "Room Discharge Cancelled", beforeState);
+
+        JsfUtil.addSuccessMessage("Room Discharge Cancelled");
+    }
+
+    private void recordRoomAuditEvent(PatientRoom pr, String trigger, String beforeState) {
+        try {
+            com.divudi.core.entity.AuditEvent auditEvent = new com.divudi.core.entity.AuditEvent();
+            auditEvent.setEventDataTime(new Date());
+            auditEvent.setEventTrigger(trigger);
+            auditEvent.setEntityType(pr.getClass().getSimpleName());
+            auditEvent.setObjectId(pr.getId());
+            if (pr.getPatientEncounter() != null) {
+                auditEvent.setUrl("BHT: " + pr.getPatientEncounter().getBhtNo()
+                        + " | Room: " + (pr.getRoomFacilityCharge() != null ? pr.getRoomFacilityCharge().getName() : "N/A"));
+            }
+            if (sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+            if (sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+            }
+            if (beforeState != null) {
+                auditEvent.setBeforeJson(beforeState);
+            }
+            String afterState = "discharged=" + pr.isDischarged()
+                    + ", dischargedAt=" + pr.getDischargedAt()
+                    + ", dischargedBy=" + (pr.getDischargedBy() != null ? pr.getDischargedBy().getName() : "null");
+            auditEvent.setAfterJson(afterState);
+            auditEventApplicationController.logAuditEvent(auditEvent);
+
+            // Mark as completed
+            auditEvent.setEventStatus("Completed");
+            auditEvent.setEventDuration(new Date().getTime() - auditEvent.getEventDataTime().getTime());
+            auditEventApplicationController.logAuditEvent(auditEvent);
+        } catch (Exception e) {
+            // Silently fail — audit failure should not block the user action
+        }
+    }
+
+    public String navigateToRoomDischargeReceipt(PatientRoom pr) {
+        if (pr == null) {
+            JsfUtil.addErrorMessage("No room selected");
+            return "";
+        }
+        this.roomForReceipt = pr;
+        return "/inward/inward_room_discharge_receipt?faces-redirect=true";
+    }
+
+    public PatientRoom getRoomForReceipt() {
+        return roomForReceipt;
+    }
+
+    public void setRoomForReceipt(PatientRoom roomForReceipt) {
+        this.roomForReceipt = roomForReceipt;
     }
 
     public void removeRoom(PatientRoom pR) {
