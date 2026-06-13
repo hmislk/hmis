@@ -688,8 +688,7 @@ public class GrnReturnWorkflowController implements Serializable {
             BillItemFinanceDetails sessionFd = bi.getBillItemFinanceDetails();
             BillItemFinanceDetails finalizedFd = finalizedItem.getBillItemFinanceDetails();
 
-            double sessionQty = sessionFd != null && sessionFd.getQuantity() != null
-                    ? Math.abs(sessionFd.getQuantity().doubleValue()) : 0.0;
+            double sessionQty = Math.abs(bi.getQty());
             double sessionFreeQty = sessionFd != null && sessionFd.getFreeQuantity() != null
                     ? Math.abs(sessionFd.getFreeQuantity().doubleValue()) : 0.0;
             double finalizedQty = finalizedFd.getQuantity() != null
@@ -855,19 +854,8 @@ public class GrnReturnWorkflowController implements Serializable {
                 continue;
             }
 
-            double totalReturnQty = 0.0;
-
-            if (returnByTotalQuantity) {
-                // Total quantity mode - check combined qty + free qty
-                double qty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
-                double freeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
-                totalReturnQty = qty + freeQty;
-            } else {
-                // Separate quantity mode - check individual quantities
-                double qty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
-                double freeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
-                totalReturnQty = qty + freeQty;
-            }
+            double freeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
+            double totalReturnQty = Math.abs(bi.getQty()) + freeQty;
 
             // If no return quantity, mark for retirement (use == 0.0 since we use absolute values)
             if (totalReturnQty == 0.0) {
@@ -1147,22 +1135,6 @@ public class GrnReturnWorkflowController implements Serializable {
             }
         }
 
-        // After stock update, negate the bill-level finance details for returns (stock moving out)
-        if (currentBill != null && currentBill.getBillFinanceDetails() != null) {
-            BillFinanceDetails bfd = currentBill.getBillFinanceDetails();
-
-            if (bfd.getTotalPurchaseValue() != null) {
-                bfd.setTotalPurchaseValue(bfd.getTotalPurchaseValue().abs().negate());
-            }
-            if (bfd.getTotalCostValue() != null) {
-                bfd.setTotalCostValue(bfd.getTotalCostValue().abs().negate());
-            }
-            if (bfd.getTotalRetailSaleValue() != null) {
-                bfd.setTotalRetailSaleValue(bfd.getTotalRetailSaleValue().abs().negate());
-            }
-
-            billFacade.edit(currentBill);
-        }
         return true;
     }
 
@@ -1441,10 +1413,11 @@ public class GrnReturnWorkflowController implements Serializable {
         currentBill.getBillFinanceDetails().setNetTotal(returnTotal);
         currentBill.getBillFinanceDetails().setGrossTotal(returnTotal);
 
-        // Set purchase, cost, and retail sale values
-        currentBill.getBillFinanceDetails().setTotalPurchaseValue(totalPurchaseValue);
-        currentBill.getBillFinanceDetails().setTotalCostValue(totalCostValue);
-        currentBill.getBillFinanceDetails().setTotalRetailSaleValue(totalRetailValue);
+        // BFD convention: purchase/cost/retail values are negative for returns (stock leaving pharmacy)
+        // PBI stores them positive; negate here to match the established sign convention in the DB
+        currentBill.getBillFinanceDetails().setTotalPurchaseValue(totalPurchaseValue.negate());
+        currentBill.getBillFinanceDetails().setTotalCostValue(totalCostValue.negate());
+        currentBill.getBillFinanceDetails().setTotalRetailSaleValue(totalRetailValue.negate());
 
         // Also set the legacy total fields for backward compatibility
         currentBill.setTotal(returnTotal.doubleValue());
@@ -1466,12 +1439,12 @@ public class GrnReturnWorkflowController implements Serializable {
                 return;
             }
 
-            BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
+            BigDecimal qty = BigDecimal.valueOf(bi.getQty());
             BigDecimal freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
 
             // Check quantity for decimal values
-            if (qty != null && qty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
-                bi.getBillItemFinanceDetails().setQuantity(BigDecimal.ZERO);
+            if (qty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
+                bi.setQty(0.0);
                 calculateLineTotal(bi);
                 calculateTotal();
                 JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for quantity. Decimal values are not allowed.");
@@ -2195,42 +2168,32 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         if (returnByTotalQty) {
-            // Total quantity mode - qty + free qty combined
-            double currentTotalQty = (fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0);
-
-            // Convert pack quantity to units for AMPP items
+            double currentTotalQty = Math.abs(billItem.getQty());
             double currentTotalQtyInUnits = isAmppItem ? currentTotalQty * unitsPerPack : currentTotalQty;
 
-            // Allow exact match (>=) instead of just (>)
             if (currentTotalQtyInUnits > remainingTotalQty) {
-                // Convert back to packs for AMPP items when setting the corrected value
                 double correctedQtyInPacks = isAmppItem ? Math.max(0, remainingTotalQty / unitsPerPack) : Math.max(0, remainingTotalQty);
-                fd.setQuantity(BigDecimal.valueOf(correctedQtyInPacks));
+                billItem.setQty(correctedQtyInPacks);
                 fd.setFreeQuantity(BigDecimal.ZERO);
                 JsfUtil.addErrorMessage("Cannot return more than remaining quantity. Remaining: "
                         + (isAmppItem ? (remainingTotalQty / unitsPerPack) + " packs" : remainingTotalQty + " units"));
                 isValid = false;
             }
         } else if (returnByQtyAndFree) {
-            // Separate quantity and free quantity mode
-            double currentQty = (fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0);
-            double currentFreeQty = (fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0);
+            double currentQty = Math.abs(billItem.getQty());
+            double currentFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
 
-            // Convert pack quantities to units for AMPP items
             double currentQtyInUnits = isAmppItem ? currentQty * unitsPerPack : currentQty;
             double currentFreeQtyInUnits = isAmppItem ? currentFreeQty * unitsPerPack : currentFreeQty;
 
-            // Allow exact match (>=) instead of just (>)
             if (currentQtyInUnits > remainingQty) {
-                // Convert back to packs for AMPP items when setting the corrected value
                 double correctedQtyInPacks = isAmppItem ? Math.max(0, remainingQty / unitsPerPack) : Math.max(0, remainingQty);
-                fd.setQuantity(BigDecimal.valueOf(correctedQtyInPacks));
+                billItem.setQty(correctedQtyInPacks);
                 JsfUtil.addErrorMessage("Cannot return more than remaining quantity. Remaining: "
                         + (isAmppItem ? (remainingQty / unitsPerPack) + " packs" : remainingQty + " units"));
                 isValid = false;
             }
             if (currentFreeQtyInUnits > remainingFreeQty) {
-                // Convert back to packs for AMPP items when setting the corrected value
                 double correctedFreeQtyInPacks = isAmppItem ? Math.max(0, remainingFreeQty / unitsPerPack) : Math.max(0, remainingFreeQty);
                 fd.setFreeQuantity(BigDecimal.valueOf(correctedFreeQtyInPacks));
                 JsfUtil.addErrorMessage("Cannot return more than remaining free quantity. Remaining: "
@@ -2271,7 +2234,10 @@ public class GrnReturnWorkflowController implements Serializable {
             return true; // No quantities to validate
         }
 
-        double currentStock = phi.getStock().getStock();
+        // Always read fresh stock from DB — session-cached value may be stale if
+        // another transaction (sale, issue, transfer) reduced stock after this return was opened.
+        Stock freshStock = stockFacade.findWithoutCache(phi.getStock().getId());
+        double currentStock = freshStock != null ? freshStock.getStock() : phi.getStock().getStock();
 
         // Calculate total stock usage by this item AND other items in the same return using the same stock
         double totalStockUsageFromCurrentReturn = calculateTotalStockUsageFromCurrentReturn(phi.getStock(), billItem);
@@ -2374,17 +2340,14 @@ public class GrnReturnWorkflowController implements Serializable {
                 continue;
             }
 
-            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
-            if (fd == null) {
-                continue;
-            }
-
-            // Skip items with zero quantities
-            double returnQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
-            double returnFreeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
-
-            if (returnQty <= 0 && returnFreeQty <= 0) {
-                continue;
+            // Skip items with zero quantities — read from BillItem.qty (always positive, user-facing)
+            if (Math.abs(bi.getQty()) <= 0) {
+                BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+                double returnFreeQty = fd != null && fd.getFreeQuantity() != null
+                        ? fd.getFreeQuantity().doubleValue() : 0.0;
+                if (Math.abs(returnFreeQty) <= 0) {
+                    continue;
+                }
             }
 
             if (!validateStockAvailability(bi, showMessages)) {
@@ -2424,14 +2387,9 @@ public class GrnReturnWorkflowController implements Serializable {
 
             // Check if at least one item has some return quantity
             BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
-            if (fd != null) {
-                double qty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
-                double freeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
-
-                // Accept any positive return quantities (including exact remaining quantities)
-                if (qty > 0 || freeQty > 0) {
-                    hasItemsWithQuantities = true;
-                }
+            double freeQty = fd != null && fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
+            if (Math.abs(bi.getQty()) > 0 || freeQty > 0) {
+                hasItemsWithQuantities = true;
             }
         }
 
@@ -2537,47 +2495,37 @@ public class GrnReturnWorkflowController implements Serializable {
         String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
         boolean isAmpp = bi.getItem() instanceof Ampp;
 
-        if (isAmpp) {
-            // For AMPP items: User entered rate is per pack, we need to sync unit-based calculations
-            BigDecimal quantity = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
-            BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
-            BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
+        // Use bi.qty as source of truth — always positive pack quantity
+        BigDecimal quantity = BigDecimal.valueOf(Math.abs(bi.getQty()));
+        BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity().abs() : BigDecimal.ZERO;
+        BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
 
-            // Calculate unit-based quantities
+        if (isAmpp) {
             BigDecimal quantityByUnits = quantity.multiply(unitsPerPack);
             BigDecimal freeQuantityByUnits = freeQuantity.multiply(unitsPerPack);
 
-            // Set calculated unit quantities
             fd.setQuantityByUnits(quantityByUnits);
             fd.setFreeQuantityByUnits(freeQuantityByUnits);
 
-            // Calculate unit rate from pack rate (HMIS STANDARD: PBI rates ALWAYS per unit)
             BigDecimal ratePerUnit = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
                     ? userEnteredRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
 
-            // Sync pharmaceutical bill item with calculated unit-based values
-            phi.setQty(quantityByUnits.doubleValue());        // ALWAYS in units
-            phi.setFreeQty(freeQuantityByUnits.doubleValue()); // ALWAYS in units
+            phi.setQty(quantityByUnits.doubleValue());
+            phi.setFreeQty(freeQuantityByUnits.doubleValue());
             phi.setPurchaseRateInUnit(ratePerUnit.doubleValue());
             phi.setPurchaseRatePack(userEnteredRate.doubleValue());
-            phi.setPurchaseRate(ratePerUnit.doubleValue());    // CRITICAL: ALWAYS per unit, not pack rate!
+            phi.setPurchaseRate(ratePerUnit.doubleValue());
 
         } else {
-            // For AMP items: User entered rate is per unit
-            BigDecimal quantity = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
-            BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
-
-            // Set unit quantities (same as pack quantities for AMP)
             fd.setQuantityByUnits(quantity);
             fd.setFreeQuantityByUnits(freeQuantity);
 
-            // Sync pharmaceutical bill item with unit-based values
-            phi.setQty(quantity.doubleValue());               // In units (same as packs for AMP)
-            phi.setFreeQty(freeQuantity.doubleValue());       // In units (same as packs for AMP)
+            phi.setQty(quantity.doubleValue());
+            phi.setFreeQty(freeQuantity.doubleValue());
             phi.setPurchaseRateInUnit(userEnteredRate.doubleValue());
-            phi.setPurchaseRate(userEnteredRate.doubleValue()); // Per unit
-            phi.setPurchaseRatePack(userEnteredRate.doubleValue()); // Same as unit for AMP
+            phi.setPurchaseRate(userEnteredRate.doubleValue());
+            phi.setPurchaseRatePack(userEnteredRate.doubleValue());
         }
 
         // Always preserve the user-entered rate
@@ -2649,47 +2597,37 @@ public class GrnReturnWorkflowController implements Serializable {
         String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
         boolean isAmpp = bi.getItem() instanceof Ampp;
 
-        if (isAmpp) {
-            // For AMPP items: Rate should remain as pack rate
-            BigDecimal quantity = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
-            BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
-            BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
+        // Use bi.qty as source of truth (always positive, user-entered pack qty)
+        BigDecimal quantity = BigDecimal.valueOf(Math.abs(bi.getQty()));
+        BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity().abs() : BigDecimal.ZERO;
+        BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
 
-            // Calculate unit-based quantities
+        if (isAmpp) {
             BigDecimal quantityByUnits = quantity.multiply(unitsPerPack);
             BigDecimal freeQuantityByUnits = freeQuantity.multiply(unitsPerPack);
 
-            // Update unit quantities but preserve the rate
             fd.setQuantityByUnits(quantityByUnits);
             fd.setFreeQuantityByUnits(freeQuantityByUnits);
 
-            // Calculate unit rate from existing pack rate (HMIS STANDARD: PBI rates ALWAYS per unit)
             BigDecimal ratePerUnit = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
                     ? existingRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
 
-            // Sync pharmaceutical bill item with calculated values
-            phi.setQty(quantityByUnits.doubleValue());        // ALWAYS in units
-            phi.setFreeQty(freeQuantityByUnits.doubleValue()); // ALWAYS in units
+            phi.setQty(quantityByUnits.doubleValue());
+            phi.setFreeQty(freeQuantityByUnits.doubleValue());
             phi.setPurchaseRateInUnit(ratePerUnit.doubleValue());
             phi.setPurchaseRatePack(existingRate.doubleValue());
-            phi.setPurchaseRate(ratePerUnit.doubleValue());    // CRITICAL: ALWAYS per unit, not pack rate!
+            phi.setPurchaseRate(ratePerUnit.doubleValue());
 
         } else {
-            // For AMP items: Rate is per unit
-            BigDecimal quantity = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
-            BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
-
-            // Update unit quantities (same as pack quantities for AMP)
             fd.setQuantityByUnits(quantity);
             fd.setFreeQuantityByUnits(freeQuantity);
 
-            // Sync pharmaceutical bill item with values
-            phi.setQty(quantity.doubleValue());               // In units (same as packs for AMP)
-            phi.setFreeQty(freeQuantity.doubleValue());       // In units (same as packs for AMP)
+            phi.setQty(quantity.doubleValue());
+            phi.setFreeQty(freeQuantity.doubleValue());
             phi.setPurchaseRateInUnit(existingRate.doubleValue());
-            phi.setPurchaseRate(existingRate.doubleValue());  // Per unit
-            phi.setPurchaseRatePack(existingRate.doubleValue()); // Same as unit for AMP
+            phi.setPurchaseRate(existingRate.doubleValue());
+            phi.setPurchaseRatePack(existingRate.doubleValue());
         }
 
         // CRITICAL: Restore the original rate to prevent external service interference
@@ -2710,9 +2648,10 @@ public class GrnReturnWorkflowController implements Serializable {
         Item item = bi.getItem();
         boolean isAmpp = item instanceof Ampp;
 
-        // Null-safe BigDecimal values
-        BigDecimal qty = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
-        BigDecimal freeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
+        // Read qty from BillItem (user-facing field) — always positive, avoids sign feedback loop
+        // from fd.getQuantity() which may already be negated from a previous calculateLineTotal call.
+        BigDecimal qty = BigDecimal.valueOf(Math.abs(bi.getQty()));
+        BigDecimal freeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().abs() : BigDecimal.ZERO;
         BigDecimal rate = fd.getLineGrossRate() != null ? fd.getLineGrossRate() : BigDecimal.ZERO;
         BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
 
