@@ -157,7 +157,8 @@ public class NotificationController implements Serializable {
             nn.setPatientRoom(pr);
             nn.setTriggerType(tt);
             nn.setCreater(sessionController.getLoggedUser());
-            String msg = "You Have a Discharge Notification From " + pr.getRoomFacilityCharge().getName();
+            String roomName = pr.getRoomFacilityCharge() != null ? pr.getRoomFacilityCharge().getName() : "Unknown Room";
+            String msg = "You Have a Discharge Notification From " + roomName;
             nn.setMessage(msg);
             getFacade().create(nn);
             userNotificationController.createUserNotifications(nn);
