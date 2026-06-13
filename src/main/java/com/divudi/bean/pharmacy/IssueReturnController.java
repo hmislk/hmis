@@ -275,15 +275,18 @@ public class IssueReturnController implements Serializable {
         }
 
         saveDisposalIssueReturnBill();
-        getReturnBill().setEditedAt(new Date());
-        getReturnBill().setEditor(sessionController.getLoggedUser());
-        getReturnBill().setChecked(true);
-        getReturnBill().setCheckeAt(new Date());
-        getReturnBill().setCheckedBy(sessionController.getLoggedUser());
-        getReturnBill().setBillItems(null);
-        getBillFacade().edit(getReturnBill());
+        // Reload from DB so we don't trigger orphan-removal on billItems
+        returnBill = billService.reloadBill(getReturnBill());
+        if (returnBill != null) {
+            returnBill.setEditedAt(new Date());
+            returnBill.setEditor(sessionController.getLoggedUser());
+            returnBill.setChecked(true);
+            returnBill.setCheckeAt(new Date());
+            returnBill.setCheckedBy(sessionController.getLoggedUser());
+            getBillFacade().edit(returnBill);
+        }
 
-        // Refresh the bill and reload bill items for print preview
+        // Refresh again and reload bill items for print preview
         returnBill = billService.reloadBill(getReturnBill());
         if (returnBill != null) {
             returnBillItems = billService.fetchBillItems(returnBill);
@@ -321,18 +324,24 @@ public class IssueReturnController implements Serializable {
         saveSettlingBill();
         saveSettlingBillComponents();
 
+        // Reload both bills so EclipseLink doesn't orphan-remove existing billItems
+        Bill freshReturn = billService.reloadBill(getReturnBill());
+        if (freshReturn != null) {
+            returnBill = freshReturn;
+        }
         getReturnBill().setReferenceBill(getOriginalBill());
         getReturnBill().setCompleted(true);
         getReturnBill().setCompletedAt(new Date());
         getReturnBill().setCompletedBy(getSessionController().getLoggedUser());
-        getReturnBill().setBillItems(null);
         getBillFacade().edit(getReturnBill());
 
+        Bill freshOriginal = billService.reloadBill(getOriginalBill());
+        if (freshOriginal != null) {
+            originalBill = freshOriginal;
+        }
         getOriginalBill().setRefundedBill(getReturnBill());
         getOriginalBill().setRefunded(true);
         getOriginalBill().getRefundBills().add(getReturnBill());
-
-        getOriginalBill().setBillItems(null);
         getBillFacade().edit(getOriginalBill());
 
         printPreview = true;
@@ -502,15 +511,29 @@ public class IssueReturnController implements Serializable {
             getReturnBill().setCreater(sessionController.getLoggedUser());
             getBillFacade().create(getReturnBill());
         } else {
-            // Null out the billItems collection before merge so EclipseLink does not treat
-            // the in-memory empty ArrayList as an authoritative orphan-removal signal.
-            // Bill items are managed independently by saveBillComponents() / billItemFacade.
-            getReturnBill().setBillItems(null);
-            getBillFacade().edit(getReturnBill());
+            // Reload from DB before merge so EclipseLink's managed entity carries the
+            // real billItems collection — setting null or an empty list here triggers
+            // orphan-removal deletes that violate the pharmaceuticalbillitem FK.
+            Bill fresh = billService.reloadBill(getReturnBill());
+            if (fresh != null) {
+                fresh.setReferenceBill(getReturnBill().getReferenceBill());
+                fresh.setComments(getReturnBill().getComments());
+                fresh.setEditedAt(new Date());
+                fresh.setEditor(sessionController.getLoggedUser());
+                getBillFacade().edit(fresh);
+                returnBill = fresh;
+            }
         }
     }
 
     private void saveSettlingBill() {
+        // Reload from DB first so EclipseLink's managed entity carries the real
+        // billItems collection — nulling it before edit triggers orphan-removal deletes
+        // that violate the pharmaceuticalbillitem FK (same fix as saveBill).
+        Bill fresh = billService.reloadBill(getReturnBill());
+        if (fresh != null) {
+            returnBill = fresh;
+        }
 
         getReturnBill().setBillType(BillType.PharmacyIssue);
         getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
@@ -568,7 +591,6 @@ public class IssueReturnController implements Serializable {
         }
         getReturnBill().setDeptId(deptId);
         getReturnBill().setInsId(insId);
-        getReturnBill().setBillItems(null);
         billFacade.edit(returnBill);
     }
 
@@ -804,10 +826,8 @@ public class IssueReturnController implements Serializable {
             getOriginalBill().setFullReturned(true);
             getOriginalBill().setFullReturnedAt(new Date());
             getOriginalBill().setFullReturnedBy(sessionController.getLoggedUser());
-            getOriginalBill().setBillItems(null);
             getBillFacade().edit(getOriginalBill());
         }
-        getReturnBill().setBillItems(null);
         getBillFacade().edit(getReturnBill());
 
     }
