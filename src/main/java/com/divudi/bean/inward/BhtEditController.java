@@ -509,6 +509,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             }
             boolean autoMarkCredit = configOptionApplicationController.getBooleanValueByKey(
                     "Inward Admission - Auto Mark Claimable for Credit Admissions", false);
+            if (autoMarkCredit && pm == PaymentMethod.Credit) {
+                getCurrent().setClaimable(true);
+            }
             if (!enforceForCredit && !autoMarkCredit) {
                 String claimableRequiredFor = configOptionApplicationController.getShortTextValueByKey(
                         "Inward Admission - Claimable Required For", "Credit");
@@ -1093,7 +1096,14 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     @Override
     public void listnerForPaymentMethodChange() {
-        // ToDo: Add Logic
+        if (current == null) {
+            return;
+        }
+        boolean autoMarkCredit = configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Auto Mark Claimable for Credit Admissions", false);
+        if (autoMarkCredit && current.getPaymentMethod() == PaymentMethod.Credit) {
+            current.setClaimable(true);
+        }
     }
 
     public PaymentScheme getPaymentScheme() {

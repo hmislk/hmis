@@ -2224,6 +2224,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         admittingProcessStarted = true;
 
+        // Auto-mark claimable for Credit admissions (server-side safety net)
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Auto Mark Claimable for Credit Admissions", false)
+                && getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
+            getCurrent().setClaimable(true);
+        }
+
         if (errorCheck()) {
             admittingProcessStarted = false;
             return;
@@ -3001,7 +3008,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     @Override
     public void listnerForPaymentMethodChange() {
-        // ToDo: Add Logic
+        if (current == null) {
+            return;
+        }
+        boolean autoMarkCredit = configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Auto Mark Claimable for Credit Admissions", false);
+        if (autoMarkCredit && current.getPaymentMethod() == PaymentMethod.Credit) {
+            current.setClaimable(true);
+        }
     }
 
     public PaymentScheme getPaymentScheme() {
