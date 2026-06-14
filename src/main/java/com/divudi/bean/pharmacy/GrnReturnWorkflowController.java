@@ -1014,6 +1014,11 @@ public class GrnReturnWorkflowController implements Serializable {
                 continue;
             }
 
+            // Recalculate from bi.qty before persisting so phi.qty and fd.quantity are
+            // always derived from the user-entered pack qty regardless of whether AJAX
+            // blur events fired before the Finalize POST.
+            calculateLineTotal(bi);
+
             // Ensure bill reference is set
             bi.setBill(currentBill);
 
@@ -1555,6 +1560,16 @@ public class GrnReturnWorkflowController implements Serializable {
 
                 BigDecimal lineGrossRateAsEntered = lineGrossRateForAUnit.multiply(unitsPerPack);
                 newBillItemFinanceDetailsInReturnBill.setLineGrossRate(lineGrossRateAsEntered);
+                // Seed bi.qty (pack qty) from phi.qty (unit qty) before calculateLineTotal reads it.
+                // phi.qty was set to the available-to-return quantity in units above; bi.qty starts
+                // at 0.0 (line 1496) and calculateLineTotal reads bi.qty — without seeding, every
+                // initial line total would be calculated as zero.
+                boolean isAmppItem = newBillItemInReturnBill.getItem() instanceof Ampp;
+                BigDecimal phiQty = BigDecimal.valueOf(newPharmaceuticalBillItemInReturnBill.getQty());
+                BigDecimal initialPackQty = isAmppItem && unitsPerPack.compareTo(BigDecimal.ZERO) > 0
+                        ? phiQty.divide(unitsPerPack, 4, java.math.RoundingMode.HALF_UP)
+                        : phiQty;
+                newBillItemInReturnBill.setQty(initialPackQty.doubleValue());
                 calculateLineTotal(newBillItemInReturnBill);
                 getBillItems().add(newBillItemInReturnBill);
             } catch (Exception e) {
