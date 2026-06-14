@@ -7,7 +7,7 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="content">
-        <h:form id="wardPharmacyBhtIssueReceiveForm">
+        <h:form id="wardPharmacyBhtIssueReceiveForm" onkeypress="if(event.keyCode == 13 &amp;&amp; event.target.type != 'textarea') { return false; }">
 
             <p:panel rendered="#{!wardPharmacyBhtIssueReceiveController.printPreview}">
                 <f:facet name="header">
