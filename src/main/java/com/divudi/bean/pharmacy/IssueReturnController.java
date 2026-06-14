@@ -95,6 +95,7 @@ public class IssueReturnController implements Serializable {
 
     private List<BillItem> originalBillItems;
     private List<BillItem> returnBillItems;
+    private List<BillItem> cachedFilteredReturnBillItems;
 
     private List<BillItem> selectedBillItems;
 
@@ -290,6 +291,7 @@ public class IssueReturnController implements Serializable {
         returnBill = billService.reloadBill(getReturnBill());
         if (returnBill != null) {
             returnBillItems = billService.fetchBillItems(returnBill);
+            invalidateReturnBillItemsCache();
         }
 
         printPreview = true;
@@ -428,6 +430,9 @@ public class IssueReturnController implements Serializable {
             JsfUtil.addErrorMessage("Programming Error");
             return null;
         }
+        // Save immediately so BillItems get database IDs for rowKey — required
+        // for PrimeFaces datatable checkbox selection to work correctly.
+        saveDisposalIssueReturnBill();
         return "/pharmacy/pharmacy_bill_return_issue?faces-redirect=true";
     }
 
@@ -535,7 +540,7 @@ public class IssueReturnController implements Serializable {
             returnBill = fresh;
         }
 
-        getReturnBill().setBillType(BillType.PharmacyIssue);
+        getReturnBill().setBillType(BillType.PharmacyDisposalIssue);
         getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
         getReturnBill().setBilledBill(getOriginalBill());
         getReturnBill().setCompleted(true);
@@ -926,6 +931,7 @@ public class IssueReturnController implements Serializable {
         returnBill.setInvoiceNumber(originalBill.getInvoiceNumber());
         originalBillItems = billService.fetchBillItems(originalBill);
         returnBillItems = new ArrayList<>();
+        invalidateReturnBillItemsCache();
         if (originalBillItems == null || originalBillItems.isEmpty()) {
             return false;
         }
@@ -1079,6 +1085,7 @@ public class IssueReturnController implements Serializable {
             returnBillItems.remove(selectedItem);
         }
         selectedBillItems.clear();
+        invalidateReturnBillItemsCache();
         calculateBillTotal();
         JsfUtil.addSuccessMessage("Selected items deleted successfully");
     }
@@ -1094,6 +1101,7 @@ public class IssueReturnController implements Serializable {
             billItemFacade.edit(itemToDelete);
         }
         returnBillItems.remove(itemToDelete);
+        invalidateReturnBillItemsCache();
         calculateBillTotal();
         JsfUtil.addSuccessMessage("Item deleted successfully");
     }
@@ -1138,16 +1146,25 @@ public class IssueReturnController implements Serializable {
     }
 
     public List<BillItem> getReturnBillItems() {
-        if (returnBillItems == null) {
-            return java.util.Collections.emptyList();
+        if (cachedFilteredReturnBillItems == null) {
+            if (returnBillItems == null) {
+                cachedFilteredReturnBillItems = java.util.Collections.emptyList();
+            } else {
+                cachedFilteredReturnBillItems = returnBillItems.stream()
+                        .filter(bi -> bi != null && !bi.isRetired())
+                        .collect(java.util.stream.Collectors.toList());
+            }
         }
-        return returnBillItems.stream()
-                .filter(bi -> bi != null && !bi.isRetired())
-                .collect(java.util.stream.Collectors.toList());
+        return cachedFilteredReturnBillItems;
+    }
+
+    private void invalidateReturnBillItemsCache() {
+        cachedFilteredReturnBillItems = null;
     }
 
     public void setReturnBillItems(List<BillItem> returnBillItems) {
         this.returnBillItems = returnBillItems;
+        invalidateReturnBillItemsCache();
     }
 
     /**
@@ -1386,7 +1403,7 @@ public class IssueReturnController implements Serializable {
      * with zero return quantity to ensure only items being returned are included in totals.
      */
     private void calculateReturnBillTotalFromItems(List<BillItem> billItems) {
-        // Initialize totals
+        // Initialize totals — positive accumulators; negated before writing to bill header
         double netTotal = 0.0;
         double grossTotal = 0.0;
         double totalDiscountValue = 0.0;
