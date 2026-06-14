@@ -68,11 +68,12 @@
 
                     <div class="row" >
                         <div class="col-9" >
-                            <p:dataTable 
-                                var="ph" 
+                            <p:dataTable
+                                var="ph"
                                 value="#{grnReturnWorkflowController.billItems}"
-                                id="itemList" 
-                                rowKey="#{ph.id != null ? ph.id : ph.hashCode()}" >
+                                id="itemList"
+                                rowKey="#{ph.id != null ? ph.id : ph.hashCode()}"
+                                rowStyleClass="#{ph.retired ? 'd-none' : ''}">
 
                                 <f:facet name="header">
                                     <h:outputText value="Returning Items" ></h:outputText>
@@ -195,8 +196,8 @@
                                     </h:panelGroup>
                                 </p:column>
 
-                                <p:column 
-                                    width="5em" 
+                                <p:column
+                                    width="5em"
                                     headerText="Returning Total Qty"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity')}">
                                     <p:inputText
@@ -204,19 +205,19 @@
                                         autocomplete="off"
                                         class="w-100 text-end"
                                         onfocus="this.select()"
-                                        value="#{ph.billItemFinanceDetails.quantity}">
+                                        value="#{ph.qty}">
                                         <f:convertNumber pattern="#,##0.00##" integerOnly="#{!ph.item.allowFractions}" ></f:convertNumber>
-                                        <p:ajax 
-                                            event="blur" 
+                                        <p:ajax
+                                            event="blur"
                                             process="@this"
-                                            update="txtLineReturnValue returnTotal messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
+                                            update="txtLineReturnValue returnTotal messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}"
                                             listener="#{grnReturnWorkflowController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                 </p:column>
 
                                 <p:column
-                                    width="5em" 
+                                    width="5em"
                                     headerText="Returning Qty"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
                                     <p:inputText
@@ -224,13 +225,13 @@
                                         autocomplete="off"
                                         onfocus="this.select()"
                                         class="w-100 text-end"
-                                        value="#{ph.billItemFinanceDetails.quantity}">
+                                        value="#{ph.qty}">
                                         <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
-                                        <p:ajax 
+                                        <p:ajax
                                             process="@this"
-                                            event="blur" 
-                                            update="txtLineReturnValue returnTotal messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
-                                            listener="#{grnReturnWorkflowController.onReturningQtyChange(ph)}" 
+                                            event="blur"
+                                            update="txtLineReturnValue returnTotal messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}"
+                                            listener="#{grnReturnWorkflowController.onReturningQtyChange(ph)}"
                                             />
                                     </p:inputText>
                                     <p:keyFilter for="txtReturningQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />

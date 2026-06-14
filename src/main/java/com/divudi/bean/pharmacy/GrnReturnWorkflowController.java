@@ -386,9 +386,7 @@ public class GrnReturnWorkflowController implements Serializable {
         // Load the bill with all its items using billService
         try {
             currentBill = billService.reloadBill(currentBill);
-            if (currentBill != null && currentBill.getBillItems() != null) {
-                // Ensure bill items are loaded for preview
-                ensureBillItemsForPreview();
+            if (currentBill != null) {
                 printPreview = true;
                 return "/pharmacy/pharmacy_reprint_grn_return?faces-redirect=true";
             } else {
@@ -440,18 +438,19 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         try {
-            // Mark the bill as cancelled in the database
-            currentBill.setCancelled(true);
-
-            // Set cancellation metadata if bill has been saved to database
-            if (currentBill.getCreatedAt() != null) {
-                currentBill.setEditedAt(new Date());
-                currentBill.setEditor(sessionController.getLoggedUser());
+            // Reload from DB to ensure EclipseLink sees the full persistent billItems
+            // collection — editing the session-scoped bill directly can trigger orphan-removal
+            // DELETEs on BillItem rows that are still referenced by PharmaceuticalBillItem.
+            Bill freshBill = billFacade.find(currentBill.getId());
+            if (freshBill == null) {
+                JsfUtil.addErrorMessage("Cannot cancel: GRN Return no longer exists.");
+                return "";
             }
-
-            // Save the cancelled bill to database
-            billFacade.edit(currentBill);
-
+            freshBill.setCancelled(true);
+            freshBill.setEditedAt(new Date());
+            freshBill.setEditor(sessionController.getLoggedUser());
+            billFacade.edit(freshBill);
+            currentBill = freshBill;
             JsfUtil.addSuccessMessage("GRN Return cancelled successfully.");
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error cancelling GRN Return: " + e.getMessage());
@@ -613,8 +612,6 @@ public class GrnReturnWorkflowController implements Serializable {
 //            return;
 //        }
         saveBill(false);
-        // Ensure bill items are properly associated for any subsequent operations
-        ensureBillItemsForPreview();
         JsfUtil.addSuccessMessage("GRN Return Request Saved Successfully");
     }
 
@@ -655,8 +652,7 @@ public class GrnReturnWorkflowController implements Serializable {
             processZeroQuantityItems();
 
             saveBill(true);
-            // Ensure the bill items are properly associated with the current bill for print preview
-            ensureBillItemsForPreview();
+            currentBill = billService.reloadBill(currentBill);
             printPreview = true;
             JsfUtil.addSuccessMessage("GRN Return Request Finalized Successfully");
         }
@@ -692,8 +688,7 @@ public class GrnReturnWorkflowController implements Serializable {
             BillItemFinanceDetails sessionFd = bi.getBillItemFinanceDetails();
             BillItemFinanceDetails finalizedFd = finalizedItem.getBillItemFinanceDetails();
 
-            double sessionQty = sessionFd != null && sessionFd.getQuantity() != null
-                    ? Math.abs(sessionFd.getQuantity().doubleValue()) : 0.0;
+            double sessionQty = Math.abs(bi.getQty());
             double sessionFreeQty = sessionFd != null && sessionFd.getFreeQuantity() != null
                     ? Math.abs(sessionFd.getFreeQuantity().doubleValue()) : 0.0;
             double finalizedQty = finalizedFd.getQuantity() != null
@@ -751,9 +746,8 @@ public class GrnReturnWorkflowController implements Serializable {
             return;
         }
 
-        // Validate stock availability before approving. allowAutoCorrect=false:
-        // at approval, validation must never mutate quantities.
-        if (!validateAllItemsStockAvailability(true, false)) {
+        // Validate stock availability before approving.
+        if (!validateAllItemsStockAvailability(true)) {
             JsfUtil.addErrorMessage("Cannot approve: insufficient stock for the finalized quantities. The return must be corrected and re-finalized.");
             return;
         }
@@ -762,16 +756,22 @@ public class GrnReturnWorkflowController implements Serializable {
             // Process zero quantity items before approval
             processZeroQuantityItems();
 
-            // Mark the current bill as completed (approved)
-            currentBill.setCompleted(true);
-            currentBill.setCompletedBy(sessionController.getLoggedUser());
-            currentBill.setCompletedAt(new Date());
-            currentBill.setApproveAt(new Date());
-            currentBill.setApproveUser(sessionController.getLoggedUser());
-
-            // Save the bill with completed status
+            // Reload from DB before editing to avoid orphan-removal FK violations:
+            // currentBill.billItems (JPA collection) is empty in the session bean,
+            // so merging it directly would trigger DELETE on all persisted BillItems.
+            Bill freshForApprove = billFacade.find(currentBill.getId());
+            if (freshForApprove == null) {
+                JsfUtil.addErrorMessage("Cannot approve: bill no longer exists.");
+                return;
+            }
+            freshForApprove.setCompleted(true);
+            freshForApprove.setCompletedBy(sessionController.getLoggedUser());
+            freshForApprove.setCompletedAt(new Date());
+            freshForApprove.setApproveAt(new Date());
+            freshForApprove.setApproveUser(sessionController.getLoggedUser());
             try {
-                billFacade.edit(currentBill);
+                billFacade.edit(freshForApprove);
+                currentBill = freshForApprove;
             } catch (Exception e) {
                 JsfUtil.addErrorMessage("Error saving bill: " + e.getMessage());
                 return;
@@ -779,12 +779,16 @@ public class GrnReturnWorkflowController implements Serializable {
 
             if (!updateStock()) {
                 // Roll back completed status — stock deduction failed for one or more items
-                currentBill.setCompleted(false);
-                currentBill.setCompletedBy(null);
-                currentBill.setCompletedAt(null);
-                currentBill.setApproveAt(null);
-                currentBill.setApproveUser(null);
-                billFacade.edit(currentBill);
+                Bill freshForRollback = billFacade.find(currentBill.getId());
+                if (freshForRollback != null) {
+                    freshForRollback.setCompleted(false);
+                    freshForRollback.setCompletedBy(null);
+                    freshForRollback.setCompletedAt(null);
+                    freshForRollback.setApproveAt(null);
+                    freshForRollback.setApproveUser(null);
+                    billFacade.edit(freshForRollback);
+                    currentBill = freshForRollback;
+                }
                 return;
             }
 
@@ -821,8 +825,7 @@ public class GrnReturnWorkflowController implements Serializable {
                 JsfUtil.addSuccessMessage("Original GRN has been fully returned and marked as complete.");
             }
 
-            // Ensure bill items are properly associated for print preview
-            ensureBillItemsForPreview();
+            currentBill = billService.reloadBill(currentBill);
             printPreview = true;
             JsfUtil.addSuccessMessage("GRN Return Approved Successfully");
         }
@@ -851,19 +854,8 @@ public class GrnReturnWorkflowController implements Serializable {
                 continue;
             }
 
-            double totalReturnQty = 0.0;
-
-            if (returnByTotalQuantity) {
-                // Total quantity mode - check combined qty + free qty
-                double qty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
-                double freeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
-                totalReturnQty = qty + freeQty;
-            } else {
-                // Separate quantity mode - check individual quantities
-                double qty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
-                double freeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
-                totalReturnQty = qty + freeQty;
-            }
+            double freeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
+            double totalReturnQty = Math.abs(bi.getQty()) + freeQty;
 
             // If no return quantity, mark for retirement (use == 0.0 since we use absolute values)
             if (totalReturnQty == 0.0) {
@@ -878,7 +870,6 @@ public class GrnReturnWorkflowController implements Serializable {
                 bi.setRetired(true);
                 bi.setRetirer(sessionController.getLoggedUser());
                 bi.setRetiredAt(new Date());
-                bi.setBill(null); // Set bill reference to null as requested
 
                 // If the item already exists in database, update it
                 if (bi.getId() != null) {
@@ -980,7 +971,28 @@ public class GrnReturnWorkflowController implements Serializable {
         if (currentBill.getId() == null) {
             billFacade.create(currentBill);
         } else {
-            billFacade.edit(currentBill);
+            // Reload from DB before editing to avoid orphan-removal FK violations on the
+            // billItems @OneToMany(orphanRemoval=true): the session bill's JPA collection
+            // is empty, so merging directly would DELETE all persisted BillItems.
+            Bill freshForSave = billFacade.find(currentBill.getId());
+            if (freshForSave != null) {
+                freshForSave.setChecked(currentBill.isChecked());
+                freshForSave.setCheckedBy(currentBill.getCheckedBy());
+                freshForSave.setCheckeAt(currentBill.getCheckeAt());
+                freshForSave.setComments(currentBill.getComments());
+                freshForSave.setPaymentMethod(currentBill.getPaymentMethod());
+                freshForSave.setNetTotal(currentBill.getNetTotal());
+                freshForSave.setTotal(currentBill.getTotal());
+                freshForSave.setEditedAt(new Date());
+                freshForSave.setEditor(sessionController.getLoggedUser());
+                if (currentBill.getBillFinanceDetails() != null) {
+                    freshForSave.setBillFinanceDetails(currentBill.getBillFinanceDetails());
+                }
+                billFacade.edit(freshForSave);
+                currentBill = freshForSave;
+            } else {
+                billFacade.edit(currentBill);
+            }
         }
 
         saveBillItems();
@@ -1001,6 +1013,11 @@ public class GrnReturnWorkflowController implements Serializable {
             if (bi.isRetired()) {
                 continue;
             }
+
+            // Recalculate from bi.qty before persisting so phi.qty and fd.quantity are
+            // always derived from the user-entered pack qty regardless of whether AJAX
+            // blur events fired before the Finalize POST.
+            calculateLineTotal(bi);
 
             // Ensure bill reference is set
             bi.setBill(currentBill);
@@ -1123,22 +1140,6 @@ public class GrnReturnWorkflowController implements Serializable {
             }
         }
 
-        // After stock update, negate the bill-level finance details for returns (stock moving out)
-        if (currentBill != null && currentBill.getBillFinanceDetails() != null) {
-            BillFinanceDetails bfd = currentBill.getBillFinanceDetails();
-
-            if (bfd.getTotalPurchaseValue() != null) {
-                bfd.setTotalPurchaseValue(bfd.getTotalPurchaseValue().abs().negate());
-            }
-            if (bfd.getTotalCostValue() != null) {
-                bfd.setTotalCostValue(bfd.getTotalCostValue().abs().negate());
-            }
-            if (bfd.getTotalRetailSaleValue() != null) {
-                bfd.setTotalRetailSaleValue(bfd.getTotalRetailSaleValue().abs().negate());
-            }
-
-            billFacade.edit(currentBill);
-        }
         return true;
     }
 
@@ -1319,14 +1320,13 @@ public class GrnReturnWorkflowController implements Serializable {
             // If the item is not saved (no ID), simply remove it from the list
             if (bi.getId() == null) {
                 billItems.remove(bi);
-                bi.setBill(null);
                 JsfUtil.addSuccessMessage("Item removed from return list: " + itemName);
             } else {
-                // If already saved, mark as retired and remove from database
+                // If already saved, mark as retired — keep bill reference intact so
+                // the FK stays valid and EclipseLink orphan-removal never fires.
                 bi.setRetired(true);
                 bi.setRetirer(sessionController.getLoggedUser());
                 bi.setRetiredAt(new Date());
-                bi.setBill(null); // Set bill as null as requested
 
                 // Update the bill item in database
                 billItemFacade.edit(bi);
@@ -1340,10 +1340,8 @@ public class GrnReturnWorkflowController implements Serializable {
                     pharmaceuticalBillItemFacade.edit(phi);
                 }
 
-                // Remove from current list to refresh the display
+                // Remove from current display list only; never touch the entity collection
                 billItems.remove(bi);
-                // Remove from Bill's bill item list
-                currentBill.getBillItems().remove(bi);
                 JsfUtil.addSuccessMessage("Item retired and removed from return: " + itemName);
             }
 
@@ -1353,32 +1351,6 @@ public class GrnReturnWorkflowController implements Serializable {
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error removing item: " + e.getMessage());
             e.printStackTrace();
-        }
-    }
-
-    private void ensureBillItemsForPreview() {
-        if (currentBill != null) {
-            // Ensure the current bill has its billItems collection properly populated
-            // The print preview component expects bill.billItems to be available
-            try {
-                if (currentBill.getBillItems() == null) {
-                    // Initialize the collection if it's null
-                    currentBill.setBillItems(new ArrayList<>());
-                }
-
-                // Clear and repopulate with current bill items
-                currentBill.getBillItems().clear();
-
-                // Add all current bill items that are not retired
-                for (BillItem bi : billItems) {
-                    if (bi != null && !bi.isRetired()) {
-                        currentBill.getBillItems().add(bi);
-                    }
-                }
-            } catch (Exception e) {
-                // If there's an issue with the billItems collection, log it but don't fail
-                JsfUtil.addErrorMessage("Warning: Could not properly associate items for preview: " + e.getMessage());
-            }
         }
     }
 
@@ -1446,10 +1418,11 @@ public class GrnReturnWorkflowController implements Serializable {
         currentBill.getBillFinanceDetails().setNetTotal(returnTotal);
         currentBill.getBillFinanceDetails().setGrossTotal(returnTotal);
 
-        // Set purchase, cost, and retail sale values
-        currentBill.getBillFinanceDetails().setTotalPurchaseValue(totalPurchaseValue);
-        currentBill.getBillFinanceDetails().setTotalCostValue(totalCostValue);
-        currentBill.getBillFinanceDetails().setTotalRetailSaleValue(totalRetailValue);
+        // BFD convention: purchase/cost/retail values are negative for returns (stock leaving pharmacy)
+        // PBI stores them positive; negate here to match the established sign convention in the DB
+        currentBill.getBillFinanceDetails().setTotalPurchaseValue(totalPurchaseValue.negate());
+        currentBill.getBillFinanceDetails().setTotalCostValue(totalCostValue.negate());
+        currentBill.getBillFinanceDetails().setTotalRetailSaleValue(totalRetailValue.negate());
 
         // Also set the legacy total fields for backward compatibility
         currentBill.setTotal(returnTotal.doubleValue());
@@ -1471,12 +1444,12 @@ public class GrnReturnWorkflowController implements Serializable {
                 return;
             }
 
-            BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
+            BigDecimal qty = BigDecimal.valueOf(bi.getQty());
             BigDecimal freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
 
             // Check quantity for decimal values
-            if (qty != null && qty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
-                bi.getBillItemFinanceDetails().setQuantity(BigDecimal.ZERO);
+            if (qty.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
+                bi.setQty(0.0);
                 calculateLineTotal(bi);
                 calculateTotal();
                 JsfUtil.addErrorMessage("Please enter only whole numbers (integers) for quantity. Decimal values are not allowed.");
@@ -1587,6 +1560,16 @@ public class GrnReturnWorkflowController implements Serializable {
 
                 BigDecimal lineGrossRateAsEntered = lineGrossRateForAUnit.multiply(unitsPerPack);
                 newBillItemFinanceDetailsInReturnBill.setLineGrossRate(lineGrossRateAsEntered);
+                // Seed bi.qty (pack qty) from phi.qty (unit qty) before calculateLineTotal reads it.
+                // phi.qty was set to the available-to-return quantity in units above; bi.qty starts
+                // at 0.0 (line 1496) and calculateLineTotal reads bi.qty — without seeding, every
+                // initial line total would be calculated as zero.
+                boolean isAmppItem = newBillItemInReturnBill.getItem() instanceof Ampp;
+                BigDecimal phiQty = BigDecimal.valueOf(newPharmaceuticalBillItemInReturnBill.getQty());
+                BigDecimal initialPackQty = isAmppItem && unitsPerPack.compareTo(BigDecimal.ZERO) > 0
+                        ? phiQty.divide(unitsPerPack, 4, java.math.RoundingMode.HALF_UP)
+                        : phiQty;
+                newBillItemInReturnBill.setQty(initialPackQty.doubleValue());
                 calculateLineTotal(newBillItemInReturnBill);
                 getBillItems().add(newBillItemInReturnBill);
             } catch (Exception e) {
@@ -2063,8 +2046,6 @@ public class GrnReturnWorkflowController implements Serializable {
         // This will make item deletion much more reliable
         try {
             saveBill(false); // Save but don't finalize
-            // Ensure bill items are properly associated for any subsequent operations
-            ensureBillItemsForPreview();
             JsfUtil.addSuccessMessage("GRN Return created successfully. You can now modify quantities and remove items as needed.");
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error creating GRN Return: " + e.getMessage());
@@ -2202,42 +2183,32 @@ public class GrnReturnWorkflowController implements Serializable {
         }
 
         if (returnByTotalQty) {
-            // Total quantity mode - qty + free qty combined
-            double currentTotalQty = (fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0);
-
-            // Convert pack quantity to units for AMPP items
+            double currentTotalQty = Math.abs(billItem.getQty());
             double currentTotalQtyInUnits = isAmppItem ? currentTotalQty * unitsPerPack : currentTotalQty;
 
-            // Allow exact match (>=) instead of just (>)
             if (currentTotalQtyInUnits > remainingTotalQty) {
-                // Convert back to packs for AMPP items when setting the corrected value
                 double correctedQtyInPacks = isAmppItem ? Math.max(0, remainingTotalQty / unitsPerPack) : Math.max(0, remainingTotalQty);
-                fd.setQuantity(BigDecimal.valueOf(correctedQtyInPacks));
+                billItem.setQty(correctedQtyInPacks);
                 fd.setFreeQuantity(BigDecimal.ZERO);
                 JsfUtil.addErrorMessage("Cannot return more than remaining quantity. Remaining: "
                         + (isAmppItem ? (remainingTotalQty / unitsPerPack) + " packs" : remainingTotalQty + " units"));
                 isValid = false;
             }
         } else if (returnByQtyAndFree) {
-            // Separate quantity and free quantity mode
-            double currentQty = (fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0);
-            double currentFreeQty = (fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0);
+            double currentQty = Math.abs(billItem.getQty());
+            double currentFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
 
-            // Convert pack quantities to units for AMPP items
             double currentQtyInUnits = isAmppItem ? currentQty * unitsPerPack : currentQty;
             double currentFreeQtyInUnits = isAmppItem ? currentFreeQty * unitsPerPack : currentFreeQty;
 
-            // Allow exact match (>=) instead of just (>)
             if (currentQtyInUnits > remainingQty) {
-                // Convert back to packs for AMPP items when setting the corrected value
                 double correctedQtyInPacks = isAmppItem ? Math.max(0, remainingQty / unitsPerPack) : Math.max(0, remainingQty);
-                fd.setQuantity(BigDecimal.valueOf(correctedQtyInPacks));
+                billItem.setQty(correctedQtyInPacks);
                 JsfUtil.addErrorMessage("Cannot return more than remaining quantity. Remaining: "
                         + (isAmppItem ? (remainingQty / unitsPerPack) + " packs" : remainingQty + " units"));
                 isValid = false;
             }
             if (currentFreeQtyInUnits > remainingFreeQty) {
-                // Convert back to packs for AMPP items when setting the corrected value
                 double correctedFreeQtyInPacks = isAmppItem ? Math.max(0, remainingFreeQty / unitsPerPack) : Math.max(0, remainingFreeQty);
                 fd.setFreeQuantity(BigDecimal.valueOf(correctedFreeQtyInPacks));
                 JsfUtil.addErrorMessage("Cannot return more than remaining free quantity. Remaining: "
@@ -2262,12 +2233,6 @@ public class GrnReturnWorkflowController implements Serializable {
      * @return true if stock is sufficient, false otherwise
      */
     public boolean validateStockAvailability(BillItem billItem, boolean showMessages) {
-        // Default keeps the legacy draft-stage behaviour (auto-corrects the
-        // quantity down to available stock so the user can re-submit).
-        return validateStockAvailability(billItem, showMessages, true);
-    }
-
-    public boolean validateStockAvailability(BillItem billItem, boolean showMessages, boolean allowAutoCorrect) {
         if (billItem == null || billItem.getPharmaceuticalBillItem() == null
                 || billItem.getPharmaceuticalBillItem().getStock() == null) {
             if (showMessages) {
@@ -2284,20 +2249,10 @@ public class GrnReturnWorkflowController implements Serializable {
             return true; // No quantities to validate
         }
 
-        double currentStock = phi.getStock().getStock();
-        double returnQty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
-        double returnFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
-
-        // Convert to units if AMPP item
-        boolean isAmppItem = billItem.getItem() instanceof Ampp;
-        double unitsPerPack = 1.0;
-        if (isAmppItem && fd.getUnitsPerPack() != null) {
-            unitsPerPack = fd.getUnitsPerPack().doubleValue();
-        }
-
-        double returnQtyInUnits = isAmppItem ? returnQty * unitsPerPack : returnQty;
-        double returnFreeQtyInUnits = isAmppItem ? returnFreeQty * unitsPerPack : returnFreeQty;
-        double totalReturnQtyInUnits = returnQtyInUnits + returnFreeQtyInUnits;
+        // Always read fresh stock from DB — session-cached value may be stale if
+        // another transaction (sale, issue, transfer) reduced stock after this return was opened.
+        Stock freshStock = stockFacade.findWithoutCache(phi.getStock().getId());
+        double currentStock = freshStock != null ? freshStock.getStock() : phi.getStock().getStock();
 
         // Calculate total stock usage by this item AND other items in the same return using the same stock
         double totalStockUsageFromCurrentReturn = calculateTotalStockUsageFromCurrentReturn(phi.getStock(), billItem);
@@ -2311,24 +2266,8 @@ public class GrnReturnWorkflowController implements Serializable {
 
                 JsfUtil.addErrorMessage("Insufficient stock for " + itemName + " (Batch: " + stockBatch + "). "
                         + "Current stock: " + String.format("%.2f", currentStock)
-                        + ", Total return quantity (including other items): " + String.format("%.2f", totalStockUsageFromCurrentReturn));
-            }
-            // Draft-stage convenience only: rewrite the quantity down to what is
-            // available so the user can review and re-submit. MUST never run at
-            // approval - a validator that mutates quantities let a failed Approve
-            // silently reduce the return, so a second click approved quantities
-            // that no longer matched the finalized bill (#21266 RC4).
-            if (allowAutoCorrect) {
-                double availableForThisItem = Math.max(0, currentStock - (totalStockUsageFromCurrentReturn - totalReturnQtyInUnits));
-
-                if (isAmppItem) {
-                    double availableInPacks = availableForThisItem / unitsPerPack;
-                    fd.setQuantity(BigDecimal.valueOf(availableInPacks));
-                    fd.setFreeQuantity(BigDecimal.ZERO);
-                } else {
-                    fd.setQuantity(BigDecimal.valueOf(availableForThisItem));
-                    fd.setFreeQuantity(BigDecimal.ZERO);
-                }
+                        + ", Total return quantity (including other items): " + String.format("%.2f", totalStockUsageFromCurrentReturn)
+                        + ". Please correct the return quantity.");
             }
             return false;
         }
@@ -2405,10 +2344,6 @@ public class GrnReturnWorkflowController implements Serializable {
      * Finalize, and Approve operations
      */
     public boolean validateAllItemsStockAvailability(boolean showMessages) {
-        return validateAllItemsStockAvailability(showMessages, true);
-    }
-
-    public boolean validateAllItemsStockAvailability(boolean showMessages, boolean allowAutoCorrect) {
         if (billItems == null || billItems.isEmpty()) {
             return true;
         }
@@ -2420,20 +2355,17 @@ public class GrnReturnWorkflowController implements Serializable {
                 continue;
             }
 
-            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
-            if (fd == null) {
-                continue;
+            // Skip items with zero quantities — read from BillItem.qty (always positive, user-facing)
+            if (Math.abs(bi.getQty()) <= 0) {
+                BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+                double returnFreeQty = fd != null && fd.getFreeQuantity() != null
+                        ? fd.getFreeQuantity().doubleValue() : 0.0;
+                if (Math.abs(returnFreeQty) <= 0) {
+                    continue;
+                }
             }
 
-            // Skip items with zero quantities
-            double returnQty = fd.getQuantity() != null ? fd.getQuantity().doubleValue() : 0.0;
-            double returnFreeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().doubleValue() : 0.0;
-
-            if (returnQty <= 0 && returnFreeQty <= 0) {
-                continue;
-            }
-
-            if (!validateStockAvailability(bi, showMessages, allowAutoCorrect)) {
+            if (!validateStockAvailability(bi, showMessages)) {
                 allValid = false;
             }
         }
@@ -2470,14 +2402,9 @@ public class GrnReturnWorkflowController implements Serializable {
 
             // Check if at least one item has some return quantity
             BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
-            if (fd != null) {
-                double qty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
-                double freeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
-
-                // Accept any positive return quantities (including exact remaining quantities)
-                if (qty > 0 || freeQty > 0) {
-                    hasItemsWithQuantities = true;
-                }
+            double freeQty = fd != null && fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
+            if (Math.abs(bi.getQty()) > 0 || freeQty > 0) {
+                hasItemsWithQuantities = true;
             }
         }
 
@@ -2583,47 +2510,37 @@ public class GrnReturnWorkflowController implements Serializable {
         String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
         boolean isAmpp = bi.getItem() instanceof Ampp;
 
-        if (isAmpp) {
-            // For AMPP items: User entered rate is per pack, we need to sync unit-based calculations
-            BigDecimal quantity = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
-            BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
-            BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
+        // Use bi.qty as source of truth — always positive pack quantity
+        BigDecimal quantity = BigDecimal.valueOf(Math.abs(bi.getQty()));
+        BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity().abs() : BigDecimal.ZERO;
+        BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
 
-            // Calculate unit-based quantities
+        if (isAmpp) {
             BigDecimal quantityByUnits = quantity.multiply(unitsPerPack);
             BigDecimal freeQuantityByUnits = freeQuantity.multiply(unitsPerPack);
 
-            // Set calculated unit quantities
             fd.setQuantityByUnits(quantityByUnits);
             fd.setFreeQuantityByUnits(freeQuantityByUnits);
 
-            // Calculate unit rate from pack rate (HMIS STANDARD: PBI rates ALWAYS per unit)
             BigDecimal ratePerUnit = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
                     ? userEnteredRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
 
-            // Sync pharmaceutical bill item with calculated unit-based values
-            phi.setQty(quantityByUnits.doubleValue());        // ALWAYS in units
-            phi.setFreeQty(freeQuantityByUnits.doubleValue()); // ALWAYS in units
+            phi.setQty(quantityByUnits.doubleValue());
+            phi.setFreeQty(freeQuantityByUnits.doubleValue());
             phi.setPurchaseRateInUnit(ratePerUnit.doubleValue());
             phi.setPurchaseRatePack(userEnteredRate.doubleValue());
-            phi.setPurchaseRate(ratePerUnit.doubleValue());    // CRITICAL: ALWAYS per unit, not pack rate!
+            phi.setPurchaseRate(ratePerUnit.doubleValue());
 
         } else {
-            // For AMP items: User entered rate is per unit
-            BigDecimal quantity = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
-            BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
-
-            // Set unit quantities (same as pack quantities for AMP)
             fd.setQuantityByUnits(quantity);
             fd.setFreeQuantityByUnits(freeQuantity);
 
-            // Sync pharmaceutical bill item with unit-based values
-            phi.setQty(quantity.doubleValue());               // In units (same as packs for AMP)
-            phi.setFreeQty(freeQuantity.doubleValue());       // In units (same as packs for AMP)
+            phi.setQty(quantity.doubleValue());
+            phi.setFreeQty(freeQuantity.doubleValue());
             phi.setPurchaseRateInUnit(userEnteredRate.doubleValue());
-            phi.setPurchaseRate(userEnteredRate.doubleValue()); // Per unit
-            phi.setPurchaseRatePack(userEnteredRate.doubleValue()); // Same as unit for AMP
+            phi.setPurchaseRate(userEnteredRate.doubleValue());
+            phi.setPurchaseRatePack(userEnteredRate.doubleValue());
         }
 
         // Always preserve the user-entered rate
@@ -2695,47 +2612,37 @@ public class GrnReturnWorkflowController implements Serializable {
         String itemName = bi.getItem() != null ? bi.getItem().getName() : "Unknown";
         boolean isAmpp = bi.getItem() instanceof Ampp;
 
-        if (isAmpp) {
-            // For AMPP items: Rate should remain as pack rate
-            BigDecimal quantity = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
-            BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
-            BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
+        // Use bi.qty as source of truth (always positive, user-entered pack qty)
+        BigDecimal quantity = BigDecimal.valueOf(Math.abs(bi.getQty()));
+        BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity().abs() : BigDecimal.ZERO;
+        BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
 
-            // Calculate unit-based quantities
+        if (isAmpp) {
             BigDecimal quantityByUnits = quantity.multiply(unitsPerPack);
             BigDecimal freeQuantityByUnits = freeQuantity.multiply(unitsPerPack);
 
-            // Update unit quantities but preserve the rate
             fd.setQuantityByUnits(quantityByUnits);
             fd.setFreeQuantityByUnits(freeQuantityByUnits);
 
-            // Calculate unit rate from existing pack rate (HMIS STANDARD: PBI rates ALWAYS per unit)
             BigDecimal ratePerUnit = unitsPerPack.compareTo(BigDecimal.ZERO) > 0
                     ? existingRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
 
-            // Sync pharmaceutical bill item with calculated values
-            phi.setQty(quantityByUnits.doubleValue());        // ALWAYS in units
-            phi.setFreeQty(freeQuantityByUnits.doubleValue()); // ALWAYS in units
+            phi.setQty(quantityByUnits.doubleValue());
+            phi.setFreeQty(freeQuantityByUnits.doubleValue());
             phi.setPurchaseRateInUnit(ratePerUnit.doubleValue());
             phi.setPurchaseRatePack(existingRate.doubleValue());
-            phi.setPurchaseRate(ratePerUnit.doubleValue());    // CRITICAL: ALWAYS per unit, not pack rate!
+            phi.setPurchaseRate(ratePerUnit.doubleValue());
 
         } else {
-            // For AMP items: Rate is per unit
-            BigDecimal quantity = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
-            BigDecimal freeQuantity = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
-
-            // Update unit quantities (same as pack quantities for AMP)
             fd.setQuantityByUnits(quantity);
             fd.setFreeQuantityByUnits(freeQuantity);
 
-            // Sync pharmaceutical bill item with values
-            phi.setQty(quantity.doubleValue());               // In units (same as packs for AMP)
-            phi.setFreeQty(freeQuantity.doubleValue());       // In units (same as packs for AMP)
+            phi.setQty(quantity.doubleValue());
+            phi.setFreeQty(freeQuantity.doubleValue());
             phi.setPurchaseRateInUnit(existingRate.doubleValue());
-            phi.setPurchaseRate(existingRate.doubleValue());  // Per unit
-            phi.setPurchaseRatePack(existingRate.doubleValue()); // Same as unit for AMP
+            phi.setPurchaseRate(existingRate.doubleValue());
+            phi.setPurchaseRatePack(existingRate.doubleValue());
         }
 
         // CRITICAL: Restore the original rate to prevent external service interference
@@ -2756,9 +2663,10 @@ public class GrnReturnWorkflowController implements Serializable {
         Item item = bi.getItem();
         boolean isAmpp = item instanceof Ampp;
 
-        // Null-safe BigDecimal values
-        BigDecimal qty = fd.getQuantity() != null ? fd.getQuantity() : BigDecimal.ZERO;
-        BigDecimal freeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity() : BigDecimal.ZERO;
+        // Read qty from BillItem (user-facing field) — always positive, avoids sign feedback loop
+        // from fd.getQuantity() which may already be negated from a previous calculateLineTotal call.
+        BigDecimal qty = BigDecimal.valueOf(Math.abs(bi.getQty()));
+        BigDecimal freeQty = fd.getFreeQuantity() != null ? fd.getFreeQuantity().abs() : BigDecimal.ZERO;
         BigDecimal rate = fd.getLineGrossRate() != null ? fd.getLineGrossRate() : BigDecimal.ZERO;
         BigDecimal unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack() : BigDecimal.ONE;
 

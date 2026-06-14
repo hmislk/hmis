@@ -21,7 +21,7 @@ import javax.persistence.Temporal;
 public class WebUserPaymentScheme implements Serializable {
      static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
      Long id;
 
     //Created Properties

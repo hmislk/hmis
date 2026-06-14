@@ -40,7 +40,7 @@ public class Patient implements Serializable, RetirableEntity {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     private Long patientPhoneNumber;
