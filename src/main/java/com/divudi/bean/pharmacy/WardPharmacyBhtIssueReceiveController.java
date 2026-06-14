@@ -203,6 +203,15 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
             double qty = Math.abs(pbi.getQty());
 
+            // Persist the BillItem (cascading its PharmaceuticalBillItem) before
+            // calling the stock movement methods - deductFromStock/addToStock
+            // create StockHistory rows referencing the PBI, and that relationship
+            // does not cascade from a still-transient BillItem.
+            bi.setBill(receivedBill);
+            bi.setCreatedAt(new Date());
+            bi.setCreater(sessionController.getLoggedUser());
+            billItemFacade.create(bi);
+
             if (pharmacyBean.deductFromStock(pbi, qty, porter)) {
                 Stock addedStock = pharmacyBean.addToStock(pbi, qty, sessionController.getDepartment());
                 pbi.setStock(addedStock);
@@ -212,10 +221,7 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
                 bi.setQty(0.0);
             }
 
-            bi.setBill(receivedBill);
-            bi.setCreatedAt(new Date());
-            bi.setCreater(sessionController.getLoggedUser());
-            billItemFacade.create(bi);
+            billItemFacade.edit(bi);
         }
 
         issuedBill.getForwardReferenceBills().add(receivedBill);
