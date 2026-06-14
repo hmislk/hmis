@@ -159,6 +159,32 @@ public class DocumentTemplateController implements Serializable {
         return "/emr/settings/document_templates?faces-redirect=true";
     }
 
+    public String navigateToAddDiagnosisCardTemplate() {
+        current = new DocumentTemplate();
+        current.setWebUser(sessionController.getLoggedUser());
+        current.setType(DocumentTemplateType.InpatientDiagnosisCard);
+        current.setContents(generateDefaultTemplateContents());
+        return "/emr/settings/document_template?faces-redirect=true";
+    }
+
+    public String navigateToListDiagnosisCardTemplates() {
+        items = fillByType(DocumentTemplateType.InpatientDiagnosisCard);
+        return "/emr/settings/document_templates?faces-redirect=true";
+    }
+
+    public String navigateToAddLetterTemplate() {
+        current = new DocumentTemplate();
+        current.setWebUser(sessionController.getLoggedUser());
+        current.setType(DocumentTemplateType.InpatientLetter);
+        current.setContents(generateDefaultTemplateContents());
+        return "/emr/settings/document_template?faces-redirect=true";
+    }
+
+    public String navigateToListLetterTemplates() {
+        items = fillByType(DocumentTemplateType.InpatientLetter);
+        return "/emr/settings/document_templates?faces-redirect=true";
+    }
+
     public void saveUserDocumentTemplate() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
@@ -181,6 +207,7 @@ public class DocumentTemplateController implements Serializable {
         saveSelected();
         fillAllItems(null);
         inpatientClinicalDataController.refreshDiagnosisCardTemplates();
+        inpatientClinicalDataController.refreshLetterTemplates();
 
     }
 
@@ -193,6 +220,7 @@ public class DocumentTemplateController implements Serializable {
         delete();
         fillAllItems(sessionController.getLoggedUser());
         inpatientClinicalDataController.refreshDiagnosisCardTemplates();
+        inpatientClinicalDataController.refreshLetterTemplates();
         JsfUtil.addSuccessMessage("Saved");
     }
 

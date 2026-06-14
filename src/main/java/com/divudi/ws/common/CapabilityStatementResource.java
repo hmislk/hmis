@@ -164,6 +164,14 @@ public class CapabilityStatementResource {
                         + "POST returns HTTP 409 with existing id when a duplicate name already exists.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Document Templates", "/api/inward/document-templates",
+                        "Manage inpatient document templates (HTML templates with placeholders). "
+                        + "Supports types: InpatientDiagnosisCard, InpatientLetter. "
+                        + "Optional query params: type (filter by type), query (name search), size. "
+                        + "GET /{id} includes full contents field. "
+                        + "POST/PUT fields: name, type, contents (HTML with placeholders), defaultTemplate, autoGenerate.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Inward Room Facility Charges", "/api/inward/room-facility-charges",
                         "Manage inward room facility charges / room fees (backs /inward/inward_room_facility.xhtml). "
                         + "Supports optional filters roomId and roomCategoryId. "

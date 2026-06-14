@@ -24,6 +24,7 @@ import com.divudi.core.data.lab.InvestigationResultForGraph;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
@@ -48,7 +49,9 @@ import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.ClinicalEntityFacade;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
+import com.divudi.core.entity.EncounterCreditCompany;
 import com.divudi.core.facade.EncounterComponentFacade;
+import com.divudi.core.facade.EncounterCreditCompanyFacade;
 import com.divudi.core.facade.ItemUsageFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientFacade;
@@ -136,6 +139,8 @@ public class InpatientClinicalDataController implements Serializable {
     private AnthropicApiService anthropicApiService;
     @EJB
     private PrescriptionService prescriptionService;
+    @EJB
+    private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
     /**
      * Controllers
      */
@@ -184,8 +189,12 @@ public class InpatientClinicalDataController implements Serializable {
 
     private List<DocumentTemplate> userDocumentTemplates;
     private List<DocumentTemplate> diagnosisCardTemplates;
+    private List<DocumentTemplate> letterTemplates;
     private DocumentTemplate selectedDocumentTemplate;
     private boolean editingDiagnosisCard;
+
+    private List<EncounterCreditCompany> encounterCreditCompanies;
+    private Long selectedEncounterCreditCompanyId;
 
     private ClinicalFindingValue patientAllergy;
     private ClinicalFindingValue patientMedicine;
@@ -721,6 +730,51 @@ public class InpatientClinicalDataController implements Serializable {
             }
         }
 
+        // Credit company placeholders — use the user-selected EncounterCreditCompany if set,
+        // otherwise fall back to the first one linked to this encounter.
+        String creditCompanyName = "";
+        String creditCompanyAddress = "";
+        String policyNo = "";
+        String referenceNo = "";
+        String creditLimit = "";
+        EncounterCreditCompany ecc = getSelectedEncounterCreditCompany();
+        if (ecc == null) {
+            String jpqlCC = "select ecc from EncounterCreditCompany ecc "
+                    + "where ecc.retired = false and ecc.patientEncounter = :pe "
+                    + "order by ecc.id asc";
+            Map<String, Object> ccParams = new HashMap<>();
+            ccParams.put("pe", e);
+            List<EncounterCreditCompany> creditCompanies = encounterCreditCompanyFacade.findByJpql(jpqlCC, ccParams, 1);
+            if (creditCompanies != null && !creditCompanies.isEmpty()) {
+                ecc = creditCompanies.get(0);
+            }
+        }
+        if (ecc != null) {
+            if (ecc.getInstitution() != null) {
+                creditCompanyName = ecc.getInstitution().getName() != null ? ecc.getInstitution().getName() : "";
+                creditCompanyAddress = ecc.getInstitution().getAddress() != null ? ecc.getInstitution().getAddress() : "";
+            }
+            policyNo = ecc.getPolicyNo() != null ? ecc.getPolicyNo() : "";
+            referenceNo = ecc.getReferanceNo() != null ? ecc.getReferanceNo() : "";
+            creditLimit = ecc.getCreditLimit() > 0 ? String.format("%.2f", ecc.getCreditLimit()) : "";
+        } else if (e.getCreditCompany() != null) {
+            creditCompanyName = e.getCreditCompany().getName() != null ? e.getCreditCompany().getName() : "";
+            creditCompanyAddress = e.getCreditCompany().getAddress() != null ? e.getCreditCompany().getAddress() : "";
+        }
+
+        String finalBill = String.format("%.2f", e.getNetTotal());
+
+        String institutionName = e.getInstitution() != null && e.getInstitution().getName() != null
+                ? e.getInstitution().getName() : "";
+        String departmentName = e.getDepartment() != null && e.getDepartment().getName() != null
+                ? e.getDepartment().getName() : "";
+        String doctorName = "";
+        Staff doctor = e.getOpdDoctor() != null ? e.getOpdDoctor() : e.getReferringDoctor();
+        if (doctor != null && doctor.getPerson() != null && doctor.getPerson().getNameWithTitle() != null) {
+            doctorName = doctor.getPerson().getNameWithTitle();
+        }
+        String letterDate = CommonFunctions.formatDate(new Date(), sessionController.getApplicationPreference().getLongDateFormat());
+
         output = input.replace("{name}", name)
                 .replace("{age}", age)
                 .replace("{comments}", comments)
@@ -752,7 +806,20 @@ public class InpatientClinicalDataController implements Serializable {
                 .replace("{bp-series}", bpSeries)
                 .replace("{pr-series}", prSeries)
                 .replace("{rr-series}", rrSeries)
-                .replace("{sat-series}", satSeries);
+                .replace("{sat-series}", satSeries)
+                .replace("{credit_company}", creditCompanyName)
+                .replace("{credit_company_address}", creditCompanyAddress)
+                .replace("{policy_no}", policyNo)
+                .replace("{reference_no}", referenceNo)
+                .replace("{credit_limit}", creditLimit)
+                .replace("{institution}", institutionName)
+                .replace("{department}", departmentName)
+                .replace("{doctor}", doctorName)
+                .replace("{letter_date}", letterDate)
+                .replace("{final_bill}", finalBill)
+                .replace("{patient_name}", name)
+                .replace("{patient_age}", age)
+                .replace("{patient_sex}", sex);
         return output;
 
     }
@@ -1108,6 +1175,125 @@ public class InpatientClinicalDataController implements Serializable {
             Logger.getLogger(InpatientClinicalDataController.class.getName()).log(Level.SEVERE, "AI diagnosis card generation failed", ex);
             JsfUtil.addErrorMessage("AI generation failed: " + ex.getMessage());
         }
+    }
+
+    public void generateLetterWithAi() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No encounter selected");
+            return;
+        }
+
+        String apiKey = configOptionApplicationController.getShortTextValueByKey("AI Chat - Claude API Key", "");
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("AI API key is not configured. Please set 'AI Chat - Claude API Key' in application settings.");
+            return;
+        }
+
+        String model = configOptionApplicationController.getShortTextValueByKey("AI Chat - Claude Model", "claude-sonnet-4-20250514");
+        Integer maxTokensConfig = configOptionApplicationController.getIntegerValueByKey("AI Chat - Max Tokens", 4096);
+        int maxTokens = (maxTokensConfig != null && maxTokensConfig > 0) ? Math.max(maxTokensConfig, 4096) : 4096;
+
+        String clinicalSummary = buildLetterDataSummary(current);
+        String systemPrompt = buildLetterSystemPrompt();
+        String letterTitle = "AI Generated Letter";
+        if (selectedDocumentTemplate != null
+                && selectedDocumentTemplate.getContents() != null
+                && !selectedDocumentTemplate.getContents().trim().isEmpty()) {
+            systemPrompt += "\n\nTEMPLATE INSTRUCTIONS (follow these exactly while preserving the rules above):\n"
+                    + selectedDocumentTemplate.getContents().trim();
+            letterTitle = selectedDocumentTemplate.getName();
+        }
+
+        try {
+            AnthropicApiService.AnthropicResponse response = anthropicApiService.sendMessage(
+                    apiKey,
+                    model,
+                    maxTokens,
+                    systemPrompt,
+                    new ArrayList<>(),
+                    clinicalSummary,
+                    null,
+                    null
+            );
+
+            if (response == null || response.getContent() == null || response.getContent().trim().isEmpty()) {
+                JsfUtil.addErrorMessage("AI returned an empty response. Please try again.");
+                return;
+            }
+
+            String html = response.getContent().trim();
+            if (html.startsWith("```html")) html = html.substring(7);
+            else if (html.startsWith("```")) html = html.substring(3);
+            if (html.endsWith("```")) html = html.substring(0, html.length() - 3);
+            html = html.trim();
+
+            ClinicalFindingValue ref = new ClinicalFindingValue();
+            ref.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
+            ref.setLobValue(html);
+            ref.setStringValue(letterTitle);
+            ref.setEncounter(current);
+            ref.setOrderNo(getEncounterDocuments().size() + 1);
+            clinicalFindingValueFacade.create(ref);
+            encounterReferral = ref;
+            getEncounterDocuments().add(ref);
+            JsfUtil.addSuccessMessage("Letter generated with AI");
+        } catch (Exception ex) {
+            Logger.getLogger(InpatientClinicalDataController.class.getName()).log(Level.SEVERE, "AI letter generation failed", ex);
+            JsfUtil.addErrorMessage("AI generation failed: " + ex.getMessage());
+        }
+    }
+
+    private String buildLetterSystemPrompt() {
+        return "You are a medical correspondence formatter for a hospital information system. "
+                + "Your task is to generate a professional formal letter in HTML format based on the patient and admission data provided.\n\n"
+                + "RULES:\n"
+                + "1. Output ONLY the HTML markup. No markdown fencing, no explanations, no preamble.\n"
+                + "2. Use inline CSS styles on every element. The output must be self-contained and suitable for printing.\n"
+                + "3. Format as a formal letter: sender block (hospital/institution), date, recipient block (credit company or patient), salutation, body paragraphs, closing.\n"
+                + "4. OMIT any field that has no meaningful data.\n"
+                + "5. NEVER fabricate, infer, or add clinical or financial data that is not provided. Only use the data given.\n"
+                + "6. The letter should fit on an A4 page when printed.\n"
+                + "7. The INSTITUTION name must appear prominently in the header.\n"
+                + "8. If credit company information is provided, address the letter to the credit company.\n"
+                + "9. Include BHT number, admission date, patient name and diagnosis in the letter body.\n"
+                + "10. The letter date must be today's date as provided in the data.\n"
+                + "11. If a final bill value is provided, include it when referring to the outstanding/total amount.\n";
+    }
+
+    private String buildLetterDataSummary(PatientEncounter e) {
+        StringBuilder sb = new StringBuilder(buildClinicalDataSummary(e));
+
+        EncounterCreditCompany ecc = getSelectedEncounterCreditCompany();
+        if (ecc == null) {
+            String jpqlCC = "select ecc from EncounterCreditCompany ecc "
+                    + "where ecc.retired = false and ecc.patientEncounter = :pe order by ecc.id asc";
+            Map<String, Object> ccParams = new HashMap<>();
+            ccParams.put("pe", e);
+            List<EncounterCreditCompany> companies = encounterCreditCompanyFacade.findByJpql(jpqlCC, ccParams, 1);
+            if (companies != null && !companies.isEmpty()) {
+                ecc = companies.get(0);
+            }
+        }
+        if (ecc != null) {
+            sb.append("\nCREDIT COMPANY:\n");
+            if (ecc.getInstitution() != null) {
+                sb.append("  Name: ").append(ecc.getInstitution().getName() != null ? ecc.getInstitution().getName() : "").append("\n");
+                sb.append("  Address: ").append(ecc.getInstitution().getAddress() != null ? ecc.getInstitution().getAddress() : "").append("\n");
+            }
+            if (ecc.getPolicyNo() != null && !ecc.getPolicyNo().isEmpty())
+                sb.append("  Policy No: ").append(ecc.getPolicyNo()).append("\n");
+            if (ecc.getReferanceNo() != null && !ecc.getReferanceNo().isEmpty())
+                sb.append("  Reference No: ").append(ecc.getReferanceNo()).append("\n");
+            if (ecc.getCreditLimit() > 0)
+                sb.append("  Credit Limit: ").append(String.format("%.2f", ecc.getCreditLimit())).append("\n");
+        } else if (e.getCreditCompany() != null) {
+            sb.append("\nCREDIT COMPANY:\n");
+            sb.append("  Name: ").append(e.getCreditCompany().getName() != null ? e.getCreditCompany().getName() : "").append("\n");
+            sb.append("  Address: ").append(e.getCreditCompany().getAddress() != null ? e.getCreditCompany().getAddress() : "").append("\n");
+        }
+        sb.append("\nFINAL BILL VALUE: ").append(String.format("%.2f", e.getNetTotal())).append("\n");
+        sb.append("\nLETTER DATE: ").append(CommonFunctions.formatDate(new Date(), sessionController.getApplicationPreference().getLongDateFormat())).append("\n");
+        return sb.toString();
     }
 
     private String buildClinicalDataSummary(PatientEncounter e) {
@@ -4462,6 +4648,76 @@ public class InpatientClinicalDataController implements Serializable {
 
     public void refreshDiagnosisCardTemplates() {
         diagnosisCardTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientDiagnosisCard);
+    }
+
+    public String navigateToInpatientLetters(PatientEncounter admission) {
+        if (admission == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return "";
+        }
+        this.parentAdmission = admission;
+        this.current = admission;
+        fillClinicalAssessments();
+        fillCurrentPatientLists(admission.getPatient());
+        fillCurrentEncounterLists(admission);
+        letterTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientLetter);
+        refreshEncounterCreditCompanies();
+        return "/inward/inward_letters?faces-redirect=true";
+    }
+
+    public List<EncounterCreditCompany> getEncounterCreditCompanies() {
+        if (encounterCreditCompanies == null) {
+            refreshEncounterCreditCompanies();
+        }
+        return encounterCreditCompanies;
+    }
+
+    public void refreshEncounterCreditCompanies() {
+        String jpql = "select ecc from EncounterCreditCompany ecc "
+                + "where ecc.retired = false and ecc.patientEncounter = :pe "
+                + "order by ecc.id asc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("pe", current);
+        encounterCreditCompanies = encounterCreditCompanyFacade.findByJpql(jpql, params);
+        if (encounterCreditCompanies == null) {
+            encounterCreditCompanies = new ArrayList<>();
+        }
+        if (encounterCreditCompanies.size() == 1) {
+            selectedEncounterCreditCompanyId = encounterCreditCompanies.get(0).getId();
+        } else {
+            selectedEncounterCreditCompanyId = null;
+        }
+    }
+
+    public Long getSelectedEncounterCreditCompanyId() {
+        return selectedEncounterCreditCompanyId;
+    }
+
+    public void setSelectedEncounterCreditCompanyId(Long selectedEncounterCreditCompanyId) {
+        this.selectedEncounterCreditCompanyId = selectedEncounterCreditCompanyId;
+    }
+
+    private EncounterCreditCompany getSelectedEncounterCreditCompany() {
+        if (selectedEncounterCreditCompanyId == null || encounterCreditCompanies == null) {
+            return null;
+        }
+        for (EncounterCreditCompany ecc : encounterCreditCompanies) {
+            if (ecc.getId() != null && ecc.getId().equals(selectedEncounterCreditCompanyId)) {
+                return ecc;
+            }
+        }
+        return null;
+    }
+
+    public List<DocumentTemplate> getLetterTemplates() {
+        if (letterTemplates == null) {
+            letterTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientLetter);
+        }
+        return letterTemplates;
+    }
+
+    public void refreshLetterTemplates() {
+        letterTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientLetter);
     }
 
     public boolean isEditingDiagnosisCard() {
