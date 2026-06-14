@@ -974,11 +974,21 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
-                                        value="Documents"
+                                        value="Uploads"
                                         ajax="false"
                                         rendered="#{webUserController.hasPrivilege('InwardDocumentUpload')}"
                                         action="#{admissionController.navigateToInpatientDocuments()}"
-                                        icon="fa fa-file-alt"
+                                        icon="fa fa-upload"
+                                        class="w-100">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Letters"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InpatientLetter')}"
+                                        action="#{admissionController.navigateToInpatientLetters()}"
+                                        icon="fa fa-file-text"
                                         class="w-100">
                                     </p:commandButton>
                                 </div>

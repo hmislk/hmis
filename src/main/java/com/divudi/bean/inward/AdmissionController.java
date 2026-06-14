@@ -430,6 +430,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return inpatientClinicalDataController.navigateToDiagnosisCards(current);
     }
 
+    public String navigateToInpatientLetters() {
+        return inpatientClinicalDataController.navigateToInpatientLetters(current);
+    }
+
     public void dateChangeListen() {
         getPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
 
