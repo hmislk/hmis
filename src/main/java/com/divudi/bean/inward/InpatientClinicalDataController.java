@@ -15,6 +15,7 @@ import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.MedicationAdministrationStatus;
 import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.data.clinical.DocumentTemplateType;
@@ -35,6 +36,7 @@ import com.divudi.core.entity.clinical.ClinicalEntity;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.clinical.DocumentTemplate;
 import com.divudi.core.entity.clinical.ItemUsage;
+import com.divudi.core.entity.clinical.MedicationAdministrationRecord;
 import com.divudi.core.entity.clinical.Prescription;
 import com.divudi.core.entity.clinical.PrescriptionTemplate;
 import com.divudi.core.entity.pharmacy.MeasurementUnit;
@@ -83,6 +85,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.entity.AiMessage;
 import com.divudi.service.AnthropicApiService;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.CaptureEvent;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
@@ -162,6 +165,8 @@ public class InpatientClinicalDataController implements Serializable {
     com.divudi.bean.pharmacy.PharmacySaleBhtController pharmacySaleBhtController;
     @Inject
     com.divudi.bean.common.NotificationController notificationController;
+    @Inject
+    private MedicationAdministrationController medicationAdministrationController;
 
     /**
      * Properties
@@ -246,9 +251,45 @@ public class InpatientClinicalDataController implements Serializable {
     private MeasurementUnit newDoseUnit;
     private MeasurementUnit newFrequencyUnit;
 
-    private TimelineModel<ClinicalFindingValue, String> wardMedicineTimelineModel;
+    private TimelineModel<WardMedicineTimelineEntry, String> wardMedicineTimelineModel;
     private ClinicalFindingValue selectedTimelineMedicine;
+    private MedicationAdministrationRecord selectedTimelineAdministration;
     private boolean hasWardMedicineTimelineEvents;
+
+    /**
+     * A single entry on the Ward Medicines Timeline (#21488): either a range
+     * bar for a prescription's active period, or a point marker for a single
+     * {@link MedicationAdministrationRecord} given/refused/held against it.
+     */
+    public static class WardMedicineTimelineEntry implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        private final ClinicalFindingValue medicine;
+        private final MedicationAdministrationRecord administration;
+
+        public WardMedicineTimelineEntry(ClinicalFindingValue medicine) {
+            this.medicine = medicine;
+            this.administration = null;
+        }
+
+        public WardMedicineTimelineEntry(MedicationAdministrationRecord administration) {
+            this.medicine = null;
+            this.administration = administration;
+        }
+
+        public ClinicalFindingValue getMedicine() {
+            return medicine;
+        }
+
+        public MedicationAdministrationRecord getAdministration() {
+            return administration;
+        }
+
+        public boolean isAdministrationEvent() {
+            return administration != null;
+        }
+    }
 
     private List<ItemUsage> currentEncounterMedicines;
     private List<ItemUsage> currentEncounterDiagnosis;
@@ -2560,6 +2601,8 @@ public class InpatientClinicalDataController implements Serializable {
         this.current = admission;
         this.patient = admission.getPatient();
         this.selectedTimelineMedicine = null;
+        this.selectedTimelineAdministration = null;
+        medicationAdministrationController.resetAdministrationHistoryCache();
         fillAdmissionWardMedicines(admission);
         buildWardMedicineTimeline();
         return "/inward/inward_ward_medicines_timeline?faces-redirect=true";
@@ -2602,8 +2645,8 @@ public class InpatientClinicalDataController implements Serializable {
             LocalDateTime end = endDate.toInstant()
                     .atZone(ZoneId.systemDefault()).toLocalDateTime();
 
-            TimelineEvent<ClinicalFindingValue> event = TimelineEvent.<ClinicalFindingValue>builder()
-                    .data(cfv)
+            TimelineEvent<WardMedicineTimelineEntry> event = TimelineEvent.<WardMedicineTimelineEntry>builder()
+                    .data(new WardMedicineTimelineEntry(cfv))
                     .startDate(start)
                     .endDate(end)
                     .group(groupId)
@@ -2611,17 +2654,82 @@ public class InpatientClinicalDataController implements Serializable {
                     .build();
             wardMedicineTimelineModel.add(event);
             hasWardMedicineTimelineEvents = true;
+
+            for (MedicationAdministrationRecord mar : medicationAdministrationController.getAdministrationHistory(rx)) {
+                if (mar.getAdministeredAt() == null) {
+                    continue;
+                }
+                LocalDateTime administeredAt = mar.getAdministeredAt().toInstant()
+                        .atZone(ZoneId.systemDefault()).toLocalDateTime();
+                TimelineEvent<WardMedicineTimelineEntry> marEvent = TimelineEvent.<WardMedicineTimelineEntry>builder()
+                        .data(new WardMedicineTimelineEntry(mar))
+                        .startDate(administeredAt)
+                        .type("point")
+                        .group(groupId)
+                        .styleClass(administrationStyleClass(mar.getStatus()))
+                        .title(administrationTitle(mar))
+                        .build();
+                wardMedicineTimelineModel.add(marEvent);
+            }
         }
     }
 
-    public void onTimelineSelect(TimelineSelectEvent<ClinicalFindingValue> e) {
-        if (e != null && e.getTimelineEvent() != null) {
-            selectedTimelineMedicine = e.getTimelineEvent().getData();
+    private String administrationStyleClass(MedicationAdministrationStatus status) {
+        if (status == null) {
+            return "mar-given";
+        }
+        switch (status) {
+            case REFUSED:
+                return "mar-refused";
+            case HELD:
+                return "mar-held";
+            default:
+                return "mar-given";
         }
     }
 
-    public TimelineModel<ClinicalFindingValue, String> getWardMedicineTimelineModel() {
+    private String administrationTitle(MedicationAdministrationRecord mar) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(mar.getStatus() != null ? mar.getStatus().getLabel() : "Administered");
+        if (mar.getQty() != null && mar.getItem() != null) {
+            sb.append(" - ").append(mar.getQty()).append(" ").append(mar.getItem().getName());
+        }
+        if (mar.getItemBatch() != null && mar.getItemBatch().getBatchNo() != null) {
+            sb.append(" (Batch ").append(mar.getItemBatch().getBatchNo()).append(")");
+        }
+        if (mar.getAdministeredBy() != null && mar.getAdministeredBy().getPerson() != null
+                && mar.getAdministeredBy().getPerson().getName() != null) {
+            sb.append(" by ").append(mar.getAdministeredBy().getPerson().getName());
+        }
+        return sb.toString();
+    }
+
+    public void onTimelineSelect(TimelineSelectEvent<WardMedicineTimelineEntry> e) {
+        if (e == null || e.getTimelineEvent() == null || e.getTimelineEvent().getData() == null) {
+            return;
+        }
+        WardMedicineTimelineEntry entry = e.getTimelineEvent().getData();
+        if (entry.isAdministrationEvent()) {
+            selectedTimelineAdministration = entry.getAdministration();
+            selectedTimelineMedicine = null;
+            PrimeFaces.current().executeScript("PF('dlgAdministrationDetail').show();");
+        } else {
+            selectedTimelineMedicine = entry.getMedicine();
+            selectedTimelineAdministration = null;
+            PrimeFaces.current().executeScript("PF('dlgMedicineDetail').show();");
+        }
+    }
+
+    public TimelineModel<WardMedicineTimelineEntry, String> getWardMedicineTimelineModel() {
         return wardMedicineTimelineModel;
+    }
+
+    public MedicationAdministrationRecord getSelectedTimelineAdministration() {
+        return selectedTimelineAdministration;
+    }
+
+    public void setSelectedTimelineAdministration(MedicationAdministrationRecord selectedTimelineAdministration) {
+        this.selectedTimelineAdministration = selectedTimelineAdministration;
     }
 
     public ClinicalFindingValue getSelectedTimelineMedicine() {
