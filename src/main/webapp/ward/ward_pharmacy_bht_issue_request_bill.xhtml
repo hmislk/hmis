@@ -77,7 +77,7 @@
                                                              styleClass="#{pharmacyRequestForBhtController.isDefaultRequestedPharmacy(recentPh) ? 'ui-button-info ui-button-sm' : 'ui-button-info ui-button-outlined ui-button-sm'}"
                                                              disabled="#{pharmacyRequestForBhtController.department ne null}"
                                                              process="@this"
-                                                             update="departmentId acPt2 recentPharmacies"
+                                                             update=":bill:departmentId :bill:acPt2 :bill:recentPharmacies"
                                                              action="#{pharmacyRequestForBhtController.selectRequestedPharmacy(recentPh)}" />
                                         </ui:repeat>
                                     </h:panelGroup>
