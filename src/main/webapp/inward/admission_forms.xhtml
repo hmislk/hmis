@@ -38,10 +38,16 @@
                     <p:column headerText="Comments">
                         <h:outputText value="#{entry.comments}" />
                     </p:column>
-                    <p:column headerText="Actions" style="width:12rem;text-align:center">
+                    <p:column headerText="Actions" style="width:15rem;text-align:center">
                         <p:commandButton value="Edit" icon="fa fa-pen" class="me-1"
                                          process="@this" update="@form"
                                          action="#{inwardFormController.editForm(entry)}" />
+                        <p:commandButton icon="fas fa-envelope" title="Send by Email" class="me-1"
+                                         styleClass="ui-button-secondary"
+                                         process="@this"
+                                         update=":emailFormDialogForm"
+                                         action="#{inwardFormController.prepareFormEmailDialog(entry)}"
+                                         oncomplete="PF('emailFormDialog').show();" />
                         <p:commandButton value="Delete" icon="fa fa-trash"
                                          styleClass="ui-button-danger"
                                          process="@this" update="@form"
@@ -231,5 +237,34 @@
                                  styleClass="ui-confirmdialog-no ui-button-flat" icon="pi pi-times" />
             </p:confirmDialog>
         </h:form>
+
+        <!-- Send Email dialog -->
+        <p:dialog widgetVar="emailFormDialog" modal="true"
+                  header="Send Form by Email"
+                  width="400px" height="auto" resizable="false">
+            <h:form id="emailFormDialogForm">
+                <div class="p-3">
+                    <div class="mb-3">
+                        <p:outputLabel value="Form: " style="font-weight: bold;"/>
+                        <p:outputLabel value="#{inwardFormController.currentEntry.designComponent.name}"/>
+                    </div>
+                    <div class="mb-3">
+                        <p:outputLabel for="emailFormRecipient" value="Email Address:" class="form-label"/>
+                        <p:inputText id="emailFormRecipient"
+                                     value="#{inwardFormController.emailRecipient}"
+                                     class="w-100" placeholder="Enter email address"
+                                     required="true" requiredMessage="Email address is required"/>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <p:commandButton value="Cancel" onclick="PF('emailFormDialog').hide();"
+                                         class="ui-button-secondary" type="button"/>
+                        <p:commandButton value="Send Email"
+                                         action="#{inwardFormController.sendFormEmail}"
+                                         class="ui-button-success" icon="fas fa-envelope"
+                                         ajax="false" oncomplete="PF('emailFormDialog').hide();"/>
+                    </div>
+                </div>
+            </h:form>
+        </p:dialog>
     </ui:define>
 </ui:composition>

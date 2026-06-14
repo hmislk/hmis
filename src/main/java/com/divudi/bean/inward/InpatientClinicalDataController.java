@@ -141,6 +141,10 @@ public class InpatientClinicalDataController implements Serializable {
     private PrescriptionService prescriptionService;
     @EJB
     private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
+    @EJB
+    private com.divudi.core.facade.EmailFacade emailFacade;
+    @EJB
+    private com.divudi.ejb.EmailManagerEjb emailManagerEjb;
     /**
      * Controllers
      */
@@ -192,6 +196,7 @@ public class InpatientClinicalDataController implements Serializable {
     private List<DocumentTemplate> letterTemplates;
     private DocumentTemplate selectedDocumentTemplate;
     private boolean editingDiagnosisCard;
+    private String emailRecipient;
 
     private List<EncounterCreditCompany> encounterCreditCompanies;
     private Long selectedEncounterCreditCompanyId;
@@ -4793,6 +4798,99 @@ public class InpatientClinicalDataController implements Serializable {
             }
         }
         return sb.toString();
+    }
+
+    public String getEmailRecipient() {
+        return emailRecipient;
+    }
+
+    public void setEmailRecipient(String emailRecipient) {
+        this.emailRecipient = emailRecipient;
+    }
+
+    public void prepareDocumentEmailDialog() {
+        if (encounterReferral == null || encounterReferral.getLobValue() == null) {
+            JsfUtil.addErrorMessage("No document selected or document content is empty");
+            return;
+        }
+        emailRecipient = resolveDefaultEmailRecipient();
+    }
+
+    private String resolveDefaultEmailRecipient() {
+        if (encounterCreditCompanies != null) {
+            for (EncounterCreditCompany ecc : encounterCreditCompanies) {
+                if (ecc.getInstitution() != null
+                        && ecc.getInstitution().getEmail() != null
+                        && !ecc.getInstitution().getEmail().trim().isEmpty()) {
+                    return ecc.getInstitution().getEmail().trim();
+                }
+            }
+        }
+        if (current != null && current.getPatient() != null && current.getPatient().getPerson() != null
+                && current.getPatient().getPerson().getEmail() != null
+                && !current.getPatient().getPerson().getEmail().trim().isEmpty()) {
+            return current.getPatient().getPerson().getEmail().trim();
+        }
+        if (current != null && current.getGuardian() != null
+                && current.getGuardian().getEmail() != null
+                && !current.getGuardian().getEmail().trim().isEmpty()) {
+            return current.getGuardian().getEmail().trim();
+        }
+        return "";
+    }
+
+    public void sendDocumentEmail() {
+        if (encounterReferral == null || encounterReferral.getLobValue() == null) {
+            JsfUtil.addErrorMessage("No document selected or document content is empty");
+            return;
+        }
+        if (emailRecipient == null || emailRecipient.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter recipient email");
+            return;
+        }
+        String recipient = emailRecipient.trim();
+        if (!CommonFunctions.isValidEmail(recipient)) {
+            JsfUtil.addErrorMessage("Please enter a valid email address");
+            return;
+        }
+
+        String subject = encounterReferral.getStringValue() != null
+                ? encounterReferral.getStringValue() : "Inpatient Document";
+        String body = encounterReferral.getLobValue();
+
+        com.divudi.core.entity.AppEmail email = new com.divudi.core.entity.AppEmail();
+        email.setCreatedAt(new Date());
+        email.setCreater(sessionController.getLoggedUser());
+        email.setReceipientEmail(recipient);
+        email.setMessageSubject(subject);
+        email.setMessageBody(body);
+        email.setDepartment(sessionController.getLoggedUser().getDepartment());
+        email.setInstitution(sessionController.getLoggedUser().getInstitution());
+        email.setPatientEncounter(current);
+        email.setMessageType(com.divudi.core.data.MessageType.InpatientClinicalDocument);
+        email.setSentSuccessfully(false);
+        email.setPending(true);
+        emailFacade.create(email);
+
+        try {
+            boolean success = emailManagerEjb.sendEmail(
+                    Collections.singletonList(recipient),
+                    body,
+                    subject,
+                    true
+            );
+            email.setSentSuccessfully(success);
+            email.setPending(!success);
+            if (success) {
+                email.setSentAt(new Date());
+                JsfUtil.addSuccessMessage("Email Sent Successfully");
+            } else {
+                JsfUtil.addErrorMessage("Sending Email Failed");
+            }
+            emailFacade.edit(email);
+        } catch (Exception ex) {
+            JsfUtil.addErrorMessage("Sending Email Failed");
+        }
     }
 
     public StreamedContent downloadAsPdf() {
