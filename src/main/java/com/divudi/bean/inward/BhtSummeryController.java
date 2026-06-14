@@ -1731,7 +1731,11 @@ public class BhtSummeryController implements Serializable {
 
         if (getPatientEncounter().getAdmissionType() != null
                 && getPatientEncounter().getAdmissionType().isRoomChargesAllowed()) {
-            if (getPatientEncounter().getCurrentPatientRoom() != null && getPatientEncounter().getCurrentPatientRoom().getDischargedAt() == null) {
+            PatientRoom currentRoom = getPatientEncounter().getCurrentPatientRoom();
+            if (currentRoom != null) {
+                currentRoom = patientRoomFacade.find(currentRoom.getId());
+            }
+            if (currentRoom != null && currentRoom.getDischargedAt() == null) {
                 JsfUtil.addErrorMessage("Cannot discharge patient: the current room has not been discharged. " + "Please discharge the room first to record an accurate billing end time.");
                 return;
             }
