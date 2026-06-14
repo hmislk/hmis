@@ -1731,10 +1731,13 @@ public class BhtSummeryController implements Serializable {
 
         if (getPatientEncounter().getAdmissionType() != null
                 && getPatientEncounter().getAdmissionType().isRoomChargesAllowed()) {
-            PatientRoom currentRoom = getPatientEncounter().getCurrentPatientRoom();
-            if (currentRoom != null) {
-                currentRoom = patientRoomFacade.find(currentRoom.getId());
-            }
+            // Re-fetch the encounter from the DB/L2 cache to get the authoritative currentPatientRoom FK.
+            // The session-scoped patientEncounter may be stale: a room change via RoomChangeController
+            // updates PatientEncounter.currentPatientRoom in the DB but not in this session object,
+            // so reading currentPatientRoom directly from the session would check the OLD room (which
+            // is already discharged) and incorrectly let the guard pass while the new room is still active.
+            PatientEncounter freshEncounter = patientEncounterFacade.find(getPatientEncounter().getId());
+            PatientRoom currentRoom = freshEncounter != null ? freshEncounter.getCurrentPatientRoom() : null;
             if (currentRoom != null && currentRoom.getDischargedAt() == null) {
                 JsfUtil.addErrorMessage("Cannot discharge patient: the current room has not been discharged. " + "Please discharge the room first to record an accurate billing end time.");
                 return;
