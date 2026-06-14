@@ -637,10 +637,9 @@
 
                         <p:menuitem
                             ajax="false"
-                            action="/pharmacy/pharmacy_return_from_ward_receive_list?faces-redirect=true"
+                            action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"
                             value="Accept Returns from Ward"
                             icon="fa fa-truck-ramp-box"
-                            actionListener="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"
                             rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
                         </p:menuitem>
 

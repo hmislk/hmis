@@ -109,7 +109,11 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
 
     private void generateBillComponent() {
         receivedBill = new BilledBill();
-        receivedBill.setBillType(BillType.PharmacyIssue);
+        // PharmacyBhtPre (not PharmacyIssue) so PharmacyBean.resolveStockHistoryType
+        // does not classify the addToStock credit below as a stock-decreasing
+        // "Issue" in bin-card/stock-history reports. Mirrors the analogous
+        // ACCEPT_ISSUED_MEDICINE_INWARD bill in WardPharmacyBhtIssueReceiveController (#21467).
+        receivedBill.setBillType(BillType.PharmacyBhtPre);
         receivedBill.setBillTypeAtomic(BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
         receivedBill.setInstitution(sessionController.getInstitution());
         receivedBill.setDepartment(sessionController.getDepartment());
