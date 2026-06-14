@@ -1,26 +1,152 @@
-site_name: CareCode HIMS Documentation
+site_name: CareCode HMIS Documentation
 site_description: Public documentation generated automatically from the GitHub Wiki.
 site_url: https://hmislk.github.io/hmis/
 
 repo_url: https://github.com/hmislk/hmis
 repo_name: hmislk/hmis
+edit_uri: https://github.com/hmislk/hmis/wiki/
 
 docs_dir: docs
 
+# ---------------------------------------------------------------------------
+# Navigation — top-level tabs, no overwhelming sidebar
+# ---------------------------------------------------------------------------
+nav:
+  - Home: index.md
+  - User Manual:
+      - Overview: User-Manual.md
+      - Login: Login.md
+      - Pharmacy: Pharmacy.md
+      - "OPD / Cashier / Billing": OPD.md
+      - LIMS: LIMS.md
+      - "Inward Patient Care": Inward.md
+      - "Electronic Health Record": Electronic-Health-Record-(EHR).md
+      - "Channelling Module": Medical-Appointment-Channelling-Moudule.md
+      - "Theatre Management": Theatre-Management-Module.md
+      - Membership: Membership-and-Loyalty-Card-System.md
+      - "Collecting Centre": Collecting-Centres.md
+      - "Stores & Assets": Stores-and-Assets-Management.md
+      - "RIS & PACS": RIS-&-PACS.md
+      - "HR Management": Human-Resource-Management-&-Payroll-System.md
+      - "Kitchen Management": Kitchen-Management.md
+      - "Linen Management": Linen-Management.md
+      - "Fleet Management": Fleet-Management.md
+      - Accounting: Accounting-Module.md
+      - Preferences: Managing-Preferences.md
+      - "Patient Deposit": Patient-Deposit-Management.md
+  - Administration:
+      - Overview: System-Administration.md
+      - "User Management": User-Management.md
+      - "Privileges & Roles": Admin-Roles-and-Privileges-Overview.md
+      - Institutions: Institutions.md
+      - Departments: Admin-Creating-and-Managing-Departments.md
+      - "Fee Configuration": Admin-Fee-Configuration-Overview.md
+  - Pharmacy Guide:
+      - Overview: Pharmaceutical-Management.md
+      - "Pharmacy Administration": Pharmacy-Administration.md
+      - Sale: Pharmacy-Sale.md
+      - "Purchase & GRN": pharmacy_purchase.md
+      - Issue: pharmacy_issue.md
+      - "Stock Transfer": Pharmacy-Stock-Transfer-Request-Issue-Receive.md
+      - Adjustments: Pharmacy-Adjustments.md
+      - Ordering: Pharmacy-Ordering.md
+  - Inpatient Guide:
+      - Overview: Inward.md
+      - "Inpatient Services": Manage-Inpatient-Services.md
+      - "Room & Bed Management": Admin-Inpatient-Room-Categories-Rooms-Fees.md
+      - "Admission Process": Add-new-patient.md
+      - Billing: Laboratory-Billing.md
+      - "Surgery Types": Admin-Inpatient-Surgery-Types-and-Clinical-Procedures.md
+      - "Form Templates": Admin-Inpatient-Form-Templates.md
+      - "Discount Matrix": Admin-Inpatient-Discount-Matrix.md
+  - LIMS Guide:
+      - Overview: LIMS.md
+      - "LIMS Administration": LIMS-Administration.md
+      - "Lab Services": Manage-Lab-Services.md
+      - "Sample Reception": LIMS-Receiving-Samples-at-the-Lab.md
+      - "Analyser Middleware": LIMS-Analyser-Middleware.md
+      - "Sending SMS": LIMS-Sending-SMS.md
+      - "Result Flags": LIMS-Result-Flags-and-Critical-Values.md
+      - "Issuing Reports": LIMS-Issuing-Reports.md
+      - Knowledgebase: LIMS-Knowledgebase.md
+  - Knowledge Base:
+      - Overview: Knowledgebase.md
+      - Functions: Functions.md
+      - "Clinical Knowledge": Clinical-Knowledge.md
+      - Medicines: Medicines.md
+      - "Pharmaceutical Fundamentals": Pharmaceutical-Fundamentals.md
+  - Developer Guide:
+      - Overview: Developer-Manual.md
+      - "Tech Stack": Tech-Stack.md
+      - API: API.md
+      - "Design Documentation": Design-Documentation.md
+      - Troubleshooting: Troubleshooting.md
+      - "Code Concepts": Code-Concepts-for-Developers.md
+  - About:
+      - "About Open HMIS": About-Open-HMIS.md
+      - "Road Map": Road-map.md
+      - "Getting Commercial Support": Getting-Commercial-Support.md
+      - "Wiki Automation Guide": Wiki-Automation-Guide.md
+
+# ---------------------------------------------------------------------------
+# Theme
+# ---------------------------------------------------------------------------
 theme:
   name: material
   language: en
+  logo: images/hmis-logo.png
+  favicon: images/favicon.png
+  custom_dir: overrides
+
+  # Navigation
   features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
     - navigation.instant
     - navigation.tracking
-    - navigation.top
+    - navigation.indexes
     - search.suggest
     - search.highlight
+    - search.share
     - content.code.copy
+    - content.action.edit
+    - toc.follow
 
+  # Colour palette — light & dark
+  palette:
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+  # Font
+  font:
+    text: Roboto
+    code: Roboto Mono
+
+# ---------------------------------------------------------------------------
+# Plugins
+# ---------------------------------------------------------------------------
 plugins:
-  - search
+  - search:
+      lang: en
 
+# ---------------------------------------------------------------------------
+# Markdown extensions
+# ---------------------------------------------------------------------------
 markdown_extensions:
   - admonition
   - tables
@@ -30,3 +156,25 @@ markdown_extensions:
   - md_in_html
   - pymdownx.details
   - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - footnotes
+  - def_list
+
+# ---------------------------------------------------------------------------
+# Extra
+# ---------------------------------------------------------------------------
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/hmislk/hmis
+  generator: false
+
+copyright: >
+  Copyright &copy; 2015 – 2026 &nbsp;
+  <a href="https://github.com/hmislk/hmis" target="_blank" rel="noopener">CareCode HMIS</a>
+  &nbsp;— Licensed under MIT
