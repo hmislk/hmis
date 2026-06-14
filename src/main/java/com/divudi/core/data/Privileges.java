@@ -123,6 +123,7 @@ public enum Privileges {
     InpatientClinicalAssessment("Inpatient Clinical Assessment"),
     InpatientClinicalDischarge("Inpatient Clinical Discharge"),
     InwardDocumentUpload("Inward Document Upload"),
+    InpatientLetter("Inpatient Letter"),
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Nurse">
@@ -331,6 +332,7 @@ public enum Privileges {
     StoreReports("Store Reports"),
     StoreSummery("Store Summary"),
     StoreAdministration("Store Administration"),
+    PharmacyItemNameEdit("Pharmacy Item Name Edit"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Channel">
@@ -1018,7 +1020,8 @@ public enum Privileges {
             case PharmacyGrnFinalize:
             case PharmacyGrnApprove:
             case PrintOriginalPoBillFromReprint:
-            case PrintOriginalGrnBillFromReprint:    
+            case PrintOriginalGrnBillFromReprint:
+            case PharmacyItemNameEdit:
 
                 return "Pharmacy";
 
@@ -1084,6 +1087,7 @@ public enum Privileges {
             case InpatientClinicalAssessment:
             case InpatientClinicalDischarge:
             case InwardDocumentUpload:
+            case InpatientLetter:
             case InwardFormTemplateAdmin:
             case InwardFormFill:
                 return "Inward";

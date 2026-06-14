@@ -38,6 +38,7 @@ public enum UploadType {
     Inward_Consent_Form("Consent Form"),
     Inward_Insurance_Document("Insurance Document"),
     Inward_Referral_Letter("Referral Letter"),
+    Inward_GOP("GOP"),
     Inward_Other("Other Document");
 
     private final String label;

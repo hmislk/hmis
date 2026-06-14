@@ -220,6 +220,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientClinicalAssessment, "Clinical Notes / Assessments"), inwardClinicalNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientClinicalDischarge, "Clinical Discharge"), inwardClinicalNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardDocumentUpload, "Document Upload"), inwardClinicalNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientLetter, "Generate Inpatient Letters"), inwardClinicalNode);
 
         TreeNode additionalPrivilegesNode = new DefaultTreeNode(new PrivilegeHolder(null, "Additional Privileges"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdditionalPrivilages, "Additional Privilege Menu"), additionalPrivilegesNode);
@@ -362,6 +363,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode pharmacyNode = new DefaultTreeNode(new PrivilegeHolder(null, "Pharmacy"), allNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.Pharmacy, "Pharmacy Menu"), pharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyAdministration, "Pharmacy Administration"), pharmacyNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyItemNameEdit, "Pharmacy Item Name Edit"), pharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDonation, "Pharmacy Donation"), pharmacyNode);
 
         // Channelling Privileges

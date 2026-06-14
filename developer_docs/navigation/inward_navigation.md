@@ -294,6 +294,46 @@ Two parallel workflows exist:
 
 ---
 
+## Porter-Mediated Ward Pharmacy Workflow (Design — Issues #21466–#21472)
+
+Investigation for #21466/#21467 found that the **existing pharmacy disbursement "Direct Issue" mechanism already implements most of the low-level machinery** needed for porter-mediated ward issue. This section records the findings and the proposed design so each sub-issue can be implemented incrementally without re-investigating.
+
+### What already exists and works
+
+- `TransferIssueDirectController` (`pharmacy_transfer_issue_direct_department.xhtml` → `pharmacy_transfer_issue_direct.xhtml`) lets pharmacy staff issue items to any department — **including ward-type departments**. Confirmed live: searching "ward" in the destination-department picker returns `Inward`, `Temp-Inward`, `Ward Pharmacy`.
+- On settle, `updateStocks()` already does exactly what #21467 asks for:
+  - Deducts from the issuing department's `Stock` via `PharmacyBean.deductFromStock(...)`.
+  - Adds the same quantity to the **selected porter's staff stock** via `PharmacyBean.addToStock(PharmaceuticalBillItem, qty, Staff)` (`Stock.staff` + `StockHistory.staff`).
+  - Bill is created with `BillTypeAtomic.PHARMACY_DIRECT_ISSUE`, `fromDepartment` = issuing pharmacy, `toDepartment` = destination department, `toStaff` = porter.
+- `TransferReceiveController` already implements the receive-side mirror (#21468's "receive from porter" pattern): it queries `Stock` where `staff = <porter>`, deducts it, and credits the receiving department's `Stock` — this is the template for #21468 and #21471.
+
+### The gap: no link to a specific admission (BHT)
+
+The disbursement flow above is **department-to-department** and has no concept of *which patient* the medicines are for. Ward medicine issue (`ward_pharmacy_bht_issue.xhtml`, originating from a request created in `ward_pharmacy_bht_issue_request_bill.xhtml`) is always tied to one **BHT / `PatientEncounter`**.
+
+Two entity fields already exist and are unused by the disbursement controllers, but solve this:
+
+- `Bill.fromDepartment` and `Bill.patientEncounter` (`Bill.java`) — every bill can carry a `PatientEncounter` reference.
+- `PatientEncounter.department` (`PatientEncounter.java`) — every admission already records **its own ward** as a `Department`. This means we don't need new per-ward `Department` records or a new destination picker — `patientEncounter.getDepartment()` gives the ward directly.
+
+### Proposed design for #21467 onward
+
+When a ward medicine request (tied to a `PatientEncounter`) is settled via the porter-issue mechanism:
+
+1. **fromDepartment** = the issuing pharmacy (as today).
+2. **toDepartment** = `patientEncounter.getDepartment()` — the ward where the patient is admitted (not a manually-picked department).
+3. **patientEncounter** = the BHT's `PatientEncounter`, set on the issue bill so every downstream step (#21468 ward receive, #21469 administration, #21470/#21471 returns) can trace back to the same admission.
+4. **toStaff** = the porter, with stock moved via the existing `addToStock(pbi, qty, Staff)` + `StockHistory` mechanism — no new entity needed for #21467.
+
+This reuses the proven staff-stock + stock-history mechanics from `TransferIssueDirectController` while adding the one missing link (`patientEncounter`) that the rest of the porter workflow (#21468–#21472) depends on. #21468's ward-receive step would then look up porter `Stock` filtered by `patientEncounter` (in addition to `staff`), crediting ward-held `Stock` (`department` = `patientEncounter.getDepartment()`). #21469 (administration) and #21470/#21471 (returns) chain off the same `patientEncounter` reference. #21472 (reporting) needs to add `patientEncounter`-based grouping to stock-in-transit/ward-stock reports, alongside the existing department-based grouping.
+
+### Open questions for implementation
+
+- Whether the porter-issue bill should be created from `ward_pharmacy_bht_issue.xhtml` directly (extending `PharmacySaleBhtController`) or by adapting `TransferIssueDirectController` to accept an optional `PatientEncounter` — needs a decision when #21467 is implemented.
+- Porter role/identification: #21467 originally proposed a dedicated "Porter" staff role; the existing `toStaff` field on `TransferIssueDirectController` already accepts any staff member via `staffController.completeStaffWithoutDoctors` — a dedicated role may be a UI/filtering nicety rather than a new entity.
+
+---
+
 ## Reports
 
 | Page | Purpose |
