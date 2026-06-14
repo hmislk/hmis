@@ -38,6 +38,30 @@
 
                 </f:facet>
 
+                <div class="row">
+                    <div class="col-md-6">
+                        <h:outputLabel value="Porter / Staff Carrying Medicines to Ward:" for="acPorter" />
+                        <p:autoComplete id="acPorter"
+                                        completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                                        forceSelection="true"
+                                        var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
+                                        value="#{pharmacySaleBhtController.preBill.toStaff}"
+                                        maxResults="10"
+                                        placeholder="Search staff by name">
+
+                            <p:column headerText="Name">
+                                <h:outputText value="#{w.person.nameWithTitle}" />
+                            </p:column>
+                            <p:column headerText="Speciality">
+                                <h:outputText value="#{w.speciality.name}" />
+                            </p:column>
+                            <p:column headerText="Staff Code">
+                                <h:outputText value="#{w.code}" />
+                            </p:column>
+                        </p:autoComplete>
+                    </div>
+                </div>
+
                 <h:panelGroup class="row">
                     <h:panelGroup class="row" rendered="#{configOptionApplicationController.getBooleanValueByKey('Adding new items for inpatient requests are allowed.',true)}">
 
