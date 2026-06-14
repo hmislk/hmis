@@ -4669,11 +4669,16 @@ public class InpatientClinicalDataController implements Serializable {
         fillCurrentPatientLists(admission.getPatient());
         fillCurrentEncounterLists(admission);
         letterTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientLetter);
-        if (selectedDocumentTemplate != null && (letterTemplates == null || !letterTemplates.contains(selectedDocumentTemplate))) {
-            selectedDocumentTemplate = null;
-        }
+        clearInvalidSelectedLetterTemplate();
         refreshEncounterCreditCompanies();
         return "/inward/inward_letters?faces-redirect=true";
+    }
+
+    private void clearInvalidSelectedLetterTemplate() {
+        if (selectedDocumentTemplate != null
+                && (letterTemplates == null || !letterTemplates.contains(selectedDocumentTemplate))) {
+            selectedDocumentTemplate = null;
+        }
     }
 
     public List<EncounterCreditCompany> getEncounterCreditCompanies() {
@@ -4717,7 +4722,7 @@ public class InpatientClinicalDataController implements Serializable {
     private boolean requiresCreditCompanySelection() {
         return encounterCreditCompanies != null
                 && encounterCreditCompanies.size() > 1
-                && selectedEncounterCreditCompanyId == null;
+                && getSelectedEncounterCreditCompany() == null;
     }
 
     private EncounterCreditCompany getSelectedEncounterCreditCompany() {
@@ -4741,6 +4746,7 @@ public class InpatientClinicalDataController implements Serializable {
 
     public void refreshLetterTemplates() {
         letterTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientLetter);
+        clearInvalidSelectedLetterTemplate();
     }
 
     public boolean isEditingDiagnosisCard() {
