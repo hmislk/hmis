@@ -46,6 +46,7 @@ def page_to_markdown_link(page_name: str) -> str:
         page_name = page_name[1:]
 
     if not page_name.lower().endswith((".md", ".markdown")):
+        page_name = page_name.replace(" ", "-")
         page_name = f"{page_name}.md"
 
     return quote(page_name, safe="/.#-_%") + anchor
@@ -113,8 +114,10 @@ def create_index_if_missing(docs_dir: Path) -> None:
 
     pages = sorted(
         path.relative_to(docs_dir)
-        for path in docs_dir.rglob("*.md")
-        if path.name.lower() != "index.md"
+        for path in docs_dir.rglob("*")
+        if path.is_file()
+        and path.suffix.lower() in (".md", ".markdown")
+        and path.name.lower() != "index.md"
     )
 
     lines = [
@@ -142,7 +145,7 @@ def main() -> int:
     source_dir = Path(sys.argv[1]).resolve()
     docs_dir = Path(sys.argv[2]).resolve()
 
-    if not source_dir.exists():
+    if not source_dir.is_dir():
         print(f"Wiki source directory not found: {source_dir}")
         return 1
 
