@@ -10,7 +10,7 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form id="addRoomForm">
+                <h:form id="addRoomForm" onkeypress="if (event.keyCode === 13) { event.preventDefault(); return false; }">
                     <p:messages id="pageMessages"/>
 
                     <p:panel>
@@ -87,6 +87,7 @@
                                                                 var="rf" itemLabel="#{rf.name}" itemValue="#{rf}"
                                                                 style="width:100%;"
                                                                 minQueryLength="1"
+                                                                maxResults="15"
                                                                 placeholder="Type room number or facility name">
                                                             </p:autoComplete>
                                                         </div>
@@ -116,6 +117,7 @@
                                                             value="Add Room"
                                                             icon="fa fa-plus-circle"
                                                             class="ui-button-success"
+                                                            onclick="return confirm('Assign this room to the patient?');"
                                                             action="#{roomChangeController.addNewRoom()}"
                                                             ajax="false">
                                                         </p:commandButton>
