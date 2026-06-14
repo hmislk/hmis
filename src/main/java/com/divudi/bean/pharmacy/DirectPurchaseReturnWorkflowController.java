@@ -1809,20 +1809,19 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
 
         if (returnByTotalQty) {
-            // bi.qty is the positive pack qty entered by user
-            double currentTotalQty = Math.abs(bi.getQty());
+            double currentTotalQty = Math.abs(billItem.getQty());
             double currentTotalQtyInUnits = isAmppItem ? currentTotalQty * unitsPerPack : currentTotalQty;
 
             if (currentTotalQtyInUnits > remainingTotalQty) {
                 double correctedQtyInPacks = isAmppItem ? Math.max(0, remainingTotalQty / unitsPerPack) : Math.max(0, remainingTotalQty);
-                bi.setQty(correctedQtyInPacks);
+                billItem.setQty(correctedQtyInPacks);
                 fd.setFreeQuantity(BigDecimal.ZERO);
                 JsfUtil.addErrorMessage("Cannot return more than remaining quantity. Remaining: "
                         + (isAmppItem ? (remainingTotalQty / unitsPerPack) + " packs" : remainingTotalQty + " units"));
                 isValid = false;
             }
         } else if (returnByQtyAndFree) {
-            double currentQty = Math.abs(bi.getQty());
+            double currentQty = Math.abs(billItem.getQty());
             double currentFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
 
             double currentQtyInUnits = isAmppItem ? currentQty * unitsPerPack : currentQty;
@@ -1830,7 +1829,7 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
 
             if (currentQtyInUnits > remainingQty) {
                 double correctedQtyInPacks = isAmppItem ? Math.max(0, remainingQty / unitsPerPack) : Math.max(0, remainingQty);
-                bi.setQty(correctedQtyInPacks);
+                billItem.setQty(correctedQtyInPacks);
                 JsfUtil.addErrorMessage("Cannot return more than remaining quantity. Remaining: "
                         + (isAmppItem ? (remainingQty / unitsPerPack) + " packs" : remainingQty + " units"));
                 isValid = false;
