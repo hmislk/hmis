@@ -89,21 +89,47 @@
                                             <p:commandButton ajax="false" value="Inward Prices" class="w-100" action="/inward/?faces-redirect=true" ></p:commandButton>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="Diagnosis Cards">
+                                    <p:tab title="Document Templates">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                ajax="false" 
+                                            <h:outputText value="Diagnosis Cards" styleClass="fw-bold text-muted small mt-1"/>
+                                            <p:commandButton
+                                                ajax="false"
                                                 value="Add Diagnosis Card Template"
-                                                class="w-100" 
+                                                class="w-100"
+                                                action="#{documentTemplateController.navigateToAddDiagnosisCardTemplate()}" >
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="List Diagnosis Card Templates"
+                                                class="w-100"
+                                                action="#{documentTemplateController.navigateToListDiagnosisCardTemplates()}" >
+                                            </p:commandButton>
+                                            <h:outputText value="Letters" styleClass="fw-bold text-muted small mt-2"/>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Add Letter Template"
+                                                class="w-100"
+                                                action="#{documentTemplateController.navigateToAddLetterTemplate()}" >
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="List Letter Templates"
+                                                class="w-100"
+                                                action="#{documentTemplateController.navigateToListLetterTemplates()}" >
+                                            </p:commandButton>
+                                            <h:outputText value="Legacy Uploaded Templates" styleClass="fw-bold text-muted small mt-2"/>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Add Uploaded Diagnosis Card Template"
+                                                class="w-100 ui-button-secondary"
                                                 action="#{uploadController.toAddNewDiagnosisCardTemplateUpload()}" >
-                                            </p:commandButton> 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Uploaded Diagnosis Card Templates"
-                                                class="w-100" 
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="List Uploaded Diagnosis Card Templates"
+                                                class="w-100 ui-button-secondary"
                                                 action="#{uploadController.toListDiagnosisCardUploads()}" >
                                             </p:commandButton>
-
                                         </div>
                                     </p:tab>
 
