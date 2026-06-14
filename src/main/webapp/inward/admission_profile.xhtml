@@ -881,6 +881,15 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
+                                        id="btnReturnMedicinesToPharmacyInpatient"
+                                        value="Return Medicines to Pharmacy"
+                                        ajax="false"
+                                        action="#{wardPharmacyReturnToPharmacyController.navigateToReturn}"
+                                        icon="fa fa-truck-ramp-box"
+                                        class="w-100"/>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
                                         value="View Pharmacy Requests"
                                         action="#{admissionController.navigateToSearchInwardBills}"
                                         rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
