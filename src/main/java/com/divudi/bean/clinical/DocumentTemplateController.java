@@ -176,8 +176,26 @@ public class DocumentTemplateController implements Serializable {
         current = new DocumentTemplate();
         current.setWebUser(sessionController.getLoggedUser());
         current.setType(DocumentTemplateType.InpatientLetter);
-        current.setContents(generateDefaultTemplateContents());
+        current.setContents(generateDefaultLetterTemplateContents());
         return "/emr/settings/document_template?faces-redirect=true";
+    }
+
+    public String generateDefaultLetterTemplateContents() {
+        return "Date: {letter_date}<br/>"
+                + "To: {credit_company}<br/>"
+                + "{credit_company_address}<br/><br/>"
+                + "Dear Sir/Madam,<br/><br/>"
+                + "Re: {patient_name} ({patient_age} / {patient_sex})<br/>"
+                + "BHT No: {bht}<br/>"
+                + "Policy No: {policy_no}<br/>"
+                + "Reference No: {reference_no}<br/><br/>"
+                + "Date of Admission: {doa}<br/>"
+                + "Admitting Doctor: {doctor}<br/>"
+                + "Final Bill Value: {final_bill}<br/><br/>"
+                + "Please find the covering letter for the above admission.<br/><br/>"
+                + "Yours faithfully,<br/>"
+                + "{institution}<br/>"
+                + "{department}<br/>";
     }
 
     public String navigateToListLetterTemplates() {

@@ -137,7 +137,7 @@
                                             icon="fa fa-file-text"
                                             title="Generate letter by substituting placeholders in the selected template"
                                             class="ui-button-secondary w-100"
-                                            process="btnGenerateFromTemplate somLetterTemplates somCreditCompany"
+                                            process="btnGenerateFromTemplate somLetterTemplates #{not empty inpatientClinicalDataController.encounterCreditCompanies ? 'somCreditCompany' : ''}"
                                             update="lstSavedLetters gpLetterDoc msgLetter"
                                             action="#{inpatientClinicalDataController.generateAndAddDocumentFromTemplate}">
                                         </p:commandButton>
@@ -151,7 +151,7 @@
                                             icon="fa fa-magic"
                                             title="Generate letter using AI (uses template as instructions if selected)"
                                             class="ui-button-info w-100"
-                                            process="btnGenerateAi somLetterTemplates somCreditCompany"
+                                            process="btnGenerateAi somLetterTemplates #{not empty inpatientClinicalDataController.encounterCreditCompanies ? 'somCreditCompany' : ''}"
                                             update="lstSavedLetters gpLetterDoc msgLetter"
                                             action="#{inpatientClinicalDataController.generateLetterWithAi}"
                                             onstart="PF('aiLetterBlockUI').show();"

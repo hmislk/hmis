@@ -1091,6 +1091,10 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("Select a template");
             return;
         }
+        if (requiresCreditCompanySelection()) {
+            JsfUtil.addErrorMessage("This admission has multiple linked credit companies. Please select one before generating.");
+            return;
+        }
         String generatedDoc = generateDocumentFromTemplate(selectedDocumentTemplate, current);
         ClinicalFindingValue ref = new ClinicalFindingValue();
         ref.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
@@ -1180,6 +1184,10 @@ public class InpatientClinicalDataController implements Serializable {
     public void generateLetterWithAi() {
         if (current == null) {
             JsfUtil.addErrorMessage("No encounter selected");
+            return;
+        }
+        if (requiresCreditCompanySelection()) {
+            JsfUtil.addErrorMessage("This admission has multiple linked credit companies. Please select one before generating.");
             return;
         }
 
@@ -4661,6 +4669,9 @@ public class InpatientClinicalDataController implements Serializable {
         fillCurrentPatientLists(admission.getPatient());
         fillCurrentEncounterLists(admission);
         letterTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientLetter);
+        if (selectedDocumentTemplate != null && (letterTemplates == null || !letterTemplates.contains(selectedDocumentTemplate))) {
+            selectedDocumentTemplate = null;
+        }
         refreshEncounterCreditCompanies();
         return "/inward/inward_letters?faces-redirect=true";
     }
@@ -4695,6 +4706,18 @@ public class InpatientClinicalDataController implements Serializable {
 
     public void setSelectedEncounterCreditCompanyId(Long selectedEncounterCreditCompanyId) {
         this.selectedEncounterCreditCompanyId = selectedEncounterCreditCompanyId;
+    }
+
+    /**
+     * Returns true when the admission has more than one linked, non-retired
+     * credit company and the user has not yet picked which one to use.
+     * Letter generation must be blocked in this case to avoid silently
+     * addressing the letter to the wrong insurer/guarantor.
+     */
+    private boolean requiresCreditCompanySelection() {
+        return encounterCreditCompanies != null
+                && encounterCreditCompanies.size() > 1
+                && selectedEncounterCreditCompanyId == null;
     }
 
     private EncounterCreditCompany getSelectedEncounterCreditCompany() {

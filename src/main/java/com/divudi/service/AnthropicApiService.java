@@ -2909,6 +2909,7 @@ public class AnthropicApiService implements Serializable {
                     if (!templateType.isEmpty()) url.append("&type=").append(URLEncoder.encode(templateType, StandardCharsets.UTF_8));
                     if (!query.isEmpty()) url.append("&query=").append(URLEncoder.encode(query, StandardCharsets.UTF_8));
                     HttpRequest req = HttpRequest.newBuilder().uri(URI.create(url.toString()))
+                            .timeout(Duration.ofSeconds(15))
                             .header("Finance", hmisApiKey).GET().build();
                     HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
                     return resp.body();
@@ -2916,6 +2917,7 @@ public class AnthropicApiService implements Serializable {
                 case "GET": {
                     if (id.isEmpty()) return "Error: id is required for GET.";
                     HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id))
+                            .timeout(Duration.ofSeconds(15))
                             .header("Finance", hmisApiKey).GET().build();
                     HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
                     return resp.body();
@@ -2927,10 +2929,11 @@ public class AnthropicApiService implements Serializable {
                             .add("name", name)
                             .add("type", templateType);
                     if (!contents.isEmpty()) bodyBuilder.add("contents", contents);
-                    if (!defaultTemplate.isEmpty()) bodyBuilder.add("defaultTemplate", defaultTemplate);
-                    if (!autoGenerate.isEmpty()) bodyBuilder.add("autoGenerate", autoGenerate);
+                    if (!defaultTemplate.isEmpty()) bodyBuilder.add("defaultTemplate", Boolean.parseBoolean(defaultTemplate));
+                    if (!autoGenerate.isEmpty()) bodyBuilder.add("autoGenerate", Boolean.parseBoolean(autoGenerate));
                     String bodyStr = bodyBuilder.build().toString();
                     HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl))
+                            .timeout(Duration.ofSeconds(15))
                             .header("Finance", hmisApiKey).header("Content-Type", "application/json")
                             .POST(HttpRequest.BodyPublishers.ofString(bodyStr)).build();
                     HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
@@ -2942,10 +2945,11 @@ public class AnthropicApiService implements Serializable {
                     if (!name.isEmpty()) bodyBuilder.add("name", name);
                     if (!templateType.isEmpty()) bodyBuilder.add("type", templateType);
                     if (!contents.isEmpty()) bodyBuilder.add("contents", contents);
-                    if (!defaultTemplate.isEmpty()) bodyBuilder.add("defaultTemplate", defaultTemplate);
-                    if (!autoGenerate.isEmpty()) bodyBuilder.add("autoGenerate", autoGenerate);
+                    if (!defaultTemplate.isEmpty()) bodyBuilder.add("defaultTemplate", Boolean.parseBoolean(defaultTemplate));
+                    if (!autoGenerate.isEmpty()) bodyBuilder.add("autoGenerate", Boolean.parseBoolean(autoGenerate));
                     String bodyStr = bodyBuilder.build().toString();
                     HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id))
+                            .timeout(Duration.ofSeconds(15))
                             .header("Finance", hmisApiKey).header("Content-Type", "application/json")
                             .PUT(HttpRequest.BodyPublishers.ofString(bodyStr)).build();
                     HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
@@ -2954,6 +2958,7 @@ public class AnthropicApiService implements Serializable {
                 case "DELETE": {
                     if (id.isEmpty()) return "Error: id is required for DELETE.";
                     HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id))
+                            .timeout(Duration.ofSeconds(15))
                             .header("Finance", hmisApiKey).DELETE().build();
                     HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
                     return resp.body();

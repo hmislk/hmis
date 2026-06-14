@@ -244,6 +244,9 @@ public class InwardDocumentTemplateApi {
             }
             if (body.containsKey("type")) {
                 String typeStr = asString(body.get("type"));
+                if (typeStr == null || typeStr.trim().isEmpty()) {
+                    return errorResponse("type cannot be empty", 400);
+                }
                 try {
                     DocumentTemplateType newType = DocumentTemplateType.valueOf(typeStr.trim());
                     if (!INPATIENT_TYPES.contains(newType)) return errorResponse("type must be InpatientDiagnosisCard or InpatientLetter", 400);
