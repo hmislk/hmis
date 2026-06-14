@@ -626,12 +626,21 @@
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" >
                         </p:menuitem>
 
-                        <p:menuitem  
-                            ajax="false"  
+                        <p:menuitem
+                            ajax="false"
                             action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true"
                             value="BHT Issue Requests"
                             icon="fa fa-notes-medical"
                             actionListener="#{pharmacySaleBhtController.resetAll()}"
+                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
+                        </p:menuitem>
+
+                        <p:menuitem
+                            ajax="false"
+                            action="/pharmacy/pharmacy_return_from_ward_receive_list?faces-redirect=true"
+                            value="Accept Returns from Ward"
+                            icon="fa fa-truck-ramp-box"
+                            actionListener="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"
                             rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
                         </p:menuitem>
 
