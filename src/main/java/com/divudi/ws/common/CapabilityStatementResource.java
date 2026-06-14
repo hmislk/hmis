@@ -218,7 +218,9 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST", "PUT", "PATCH"))
                 .add(resource("Pharmaceutical Items", "/api/pharmaceutical_items",
-                        "Pharmaceutical item master data",
+                        "Pharmaceutical item master data. AMP create/update accepts "
+                        + "strengthOfAnIssueUnit (Double) and strengthUnitId (Long, MeasurementUnit) "
+                        + "for strength-ratio based dispensing substitution.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Pharmacy Adjustments", "/api/pharmacy_adjustments",
