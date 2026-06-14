@@ -72,6 +72,7 @@ node_modules/
 /*.png
 /*.yml
 /*.yaml
+!mkdocs.yml
 /*.sql
 /*.py
 /package.json
@@ -102,6 +103,7 @@ github-issues/
 
 # Miscellaneous docs (content moved to developer_docs/ or wiki)
 docs/
+site/
 
 # Wiki documentation lives in sibling repo ../hmis.wiki — not here
 wiki-docs/
