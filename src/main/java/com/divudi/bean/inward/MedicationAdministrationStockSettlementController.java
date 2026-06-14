@@ -111,10 +111,32 @@ public class MedicationAdministrationStockSettlementController implements Serial
             return;
         }
 
-        Map<String, List<MedicationAdministrationRecord>> groups = new LinkedHashMap<>();
+        // Reload fresh copies so concurrent settlements cannot process already-deducted records
+        List<MedicationAdministrationRecord> freshRecords = new ArrayList<>();
         for (MedicationAdministrationRecord m : selectedRecords) {
+            if (m.getId() == null) {
+                continue;
+            }
+            MedicationAdministrationRecord current = medicationAdministrationRecordFacade.find(m.getId());
+            if (current != null && !current.isStockDeducted() && !current.isRetired()) {
+                freshRecords.add(current);
+            }
+        }
+        if (freshRecords.isEmpty()) {
+            JsfUtil.addErrorMessage("All selected records have already been settled or retired.");
+            loadPendingRecords();
+            selectedRecords = null;
+            return;
+        }
+
+        Map<String, List<MedicationAdministrationRecord>> groups = new LinkedHashMap<>();
+        for (MedicationAdministrationRecord m : freshRecords) {
             if (m.getItemBatch() == null || m.getItemBatch().getId() == null) {
                 JsfUtil.addErrorMessage("Record for " + (m.getItem() != null ? m.getItem().getName() : "?") + " has no batch - cannot settle.");
+                return;
+            }
+            if (m.getItem() == null || m.getItem().getId() == null) {
+                JsfUtil.addErrorMessage("Record has no item - cannot settle.");
                 return;
             }
             String key = m.getItem().getId() + "_" + m.getItemBatch().getId() + "_"
@@ -146,7 +168,7 @@ public class MedicationAdministrationStockSettlementController implements Serial
             MedicationAdministrationRecord sample = recs.get(0);
             double totalQty = 0.0;
             for (MedicationAdministrationRecord m : recs) {
-                totalQty += m.getQty();
+                totalQty += (m.getQty() != null ? m.getQty() : 0.0);
             }
 
             BillItem bi = new BillItem();
@@ -212,7 +234,7 @@ public class MedicationAdministrationStockSettlementController implements Serial
             MedicationAdministrationRecord sample = recs.get(0);
             double totalQty = 0.0;
             for (MedicationAdministrationRecord m : recs) {
-                totalQty += m.getQty();
+                totalQty += (m.getQty() != null ? m.getQty() : 0.0);
             }
             Long batchId = sample.getItemBatch().getId();
             requiredByBatch.merge(batchId, totalQty, Double::sum);

@@ -218,11 +218,17 @@ public class MedicationAdministrationController implements Serializable {
     }
 
     public void retireAdministration() {
-        if (recordToRetire == null) {
+        if (recordToRetire == null || recordToRetire.getId() == null) {
             JsfUtil.addErrorMessage("No record selected.");
             return;
         }
-        if (recordToRetire.isStockDeducted()) {
+        MedicationAdministrationRecord current = medicationAdministrationRecordFacade.find(recordToRetire.getId());
+        if (current == null) {
+            JsfUtil.addErrorMessage("Administration record not found.");
+            recordToRetire = null;
+            return;
+        }
+        if (current.isStockDeducted()) {
             JsfUtil.addErrorMessage("This record has already been deducted from ward stock and cannot be retired.");
             recordToRetire = null;
             return;
@@ -231,11 +237,11 @@ public class MedicationAdministrationController implements Serializable {
             JsfUtil.addErrorMessage("Enter a reason for retiring this record.");
             return;
         }
-        recordToRetire.setRetired(true);
-        recordToRetire.setRetirer(sessionController.getLoggedUser());
-        recordToRetire.setRetiredAt(new Date());
-        recordToRetire.setRetireComments(retireReason.trim());
-        medicationAdministrationRecordFacade.edit(recordToRetire);
+        current.setRetired(true);
+        current.setRetirer(sessionController.getLoggedUser());
+        current.setRetiredAt(new Date());
+        current.setRetireComments(retireReason.trim());
+        medicationAdministrationRecordFacade.edit(current);
 
         administrationHistoryByPrescription = null;
         recordToRetire = null;
