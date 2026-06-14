@@ -42,6 +42,10 @@ jobs:
         run: |
           python tools/convert-wiki-for-mkdocs.py wiki-source docs
 
+      - name: Copy extra site files
+        run: |
+          cp -r mkdocs-extra/. docs/
+
       - name: Build MkDocs site
         run: |
           mkdocs build --site-dir site
