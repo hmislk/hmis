@@ -96,6 +96,18 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
             JsfUtil.addErrorMessage("Quantity exceeds available ward stock (" + tmpStock.getStock() + ").");
             return;
         }
+        double alreadyQueued = 0.0;
+        for (BillItem queuedItem : getReturnItems()) {
+            PharmaceuticalBillItem queuedPbi = queuedItem.getPharmaceuticalBillItem();
+            if (queuedPbi.getItemBatch() != null && queuedPbi.getItemBatch().getId() != null
+                    && queuedPbi.getItemBatch().getId().equals(tmpStock.getItemBatch().getId())) {
+                alreadyQueued += queuedItem.getQty();
+            }
+        }
+        if (qty + alreadyQueued > tmpStock.getStock()) {
+            JsfUtil.addErrorMessage("Total queued quantity (" + (qty + alreadyQueued) + ") exceeds available ward stock (" + tmpStock.getStock() + ").");
+            return;
+        }
 
         BillItem bi = new BillItem();
         bi.setItem(tmpStock.getItemBatch().getItem());
