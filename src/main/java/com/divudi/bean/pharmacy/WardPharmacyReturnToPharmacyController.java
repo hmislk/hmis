@@ -7,6 +7,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
@@ -71,6 +72,7 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
     private Department toDepartment;
     private boolean printPreview;
     private boolean settling;
+    private String comment;
 
     public String navigateToReturn() {
         printPreview = false;
@@ -79,6 +81,7 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
         qty = null;
         porter = null;
         toDepartment = null;
+        comment = null;
         returnBill = new BilledBill();
         return "/ward/ward_pharmacy_return_to_pharmacy?faces-redirect=true";
     }
@@ -128,6 +131,85 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
 
     public void removeItem(BillItem item) {
         getReturnItems().remove(item);
+    }
+
+    /**
+     * Whether the pharmacy has started accepting this return - i.e. any
+     * non-cancelled {@link BillTypeAtomic#ACCEPT_RETURN_MEDICINE_INWARD} bill
+     * item references one of this return's items. Once true, the ward can no
+     * longer cancel the return (#21516).
+     */
+    public boolean isAcceptanceStarted() {
+        return hasNonCancelledAcceptance(returnBill);
+    }
+
+    private boolean hasNonCancelledAcceptance(Bill returnBill) {
+        if (returnBill == null || returnBill.getId() == null) {
+            return false;
+        }
+        String jpql = "SELECT COUNT(bi) FROM BillItem bi "
+                + "WHERE bi.referanceBillItem.bill = :returnBill "
+                + "AND bi.bill.billTypeAtomic = :acceptBta "
+                + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL) "
+                + "AND bi.bill.cancelled = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("returnBill", returnBill);
+        params.put("acceptBta", BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
+        Long count = billItemFacade.findLongByJpql(jpql, params);
+        return count != null && count > 0;
+    }
+
+    /**
+     * Cancels this ward-to-pharmacy return, provided the pharmacy has not yet
+     * started accepting it (#21516). Mirrors
+     * {@code PharmacyBillSearch.cancelInwardPharmacyRequestBill} - flags the
+     * bill as cancelled and records a {@link CancelledBill}, without reversing
+     * the ward/porter stock movements made on settle.
+     */
+    public void cancelReturnBill() {
+        if (returnBill == null || returnBill.getId() == null) {
+            JsfUtil.addErrorMessage("No return bill found.");
+            return;
+        }
+        if (returnBill.isCancelled()) {
+            JsfUtil.addErrorMessage("This return has already been cancelled.");
+            return;
+        }
+        if (comment == null || comment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Provide a comment to cancel the return.");
+            return;
+        }
+        if (hasNonCancelledAcceptance(returnBill)) {
+            JsfUtil.addErrorMessage("This return has already been accepted by the pharmacy and can no longer be cancelled.");
+            return;
+        }
+
+        CancelledBill cb = new CancelledBill();
+        cb.setBilledBill(returnBill);
+        cb.copy(returnBill);
+        cb.setReferenceBill(returnBill.getReferenceBill());
+        cb.invertAndAssignValuesFromOtherBill(returnBill);
+        cb.setBillItems(returnBill.getBillItems());
+        cb.setBillTypeAtomic(BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION);
+        cb.setComments(comment);
+        cb.setCreatedAt(new Date());
+        cb.setCreater(sessionController.getLoggedUser());
+        cb.setDepartment(sessionController.getDepartment());
+        cb.setInstitution(sessionController.getInstitution());
+        cb.setBalance(0.0);
+        cb.setCompleted(true);
+
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.RETURN_MEDICINE_INWARD_CANCELLATION);
+        cb.setDeptId(deptId);
+        cb.setInsId(deptId);
+        billFacade.create(cb);
+
+        returnBill.setCancelled(true);
+        returnBill.setCancelledBill(cb);
+        billFacade.edit(returnBill);
+
+        comment = null;
+        JsfUtil.addSuccessMessage("Return to pharmacy cancelled.");
     }
 
     public void settle() {
@@ -318,6 +400,14 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
 }

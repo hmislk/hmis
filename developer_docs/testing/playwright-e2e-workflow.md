@@ -379,6 +379,40 @@ Never close a QA session with "code looks correct" as the only evidence.
 If you cannot generate data through the app, stop and discuss alternatives
 with the developer before falling back.
 
+## 16. List pages that filter by `toDepartment = session department`
+
+Several ward/pharmacy list pages (e.g. `pharmacy_return_from_ward_receive_list.xhtml`
+via `PharmacyReturnFromWardReceiveController.loadPendingReturnBills()`, and
+`ward_pharmacy_bht_issue_request_list_for_issue.xhtml` via
+`SearchController.createInwardBHTForIssueTable()`) filter bills by
+`b.toDepartment = sessionController.getDepartment()` — i.e. only bills whose
+**pharmacy/target department** matches the department currently selected in
+the session. A bill created with a different target department (e.g. a BHT
+issue request where "Pharmacy Dept" was set to "Temp-Inward") will show
+"No records found." when searched from "Inward" or "Main Pharmacy", even with
+"Search All" and a wide date range — this is filtering, not a bug. Either pick
+the matching department when creating the test record, or switch the session
+to the bill's `toDepartment` before searching for it.
+
+## 17. Switching session department mid-test (no redeploy)
+
+To test as a different department without redeploying: navigate to
+`/rh/faces/logout.xhtml`, then `/rh/faces/index1.xhtml`, click **Login**
+(credentials are pre-filled after a recent login), then use the "Select
+Department" combobox + **Select** button to pick the new department. This
+re-runs `SessionController.fillUserPrivileges()` for that department, so
+privilege-gated buttons render correctly without a full app redeploy.
+
+## 18. `p:datePicker` — changing the date via the calendar grid
+
+To change a `p:datePicker` (with `timeInput="true"`) to a different day:
+click the input to open the "Choose Date" dialog, then click the target day
+cell in the calendar `grid` (refs like `gridcell "June 15"`). Typing into the
+input directly is unreliable. After picking the date, the calendar overlay
+can intercept subsequent clicks ("subtree intercepts pointer events") — click
+a neutral element on the page first (e.g. a heading) to dismiss the overlay
+before clicking Search.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

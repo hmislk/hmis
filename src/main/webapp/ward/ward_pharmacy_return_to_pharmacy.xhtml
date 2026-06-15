@@ -158,7 +158,36 @@
             <p:panel rendered="#{wardPharmacyReturnToPharmacyController.printPreview}">
                 <f:facet name="header">
                     <p:outputLabel value="Returned to Pharmacy - Bill #{wardPharmacyReturnToPharmacyController.returnBill.deptId}"/>
+                    <p:commandButton
+                        id="btnCancelReturn"
+                        class="ui-button-danger mx-1"
+                        style="float: right;"
+                        icon="fas fa-cancel"
+                        value="Cancel Return"
+                        disabled="#{not webUserController.hasPrivilege('InwardPharmacyReturnCancel') or wardPharmacyReturnToPharmacyController.returnBill.cancelled or wardPharmacyReturnToPharmacyController.acceptanceStarted}"
+                        onclick="PF('confirmCancelReturnDialog').show();"/>
                 </f:facet>
+
+                <p:dialog minHeight="100" width="800" header="Confirmation" widgetVar="confirmCancelReturnDialog" modal="true" resizable="false">
+                    <p>Are you sure you want to cancel this return to pharmacy?</p>
+                    <p:inputText id="txtCancelReturnComment" widgetVar="txtCancelReturnComment" class="w-100"
+                                 value="#{wardPharmacyReturnToPharmacyController.comment}"
+                                 placeholder="Please provide a comment for the cancellation"/>
+
+                    <f:facet name="footer">
+                        <p:commandButton
+                            id="btnConfirmCancelReturn"
+                            class="mx-2 ui-button-warning"
+                            value="Yes"
+                            update=":formWardReturnToPharmacy"
+                            actionListener="#{wardPharmacyReturnToPharmacyController.cancelReturnBill}"
+                            oncomplete="PF('confirmCancelReturnDialog').hide();"/>
+                        <p:commandButton
+                            id="btnCancelCancelReturn"
+                            value="No"
+                            onclick="PF('confirmCancelReturnDialog').hide();"/>
+                    </f:facet>
+                </p:dialog>
 
                 <p:dataTable
                     id="tblReturnedItems"
