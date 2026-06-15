@@ -102,17 +102,17 @@ quirk, a new accessibility gap, a new verification pattern), append it to
 
 ## 10. Pre-push check
 
-Run the `verify-persistence` skill: confirm `persistence.xml` is back to
-`${JDBC_DATASOURCE}` / `${JDBC_AUDIT_DATASOURCE}` placeholders before
-committing.
+Run the `verify-persistence` skill's pre-push step: swap `persistence.xml`
+back to the `${JDBC_DATASOURCE}` / `${JDBC_AUDIT_DATASOURCE}` placeholders,
+remembering the local JNDI names for the post-push restore.
 
 ## 11. Commit and push
 
-Stage the intended source/doc files (`git add <files>`) — do **not** stage
-`persistence.xml`, which must stay on local JNDI. Then run `commit-code` with
-`$0` as the issue number, then `git push`. Immediately restore
-`persistence.xml` to local JNDI per `verify-persistence`'s post-push step
-(unstaged).
+Stage the intended source/doc files (`git add <files>`), including
+`persistence.xml` now that it has placeholders. Then run `commit-code` with
+`$0` as the issue number, then `git push`. Immediately after the push, run
+`verify-persistence`'s post-push step to restore `persistence.xml` to the
+local JNDI names, leaving that change **unstaged**.
 
 ## 12. Create the PR
 
