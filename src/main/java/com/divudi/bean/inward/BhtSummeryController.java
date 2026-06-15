@@ -2475,56 +2475,71 @@ public class BhtSummeryController implements Serializable {
         getBillFacade().edit(getOriginalBill());
     }
 
-    private void updateProBillFee(BillItem bItem) {
-        // Persist the current list order (set by drag-and-drop on the final bill) into
-        // orderNo so @OrderBy("orderNo, feeAdjusted") reproduces it on the printout.
-        int serial = 0;
-        for (BillFee bf : getProfesionallFee()) {
-            bf.setReferenceBillItem(bItem);
-            bf.setOrderNo(serial++);
-            getBillFeeFacade().edit(bf);
+    private List<BillFee> feesOrderedByOrderNo(List<BillFee> fees) {
+        List<BillFee> ordered = new ArrayList<>(fees);
+        ordered.sort(Comparator.comparingInt(BillFee::getOrderNo));
+        return ordered;
+    }
 
-            bItem.getProFees().add(bf);
-
+    /**
+     * Stores ONE professional fee per doctor on the saved bill: a doctor's
+     * individual fees are merged into a single new BillFee (summed feeValue and
+     * feeAdjusted) attached to the final/temp bill item via referenceBillItem,
+     * preserving the manual doctor order via orderNo.
+     * <p>
+     * The original per-encounter fees are left untouched on their
+     * InwardProfessional bills, so doctor-payment/commission reports (which read
+     * those bills) stay correct. The merged fees belong to the final bill
+     * (InwardFinalBill), so they are distinguishable from the source fees by bill
+     * type. When {@code persist} is false (temp preview) the merged fees are kept
+     * in memory only.
+     */
+    private void addMergedDoctorFeesToProFees(List<BillFee> sourceFees, BillItem bItem, boolean persist) {
+        Map<Staff, BillFee> merged = new LinkedHashMap<>();
+        for (BillFee bf : feesOrderedByOrderNo(sourceFees)) {
+            Staff staff = bf.getStaff();
+            if (staff == null) {
+                continue;
+            }
+            double adjusted = bf.getFeeAdjusted() != 0 ? bf.getFeeAdjusted() : bf.getFeeValue();
+            BillFee m = merged.get(staff);
+            if (m == null) {
+                m = new BillFee();
+                m.setStaff(staff);
+                m.setFee(bf.getFee());
+                m.setBill(bItem.getBill());
+                m.setBillItem(bItem);
+                m.setReferenceBillItem(bItem);
+                m.setOrderNo(bf.getOrderNo());
+                m.setCreatedAt(new Date());
+                m.setCreater(getSessionController().getLoggedUser());
+                merged.put(staff, m);
+            }
+            m.setFeeValue(m.getFeeValue() + bf.getFeeValue());
+            m.setFeeAdjusted(m.getFeeAdjusted() + adjusted);
         }
+        for (BillFee m : merged.values()) {
+            if (persist) {
+                getBillFeeFacade().create(m);
+            }
+            bItem.getProFees().add(m);
+        }
+    }
 
+    private void updateProBillFee(BillItem bItem) {
+        addMergedDoctorFeesToProFees(getProfesionallFee(), bItem, true);
     }
 
     private void updateProTempBillFee(BillItem bItem) {
-        int serial = 0;
-        for (BillFee bf : getProfesionallFee()) {
-            bf.setReferenceBillItem(bItem);
-            bf.setOrderNo(serial++);
-
-            bItem.getProFees().add(bf);
-
-        }
-
+        addMergedDoctorFeesToProFees(getProfesionallFee(), bItem, false);
     }
 
     private void updateProBillFeeForDocAndNeurses(BillItem bItem) {
-        int serial = 0;
-        for (BillFee bf : getDoctorAndNurseFee()) {
-            bf.setReferenceBillItem(bItem);
-            bf.setOrderNo(serial++);
-            getBillFeeFacade().edit(bf);
-
-            bItem.getProFees().add(bf);
-
-        }
-
+        addMergedDoctorFeesToProFees(getDoctorAndNurseFee(), bItem, true);
     }
 
     private void updateProTempBillFeeForDocAndNeurses(BillItem bItem) {
-        int serial = 0;
-        for (BillFee bf : getDoctorAndNurseFee()) {
-            bf.setReferenceBillItem(bItem);
-            bf.setOrderNo(serial++);
-
-            bItem.getProFees().add(bf);
-
-        }
-
+        addMergedDoctorFeesToProFees(getDoctorAndNurseFee(), bItem, false);
     }
 
     private void saveRefencePatientRoom(PatientRoom pr) {
