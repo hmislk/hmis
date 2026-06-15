@@ -80,12 +80,14 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.event.ReorderEvent;
 import org.primefaces.event.RowEditEvent;
 
 /**
@@ -2245,8 +2247,12 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void updateProBillFee(BillItem bItem) {
+        // Persist the current list order (set by drag-and-drop on the final bill) into
+        // orderNo so @OrderBy("orderNo, feeAdjusted") reproduces it on the printout.
+        int serial = 0;
         for (BillFee bf : getProfesionallFee()) {
             bf.setReferenceBillItem(bItem);
+            bf.setOrderNo(serial++);
             getBillFeeFacade().edit(bf);
 
             bItem.getProFees().add(bf);
@@ -2256,8 +2262,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void updateProTempBillFee(BillItem bItem) {
+        int serial = 0;
         for (BillFee bf : getProfesionallFee()) {
             bf.setReferenceBillItem(bItem);
+            bf.setOrderNo(serial++);
 
             bItem.getProFees().add(bf);
 
@@ -2266,8 +2274,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void updateProBillFeeForDocAndNeurses(BillItem bItem) {
+        int serial = 0;
         for (BillFee bf : getDoctorAndNurseFee()) {
             bf.setReferenceBillItem(bItem);
+            bf.setOrderNo(serial++);
             getBillFeeFacade().edit(bf);
 
             bItem.getProFees().add(bf);
@@ -2277,8 +2287,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     private void updateProTempBillFeeForDocAndNeurses(BillItem bItem) {
+        int serial = 0;
         for (BillFee bf : getDoctorAndNurseFee()) {
             bf.setReferenceBillItem(bItem);
+            bf.setOrderNo(serial++);
 
             bItem.getProFees().add(bf);
 
@@ -2523,7 +2535,9 @@ public class BhtSummeryController implements Serializable {
 
     public List<BillItem> getSummaryOfDoctorChargers(List<BillItem> bi, PatientEncounter pe) {
         List<BillItem> newBillItems = new ArrayList<>();
-        Map<Staff, BillFee> staffFeeMap = new HashMap<>();
+        // LinkedHashMap preserves first-appearance order of each staff member, which follows
+        // the orderNo ordering of proFees, so the manual drag order survives in this layout too.
+        Map<Staff, BillFee> staffFeeMap = new LinkedHashMap<>();
         double totalFee = 0.0;
 
         for (BillItem i : bi) {
