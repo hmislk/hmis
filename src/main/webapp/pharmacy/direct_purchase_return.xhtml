@@ -84,6 +84,7 @@
                                         </h:outputText>
                                         <p:inputText
                                             id="txtReturnRate"
+                                            widgetVar="dprReturnRate"
                                             class="w-100 text-end"
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}"
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
@@ -109,6 +110,7 @@
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity')}">
                                     <p:inputText
                                         id="txtReturningTotalQty"
+                                        widgetVar="dprReturningTotalQty"
                                         autocomplete="off"
                                         class="w-100 text-end"
                                         onfocus="this.select()"
@@ -135,6 +137,7 @@
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Quantity and Free Quantity')}">
                                     <p:inputText
                                         id="txtReturningQty"
+                                        widgetVar="dprReturningQty"
                                         autocomplete="off"
                                         onfocus="this.select()"
                                         class="w-100 text-end"
@@ -163,6 +166,7 @@
                                     <p:inputText
                                         class="w-100 text-end"
                                         id="txtReturningFreeQty"
+                                        widgetVar="dprReturningFreeQty"
                                         autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
                                         <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
                                         <f:validator validatorId="nonNegativeNumberValidator" />

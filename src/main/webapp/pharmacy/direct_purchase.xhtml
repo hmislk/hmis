@@ -156,6 +156,7 @@
                                             class="w-100 m-1"/><br/>
                                         <p:inputText
                                             id="txtQty"
+                                            widgetVar="dpQty"
                                             class="w-100 m-1 text-end"
                                             autocomplete="off"
                                             onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
@@ -178,6 +179,7 @@
                                         <p:inputText
                                             autocomplete="off"
                                             id="txtFreeQty"
+                                            widgetVar="dpFreeQty"
                                             class="w-100 m-1 text-end"
                                             onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
                                             onkeyup="if (event.keyCode === 13) { event.preventDefault(); var addBtnId = '#{p:resolveFirstComponentWithId('btnAdd',view).clientId}'; this.blur(); setTimeout(function () { document.getElementById(addBtnId).click(); }, 350); }"
@@ -198,6 +200,7 @@
                                             value="Purchase Rate" /><br/>
                                         <p:inputText
                                             id="txtPrate"
+                                            widgetVar="dpPurchaseRate"
                                             autocomplete="off"
                                             class="w-100 m-1 text-end"
                                             onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
@@ -224,6 +227,7 @@
                                             value="Discount Rate" /><br/>
                                         <p:inputText
                                             id="txtLineDiscountRate"
+                                            widgetVar="dpDiscountRate"
                                             autocomplete="off"
                                             onfocus="this.select()"
                                             class="w-100 m-1 text-end"
@@ -250,6 +254,7 @@
                                         <p:inputText
                                             autocomplete="off"
                                             id="txtRetailRate"
+                                            widgetVar="dpRetailRate"
                                             onfocus="this.select()"
                                             class="w-100 m-1 text-end"
                                             onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
@@ -289,6 +294,7 @@
                                             autocomplete="off"
                                             class="w-100 m-1"
                                             id="tmp"
+                                            widgetVar="dpBatchNo"
                                             onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
                                             onkeyup="if (event.keyCode === 13) { event.preventDefault(); var addBtnId = '#{p:resolveFirstComponentWithId('btnAdd',view).clientId}'; this.blur(); setTimeout(function () { document.getElementById(addBtnId).click(); }, 350); }"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.pharmaceuticalBillItem.stringValue}"  />

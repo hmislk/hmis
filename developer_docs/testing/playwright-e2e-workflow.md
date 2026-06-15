@@ -104,7 +104,36 @@ key/blur events** PrimeFaces relies on to commit a value. Symptoms: an
 autocomplete shows text but no selection is made; a quantity field looks filled
 but arrives as empty/`0` on the server.
 
+### Method A — PF widget API (preferred, most reliable)
+
+Every `p:inputText` / `p:inputNumber` should carry a stable `widgetVar`
+attribute. Use `browser_evaluate` to call the PrimeFaces widget API directly:
+
+```javascript
+// Set value through the PF widget (updates both visible + hidden inputs)
+await page.evaluate(() => PF('dpPurchaseRate').setValue(1.00));
+// Fire the AJAX change/blur behavior to commit server-side
+await page.evaluate(() => PF('dpPurchaseRate').callBehavior('change'));
+await page.waitForTimeout(300); // let AJAX land
+```
+
+**All `p:inputText` / `p:inputNumber` / `p:calendar` elements that a Playwright
+test needs to interact with MUST carry a `widgetVar` attribute.** Without one,
+the PF widget is registered under an auto-generated name (e.g. `widget_j_idt517_3`)
+that changes across sessions. The `widgetVar` is an accessibility + e2e enabler:
+add it to any page you touch — it costs nothing and unblocks automation for
+everyone who follows.
+
+**For `p:calendar` / `p:datePicker`:**
+```javascript
+PF('dpDoe').setDate(new Date(2027, 11, 31));  // Dec 31, 2027
+PF('dpDoe').callBehavior('dateSelect');
+```
+
+### Method B — Real key events (fallback when no widgetVar)
+
 **Use real key events instead:**
+
 
 - **Autocomplete:** type the query slowly with `pressSequentially` (or
   `browser_type` with `slowly: true`) → wait ~1.5 s for the suggestion panel →
