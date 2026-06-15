@@ -126,6 +126,7 @@
                                             class="w-100 m-1"
                                             inputStyleClass="w-100"
                                             id="acItem"
+                                            widgetVar="dpAcItem"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.item}"
                                             forceSelection="true"
                                             onkeydown="if (event.keyCode === 13) { var pnl = document.getElementById(this.id.replace(/_input$/, '_panel')); var panelOpen = pnl &amp;&amp; pnl.style.display !== 'none'; event.preventDefault(); if (!panelOpen) { return false; } }"
@@ -804,6 +805,8 @@
 
                                     <p:outputLabel value="Select Supplier"/>
                                     <p:autoComplete
+                                        id="acSupplier"
+                                        widgetVar="dpAcSupplier"
                                         class=" w-100 my-2"
                                         inputStyleClass="w-100"
                                         converter="deal"

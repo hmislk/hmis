@@ -104,31 +104,45 @@ key/blur events** PrimeFaces relies on to commit a value. Symptoms: an
 autocomplete shows text but no selection is made; a quantity field looks filled
 but arrives as empty/`0` on the server.
 
-### Method A — PF widget API (preferred, most reliable)
+### Method A — PF widget API via jQuery (preferred, most reliable)
 
-Every `p:inputText` / `p:inputNumber` should carry a stable `widgetVar`
-attribute. Use `browser_evaluate` to call the PrimeFaces widget API directly:
+Every `p:inputText` / `p:inputNumber` / `p:calendar` should carry a stable
+`widgetVar` attribute. There are TWO widget families with different APIs:
 
+**`p:inputNumber` / `p:calendar` — use `PF()` + `callBehavior()`:**
 ```javascript
-// Set value through the PF widget (updates both visible + hidden inputs)
-await page.evaluate(() => PF('dpPurchaseRate').setValue(1.00));
-// Fire the AJAX change/blur behavior to commit server-side
-await page.evaluate(() => PF('dpPurchaseRate').callBehavior('change'));
-await page.waitForTimeout(300); // let AJAX land
+await page.evaluate(() => {
+  PF('dpDoe').setDate(new Date(2027, 11, 31));
+  PF('dpDoe').callBehavior('dateSelect');
+});
 ```
 
-**All `p:inputText` / `p:inputNumber` / `p:calendar` elements that a Playwright
-test needs to interact with MUST carry a `widgetVar` attribute.** Without one,
-the PF widget is registered under an auto-generated name (e.g. `widget_j_idt517_3`)
-that changes across sessions. The `widgetVar` is an accessibility + e2e enabler:
-add it to any page you touch — it costs nothing and unblocks automation for
-everyone who follows.
-
-**For `p:calendar` / `p:datePicker`:**
+**`p:inputText` with `p:ajax event="blur"` — use jQuery `.trigger('blur')`:**
+These do NOT have PF behaviors — the AJAX handler is attached as a jQuery
+event. Set the value, then trigger a real jQuery blur event:
 ```javascript
-PF('dpDoe').setDate(new Date(2027, 11, 31));  // Dec 31, 2027
-PF('dpDoe').callBehavior('dateSelect');
+await page.evaluate(async () => {
+  const $ = window.$;
+  $('#bill\\:txtPrate').focus().val('1.00').trigger('blur');
+  // Wait between fields so each AJAX completes before the next
+  await new Promise(r => setTimeout(r, 500));
+  $('#bill\\:txtQty').focus().val('100').trigger('blur');
+  await new Promise(r => setTimeout(r, 500));
+});
 ```
+The 500ms wait between fields is critical: each blur fires a `p:ajax` that
+recalculates dependent fields server-side; the next field's set may need
+those updated values.
+
+**`p:autoComplete` — use `p:ajax event="itemSelect"` pattern:**
+Type the query with `pressSequentially`, wait 1.5s for suggestions,
+`ArrowDown` → `Enter` to select, then wait for `itemSelect` AJAX to land.
+
+**All `p:inputText` / `p:inputNumber` / `p:calendar` / `p:autoComplete`
+elements that a Playwright test needs to interact with MUST carry a
+`widgetVar` attribute.** Without one, the PF widget is registered under an
+auto-generated name that changes across sessions. Adding `widgetVar` costs
+nothing — do it on every page you touch.
 
 ### Method B — Real key events (fallback when no widgetVar)
 
@@ -333,17 +347,16 @@ if the response is slow. The click usually succeeds — use `browser_snapshot`
 after the timeout to check the new page state rather than assuming the action
 failed. If stuck, `browser_navigate` directly to the page URL to recover.
 
-## 15. Code-level verification when test data is unavailable
+## 15. Always generate test data — never fall back to code-only verification
 
-When the test database has no records for the department under test (zero
-stock, no GRN/DP bills), fall back to code-level verification:
-- `git diff` the hotfix commit to confirm every changed line
-- `grep` for removed anti-patterns (e.g. `setBill(null)`, `p:calendar`)
-- `grep` for added patterns (e.g. `reloadBill`, `p:datePicker`)
-- Page-load testing: navigate to every modified XHTML page and confirm no
-  JSF errors or stack traces in the server log
-- Server log scan: search for `SEVERE`, `Exception`, `FK`, `orphanRemoval`,
-  `IntegrityConstraintViolation` after exercising all accessible pages
+If the database has no suitable records, **create them** through the UI.
+For returns, create a purchase first (Direct Purchase is simplest), then
+return against it. For issues, create a purchase → issue → return. The
+`widgetVar` + jQuery-blur pattern (§3) makes data entry reliable.
+
+Never close a QA session with "code looks correct" as the only evidence.
+If you cannot generate data through the app, stop and discuss alternatives
+with the developer before falling back.
 
 ## Quick checklist
 
@@ -361,4 +374,4 @@ stock, no GRN/DP bills), fall back to code-level verification:
 - [ ] For canvas-based widgets (vis-timeline etc.), used `page.$`/bounding-box
       clicks and closed dialogs via `.ui-dialog-titlebar-close`, not `Escape`.
 - [ ] Re-logged in and re-selected department after any redeploy before continuing.
-- [ ] If test data is unavailable, performed code-level verification via git diff, grep, page-load tests, and server log scan.
+- [ ] If test data is unavailable, **generated it through the app** (create purchase → return → etc.) rather than falling back to code-only checks.
