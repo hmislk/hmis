@@ -14,7 +14,7 @@ argument-hint: "<issue-number>"
 # Full Issue Lifecycle (HMIS)
 
 Invoking this skill is the explicit authorization for every commit/push/PR
-step below — do not re-ask before each one. Discussion gates (steps 3, 4, 13)
+step below — do not re-ask before each one. Discussion gates (steps 3, 4, 14)
 are the points where you pause for the user.
 
 ## 1. Setup
@@ -85,6 +85,10 @@ errors before moving on.
 Run the `playwright-e2e` skill workflow:
 - Login, select the department from step 4
 - Exercise the feature using the records chosen in step 4
+- **Take screenshots** (`browser_take_screenshot`) into the project `tmp/`
+  folder at each meaningful stage (before/after states, confirmation dialogs,
+  final result) — per playwright-e2e §0. These double as evidence for the
+  issue/PR and wiki in step 10.
 - Verify the result in the local DB (credentials: see the
   `local_mysql_credentials.md` memory)
 
@@ -100,13 +104,29 @@ quirk, a new accessibility gap, a new verification pattern), append it to
 `developer_docs/testing/playwright-e2e-workflow.md` — same pattern as the
 §0a/§5a additions from issue #21499. Don't force this if nothing new came up.
 
-## 10. Pre-push check
+## 10. Publish evidence (wiki, issue, PR)
+
+Follow playwright-e2e
+[§8 Publishing screenshot evidence](../../../developer_docs/testing/playwright-e2e-workflow.md#8-publishing-screenshot-evidence):
+
+1. Review the screenshots from step 7 and discard/crop any that expose
+   patient data, credentials, or other sensitive information.
+2. Copy the durable, non-sensitive screenshots into `../hmis.wiki/images/`,
+   then commit and push the wiki from `../hmis.wiki`.
+3. Add a comment (or update the description) on issue `$0` showing the
+   verified before/after flow, embedding the wiki images via their raw URLs
+   (`https://raw.githubusercontent.com/wiki/hmislk/hmis/images/<name>.png`).
+4. Remove the temporary screenshots from the project `tmp/` folder.
+
+These wiki image URLs are reused in the PR description in step 13.
+
+## 11. Pre-push check
 
 Run the `verify-persistence` skill's pre-push step: swap `persistence.xml`
 back to the `${JDBC_DATASOURCE}` / `${JDBC_AUDIT_DATASOURCE}` placeholders,
 remembering the local JNDI names for the post-push restore.
 
-## 11. Commit and push
+## 12. Commit and push
 
 Stage the intended source/doc files (`git add <files>`), including
 `persistence.xml` now that it has placeholders. Then run `commit-code` with
@@ -114,13 +134,15 @@ Stage the intended source/doc files (`git add <files>`), including
 `verify-persistence`'s post-push step to restore `persistence.xml` to the
 local JNDI names, leaving that change **unstaged**.
 
-## 12. Create the PR
+## 13. Create the PR
 
 Target `development`. The PR description should state what was implemented
 and summarize the Playwright + DB verification performed in steps 7-8
-(concrete enough that a reviewer trusts it was actually tested).
+(concrete enough that a reviewer trusts it was actually tested), and embed
+the same wiki-hosted screenshots from step 10 so reviewers can see the
+verified behavior without redeploying locally.
 
-## 13. Review loop (until mergeable)
+## 14. Review loop (until mergeable)
 
 Repeat, up to **3 cycles**:
 
@@ -140,7 +162,8 @@ If 3 cycles pass without convergence (flaky CI, unresolved disagreement with
 a reviewer, etc.), stop and ask the user how to proceed rather than looping
 indefinitely.
 
-## 14. Notify
+## 15. Notify
 
-Report the PR link, a short summary of what changed, and what was verified.
+Report the PR link, the issue comment from step 10, a short summary of what
+changed, and what was verified (including the published screenshots).
 **Never merge** — that's the user's call.
