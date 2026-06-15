@@ -27,6 +27,28 @@ waste a session.
 
 ---
 
+## 0a. Rebuild and redeploy local code changes before testing
+
+If the change under test isn't deployed yet, rebuild and redeploy to the local
+Payara instance first (see [Local build tools](../../CLAUDE.md) for tool
+locations):
+
+```powershell
+$env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-11.0.23.9-hotspot"
+& "D:\Program Files\NetBeans-18\netbeans\java\maven\bin\mvn.cmd" clean package -DskipTests
+& "D:\Payara\bin\asadmin.bat" redeploy --name rh "D:\Development\2024\hmis\target\rh-3.0.0.war"
+```
+
+- `clean` is required when switching branches or after structural changes
+  (new/renamed/deleted classes, resources); a plain `compile`/`package` can
+  leave stale `.class` files in `target/`.
+- A redeploy invalidates the current session (see §1) — log in again
+  afterwards.
+- Watch `D:\Payara\glassfish\domains\*\logs\server.log` for deployment errors
+  before starting the browser flow.
+
+---
+
 ## 1. Login and department selection
 
 The HMIS login + landing flow has a fixed shape:
@@ -116,6 +138,22 @@ fires first. If a **required** field is empty (e.g. the transfer **Comment**
 field), the submit is rejected and the action — including an unrelated
 `remove(row)` button on the same form — silently does nothing. Fill required
 fields before exercising any non-AJAX button on the page.
+
+---
+
+## 5a. Waiting for AJAX without hard timeouts
+
+- Prefer `browser_snapshot` (accessibility tree) over screenshots for finding
+  and confirming elements — it's far cheaper in tokens and is what the agent
+  actually reasons over.
+- After an AJAX action (PrimeFaces `p:ajax`/`update`), use `browser_wait_for`
+  on the expected resulting text/element rather than a fixed `sleep`. Fall
+  back to the explicit waits in §3 (slow type + ~1–1.5 s) only for the known
+  PrimeFaces commit-timing gotchas, since those are races against a keyup
+  handler that no DOM state change reliably signals.
+- `browser_network_requests` is useful to confirm a `javax.faces.partial.ajax`
+  POST actually fired (and what it returned) when a UI update silently does
+  nothing — cheaper than guessing at another `wait_for`.
 
 ---
 
