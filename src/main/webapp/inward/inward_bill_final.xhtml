@@ -665,45 +665,116 @@
                         </p:dataTable>
                     </p:panel>
 
-                    <p:panel header="Profesionall Fee" class="mt-3">  
-                        <p:dataTable 
-                            value="#{bhtSummeryController.profesionallFee}" 
+                    <p:panel header="Profesionall Fee" class="mt-3">
+                        <p:dataTable
+                            id="professionalFeeTable"
+                            value="#{bhtSummeryController.groupedProfessionalFees}"
                             rowIndexVar="i"
-                            var="pf"
-                                     rowStyleClass="#{pf.feeValue ne 0 
-                                                      and pf.bill.cancelled eq false
-                                                      and pf.bill.billClass eq 'class com.divudi.entity.BilledBill' ? '':'noDisplayRow'}">
-                            
+                            var="g">
+
                             <p:column headerText="#" style="padding: 7px; width: 2em;">
                                 <h:outputLabel value="#{i+1}"/>
                             </p:column>
-                            
+
                             <p:column headerText="Name" style="padding: 7px;">
-                                <h:outputLabel value="#{pf.staff.person.nameWithTitle}"/>
+                                <h:outputLabel value="#{g.staff.person.nameWithTitle}"/>
                             </p:column>
-                            
+
                             <p:column headerText="Fee Value" style="text-align: right; padding: 7px;">
-                                <h:outputLabel value="#{pf.feeValue}">
+                                <h:outputLabel value="#{g.total}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
-                            
+
                             <p:column headerText="Adjusted Value" style="text-align: right; padding: 7px;">
-                                <p:inputText autocomplete="off" value="#{pf.feeAdjusted}">
+                                <h:outputLabel value="#{g.totalAdjusted}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                     <p:ajax event="blur" process="@this"
-                                            update=":#{p:resolveFirstComponentWithId('dList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId}"
-                                            listener="#{bhtSummeryController.changeAdjustedProValue(pf)}"/>
+                                            update=":#{p:resolveFirstComponentWithId('professionalFeeTable',view).clientId} :#{p:resolveFirstComponentWithId('dList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId}"
+                                            listener="#{bhtSummeryController.changeGroupedAdjustedValue(g)}"/>
                                     <p:ajax process="@this" event="keyup"
                                             update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
                                             listener="#{bhtSummeryController.changeIsMade()}"/>
-                                </p:inputText>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Breakdown" style="text-align: center; padding: 7px; width: 14em;">
+                                <p:commandButton value="View"
+                                                 icon="fa fa-list-ul"
+                                                 class="ui-button-info ui-button-outlined"
+                                                 process="@this"
+                                                 actionListener="#{bhtSummeryController.viewDoctorFeeBreakdown(g)}"
+                                                 update=":#{p:resolveFirstComponentWithId('docFeeBreakdownContent',view).clientId}"
+                                                 oncomplete="PF('docFeeBreakdownDlgWv').show()"/>
                             </p:column>
 
                         </p:dataTable>
                     </p:panel>
 
-                    <p:panel id="printTempBill" header="Tempory Bill Priview" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show an Intermediate Bill on Final Bill Edit',false)}">
+                    <p:dialog header="Fee Breakdown"
+                              id="docFeeBreakdownDlg"
+                              widgetVar="docFeeBreakdownDlgWv"
+                              modal="true"
+                              showEffect="fade"
+                              hideEffect="fade"
+                              resizable="false"
+                              position="center"
+                              fitViewport="true"
+                              width="1200"
+                              style="max-height:70vh; overflow:auto; padding:20px; font-size:1.05rem;">
+                        <h:panelGroup id="docFeeBreakdownContent" layout="block">
+                        <h:panelGroup rendered="#{bhtSummeryController.selectedDoctorFeeGroup ne null}">
+                            <div class="mb-3 fw-bold" style="font-size:1.2rem;">
+                                <i class="fa fa-user-md me-2"/>
+                                <h:outputText value="#{bhtSummeryController.selectedDoctorFeeGroup.staff.person.nameWithTitle}"/>
+                            </div>
+                            <p:dataTable id="breakdownTable" value="#{bhtSummeryController.selectedDoctorFeeGroup.fees}" var="fb">
+                                <p:column headerText="Bill No" style="padding: 6px;">
+                                    <h:outputText value="#{fb.bill.deptId}"/>
+                                </p:column>
+                                <p:column headerText="Date" style="padding: 6px;">
+                                    <h:outputText value="#{fb.feeAt ne null ? fb.feeAt : fb.createdAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo"
+                                                           pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Added User" style="padding: 6px;">
+                                    <h:outputText value="#{fb.bill.creater.webUserPerson.nameWithTitle}"/>
+                                </p:column>
+                                <p:column headerText="Fee Value" style="text-align: right; padding: 6px;">
+                                    <h:outputText value="#{fb.feeValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Adjusted Value" style="text-align: right; padding: 6px;">
+                                    <p:inputText autocomplete="off" value="#{fb.feeAdjusted}" style="text-align: right;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                        <p:ajax event="blur" process="@this"
+                                                update=":#{p:resolveFirstComponentWithId('breakdownTable',view).clientId} :#{p:resolveFirstComponentWithId('professionalFeeTable',view).clientId} :#{p:resolveFirstComponentWithId('dList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId}"
+                                                listener="#{bhtSummeryController.changeFeeAdjustedInBreakdown(fb)}"/>
+                                        <p:ajax process="@this" event="keyup"
+                                                update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                                listener="#{bhtSummeryController.changeIsMade()}"/>
+                                    </p:inputText>
+                                </p:column>
+                                <p:columnGroup type="footer">
+                                    <p:row>
+                                        <p:column footerText="Total" colspan="4" style="text-align: right; padding: 6px; font-weight: bold;"/>
+                                        <p:column style="text-align: right; padding: 6px; font-weight: bold;">
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{bhtSummeryController.selectedDoctorFeeGroup.totalAdjusted}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                    </p:row>
+                                </p:columnGroup>
+                            </p:dataTable>
+                        </h:panelGroup>
+                        </h:panelGroup>
+                    </p:dialog>
+
+                    <p:panel id="printTempBill" class="mt-3" header="Tempory Bill Priview" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show an Intermediate Bill on Final Bill Edit',false)}">
                         <bi:finalBill
                             bill="#{bhtSummeryController.tempBill}"
                             hosCopy="true">
