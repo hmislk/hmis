@@ -291,7 +291,13 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
         if (receivedBill != null && receivedBill.getBillItems() != null) {
             for (BillItem bi : receivedBill.getBillItems()) {
                 PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
-                double requestedQty = Math.abs(pbi.getQty());
+                double requestedQty = pbi.getQty();
+                if (requestedQty < 0.0) {
+                    JsfUtil.addErrorMessage("Can not enter a minus value");
+                    pbi.setQty(0);
+                    bi.setQty(0.0);
+                    continue;
+                }
                 if (requestedQty <= 0.0) {
                     continue;
                 }
