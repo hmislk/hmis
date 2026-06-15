@@ -517,6 +517,7 @@ public enum Privileges {
     PharmacyDirectIssueToTheaterCases("Pharmacy Direct Issue to Theater Cases"),
     PharmacyBhtIssueRequest("Pharmacy BHT Issue Request"),
     PharmacyBhtRequestForceComplete("Pharmacy BHT Request Force Complete"),
+    PharmacyReturnFromWardForceComplete("Pharmacy Return From Ward Force Complete"),
     PharmacySearchInpatientDirectIssuesbyBill("Pharmacy Search Inpatient Direct Issues by Bill"),
     PharmacySearchInpatientDirectIssuesbyItem("Pharmacy Search Inpatient Direct Issues by Item"),
     PharmacySearchInpatientDirectIssueReturnsbyBill("Pharmacy Search Inpatient Direct Issue Returns by Bill"),
@@ -913,6 +914,7 @@ public enum Privileges {
             case PharmacyDirectIssueToTheaterCases:
             case PharmacyBhtIssueRequest:
             case PharmacyBhtRequestForceComplete:
+            case PharmacyReturnFromWardForceComplete:
             case PharmacySearchInpatientDirectIssuesbyBill:
             case PharmacySearchInpatientDirectIssuesbyItem:
             case PharmacySearchInpatientDirectIssueReturnsbyBill:

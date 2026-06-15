@@ -209,6 +209,18 @@ fields before exercising any non-AJAX button on the page.
 
 ---
 
+## 5b. Pending-list pages may need an explicit "Refresh" click
+
+Some "pending items" list pages (e.g.
+`pharmacy_return_from_ward_receive_list.xhtml`) populate their backing list
+via an action method bound to a "Refresh" button, not via a `viewAction` on
+direct GET. Navigating straight to the page (or returning to it via a
+redirect) can show "No pending ... " even though matching rows exist in the
+DB. If a pending list looks empty right after navigation, click "Refresh"
+before concluding the underlying JPQL is wrong.
+
+---
+
 ## 6. Verify against the database
 
 After the UI flow, confirm correctness directly in the DB (the local copy, with
