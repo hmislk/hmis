@@ -68,11 +68,12 @@
 
                     <div class="row" >
                         <div class="col-9" >
-                            <p:dataTable 
-                                var="ph" 
+                            <p:dataTable
+                                var="ph"
                                 value="#{grnReturnWorkflowController.billItems}"
-                                id="itemList" 
-                                rowKey="#{ph.id != null ? ph.id : ph.hashCode()}" >
+                                id="itemList"
+                                rowKey="#{ph.id != null ? ph.id : ph.hashCode()}"
+                                rowStyleClass="#{ph.retired ? 'd-none' : ''}">
 
                                 <f:facet name="header">
                                     <h:outputText value="Returning Items" ></h:outputText>
@@ -204,7 +205,7 @@
                                         autocomplete="off"
                                         class="w-100 text-end"
                                         onfocus="this.select()"
-                                        value="#{ph.billItemFinanceDetails.quantity}">
+                                        value="#{ph.qty}">
                                         <f:convertNumber pattern="#,##0.00##" integerOnly="#{!ph.item.allowFractions}" ></f:convertNumber>
                                         <p:ajax 
                                             event="blur" 
@@ -224,7 +225,7 @@
                                         autocomplete="off"
                                         onfocus="this.select()"
                                         class="w-100 text-end"
-                                        value="#{ph.billItemFinanceDetails.quantity}">
+                                        value="#{ph.qty}">
                                         <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
                                         <p:ajax 
                                             process="@this"

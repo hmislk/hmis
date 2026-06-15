@@ -115,15 +115,14 @@
                                         value="#{ph.billItemFinanceDetails.quantity}">
                                         <f:convertNumber pattern="#,##0.00##" integerOnly="#{!ph.item.allowFractions}" ></f:convertNumber>
                                         <f:validator validatorId="positiveNumberValidator" />
-                                    </p:inputText>
-                                    <p:keyFilter for="txtReturningTotalQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
-                                        <p:ajax 
-                                            event="keyup" 
+                                        <p:keyFilter for="txtReturningTotalQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
+                                        <p:ajax
+                                            event="keyup"
                                             process="@this"
-                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
+                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}"
                                             listener="#{directPurchaseReturnController.onReturningTotalQtyChange(ph)}" />
-                                        <p:ajax 
-                                            event="blur" 
+                                        <p:ajax
+                                            event="blur"
                                             process="@this"
                                             update="@this" />
                                     </p:inputText>

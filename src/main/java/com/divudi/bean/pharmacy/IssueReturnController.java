@@ -275,15 +275,18 @@ public class IssueReturnController implements Serializable {
         }
 
         saveDisposalIssueReturnBill();
-        getReturnBill().setEditedAt(new Date());
-        getReturnBill().setEditor(sessionController.getLoggedUser());
-        getReturnBill().setChecked(true);
-        getReturnBill().setCheckeAt(new Date());
-        getReturnBill().setCheckedBy(sessionController.getLoggedUser());
-        getReturnBill().setBillItems(null);
-        getBillFacade().edit(getReturnBill());
+        // Reload from DB so we don't trigger orphan-removal on billItems
+        returnBill = billService.reloadBill(getReturnBill());
+        if (returnBill != null) {
+            returnBill.setEditedAt(new Date());
+            returnBill.setEditor(sessionController.getLoggedUser());
+            returnBill.setChecked(true);
+            returnBill.setCheckeAt(new Date());
+            returnBill.setCheckedBy(sessionController.getLoggedUser());
+            getBillFacade().edit(returnBill);
+        }
 
-        // Refresh the bill and reload bill items for print preview
+        // Refresh again and reload bill items for print preview
         returnBill = billService.reloadBill(getReturnBill());
         if (returnBill != null) {
             returnBillItems = billService.fetchBillItems(returnBill);
@@ -321,18 +324,24 @@ public class IssueReturnController implements Serializable {
         saveSettlingBill();
         saveSettlingBillComponents();
 
+        // Reload both bills so EclipseLink doesn't orphan-remove existing billItems
+        Bill freshReturn = billService.reloadBill(getReturnBill());
+        if (freshReturn != null) {
+            returnBill = freshReturn;
+        }
         getReturnBill().setReferenceBill(getOriginalBill());
         getReturnBill().setCompleted(true);
         getReturnBill().setCompletedAt(new Date());
         getReturnBill().setCompletedBy(getSessionController().getLoggedUser());
-        getReturnBill().setBillItems(null);
         getBillFacade().edit(getReturnBill());
 
+        Bill freshOriginal = billService.reloadBill(getOriginalBill());
+        if (freshOriginal != null) {
+            originalBill = freshOriginal;
+        }
         getOriginalBill().setRefundedBill(getReturnBill());
         getOriginalBill().setRefunded(true);
         getOriginalBill().getRefundBills().add(getReturnBill());
-
-        getOriginalBill().setBillItems(null);
         getBillFacade().edit(getOriginalBill());
 
         printPreview = true;
@@ -357,13 +366,14 @@ public class IssueReturnController implements Serializable {
      * @return true if all return quantities are valid, false otherwise
      */
     public boolean validateReturnQuantities() {
-        if (returnBillItems == null || returnBillItems.isEmpty()) {
+        List<BillItem> activeItems = getReturnBillItems();
+        if (activeItems == null || activeItems.isEmpty()) {
             JsfUtil.addErrorMessage("No items found to return");
             return false;
         }
 
         boolean hasErrors = false;
-        for (BillItem returnItem : returnBillItems) {
+        for (BillItem returnItem : activeItems) {
             if (returnItem == null || returnItem.getReferanceBillItem() == null) {
                 continue;
             }
@@ -604,8 +614,6 @@ public class IssueReturnController implements Serializable {
                 i.setBill(null);
                 i.setRetired(true);
                 billItemFacade.edit(i);
-                getReturnBill().getBillItems().remove(i);
-                returnBill = billService.reloadBill(returnBill);
                 continue;
             }
 
@@ -1119,7 +1127,12 @@ public class IssueReturnController implements Serializable {
     }
 
     public List<BillItem> getReturnBillItems() {
-        return returnBillItems;
+        if (returnBillItems == null) {
+            return java.util.Collections.emptyList();
+        }
+        return returnBillItems.stream()
+                .filter(bi -> bi != null && !bi.isRetired())
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public void setReturnBillItems(List<BillItem> returnBillItems) {
@@ -1230,11 +1243,8 @@ public class IssueReturnController implements Serializable {
         }
         double qty = bi.getQty();
 
-        // Comprehensive validation with auto-correction for user input
-        if (!validateItemReturnQuantity(bi, true)) {
-            // Validation failed, quantity has been auto-corrected
-            // Re-calculate with the corrected quantity
-            qty = bi.getQty();
+        if (!validateItemReturnQuantity(bi, false)) {
+            return;
         }
 
         // Get rates from item batch - these are always in units
@@ -1352,11 +1362,11 @@ public class IssueReturnController implements Serializable {
     }
 
     public void calculateBillTotal() {
-        if (returnBillItems == null || returnBillItems.isEmpty()) {
+        List<BillItem> activeItems = getReturnBillItems();
+        if (activeItems.isEmpty()) {
             return;
         }
-        // Always calculate from returnBillItems for issue returns
-        calculateReturnBillTotalFromItems(returnBillItems);
+        calculateReturnBillTotalFromItems(activeItems);
     }
 
     /**
