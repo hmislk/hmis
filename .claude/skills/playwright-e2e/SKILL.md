@@ -62,7 +62,7 @@ the workflow doc above is HMIS-specific; the guide is generic Playwright MCP usa
 7. **Capture evidence** into the project `tmp/` folder, then follow
    [§8](../../../developer_docs/testing/playwright-e2e-workflow.md#8-publishing-screenshot-evidence)
    for anything destined for the wiki/issue. Remove temp screenshots from the
-   repo afterwards.
+   repo afterward.
 8. If Playwright can't find a control, treat it as a product accessibility gap
    (§7) — fix the page, not the test.
 

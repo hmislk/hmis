@@ -88,7 +88,7 @@ Run the `playwright-e2e` skill workflow:
 - **Take screenshots** (`browser_take_screenshot`) into the project `tmp/`
   folder at each meaningful stage (before/after states, confirmation dialogs,
   final result) — per playwright-e2e §0. These double as evidence for the
-  issue/PR and wiki in step 9.
+  issue/PR and wiki in step 10.
 - Verify the result in the local DB (credentials: see the
   `local_mysql_credentials.md` memory)
 
