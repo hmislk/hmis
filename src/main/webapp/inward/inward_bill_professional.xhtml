@@ -435,6 +435,11 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
+                                            <p:column headerText="Adjusted Fee" styleClass="text-end">
+                                                <h:outputLabel value="#{bif.feeAdjusted}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
                                         </p:dataTable>
                                     </p:panel>
                                 </h:panelGroup>
