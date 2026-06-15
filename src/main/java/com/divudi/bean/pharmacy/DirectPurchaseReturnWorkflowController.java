@@ -719,7 +719,9 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
                 billFacade.edit(freshForSave);
                 currentBill = freshForSave;
             } else {
-                billFacade.edit(currentBill);
+                LOGGER.log(Level.SEVERE, "Cannot save: Direct Purchase Return bill ID {0} no longer exists in database", currentBill.getId());
+                JsfUtil.addErrorMessage("Cannot save: Direct Purchase Return no longer exists.");
+                return;
             }
         }
 

@@ -200,7 +200,7 @@ public class UserSettingsController implements Serializable {
             settingsCache.put(key, option);
 
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to save user setting: {0} - {1}", new Object[]{key, e.getMessage()});
+            LOGGER.log(Level.WARNING, "Failed to save user setting: " + key, e);
         }
     }
 
@@ -232,7 +232,7 @@ public class UserSettingsController implements Serializable {
             String jsonString = serializeToJson(value);
             saveUserSetting(key, jsonString, OptionValueType.LONG_TEXT);
         } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "Failed to save user JSON setting: {0} - {1}", new Object[]{key, e.getMessage()});
+            LOGGER.log(Level.WARNING, "Failed to save user JSON setting: " + key, e);
         }
     }
 

@@ -446,6 +446,14 @@ public class GrnReturnWorkflowController implements Serializable {
                 JsfUtil.addErrorMessage("Cannot cancel: GRN Return no longer exists.");
                 return "";
             }
+            if (freshBill.isCancelled()) {
+                JsfUtil.addErrorMessage("Cannot cancel: GRN Return has already been cancelled.");
+                return "";
+            }
+            if (freshBill.isChecked()) {
+                JsfUtil.addErrorMessage("Cannot cancel: GRN Return has already been finalized.");
+                return "";
+            }
             freshBill.setCancelled(true);
             freshBill.setEditedAt(new Date());
             freshBill.setEditor(sessionController.getLoggedUser());
@@ -1029,6 +1037,10 @@ public class GrnReturnWorkflowController implements Serializable {
             currentBill.setCheckeAt(new Date());
         }
 
+        // Recalculate each line total from bi.qty before summing the bill header,
+        // so the persisted totals reflect the final user-submitted quantities even
+        // if the blur AJAX did not fire before the Finalize POST.
+        recalculateActiveReturnLineTotals();
         calculateTotal();
 
         // Use create() for new bills, edit() for existing bills
@@ -2463,46 +2475,29 @@ public class GrnReturnWorkflowController implements Serializable {
                 continue; // Different stock
             }
 
-            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
-            if (fd == null) {
-                continue;
-            }
-
-            double returnQty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
-            double returnFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
-
-            // Convert to units if AMPP item
-            boolean isAmppItem = bi.getItem() instanceof Ampp;
-            double unitsPerPack = 1.0;
-            if (isAmppItem && fd.getUnitsPerPack() != null) {
-                unitsPerPack = fd.getUnitsPerPack().doubleValue();
-            }
-
-            double returnQtyInUnits = isAmppItem ? returnQty * unitsPerPack : returnQty;
-            double returnFreeQtyInUnits = isAmppItem ? returnFreeQty * unitsPerPack : returnFreeQty;
-
-            totalUsage += (returnQtyInUnits + returnFreeQtyInUnits);
+            totalUsage += calculateReturnUsageInUnits(bi);
         }
 
         // Add the current item's usage
-        if (excludeItem != null && excludeItem.getBillItemFinanceDetails() != null) {
-            BillItemFinanceDetails fd = excludeItem.getBillItemFinanceDetails();
-            double returnQty = fd.getQuantity() != null ? Math.abs(fd.getQuantity().doubleValue()) : 0.0;
-            double returnFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
-
-            boolean isAmppItem = excludeItem.getItem() instanceof Ampp;
-            double unitsPerPack = 1.0;
-            if (isAmppItem && fd.getUnitsPerPack() != null) {
-                unitsPerPack = fd.getUnitsPerPack().doubleValue();
-            }
-
-            double returnQtyInUnits = isAmppItem ? returnQty * unitsPerPack : returnQty;
-            double returnFreeQtyInUnits = isAmppItem ? returnFreeQty * unitsPerPack : returnFreeQty;
-
-            totalUsage += (returnQtyInUnits + returnFreeQtyInUnits);
+        if (excludeItem != null) {
+            totalUsage += calculateReturnUsageInUnits(excludeItem);
         }
 
         return totalUsage;
+    }
+
+    private double calculateReturnUsageInUnits(BillItem bi) {
+        if (bi == null || bi.getBillItemFinanceDetails() == null) {
+            return 0.0;
+        }
+        BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+        // Use bi.qty as source of truth (always positive, user-entered pack qty).
+        // fd.quantity may be stale if blur AJAX hasn't completed.
+        double returnQty = Math.abs(bi.getQty());
+        double returnFreeQty = fd.getFreeQuantity() != null ? Math.abs(fd.getFreeQuantity().doubleValue()) : 0.0;
+        boolean isAmppItem = bi.getItem() instanceof Ampp;
+        double unitsPerPack = fd.getUnitsPerPack() != null ? fd.getUnitsPerPack().doubleValue() : 1.0;
+        return isAmppItem ? (returnQty + returnFreeQty) * unitsPerPack : returnQty + returnFreeQty;
     }
 
     /**
@@ -2720,6 +2715,18 @@ public class GrnReturnWorkflowController implements Serializable {
 
         // Always preserve the user-entered rate
         fd.setLineGrossRate(userEnteredRate);
+    }
+
+    private void recalculateActiveReturnLineTotals() {
+        if (billItems == null) {
+            return;
+        }
+        for (BillItem bi : billItems) {
+            if (bi == null || bi.isRetired()) {
+                continue;
+            }
+            calculateLineTotal(bi);
+        }
     }
 
     private void syncAllQuantitiesBeforeFinalize() {

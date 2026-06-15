@@ -148,7 +148,6 @@ the DOM value but don't fire the keyup events that PrimeFaces needs to
 query the server for suggestions.
 4. browser_snapshot — find the suggestion ref in the listbox/table
 5. browser_click the suggestion item
-```
 Autocomplete items are in a `.ui-autocomplete-panel` that contains a `<table>`
 (not `<ul>/<li>`). Click the `<tr>` row directly. Do NOT set the hidden input
 value — the `itemSelect` AJAX must fire for the server to see the selection.
@@ -362,7 +361,7 @@ failed. If stuck, `browser_navigate` directly to the page URL to recover.
 If the database has no suitable records, **create them** through the UI.
 For returns, create a purchase first (Direct Purchase is simplest), then
 return against it. For issues, create a purchase → issue → return. The
-`widgetVar` + jQuery-blur pattern (§3) makes data entry reliable.
+For qty fields with `async="true"` blur handlers, use slow `browser_type` + Tab key to commit — do not rely on jQuery-blur (see §3).
 
 Never close a QA session with "code looks correct" as the only evidence.
 If you cannot generate data through the app, stop and discuss alternatives
@@ -374,7 +373,7 @@ with the developer before falling back.
 - [ ] Logged in, selected a department, reached an inner page (menu visible).
 - [ ] Checked for stale department pre-selection — the app remembers the last department; always re-select explicitly.
 - [ ] Clicked **Search** on every date-filtered list before expecting rows.
-- [ ] Used real key events (slow type + wait) for autocompletes and qty fields.
+- [ ] Used real key events (slow type + wait) for autocompletes; for qty fields with blur AJAX, used slow type + Tab (not jQuery-blur — see §3).
 - [ ] Handled `confirm()` dialogs; tested double-click on settle buttons.
 - [ ] Filled required fields before non-AJAX actions.
 - [ ] Checked that navigation buttons are not blocked by JSF validation on required fields in the same form.

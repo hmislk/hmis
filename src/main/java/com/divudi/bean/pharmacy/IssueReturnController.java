@@ -611,7 +611,6 @@ public class IssueReturnController implements Serializable {
                 } else {
                     fullyReturned = false;
                 }
-                i.setBill(null);
                 i.setRetired(true);
                 billItemFacade.edit(i);
                 continue;
@@ -1061,7 +1060,6 @@ public class IssueReturnController implements Serializable {
         }
         for (BillItem selectedItem : selectedBillItems) {
             if (selectedItem.getId() != null) {
-                selectedItem.setBill(null);
                 selectedItem.setRetired(true);
                 billItemFacade.edit(selectedItem);
             }
@@ -1078,7 +1076,6 @@ public class IssueReturnController implements Serializable {
             return;
         }
         if (itemToDelete.getId() != null) {
-            itemToDelete.setBill(null);
             itemToDelete.setRetired(true);
             billItemFacade.edit(itemToDelete);
         }
@@ -1363,9 +1360,6 @@ public class IssueReturnController implements Serializable {
 
     public void calculateBillTotal() {
         List<BillItem> activeItems = getReturnBillItems();
-        if (activeItems.isEmpty()) {
-            return;
-        }
         calculateReturnBillTotalFromItems(activeItems);
     }
 
