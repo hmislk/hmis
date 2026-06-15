@@ -258,13 +258,13 @@
                                                 </div>
 
                                                 <div class="col-md-4">
-                                                    <div class="mb-3">
-                                                        <strong class="text-muted">Registered Type</strong><br/>
-                                                        <p:badge 
-                                                            value="#{patientController.current.selfRegistered eq true ? 'Self Registered' : 'System Registered'}"
-                                                            severity="#{patientController.current.selfRegistered eq true ? 'warning' : 'success'}">
+                                                    <h:panelGroup layout="block" styleClass="mb-3" rendered="#{not empty patientController.current.registrationSource}">
+                                                        <strong class="text-muted">Registration Source</strong><br/>
+                                                        <p:badge
+                                                            value="#{patientController.current.registrationSource.label}"
+                                                            severity="info">
                                                         </p:badge>
-                                                    </div>
+                                                    </h:panelGroup>
 
                                                 </div>
                                             </div>
@@ -272,6 +272,7 @@
                                     </div>
 
                                     <!-- Patient Relationships -->
+                                    <h:panelGroup id="relPanel" layout="block">
                                     <div class="card mb-3">
                                         <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
                                             <h:outputText value="Patient Relationships" styleClass="fw-bold"/>
@@ -314,13 +315,14 @@
                                                         styleClass="ui-button-danger"
                                                         style="font-size:0.8em;"
                                                         ajax="true"
-                                                        update="@form"
+                                                        update="relPanel"
                                                         onclick="return confirm('Remove this relationship?')"
                                                         action="#{personRelationshipController.deleteRelationship(rel)}"/>
                                                 </p:column>
                                             </p:dataTable>
                                         </div>
                                     </div>
+                                    </h:panelGroup>
 
                                     <div style="transform: scale(2.0); transform-origin: top left; width: 10.0cm; height:5.0cm" >
                                         <h:panelGroup id="groupPatientCard" style="text-align: center; width: 5cm;" layout="block">
@@ -626,7 +628,7 @@
                             name="loadPatientRelationships"
                             autoRun="true"
                             action="#{personRelationshipController.loadRelationshipsForPatient(patientController.current)}"
-                            update="@form"/>
+                            update="relPanel"/>
 
                         <!-- Add Relationship Dialog -->
                         <p:dialog
@@ -658,6 +660,7 @@
                                     <p:selectOneMenu
                                         id="relType"
                                         value="#{personRelationshipController.current.apToBpRelationship}"
+                                        rendered="#{personRelationshipController.current ne null}"
                                         styleClass="w-100">
                                         <f:selectItem itemLabel="-- Select --" itemValue="#{null}" noSelectionOption="true"/>
                                         <f:selectItems
@@ -676,7 +679,7 @@
                                         process="addRelationshipDlg"
                                         action="#{personRelationshipController.saveRelationship()}"
                                         oncomplete="if (!args.validationFailed) PF('addRelationshipDlg').hide();"
-                                        update="@form"/>
+                                        update="relPanel addRelationshipDlg"/>
                                     <p:commandButton
                                         value="Cancel"
                                         icon="pi pi-times"

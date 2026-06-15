@@ -17,6 +17,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Add New Discount Entry" class="mt-2"/>
                                 <p:commandButton
+                                    id="btnAdd"
                                     value="Add"
                                     class="ui-button-success"
                                     icon="fa fa-plus"
@@ -121,6 +122,28 @@
 
                                 <div class="row mt-1">
                                     <div class="col-2">
+                                        <h:outputLabel value="Credit Company" class="mt-2"/>
+                                    </div>
+                                    <div class="col-10">
+                                        <p:autoComplete
+                                            value="#{inwardDiscountMatrixController.creditCompany}"
+                                            forceSelection="true"
+                                            completeMethod="#{institutionController.completeCreditCompany}"
+                                            var="ins"
+                                            inputStyleClass="form-control"
+                                            class="w-100"
+                                            itemLabel="#{ins.name}"
+                                            itemValue="#{ins}"
+                                            placeholder="Leave blank to apply to all companies"
+                                            maxResults="20"
+                                            onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }">
+                                            <p:column headerText="Name">#{ins.name}</p:column>
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2">
                                         <h:outputLabel value="Discount %" class="mt-2"/>
                                     </div>
                                     <div class="col-4">
@@ -140,6 +163,7 @@
                                 <h:outputLabel value="Discount Matrix" class="mt-2"/>
                                 <div class="d-flex" style="float: right">
                                     <p:commandButton
+                                        id="btnFill"
                                         ajax="false"
                                         icon="fa fa-fill"
                                         class="ui-button-warning"
@@ -147,6 +171,7 @@
                                         action="#{inwardDiscountMatrixController.loadServiceInvestigation}">
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnExcel"
                                         class="ui-button-success mx-2"
                                         actionListener="#{inwardDiscountMatrixController.loadServiceInvestigation}"
                                         ajax="false"
@@ -158,6 +183,7 @@
                                             fileName="inward_discount_matrix_service_investigation"/>
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnPrint"
                                         class="ui-button-info"
                                         ajax="false"
                                         icon="fa fa-print"
@@ -205,6 +231,13 @@
 
                                 <p:column headerText="BHT Type">
                                     <h:outputText value="#{a.paymentMethod}"/>
+                                </p:column>
+
+                                <p:column
+                                    headerText="Credit Company"
+                                    filterBy="#{empty a.creditCompany ? '' : a.creditCompany.name}"
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{empty a.creditCompany ? 'All Companies' : a.creditCompany.name}"/>
                                 </p:column>
 
                                 <p:column headerText="Discount %" style="width: 8em;">

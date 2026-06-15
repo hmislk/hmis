@@ -207,7 +207,11 @@ public class BhtIssueReturnController implements Serializable {
 
 //        getReturnBill().copy(getBill());
         getReturnBill().setBillType(getBill().getBillType());
-        getReturnBill().setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        // Discharge medicine issues return to the discharge return atomic; all other inward direct issues to the regular one.
+        BillTypeAtomic returnAtomic = getBill().getBillTypeAtomic() == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE
+                ? BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
+                : BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN;
+        getReturnBill().setBillTypeAtomic(returnAtomic);
         getReturnBill().setBilledBill(getBill());
         getReturnBill().setComments(returnComment);
         getReturnBill().setForwardReferenceBill(getBill().getForwardReferenceBill());
@@ -222,7 +226,7 @@ public class BhtIssueReturnController implements Serializable {
         getReturnBill().setDepartment(getSessionController().getDepartment());
         getReturnBill().setInstitution(getSessionController().getInstitution());
 
-        String departmentId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        String departmentId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), returnAtomic);
         getReturnBill().setInsId(departmentId);
         getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), getBill().getBillType(), BillClassType.RefundBill, BillNumberSuffix.PHISSRET));
 

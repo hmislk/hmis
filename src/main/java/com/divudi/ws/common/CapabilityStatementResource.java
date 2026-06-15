@@ -80,7 +80,9 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Clinical Favourite Medicines", "/api/clinical/favourite_medicines",
-                        "Clinical favourite medicine management",
+                        "Clinical favourite medicine templates and favourite-diagnosis medicine suggestions "
+                        + "(type=FavouriteMedicine default, or type=FavouriteDiagnosis). "
+                        + "Includes /entities/diagnoses for searching diagnoses to use as forItemName.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Membership", "/api/apiMembership",
@@ -134,9 +136,20 @@ public class CapabilityStatementResource {
                 .add(resource("Inward Discount Matrix", "/api/inward-discount-matrix",
                         "Manage inward discount matrix entries for services/investigations and pharmacy. "
                         + "Supports scope=service|pharmacy to restrict category types. "
+                        + "Optional creditCompanyId filters or sets a credit-company-specific override row. "
                         + "Lookup sub-paths for resolving names to IDs: "
                         + "/admission-types/search, /payment-schemes/search, "
-                        + "/pharmaceutical-item-categories/search, /payment-methods. "
+                        + "/pharmaceutical-item-categories/search, /payment-methods, /credit-companies/search. "
+                        + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Price Adjustment", "/api/inward-price-adjustment",
+                        "Manage inward price adjustment (margin) matrix entries for services, investigations, and pharmacy. "
+                        + "Supports scope=service|pharmacy to restrict category types. "
+                        + "Optional creditCompanyId sets a credit-company-specific margin override. "
+                        + "Price range lookup: fromPrice/toPrice define the gross value range to which the margin applies. "
+                        + "Lookup sub-paths: /categories/search?scope=service|pharmacy, /departments/search, "
+                        + "/payment-methods, /credit-companies/search. "
                         + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
@@ -149,6 +162,14 @@ public class CapabilityStatementResource {
                         "Manage inward rooms (backs /inward/inward_room.xhtml). "
                         + "Supports optional filter roomCategoryId. "
                         + "POST returns HTTP 409 with existing id when a duplicate name already exists.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Document Templates", "/api/inward/document-templates",
+                        "Manage inpatient document templates (HTML templates with placeholders). "
+                        + "Supports types: InpatientDiagnosisCard, InpatientLetter. "
+                        + "Optional query params: type (filter by type), query (name search), size. "
+                        + "GET /{id} includes full contents field. "
+                        + "POST/PUT fields: name, type, contents (HTML with placeholders), defaultTemplate, autoGenerate.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Inward Room Facility Charges", "/api/inward/room-facility-charges",
@@ -205,7 +226,9 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST", "PUT", "PATCH"))
                 .add(resource("Pharmaceutical Items", "/api/pharmaceutical_items",
-                        "Pharmaceutical item master data",
+                        "Pharmaceutical item master data. AMP create/update accepts "
+                        + "strengthOfAnIssueUnit (Double) and strengthUnitId (Long, MeasurementUnit) "
+                        + "for strength-ratio based dispensing substitution.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Pharmacy Adjustments", "/api/pharmacy_adjustments",
@@ -254,6 +277,16 @@ public class CapabilityStatementResource {
                         "User role CRUD and role-level privilege assignment with optional department scope.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Subscriptions", "/api/subscriptions",
+                        "Manage notification trigger subscriptions (who receives which notification, in which department). "
+                        + "GET /subscriptions lists subscriptions (filters: triggerType, userId, departmentId, applicationWide=true). "
+                        + "GET /subscriptions/trigger-types lists all available TriggerType values (name, label, medium, parent). "
+                        + "POST /subscriptions creates a subscription (body: userId, triggerType, and EITHER departmentId OR applicationWide:true); "
+                        + "returns already_exists when an identical non-retired subscription exists. "
+                        + "DELETE /subscriptions/{id} soft-retires a subscription. "
+                        + "An application-wide subscription (null department) matches every department across the whole application.",
+                        "API Key",
+                        "GET", "POST", "DELETE"))
                                 .add(resource("Investigations", "/api/investigations",
                         "Investigation master management including search, create, update, and activate/deactivate for item import workflows",
                         "API Key",
@@ -288,6 +321,16 @@ public class CapabilityStatementResource {
                         + "Auth: Finance header.",
                         "API Key (Finance header)",
                         "GET", "POST"))
+                .add(resource("Dynamic Forms", "/api/forms",
+                        "Design and manage dynamic clinical form templates and capture filled values. "
+                        + "Templates: GET /forms/templates lists all; GET /forms/templates/{id} returns one with field count; POST creates; PUT updates; DELETE retires. "
+                        + "Fields: GET /forms/templates/{id}/fields; POST adds a field (componentPresentationType, componentDataType, editHtml, viewHtml, choices). "
+                        + "PUT /forms/fields/{id} updates; DELETE /forms/fields/{id} retires. "
+                        + "Choices: GET /forms/fields/{id}/choices; POST adds; PUT /forms/choices/{id} updates; DELETE /forms/choices/{id} retires. "
+                        + "Filled data: GET /forms/entries/{admissionId} lists all PatientFormEntry records for an admission; "
+                        + "GET /forms/entries/{entryId}/values lists all CaptureComponent values for a filled entry.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("SAP Integration - Inventory", "/api/sap/inventory",
                         "SAP S/4HANA Cloud MM inventory sync. "
                         + "GET /sync?fromDate=yyyy-MM-dd&toDate=yyyy-MM-dd fetches SAP goods-receipt material documents "

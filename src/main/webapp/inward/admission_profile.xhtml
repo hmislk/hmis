@@ -19,6 +19,22 @@
                         <div>
                             <h:outputText styleClass="fa fa-id-card"/>
                             <p:outputLabel value="Inpatient Dashboard" class="mt-2 mx-3"/>
+                            <!-- Encounter flag badge — hidden for the STANDARD default to keep
+                                 the dashboard clean for the vast majority of records. Styling
+                                 is flag-aware: dark for On Admission Death, amber for the
+                                 Rapid / Temp A&E pending-completion state. (Issues #21182, #21183) -->
+                            <ui:fragment rendered="#{admissionController.current.encounterRegistrationFlag eq 'ON_ADMISSION_DEATH'}">
+                                <p:tag value="#{admissionController.current.encounterRegistrationFlag.label}"
+                                       icon="fas fa-cross"
+                                       styleClass="mx-2"
+                                       style="background-color:#455a64; color:#ffffff;"/>
+                            </ui:fragment>
+                            <ui:fragment rendered="#{admissionController.current.encounterRegistrationFlag eq 'RAPID_TEMP_AE'}">
+                                <p:tag value="#{admissionController.current.encounterRegistrationFlag.label}"
+                                       icon="fas fa-truck-medical"
+                                       styleClass="mx-2"
+                                       style="background-color:#f0ad4e; color:#212529;"/>
+                            </ui:fragment>
                         </div>
                         <div><div class="d-flex gap-2">
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
@@ -43,6 +59,49 @@
                         </div>
                     </div>
                 </f:facet>
+
+                <!-- Rapid / Temp A&E warning: demographics may be incomplete. Offers the
+                     follow-up actions (complete details, change patient if duplicate, or
+                     mark complete once verified). Hidden for all other flags. (Issue #21183) -->
+                <ui:fragment rendered="#{admissionController.current.encounterRegistrationFlag eq 'RAPID_TEMP_AE'}">
+                    <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2 my-2" role="alert">
+                        <div>
+                            <h:outputText styleClass="fas fa-triangle-exclamation me-2"/>
+                            <h:outputText value="Provisional Emergency Admission — patient demographics may be incomplete. Please add the patient data, or change to the correct patient if this is a duplicate record."/>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                value="Add Patient Data"
+                                ajax="false"
+                                icon="fa fa-user-edit"
+                                class="ui-button-success"
+                                action="#{patientController.navigateToOpdPatientEdit()}">
+                                <f:setPropertyActionListener
+                                    value="#{admissionController.current.patient}"
+                                    target="#{patientController.current}" />
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Edit Admission Details"
+                                ajax="false"
+                                icon="fa fa-file-medical"
+                                class="ui-button-info"
+                                action="#{admissionController.navigateToEditAdmission()}"/>
+                            <p:commandButton
+                                value="Change Patient"
+                                ajax="false"
+                                icon="fa fa-user-friends"
+                                class="ui-button-warning"
+                                action="#{admissionPatientChangeController.navigateToChangeAdmissionPatientFromProfile()}"/>
+                            <p:commandButton
+                                value="Mark as Verified"
+                                icon="fa fa-check-circle"
+                                class="ui-button-secondary"
+                                process="@this"
+                                update="form"
+                                action="#{admissionController.markRapidTempAdmissionComplete}"/>
+                        </div>
+                    </div>
+                </ui:fragment>
 
                 <div class="row">
                     <!-- Column 1: Patient Info -->
@@ -77,6 +136,12 @@
                                     <div class="col-md-5"><p:outputLabel value="NIC" /></div>
                                     <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
                                     <div class="col-md-6"><h:outputText value="#{empty admissionController.current.patient.person.nic ? 'N/A' : admissionController.current.patient.person.nic}" /></div>
+
+                                    <ui:fragment rendered="#{not empty admissionController.current.patient.registrationSource}">
+                                        <div class="col-md-5"><p:outputLabel value="Registration Source" /></div>
+                                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                        <div class="col-md-6"><p:badge value="#{admissionController.current.patient.registrationSource.label}" severity="info" /></div>
+                                    </ui:fragment>
                                 </div>
                             </p:panel>
                         </div>
@@ -219,6 +284,101 @@
                         </p:panel>
 
                         <p:panel header="Billing" class="m-1" rendered="#{admissionController.current.parentEncounter == null}">
+                            <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <div class="border border-warning rounded p-2 mb-2 shadow-sm" style="background-color:#fffdf5;">
+                                    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom">
+                                        <span class="fw-bold text-uppercase small text-warning">
+                                            <i class="fa fa-receipt me-1"/> Last Processing Summary
+                                        </span>
+                                        <span class="d-inline-flex align-items-center gap-1">
+                                            <h:panelGroup rendered="#{admissionController.current.lastProcessAt != null}">
+                                                <p:tag value="Snapshot - Not Live" icon="fa fa-clock-rotate-left" severity="warning" class="small"/>
+                                            </h:panelGroup>
+                                            <p:tag value="Developer" icon="fa fa-code" severity="info" class="small"/>
+                                        </span>
+                                    </div>
+
+                                    <h:panelGroup layout="block" rendered="#{admissionController.current.lastProcessAt != null}">
+                                        <div class="d-flex align-items-center py-2 px-3 mb-2 rounded shadow-sm"
+                                             role="alert"
+                                             style="border-left:8px solid #dc3545; background-color:#fdecea; color:#842029;">
+                                            <i class="fa fa-triangle-exclamation fa-lg me-2 text-danger"/>
+                                            <span class="fw-semibold">
+                                                Totals are <span class="fw-bold text-danger text-decoration-underline">NOT current</span> &#8212; snapshot only. Re-process for live values.
+                                            </span>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup layout="block" rendered="#{admissionController.current.lastProcessAt == null}">
+                                        <div class="text-center text-muted small py-2">
+                                            <i class="fa fa-circle-info me-1"/> Not processed yet
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup layout="block" rendered="#{admissionController.current.lastProcessAt != null}">
+                                        <div class="d-flex flex-wrap justify-content-between align-items-center small mb-2 p-2 rounded border border-warning" style="background-color:#fff3cd;">
+                                            <span class="text-muted">
+                                                <i class="fa fa-user me-1"/>
+                                                By <span class="fw-semibold text-dark">#{admissionController.current.lastProcessBy.webUserPerson.nameWithTitle}</span>
+                                            </span>
+                                            <span class="d-inline-flex align-items-center fw-bold px-2 py-1 rounded text-white" style="background-color:#fd7e14;">
+                                                <i class="fa fa-clock-rotate-left me-2"/>
+                                                Last Processed:&nbsp;
+                                                <h:outputText value="#{admissionController.current.lastProcessAt}">
+                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                </h:outputText>
+                                            </span>
+                                        </div>
+
+                                        <div class="fst-italic" style="opacity:0.85;">
+                                            <div class="d-flex justify-content-between border-bottom py-1">
+                                                <span class="text-muted">Total</span>
+                                                <span class="fw-semibold">
+                                                    <h:outputText value="#{admissionController.current.totalAtFinalProcessing}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </span>
+                                            </div>
+                                            <div class="d-flex justify-content-between border-bottom py-1">
+                                                <span class="text-muted">Discount</span>
+                                                <span class="fw-semibold text-success">
+                                                    <h:outputText value="#{admissionController.current.discountAvailableAtFinalProcessing}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </span>
+                                            </div>
+                                            <div class="d-flex justify-content-between border-bottom py-1">
+                                                <span class="text-muted">Patient Paid</span>
+                                                <span class="fw-semibold">
+                                                    <h:outputText value="#{admissionController.current.totalPatientPaidAtFinalProcessing}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </span>
+                                            </div>
+                                            <div class="d-flex justify-content-between border-bottom py-1">
+                                                <span class="text-muted">Credit Company Paid</span>
+                                                <span class="fw-semibold">
+                                                    <h:outputText value="#{admissionController.current.totalCompanyPaidAtFinalProcessing}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center mt-2 p-2 rounded border #{admissionController.current.amountDueAtFinalProcessing gt 0 ? 'border-danger bg-danger-subtle' : 'border-success bg-success-subtle'}">
+                                            <span class="fw-bold text-uppercase">
+                                                <i class="fa fa-money-bill-wave me-1"/> Due Amount
+                                            </span>
+                                            <span class="fw-bold fs-5 #{admissionController.current.amountDueAtFinalProcessing gt 0 ? 'text-danger' : 'text-success'}">
+                                                <h:outputText value="#{admissionController.current.amountDueAtFinalProcessing}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </span>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                            </h:panelGroup>
+
                             <div class="row g-2">
                                 <div class="col-12">
                                     <p:commandButton
@@ -352,8 +512,79 @@
 
                         <p:panel header="Room Management" class="m-1">
                             <div class="row g-2">
+                                <!-- Current Room Assignments -->
+                                <div class="col-12">
+                                    <h:panelGroup rendered="#{empty admissionController.activePatientRooms}" layout="block">
+                                        <div class="text-center py-2 text-muted small">
+                                            <i class="fa-solid fa-info-circle me-1"/>
+                                            Not admitted to any room
+                                        </div>
+                                    </h:panelGroup>
+                                    <ui:repeat value="#{admissionController.activePatientRooms}" var="room">
+                                        <div class="d-flex align-items-center justify-content-between p-2 mb-1 border rounded" style="background: #f0f8ff;">
+                                            <div>
+                                                <div class="fw-semibold small">
+                                                    <i class="fa-solid fa-bed text-primary me-1"/>
+                                                    <h:outputText value="#{room.roomFacilityCharge.name}"/>
+                                                    <h:panelGroup rendered="#{room.patientRoomClass eq 'class com.divudi.core.entity.inward.GuardianRoom'}">
+                                                        <span class="badge bg-success ms-1" style="font-size:0.65rem;">Guardian</span>
+                                                    </h:panelGroup>
+                                                </div>
+                                                <div class="text-muted" style="font-size:0.72rem;">
+                                                    <i class="fa-solid fa-clock me-1"/>
+                                                    Admitted:
+                                                    <h:outputText value="#{room.admittedAt}">
+                                                        <f:convertDateTime pattern="dd MMM yyyy HH:mm" timeZone="Asia/Colombo"/>
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <p:commandButton
+                                                value="View"
+                                                ajax="false"
+                                                icon="fa-solid fa-arrow-right"
+                                                class="ui-button-sm ui-button-info"
+                                                action="#{admissionController.navigateToPatientRoomDetails()}">
+                                            </p:commandButton>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+
+                                <!-- Add New Room Buttons -->
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnAddNewRoom"
+                                        rendered="#{webUserController.hasPrivilege('InwardRoomRoomChange')}"
+                                        disabled="#{admissionController.current.discharged eq true}"
+                                        value="Add New Room"
+                                        ajax="false"
+                                        action="#{admissionController.navigateToAddRoom}"
+                                        icon="fa fa-plus-circle"
+                                        class="w-100 ui-button-success">
+                                        <f:setPropertyActionListener
+                                            value="#{admissionController.current}"
+                                            target="#{roomChangeController.current}" />
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnAddGuardianRoom"
+                                        rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}"
+                                        value="Add Guardian Room"
+                                        ajax="false"
+                                        disabled="#{admissionController.current.discharged eq true}"
+                                        action="#{admissionController.navigateToAddGuardianRoom}"
+                                        icon="fa fa-user-plus"
+                                        class="w-100 ui-button-success">
+                                        <f:setPropertyActionListener
+                                            value="#{admissionController.current}"
+                                            target="#{roomChangeController.current}" />
+                                    </p:commandButton>
+                                </div>
+
                                 <div class="col-12">
                                     <p:commandButton
+                                        id="btnRoomDetails"
+                                        rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}"
                                         value="Room Details"
                                         ajax="false"
                                         action="#{admissionController.navigateToPatientRoomDetails()}"
@@ -363,6 +594,8 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
+                                        id="btnRoomChange"
+                                        rendered="#{webUserController.hasPrivilege('InwardRoomRoomChange')}"
                                         disabled="#{admissionController.current.discharged eq true}"
                                         value="Room Change"
                                         ajax="false"
@@ -376,6 +609,8 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
+                                        id="btnGuardianRoomChange"
+                                        rendered="#{webUserController.hasPrivilege('InwardRoomGurdianRoomChange')}"
                                         value="Guardian Room Change"
                                         ajax="false"
                                         disabled="#{admissionController.current.discharged eq true}"
@@ -522,26 +757,6 @@
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
-                                        value="Clinical Discharge"
-                                        ajax="false"
-                                        action="#{inpatientClinicalDataController.navigateToClinicalDischargeFromAdmission(admissionController.current)}"
-                                        icon="fa fa-sign-out-alt"
-                                        title="Navigate to Clinical Discharge"
-                                        rendered="#{webUserController.hasPrivilege('InpatientClinicalDischarge')}"
-                                        styleClass="w-100 #{admissionController.current.clinicallyDischarged ? 'ui-button-success' : 'ui-button-warning'}">
-                                    </p:commandButton>
-                                </div>
-                                <div class="col-6">
-                                    <p:commandButton
-                                        value="Drug Chart"
-                                        ajax="false"
-                                        action="#{admissionController.navigateToInpatientDrugChart()}"
-                                        icon="fa fa-prescription-bottle-alt"
-                                        class="w-100">
-                                    </p:commandButton>
-                                </div>
-                                <div class="col-6">
-                                    <p:commandButton
                                         value="Investigations"
                                         ajax="false"
                                         action="#{admissionController.navigateToInpatientInvestigations()}"
@@ -567,6 +782,17 @@
                                         class="w-100">
                                     </p:commandButton>
                                 </div>
+                                <div class="col-12">
+                                    <p:commandButton
+                                        value="Clinical Discharge"
+                                        ajax="false"
+                                        action="#{inpatientClinicalDataController.navigateToClinicalDischargeFromAdmission(admissionController.current)}"
+                                        icon="fa fa-sign-out-alt"
+                                        title="Navigate to Clinical Discharge"
+                                        rendered="#{webUserController.hasPrivilege('InpatientClinicalDischarge')}"
+                                        styleClass="w-100 #{admissionController.current.clinicallyDischarged ? 'ui-button-success' : 'ui-button-warning'}">
+                                    </p:commandButton>
+                                </div>
                             </div>
                         </p:panel>
                     </div>
@@ -577,7 +803,7 @@
                             <div class="row g-2">
                                 <div class="col-6">
                                     <p:commandButton
-                                        value="Pharmacy BHT Request"
+                                        value="Request from Pharmacy"
                                         ajax="false"
                                         action="#{admissionController.navigateToPharmacyBhtRequest}"
                                         icon="fa fa-prescription-bottle-alt"
@@ -594,6 +820,21 @@
                                         actionListener="#{pharmacySaleBhtController.resetAll()}"
                                         rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                                         icon="pi pi-check"
+                                        class="w-100"
+                                        ajax="false">
+                                        <f:setPropertyActionListener
+                                            value="#{admissionController.current}"
+                                            target="#{pharmacySaleBhtController.patientEncounter}" />
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="issueDischargeMedicinesBtn"
+                                        value="Issue Discharge Medicines"
+                                        action="/inward/pharmacy_discharge_medicine_issue?faces-redirect=true"
+                                        actionListener="#{pharmacySaleBhtController.resetAllForDischargeIssue()}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyDischargeMedicineIssue')}"
+                                        icon="fa fa-prescription-bottle-alt"
                                         class="w-100"
                                         ajax="false">
                                         <f:setPropertyActionListener
@@ -628,6 +869,24 @@
                                             value="#{admissionController.current}"
                                             target="#{pharmacySaleBhtController.patientEncounter}" />
                                     </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnReceiveMedicinesFromPharmacyInpatient"
+                                        value="Receive Medicines from Pharmacy"
+                                        ajax="false"
+                                        action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingList}"
+                                        icon="fa fa-truck-medical"
+                                        class="w-100"/>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnReturnMedicinesToPharmacyInpatient"
+                                        value="Return Medicines to Pharmacy"
+                                        ajax="false"
+                                        action="#{wardPharmacyReturnToPharmacyController.navigateToReturn}"
+                                        icon="fa fa-truck-ramp-box"
+                                        class="w-100"/>
                                 </div>
                                 <div class="col-6">
                                     <p:commandButton
@@ -701,6 +960,41 @@
                             </div>
                         </p:panel>
 
+                        <p:panel header="Documents" class="m-1">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Fill Forms"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardFormFill')}"
+                                        action="#{inwardFormController.navigateToInwardFormsFromAdmissionProfile(admissionController.current)}"
+                                        icon="fa fa-wpforms"
+                                        class="w-100">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Uploads"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InwardDocumentUpload')}"
+                                        action="#{admissionController.navigateToInpatientDocuments()}"
+                                        icon="fa fa-upload"
+                                        class="w-100">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        value="Letters"
+                                        ajax="false"
+                                        rendered="#{webUserController.hasPrivilege('InpatientLetter')}"
+                                        action="#{admissionController.navigateToInpatientLetters()}"
+                                        icon="fa fa-file-text"
+                                        class="w-100">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </p:panel>
+
                         <p:panel header="Reports" class="m-1">
                             <div class="row g-2">
                                 <div class="col-6">
@@ -729,6 +1023,23 @@
                                         ajax="false"
                                         class="w-100 ui-button-success"
                                         title="Inpatient services billed during this admission">
+                                        <f:setPropertyActionListener
+                                            value="#{admissionController.current}"
+                                            target="#{inwardReportControllerBht.patientEncounter}" />
+                                        <f:setPropertyActionListener
+                                            value="#{null}"
+                                            target="#{inwardReportControllerBht.department}" />
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnServiceBills"
+                                        value="Inward Service Bills"
+                                        action="#{inwardReportControllerBht.navigateToInpatientServiceBillListDto()}"
+                                        icon="fa fa-file-invoice"
+                                        ajax="false"
+                                        class="w-100 ui-button-success"
+                                        title="List of service bills for this admission - view/reprint or return individual bills">
                                         <f:setPropertyActionListener
                                             value="#{admissionController.current}"
                                             target="#{inwardReportControllerBht.patientEncounter}" />

@@ -4,19 +4,58 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:o="http://omnifaces.org/ui">
     <!-- INTERFACE -->
     <cc:interface>
     </cc:interface>
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:form >
-            <style>
-                .ui-menu .ui-icon, .ui-menu .fa, .ui-menu .pi {
-                    font-size: 18px !important;
-                }
-            </style>
+        <style>
+            .ui-menu .ui-icon, .ui-menu .fa, .ui-menu .pi {
+                font-size: 18px !important;
+            }
+            #notifFloatBar {
+                position: fixed;
+                top: 6px;
+                right: 60px;
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+        </style>
 
+        <h:form id="notificationPushForm">
+            <!-- o:socket evaluates user= at render time — no view-build-time null problem -->
+            <o:socket channel="notifications"
+                      user="#{sessionController.loggedUser.id}"
+                      onmessage="onNotificationPush"
+                      rendered="#{sessionController.loggedUser != null}" />
+            <script type="text/javascript">
+                function onNotificationPush(message, channel, event) {
+                    refreshNotifications();
+                }
+            </script>
+            <p:remoteCommand name="refreshNotifications"
+                             update="notCount notificationGrowl"
+                             action="#{userNotificationController.onPushRefreshNotifications}" />
+            <p:growl id="notificationGrowl" life="6000" showDetail="true" />
+            <div id="notifFloatBar">
+                <h:panelGroup id="notCount">
+                    <p:badge id="bdgeNotiCount"
+                             severity="danger"
+                             value="#{userNotificationController.unseenCount}">
+                        <p:commandButton id="btnNot"
+                                         ajax="false"
+                                         icon="pi pi-bell"
+                                         action="#{userNotificationController.navigateToRecivedNotification()}" />
+                    </p:badge>
+                </h:panelGroup>
+            </div>
+        </h:form>
+
+        <h:form id="menuForm">
             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Displaying the message provided to system users',false)}" style="background-color: #{configOptionApplicationController.getColorValueByKey('Message background color')}">
                 <div class="card">
                     <div class="d-flex justify-content-center shadow-4 p-2" style="background-color: #{configOptionApplicationController.getColorValueByKey('Message background color')}; font-weight: 700; font-size: 18px;">
@@ -587,12 +626,20 @@
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" >
                         </p:menuitem>
 
-                        <p:menuitem  
-                            ajax="false"  
+                        <p:menuitem
+                            ajax="false"
                             action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true"
                             value="BHT Issue Requests"
                             icon="fa fa-notes-medical"
                             actionListener="#{pharmacySaleBhtController.resetAll()}"
+                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
+                        </p:menuitem>
+
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"
+                            value="Accept Returns from Ward"
+                            icon="fa fa-truck-ramp-box"
                             rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
                         </p:menuitem>
 
@@ -1104,6 +1151,10 @@
                                     value="Direct Issue to BHTs (Native SQL)" icon="fa fa-bolt"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDirectIssueToBht')}"
                                     actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"/>
+                        <p:menuitem ajax="false" action="/inward/pharmacy_discharge_medicine_issue?faces-redirect=true"
+                                    value="Issue Discharge Medicines" icon="fas fa-prescription-bottle-alt"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDischargeMedicineIssue')}"
+                                    actionListener="#{pharmacySaleBhtController.resetAllForDischargeIssue()}"/>
                         <p:menuitem  ajax="false"  action="/theater/inward_bill_surgery_issue?faces-redirect=true"
                                      value="Direct Issue to Theatre Cases" icon="fas fa-cut"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
@@ -1129,128 +1180,18 @@
                     </p:submenu>
 
 
-                    <p:submenu
-                        id="submenuPharmacy"
-                        label="Procurement" 
-                        icon="fas fa-shopping-cart" 
-                        rendered="#{webUserController.hasPrivilege('PharmacyProcurementMenu')}">
-                        <!--Procurement Menu Items with Titles-->
-                        <p:menuitem
-                            ajax="false"
-                            action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"
-                            value="Create PO"
-                            title="Create a new Purchase Order"
-                            icon="fas fa-plus-circle"
-                            rendered="#{webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{reorderController.autoOrderByDistributor()}"  
-                            value="Auto Ordering - P Model" 
-                            title="Auto Ordering - P Model"
-                            icon="fas fa-sync-alt"
-                            rendered="#{webUserController.hasPrivilege('AutoOrderPModel')}" ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{reorderController.autoOrderByDistributor()}"  
-                            value="Auto Ordering - Q Model" 
-                            title="Auto Ordering - Q Model"
-                            icon="fas fa-retweet"
-                            rendered="#{webUserController.hasPrivilege('AutoOrderQModal')}" ></p:menuitem>
-                        <p:menuitem
-                            ajax="false"
-                            action="#{pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill}"
-                            value="Direct Purchase"
-                            title="Direct Purchase"
-                            icon="fas fa-hand-holding-usd"
-                            rendered="#{webUserController.hasPrivilege('DirectPurchase') and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" >
-                        </p:menuitem>
-                        <p:menuitem
-                            ajax="false"
-                            action="#{pharmacyDonationController.navigateToStartNewDonationBill}"
-                            value="Pharmacy Donations"
-                            title="Pharmacy Donations"
-                            icon="fas fa-donate"
-                            rendered="#{webUserController.hasPrivilege('PharmacyDonation')}" ></p:menuitem>
-                        <p:menuitem
-                            ajax="false"
-                            action="#{searchController.navigateToPurchaseOrderFinalize}"
-                            value="Finalize POs"
-                            title="Finalize Purchase Orders"
-                            icon="fas fa-tasks"
-                            rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
-                        <p:menuitem
-                            ajax="false"
-                            action="#{searchController.navigateToPurchaseOrderApprove}"
-                            value="PO Approval"
-                            title="Purchase Order Approval"
-                            icon="fas fa-clipboard-check"
-                            rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel')}" ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="/pharmacy/pharmacy_purchase?faces-redirect=true"  
-                            value="Direct Purchase" 
-                            title="Direct Purchase"
-                            icon="fas fa-hand-holding-usd"
-                            rendered="#{webUserController.hasPrivilege('DirectPurchase') and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" 
-                            actionListener="#{pharmacyPurchaseController.makeNull()}" ></p:menuitem>
-                        <p:menuitem
-                            ajax="false"
-                            action="#{searchController.navigateToListPurchaseOrdersToReceive()}"
-                            value="GRN"
-                            title="Goods Receipt (GRN)"
-                            icon="fas fa-dolly-flatbed"
-                            rendered="#{webUserController.hasPrivilege('GoodsRecipt')}"  ></p:menuitem>
-                        <p:menuitem
-                            ajax="false"
-                            action="#{searchController.navigateToListPurchaseOrdersToReceiveDto()}"
-                            value="Approved POs to Create GRN"
-                            title="Optimized list of Approved Purchase Orders for GRN Creation - Fast Loading"
-                            icon="fas fa-rocket"
-                            styleClass="ui-menuitem-success"
-                            rendered="#{webUserController.hasPrivilege('GoodsRecipt')}"  ></p:menuitem>
-                        <p:menuitem
-                            ajax="false"
-                            action="#{searchController.navigateToGrnListToFinalize()}"
-                            value="GRN Finalize"
-                            icon="fas fa-clipboard-check"
-                            rendered="#{webUserController.hasPrivilege('PharmacyGrnFinalize')}" ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="#{searchController.navigateToGrnListToApprove()}"  
-                            value="GRN Approval"  
-                            icon="fas fa-check-circle"
-                            rendered="#{webUserController.hasPrivilege('PharmacyGrnApprove')}" ></p:menuitem>
-
-                        <p:menuitem  
-                            ajax="false" 
-                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve_with_approval?faces-redirect=true"  
-                            value="Goods Receipt With Approval"  
-                            title="Goods Receipt With Approval"
-                            icon="fas fa-dolly-flatbed"
-                            actionListener="#{searchController.makeListNull()}" 
-                            rendered="#{webUserController.hasPrivilege('GoodsRecipt') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}" ></p:menuitem>
-
-                    </p:submenu>
-                    <p:submenu label="Disposal" icon="fas fa-trash-alt" rendered="#{webUserController.hasPrivilege('PharmacyDisposalMenue')}">
-                        <p:menuitem
-                            ajax="false"
-                            action="/pharmacy/pharmacy_issue?faces-redirect=true"
-                            value="Issue" icon="fas fa-trash"
-                            actionListener="#{pharmacyIssueController.resetAll()}"
-                            rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssue')}" ></p:menuitem>
-                        <p:menuitem
-                            ajax="false"
-                            action="/pharmacy/pharmacy_search_issue_bill?faces-redirect=true"
-                            actionListener="#{searchController.makeListNull}"
-                            value="Search Issue Bill" icon="fas fa-search"
-                            rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueBill')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill_item?faces-redirect=true" actionListener="#{searchController.makeListNull}"
-                                     value="Search Issue Bill Items" icon="fas fa-list" rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueBillItems')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_issue_bill_return?faces-redirect=true" actionListener="#{searchController.makeListNull}"
-                                     value="Search Issue Return Bill" icon="fas fa-undo" rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueReturnBill')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/store/issue_rate_margin_manager?faces-redirect=true"
-                                     value="Unit Issue Margin" icon="fas fa-percentage" rendered="#{webUserController.hasPrivilege('PharmacyDisposalUnitIssueMargin')}" />
-                    </p:submenu>
+                    <p:menuitem
+                        ajax="false"
+                        action="/pharmacy/procurement_index?faces-redirect=true"
+                        value="Procurement"
+                        rendered="#{webUserController.hasPrivilege('PharmacyProcurementMenu')}"
+                        icon="fas fa-shopping-cart" />
+                    <p:menuitem
+                        ajax="false"
+                        action="/pharmacy/disposal_index?faces-redirect=true"
+                        value="Disposal"
+                        rendered="#{webUserController.hasPrivilege('PharmacyDisposalMenue')}"
+                        icon="fas fa-trash-alt" />
 
                     <p:menuitem
                         ajax="false"
@@ -2113,13 +2054,6 @@
                         icon="fa fa-database"
                         rendered="#{webUserController.hasPrivilege('AdminItems')}" >
                     </p:menuitem>
-                    <p:menuitem
-                        ajax="false"
-                        action="#{patientController.navigateToInactivePatients()}"
-                        value="Inactive Patients"
-                        icon="fa fa-user-slash"
-                        rendered="#{webUserController.hasPrivilege('AdminInactivePatients')}" >
-                    </p:menuitem>
 
                 </p:submenu>
 
@@ -2132,32 +2066,6 @@
                                              ajax="false"
                                              action="#{financialTransactionController.refreshCashNetTotalForMenu()}" />
                         </h:panelGroup>
-                        <!-- User Notifications UI disabled: caused TransactionRolledback errors during render.
-                             Once the JPQL/transaction issues are fixed, remove the comment markers below
-                             to re-enable the bell badge, polling, and refresh actions. -->
-                        <!--
-                        <div class="mx-4">
-                            <h:panelGroup>
-                                <p:poll
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Auto-refresh Menu Notifications', false)}"
-                                    interval="#{configOptionApplicationController.getLongValueByKey('Auto-refresh Menu Notification Duration', 1800)}"
-                                    listener="#{userNotificationController.fillLoggedUserNotifications()}"
-                                    update="notCount" />
-                                <h:panelGroup id="notCount">
-                                    <p:badge id="bdgeNotiCount" severity="danger" value="#{webUserController.userNotificationCount}">
-                                        <p:commandButton id="btnNot" ajax="false" icon="pi pi-bell" action="#{userNotificationController.navigateToRecivedNotification()}" />
-                                    </p:badge>
-                                </h:panelGroup>
-                                <p:commandButton 
-                                    icon="pi pi-refresh" 
-                                    rendered="#{not configOptionApplicationController.getBooleanValueByKey('Auto-refresh Menu Notifications', false)}"
-                                    action="#{userNotificationController.fillLoggedUserNotifications()}"
-                                    title="Refresh Notifications" style="margin-left: 10px;"/>
-                            </h:panelGroup>
-                        </div>
-                        -->
-
-
                         <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
                     </div>
 

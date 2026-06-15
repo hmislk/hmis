@@ -17,6 +17,26 @@
                 <h:form id="roomDetailsForm">
                     <p:messages id="pageMessages"/>
 
+                    <p:confirmDialog
+                        global="true"
+                        responsive="true"
+                        width="780"
+                        showEffect="fade"
+                        hideEffect="fade">
+                        <p:commandButton
+                            style="width: 150px;"
+                            value="Yes"
+                            type="button"
+                            styleClass="ui-confirmdialog-yes ui-button-danger"
+                            icon="fa fa-check"/>
+                        <p:commandButton
+                            style="width: 150px;"
+                            value="No"
+                            type="button"
+                            styleClass="ui-confirmdialog-no ui-button-secondary ui-button-outlined"
+                            icon="fa fa-times"/>
+                    </p:confirmDialog>
+
                     <p:panel>
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">
@@ -96,6 +116,7 @@
                                             <div class="d-flex align-items-center gap-2 flex-wrap">
                                                 <p:autoComplete
                                                     forceSelection="true"
+                                                    readonly="#{bhtSummeryController.patientEncounter.discharged}"
                                                     value="#{rm.roomFacilityCharge}"
                                                     completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
                                                     var="rf"
@@ -121,6 +142,7 @@
                                                 value="#{rm.admittedAt}"
                                                 showTime="true"
                                                 showButtonBar="true"
+                                                readonly="#{bhtSummeryController.patientEncounter.discharged}"
                                                 timeInput="true"
                                                 pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                         </p:column>
@@ -132,6 +154,7 @@
                                                 showTime="true"
                                                 showButtonBar="true"
                                                 timeInput="true"
+                                                readonly="#{bhtSummeryController.patientEncounter.discharged}"
                                                 pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                         </p:column>
 
@@ -181,32 +204,75 @@
                                             </h:outputText>
                                         </p:column>
 
-                                        <p:column headerText="Actions" style="width:220px;">
+                                        <p:column headerText="Actions" style="width:240px;">
                                             <div class="d-flex gap-1 flex-wrap">
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    update="@form"
                                                     icon="fa fa-save"
                                                     title="Save Changes"
                                                     class="ui-button-info"
-                                                    action="#{bhtSummeryController.updatePatientRoom(rm)}"/>
+                                                    disabled="#{bhtSummeryController.patientEncounter.discharged}"
+                                                    action="#{bhtSummeryController.updatePatientRoom(rm)}">
+                                                </p:commandButton>
+
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    update="@form"
                                                     icon="fa fa-calculator"
                                                     title="Update Charges from Room Rates"
+                                                    disabled="#{bhtSummeryController.patientEncounter.discharged}"
                                                     class="ui-button-success"
-                                                    action="#{bhtSummeryController.updateChargesForRoom(rm)}"/>
+                                                    action="#{bhtSummeryController.updateChargesForRoom(rm)}">
+                                                </p:commandButton>
+                                                
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    process="@this"
+                                                    update="@form"
                                                     icon="fa fa-check-square"
                                                     title="Discharge from Room"
+                                                    rendered="#{not rm.discharged}"
+                                                    disabled="#{bhtSummeryController.patientEncounter.discharged}"
                                                     class="ui-button-warning"
-                                                    action="#{roomChangeController.dischargeWithCurrentTime(rm)}"/>
+                                                    action="#{roomChangeController.dischargeWithCurrentTime(rm)}">
+                                                    <p:confirm header="Confirm Discharge"
+                                                               message="Are you sure you want to discharge from this room?"
+                                                               icon="fa fa-exclamation-triangle"/>
+                                                </p:commandButton>
+
                                                 <p:commandButton
-                                                    ajax="false"
+                                                    process="@this"
+                                                    update="@form"
                                                     icon="fa fa-times-circle"
                                                     title="Cancel Room Discharge"
+                                                    rendered="#{rm.discharged}"
+                                                    disabled="#{bhtSummeryController.patientEncounter.discharged}"
                                                     class="ui-button-danger"
-                                                    action="#{roomChangeController.dischargeCancel(rm)}"/>
+                                                    action="#{roomChangeController.dischargeCancel(rm)}">
+                                                    <p:confirm header="Confirm Cancel Discharge"
+                                                               message="Are you sure you want to cancel this room discharge?"
+                                                               icon="fa fa-exclamation-triangle"/>
+                                                </p:commandButton>
+
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    icon="fa fa-print"
+                                                    title="Print Discharge Receipt"
+                                                    rendered="#{rm.discharged}"
+                                                    class="ui-button-info"
+                                                    action="#{roomChangeController.navigateToRoomDischargeReceipt(rm)}">
+                                                </p:commandButton>
+
+                                                <p:commandButton
+                                                    process="@this"
+                                                    update="@form"
+                                                    icon="fa fa-trash"
+                                                    title="Remove Room"
+                                                    disabled="#{bhtSummeryController.patientEncounter.discharged}"
+                                                    class="ui-button-danger mx-2"
+                                                    action="#{roomChangeController.removeRoom(rm)}">
+                                                    <p:confirm header="Confirm Room Removal"
+                                                               message="Remove this room from the patient's room list? This action cannot be undone."
+                                                               icon="fa fa-exclamation-triangle"/>
+                                                </p:commandButton>
                                             </div>
                                         </p:column>
 

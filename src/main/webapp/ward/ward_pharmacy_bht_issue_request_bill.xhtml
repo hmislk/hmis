@@ -64,8 +64,24 @@
                                         <i class="fa-solid fa-hospital me-2 text-primary"></i>
                                         <h:outputLabel for="departmentId_input" style="font-weight: bold" value="Requesting Department"/>
                                     </div>
-                                    
-                                    
+
+                                    <h:panelGroup id="recentPharmacies" layout="block"
+                                                  rendered="#{not empty pharmacyRequestForBhtController.recentRequestedPharmacies}"
+                                                  styleClass="d-flex flex-wrap gap-2 mb-2 mx-2">
+                                        <p:outputLabel value="Recent:" styleClass="text-muted me-1 align-self-center" />
+                                        <ui:repeat value="#{pharmacyRequestForBhtController.recentRequestedPharmacies}" var="recentPh">
+                                            <p:commandButton id="btnRecentPharmacy"
+                                                             value="#{recentPh.name}#{pharmacyRequestForBhtController.isDefaultRequestedPharmacy(recentPh) ? ' (Default)' : ''}"
+                                                             icon="#{pharmacyRequestForBhtController.isDefaultRequestedPharmacy(recentPh) ? 'fa fa-star' : 'fa fa-clock-o'}"
+                                                             title="#{pharmacyRequestForBhtController.isDefaultRequestedPharmacy(recentPh) ? 'Default pharmacy for this ward' : 'Recently requested pharmacy'}"
+                                                             styleClass="#{pharmacyRequestForBhtController.isDefaultRequestedPharmacy(recentPh) ? 'ui-button-info ui-button-sm' : 'ui-button-info ui-button-outlined ui-button-sm'}"
+                                                             disabled="#{pharmacyRequestForBhtController.department ne null}"
+                                                             process="@this"
+                                                             update="@form"
+                                                             action="#{pharmacyRequestForBhtController.selectRequestedPharmacy(recentPh)}" />
+                                        </ui:repeat>
+                                    </h:panelGroup>
+
                                     <p:autoComplete
                                         id="departmentId"
                                         value="#{pharmacyRequestForBhtController.department}"
@@ -80,12 +96,12 @@
                                         <p:ajax
                                             event="itemSelect"
                                             process="@this"
-                                            update="@this acPt2" />
+                                            update="@form" />
                                     </p:autoComplete>
                                 </div>
 
                                 <div class="d-flex flex-column col-6">
-                                    
+
                                     <div class="d-flex align-items-center my-1">
                                         <i class="fa-solid fa-user me-2 text-primary"></i>
                                         <h:outputLabel for="acPt2_input" style="font-weight: bold" value="Patient Name or BHT or PHN No"/>
@@ -124,7 +140,7 @@
                                                 </span>
                                             </div>
                                         </p:column>
-                                        <p:ajax event="itemSelect" process="acPt2" />
+                                        <p:ajax event="itemSelect" process="acPt2" update="@form" />
                                     </p:autoComplete>
                                 </div>
 

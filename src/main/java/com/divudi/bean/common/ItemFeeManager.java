@@ -29,9 +29,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import com.google.gson.Gson;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -969,6 +971,74 @@ public class ItemFeeManager implements Serializable {
 
         List<ItemLight> fs = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, m);
         return fs;
+    }
+
+    public List<ItemLight> fillItemLightsForDepartment(Department dept) {
+        if (dept == null) {
+            return new ArrayList<>();
+        }
+        Institution site = dept.getSite();
+
+        // Pass 1: site-specific fees
+        Map<String, Object> m = new HashMap<>();
+        String jpql = "SELECT new com.divudi.core.data.ItemLight("
+                + "f.item.id, f.item.department.name, f.item.name, f.item.code, sum(f.fee), f.item.department.id) "
+                + "FROM ItemFee f "
+                + "WHERE f.retired=:ret AND f.item.retired=:ir "
+                + "AND f.item.department=:dept "
+                + "AND f.forCategory IS NULL AND f.fee > :zero ";
+        m.put("ret", false);
+        m.put("ir", false);
+        m.put("dept", dept);
+        m.put("zero", 0.0);
+
+        if (site != null) {
+            jpql += "AND f.forInstitution=:site ";
+            m.put("site", site);
+        } else {
+            jpql += "AND f.forInstitution IS NULL ";
+        }
+        jpql += "GROUP BY f.item ORDER BY f.item.name";
+
+        List<ItemLight> siteItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, m);
+
+        if (site == null) {
+            return siteItems;
+        }
+
+        // Pass 2: base fees for items not covered by site fees
+        Set<Long> siteItemIds = new HashSet<>();
+        for (ItemLight il : siteItems) {
+            siteItemIds.add(il.getId());
+        }
+
+        Map<String, Object> m2 = new HashMap<>();
+        String jpql2 = "SELECT new com.divudi.core.data.ItemLight("
+                + "f.item.id, f.item.department.name, f.item.name, f.item.code, sum(f.fee), f.item.department.id) "
+                + "FROM ItemFee f "
+                + "WHERE f.retired=:ret AND f.item.retired=:ir "
+                + "AND f.item.department=:dept "
+                + "AND f.forInstitution IS NULL AND f.forCategory IS NULL AND f.fee > :zero ";
+        m2.put("ret", false);
+        m2.put("ir", false);
+        m2.put("dept", dept);
+        m2.put("zero", 0.0);
+        if (!siteItemIds.isEmpty()) {
+            jpql2 += "AND f.item.id NOT IN :excludeIds ";
+            m2.put("excludeIds", siteItemIds);
+        }
+        jpql2 += "GROUP BY f.item ORDER BY f.item.name";
+
+        List<ItemLight> baseItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql2, m2);
+
+        List<ItemLight> result = new ArrayList<>(siteItems);
+        result.addAll(baseItems);
+        result.sort((a, b) -> {
+            if (a.getName() == null) return 1;
+            if (b.getName() == null) return -1;
+            return a.getName().compareToIgnoreCase(b.getName());
+        });
+        return result;
     }
 
     public List<ItemLight> fillItemLightsForCc(Institution cc) {

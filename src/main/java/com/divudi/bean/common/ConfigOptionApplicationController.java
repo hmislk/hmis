@@ -110,6 +110,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadPharmacyCommonBillConfigurationDefaults();
             loadPharmacyAdjustmentReceiptConfigurationDefaults();
             loadPatientNameConfigurationDefaults();
+            loadPhnConfigurationDefaults();
             loadSecurityConfigurationDefaults();
             loadPharmacyAnalyticsConfigurationDefaults();
             loadReportMethodConfigurationDefaults();
@@ -948,6 +949,20 @@ public class ConfigOptionApplicationController implements Serializable {
     private void loadPatientNameConfigurationDefaults() {
         getBooleanValueByKey("Capitalize Entire Patient Name", false);
         getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
+    }
+
+    private void loadPhnConfigurationDefaults() {
+        // PHN Standard Version: V1 (NeGS sequential), V2 (NDHGS random), External (manual), None (disabled)
+        // Default: V2 for new deployments; existing deployments that used the old random method are V2-compatible
+        getShortTextValueByKey("PHN Standard Version", "V2");
+        // POI Scope: Global (one POI for all institutions) or PerInstitution (POI from Institution.pointOfIssueNo)
+        getShortTextValueByKey("PHN POI Number Scope", "Global");
+        // Global POI value — used when scope is Global (4 chars, alphanumeric for V2, numeric for V1)
+        getShortTextValueByKey("PHN POI Number", "");
+        // Auto-generate PHN on patient registration (true) or allow manual entry (false)
+        getBooleanValueByKey("PHN Auto-generate on Registration", true);
+        // Starting sequential number for V1 generation (applies per POI scope)
+        getIntegerValueByKey("PHN Sequential Start", 1);
     }
 
     private void loadSecurityConfigurationDefaults() {
