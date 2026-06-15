@@ -1,8 +1,10 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.BillItem;
@@ -26,6 +28,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.event.RowEditEvent;
 
 /**
  * Pharmacy-side confirmation of medicines returned from a ward via a porter
@@ -36,6 +39,12 @@ import javax.inject.Named;
  * department's stock, recording the confirmation as a
  * {@link BillTypeAtomic#ACCEPT_RETURN_MEDICINE_INWARD} bill linked back to
  * the return via {@link Bill#getBackwardReferenceBill()}.
+ *
+ * <p>Remaining-quantity tracking, auto-complete and force-complete (#21510)
+ * mirror the equivalent BHT issue-request pattern in
+ * {@link PharmacySaleBhtController} (#21505/#21507), reusing the generic
+ * {@code Bill.fullyIssued}/{@code completed} fields and
+ * {@code BillItem.remainingQty}.</p>
  */
 @Named
 @SessionScoped
@@ -45,6 +54,8 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
 
     @EJB
     private BillFacade billFacade;
@@ -64,11 +75,13 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
     private List<Bill> pendingReturnBills;
     private boolean printPreview;
     private boolean settling;
+    private boolean completed;
 
     public void makeNull() {
         returnedBill = null;
         receivedBill = null;
         printPreview = false;
+        completed = false;
     }
 
     public String navigateToPendingList() {
@@ -81,14 +94,13 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
         String jpql = "SELECT b FROM Bill b WHERE b.billType = :bt AND b.billTypeAtomic = :bta "
                 + "AND b.toDepartment = :dept "
                 + "AND b.cancelled = false "
-                + "AND NOT EXISTS (SELECT r FROM Bill r WHERE r.backwardReferenceBill = b "
-                + "AND r.billTypeAtomic = :acceptBta AND r.cancelled = false) "
+                + "AND (b.fullyIssued = false OR b.fullyIssued IS NULL) "
+                + "AND (b.completed = false OR b.completed IS NULL) "
                 + "ORDER BY b.createdAt DESC";
         Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.PharmacyIssue);
         params.put("bta", BillTypeAtomic.RETURN_MEDICINE_INWARD);
         params.put("dept", sessionController.getDepartment());
-        params.put("acceptBta", BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
         pendingReturnBills = billFacade.findByJpql(jpql, params);
     }
 
@@ -97,13 +109,14 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
             JsfUtil.addErrorMessage("No return selected.");
             return null;
         }
-        if (isAlreadyReceived(returnedBill)) {
-            JsfUtil.addErrorMessage("This return has already been received.");
+        if (isFullyAccepted(returnedBill)) {
+            JsfUtil.addErrorMessage("This return has already been fully received.");
             loadPendingReturnBills();
             return null;
         }
         generateBillComponent();
         printPreview = false;
+        completed = false;
         return "/pharmacy/pharmacy_return_from_ward_receive?faces-redirect=true";
     }
 
@@ -131,22 +144,23 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
             if (returnedPbi == null) {
                 continue;
             }
-            double qty = Math.abs(returnedPbi.getQty());
-            if (qty <= 0.0) {
+            // Only propose the quantity not yet accepted in a prior visit (#21510).
+            double remaining = getRemainingQuantityForReturnItem(returnedItem);
+            if (remaining <= 0.001) {
                 continue;
             }
 
             BillItem newItem = new BillItem();
             newItem.setBill(receivedBill);
             newItem.setItem(returnedItem.getItem());
-            newItem.setQty(qty);
+            newItem.setQty(remaining);
             newItem.setReferanceBillItem(returnedItem);
             newItem.setSearialNo(serial++);
 
             PharmaceuticalBillItem newPbi = new PharmaceuticalBillItem();
             newPbi.copy(returnedPbi);
             newPbi.setBillItem(newItem);
-            newPbi.setQty(qty);
+            newPbi.setQty(remaining);
             // The copy above inherits the return's stock binding. A receive
             // must only ever touch the porter's in-transit stock (deducted)
             // and the pharmacy department's stock (added, bound below).
@@ -156,6 +170,81 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
 
             receivedBill.getBillItems().add(newItem);
         }
+    }
+
+    /**
+     * Computes the quantity of a return line not yet accepted by the
+     * pharmacy, netting off prior {@link BillTypeAtomic#ACCEPT_RETURN_MEDICINE_INWARD}
+     * bill items that reference it. There is no cancellation/reversal
+     * {@code BillTypeAtomic} for accepted returns, so unlike
+     * {@code PharmacySaleBhtController#getRemainingQuantityForItem} only a
+     * single reference hop is needed (#21510).
+     */
+    public double getRemainingQuantityForReturnItem(BillItem returnItem) {
+        if (returnItem == null || returnItem.getId() == null) {
+            return 0.0;
+        }
+        String jpql = "SELECT SUM(ABS(bi.qty)) FROM BillItem bi "
+                + "WHERE bi.referanceBillItem.id = :refId "
+                + "AND bi.bill.billTypeAtomic = :acceptBta "
+                + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL) "
+                + "AND bi.bill.cancelled = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("refId", returnItem.getId());
+        params.put("acceptBta", BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
+        double alreadyAccepted = billItemFacade.findDoubleByJpql(jpql, params);
+        return Math.max(0.0, returnItem.getQty() - alreadyAccepted);
+    }
+
+    /**
+     * Whether every line of a return bill has been fully accepted by the
+     * pharmacy. Mirrors {@code PharmacySaleBhtController#isFullyIssued}.
+     */
+    public boolean isFullyAccepted(Bill returnBill) {
+        if (returnBill == null) {
+            return false;
+        }
+        Bill freshBill = billFacade.findWithoutCache(returnBill.getId());
+        if (freshBill == null || freshBill.getBillItems() == null || freshBill.getBillItems().isEmpty()) {
+            return false;
+        }
+        for (BillItem item : freshBill.getBillItems()) {
+            if (getRemainingQuantityForReturnItem(item) > 0.001) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Row-edit listener for the editable "Receiving Quantity" column,
+     * clamping the entered quantity to the range
+     * {@code [0, remaining-to-accept]}. Mirrors
+     * {@code PharmacySaleBhtController#onEditing}.
+     */
+    public void onEditing(RowEditEvent event) {
+        BillItem tmp = (BillItem) event.getObject();
+        PharmaceuticalBillItem pbi = tmp.getPharmaceuticalBillItem();
+
+        if (pbi.getQty() < 0) {
+            pbi.setQty(0);
+            tmp.setQty(0.0);
+            JsfUtil.addErrorMessage("Can not enter a minus value");
+            return;
+        }
+
+        if (tmp.getReferanceBillItem() != null) {
+            double remaining = getRemainingQuantityForReturnItem(tmp.getReferanceBillItem());
+            if (pbi.getQty() > remaining) {
+                JsfUtil.addErrorMessage("Cannot receive " + pbi.getQty()
+                        + " units of " + tmp.getItem().getName() + ". Only " + remaining + " units remaining to be accepted.");
+                pbi.setQty(remaining);
+                tmp.setQty(remaining);
+                return;
+            }
+        }
+
+        tmp.setQty(pbi.getQty());
     }
 
     public void settle() {
@@ -171,12 +260,12 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
     }
 
     private void doSettle() {
-        if (receivedBill == null || receivedBill.getBillItems() == null || receivedBill.getBillItems().isEmpty()) {
-            JsfUtil.addErrorMessage("Nothing to receive.");
+        if (returnedBill == null || returnedBill.getId() == null) {
+            JsfUtil.addErrorMessage("No return selected.");
             return;
         }
-        if (isAlreadyReceived(returnedBill)) {
-            JsfUtil.addErrorMessage("This return has already been received.");
+        if (isFullyAccepted(returnedBill)) {
+            JsfUtil.addErrorMessage("This return has already been fully received.");
             return;
         }
 
@@ -186,105 +275,129 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
             return;
         }
 
-        if (!porterStockCoversAllLines(porter)) {
-            return;
-        }
+        boolean forceComplete = completed && webUserController.hasPrivilege(Privileges.PharmacyReturnFromWardForceComplete.toString());
 
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
-        receivedBill.setDeptId(deptId);
-        receivedBill.setInsId(deptId);
-        receivedBill.setCreatedAt(new Date());
-        receivedBill.setCreater(sessionController.getLoggedUser());
+        List<BillItem> itemsToAccept = new ArrayList<>();
+        if (receivedBill != null && receivedBill.getBillItems() != null) {
+            for (BillItem bi : receivedBill.getBillItems()) {
+                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                double requestedQty = Math.abs(pbi.getQty());
+                if (requestedQty <= 0.0) {
+                    continue;
+                }
+                if (pbi.getItemBatch() == null || pbi.getItemBatch().getId() == null) {
+                    JsfUtil.addErrorMessage("Item " + (bi.getItem() != null ? bi.getItem().getName() : "?") + " has no batch - cannot receive.");
+                    pbi.setQty(0);
+                    bi.setQty(0.0);
+                    continue;
+                }
 
-        // Detach billItems before create() - CascadeType.ALL would otherwise
-        // attempt to insert them here, before the per-item stock movements below.
-        List<BillItem> items = receivedBill.getBillItems();
-        receivedBill.setBillItems(new ArrayList<>());
-        billFacade.create(receivedBill);
-        receivedBill.setBillItems(items);
+                String jpql = "select s from Stock s where s.itemBatch=:bc and s.staff=:stf";
+                Map<String, Object> params = new HashMap<>();
+                params.put("bc", pbi.getItemBatch());
+                params.put("stf", porter);
+                Stock porterStock = stockFacade.findFirstByJpql(jpql, params, true);
+                double available = porterStock == null ? 0.0 : porterStock.getStock();
 
-        for (BillItem bi : receivedBill.getBillItems()) {
-            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
-            double qty = Math.abs(pbi.getQty());
+                double qty = Math.min(requestedQty, available);
+                if (qty <= 0.0001) {
+                    JsfUtil.addErrorMessage("Insufficient in-transit (porter) stock for " + bi.getItem().getName() + " - nothing received for this line.");
+                    pbi.setQty(0);
+                    bi.setQty(0.0);
+                    continue;
+                }
+                if (qty + 0.0001 < requestedQty) {
+                    JsfUtil.addErrorMessage("Only " + qty + " of " + requestedQty + " units of " + bi.getItem().getName()
+                            + " were available from the porter - receiving the available quantity.");
+                }
 
-            // Persist the BillItem (cascading its PharmaceuticalBillItem) before
-            // calling the stock movement methods - deductFromStock/addToStock
-            // create StockHistory rows referencing the PBI, and that relationship
-            // does not cascade from a still-transient BillItem.
-            bi.setBill(receivedBill);
-            bi.setCreatedAt(new Date());
-            bi.setCreater(sessionController.getLoggedUser());
-            billItemFacade.create(bi);
-
-            if (pharmacyBean.deductFromStock(pbi, qty, porter)) {
-                Stock addedStock = pharmacyBean.addToStock(pbi, qty, sessionController.getDepartment());
-                pbi.setStock(addedStock);
-            } else {
-                JsfUtil.addErrorMessage("Insufficient in-transit (porter) stock for " + bi.getItem().getName() + " - received as zero.");
-                pbi.setQty(0);
-                bi.setQty(0.0);
-            }
-
-            billItemFacade.edit(bi);
-        }
-
-        printPreview = true;
-    }
-
-    /**
-     * Validates that the porter holds enough in-transit stock to cover EVERY
-     * line being received, before any data is written, mirroring
-     * {@code WardPharmacyBhtIssueReceiveController#porterStockCoversAllLines}
-     * (#21467/#21468).
-     */
-    private boolean porterStockCoversAllLines(Staff porter) {
-        Map<Long, Double> requiredUnitsByBatch = new HashMap<>();
-        Map<Long, BillItem> sampleItemByBatch = new HashMap<>();
-        for (BillItem bi : receivedBill.getBillItems()) {
-            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
-            double qty = Math.abs(pbi.getQty());
-            if (qty <= 0.0) {
-                continue;
-            }
-            if (pbi.getItemBatch() == null || pbi.getItemBatch().getId() == null) {
-                JsfUtil.addErrorMessage("Item " + (bi.getItem() != null ? bi.getItem().getName() : "?") + " has no batch - cannot receive.");
-                return false;
-            }
-            Long batchId = pbi.getItemBatch().getId();
-            requiredUnitsByBatch.merge(batchId, qty, Double::sum);
-            sampleItemByBatch.put(batchId, bi);
-        }
-
-        boolean allCovered = true;
-        for (Map.Entry<Long, Double> e : requiredUnitsByBatch.entrySet()) {
-            BillItem bi = sampleItemByBatch.get(e.getKey());
-            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
-            String jpql = "select s from Stock s where s.itemBatch=:bc and s.staff=:stf";
-            Map<String, Object> params = new HashMap<>();
-            params.put("bc", pbi.getItemBatch());
-            params.put("stf", porter);
-            Stock porterStock = stockFacade.findFirstByJpql(jpql, params, true);
-            double available = porterStock == null ? 0.0 : porterStock.getStock();
-            if (available + 0.0001 < e.getValue()) {
-                JsfUtil.addErrorMessage("Insufficient in-transit (porter) stock for " + bi.getItem().getName()
-                        + ": receiving " + e.getValue() + " but porter holds " + available
-                        + ". Nothing was received.");
-                allCovered = false;
+                pbi.setQty(qty);
+                bi.setQty(qty);
+                itemsToAccept.add(bi);
             }
         }
-        return allCovered;
-    }
 
-    public boolean isAlreadyReceived(Bill bill) {
-        if (bill == null || bill.getId() == null) {
-            return false;
+        if (itemsToAccept.isEmpty()) {
+            if (!forceComplete) {
+                JsfUtil.addErrorMessage("Nothing to receive.");
+                return;
+            }
+        } else {
+            String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
+            receivedBill.setDeptId(deptId);
+            receivedBill.setInsId(deptId);
+            receivedBill.setCreatedAt(new Date());
+            receivedBill.setCreater(sessionController.getLoggedUser());
+
+            // Detach billItems before create() - CascadeType.ALL would otherwise
+            // attempt to insert them here, before the per-item stock movements below.
+            List<BillItem> items = receivedBill.getBillItems();
+            receivedBill.setBillItems(new ArrayList<>());
+            billFacade.create(receivedBill);
+            receivedBill.setBillItems(items);
+
+            for (BillItem bi : itemsToAccept) {
+                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                double qty = Math.abs(pbi.getQty());
+
+                // Persist the BillItem (cascading its PharmaceuticalBillItem) before
+                // calling the stock movement methods - deductFromStock/addToStock
+                // create StockHistory rows referencing the PBI, and that relationship
+                // does not cascade from a still-transient BillItem.
+                bi.setBill(receivedBill);
+                bi.setCreatedAt(new Date());
+                bi.setCreater(sessionController.getLoggedUser());
+                billItemFacade.create(bi);
+
+                if (pharmacyBean.deductFromStock(pbi, qty, porter)) {
+                    Stock addedStock = pharmacyBean.addToStock(pbi, qty, sessionController.getDepartment());
+                    pbi.setStock(addedStock);
+                } else {
+                    JsfUtil.addErrorMessage("Insufficient in-transit (porter) stock for " + bi.getItem().getName() + " - received as zero.");
+                    pbi.setQty(0);
+                    bi.setQty(0.0);
+                }
+
+                billItemFacade.edit(bi);
+            }
         }
-        String jpql = "SELECT count(r) FROM Bill r WHERE r.backwardReferenceBill.id = :returnId "
-                + "AND r.billTypeAtomic = :acceptBta AND r.cancelled = false";
-        Map<String, Object> params = new HashMap<>();
-        params.put("returnId", bill.getId());
-        params.put("acceptBta", BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD);
-        return billFacade.findLongByJpql(jpql, params) > 0;
+
+        // Update remainingQty on the original return items using DB-derived accepted total (#21510)
+        Bill freshReturnedBill = billFacade.findWithoutCache(returnedBill.getId());
+        for (BillItem returnItem : freshReturnedBill.getBillItems()) {
+            BillItem freshReturnItem = billItemFacade.findWithoutCache(returnItem.getId());
+            freshReturnItem.setRemainingQty(getRemainingQuantityForReturnItem(freshReturnItem));
+            billItemFacade.editAndCommit(freshReturnItem);
+        }
+
+        // Auto-complete the return once everything has been accepted (#21510)
+        if (!returnedBill.isFullyIssued() && isFullyAccepted(returnedBill)) {
+            freshReturnedBill = billFacade.findWithoutCache(returnedBill.getId());
+            freshReturnedBill.setFullyIssued(true);
+            freshReturnedBill.setFullyIssuedAt(new Date());
+            freshReturnedBill.setFullyIssuedBy(sessionController.getLoggedUser());
+            billFacade.edit(freshReturnedBill);
+            returnedBill.setFullyIssued(true);
+            returnedBill.setFullyIssuedAt(freshReturnedBill.getFullyIssuedAt());
+            returnedBill.setFullyIssuedBy(freshReturnedBill.getFullyIssuedBy());
+        }
+
+        // Manual force-complete (#21510)
+        if (forceComplete) {
+            freshReturnedBill = billFacade.findWithoutCache(returnedBill.getId());
+            freshReturnedBill.setCompleted(true);
+            freshReturnedBill.setCompletedAt(new Date());
+            freshReturnedBill.setCompletedBy(sessionController.getLoggedUser());
+            billFacade.edit(freshReturnedBill);
+        }
+        completed = false;
+
+        if (itemsToAccept.isEmpty()) {
+            // Force-completed with nothing left to receive - no accept bill was created.
+            JsfUtil.addSuccessMessage("This return has been marked as completed.");
+        } else {
+            printPreview = true;
+        }
     }
 
     public String navigateBackToPendingList() {
@@ -328,5 +441,13 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
+    }
+
+    public boolean isCompleted() {
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        this.completed = completed;
     }
 }

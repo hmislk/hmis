@@ -16,7 +16,12 @@
                             <h:outputText styleClass="fa-solid fa-truck-ramp-box"/>
                             <p:outputLabel value="Receive Returned Medicines - Bill #{pharmacyReturnFromWardReceiveController.returnedBill.deptId}" class="mx-4"/>
                         </div>
-                        <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <p:selectBooleanCheckbox
+                                itemLabel="Complete the Return"
+                                value="#{pharmacyReturnFromWardReceiveController.completed}"
+                                disabled="#{!webUserController.hasPrivilege('PharmacyReturnFromWardForceComplete')}">
+                            </p:selectBooleanCheckbox>
                             <p:commandButton
                                 id="btnBackToPendingReturns"
                                 value="Back to List"
@@ -57,7 +62,11 @@
                     rowKey="#{i.id}"
                     value="#{pharmacyReturnFromWardReceiveController.receivedBill.billItems}"
                     var="i"
+                    editable="true"
                     class="w-100">
+
+                    <p:ajax event="rowEdit" listener="#{pharmacyReturnFromWardReceiveController.onEditing}" update="returnReceiveItemTable"/>
+                    <p:ajax event="rowEditCancel" listener="#{pharmacyReturnFromWardReceiveController.onEditing}" update="returnReceiveItemTable"/>
 
                     <p:column headerText="Item">
                         <h:outputText value="#{i.item.name}"/>
@@ -73,10 +82,27 @@
                         </h:outputText>
                     </p:column>
 
-                    <p:column headerText="Receiving Quantity">
-                        <h:outputText value="#{i.pharmaceuticalBillItem.qty}">
+                    <p:column headerText="Remaining to Accept">
+                        <h:outputText value="#{pharmacyReturnFromWardReceiveController.getRemainingQuantityForReturnItem(i.referanceBillItem)}">
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Receiving Quantity">
+                        <p:cellEditor>
+                            <f:facet name="output">
+                                <h:outputText value="#{i.pharmaceuticalBillItem.qty}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
+                            <f:facet name="input">
+                                <p:inputText autocomplete="off" value="#{i.pharmaceuticalBillItem.qty}" style="width:96%"/>
+                            </f:facet>
+                        </p:cellEditor>
+                    </p:column>
+
+                    <p:column style="width:10px!important; text-align: right; padding: 6px;">
+                        <p:rowEditor/>
                     </p:column>
 
                 </p:dataTable>
