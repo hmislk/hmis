@@ -317,6 +317,13 @@
             <type>jar</type>
         </dependency>
 
+        <!-- OmniFaces — 3.x targets JSF 2.3 (javax.faces); used for o:socket reliable push -->
+        <dependency>
+            <groupId>org.omnifaces</groupId>
+            <artifactId>omnifaces</artifactId>
+            <version>3.14.16</version>
+        </dependency>
+
         <!-- JFreeChart -->
         <dependency>
             <groupId>org.jfree</groupId>

@@ -240,16 +240,26 @@
                                             <div class="col-2">
                                                 <p:panel header="Pharmaceuticals &amp; Consumables">
                                                     <div class="d-grid gap-3">
-                                                        <p:commandButton 
-                                                            value="Pharmacy BHT Request" 
+                                                        <p:commandButton
+                                                            value="Pharmacy BHT Request"
                                                             ajax="false"
-                                                            action="#{admissionController.navigateToPharmacyBhtRequest}" 
+                                                            action="#{admissionController.navigateToPharmacyBhtRequest}"
                                                             icon="fa fa-prescription-bottle-alt"
                                                             class="w-100">
                                                         </p:commandButton>
 
-                                                        <p:commandButton 
-                                                            value="Direct Issue to BHTs" 
+                                                        <p:commandButton
+                                                            id="btnReceiveMedicinesFromPharmacy"
+                                                            value="Receive Medicines from Pharmacy"
+                                                            title="Receive Medicines from Pharmacy"
+                                                            ajax="false"
+                                                            action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingList}"
+                                                            icon="fa fa-truck-medical"
+                                                            class="w-100">
+                                                        </p:commandButton>
+
+                                                        <p:commandButton
+                                                            value="Direct Issue to BHTs"
                                                             action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"  
                                                             actionListener="#{pharmacySaleBhtController.resetAll()}"
                                                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"

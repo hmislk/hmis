@@ -123,6 +123,7 @@ public enum Privileges {
     InpatientClinicalAssessment("Inpatient Clinical Assessment"),
     InpatientClinicalDischarge("Inpatient Clinical Discharge"),
     InwardDocumentUpload("Inward Document Upload"),
+    InpatientLetter("Inpatient Letter"),
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Nurse">
@@ -331,6 +332,7 @@ public enum Privileges {
     StoreReports("Store Reports"),
     StoreSummery("Store Summary"),
     StoreAdministration("Store Administration"),
+    PharmacyItemNameEdit("Pharmacy Item Name Edit"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Channel">
@@ -503,9 +505,15 @@ public enum Privileges {
     PharmacyDisbursementRecieve("Pharmacy Disbursement Receive"),
     PharmacyDisbursementReports("Pharmacy Disbursement Reports"),
     PharmacyDisbursementRequestApproval("Pharmacy Disbursement Request Approval"),
+    PharmacyIssueForRequestSave("Pharmacy Issue For Request Save"),
+    PharmacyIssueForRequestFinalize("Pharmacy Issue For Request Finalize"),
+    PharmacyIssueForRequestApprove("Pharmacy Issue For Request Approve"),
+    PharmacyReceiveFinalize("Pharmacy Receive Finalize"),
+    PharmacyReceiveApprove("Pharmacy Receive Approve"),
     // Pharmacy Inpatient medication management
     InpatientMedicationManagementMenue("Inpatient Medication Management Menu"),
     PharmacyDirectIssueToBht("Pharmacy Direct Issue to BHT"),
+    PharmacyDischargeMedicineIssue("Pharmacy Discharge Medicine Issue"),
     PharmacyDirectIssueToTheaterCases("Pharmacy Direct Issue to Theater Cases"),
     PharmacyBhtIssueRequest("Pharmacy BHT Issue Request"),
     PharmacySearchInpatientDirectIssuesbyBill("Pharmacy Search Inpatient Direct Issues by Bill"),
@@ -542,6 +550,8 @@ public enum Privileges {
     // Pharmacy Disposal
     PharmacyDisposalMenue("Pharmacy Disposal Menu"),
     PharmacyDisposalIssue("Pharmacy Disposal Issue"),
+    PharmacyDisposalIssueFinalize("Pharmacy Disposal Issue Finalize"),
+    PharmacyDisposalIssueApprove("Pharmacy Disposal Issue Approve"),
     PharmacyDisposalSearchIssueBill("Pharmacy Disposal Search Issue Bill"),
     PharmacyDisposalSearchIssueBillItems("Pharmacy Disposal Search Issue Bill Items"),
     PharmacyDisposalSearchIssueReturnBill("Pharmacy Disposal Search Issue Return Bill"),
@@ -898,6 +908,7 @@ public enum Privileges {
             // Inpatient medication management
             case InpatientMedicationManagementMenue:
             case PharmacyDirectIssueToBht:
+            case PharmacyDischargeMedicineIssue:
             case PharmacyDirectIssueToTheaterCases:
             case PharmacyBhtIssueRequest:
             case PharmacySearchInpatientDirectIssuesbyBill:
@@ -935,6 +946,11 @@ public enum Privileges {
             case PharmacyDisbursementDirectIssue:
             case PharmacyDisbursementRecieve:
             case PharmacyDisbursementReports:
+            case PharmacyIssueForRequestSave:
+            case PharmacyIssueForRequestFinalize:
+            case PharmacyIssueForRequestApprove:
+            case PharmacyReceiveFinalize:
+            case PharmacyReceiveApprove:
 
             // Retail Transactions
             case PharmacyRetailTransaction:
@@ -965,6 +981,8 @@ public enum Privileges {
 
             // Disposal
             case PharmacyDisposalIssue:
+            case PharmacyDisposalIssueFinalize:
+            case PharmacyDisposalIssueApprove:
             case PharmacyDisposalSearchIssueBill:
             case PharmacyDisposalSearchIssueBillItems:
             case PharmacyDisposalSearchIssueReturnBill:
@@ -1002,7 +1020,8 @@ public enum Privileges {
             case PharmacyGrnFinalize:
             case PharmacyGrnApprove:
             case PrintOriginalPoBillFromReprint:
-            case PrintOriginalGrnBillFromReprint:    
+            case PrintOriginalGrnBillFromReprint:
+            case PharmacyItemNameEdit:
 
                 return "Pharmacy";
 
@@ -1068,6 +1087,7 @@ public enum Privileges {
             case InpatientClinicalAssessment:
             case InpatientClinicalDischarge:
             case InwardDocumentUpload:
+            case InpatientLetter:
             case InwardFormTemplateAdmin:
             case InwardFormFill:
                 return "Inward";

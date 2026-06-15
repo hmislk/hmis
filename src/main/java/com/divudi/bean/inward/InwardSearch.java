@@ -453,6 +453,10 @@ public class InwardSearch implements Serializable {
         PatientEncounter pe = inwardPaymentController.getCurrent().getPatientEncounter();
         inwardPaymentController.makeNull();
         inwardPaymentController.getCurrent().setPatientEncounter(pe);
+        inwardPaymentController.setPatient(pe.getPatient());
+        
+        inwardPaymentController.paymentListener();
+        
         if (sessionController.getPaymentManagementAfterShiftStart()) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {

@@ -234,16 +234,17 @@
                             <h:outputLabel value="#{c.inwardChargeType.name}"/>
                         </p:column>
 
-                        <p:column headerText="Total" sortBy="#{c.total}">
-                            <h:outputLabel value="#{c.total}">
+                        <p:column headerText="Total" sortBy="#{c.total}" class="text-end" width="14em;">
+                            <h:outputLabel value="#{c.total}" class="w-100 text-end">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
 
-                        <p:column headerText="Discount">
+                        <p:column headerText="Discount" class="text-end" width="14em;">
                             <p:inputText 
                                 autocomplete="off" 
                                 id="catDiscount" 
+                                class="w-100 text-end"
                                 value="#{c.discount}"
                                 disabled="#{c.inwardChargeType eq 'RoomCharges'
                                             or c.inwardChargeType eq 'MOCharges'
@@ -266,16 +267,17 @@
                             </p:inputText>
                         </p:column>
 
-                        <p:column headerText="NetTotal">
-                            <h:outputLabel id="catNetTotal" value="#{c.netTotal}">
+                        <p:column headerText="NetTotal" class="text-end" width="14em;">
+                            <h:outputLabel id="catNetTotal" value="#{c.netTotal}" class="w-100 text-end">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
 
-                        <p:column>
+                        <p:column class="text-end" width="14em;" headerText="Adjusted Total">
                             <p:inputText 
                                 autocomplete="off" 
                                 id="catAdj" 
+                                class="w-100 text-end"
                                 value="#{c.adjustedTotal}"
                                 disabled="#{c.inwardChargeType eq 'RoomCharges' 
                                             or c.inwardChargeType eq 'MOCharges'

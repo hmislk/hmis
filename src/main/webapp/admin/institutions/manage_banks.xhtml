@@ -36,7 +36,8 @@
                             <p:panel id="gpDetail" class="w-100" header="Details of the Bank">
                                 <h:panelGrid id="gpDetailText" columns="2" class="w-100">
                                     <h:outputText value="Name"/>
-                                    <p:inputText autocomplete="off" value="#{bankController.current.name}" class="w-100 p-1"/>
+                                    <p:inputText id="txtName" autocomplete="off" value="#{bankController.current.name}" class="w-100 p-1"
+                                                 required="true" requiredMessage="Bank name is required."/>
                                 </h:panelGrid>
                                 <p:commandButton id="btnSave" value="Save"
                                                  icon="fas fa-save"

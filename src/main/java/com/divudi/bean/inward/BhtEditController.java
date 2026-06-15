@@ -501,14 +501,17 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
                 "Inward Admission - Show Claimable Field", true);
         if (showClaimable) {
             PaymentMethod pm = getCurrent().getPaymentMethod();
+            boolean autoMarkCredit = configOptionApplicationController.getBooleanValueByKey(
+                    "Inward Admission - Auto Mark Claimable for Credit Admissions", false);
+            if (autoMarkCredit && pm == PaymentMethod.Credit) {
+                getCurrent().setClaimable(true);
+            }
             boolean enforceForCredit = configOptionApplicationController.getBooleanValueByKey(
                     "Inward Admission - Enforce Claimable for Credit", false);
             if (enforceForCredit && pm == PaymentMethod.Credit && !getCurrent().isClaimable()) {
                 JsfUtil.addErrorMessage("Credit admissions must be marked as Claimable");
                 return;
             }
-            boolean autoMarkCredit = configOptionApplicationController.getBooleanValueByKey(
-                    "Inward Admission - Auto Mark Claimable for Credit Admissions", false);
             if (!enforceForCredit && !autoMarkCredit) {
                 String claimableRequiredFor = configOptionApplicationController.getShortTextValueByKey(
                         "Inward Admission - Claimable Required For", "Credit");
@@ -1093,7 +1096,14 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     @Override
     public void listnerForPaymentMethodChange() {
-        // ToDo: Add Logic
+        if (current == null) {
+            return;
+        }
+        boolean autoMarkCredit = configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Auto Mark Claimable for Credit Admissions", false);
+        if (autoMarkCredit && current.getPaymentMethod() == PaymentMethod.Credit) {
+            current.setClaimable(true);
+        }
     }
 
     public PaymentScheme getPaymentScheme() {

@@ -874,6 +874,13 @@ public class InwardReportController implements Serializable {
         jpql.append(" ORDER BY b.staff.speciality.name, b.staff.person.name ");
 
         List<SurgeryCountDoctorWiseDTO> rawList = (List<SurgeryCountDoctorWiseDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        
+        // Post-process to set the doctor name with title
+        for (SurgeryCountDoctorWiseDTO dto : rawList) {
+            if (dto.getStaff() != null && dto.getStaff().getPerson() != null) {
+                dto.setDoctorName(dto.getStaff().getPerson().getNameWithTitle());
+            }
+        }
 
         // Group by specialty and doctor, count surgeries month-wise
         Map<String, Map<Long, SurgeryCountDoctorWiseDTO>> specialtyDoctorMap = new LinkedHashMap<>();

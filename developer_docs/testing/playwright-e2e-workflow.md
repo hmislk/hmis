@@ -41,6 +41,13 @@ The HMIS login + landing flow has a fixed shape:
    *last* department, so a fresh login often pre-fills it — still click through
    the **Select Department** screen to reach an inner page.
 
+**Do not navigate directly to an inner page URL before selecting a department.**
+`sessionController.department` is null until department selection completes.
+The template wraps `<ez:menu />` in `rendered="#{sessionController.department ne null}"`,
+so the entire menu — including the notification bell, websocket, and remoteCommand —
+is absent from the page. Any Playwright check for these components will fail silently.
+Always go through the department-selection screen first.
+
 **A redeploy invalidates the session.** Every time the WAR is redeployed you are
 logged out and must log in again. Plan test runs so you are not mid-flow when a
 deploy lands.
@@ -138,6 +145,96 @@ Accessibility work done this way benefits real assistive-technology users too.
 
 ---
 
+## 8. Publishing screenshot evidence
+
+Use screenshots as durable evidence only after checking that they do not expose
+patient details, credentials, or other sensitive data. Prefer capturing
+configuration screens, reports with non-sensitive rows, or cropped states that
+show the fixed control without private information.
+
+1. Capture verification screenshots with `browser_take_screenshot` into the
+   project `tmp/` folder.
+2. For user-facing documentation, copy final screenshots into the sibling wiki
+   repo under `../hmis.wiki/images/`.
+3. Reference wiki images in markdown as `images/example_name.png`.
+4. Commit and push the wiki immediately from `../hmis.wiki`.
+5. To embed the same image in a GitHub issue or PR comment, use the raw wiki
+   URL:
+
+```text
+https://raw.githubusercontent.com/wiki/hmislk/hmis/images/example_name.png
+```
+
+Example issue comment:
+
+```powershell
+gh issue comment 21364 --repo hmislk/hmis --body "Verified with Playwright.
+
+![Verification screenshot](https://raw.githubusercontent.com/wiki/hmislk/hmis/images/example_name.png)"
+```
+
+Remove temporary screenshots from the main repository after copying the durable
+ones into the wiki so they are not accidentally committed with application code.
+
+---
+
+## 9. Interacting with non-accessible canvas widgets (e.g. `p:timeline` / vis-timeline)
+
+`p:timeline` renders into an HTML canvas-like DOM (vis-timeline `div`s with no
+useful accessibility tree), so `browser_click`/`browser_snapshot` `ref=`
+targeting won't find individual events. Use `browser_run_code_unsafe` instead:
+
+```js
+async (page) => {
+  const el = await page.$('.vis-item.mar-given'); // or .vis-item.timeline-active
+  const box = await el.boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await page.waitForTimeout(1500);
+  const dlg = await page.$('#formTimeline\\:panelAdministrationDetail');
+  return { style: await dlg.getAttribute('style'), text: await dlg.innerText() };
+}
+```
+
+To enumerate all items first (positions shift after dialogs open/close and
+change page layout):
+
+```js
+await page.$$eval('.vis-item', els =>
+  els.map(e => ({ cls: e.className, text: e.innerText, box: e.getBoundingClientRect() })));
+```
+
+**Closing a `p:dialog` after inspection**: pressing `Escape` does **not**
+reliably close a PrimeFaces modal `p:dialog` in a scripted session. Click the
+titlebar close button explicitly:
+
+```js
+await page.click('#formTimeline\\:panelAdministrationDetail .ui-dialog-titlebar-close');
+```
+
+If you click a timeline item while a previous dialog's overlay is still up, the
+click lands on the dialog/overlay (not the timeline) and silently produces no
+AJAX request — always close the prior dialog first and re-query item positions.
+
+## 10. `browser_click` / `browser_type` parameter name
+
+These tools take `target` (an element reference like `e123` from the latest
+`browser_snapshot`, or a selector) plus a human-readable `element` description —
+**not** `ref`. If a call fails with "expected string, received undefined at
+target", the tool schema may not be loaded yet; reload it via
+`ToolSearch` (`query: "browser_type playwright"`) and retry with `target`.
+
+## 11. Session is lost on redeploy and on stale snapshots
+
+- **A redeploy invalidates the session** (already noted in §1) — re-login and
+  re-select department before continuing.
+- If a click navigates somewhere unexpected (e.g. `about:blank` or a
+  `TypeError: Cannot read properties of undefined (reading 'url')`), the page
+  state and your last `browser_snapshot` have diverged. Re-navigate to the app
+  root (`/rh`), log in again, and re-take a snapshot before continuing — don't
+  keep issuing actions against stale `ref=` values.
+
+---
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
@@ -148,3 +245,7 @@ Accessibility work done this way benefits real assistive-technology users too.
 - [ ] Filled required fields before non-AJAX actions.
 - [ ] Verified stock + bill-item integrity in the DB; cleaned up temp files.
 - [ ] Filed/fixed any accessibility gap that blocked the test.
+- [ ] Published only non-sensitive screenshot evidence and removed temporary files.
+- [ ] For canvas-based widgets (vis-timeline etc.), used `page.$`/bounding-box
+      clicks and closed dialogs via `.ui-dialog-titlebar-close`, not `Escape`.
+- [ ] Re-logged in and re-selected department after any redeploy before continuing.
