@@ -104,17 +104,69 @@ key/blur events** PrimeFaces relies on to commit a value. Symptoms: an
 autocomplete shows text but no selection is made; a quantity field looks filled
 but arrives as empty/`0` on the server.
 
-**Use real key events instead:**
+### ⚠️ `p:inputText` with `p:ajax event="blur"` — cannot be automated
 
-- **Autocomplete:** type the query slowly with `pressSequentially` (or
-  `browser_type` with `slowly: true`) → wait ~1.5 s for the suggestion panel →
-  `ArrowDown` → `Enter` to select the highlighted suggestion. Focus then
-  auto-advances (e.g. to the quantity field).
-- **Quantity / numeric fields:** type slowly, then **wait ~1 s** so the
-  keyup-AJAX commits the bound value **before** you click the Add/Save button.
-  Clicking immediately races the AJAX and submits a stale/empty value.
-- **Add a row reliably:** type item (select via Enter) → type qty slowly →
-  wait → click the Add button by its stable id (e.g. `#…:btnAddItem`).
+**None of the following work** to commit a `p:inputText` value server-side via
+`p:ajax event="blur"`: jQuery `.trigger('blur')`, `.triggerHandler('blur')`,
+native `el.onblur()`, `dispatchEvent(new FocusEvent('blur'))`, or even
+Playwright's real `Tab` key press. JSF inspects the event source and rejects
+synthetic/programmatic events.
+
+The **only known fix** is adding `async="true"` to the `<p:ajax>` tag:
+```xml
+<p:ajax event="blur" async="true" process="@this" update="..." />
+```
+This is a server-side change requiring rebuild. If a page has `p:inputText`
+fields with `p:ajax event="blur"` that must be filled, either add `async="true"`
+first, or have a human enter those values manually.
+
+### `p:autoComplete` — type slowly, Enter to select ✅
+
+Two proven patterns, depending on how specific your query is:
+
+**Pattern 1 — specific query, just press Enter (1 snapshot):**
+Use when your query narrows to the desired item as the first suggestion:
+```text
+browser_click on autocomplete textbox
+browser_press_key Control+a
+browser_press_key Backspace
+browser_type "Paracetamol 500" slowly:true     ← character by character
+browser_wait_for text "Paracetamol 500Mg Tablet"
+browser_press_key Enter                         ← selects first match, no snapshot needed
+```
+
+**Pattern 2 — generic query, click from snapshot (2 snapshots):**
+Use when the desired item is not the first suggestion and you need to pick:
+```text
+browser_click → Ctrl+A → Backspace → browser_type slowly →
+browser_wait_for text → browser_snapshot →
+browser_click on suggestion ref
+```
+
+**Never use `browser_fill_form` or `fill()` for autocomplete** — they set
+the DOM value but don't fire the keyup events that PrimeFaces needs to
+query the server for suggestions.
+4. browser_snapshot — find the suggestion ref in the listbox/table
+5. browser_click the suggestion item
+Autocomplete items are in a `.ui-autocomplete-panel` that contains a `<table>`
+(not `<ul>/<li>`). Click the `<tr>` row directly. Do NOT set the hidden input
+value — the `itemSelect` AJAX must fire for the server to see the selection.
+
+### `p:selectOneMenu` — click-option pattern ✅
+
+PrimeFaces dropdowns are not native `<select>` elements. `browser_select_option`
+fails. Instead: click the combobox → snapshot → click the option from the
+dropdown panel.
+
+### `p:datePicker` / `p:calendar` — keyboard or click ✅
+
+Type the date string directly or click to open the calendar popup and select.
+
+### Always add `widgetVar`
+
+Every `p:inputText`, `p:autoComplete`, `p:calendar`, and `p:selectOneMenu`
+that a Playwright test needs to interact with MUST carry a `widgetVar`
+attribute. It costs nothing and makes elements identifiable across sessions.
 
 ---
 
@@ -273,17 +325,62 @@ target", the tool schema may not be loaded yet; reload it via
 
 ---
 
+## 12. JSF form validation blocks navigation buttons
+
+On pages where the *same* `h:form` contains both a data-entry section (with
+required fields) and navigation buttons (e.g. "List GRNs"), clicking a
+navigation button can unexpectedly trigger form validation. If a required
+`p:selectOneMenu` (like Payment Method) is empty, JSF rejects the entire
+form submission and the navigation action never fires — the user sees a silent
+"Please select a payment method" error instead of the expected dialog/page.
+
+**Workaround:** Navigate directly to the target page URL instead of clicking
+the button, or fill all required fields first. Better: ensure the navigation
+button uses `process="@this"` or is in a separate form so it doesn't submit
+the data-entry fields.
+
+## 13. PrimeFaces `p:selectOneMenu` is not a native `<select>`
+
+`browser_select_option` fails with "Element is not a <select> element" on
+PrimeFaces dropdowns. Use the click-option pattern instead:
+1. Click the dropdown label/combobox to expand the panel
+2. `browser_snapshot` to find the option ref in the `listbox`
+3. Click the option by its `ref=` from the snapshot
+4. The value commits on selection; no extra "Select" click is needed
+
+## 14. Non-AJAX search buttons can timeout on click
+
+When a JSF search button triggers a full page reload (non-AJAX, `ajax="false"`),
+`browser_click` may time out with "waiting for scheduled navigations to finish"
+if the response is slow. The click usually succeeds — use `browser_snapshot`
+after the timeout to check the new page state rather than assuming the action
+failed. If stuck, `browser_navigate` directly to the page URL to recover.
+
+## 15. Always generate test data — never fall back to code-only verification
+
+If the database has no suitable records, **create them** through the UI.
+For returns, create a purchase first (Direct Purchase is simplest), then
+return against it. For issues, create a purchase → issue → return. The
+For qty fields with `async="true"` blur handlers, use slow `browser_type` + Tab key to commit — do not rely on jQuery-blur (see §3).
+
+Never close a QA session with "code looks correct" as the only evidence.
+If you cannot generate data through the app, stop and discuss alternatives
+with the developer before falling back.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
 - [ ] Logged in, selected a department, reached an inner page (menu visible).
+- [ ] Checked for stale department pre-selection — the app remembers the last department; always re-select explicitly.
 - [ ] Clicked **Search** on every date-filtered list before expecting rows.
-- [ ] Used real key events (slow type + wait) for autocompletes and qty fields.
+- [ ] Used real key events (slow type + wait) for autocompletes; for qty fields with blur AJAX, used slow type + Tab (not jQuery-blur — see §3).
 - [ ] Handled `confirm()` dialogs; tested double-click on settle buttons.
 - [ ] Filled required fields before non-AJAX actions.
+- [ ] Checked that navigation buttons are not blocked by JSF validation on required fields in the same form.
 - [ ] Verified stock + bill-item integrity in the DB; cleaned up temp files.
 - [ ] Filed/fixed any accessibility gap that blocked the test.
 - [ ] Published only non-sensitive screenshot evidence and removed temporary files.
 - [ ] For canvas-based widgets (vis-timeline etc.), used `page.$`/bounding-box
       clicks and closed dialogs via `.ui-dialog-titlebar-close`, not `Escape`.
 - [ ] Re-logged in and re-selected department after any redeploy before continuing.
+- [ ] If test data is unavailable, **generated it through the app** (create purchase → return → etc.) rather than falling back to code-only checks.
