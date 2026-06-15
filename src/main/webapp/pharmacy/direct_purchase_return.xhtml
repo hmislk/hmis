@@ -89,7 +89,7 @@
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}"
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
-                                            <f:ajax event="blur" render="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" listener="#{directPurchaseReturnController.onReturnRateChange(ph)}" />
+                                            <p:ajax event="blur" async="true" process="@this" update="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" listener="#{directPurchaseReturnController.onReturnRateChange(ph)}" />
                                         </p:inputText>
                                         <h:outputText value="&nbsp;per Pack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                     </h:panelGroup>
@@ -125,6 +125,7 @@
                                             listener="#{directPurchaseReturnController.onReturningTotalQtyChange(ph)}" />
                                         <p:ajax
                                             event="blur"
+                                            async="true"
                                             process="@this"
                                             update="@this" />
                                     </p:inputText>
@@ -152,8 +153,9 @@
                                             update="txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
                                             listener="#{directPurchaseReturnController.onReturningQtyChange(ph)}" 
                                             />
-                                        <p:ajax 
-                                            event="blur" 
+                                        <p:ajax
+                                            event="blur"
+                                            async="true"
                                             process="@this"
                                             update="@this" />
                                     </p:inputText>
@@ -171,8 +173,9 @@
                                         <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
                                         <f:validator validatorId="nonNegativeNumberValidator" />
                                         <p:ajax
-                                            event="blur" 
-                                            process="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
+                                            event="blur"
+                                            async="true"
+                                            process="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}"
                                             update="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}"
                                             listener="#{directPurchaseReturnController.onReturningFreeQtyChange(ph)}" />
                                     </p:inputText>

@@ -165,6 +165,7 @@
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.quantity}">
                                             <p:ajax
                                                 event="blur"
+                                                async="true"
                                                 process="@this"
                                                 listener="#{pharmacyDirectPurchaseController.onQuantityChange}"
                                                 update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
@@ -188,6 +189,7 @@
                                             <!--<f:convertNumber integerOnly="#{!pharmacyDirectPurchaseController.currentBillItem.item.allowFractions}" />-->
                                             <p:ajax
                                                 event="blur"
+                                                async="true"
                                                 process="@this"
                                                 update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue txtRetailValue txtCostValue @this
                                                 :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} msg"
@@ -207,8 +209,9 @@
                                             onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
                                             onkeyup="if (event.keyCode === 13) { event.preventDefault(); var addBtnId = '#{p:resolveFirstComponentWithId('btnAdd',view).clientId}'; this.blur(); setTimeout(function () { document.getElementById(addBtnId).click(); }, 350); }"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
-                                            <p:ajax 
+                                            <p:ajax
                                                 event="blur"
+                                                async="true"
                                                 process="@this"
                                                 listener="#{pharmacyDirectPurchaseController.onLineGrossRateChange}"
                                                 update="txtPurchaseValue txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
@@ -235,8 +238,9 @@
                                             onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
                                             onkeyup="if (event.keyCode === 13) { event.preventDefault(); var addBtnId = '#{p:resolveFirstComponentWithId('btnAdd',view).clientId}'; this.blur(); setTimeout(function () { document.getElementById(addBtnId).click(); }, 350); }"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.lineDiscountRate}">
-                                            <p:ajax 
+                                            <p:ajax
                                                 event="blur"
+                                                async="true"
                                                 process="@this"
                                                 listener="#{pharmacyDirectPurchaseController.onLineDiscountRateChange}"
                                                 update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
@@ -262,8 +266,9 @@
                                             onkeyup="if (event.keyCode === 13) { event.preventDefault(); var addBtnId = '#{p:resolveFirstComponentWithId('btnAdd',view).clientId}'; this.blur(); setTimeout(function () { document.getElementById(addBtnId).click(); }, 350); }"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRate}">
                                             <f:convertNumber pattern="#,##0.00" />
-                                            <p:ajax 
+                                            <p:ajax
                                                 event="blur"
+                                                async="true"
                                                 process="@this"
                                                 listener="#{pharmacyDirectPurchaseController.onRetailSaleRateChange}"
                                                 update="txtRetailValue txtPackOrUnit txtUnitsPerPack
@@ -885,9 +890,10 @@
                                                     update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('totalBillValue', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}" 
                                                     event="keyup"
                                                     listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
-                                                <p:ajax 
-                                                    process="tx" 
-                                                    update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('totalBillValue', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}" 
+                                                <p:ajax
+                                                    process="tx"
+                                                    async="true"
+                                                    update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('totalBillValue', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
                                                     event="blur"
                                                     listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
                                                 <f:convertNumber pattern="#,##0.00" />
@@ -904,9 +910,10 @@
                                                     update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('totalBillValue', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}" 
                                                     event="keyup"
                                                     listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
-                                                <p:ajax 
-                                                    process="dis" 
-                                                    update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('totalBillValue', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}" 
+                                                <p:ajax
+                                                    process="dis"
+                                                    async="true"
+                                                    update=":#{p:resolveFirstComponentWithId('lblNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('totalBillValue', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('billExpensesTotal', view).clientId} :#{p:resolveFirstComponentWithId('expensesConsidered', view).clientId} :#{p:resolveFirstComponentWithId('expensesNotConsidered', view).clientId} :#{p:resolveFirstComponentWithId('saleValue', view).clientId} :#{p:resolveFirstComponentWithId('itemList', view).clientId}"
                                                     event="blur"
                                                     listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
                                                 <f:convertNumber pattern="#,##0.00" />

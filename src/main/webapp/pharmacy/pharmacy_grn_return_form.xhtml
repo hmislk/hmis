@@ -191,7 +191,7 @@
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}"
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
-                                            <p:ajax event="blur" process="@this" update="@this txtLineReturnValue returnTotal" listener="#{grnReturnWorkflowController.onReturnRateChange(ph)}" />
+                                            <p:ajax event="blur" async="true" process="@this" update="@this txtLineReturnValue returnTotal" listener="#{grnReturnWorkflowController.onReturnRateChange(ph)}" />
                                         </p:inputText>
                                         <h:outputText value="&nbsp;per Pack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                     </h:panelGroup>
@@ -209,10 +209,11 @@
                                         onfocus="this.select()"
                                         value="#{ph.qty}">
                                         <f:convertNumber pattern="#,##0.00##" integerOnly="#{!ph.item.allowFractions}" ></f:convertNumber>
-                                        <p:ajax 
-                                            event="blur" 
+                                        <p:ajax
+                                            event="blur"
+                                            async="true"
                                             process="@this"
-                                            update="txtLineReturnValue returnTotal messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
+                                            update="txtLineReturnValue returnTotal messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}"
                                             listener="#{grnReturnWorkflowController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
@@ -230,11 +231,12 @@
                                         class="w-100 text-end"
                                         value="#{ph.qty}">
                                         <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
-                                        <p:ajax 
+                                        <p:ajax
                                             process="@this"
-                                            event="blur" 
-                                            update="txtLineReturnValue returnTotal messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
-                                            listener="#{grnReturnWorkflowController.onReturningQtyChange(ph)}" 
+                                            event="blur"
+                                            async="true"
+                                            update="txtLineReturnValue returnTotal messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}"
+                                            listener="#{grnReturnWorkflowController.onReturningQtyChange(ph)}"
                                             />
                                     </p:inputText>
                                     <p:keyFilter for="txtReturningQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
@@ -251,8 +253,9 @@
                                         autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
                                         <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
                                         <p:ajax
-                                            event="blur" 
-                                            process="@this" 
+                                            event="blur"
+                                            async="true"
+                                            process="@this"
                                             update="txtLineReturnValue returnTotal messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}"
                                             listener="#{grnReturnWorkflowController.onReturningFreeQtyChange(ph)}" />
                                     </p:inputText>

@@ -271,6 +271,7 @@
                                                 <p:ajax
                                                     id="ajexReturnQty"
                                                     event="blur"
+                                                    async="true"
                                                     update="txtReturnQty lblReturnValue :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('messages',view).clientId}"
                                                     listener="#{issueReturnController.calculateBillItemTotals(rbi)}"/>
                                             </p:inputText>
