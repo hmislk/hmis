@@ -50,8 +50,8 @@ Before writing code, ask the user (via `AskUserQuestion`):
   code) — pick something that exists in the local DB and is relevant to the
   feature
 - **Environment**: local Payara (default) unless the issue specifically
-  requires testing against a remote env, in which case confirm which one —
-  credentials come from `C:\Credentials\credentials.txt`, never inlined
+  requires testing against a remote env, in which case confirm which one.
+  Credentials live outside the repo in `C:\Credentials\` — never inlined
 
 Don't guess these — wrong department/record selection wastes the whole
 Playwright pass later.
@@ -85,8 +85,8 @@ errors before moving on.
 Run the `playwright-e2e` skill workflow:
 - Login, select the department from step 4
 - Exercise the feature using the records chosen in step 4
-- Verify the result in the local DB (credentials: `local_mysql_credentials.md`
-  memory — user `buddhika`)
+- Verify the result in the local DB (credentials: see the
+  `local_mysql_credentials.md` memory)
 
 ## 8. Iterate
 
@@ -108,9 +108,11 @@ committing.
 
 ## 11. Commit and push
 
-Run `commit-code` with `$0` as the issue number, then `git push`. Immediately
-restore `persistence.xml` to local JNDI per `verify-persistence`'s post-push
-step (unstaged).
+Stage the intended source/doc files (`git add <files>`) — do **not** stage
+`persistence.xml`, which must stay on local JNDI. Then run `commit-code` with
+`$0` as the issue number, then `git push`. Immediately restore
+`persistence.xml` to local JNDI per `verify-persistence`'s post-push step
+(unstaged).
 
 ## 12. Create the PR
 
