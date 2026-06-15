@@ -224,11 +224,22 @@ public class PrescriptionToItemService {
             return null;
         }
 
-        // For AMP with strength in issue unit case:
-        // Total quantity = dose × doses per day × number of days
-        Double totalQuantity = dose * dosesPerDay * durationInDays;
+        // Number of administrations over the course of treatment
+        Double administrations = dosesPerDay * durationInDays;
 
-        return totalQuantity;
+        // If the AMP's strength (e.g. 500 mg per capsule) is known and is in the
+        // same unit as the prescribed dose (e.g. 500 mg), convert the dose into
+        // a number of issue units (capsules) per administration: dose / strength.
+        // Otherwise assume the prescribed dose already refers to one issue unit
+        // (e.g. "1 tablet" tds) and just count administrations.
+        Double strength = amp.getStrengthOfAnIssueUnit();
+        MeasurementUnit strengthUnit = amp.getStrengthUnit();
+        if (strength != null && strength > 0 && doseUnit != null && strengthUnit != null
+                && doseUnit.getName() != null && doseUnit.getName().equalsIgnoreCase(strengthUnit.getName())) {
+            return (dose / strength) * administrations;
+        }
+
+        return administrations;
     }
 
     /**
@@ -300,10 +311,30 @@ public class PrescriptionToItemService {
         try {
             // This is a simplified implementation
             // In practice, this would involve complex matching based on:
-            // - Strength requirements
             // - Dosage form preferences
             // - Availability
-            String jpql = "SELECT i FROM Item i WHERE i.name LIKE :pattern AND i.retired = false";
+            String jpql = "SELECT i FROM Item i WHERE i.name LIKE :pattern AND i.retired = false AND TYPE(i) IN (Vmp, Amp)";
+
+            // VMP/AMP names embed the strength (e.g. "Amoxicillin 500.0 mg
+            // capsules"), but the VTM itself does not. When the prescription
+            // carries a dose, narrow the match to items whose name also
+            // mentions that strength so a "500mg" prescription of the VTM
+            // "Amoxicillin" resolves to the 500mg VMP/AMP rather than the
+            // first name match (which could be the 250mg item).
+            Double dose = prescription.getDose();
+            if (dose != null) {
+                String doseStr = (dose == Math.floor(dose) && !Double.isInfinite(dose))
+                        ? String.valueOf(dose.longValue())
+                        : String.valueOf(dose);
+                String strengthPattern = "%" + genericItem.getName() + "%" + doseStr + "%";
+                Map<String, Object> strengthParameters = new HashMap<>();
+                strengthParameters.put("pattern", strengthPattern);
+                List<Item> strengthMatches = itemFacade.findByJpql(jpql, strengthParameters);
+                if (!strengthMatches.isEmpty()) {
+                    return strengthMatches;
+                }
+            }
+
             String pattern = "%" + genericItem.getName() + "%";
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("pattern", pattern);

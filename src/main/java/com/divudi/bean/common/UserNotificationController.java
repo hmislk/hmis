@@ -20,6 +20,8 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.UserNotification;
 import com.divudi.core.entity.Notification;
+import com.divudi.bean.inward.BhtSummeryController;
+import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Sms;
 import com.divudi.core.entity.WebUser;
@@ -30,7 +32,6 @@ import com.divudi.service.NotificationPushService;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -82,168 +83,152 @@ public class UserNotificationController implements Serializable {
     SmsManagerEjb smsManager;
     @Inject
     NotificationPushService notificationPushService;
+    @Inject
+    BhtSummeryController bhtSummeryController;
     private Date date;
+    // Notification list filters
     private boolean todayNotification;
-    private boolean seenedNotifiaction;
-    private boolean completedNotification;
-    private boolean notCompeletedNotifiaction;
+    private String seenFilter = "ALL"; // ALL | SEEN | UNSEEN
+    private String completionFilter = "ALL"; // ALL | COMPLETED | PENDING
     private boolean canceldRequests;
+    private boolean showCleared; // list previously cleared (retired) notifications for restoring
 
     public String navigateToRecivedNotification() {
-        return "/Notification/user_notifications";
+        resetFilters();
+        fillLoggedUserNotifications();
+        return "/Notification/user_notifications?faces-redirect=true";
+    }
+
+    public void resetFilters() {
+        todayNotification = false;
+        canceldRequests = false;
+        showCleared = false;
+        seenFilter = "ALL";
+        completionFilter = "ALL";
+    }
+
+    public int getUnseenCount() {
+        if (sessionController == null || sessionController.getLoggedUser() == null) {
+            return 0;
+        }
+        try {
+            String jpql = "select count(un) "
+                    + " from UserNotification un "
+                    + " where un.webUser=:wu "
+                    + " and un.retired=:ret "
+                    + " and un.seen=:seen";
+            Map m = new HashMap();
+            m.put("ret", false);
+            m.put("seen", false);
+            m.put("wu", sessionController.getLoggedUser());
+            long count = getFacade().findLongByJpql(jpql, m);
+            return count > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) count;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public String navigateToSentNotification() {
         return "/Notification/sent_notifications";
     }
 
+    /**
+     * Retires (clears) every notification currently listed. The user filters
+     * first, then clears, so what is removed is exactly what is on screen.
+     * Cleared notifications remain in the database and can be viewed and
+     * restored through the "Show Cleared" filter.
+     */
     public void clearNotificationsByCriteria() {
-        if (seenedNotifiaction) {
-            if (items == null) {
-                return;
-            }
-            for (UserNotification un : items) {
-                if (un.isSeen()) {
-                    un.setRetired(true);
-                    un.setRetiredAt(new Date());
-                    getFacade().edit(un);
-                }
-            }
-            fillLoggedUserNotifications();
+        if (showCleared) {
+            JsfUtil.addErrorMessage("These notifications are already cleared. Use Restore to bring one back.");
+            return;
         }
-
-        if (completedNotification) {
-            if (items == null) {
-                return;
-            }
-            for (UserNotification un : items) {
-                if (un.getNotification().isCompleted()) {
-                    un.setRetired(true);
-                    un.setRetiredAt(new Date());
-                    getFacade().edit(un);
-                }
-            }
-            fillLoggedUserNotifications();
+        if (items == null || items.isEmpty()) {
+            JsfUtil.addErrorMessage("No notifications listed to clear");
+            return;
         }
-
-        if (canceldRequests) {
-            if (items == null) {
-                return;
-            }
-            for (UserNotification un : items) {
-                if (un.getNotification().getBill().isCancelled()) {
-                    un.setRetired(true);
-                    un.setRetiredAt(new Date());
-                    getFacade().edit(un);
-                }
-            }
-            fillLoggedUserNotifications();
+        int clearedCount = 0;
+        for (UserNotification un : items) {
+            un.setRetired(true);
+            un.setRetiredAt(new Date());
+            un.setRetirer(sessionController.getLoggedUser());
+            getFacade().edit(un);
+            clearedCount++;
         }
-
-        if (notCompeletedNotifiaction) {
-            if (items == null) {
-                return;
-            }
-            for (UserNotification un : items) {
-                if (!un.getNotification().isCompleted()) {
-                    un.setRetired(true);
-                    un.setRetiredAt(new Date());
-                    getFacade().edit(un);
-                }
-            }
-            fillLoggedUserNotifications();
-
-        }
-
+        JsfUtil.addSuccessMessage(clearedCount + " notification(s) cleared");
+        filterNotificationsByCriteria();
     }
 
+    /**
+     * Brings back a previously cleared (retired) notification so it appears
+     * in the normal list again.
+     */
+    public void restoreUserNotification(UserNotification un) {
+        if (un == null || un.getId() == null) {
+            JsfUtil.addErrorMessage("Nothing to restore !");
+            return;
+        }
+        un.setRetired(false);
+        un.setRetiredAt(null);
+        un.setRetirer(null);
+        un.setRetireComments(null);
+        getFacade().edit(un);
+        JsfUtil.addSuccessMessage("Notification restored");
+        filterNotificationsByCriteria();
+    }
+
+    /**
+     * Reloads the notification list from the database applying the selected
+     * filter criteria. Always queries fresh so changing or removing criteria
+     * works as expected.
+     */
     public void filterNotificationsByCriteria() {
-        if (seenedNotifiaction) {
-            if (items == null) {
-                return;
-            }
-            Iterator<UserNotification> iterator = items.iterator();
-            while (iterator.hasNext()) {
-                UserNotification notification = iterator.next();
-                if (notification.getNotification() == null) {
-                    continue;
-                }
-
-                if (!notification.isSeen()) {
-                    iterator.remove();
-                }
-            }
+        if (sessionController == null || sessionController.getLoggedUser() == null) {
+            items = null;
+            return;
         }
-
-        if (completedNotification) {
-            if (items == null) {
-                return;
-            }
-
-            Iterator<UserNotification> iterator = items.iterator();
-            while (iterator.hasNext()) {
-                UserNotification notification = iterator.next();
-                if (notification.getNotification() == null) {
-                    continue;
-                }
-
-                if (!notification.getNotification().isCompleted()) {
-                    iterator.remove();
-                }
-            }
-
-        }
+        StringBuilder jpql = new StringBuilder("select un "
+                + " from UserNotification un "
+                + " where un.webUser=:wu "
+                + " and un.retired=:ret ");
+        Map<String, Object> m = new HashMap<>();
+        m.put("wu", sessionController.getLoggedUser());
+        m.put("ret", showCleared);
 
         if (todayNotification) {
-            if (items == null) {
-                return;
-            }
-            Iterator<UserNotification> iterator = items.iterator();
-            while (iterator.hasNext()) {
-                UserNotification notification = iterator.next();
-                if (notification.getNotification() == null) {
-                    continue;
-                }
-
-                if (!notification.getNotification().getCreatedAt().equals(getDate())) {
-                    iterator.remove();
-                }
-            }
+            java.util.Calendar todayCal = java.util.Calendar.getInstance();
+            todayCal.set(java.util.Calendar.HOUR_OF_DAY, 0);
+            todayCal.set(java.util.Calendar.MINUTE, 0);
+            todayCal.set(java.util.Calendar.SECOND, 0);
+            todayCal.set(java.util.Calendar.MILLISECOND, 0);
+            jpql.append(" and un.notification.createdAt >= :fromDate ");
+            m.put("fromDate", todayCal.getTime());
         }
 
-        if (notCompeletedNotifiaction) {
-            if (items == null) {
-                return;
-            }
-            Iterator<UserNotification> iterator = items.iterator();
-            while (iterator.hasNext()) {
-                UserNotification notification = iterator.next();
-                if (notification.getNotification() == null) {
-                    continue;
-                }
+        if ("SEEN".equals(seenFilter)) {
+            jpql.append(" and un.seen=:seen ");
+            m.put("seen", true);
+        } else if ("UNSEEN".equals(seenFilter)) {
+            jpql.append(" and un.seen=:seen ");
+            m.put("seen", false);
+        }
 
-                if (notification.getNotification().isCompleted()) {
-                    iterator.remove();
-                }
-            }
+        if ("COMPLETED".equals(completionFilter)) {
+            jpql.append(" and un.notification.completed=:com ");
+            m.put("com", true);
+        } else if ("PENDING".equals(completionFilter)) {
+            jpql.append(" and un.notification.completed=:com ");
+            m.put("com", false);
         }
 
         if (canceldRequests) {
-            if (items == null) {
-                return;
-            }
-            Iterator<UserNotification> iterator = items.iterator();
-            while (iterator.hasNext()) {
-                UserNotification notification = iterator.next();
-                if (notification.getNotification() == null) {
-                    continue;
-                }
-
-                if (!notification.getNotification().getBill().isCancelled()) {
-                    iterator.remove();
-                }
-            }
+            jpql.append(" and un.notification.bill is not null "
+                    + " and un.notification.bill.cancelled=:can ");
+            m.put("can", true);
         }
+
+        jpql.append(" order by un.id desc");
+        items = getFacade().findByJpql(jpql.toString(), m, 100);
     }
 
     public void save(UserNotification userNotification) {
@@ -296,6 +281,10 @@ public class UserNotificationController implements Serializable {
     }
 
     public void removeUserNotification(UserNotification un) {
+        if (un == null || un.getNotification() == null) {
+            JsfUtil.addErrorMessage("Nothing to remove !");
+            return;
+        }
         Department todept = null;
         Notification n = un.getNotification();
         if (n.getBill() != null) {
@@ -317,21 +306,24 @@ public class UserNotificationController implements Serializable {
                     break;
             }
         } else if (n.getPatientRoom() != null) {
-            todept = n.getPatientRoom().getRoomFacilityCharge().getDepartment();
-        } else {
+            if (n.getPatientRoom().getRoomFacilityCharge() != null) {
+                todept = n.getPatientRoom().getRoomFacilityCharge().getDepartment();
+            }
+        } else if (n.getPatientEncounter() == null) {
+            // Not a bill, room or encounter based notification - nothing we know how to remove
             return;
         }
-
-        if (!todept.equals(sessionController.getLoggedUser().getDepartment())) {
+        // PatientEncounter-based (clinical/final discharge) notifications have no
+        // owning department; the notification already belongs to the logged user.
+        if (todept != null && !todept.equals(sessionController.getLoggedUser().getDepartment())) {
             JsfUtil.addErrorMessage("You can't Access On Current Department !");
             return;
         }
-        if (un.getNotification().getBill() == null) {
-            return;
-        }
         un.setRetired(true);
+        un.setRetiredAt(new Date());
+        un.setRetirer(sessionController.getLoggedUser());
         getFacade().edit(un);
-        fillLoggedUserNotifications();
+        filterNotificationsByCriteria();
     }
 
     private UserNotificationFacade getEjbFacade() {
@@ -347,7 +339,8 @@ public class UserNotificationController implements Serializable {
             String jpql = "select un "
                     + " from UserNotification un "
                     + " where un.webUser=:wu "
-                    + " and un.retired=:ret";
+                    + " and un.retired=:ret "
+                    + " order by un.id desc";
             Map m = new HashMap();
             m.put("ret", false);
             m.put("wu", sessionController.getLoggedUser());
@@ -390,8 +383,32 @@ public class UserNotificationController implements Serializable {
     }
 
     public String navigateToCurrentNotificationRequest(UserNotification un) {
+        if (un == null || un.getNotification() == null) {
+            JsfUtil.addErrorMessage("Invalid notification");
+            return "";
+        }
         un.setSeen(true);
+        un.setRetired(true);
+        un.setRetiredAt(new Date());
+        un.setRetirer(sessionController.getLoggedUser());
+        un.setRetireComments("Viewed");
         getFacade().edit(un);
+
+        // Handle PatientRoom-based (discharge) notifications
+        if (un.getNotification().getPatientRoom() != null) {
+            PatientRoom pr = un.getNotification().getPatientRoom();
+            if (pr.getPatientEncounter() != null) {
+                bhtSummeryController.setPatientEncounter(pr.getPatientEncounter());
+                return bhtSummeryController.navigateToInpatientProfile();
+            }
+            return "";
+        }
+
+        // Handle PatientEncounter-based notifications
+        if (un.getNotification().getPatientEncounter() != null) {
+            bhtSummeryController.setPatientEncounter(un.getNotification().getPatientEncounter());
+            return bhtSummeryController.navigateToInpatientProfile();
+        }
 
         if (un.getNotification().getBill() == null) {
             return "";
@@ -419,9 +436,6 @@ public class UserNotificationController implements Serializable {
 
         if (!todept.equals(sessionController.getLoggedUser().getDepartment())) {
             JsfUtil.addErrorMessage("You can't Access On Current Department !");
-            return "";
-        }
-        if (un.getNotification().getBill() == null) {
             return "";
         }
         Bill bill = un.getNotification().getBill();
@@ -637,28 +651,28 @@ public class UserNotificationController implements Serializable {
         this.todayNotification = todayNotification;
     }
 
-    public boolean isSeenedNotifiaction() {
-        return seenedNotifiaction;
+    public String getSeenFilter() {
+        return seenFilter;
     }
 
-    public void setSeenedNotifiaction(boolean seenedNotifiaction) {
-        this.seenedNotifiaction = seenedNotifiaction;
+    public void setSeenFilter(String seenFilter) {
+        this.seenFilter = seenFilter;
     }
 
-    public boolean isCompletedNotification() {
-        return completedNotification;
+    public String getCompletionFilter() {
+        return completionFilter;
     }
 
-    public void setCompletedNotification(boolean completedNotification) {
-        this.completedNotification = completedNotification;
+    public void setCompletionFilter(String completionFilter) {
+        this.completionFilter = completionFilter;
     }
 
-    public boolean isNotCompeletedNotifiaction() {
-        return notCompeletedNotifiaction;
+    public boolean isShowCleared() {
+        return showCleared;
     }
 
-    public void setNotCompeletedNotifiaction(boolean notCompeletedNotifiaction) {
-        this.notCompeletedNotifiaction = notCompeletedNotifiaction;
+    public void setShowCleared(boolean showCleared) {
+        this.showCleared = showCleared;
     }
 
     public Date getDate() {

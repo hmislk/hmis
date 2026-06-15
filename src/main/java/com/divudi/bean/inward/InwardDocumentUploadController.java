@@ -240,6 +240,7 @@ public class InwardDocumentUploadController implements Serializable {
         types.add(UploadType.Inward_Consent_Form);
         types.add(UploadType.Inward_Insurance_Document);
         types.add(UploadType.Inward_Referral_Letter);
+        types.add(UploadType.Inward_GOP);
         types.add(UploadType.Inward_Other);
         return types;
     }
