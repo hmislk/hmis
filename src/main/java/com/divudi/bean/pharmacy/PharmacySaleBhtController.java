@@ -71,6 +71,7 @@ import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.service.pharmacy.DirectIssueBatchService;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -1605,7 +1606,9 @@ public class PharmacySaleBhtController implements Serializable {
 
         List<BillItem> issuedBillItems = new ArrayList<>(getBillItems());
 
-        settleBhtIssueRequestAccept(bt, bta, matrixDept, BillNumberSuffix.PHISSUE);
+        if (!settleBhtIssueRequestAccept(bt, bta, matrixDept, BillNumberSuffix.PHISSUE)) {
+            return;
+        }
 
         // Update remainingQty on the original request items using DB-derived issued total
         for (BillItem tbi : issuedBillItems) {
@@ -1963,13 +1966,22 @@ public class PharmacySaleBhtController implements Serializable {
         if (referenceItem == null || referenceItem.getId() == null) {
             return 0.0;
         }
-        String jpql = "SELECT SUM(ABS(bi.qty)) FROM BillItem bi "
-                + "WHERE bi.referanceBillItem.id = :refId "
-                + "AND bi.bill.billTypeAtomic = :bta "
+        // Issue bill items reference the request item directly. Cancellation/return
+        // bill items reference the issue bill item (one level further), so their
+        // qty is netted off via that second reference hop. See BhtIssueReturnController
+        // and PharmacyBillSearch#cancelPharmacyRequestIssueToBht for the chains.
+        String jpql = "SELECT SUM("
+                + "CASE WHEN bi.bill.billTypeAtomic = :issueBta THEN ABS(bi.qty) "
+                + "ELSE -ABS(bi.qty) END) FROM BillItem bi "
+                + "WHERE ((bi.bill.billTypeAtomic = :issueBta AND bi.referanceBillItem.id = :refId) "
+                + "OR (bi.bill.billTypeAtomic IN :reverseBtas AND bi.referanceBillItem.referanceBillItem.id = :refId)) "
                 + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL)";
         Map<String, Object> params = new HashMap<>();
         params.put("refId", referenceItem.getId());
-        params.put("bta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        params.put("issueBta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        params.put("reverseBtas", Arrays.asList(
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN));
         double alreadyIssued = getBillItemFacade().findDoubleByJpql(jpql, params);
         return Math.max(0.0, referenceItem.getQty() - alreadyIssued);
     }
@@ -2009,16 +2021,16 @@ public class PharmacySaleBhtController implements Serializable {
         }
     }
     
-    private void settleBhtIssueRequestAccept(BillType btp, BillTypeAtomic bta, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
+    private boolean settleBhtIssueRequestAccept(BillType btp, BillTypeAtomic bta, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
 
         if (matrixDepartment == null) {
             JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
-            return;
+            return false;
         }
         List<BillItem> tmpBillItems = getBillItems();
 
         if (hasAllergyConflicts(tmpBillItems)) {
-            return;
+            return false;
         }
 
         if (!getBillItems().isEmpty()) {
@@ -2028,16 +2040,16 @@ public class PharmacySaleBhtController implements Serializable {
         for (BillItem tbi : tmpBillItems) {
             if (tbi.getPharmaceuticalBillItem().getQty() == 0.0) {
                 JsfUtil.addErrorMessage("Item Qty is Zero " + tbi.getItem().getName());
-                return;
+                return false;
             }
             Stock tbiStock = tbi.getPharmaceuticalBillItem().getStock();
             if (tbiStock == null) {
                 JsfUtil.addErrorMessage("No stock available for " + tbi.getItem().getName() + ". Please check pharmacy stock.");
-                return;
+                return false;
             }
             if (Math.abs(tbi.getPharmaceuticalBillItem().getQty()) > tbiStock.getStock()) {
                 JsfUtil.addErrorMessage("Not Enough Stock " + tbi.getItem().getName());
-                return;
+                return false;
             }
         }
 
@@ -2061,6 +2073,7 @@ public class PharmacySaleBhtController implements Serializable {
         clearBillItem();
         billPreview = true;
 
+        return true;
     }
 
     public void updateMargin(BillItem bi, Department matrixDepartment, PaymentMethod paymentMethod) {
