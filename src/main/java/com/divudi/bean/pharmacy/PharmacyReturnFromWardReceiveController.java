@@ -101,7 +101,17 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
         params.put("bt", BillType.PharmacyIssue);
         params.put("bta", BillTypeAtomic.RETURN_MEDICINE_INWARD);
         params.put("dept", sessionController.getDepartment());
-        pendingReturnBills = billFacade.findByJpql(jpql, params);
+        List<Bill> candidates = billFacade.findByJpql(jpql, params);
+
+        // Defense for pre-#21510 data: returns fully accepted before this change
+        // were never stamped with fullyIssued/completed, so the flag filter above
+        // alone would resurface them. Drop anything already fully accepted.
+        pendingReturnBills = new ArrayList<>();
+        for (Bill b : candidates) {
+            if (!isFullyAccepted(b)) {
+                pendingReturnBills.add(b);
+            }
+        }
     }
 
     public String navigateToReceive() {
@@ -292,6 +302,17 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
                     continue;
                 }
 
+                // Recompute against the latest accepted total - the receivedBill's
+                // requestedQty is a snapshot from when the page was loaded, and
+                // another visit may have accepted some/all of this line since (#21510).
+                double remaining = getRemainingQuantityForReturnItem(bi.getReferanceBillItem());
+                if (remaining <= 0.0001) {
+                    JsfUtil.addErrorMessage("Item " + (bi.getItem() != null ? bi.getItem().getName() : "?") + " has already been fully accepted - nothing received for this line.");
+                    pbi.setQty(0);
+                    bi.setQty(0.0);
+                    continue;
+                }
+
                 String jpql = "select s from Stock s where s.itemBatch=:bc and s.staff=:stf";
                 Map<String, Object> params = new HashMap<>();
                 params.put("bc", pbi.getItemBatch());
@@ -299,7 +320,7 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
                 Stock porterStock = stockFacade.findFirstByJpql(jpql, params, true);
                 double available = porterStock == null ? 0.0 : porterStock.getStock();
 
-                double qty = Math.min(requestedQty, available);
+                double qty = Math.min(Math.min(requestedQty, available), remaining);
                 if (qty <= 0.0001) {
                     JsfUtil.addErrorMessage("Insufficient in-transit (porter) stock for " + bi.getItem().getName() + " - nothing received for this line.");
                     pbi.setQty(0);
@@ -308,7 +329,7 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
                 }
                 if (qty + 0.0001 < requestedQty) {
                     JsfUtil.addErrorMessage("Only " + qty + " of " + requestedQty + " units of " + bi.getItem().getName()
-                            + " were available from the porter - receiving the available quantity.");
+                            + " could be received (porter stock / remaining return quantity) - receiving the available quantity.");
                 }
 
                 pbi.setQty(qty);
