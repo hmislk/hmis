@@ -64,6 +64,7 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.common.EnumController;
+import com.divudi.core.data.dto.AdmissionDischargeDTO;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -284,6 +285,7 @@ public class InwardReportController implements Serializable {
     private Staff consultant;
     private List<IpUnsettledInvoiceDTO> unsettledInvoicesList;
     private List<AdmissionCategoryWiseAdmissionDTO> admissionCategoryWiseAdmissionList;
+    private List<AdmissionDischargeDTO> admissionDischargesList;
     private Item surgeryItem;
 
     // for specialty/doctor wise income
@@ -874,7 +876,7 @@ public class InwardReportController implements Serializable {
         jpql.append(" ORDER BY b.staff.speciality.name, b.staff.person.name ");
 
         List<SurgeryCountDoctorWiseDTO> rawList = (List<SurgeryCountDoctorWiseDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        
+
         // Post-process to set the doctor name with title
         for (SurgeryCountDoctorWiseDTO dto : rawList) {
             if (dto.getStaff() != null && dto.getStaff().getPerson() != null) {
@@ -2487,6 +2489,134 @@ public class InwardReportController implements Serializable {
 
             dto.setNetTotal(total);
             dto.setCreditPaidAmount(collected);
+        }
+    }
+
+    public void processAdmissionDischargeReport() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append("SELECT new com.divudi.core.data.dto.AdmissionDischargeDTO(")
+                .append("pe.patient.phn, ")
+                .append("pe.patient.person.name, ")
+                .append("pe.patient.person.mobile, ")
+                .append("pe.bhtNo, ")
+                .append("pe.patient.person.address, ")
+                .append("pe.comments, ")
+                .append("pe.admissionType.name, ")
+                .append("pe.patient.person.dob, ")
+                .append("pe.patient.person.sex, ")
+                .append("pe.department.name, ")
+                .append("pe.dateOfAdmission, ")
+                .append("pe.dateOfDischarge, ")
+                .append("dc.name, ")
+                .append("rfc.name, ")
+                .append("rcp.name, ")
+                .append("cc.name, ")
+                .append("pe.totalCompanyPaidAtFinalProcessing, ")
+                .append("pe.totalPatientPaidAtFinalProcessing, ")
+                .append("pe.discount, ")
+                .append("pe.netTotal, ")
+                .append("pe.amountDueAtFinalProcessing, ")
+                .append("cd.name, ")
+                .append("pe.clinicalDischargeDateTime, ")
+                .append("fb.creater.name, ")
+                .append("fb.createdAt) ")
+                .append("FROM PatientEncounter pe ")
+                .append("LEFT JOIN pe.dischargeCondition d ")
+                .append("LEFT JOIN d.category dc ")
+                .append("LEFT JOIN pe.currentPatientRoom room ")
+                .append("LEFT JOIN room.roomFacilityCharge rfc ")
+                .append("LEFT JOIN pe.referringConsultant rc ")
+                .append("LEFT JOIN rc.person rcp ")
+                .append("LEFT JOIN pe.creditCompany cc ")
+                .append("LEFT JOIN pe.clinicalDischargedBy cd ")
+                .append("LEFT JOIN pe.finalBill fb ");
+
+        jpql.append("WHERE pe.retired = :ret ")
+                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ");
+        params.put("ret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if (dischargeFromDate != null && dischargeToDate != null) {
+            jpql.append("AND pe.dateOfDischarge BETWEEN :dfd AND :dtd ");
+            params.put("dfd", dischargeFromDate);
+            params.put("dtd", dischargeToDate);
+        }
+        if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
+            jpql.append("AND pe.finalBill IS NOT NULL ")
+                    .append("AND pe.finalBill.createdAt BETWEEN :iafd AND :iatd ");
+            params.put("iafd", invoiceApprovedFromDate);
+            params.put("iatd", invoiceApprovedToDate);
+        }
+        if (institution != null) {
+            jpql.append("AND pe.institution = :inst ");
+            params.put("inst", institution);
+        }
+        if (site != null) {
+            jpql.append("AND pe.department.site = :site ");
+            params.put("site", site);
+        }
+        if (department != null) {
+            jpql.append("AND pe.department = :dept ");
+            params.put("dept", department);
+        }
+        if (consultant != null) {
+            jpql.append("AND pe.referringConsultant = :cons ");
+            params.put("cons", consultant);
+        }
+        if (serviceCenter != null) {
+            jpql.append("AND pe.department = :sc ");
+            params.put("sc", serviceCenter);
+        }
+        if (sponsor != null) {
+            jpql.append("AND pe.creditCompany = :sponsor ");
+            params.put("sponsor", sponsor);
+        }
+        if (admissionType != null) {
+            jpql.append("AND pe.admissionType = :at ");
+            params.put("at", admissionType);
+        }
+        if (paymentMethod != null) {
+            jpql.append("AND pe.paymentMethod = :pm ");
+            params.put("pm", paymentMethod);
+        }
+        if (roomCategory != null) {
+            jpql.append("AND rfc.roomCategory = :rc ");
+            params.put("rc", roomCategory);
+        }
+        if (admissionStatus != null) {
+            switch (admissionStatus) {
+                case ADMITTED_BUT_NOT_DISCHARGED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
+                    params.put("dis", false);
+                    break;
+                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
+                    params.put("dis", true);
+                    break;
+                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = TRUE ");
+                    params.put("dis", true);
+                    break;
+                case ANY_STATUS:
+                default:
+                    break;
+            }
+        }
+
+        jpql.append("ORDER BY pe.dateOfAdmission ");
+
+        try {
+            admissionDischargesList = (List<AdmissionDischargeDTO>) peFacade.findLightsByJpql(
+                    jpql.toString(),
+                    params,
+                    TemporalType.TIMESTAMP
+            );
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error loading admissions & discharges: " + e.getMessage());
+            admissionDischargesList = new ArrayList<>();
         }
     }
 
@@ -6339,6 +6469,14 @@ public class InwardReportController implements Serializable {
 
     public void setIpIncomeTotalBillDiscount(double ipIncomeTotalBillDiscount) {
         this.ipIncomeTotalBillDiscount = ipIncomeTotalBillDiscount;
+    }
+
+    public List<AdmissionDischargeDTO> getAdmissionDischargesList() {
+        return admissionDischargesList;
+    }
+
+    public void setAdmissionDischargesList(List<AdmissionDischargeDTO> admissionDischargesList) {
+        this.admissionDischargesList = admissionDischargesList;
     }
 
     public class IncomeByCategoryRecord {
