@@ -12,6 +12,7 @@ import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UserNotificationController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
@@ -23,6 +24,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.StockQty;
 import com.divudi.core.data.Title;
@@ -194,6 +196,8 @@ public class PharmacySaleBhtController implements Serializable {
     PharmacyCalculation pharmacyCalculation;
     @Inject
     UserNotificationController userNotificationController;
+    @Inject
+    WebUserController webUserController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -394,9 +398,21 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         Stock fetchedStock = tmp.getPharmaceuticalBillItem().getStock();
-        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > fetchedStock.getStock()) {
+        if (fetchedStock != null && tmp.getPharmaceuticalBillItem().getQtyInUnit() > fetchedStock.getStock()) {
             setZeroToQty(tmp);
             JsfUtil.addErrorMessage("No Sufficient Stocks?");
+            return;
+        }
+
+        if (tmp.getReferanceBillItem() != null) {
+            double remaining = getRemainingQuantityForItem(tmp.getReferanceBillItem());
+            if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > remaining) {
+                JsfUtil.addErrorMessage("Cannot issue " + tmp.getPharmaceuticalBillItem().getQtyInUnit()
+                        + " units of " + tmp.getItem().getName() + ". Only " + remaining + " units remaining to be issued.");
+                tmp.setQty(remaining);
+                tmp.getPharmaceuticalBillItem().setQtyInUnit((float) remaining);
+                userStockController.updateUserStock(tmp.getTransUserStock(), remaining);
+            }
         }
 
     }
@@ -1568,6 +1584,11 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
+        if (isFullyIssued(bhtRequestBill)) {
+            JsfUtil.addErrorMessage("This request has already been fully issued.");
+            return;
+        }
+
         if (hasAllergyConflicts(getBillItems())) {
             return;
         }
@@ -1582,14 +1603,39 @@ public class PharmacySaleBhtController implements Serializable {
 
         Department matrixDept = determineMatrixDepartment();
 
+        List<BillItem> issuedBillItems = new ArrayList<>(getBillItems());
+
         settleBhtIssueRequestAccept(bt, bta, matrixDept, BillNumberSuffix.PHISSUE);
-        
+
+        // Update remainingQty on the original request items using DB-derived issued total
+        for (BillItem tbi : issuedBillItems) {
+            BillItem refItem = tbi.getReferanceBillItem();
+            if (refItem == null || refItem.getId() == null) {
+                continue;
+            }
+            BillItem freshRefItem = billItemFacade.findWithoutCache(refItem.getId());
+            freshRefItem.setRemainingQty(getRemainingQuantityForItem(freshRefItem));
+            billItemFacade.editAndCommit(freshRefItem);
+        }
+
+        // Auto-complete the request once everything has been issued
+        if (!bhtRequestBill.isFullyIssued() && isFullyIssued(bhtRequestBill)) {
+            Bill freshRequestBill = getBillFacade().findWithoutCache(bhtRequestBill.getId());
+            freshRequestBill.setFullyIssued(true);
+            freshRequestBill.setFullyIssuedAt(new Date());
+            freshRequestBill.setFullyIssuedBy(sessionController.getLoggedUser());
+            getBillFacade().edit(freshRequestBill);
+            bhtRequestBill.setFullyIssued(true);
+            bhtRequestBill.setFullyIssuedAt(freshRequestBill.getFullyIssuedAt());
+            bhtRequestBill.setFullyIssuedBy(freshRequestBill.getFullyIssuedBy());
+        }
+
         //update Bill
-        if(completed){
+        if (completed && webUserController.hasPrivilege(Privileges.PharmacyBhtRequestForceComplete.toString())) {
             bhtRequestBill.setCompleted(true);
             bhtRequestBill.setCompletedAt(new Date());
             bhtRequestBill.setCompletedBy(sessionController.getLoggedUser());
-            
+
             billFacade.edit(bhtRequestBill);
         }
         completed = false;
@@ -1914,14 +1960,37 @@ public class PharmacySaleBhtController implements Serializable {
     }
     
     public double getRemainingQuantityForItem(BillItem referenceItem) {
-        if (referenceItem == null) {
+        if (referenceItem == null || referenceItem.getId() == null) {
             return 0.0;
         }
-        double requestedQty = referenceItem.getQty();
-        double alreadyIssued = referenceItem.getIssuedPhamaceuticalItemQty();
-        return Math.max(0.0, requestedQty - alreadyIssued);
+        String jpql = "SELECT SUM(ABS(bi.qty)) FROM BillItem bi "
+                + "WHERE bi.referanceBillItem.id = :refId "
+                + "AND bi.bill.billTypeAtomic = :bta "
+                + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL)";
+        Map<String, Object> params = new HashMap<>();
+        params.put("refId", referenceItem.getId());
+        params.put("bta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        double alreadyIssued = getBillItemFacade().findDoubleByJpql(jpql, params);
+        return Math.max(0.0, referenceItem.getQty() - alreadyIssued);
     }
-    
+
+    public boolean isFullyIssued(Bill requestBill) {
+        if (requestBill == null) {
+            return false;
+        }
+        Bill freshBill = getBillFacade().findWithoutCache(requestBill.getId());
+        if (freshBill == null || freshBill.getBillItems() == null || freshBill.getBillItems().isEmpty()) {
+            return false;
+        }
+        for (BillItem item : freshBill.getBillItems()) {
+            if (getRemainingQuantityForItem(item) > 0.001) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
     private BigDecimal determineTransferRate(ItemBatch itemBatch) {
         if (itemBatch == null) {
             return BigDecimal.ZERO;
@@ -1961,7 +2030,12 @@ public class PharmacySaleBhtController implements Serializable {
                 JsfUtil.addErrorMessage("Item Qty is Zero " + tbi.getItem().getName());
                 return;
             }
-            if (Math.abs(tbi.getPharmaceuticalBillItem().getQty()) > tbi.getPharmaceuticalBillItem().getStock().getStock()) {
+            Stock tbiStock = tbi.getPharmaceuticalBillItem().getStock();
+            if (tbiStock == null) {
+                JsfUtil.addErrorMessage("No stock available for " + tbi.getItem().getName() + ". Please check pharmacy stock.");
+                return;
+            }
+            if (Math.abs(tbi.getPharmaceuticalBillItem().getQty()) > tbiStock.getStock()) {
                 JsfUtil.addErrorMessage("Not Enough Stock " + tbi.getItem().getName());
                 return;
             }
@@ -2629,6 +2703,10 @@ public class PharmacySaleBhtController implements Serializable {
     public String navigateToIssueMedicinesDirectlyForBhtRequest() {
         if (bhtRequestBill == null) {
             JsfUtil.addErrorMessage("No Bill");
+            return "";
+        }
+        if (isFullyIssued(bhtRequestBill)) {
+            JsfUtil.addErrorMessage("This request has already been fully issued.");
             return "";
         }
         setCompleted(false);
