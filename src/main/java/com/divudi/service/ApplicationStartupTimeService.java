@@ -1,32 +1,32 @@
 package com.divudi.service;
 
 import java.time.ZonedDateTime;
-import javax.annotation.PostConstruct;
-import javax.ejb.Singleton;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Initialized;
+import javax.enterprise.event.Observes;
 
 /**
- * Singleton EJB that captures the application startup time on first access.
- * The @Startup annotation was removed to avoid a Payara 5 / Weld 3 CDI context
- * race condition where the @Dependent scope is not yet active when the container
- * tries to create lifecycle interceptors for the bean during early startup.
+ * CDI ApplicationScoped bean that captures the true application startup time.
+ *
+ * Uses a CDI @Observes @Initialized(ApplicationScoped.class) observer instead
+ * of an EJB @Singleton @Startup, which avoids a Payara 5 / Weld 3 race condition
+ * (WELD-001303: No active contexts for @Dependent) that occurs when the EJB
+ * container tries to build CDI lifecycle interceptors before the @Dependent
+ * scope is active. The CDI @Initialized event fires during CDI startup while
+ * all CDI contexts are already active, capturing a time equivalent to true
+ * application startup.
  *
  * @author L C J Samarasekara <lawan.chaamindu1234@gmail.com>
  */
-@Singleton
+@ApplicationScoped
 public class ApplicationStartupTimeService {
 
     private ZonedDateTime startupTime;
 
-    @PostConstruct
-    public void init() {
-        // Capture the startup time immediately when the application starts
+    public void init(@Observes @Initialized(ApplicationScoped.class) Object ignored) {
         startupTime = ZonedDateTime.now();
     }
 
-    /**
-     * Gets the recorded application startup time
-     * @return The ZonedDateTime when the application started
-     */
     public ZonedDateTime getStartupTime() {
         return startupTime;
     }
