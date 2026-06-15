@@ -3,17 +3,16 @@ package com.divudi.service;
 import java.time.ZonedDateTime;
 import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
-import javax.ejb.Startup;
 
 /**
- * Eager singleton EJB that captures the actual application startup time.
- * This bean is instantiated immediately when the application starts (not lazily),
- * ensuring the recorded startup time reflects the actual server restart or deployment time.
+ * Singleton EJB that captures the application startup time on first access.
+ * The @Startup annotation was removed to avoid a Payara 5 / Weld 3 CDI context
+ * race condition where the @Dependent scope is not yet active when the container
+ * tries to create lifecycle interceptors for the bean during early startup.
  *
  * @author L C J Samarasekara <lawan.chaamindu1234@gmail.com>
  */
 @Singleton
-@Startup
 public class ApplicationStartupTimeService {
 
     private ZonedDateTime startupTime;
