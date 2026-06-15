@@ -430,6 +430,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return inpatientClinicalDataController.navigateToDiagnosisCards(current);
     }
 
+    public String navigateToInpatientLetters() {
+        return inpatientClinicalDataController.navigateToInpatientLetters(current);
+    }
+
     public void dateChangeListen() {
         getPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
 
@@ -750,6 +754,24 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return "/inward/inward_room_change?faces-redirect=true";
     }
 
+    public String navigateToAddRoom() {
+        roomChangeController.createPatientRoom();
+        roomChangeController.setInstitution(sessionController.getInstitution());
+        roomChangeController.setNewRoomFacilityCharge(null);
+        roomChangeController.setChangeAt(null);
+        roomChangeController.setNewConsultant(null);
+        roomChangeController.setNewPrimeConsultant(null);
+        return "/inward/inward_add_room?faces-redirect=true";
+    }
+
+    public String navigateToAddGuardianRoom() {
+        roomChangeController.createGuardianRoom();
+        roomChangeController.setInstitution(sessionController.getInstitution());
+        roomChangeController.setNewRoomFacilityCharge(null);
+        roomChangeController.setChangeAt(null);
+        return "/inward/inward_add_guardian_room?faces-redirect=true";
+    }
+
     public String navigateToGuardianRoomChange() {
 //         roomChangeController.recreate();
         roomChangeController.createGuardianRoom();
@@ -760,6 +782,34 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public String navigateToPatientRoomDetails() {
         bhtSummeryController.setPatientEncounter(current);
         return bhtSummeryController.navigateToPatientRoomDetails();
+    }
+
+    /**
+     * Returns the list of currently active (non-discharged, non-retired)
+     * PatientRoom and GuardianRoom records for the current admission.
+     * Used by the dashboard "Room Management" panel to display current room
+     * assignments.
+     */
+    public List<com.divudi.core.entity.inward.PatientRoom> getActivePatientRooms() {
+        if (current == null) {
+            return java.util.Collections.emptyList();
+        }
+        List<com.divudi.core.entity.inward.PatientRoom> activeRooms = new java.util.ArrayList<>();
+        try {
+            String jpql = "SELECT pr FROM PatientRoom pr "
+                    + "WHERE pr.retired = false "
+                    + "AND pr.discharged = false "
+                    + "AND pr.patientEncounter = :enc "
+                    + "ORDER BY pr.createdAt";
+            java.util.HashMap<String, Object> params = new java.util.HashMap<>();
+            params.put("enc", current);
+            activeRooms = patientRoomFacade.findByJpql(jpql, params);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Failed to load active rooms for admission ID: "
+                    + (current != null ? current.getId() : null), e);
+            JsfUtil.addErrorMessage("Unable to load current room assignments.");
+        }
+        return activeRooms;
     }
 
     public String navigateToAddBabyAdmission() {
@@ -1340,6 +1390,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         perantAddmission = current;
         searchAdmissions();
         return "/inward/inpatient_search?faces-redirect=true";
+    }
+
+    public void onInstitutionForSearchChange() {
+        site = null;
+        loggedDepartment = null;
+    }
+
+    public void onSiteForSearchChange() {
+        loggedDepartment = null;
     }
 
     public void listCurrentInpatients() {
@@ -2187,6 +2246,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         admittingProcessStarted = true;
 
+        // Auto-mark claimable for Credit admissions (server-side safety net)
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Auto Mark Claimable for Credit Admissions", false)
+                && getCurrent().getPaymentMethod() == PaymentMethod.Credit) {
+            getCurrent().setClaimable(true);
+        }
+
         if (errorCheck()) {
             admittingProcessStarted = false;
             return;
@@ -2964,7 +3030,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     @Override
     public void listnerForPaymentMethodChange() {
-        // ToDo: Add Logic
+        if (current == null) {
+            return;
+        }
+        boolean autoMarkCredit = configOptionApplicationController.getBooleanValueByKey(
+                "Inward Admission - Auto Mark Claimable for Credit Admissions", false);
+        if (autoMarkCredit && current.getPaymentMethod() == PaymentMethod.Credit) {
+            current.setClaimable(true);
+        }
     }
 
     public PaymentScheme getPaymentScheme() {

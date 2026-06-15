@@ -81,172 +81,129 @@
                     </table>
 
 
-                    <div style=" font-size: 13px; margin-left: 1cm; height: " class="mt-2 mb-4 justify-content-center">
+                    <!-- ===== A4 Bill Header (BHT, Name, ...) - auto-wrapping 2-column grid ===== -->
+                    <div style="font-size: 13px; width: 90%; margin-left: 5%; margin-right: 5%" class="mt-4 mb-4">
+                        <div class="row gx-0">
 
-                        <div class="row">
-                            <div class="row col-6 d-flex justify-content-between">
-                                <div class="col-5 d-flex justify-content-between">
-                                    <h:outputLabel value="BHT NO" />
-                                    <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                </div>
-                                <div class="col-7" >
+                            <!-- BHT No -->
+                            <div class="col-6 d-flex mb-1">
+                                <span style="width: 130px;">BHT No</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
                                     <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" />
-                                </div>
+                                </span>
                             </div>
-                            <div class="col-6 W-100 ">
-                                <div class="col-6 d-flex justify-content-between">
-                                    <div class="col-5 w-100 d-flex justify-content-between">
-                                        <h:outputLabel value="Bill No" />
-                                        <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                    </div>
-                                    <div class="col-7 d-flex w-100">
-                                        <h:outputLabel value="#{cc.attrs.bill.deptId}" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div class="row">
-                            <div class="row col-6 d-flex justify-content-between">
-                                <div class="col-5 d-flex justify-content-between">
-                                    <h:outputLabel value="Patient Name" />
-                                    <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                </div>
-                                <div class="col-7" >
+                            <!-- Bill No -->
+                            <div class="col-6 d-flex mb-1">
+                                <span style="width: 130px;">Bill No</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.deptId}" />
+                                </span>
+                            </div>
+
+                            <!-- Patient Name -->
+                            <div class="col-6 d-flex mb-1">
+                                <span style="width: 130px;">Patient Name</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
                                     <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}"/>
-                                </div>
+                                </span>
                             </div>
-                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Address on Final Bill',true)}">
-                                <div class="col-6 W-100 ">
-                                    <div class="col-6 d-flex justify-content-between">
-                                        <div class="col-5 w-100 d-flex justify-content-between">
-                                            <h:outputLabel value="Address" />
-                                            <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                        </div>
-                                        <div class="col-7 d-flex w-100">
-                                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.address}"/>
-                                        </div>
-                                    </div>
-                                </div>
-                            </h:panelGroup>
-                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Gender/Age on Final Bill',false)}">
-                                <div class="row col-6 d-flex justify-content-between">
-                                    <div class="col-5 d-flex justify-content-between">
-                                        <h:outputLabel value="Patient Age/Sex" />
-                                        <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                    </div>
-                                    <div class="col-7" >
-                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.ageAsShortString} / #{cc.attrs.bill.patientEncounter.patient.person.sex}"/>
-                                    </div>
-                                </div>
-                            </h:panelGroup>
-                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient NIC on Final Bill',false)
-                                           or (cc.attrs.bill.patientEncounter.patient.person.nic ne null and !cc.attrs.bill.patientEncounter.patient.person.nic.equals(''))}">
-                                <div class="col-6 W-100 ">
-                                    <div class="col-6 d-flex justify-content-between">
-                                        <div class="col-5 w-100 d-flex justify-content-between">
-                                            <h:outputLabel value="NIC No" />
-                                            <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                        </div>
-                                        <div class="col-7 d-flex w-100">
-                                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nic ne null and !cc.attrs.bill.patientEncounter.patient.person.nic.equals('') ? cc.attrs.bill.patientEncounter.patient.person.nic : cc.attrs.bill.patientEncounter.guardian.nic}"/>
-                                        </div>
-                                    </div>
-                                </div>
-                            </h:panelGroup>
-                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Phone Number on Final Bill',false)}">
-                                <div class="row col-6 d-flex justify-content-between">
-                                    <div class="col-5 d-flex justify-content-between">
-                                        <h:outputLabel value="Phone No" />
-                                        <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                    </div>
-                                    <div class="col-7" >
-                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.phone}"/>
-                                    </div>
-                                </div>
-                            </h:panelGroup>
-                        </div>
 
-                        <div class="row">
-                            <div class="row col-6 d-flex justify-content-between">
-                                <div class="col-5 d-flex justify-content-between">
-                                    <h:outputLabel value="Admission At"/>
-                                    <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                </div>
-                                <div class="col-7" >
+                            <!-- Address -->
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Address on Final Bill',true)}">
+                                <span style="width: 130px;">Address</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.address}"/>
+                                </span>
+                            </h:panelGroup>
+
+                            <!-- Patient Age/Sex -->
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Gender/Age on Final Bill',false)}">
+                                <span style="width: 130px;">Patient Age/Sex</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.ageAsShortString} / #{cc.attrs.bill.patientEncounter.patient.person.sex}"/>
+                                </span>
+                            </h:panelGroup>
+
+                            <!-- NIC No -->
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient NIC on Final Bill',false) or (cc.attrs.bill.patientEncounter.patient.person.nic ne null and !cc.attrs.bill.patientEncounter.patient.person.nic.equals(''))}">
+                                <span style="width: 130px;">NIC No</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nic ne null and !cc.attrs.bill.patientEncounter.patient.person.nic.equals('') ? cc.attrs.bill.patientEncounter.patient.person.nic : 'N/A'}"/>
+                                </span>
+                            </h:panelGroup>
+
+                            <!-- Phone No -->
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Patient Phone Number on Final Bill',false)}">
+                                <span style="width: 130px;">Phone No</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.phone}"/>
+                                </span>
+                            </h:panelGroup>
+
+                            <!-- Admission At -->
+                            <div class="col-6 d-flex mb-1">
+                                <span style="width: 130px;">Admission At</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
                                     <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingAdmissionTime ne null and !cc.attrs.bill.patientEncounter.printingAdmissionTime.equals('') ? cc.attrs.bill.patientEncounter.printingAdmissionTime : cc.attrs.bill.patientEncounter.dateOfAdmission}">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
-                                </div>
+                                </span>
                             </div>
-                            <div class="col-6 W-100 ">
-                                <div class="col-6 d-flex justify-content-between">
-                                    <div class="col-5 w-100 d-flex justify-content-between">
-                                        <h:outputLabel value="Discharged At"/>
-                                        <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                    </div>
-                                    <div class="col-7 d-flex w-100">
-                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingDischargeTime ne null and !cc.attrs.bill.patientEncounter.printingDischargeTime.equals('') ? cc.attrs.bill.patientEncounter.printingDischargeTime : cc.attrs.bill.patientEncounter.dateOfDischarge}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-                                    </div>
-                                </div>
+
+                            <!-- Discharged At -->
+                            <div class="col-6 d-flex mb-1">
+                                <span style="width: 130px;">Discharged At</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.printingDischargeTime ne null and !cc.attrs.bill.patientEncounter.printingDischargeTime.equals('') ? cc.attrs.bill.patientEncounter.printingDischargeTime : cc.attrs.bill.patientEncounter.dateOfDischarge}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
+                                </span>
                             </div>
+
+                            <!-- Guardian -->
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Guardian on Final Bill',true)}">
+                                <span style="width: 130px;">Guardian</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.guardian.nameWithTitle}" />
+                                </span>
+                            </h:panelGroup>
+
+                            <!-- Room -->
+                            <div class="col-6 d-flex mb-1">
+                                <span style="width: 130px;">Room</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" />
+                                </span>
+                            </div>
+
+                            <!-- Credit Company -->
+                            <h:panelGroup layout="block" styleClass="col-6 d-flex mb-1"
+                                          rendered="#{cc.attrs.bill.creditCompany ne null and cc.attrs.bill.paymentMethod eq 'Credit'}">
+                                <span style="width: 130px;">Credit Company</span>
+                                <span style="width: 12px; text-align: center;">:</span>
+                                <span class="flex-fill ps-2">
+                                    <h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" />
+                                </span>
+                            </h:panelGroup>
+
                         </div>
-
-                        <div class="row">
-                            <div class="row col-6 d-flex justify-content-between">
-                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Guardian on Final Bill',true)}">
-                                    <div class="col-5 d-flex justify-content-between">
-                                        <h:outputLabel value="Guardian" />
-                                        <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                    </div>
-                                    <div class="col-7" >
-                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.guardian.nameWithTitle}" />
-                                    </div>
-                                </h:panelGroup>
-                            </div>
-                            <div class="col-6 W-100 ">
-                                <div class="col-6 d-flex justify-content-between">
-                                    <div class="col-5 w-100 d-flex justify-content-between">
-                                        <h:outputLabel value="Room " />
-                                        <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                    </div>
-                                    <div class="col-7 d-flex w-100">
-                                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="row col-6 d-flex justify-content-between">
-                                <h:panelGroup rendered="#{cc.attrs.bill.creditCompany ne null and cc.attrs.bill.paymentMethod eq 'Credit'}">
-                                    <div class="col-5 d-flex justify-content-between">
-                                        <h:outputLabel value="Credit Company " />
-                                        <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                    </div>
-                                    <div class="col-7" >
-                                        <div class="col-7 d-flex w-100">
-                                            <h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" />
-                                        </div>
-                                    </div>
-                                </h:panelGroup>
-
-                            </div>
-                            <!--                            <div class="col-6 W-100 ">
-                                                            <div class="col-6 d-flex justify-content-between">
-                                                                <div class="col-5 w-100 d-flex justify-content-between">
-                                                                    <h:outputLabel value="Vat Reg. No " />
-                                                                    <h:outputLabel value=":" style="width: 20px; text-align: center;"/>
-                                                                </div>
-                                                                <div class="col-7 d-flex w-100">
-
-                                                                </div>
-                                                            </div>
-                                                        </div>-->
-                        </div>
-
                     </div>
 
                     <div style="width: 90%; margin-left: 5%; margin-right: 5%">
@@ -288,10 +245,10 @@
 
                                                                     <td style="text-align: left;font-size: 10px!important;">
                                                                         <h:panelGroup>
-                                                                            #{fe.staff.person.nameWithTitle}
+                                                                            #{fe.staff.person.nameWithTitle}<h:outputText value=" (#{fe.staff.speciality.name})" rendered="#{fe.staff.speciality ne null}"/>
                                                                         </h:panelGroup>
                                                                     </td>
-                                                                    <td  style="text-align: right;font-size: 10px!important;">
+                                                                    <td  style="text-align: right;font-size: 10px!important; padding-left: 25px;">
                                                                         <h:panelGroup>
                                                                             <h:outputLabel value="#{fe.feeAdjusted}">
                                                                                 <f:convertNumber pattern="#,##0.00" />
@@ -701,9 +658,9 @@
                                                                     <h:panelGroup rendered="#{fe.feeAdjusted ne 0 and fe.bill.cancelled eq false and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
                                                                         <tr>
                                                                             <td style="text-align: left; font-size: 10px!important;">
-                                                                                <h:panelGroup>#{fe.staff.person.nameWithTitle}</h:panelGroup>
+                                                                                <h:panelGroup>#{fe.staff.person.nameWithTitle}<h:outputText value=" (#{fe.staff.speciality.name})" rendered="#{fe.staff.speciality ne null}"/></h:panelGroup>
                                                                             </td>
-                                                                            <td style="text-align: right; font-size: 10px!important;">
+                                                                            <td style="text-align: right; font-size: 10px!important; padding-left: 25px;">
                                                                                 <h:outputLabel value="#{fe.feeAdjusted}">
                                                                                     <f:convertNumber pattern="#,##0.00" />
                                                                                 </h:outputLabel>
@@ -744,7 +701,7 @@
                                                                     <h:panelGroup  rendered="#{fe.feeAdjusted gt 0 or fe.feeValue gt 0}">
                                                                         <tr>
                                                                             <td style="text-align: left; font-size: 10px!important;">
-                                                                                <h:panelGroup>#{fe.staff.person.nameWithTitle}</h:panelGroup>
+                                                                                <h:panelGroup>#{fe.staff.person.nameWithTitle}<h:outputText value=" (#{fe.staff.speciality.name})" rendered="#{fe.staff.speciality ne null}"/></h:panelGroup>
                                                                             </td>
                                                                             <td>&emsp;</td>
                                                                             <td style="text-align: right; font-size: 10px!important;">

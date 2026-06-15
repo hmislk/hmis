@@ -912,6 +912,102 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("resource_type").add("method")))
                 .build();
 
+        JsonObject manageSubscriptionsTool = Json.createObjectBuilder()
+                .add("name", "manage_subscriptions")
+                .add("description",
+                        "Manage notification trigger subscriptions: who receives which notification, in which department. "
+                        + "A subscription links a user to a TriggerType for a department, or — when application-wide — for the whole "
+                        + "application (matches every department; useful for hospital-wide roles such as a Guest Relations Officer).\n\n"
+                        + "method: LIST | LIST_TRIGGER_TYPES | POST | DELETE\n\n"
+                        + "LIST_TRIGGER_TYPES: returns all available TriggerType values (name, label, medium, parent). "
+                        + "Call this first to discover valid triggerType names.\n"
+                        + "LIST: list subscriptions; optional filters triggerType, userId, departmentId, applicationWide.\n"
+                        + "POST: create a subscription. Requires userId, triggerType, and EITHER departmentId OR applicationWide=true. "
+                        + "Returns already_exists when an identical non-retired subscription exists.\n"
+                        + "DELETE: soft-retire the subscription with the given id.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("LIST").add("LIST_TRIGGER_TYPES").add("POST").add("DELETE"))
+                                        .add("description", "Operation to perform"))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Subscription ID — required for DELETE"))
+                                .add("triggerType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "TriggerType enum name (e.g. INWARD_PATIENT_DISCHARGED). Required for POST; optional filter for LIST"))
+                                .add("userId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "WebUser ID. Required for POST; optional filter for LIST"))
+                                .add("departmentId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Department ID. For POST, provide this OR applicationWide (not both)"))
+                                .add("applicationWide", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'true' to make the subscription apply across every department (null department)")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
+        JsonObject manageInpatientTemplates = Json.createObjectBuilder()
+                .add("name", "manage_inpatient_templates")
+                .add("description",
+                        "Create, read, update, and retire inpatient document templates stored in the HMIS. "
+                        + "Templates are HTML-based with placeholder tokens that are substituted at generation time. "
+                        + "Two types are supported: InpatientDiagnosisCard and InpatientLetter.\n\n"
+                        + "method: LIST | GET | POST | PUT | DELETE\n\n"
+                        + "LIST: returns all non-retired templates; optional filters: type, query (name search), size.\n"
+                        + "GET: returns a single template including the full contents field; requires id.\n"
+                        + "POST: creates a new template; requires name, type, contents.\n"
+                        + "PUT: updates an existing template; requires id; optional fields: name, type, contents, defaultTemplate, autoGenerate.\n"
+                        + "DELETE: soft-retires the template; requires id.\n\n"
+                        + "InpatientLetter placeholder tokens available in contents:\n"
+                        + "  Patient: {name} {age} {sex} {address} {phone} {bht} {doa} {dod}\n"
+                        + "  Clinical: {dx} {past-dx} {allergies} {routine-medicines} {rx} {drx} {ix} {procedures}\n"
+                        + "  Vitals: {bp} {pr} {rr} {sat} {height} {weight} {bmi} {pfr}\n"
+                        + "  Vital series: {temp-series} {bp-series} {pr-series} {rr-series} {sat-series}\n"
+                        + "  Credit company: {credit_company} {credit_company_address} {policy_no} {reference_no} {credit_limit}\n"
+                        + "  Institution: {institution} {department} {doctor} {letter_date}\n"
+                        + "  Billing: {final_bill} (admission net total) {patient_name} {patient_age} {patient_sex} (aliases of name/age/sex)\n"
+                        + "If the admission has more than one credit company, the user selects which one to use on the "
+                        + "inward_letters page before generating; the credit company placeholders resolve to the selected company.\n"
+                        + "InpatientDiagnosisCard uses the same placeholders (credit company fields resolve to empty if not applicable).")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("LIST").add("GET").add("POST").add("PUT").add("DELETE"))
+                                        .add("description", "Operation to perform"))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Template ID — required for GET, PUT, DELETE"))
+                                .add("type", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("InpatientDiagnosisCard").add("InpatientLetter"))
+                                        .add("description", "Template type — required for POST; optional filter for LIST"))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Template name — required for POST; optional for PUT"))
+                                .add("contents", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "HTML template body with placeholder tokens — required for POST; optional for PUT"))
+                                .add("defaultTemplate", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'true' or 'false' — marks this as the default template for its type"))
+                                .add("autoGenerate", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'true' or 'false' — auto-regenerate on encounter changes"))
+                                .add("query", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Name search string for LIST"))
+                                .add("size", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max results for LIST (default 200)")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         return Json.createArrayBuilder()
                 .add(searchCodeTool)
                 .add(fetchFileTool)
@@ -924,6 +1020,8 @@ public class AnthropicApiService implements Serializable {
                 .add(manageInvestigationsTool)
                 .add(manageInvestigationFormatTool)
                 .add(manageFormsTool)
+                .add(manageSubscriptionsTool)
+                .add(manageInpatientTemplates)
                 .build();
     }
 
@@ -1152,6 +1250,29 @@ public class AnthropicApiService implements Serializable {
                             placeholder, minValue, maxValue, stepSize, maxRating,
                             onLabel, offLabel, editHtml, viewHtml, label, value,
                             hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_subscriptions": {
+                    String method          = toolInput.getString("method", "LIST");
+                    String id              = toolInput.containsKey("id")              ? toolInput.getString("id", "")              : "";
+                    String triggerType     = toolInput.containsKey("triggerType")     ? toolInput.getString("triggerType", "")     : "";
+                    String userId          = toolInput.containsKey("userId")          ? toolInput.getString("userId", "")          : "";
+                    String departmentId    = toolInput.containsKey("departmentId")    ? toolInput.getString("departmentId", "")    : "";
+                    String applicationWide = toolInput.containsKey("applicationWide") ? toolInput.getString("applicationWide", "") : "";
+                    return callSubscriptionApi(method, id, triggerType, userId, departmentId, applicationWide,
+                            hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_inpatient_templates": {
+                    String method        = toolInput.getString("method", "LIST");
+                    String id            = toolInput.containsKey("id")             ? toolInput.getString("id", "")            : "";
+                    String templateType  = toolInput.containsKey("type")           ? toolInput.getString("type", "")          : "";
+                    String name          = toolInput.containsKey("name")           ? toolInput.getString("name", "")          : "";
+                    String contents      = toolInput.containsKey("contents")       ? toolInput.getString("contents", "")      : "";
+                    String defTemplate   = toolInput.containsKey("defaultTemplate") ? toolInput.getString("defaultTemplate", "") : "";
+                    String autoGenerate  = toolInput.containsKey("autoGenerate")   ? toolInput.getString("autoGenerate", "")  : "";
+                    String query         = toolInput.containsKey("query")          ? toolInput.getString("query", "")         : "";
+                    String size          = toolInput.containsKey("size")           ? toolInput.getString("size", "")          : "";
+                    return callInpatientTemplateApi(method, id, templateType, name, contents, defTemplate, autoGenerate,
+                            query, size, hmisBaseUrl, hmisApiKey);
                 }
                 default:
                     return "Unknown tool: " + toolName;
@@ -1415,6 +1536,125 @@ public class AnthropicApiService implements Serializable {
             return "Clinical metadata API call interrupted.";
         } catch (Exception e) {
             return "Clinical metadata API error: " + e.getMessage();
+        }
+    }
+
+    private String callSubscriptionApi(String method, String id, String triggerType, String userId,
+            String departmentId, String applicationWide, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured. Cannot call subscription API.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: No active HMIS API key found for the current user.";
+        }
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+            String base = hmisBaseUrl.trim().replaceAll("/+$", "") + "/api/subscriptions";
+            String url;
+            String requestBody = null;
+            String httpMethod;
+
+            switch (method.toUpperCase()) {
+                case "LIST_TRIGGER_TYPES": {
+                    url = base + "/trigger-types";
+                    httpMethod = "GET";
+                    break;
+                }
+                case "LIST":
+                case "GET": {
+                    StringBuilder urlBuilder = new StringBuilder(base);
+                    boolean first = true;
+                    if (triggerType != null && !triggerType.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("triggerType=").append(URLEncoder.encode(triggerType, StandardCharsets.UTF_8));
+                        first = false;
+                    }
+                    if (userId != null && !userId.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("userId=").append(URLEncoder.encode(userId, StandardCharsets.UTF_8));
+                        first = false;
+                    }
+                    if (departmentId != null && !departmentId.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("departmentId=").append(URLEncoder.encode(departmentId, StandardCharsets.UTF_8));
+                        first = false;
+                    }
+                    if (applicationWide != null && !applicationWide.trim().isEmpty()) {
+                        String normalizedAw = applicationWide.trim().toLowerCase();
+                        if (!"true".equals(normalizedAw) && !"false".equals(normalizedAw)) {
+                            return "Error: applicationWide must be 'true' or 'false'.";
+                        }
+                        urlBuilder.append(first ? "?" : "&").append("applicationWide=").append(normalizedAw);
+                        first = false;
+                    }
+                    url = urlBuilder.toString();
+                    httpMethod = "GET";
+                    break;
+                }
+                case "POST": {
+                    url = base;
+                    httpMethod = "POST";
+                    boolean hasDepartmentId = departmentId != null && !departmentId.trim().isEmpty();
+                    boolean isApplicationWide = "true".equalsIgnoreCase(applicationWide);
+                    if (hasDepartmentId && isApplicationWide) {
+                        return "Error: provide exactly one of departmentId or applicationWide=true, not both.";
+                    }
+                    if (!hasDepartmentId && !isApplicationWide) {
+                        return "Error: provide either departmentId or applicationWide=true.";
+                    }
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    if (triggerType != null && !triggerType.isEmpty()) bodyBuilder.add("triggerType", triggerType);
+                    if (userId != null && !userId.isEmpty()) {
+                        try {
+                            bodyBuilder.add("userId", Long.parseLong(userId.trim()));
+                        } catch (NumberFormatException e) {
+                            return "Error: userId must be numeric.";
+                        }
+                    }
+                    if (isApplicationWide) {
+                        bodyBuilder.add("applicationWide", true);
+                    } else {
+                        try {
+                            bodyBuilder.add("departmentId", Long.parseLong(departmentId.trim()));
+                        } catch (NumberFormatException e) {
+                            return "Error: departmentId must be numeric.";
+                        }
+                    }
+                    requestBody = bodyBuilder.build().toString();
+                    break;
+                }
+                case "DELETE": {
+                    if (id == null || id.trim().isEmpty()) return "Error: id is required for DELETE.";
+                    url = base + "/" + id.trim();
+                    httpMethod = "DELETE";
+                    break;
+                }
+                default:
+                    return "Error: Unknown method: " + method;
+            }
+
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Finance", hmisApiKey)
+                    .header("Content-Type", "application/json");
+
+            if (requestBody != null) {
+                reqBuilder.method(httpMethod, HttpRequest.BodyPublishers.ofString(requestBody));
+            } else if ("DELETE".equals(httpMethod)) {
+                reqBuilder.DELETE();
+            } else {
+                reqBuilder.GET();
+            }
+
+            HttpResponse<String> response = client.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + "\n" + response.body();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Subscription API call interrupted.";
+        } catch (Exception e) {
+            return "Subscription API error: " + e.getMessage();
         }
     }
 
@@ -2650,6 +2890,90 @@ public class AnthropicApiService implements Serializable {
         }
     }
 
+    private String callInpatientTemplateApi(String method, String id, String templateType,
+            String name, String contents, String defaultTemplate, String autoGenerate,
+            String query, String size, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String baseUrl = hmisBaseUrl.replaceAll("/$", "") + "/api/inward/document-templates";
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+
+            switch (method.toUpperCase()) {
+                case "LIST": {
+                    StringBuilder url = new StringBuilder(baseUrl).append("?size=").append(size.isEmpty() ? "200" : size);
+                    if (!templateType.isEmpty()) url.append("&type=").append(URLEncoder.encode(templateType, StandardCharsets.UTF_8));
+                    if (!query.isEmpty()) url.append("&query=").append(URLEncoder.encode(query, StandardCharsets.UTF_8));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(url.toString()))
+                            .timeout(Duration.ofSeconds(15))
+                            .header("Finance", hmisApiKey).GET().build();
+                    HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+                    return resp.body();
+                }
+                case "GET": {
+                    if (id.isEmpty()) return "Error: id is required for GET.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id))
+                            .timeout(Duration.ofSeconds(15))
+                            .header("Finance", hmisApiKey).GET().build();
+                    HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+                    return resp.body();
+                }
+                case "POST": {
+                    if (name.isEmpty()) return "Error: name is required for POST.";
+                    if (templateType.isEmpty()) return "Error: type is required for POST.";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder()
+                            .add("name", name)
+                            .add("type", templateType);
+                    if (!contents.isEmpty()) bodyBuilder.add("contents", contents);
+                    if (!defaultTemplate.isEmpty()) bodyBuilder.add("defaultTemplate", Boolean.parseBoolean(defaultTemplate));
+                    if (!autoGenerate.isEmpty()) bodyBuilder.add("autoGenerate", Boolean.parseBoolean(autoGenerate));
+                    String bodyStr = bodyBuilder.build().toString();
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl))
+                            .timeout(Duration.ofSeconds(15))
+                            .header("Finance", hmisApiKey).header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(bodyStr)).build();
+                    HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+                    return resp.body();
+                }
+                case "PUT": {
+                    if (id.isEmpty()) return "Error: id is required for PUT.";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    if (!name.isEmpty()) bodyBuilder.add("name", name);
+                    if (!templateType.isEmpty()) bodyBuilder.add("type", templateType);
+                    if (!contents.isEmpty()) bodyBuilder.add("contents", contents);
+                    if (!defaultTemplate.isEmpty()) bodyBuilder.add("defaultTemplate", Boolean.parseBoolean(defaultTemplate));
+                    if (!autoGenerate.isEmpty()) bodyBuilder.add("autoGenerate", Boolean.parseBoolean(autoGenerate));
+                    String bodyStr = bodyBuilder.build().toString();
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id))
+                            .timeout(Duration.ofSeconds(15))
+                            .header("Finance", hmisApiKey).header("Content-Type", "application/json")
+                            .PUT(HttpRequest.BodyPublishers.ofString(bodyStr)).build();
+                    HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+                    return resp.body();
+                }
+                case "DELETE": {
+                    if (id.isEmpty()) return "Error: id is required for DELETE.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id))
+                            .timeout(Duration.ofSeconds(15))
+                            .header("Finance", hmisApiKey).DELETE().build();
+                    HttpResponse<String> resp = client.send(req, HttpResponse.BodyHandlers.ofString());
+                    return resp.body();
+                }
+                default:
+                    return "Unknown method: " + method + ". Valid: LIST, GET, POST, PUT, DELETE";
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Inpatient template API call interrupted.";
+        } catch (Exception e) {
+            return "Inpatient template API error: " + e.getMessage();
+        }
+    }
+
     public String buildSystemPrompt(String hmisApiBaseUrl, String userHmisApiKey, String githubBranch) {
         String branch = (githubBranch != null && !githubBranch.trim().isEmpty())
                 ? githubBranch.trim() : "development";
@@ -2678,7 +3002,7 @@ public class AnthropicApiService implements Serializable {
         }
 
         sb.append("## Tools Available to You\n");
-        sb.append("You have ten tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, inward discount matrix entries, investigation master records, investigation report formats, and dynamic clinical form templates:\n\n");
+        sb.append("You have thirteen tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, inward discount matrix entries, investigation master records, investigation report formats, dynamic clinical form templates, notification subscriptions, and inpatient document templates:\n\n");
         sb.append("### search_github_code\n");
         sb.append("Searches the hmislk/hmis repository source code for files matching keywords. ");
         sb.append("Use this first when a user asks about system behaviour, page logic, or wants to understand how something works.\n\n");
@@ -2767,6 +3091,27 @@ public class AnthropicApiService implements Serializable {
           .append("  </div>\n")
           .append("When generating viewHtml, use {{LABEL}} and {{VALUE}} (the formatted stored value).\n")
           .append("Always confirm with the user before POST, PUT, or DELETE.\n\n");
+        sb.append("### manage_subscriptions\n");
+        sb.append("Manage notification trigger subscriptions — who receives which notification, in which department. ")
+          .append("method: LIST | LIST_TRIGGER_TYPES | POST | DELETE. ")
+          .append("Use LIST_TRIGGER_TYPES first to discover valid TriggerType names. ")
+          .append("Use LIST to see existing subscriptions (filter by triggerType, userId, departmentId, or applicationWide). ")
+          .append("Use POST to subscribe a user (userId + triggerType + EITHER departmentId OR applicationWide=true); ")
+          .append("an application-wide subscription has a null department and matches every department, which suits hospital-wide roles such as a Guest Relations Officer. ")
+          .append("POST returns 'already_exists' with the existing id when an identical non-retired subscription exists. ")
+          .append("Use DELETE to soft-retire a subscription by id. ")
+          .append("Always confirm with the user before POST or DELETE — these changes affect who receives live notifications.\n\n");
+        sb.append("### manage_inpatient_templates\n");
+        sb.append("Create, read, update, and retire inpatient document templates (HTML with placeholder tokens). ")
+          .append("Types: InpatientDiagnosisCard (diagnosis & treatment cards) and InpatientLetter (covering letters, credit company letters, etc.). ")
+          .append("method: LIST | GET | POST | PUT | DELETE. ")
+          .append("LIST: browse templates by type and name. GET /{id}: retrieve a template including its full HTML contents. ")
+          .append("POST: create a new template (name, type, contents required). PUT: update name, type, contents, defaultTemplate, or autoGenerate flags. DELETE: soft-retire. ")
+          .append("InpatientLetter placeholders available in contents: {credit_company} {credit_company_address} {policy_no} {reference_no} {credit_limit} ")
+          .append("{institution} {department} {doctor} {letter_date} {final_bill} {patient_name} {patient_age} {patient_sex} — plus all Inpatient Diagnosis Card placeholders ")
+          .append("({name} {age} {sex} {bht} {doa} {dod} {dx} {past-dx} {allergies} {rx} {drx} {ix} {procedures} {routine-medicines} vitals). ")
+          .append("If an admission has multiple credit companies, the user picks one on the inward_letters page before generating. ")
+          .append("Always confirm with the user before POST, PUT, or DELETE — these templates appear on the inpatient dashboard Documents page.\n\n");
 
         sb.append("## How to Use the Tools\n");
         sb.append("- When a user describes a problem or asks why something behaves a certain way, search the source code first.\n");
@@ -2958,6 +3303,17 @@ public class AnthropicApiService implements Serializable {
                     {"POST",   "/user-roles/{id}/privileges",     "Assign a privilege to a role"}
                 });
 
+        appendModule(sb, "Subscriptions", "/subscriptions",
+                "Manage notification trigger subscriptions (who receives which notification, in which department). "
+                + "An application-wide subscription (null department) matches every department across the whole application.",
+                null,
+                new String[][]{
+                    {"GET",    "/subscriptions",                "List subscriptions (filters: triggerType, userId, departmentId, applicationWide)"},
+                    {"GET",    "/subscriptions/trigger-types",  "List all available TriggerType values (name, label, medium, parent)"},
+                    {"POST",   "/subscriptions",                "Create a subscription (userId, triggerType, and departmentId OR applicationWide). Returns already_exists on duplicate"},
+                    {"DELETE", "/subscriptions/{id}",           "Soft-retire a subscription by ID"}
+                });
+
         // ── Finance ───────────────────────────────────────────────────────────
         appendModule(sb, "Finance - Balance History", "/balance_history",
                 "Retrieve financial balance history: drawer entries, patient deposits, agent histories, staff welfare.",
@@ -3057,13 +3413,17 @@ public class AnthropicApiService implements Serializable {
                 });
 
         appendModule(sb, "Clinical - Favourite Medicines", "/clinical/favourite_medicines",
-                "Manage clinician favourite medicine templates. "
+                "Manage clinician favourite medicine templates and favourite-diagnosis "
+                + "medicine suggestions (PrescriptionTemplate types FavouriteMedicine / FavouriteDiagnosis). "
+                + "POST/GET accept type=FavouriteMedicine (default) or type=FavouriteDiagnosis. "
+                + "For FavouriteDiagnosis, forItemName (resolved via /entities/diagnoses) is required "
+                + "and is set as the diagnosis (forItem); itemName/itemType is the suggested medicine. "
                 + "/validate (bulk entity validation) is live. "
                 + "/parse and /suggest are not yet implemented (return 501).",
                 githubUrl(branch, "developer_docs/API_CLINICAL_FAVOURITE_MEDICINES.md"),
                 new String[][]{
-                    {"GET",    "/clinical/favourite_medicines",              "List favourite medicine templates"},
-                    {"POST",   "/clinical/favourite_medicines",              "Create a new template"},
+                    {"GET",    "/clinical/favourite_medicines",              "List favourite medicine/diagnosis templates. Use type=FavouriteDiagnosis for diagnosis suggestions"},
+                    {"POST",   "/clinical/favourite_medicines",              "Create a new template. Set type=FavouriteDiagnosis + forItemName=<diagnosis name> for diagnosis suggestions"},
                     {"GET",    "/clinical/favourite_medicines/{id}",         "Get template by ID"},
                     {"PUT",    "/clinical/favourite_medicines/{id}",         "Update a template"},
                     {"DELETE", "/clinical/favourite_medicines/{id}",         "Retire a template"},
@@ -3071,7 +3431,8 @@ public class AnthropicApiService implements Serializable {
                     {"POST",   "/clinical/favourite_medicines/suggest",      "Not implemented (501) — reserved for future auto-suggest"},
                     {"POST",   "/clinical/favourite_medicines/validate",     "Bulk-validate a set of medicine entities"},
                     {"GET",    "/clinical/favourite_medicines/entities/vtms","List/search Virtual Therapeutic Moieties"},
-                    {"GET",    "/clinical/favourite_medicines/entities/amps", "List/search Actual Medicinal Products"}
+                    {"GET",    "/clinical/favourite_medicines/entities/amps", "List/search Actual Medicinal Products"},
+                    {"GET",    "/clinical/favourite_medicines/entities/diagnoses", "List/search diagnoses (ClinicalEntity, Disease_or_Syndrome) for use as forItemName"}
                 });
 
         // ── FHIR ──────────────────────────────────────────────────────────────

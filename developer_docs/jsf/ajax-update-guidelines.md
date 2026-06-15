@@ -216,6 +216,78 @@ When a `p:commandButton` (or any submit button) has `ajax="false"`, the browser 
 
 ---
 
+## Critical Rule: Conditional `oncomplete` EL Expressions Are Frozen at Initial Render
+
+### The Problem
+
+`p:ajax oncomplete="..."` (and other client-behavior attributes like `onclick`,
+`onstart`) are plain HTML attributes. Any `#{bean.property}` EL inside them is
+evaluated **once, when the enclosing component is rendered** — not on every
+AJAX response. If the component that owns the `p:ajax` (e.g. `p:timeline`,
+`p:dataTable`) is **not** part of the AJAX `update=` target, it never
+re-renders, so the `oncomplete` string is permanently baked-in using whatever
+the bean properties were at **initial page load** (often `null`).
+
+### ❌ WRONG — conditional JS frozen with stale/initial values
+
+```xhtml
+<p:timeline value="#{bean.timelineModel}" ...>
+    <p:ajax event="select"
+            listener="#{bean.onTimelineSelect}"
+            update="panelA panelB"
+            oncomplete="if (#{bean.selectedA ne null}) { PF('dlgA').show(); }
+                        else if (#{bean.selectedB ne null}) { PF('dlgB').show(); }" />
+</p:timeline>
+```
+
+Symptom: the AJAX POST returns 200 OK, `panelA`/`panelB` are updated with the
+correct data server-side, but **no dialog ever opens** — because
+`#{bean.selectedA ne null}` was evaluated as `false` at page load and is now
+permanently part of the rendered `oncomplete` JS string.
+
+### ✅ CORRECT — dispatch from the listener with `PrimeFaces.current().executeScript(...)`
+
+```java
+import org.primefaces.PrimeFaces;
+
+public void onTimelineSelect(TimelineSelectEvent<MyEntry> e) {
+    MyEntry entry = e.getTimelineEvent().getData();
+    if (entry.isTypeA()) {
+        selectedA = entry.getA();
+        selectedB = null;
+        PrimeFaces.current().executeScript("PF('dlgA').show();");
+    } else {
+        selectedB = entry.getB();
+        selectedA = null;
+        PrimeFaces.current().executeScript("PF('dlgB').show();");
+    }
+}
+```
+
+```xhtml
+<p:ajax event="select"
+        listener="#{bean.onTimelineSelect}"
+        update="panelA panelB" />
+```
+
+`PrimeFaces.current().executeScript(...)` queues JavaScript to run as part of
+the **current** AJAX response — it always reflects this request's state, with
+no EL-in-attribute timing issue.
+
+**When this applies**: any client-behavior attribute (`oncomplete`, `onstart`,
+`onerror`) on a component whose own id is **not** in `update=`, where the
+attribute's EL references a bean property set by the same listener. Existing
+correct usages of this pattern: `AdmissionController.java` (~line 2226),
+`SurgeryBillController.java` (~line 948).
+
+**Root cause of a regression during #21488**: the Ward Medicines Timeline
+detail dialogs (Prescription / Medicine Administration) silently stopped
+opening after adding a conditional `oncomplete` to `p:timeline`'s `select`
+event — fixed by switching to `PrimeFaces.current().executeScript(...)` in
+`InpatientClinicalDataController.onTimelineSelect()`.
+
+---
+
 ## Related JSF Concepts
 
 - **Component Tree**: Only JSF components are part of the component tree

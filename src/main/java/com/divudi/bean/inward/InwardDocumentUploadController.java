@@ -32,6 +32,10 @@ public class InwardDocumentUploadController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private UploadFacade uploadFacade;
+    @EJB
+    private com.divudi.core.facade.EmailFacade emailFacade;
+    @EJB
+    private com.divudi.ejb.EmailManagerEjb emailManagerEjb;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -46,6 +50,7 @@ public class InwardDocumentUploadController implements Serializable {
     private String comments;
     private UploadedFile file;
     private Upload selectedDocument;
+    private String emailRecipient;
 
     private static final long SIZE_LIMIT = 10240000;
     private static final String ALLOWED_FILE_TYPES_REGEX = "(?i)\\.(pdf|jpeg|jpg|png)$";
@@ -216,6 +221,107 @@ public class InwardDocumentUploadController implements Serializable {
                 .build();
     }
 
+    public void prepareEmailDialog(Upload doc) {
+        if (doc == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+        selectedDocument = doc;
+        emailRecipient = resolveDefaultEmailRecipient();
+    }
+
+    private String resolveDefaultEmailRecipient() {
+        if (currentEncounter != null && currentEncounter.getPatient() != null
+                && currentEncounter.getPatient().getPerson() != null
+                && currentEncounter.getPatient().getPerson().getEmail() != null
+                && !currentEncounter.getPatient().getPerson().getEmail().trim().isEmpty()) {
+            return currentEncounter.getPatient().getPerson().getEmail().trim();
+        }
+        if (currentEncounter != null && currentEncounter.getGuardian() != null
+                && currentEncounter.getGuardian().getEmail() != null
+                && !currentEncounter.getGuardian().getEmail().trim().isEmpty()) {
+            return currentEncounter.getGuardian().getEmail().trim();
+        }
+        return "";
+    }
+
+    public void sendDocumentEmail() {
+        if (selectedDocument == null) {
+            JsfUtil.addErrorMessage("No document selected");
+            return;
+        }
+        if (emailRecipient == null || emailRecipient.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter recipient email");
+            return;
+        }
+        String recipient = emailRecipient.trim();
+        if (!com.divudi.core.util.CommonFunctions.isValidEmail(recipient)) {
+            JsfUtil.addErrorMessage("Please enter a valid email address");
+            return;
+        }
+
+        String subject = "Document: " + (selectedDocument.getFileName() != null ? selectedDocument.getFileName() : "Attachment");
+        String body = buildDocumentEmailHtml();
+
+        com.divudi.core.entity.AppEmail email = new com.divudi.core.entity.AppEmail();
+        email.setCreatedAt(new Date());
+        email.setCreater(sessionController.getLoggedUser());
+        email.setReceipientEmail(recipient);
+        email.setMessageSubject(subject);
+        email.setMessageBody(body);
+        email.setDepartment(sessionController.getLoggedUser().getDepartment());
+        email.setInstitution(sessionController.getLoggedUser().getInstitution());
+        email.setPatientEncounter(currentEncounter);
+        email.setMessageType(com.divudi.core.data.MessageType.InpatientDocumentUpload);
+        email.setSentSuccessfully(false);
+        email.setPending(true);
+        emailFacade.create(email);
+
+        try {
+            boolean success = emailManagerEjb.sendEmail(
+                    java.util.Collections.singletonList(recipient),
+                    body,
+                    subject,
+                    true
+            );
+            email.setSentSuccessfully(success);
+            email.setPending(!success);
+            if (success) {
+                email.setSentAt(new Date());
+                JsfUtil.addSuccessMessage("Email Sent Successfully");
+            } else {
+                JsfUtil.addErrorMessage("Sending Email Failed");
+            }
+            emailFacade.edit(email);
+        } catch (Exception ex) {
+            JsfUtil.addErrorMessage("Sending Email Failed");
+        }
+    }
+
+    private String buildDocumentEmailHtml() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><body>");
+        sb.append("<p>Please find the details of the document below.</p>");
+        sb.append("<table border=\"0\" cellpadding=\"4\">");
+        sb.append("<tr><td><b>Document Type</b></td><td>").append(escapeHtml(selectedDocument.getUploadType() != null ? selectedDocument.getUploadType().getLabel() : "")).append("</td></tr>");
+        sb.append("<tr><td><b>File Name</b></td><td>").append(escapeHtml(selectedDocument.getFileName())).append("</td></tr>");
+        if (selectedDocument.getComments() != null && !selectedDocument.getComments().trim().isEmpty()) {
+            sb.append("<tr><td><b>Comments</b></td><td>").append(escapeHtml(selectedDocument.getComments())).append("</td></tr>");
+        }
+        sb.append("</table>");
+        sb.append("<p><i>Note: The file itself is not attached to this email. Please contact the hospital to obtain a copy of the document.</i></p>");
+        sb.append("</body></html>");
+        return sb.toString();
+    }
+
+    private static String escapeHtml(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\"", "&quot;").replace("'", "&#39;");
+    }
+
     private String detectContentType(byte[] bytes, String fileName) {
         if (bytes == null || bytes.length < 4) {
             return null;
@@ -240,6 +346,7 @@ public class InwardDocumentUploadController implements Serializable {
         types.add(UploadType.Inward_Consent_Form);
         types.add(UploadType.Inward_Insurance_Document);
         types.add(UploadType.Inward_Referral_Letter);
+        types.add(UploadType.Inward_GOP);
         types.add(UploadType.Inward_Other);
         return types;
     }
@@ -292,6 +399,14 @@ public class InwardDocumentUploadController implements Serializable {
 
     public void setFile(UploadedFile file) {
         this.file = file;
+    }
+
+    public String getEmailRecipient() {
+        return emailRecipient;
+    }
+
+    public void setEmailRecipient(String emailRecipient) {
+        this.emailRecipient = emailRecipient;
     }
 
     // </editor-fold>

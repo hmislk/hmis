@@ -21,6 +21,8 @@ public class AmpRequestDTO extends PharmaceuticalItemBaseRequestDTO implements S
     private Boolean allowFractions;
     private Boolean consumptionAllowed;
     private Boolean refundsAllowed;
+    private Double strengthOfAnIssueUnit;
+    private Long strengthUnitId;
 
     public AmpRequestDTO() {
     }
@@ -95,5 +97,21 @@ public class AmpRequestDTO extends PharmaceuticalItemBaseRequestDTO implements S
 
     public void setRefundsAllowed(Boolean refundsAllowed) {
         this.refundsAllowed = refundsAllowed;
+    }
+
+    public Double getStrengthOfAnIssueUnit() {
+        return strengthOfAnIssueUnit;
+    }
+
+    public void setStrengthOfAnIssueUnit(Double strengthOfAnIssueUnit) {
+        this.strengthOfAnIssueUnit = strengthOfAnIssueUnit;
+    }
+
+    public Long getStrengthUnitId() {
+        return strengthUnitId;
+    }
+
+    public void setStrengthUnitId(Long strengthUnitId) {
+        this.strengthUnitId = strengthUnitId;
     }
 }

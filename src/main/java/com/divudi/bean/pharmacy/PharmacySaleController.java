@@ -43,6 +43,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyService;
+import com.divudi.ejb.PrescriptionToItemService;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.StaffService;
 import com.divudi.core.entity.Bill;
@@ -196,6 +197,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     @EJB
     private PharmacyService pharmacyService;
     @EJB
+    private PrescriptionToItemService prescriptionToItemService;
+    @EJB
     private BillService billService;
     @EJB
     private AuditService auditService;
@@ -227,6 +230,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     boolean billPreview = false;
     boolean fromOpdEncounter = false;
     String opdEncounterComments = "";
+    String prescriptionHtml;
     int patientSearchTab = 0;
 
     Staff toStaff;
@@ -1832,6 +1836,134 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         clearBillItem();
         getBillItem();
         return addedQty;
+    }
+
+    /**
+     * Pre-loads the retail sale bill with the medicines prescribed in an OPD
+     * encounter (Pharmacy Bill button on the clinical queue). Each visit
+     * medicine's prescription is resolved to a dispensable item and quantity via
+     * {@link PrescriptionToItemService}, and the earliest-expiry (FEFO) in-date
+     * stock batch in the logged-in department is auto-picked. Items are added
+     * through {@link #addBillItemSingleItem()} so the usual checks (expiry,
+     * available quantity, duplicate batch, user stock locking, allergies) all
+     * apply, and the user can still edit or remove lines before settling.
+     *
+     * <p>Mirrors {@link PharmacySaleBhtController#prepareDischargeIssueFromPrescriptions}.
+     * Medicines with no stock (or whose conversion fails) are skipped with a
+     * visible warning, never silently dropped.</p>
+     *
+     * @param encounterMedicines visit medicines of the OPD encounter
+     */
+    public void addBillItemsFromEncounterMedicines(List<ClinicalFindingValue> encounterMedicines) {
+        if (encounterMedicines == null || encounterMedicines.isEmpty()) {
+            return;
+        }
+        Department dispensingDepartment = getSessionController().getLoggedUser() != null
+                ? getSessionController().getLoggedUser().getDepartment() : null;
+        if (dispensingDepartment == null) {
+            JsfUtil.addErrorMessage("No logged-in department to dispense the prescribed medicines from. Please add them manually.");
+            return;
+        }
+        List<String> skipped = new ArrayList<>();
+        for (ClinicalFindingValue encounterMedicine : encounterMedicines) {
+            if (encounterMedicine == null
+                    || encounterMedicine.getPrescription() == null
+                    || encounterMedicine.getPrescription().getItem() == null) {
+                continue;
+            }
+            Prescription sourcePrescription = encounterMedicine.getPrescription();
+            Item dispensableItem = sourcePrescription.getItem();
+            Double calculatedQty = null;
+            try {
+                PrescriptionToItemService.PrescriptionToItemResult result
+                        = prescriptionToItemService.calculateItemAndQuantity(sourcePrescription);
+                if (result != null && result.isSuccess()) {
+                    if (result.getItem() != null) {
+                        dispensableItem = result.getItem();
+                    }
+                    if (result.getQuantity() != null) {
+                        calculatedQty = result.getQuantity();
+                    }
+                }
+            } catch (Exception e) {
+                // Incomplete or unconvertible prescription: fall through to the
+                // qty=1 default so the pharmacist sets the real quantity on the page.
+            }
+            double requiredQty = (calculatedQty != null && calculatedQty > 0) ? Math.ceil(calculatedQty) : 1.0;
+
+            Stock fefoStock = findFefoStockForPrescribedItem(dispensableItem, dispensingDepartment, requiredQty);
+            if (fefoStock == null || fefoStock.getStock() <= 0) {
+                skipped.add(dispensableItem.getName() + " - no stock");
+                continue;
+            }
+
+            BillItem newBillItem = new BillItem();
+            newBillItem.setItem(fefoStock.getItemBatch().getItem());
+            // Carry the prescription details onto the bill item so dose/frequency/
+            // duration show on the bill and drug labels print correctly.
+            Prescription billItemPrescription = new Prescription();
+            billItemPrescription.setItem(fefoStock.getItemBatch().getItem());
+            billItemPrescription.setDose(sourcePrescription.getDose());
+            billItemPrescription.setDoseUnit(sourcePrescription.getDoseUnit());
+            billItemPrescription.setFrequencyUnit(sourcePrescription.getFrequencyUnit());
+            billItemPrescription.setDuration(sourcePrescription.getDuration());
+            billItemPrescription.setDurationUnit(sourcePrescription.getDurationUnit());
+            billItemPrescription.setComment(sourcePrescription.getComment());
+            billItemPrescription.setPatient(getPatient());
+            newBillItem.setPrescription(billItemPrescription);
+
+            setBillItem(newBillItem);
+            setStock(fefoStock);
+            setQty(Math.min(requiredQty, fefoStock.getStock()));
+
+            double addedQty = addBillItemSingleItem();
+            if (addedQty <= 0) {
+                String reason = (errorMessage != null && !errorMessage.trim().isEmpty())
+                        ? errorMessage : "could not be added";
+                skipped.add(dispensableItem.getName() + " - " + reason);
+                clearBillItem();
+            }
+        }
+        calculateBillItemsAndBillTotalsOfPreBill();
+        if (!skipped.isEmpty()) {
+            JsfUtil.addErrorMessage("Not auto-added from the prescription: " + String.join("; ", skipped)
+                    + ". Please add manually if needed.");
+        }
+    }
+
+    /**
+     * FEFO stock lookup for a prescribed item: in-date, positive-stock batches in
+     * the dispensing department, earliest expiry first. Prefers the first batch
+     * that covers the required quantity; otherwise returns the earliest-expiry
+     * batch (the caller caps the quantity to its stock). For VMP/VTM prescriptions
+     * the candidate AMPs are resolved first, as in the BHT discharge issue flow.
+     */
+    private Stock findFefoStockForPrescribedItem(Item dispensableItem, Department dispensingDepartment, double requiredQty) {
+        List<Amp> amps = pharmacyBean.resolveAmps(dispensableItem);
+        if (amps == null || amps.isEmpty()) {
+            return null;
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("amps", amps);
+        m.put("d", dispensingDepartment);
+        m.put("z", 0.0);
+        m.put("doe", new Date());
+        String jpql = "select s from Stock s "
+                + " where s.itemBatch.item in :amps "
+                + " and s.department=:d "
+                + " and s.stock > :z "
+                + " and s.itemBatch.dateOfExpire > :doe "
+                + " order by s.itemBatch.dateOfExpire";
+        List<Stock> availableStocks = getStockFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        if (availableStocks == null || availableStocks.isEmpty()) {
+            return null;
+        }
+        for (Stock s : availableStocks) {
+            if (s.getStock() >= requiredQty) {
+                return s;
+            }
+        }
+        return availableStocks.get(0);
     }
 
     public void addBillItemMultipleBatches() {
@@ -4336,6 +4468,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         userStockContainer = null;
         fromOpdEncounter = false;
         opdEncounterComments = null;
+        prescriptionHtml = null;
         patientSearchTab = 0;
         errorMessage = "";
         comment = null;
@@ -4650,6 +4783,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void setOpdEncounterComments(String opdEncounterComments) {
         this.opdEncounterComments = opdEncounterComments;
+    }
+
+    public String getPrescriptionHtml() {
+        return prescriptionHtml;
+    }
+
+    public void setPrescriptionHtml(String prescriptionHtml) {
+        this.prescriptionHtml = prescriptionHtml;
     }
 
     public int getPatientSearchTab() {

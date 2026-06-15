@@ -72,7 +72,7 @@
                                                 class="m-1 ui-button-success"
                                                 update="acVtm gpDetail actionButtons statusFilterPanel vtmDetails"
                                                 process="@this"
-                                                disabled="#{storeVtmController.editable}">
+                                                disabled="#{storeVtmController.editable or !webUserController.hasPrivilege('PharmacyItemNameEdit')}">
                                                 <f:setPropertyActionListener target="#{storeVtmController.selectedVtmDto}" value="#{null}" />
                                             </p:commandButton>
 
@@ -84,7 +84,7 @@
                                                 class="m-1 ui-button-info"
                                                 update="vtmDetails acVtm actionButtons statusFilterPanel"
                                                 process="@this"
-                                                disabled="#{storeVtmController.editable or storeVtmController.selectedVtmDto eq null}">
+                                                disabled="#{storeVtmController.editable or storeVtmController.selectedVtmDto eq null or !webUserController.hasPrivilege('PharmacyItemNameEdit')}">
                                             </p:commandButton>
 
                                             <p:commandButton
@@ -255,7 +255,7 @@
                                                 class="m-1 ui-button-warning w-25"
                                                 process="btnSave gpDetail"
                                                 update="acVtm gpDetail form:msg actionButtons vtmDetails statusFilterPanel"
-                                                disabled="#{!storeVtmController.editable}"
+                                                disabled="#{!storeVtmController.editable or !webUserController.hasPrivilege('PharmacyItemNameEdit')}"
                                                 oncomplete="try { if (PF('acVtm')) { PF('acVtm').cache = {}; } } catch(e) {}">
                                             </p:commandButton>
                                             <p:commandButton

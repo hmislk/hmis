@@ -1,0 +1,194 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form id="receiptForm">
+
+                    <h:panelGroup rendered="#{roomChangeController.roomForReceipt eq null}" layout="block">
+                        <div class="text-center py-5">
+                            <i class="fa-solid fa-exclamation-circle fa-3x text-warning mb-3"></i>
+                            <p class="text-muted">No room discharge record selected. Please navigate from the Patient Room Details page.</p>
+                            <p:commandButton
+                                value="Inpatient Dashboard"
+                                ajax="false"
+                                action="/inward/admission_profile?faces-redirect=true"
+                                icon="fa fa-id-card"
+                                class="ui-button-secondary mt-3">
+                            </p:commandButton>
+                        </div>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{roomChangeController.roomForReceipt ne null}" layout="block">
+
+                        <!-- Action Buttons (hidden when printing) -->
+                        <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    type="button"
+                                    value="Print"
+                                    icon="fa fa-print"
+                                    class="ui-button-info"
+                                    onclick="window.print();">
+                                </p:commandButton>
+                                <p:commandButton
+                                    type="button"
+                                    value="Print Copy"
+                                    icon="fa fa-copy"
+                                    class="ui-button-secondary"
+                                    onclick="window.print();">
+                                </p:commandButton>
+                            </div>
+                            <p:commandButton
+                                value="Inpatient Dashboard"
+                                ajax="false"
+                                icon="fa fa-id-card"
+                                class="ui-button-success"
+                                action="#{admissionController.navigateToAdmissionProfilePage()}">
+                                <f:setPropertyActionListener
+                                    value="#{roomChangeController.roomForReceipt.patientEncounter}"
+                                    target="#{admissionController.current}"/>
+                            </p:commandButton>
+                        </div>
+
+                        <!-- Receipt Content -->
+                        <div class="border p-4" style="max-width:800px; margin:0 auto; background:#fff;">
+                            <!-- Hospital Header -->
+                            <div class="text-center mb-4">
+                                <h4 class="mb-0 fw-bold">
+                                    <h:outputText value="#{sessionController.institution.name}" />
+                                </h4>
+                                <p class="text-muted mb-1">Room Discharge Receipt</p>
+                                <hr/>
+                            </div>
+
+                            <!-- Patient Details -->
+                            <table class="w-100 mb-3" style="font-size:0.9rem;">
+                                <tr>
+                                    <td style="width:25%;" class="fw-bold">Patient Name</td>
+                                    <td style="width:25%;">
+                                        <h:outputText value="#{roomChangeController.roomForReceipt.patientEncounter.patient.person.nameWithTitle}"/>
+                                    </td>
+                                    <td style="width:25%;" class="fw-bold">BHT No</td>
+                                    <td style="width:25%;">
+                                        <h:outputText value="#{roomChangeController.roomForReceipt.patientEncounter.bhtNo}"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Age</td>
+                                    <td>
+                                        <h:outputText value="#{roomChangeController.roomForReceipt.patientEncounter.patient.person.ageAsString}"/>
+                                    </td>
+                                    <td class="fw-bold">Admission Date</td>
+                                    <td>
+                                        <h:outputText value="#{roomChangeController.roomForReceipt.patientEncounter.dateOfAdmission}">
+                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm" timeZone="Asia/Colombo"/>
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <hr/>
+
+                            <!-- Room Discharge Details -->
+                            <table class="w-100 mb-3" style="font-size:0.9rem;">
+                                <tr>
+                                    <td style="width:25%;" class="fw-bold">Room</td>
+                                    <td style="width:25%;">
+                                        <h:outputText value="#{roomChangeController.roomForReceipt.roomFacilityCharge.name}"/>
+                                        <h:panelGroup rendered="#{roomChangeController.roomForReceipt.patientRoomClass eq 'class com.divudi.core.entity.inward.GuardianRoom'}">
+                                            <span class="badge bg-success ms-1">Guardian</span>
+                                        </h:panelGroup>
+                                    </td>
+                                    <td style="width:25%;" class="fw-bold">Status</td>
+                                    <td style="width:25%;">
+                                        <span class="badge bg-info">Discharged</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Admitted At</td>
+                                    <td>
+                                        <h:outputText value="#{roomChangeController.roomForReceipt.admittedAt}">
+                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm" timeZone="Asia/Colombo"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td class="fw-bold">Discharged At</td>
+                                    <td>
+                                        <h:outputText value="#{roomChangeController.roomForReceipt.dischargedAt}">
+                                            <f:convertDateTime pattern="dd MMM yyyy HH:mm" timeZone="Asia/Colombo"/>
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold">Duration</td>
+                                    <td colspan="3">
+                                        <span class="text-muted">(See admitted and discharged times above)</span>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <hr/>
+
+                            <!-- Discharge Information -->
+                            <table class="w-100" style="font-size:0.85rem;">
+                                <tr>
+                                    <td style="width:25%;" class="fw-bold">Discharged By</td>
+                                    <td style="width:25%;">
+                                        <h:outputText value="#{roomChangeController.roomForReceipt.dischargedBy.name}"/>
+                                    </td>
+                                    <td style="width:25%;" class="fw-bold">Printed By</td>
+                                    <td style="width:25%;">
+                                        <h:outputText value="#{sessionController.loggedUser.name}"/>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Footer -->
+                            <div class="text-center mt-4 text-muted" style="font-size:0.75rem;">
+                                <hr/>
+                                <p class="mb-0">This is a computer-generated receipt.</p>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                </h:form>
+
+                <!-- Auto-print on load when receipt is present -->
+                <h:panelGroup rendered="#{roomChangeController.roomForReceipt ne null}">
+                    <script type="text/javascript">
+                        //<![CDATA[
+                        window.onload = function() {
+                            setTimeout(function() {
+                                window.print();
+                            }, 500);
+                        };
+                        //]]>
+                    </script>
+                </h:panelGroup>
+
+                <!-- Print styling -->
+                <style type="text/css">
+                    @media print {
+                        .no-print, .no-print * {
+                            display: none !important;
+                        }
+                        body {
+                            margin: 0;
+                            padding: 10mm;
+                        }
+                        .border {
+                            border: none !important;
+                        }
+                    }
+                </style>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

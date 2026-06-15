@@ -9,7 +9,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form id="formWardMedicines">
-                    <p:growl id="growlWardMedicines" showDetail="true" life="4000" />
+                    <p:growl id="growlWardMedicines" life="4000" />
                     <div class="row">
                         <div class="col-12 px-4">
                             <p:commandButton
@@ -123,14 +123,23 @@
                                         <div class="d-flex align-items-center justify-content-between w-100 fw-bold"
                                              style="background-color:#198754; color:#ffffff; margin:-0.75rem -1rem; padding:0.4rem 1rem; border-top-left-radius:0.25rem; border-top-right-radius:0.25rem;">
                                             <p:outputLabel value="Active Ward Medications" />
-                                            <p:commandButton id="btnRequestFromPharmacy"
-                                                             value="Request Selected from Pharmacy"
-                                                             icon="fa fa-paper-plane"
-                                                             ajax="false"
-                                                             title="Request the ticked medicines from a pharmacy"
-                                                             styleClass="ui-button-warning ui-button-sm"
-                                                             process="@form"
-                                                             action="#{inpatientClinicalDataController.requestSelectedWardMedicinesFromPharmacy()}" />
+                                            <h:panelGroup>
+                                                <p:commandButton id="btnDeductAdministeredFromWardStock"
+                                                                 value="Deduct Administered from Ward Stock"
+                                                                 icon="fa fa-syringe"
+                                                                 ajax="false"
+                                                                 title="Review administered doses and deduct them from ward stock"
+                                                                 styleClass="ui-button-info ui-button-sm mx-1"
+                                                                 action="#{medicationAdministrationStockSettlementController.navigateToSettle}" />
+                                                <p:commandButton id="btnRequestFromPharmacy"
+                                                                 value="Request Selected from Pharmacy"
+                                                                 icon="fa fa-paper-plane"
+                                                                 ajax="false"
+                                                                 title="Request the ticked medicines from a pharmacy"
+                                                                 styleClass="ui-button-warning ui-button-sm"
+                                                                 process="@form"
+                                                                 action="#{inpatientClinicalDataController.requestSelectedWardMedicinesFromPharmacy()}" />
+                                            </h:panelGroup>
                                         </div>
                                     </f:facet>
                                     <p:dataTable id="tblActiveMedicines"
@@ -164,7 +173,42 @@
                                         <p:column headerText="Comment">
                                             <h:outputText value="#{rx.prescription.comment}" />
                                         </p:column>
+                                        <p:column headerText="Administration History" style="width: 260px;">
+                                            <ui:repeat value="#{medicationAdministrationController.getAdministrationHistory(rx.prescription)}" var="mar">
+                                                <div class="small mb-1 d-flex align-items-start justify-content-between">
+                                                    <span>
+                                                        <h:outputText value="#{mar.administeredAt}">
+                                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                                        </h:outputText>
+                                                        <h:outputText value=" - #{mar.status.label}" styleClass="fw-bold" />
+                                                        <h:outputText value=" #{mar.qty} #{mar.itemBatch.batchNo}" rendered="#{mar.status.name() == 'GIVEN'}" />
+                                                        <br />
+                                                        <span class="text-muted">
+                                                            <h:outputText value="by #{mar.administeredBy.person.nameWithTitle}" />
+                                                        </span>
+                                                    </span>
+                                                    <p:commandButton id="btnRetireAdministration"
+                                                                     icon="fa fa-undo"
+                                                                     title="Retire this administration record (recorded by mistake)"
+                                                                     class="ui-button-secondary ui-button-sm m-1"
+                                                                     rendered="#{!mar.stockDeducted}"
+                                                                     oncomplete="PF('dlgRetireAdministration').show()"
+                                                                     process="@this"
+                                                                     update=":formWardMedicines:panelRetireAdministrationDialog"
+                                                                     actionListener="#{medicationAdministrationController.openRetireDialog(mar)}" />
+                                                </div>
+                                            </ui:repeat>
+                                        </p:column>
                                         <p:column headerText="Action" style="width: 220px;">
+                                            <p:commandButton id="btnAdminister"
+                                                             icon="fa fa-syringe"
+                                                             value="Administer"
+                                                             title="Record medicine administration to patient"
+                                                             class="ui-button-success ui-button-sm m-1"
+                                                             oncomplete="PF('dlgAdminister').show()"
+                                                             process="@this"
+                                                             update=":formWardMedicines:growlWardMedicines :formWardMedicines:panelAdministerDialog"
+                                                             actionListener="#{medicationAdministrationController.openAdministerDialog(rx)}" />
                                             <p:commandButton id="btnChangeDose"
                                                              icon="fa fa-edit"
                                                              value="Change"
@@ -281,6 +325,116 @@
                                                      oncomplete="PF('dlgOmit').hide()"
                                                      class="ui-button-danger m-1" />
                                 </div>
+                            </div>
+                        </p:dialog>
+                        <p:dialog id="panelAdministerDialog"
+                                 header="Record Medicine Administration"
+                                 widgetVar="dlgAdminister"
+                                 modal="true"
+                                 resizable="false"
+                                 closable="true"
+                                 width="500">
+                            <div class="p-3">
+                                <h:panelGroup rendered="#{medicationAdministrationController.administeringCfv != null}">
+                                    <p class="mb-3">
+                                        <strong>Medicine: </strong>
+                                        <h:outputText value="#{medicationAdministrationController.administeringCfv.prescription.formattedPrescriptionWithoutIndoorOutdoor}" />
+                                    </p>
+                                    <div class="mb-3">
+                                        <p:outputLabel for="selAdministerStatus" value="Status:" styleClass="d-block mb-1" />
+                                        <p:selectOneMenu id="selAdministerStatus"
+                                                         value="#{medicationAdministrationController.administerStatus}"
+                                                         style="width: 100%;">
+                                            <f:selectItems value="#{medicationAdministrationController.administrationStatuses}" var="st" itemLabel="#{st.label}" itemValue="#{st}" />
+                                            <p:ajax process="@this" update=":formWardMedicines:groupGivenFields" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <h:panelGroup id="groupGivenFields" layout="block">
+                                        <h:panelGroup layout="block" rendered="#{medicationAdministrationController.administerStatus.name() == 'GIVEN'}">
+                                            <div class="mb-3">
+                                                <p:outputLabel for="selAdministerBatch" value="Batch (earliest expiry first):" styleClass="d-block mb-1" />
+                                                <p:selectOneMenu id="selAdministerBatch"
+                                                                 value="#{medicationAdministrationController.selectedStock}"
+                                                                 style="width: 100%;">
+                                                    <f:selectItems value="#{medicationAdministrationController.availableWardStocks}" var="s"
+                                                                   itemLabel="#{s.itemBatch.batchNo} (exp #{s.itemBatch.dateOfExpire}, avail #{s.stock})"
+                                                                   itemValue="#{s}" />
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="mb-3">
+                                                <p:outputLabel for="txtAdministerQty" value="Quantity Given:" styleClass="d-block mb-1" />
+                                                <p:inputNumber id="txtAdministerQty"
+                                                               value="#{medicationAdministrationController.administerQty}"
+                                                               decimalPlaces="2"
+                                                               style="width: 100%;" />
+                                            </div>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                    <div class="mb-3">
+                                        <p:outputLabel for="txtAdministerComments" value="Comments:" styleClass="d-block mb-1" />
+                                        <p:inputTextarea id="txtAdministerComments"
+                                                         value="#{medicationAdministrationController.administerComments}"
+                                                         rows="2"
+                                                         style="width: 100%;"
+                                                         placeholder="Optional notes (e.g. reason for refused/held)" />
+                                    </div>
+                                    <div class="d-flex justify-content-end">
+                                        <p:commandButton value="Cancel"
+                                                         type="button"
+                                                         onclick="PF('dlgAdminister').hide()"
+                                                         class="ui-button-secondary m-1" />
+                                        <p:commandButton value="Confirm"
+                                                         id="btnConfirmAdminister"
+                                                         action="#{medicationAdministrationController.recordAdministration()}"
+                                                         process=":formWardMedicines:panelAdministerDialog"
+                                                         update=":formWardMedicines:growlWardMedicines :formWardMedicines:panelActiveMedicines"
+                                                         oncomplete="PF('dlgAdminister').hide()"
+                                                         class="ui-button-success m-1" />
+                                    </div>
+                                </h:panelGroup>
+                            </div>
+                        </p:dialog>
+                        <p:dialog id="panelRetireAdministrationDialog"
+                                 header="Retire Administration Record"
+                                 widgetVar="dlgRetireAdministration"
+                                 modal="true"
+                                 resizable="false"
+                                 closable="true"
+                                 width="450">
+                            <div class="p-3">
+                                <h:panelGroup rendered="#{medicationAdministrationController.recordToRetire != null}">
+                                    <p class="mb-2">
+                                        <strong>Medicine: </strong>
+                                        <h:outputText value="#{medicationAdministrationController.recordToRetire.item.name}" />
+                                    </p>
+                                    <p class="mb-2 text-muted">
+                                        <h:outputText value="#{medicationAdministrationController.recordToRetire.administeredAt}">
+                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                        </h:outputText>
+                                        <h:outputText value=" - #{medicationAdministrationController.recordToRetire.status.label}" />
+                                    </p>
+                                    <div class="mb-3">
+                                        <p:outputLabel for="txtRetireReason" value="Reason for retiring this record:" styleClass="d-block mb-1" />
+                                        <p:inputTextarea id="txtRetireReason"
+                                                         value="#{medicationAdministrationController.retireReason}"
+                                                         rows="3"
+                                                         style="width: 100%;"
+                                                         placeholder="e.g. Recorded by mistake" />
+                                    </div>
+                                    <div class="d-flex justify-content-end">
+                                        <p:commandButton value="Cancel"
+                                                         type="button"
+                                                         onclick="PF('dlgRetireAdministration').hide()"
+                                                         class="ui-button-secondary m-1" />
+                                        <p:commandButton value="Retire"
+                                                         id="btnConfirmRetireAdministration"
+                                                         action="#{medicationAdministrationController.retireAdministration()}"
+                                                         process="@this txtRetireReason"
+                                                         update=":formWardMedicines:growlWardMedicines :formWardMedicines:panelActiveMedicines"
+                                                         oncomplete="PF('dlgRetireAdministration').hide()"
+                                                         class="ui-button-danger m-1" />
+                                    </div>
+                                </h:panelGroup>
                             </div>
                         </p:dialog>
                         <p:dialog id="panelChangeDoseDialog"

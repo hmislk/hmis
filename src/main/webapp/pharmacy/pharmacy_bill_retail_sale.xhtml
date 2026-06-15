@@ -937,6 +937,27 @@
                                                 </h:panelGroup>
                                             </h:panelGroup>
                                         </p:panel>
+                                        <p:panel id="panelPrescription"
+                                                 class="my-1 w-100"
+                                                 toggleable="true"
+                                                 rendered="#{not empty pharmacySaleController.prescriptionHtml}">
+                                            <f:facet name="header">
+                                                <h:outputText styleClass="fas fa-prescription" />
+                                                <h:outputLabel value="Prescription" class="mx-4"/>
+                                            </f:facet>
+                                            <style>
+                                                .rx-preview { line-height: 1.5; overflow-x: hidden; }
+                                                .rx-preview p { margin: 0; }
+                                                .rx-preview h1 { font-size: 1.4rem; margin: 0.2rem 0; }
+                                                .rx-preview h2 { font-size: 1.1rem; margin: 0.4rem 0 0.2rem 0; }
+                                                .rx-preview .ql-align-center { text-align: center; }
+                                                .rx-preview .ql-align-right { text-align: right; }
+                                                .rx-preview .ql-align-justify { text-align: justify; }
+                                            </style>
+                                            <h:panelGroup id="prescriptionView" layout="block" styleClass="rx-preview p-2">
+                                                <h:outputText value="#{pharmacySaleController.prescriptionHtml}" escape="false"/>
+                                            </h:panelGroup>
+                                        </p:panel>
                                         <div class="row">
                                             <div class="col">
                                                 <p:panel id="panelPayment"  class="w-100">

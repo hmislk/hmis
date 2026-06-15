@@ -123,6 +123,7 @@ public enum Privileges {
     InpatientClinicalAssessment("Inpatient Clinical Assessment"),
     InpatientClinicalDischarge("Inpatient Clinical Discharge"),
     InwardDocumentUpload("Inward Document Upload"),
+    InpatientLetter("Inpatient Letter"),
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Nurse">
@@ -331,6 +332,7 @@ public enum Privileges {
     StoreReports("Store Reports"),
     StoreSummery("Store Summary"),
     StoreAdministration("Store Administration"),
+    PharmacyItemNameEdit("Pharmacy Item Name Edit"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Channel">
@@ -514,6 +516,7 @@ public enum Privileges {
     PharmacyDischargeMedicineIssue("Pharmacy Discharge Medicine Issue"),
     PharmacyDirectIssueToTheaterCases("Pharmacy Direct Issue to Theater Cases"),
     PharmacyBhtIssueRequest("Pharmacy BHT Issue Request"),
+    PharmacyBhtRequestForceComplete("Pharmacy BHT Request Force Complete"),
     PharmacySearchInpatientDirectIssuesbyBill("Pharmacy Search Inpatient Direct Issues by Bill"),
     PharmacySearchInpatientDirectIssuesbyItem("Pharmacy Search Inpatient Direct Issues by Item"),
     PharmacySearchInpatientDirectIssueReturnsbyBill("Pharmacy Search Inpatient Direct Issue Returns by Bill"),
@@ -909,6 +912,7 @@ public enum Privileges {
             case PharmacyDischargeMedicineIssue:
             case PharmacyDirectIssueToTheaterCases:
             case PharmacyBhtIssueRequest:
+            case PharmacyBhtRequestForceComplete:
             case PharmacySearchInpatientDirectIssuesbyBill:
             case PharmacySearchInpatientDirectIssuesbyItem:
             case PharmacySearchInpatientDirectIssueReturnsbyBill:
@@ -1018,7 +1022,8 @@ public enum Privileges {
             case PharmacyGrnFinalize:
             case PharmacyGrnApprove:
             case PrintOriginalPoBillFromReprint:
-            case PrintOriginalGrnBillFromReprint:    
+            case PrintOriginalGrnBillFromReprint:
+            case PharmacyItemNameEdit:
 
                 return "Pharmacy";
 
@@ -1084,6 +1089,7 @@ public enum Privileges {
             case InpatientClinicalAssessment:
             case InpatientClinicalDischarge:
             case InwardDocumentUpload:
+            case InpatientLetter:
             case InwardFormTemplateAdmin:
             case InwardFormFill:
                 return "Inward";

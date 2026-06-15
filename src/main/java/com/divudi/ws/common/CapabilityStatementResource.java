@@ -80,7 +80,9 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Clinical Favourite Medicines", "/api/clinical/favourite_medicines",
-                        "Clinical favourite medicine management",
+                        "Clinical favourite medicine templates and favourite-diagnosis medicine suggestions "
+                        + "(type=FavouriteMedicine default, or type=FavouriteDiagnosis). "
+                        + "Includes /entities/diagnoses for searching diagnoses to use as forItemName.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Membership", "/api/apiMembership",
@@ -162,6 +164,14 @@ public class CapabilityStatementResource {
                         + "POST returns HTTP 409 with existing id when a duplicate name already exists.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Document Templates", "/api/inward/document-templates",
+                        "Manage inpatient document templates (HTML templates with placeholders). "
+                        + "Supports types: InpatientDiagnosisCard, InpatientLetter. "
+                        + "Optional query params: type (filter by type), query (name search), size. "
+                        + "GET /{id} includes full contents field. "
+                        + "POST/PUT fields: name, type, contents (HTML with placeholders), defaultTemplate, autoGenerate.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Inward Room Facility Charges", "/api/inward/room-facility-charges",
                         "Manage inward room facility charges / room fees (backs /inward/inward_room_facility.xhtml). "
                         + "Supports optional filters roomId and roomCategoryId. "
@@ -216,7 +226,9 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST", "PUT", "PATCH"))
                 .add(resource("Pharmaceutical Items", "/api/pharmaceutical_items",
-                        "Pharmaceutical item master data",
+                        "Pharmaceutical item master data. AMP create/update accepts "
+                        + "strengthOfAnIssueUnit (Double) and strengthUnitId (Long, MeasurementUnit) "
+                        + "for strength-ratio based dispensing substitution.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Pharmacy Adjustments", "/api/pharmacy_adjustments",
@@ -265,6 +277,16 @@ public class CapabilityStatementResource {
                         "User role CRUD and role-level privilege assignment with optional department scope.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Subscriptions", "/api/subscriptions",
+                        "Manage notification trigger subscriptions (who receives which notification, in which department). "
+                        + "GET /subscriptions lists subscriptions (filters: triggerType, userId, departmentId, applicationWide=true). "
+                        + "GET /subscriptions/trigger-types lists all available TriggerType values (name, label, medium, parent). "
+                        + "POST /subscriptions creates a subscription (body: userId, triggerType, and EITHER departmentId OR applicationWide:true); "
+                        + "returns already_exists when an identical non-retired subscription exists. "
+                        + "DELETE /subscriptions/{id} soft-retires a subscription. "
+                        + "An application-wide subscription (null department) matches every department across the whole application.",
+                        "API Key",
+                        "GET", "POST", "DELETE"))
                                 .add(resource("Investigations", "/api/investigations",
                         "Investigation master management including search, create, update, and activate/deactivate for item import workflows",
                         "API Key",
