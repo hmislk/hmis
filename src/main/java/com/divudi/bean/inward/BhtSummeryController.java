@@ -1935,37 +1935,19 @@ public class BhtSummeryController implements Serializable {
         createTables();
 
         if (configOptionApplicationController.getBooleanValueByKey("Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false)) {
-            
-            System.out.println("DEBUG: Merging fees - ProfFee size = " + profesionallFee.size());
-            System.out.println("DEBUG: Merging fees - AssistFee size = " + doctorAndNurseFee.size());
-
-            // Assisting fees (non-Consultant staff) are never touched by setProfesionallFeeAdjusted,
-            // so their feeAdjusted stays 0. When merged into the Professional Fee list they would show
-            // a blank/zero Adjusted Value. Seed it from feeValue (mirrors the professional-fee behaviour)
-            // so the combined list shows a correct adjusted value for assistant doctors too.
-            for (BillFee assistFee : doctorAndNurseFee) {
-                if (assistFee.getFeeAdjusted() == 0.0) {
-                    assistFee.setFeeAdjusted(assistFee.getFeeValue());
-                    getBillFeeFacade().edit(assistFee);
-                }
-            }
-
+            // Both lists already have feeAdjusted = feeValue (set by setProfesionallFeeAdjusted /
+            // setAssistingFeeAdjusted in createTables), so the merged list shows matching adjusted values.
             allDoctorCharges = new ArrayList<>();
             allDoctorCharges.addAll(profesionallFee);
             allDoctorCharges.addAll(doctorAndNurseFee);
-            
-            System.out.println("DEBUG: Merged total size = " + allDoctorCharges.size());
-            
+
             profesionallFee.clear();
             doctorAndNurseFee.clear();
-            System.out.println("DEBUG: Clear --> Profesionall Fee and  Assist Fee");
-            
+
             profesionallFee.addAll(allDoctorCharges);
-            System.out.println("DEBUG: Back to Merged Profesionall Fee = " + profesionallFee.size());
-            
+
             allDoctorCharges.clear();
-            System.out.println("DEBUG: Clear --> All Doctor harges");
-            
+
             createChargeItemTotals();
         }
 
@@ -2388,6 +2370,7 @@ public class BhtSummeryController implements Serializable {
         departmentBillItems = getInwardBean().createDepartmentBillItemsOptimized(patientEncounter, null, childPatientEncouters);
         additionalChargeBill = getInwardBean().fetchOutSideBill(getPatientEncounter(), childPatientEncouters);
         getInwardBean().setProfesionallFeeAdjusted(getPatientEncounter(), childPatientEncouters);
+        getInwardBean().setAssistingFeeAdjusted(getPatientEncounter(), childPatientEncouters);
         profesionallFee = getInwardBean().createProfesionallFee(getPatientEncounter(), childPatientEncouters);
         doctorAndNurseFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(), childPatientEncouters);
         paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
@@ -2428,6 +2411,7 @@ public class BhtSummeryController implements Serializable {
         departmentBillItems = getInwardBean().createDepartmentBillItemsOptimized(patientEncounter, null, childPatientEncouters);
         additionalChargeBill = getInwardBean().fetchOutSideBill(getPatientEncounter(), childPatientEncouters);
         getInwardBean().setProfesionallFeeAdjusted(getPatientEncounter(), childPatientEncouters);
+        getInwardBean().setAssistingFeeAdjusted(getPatientEncounter(), childPatientEncouters);
         profesionallFee = getInwardBean().createProfesionallFeeEstimated(getPatientEncounter());
         doctorAndNurseFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(), childPatientEncouters);
         paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
