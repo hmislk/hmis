@@ -89,11 +89,26 @@ The top-level menu entry is **Inpatient** (privilege: `Inward`).
 | Direct Issue to Theatre Cases | `/theater/inward_bill_surgery_issue.xhtml` | For theatre/OT pharmacy issues |
 | BHT Issue Requests | `/ward/ward_pharmacy_bht_issue_request_list_for_issue.xhtml` | Pharmacist view to action pending requests |
 | View Pharmacy Requests | `/ward/ward_pharmacy_bht_issue_request_bill_search.xhtml` | Search/view requests; Privilege: `InwardPharmacyIssueRequestSearch` |
+| Accept Returns from Ward | `/pharmacy/pharmacy_return_from_ward_receive_list.xhtml` | Pharmacy confirms receipt of returned medicines from ward via porter |
 | Search Inpatient Direct Issues by Bill | `/inward/pharmacy_search_sale_bill_bht.xhtml` | |
 | Search Inpatient Direct Issues by Item | `/inward/pharmacy_search_sale_bill_item_bht.xhtml` | |
 | Search Inpatient Direct Issue Returns by Bill/Item | `/inward/pharmacy_search_return_bill_bht.xhtml` | |
 | Investigation Trace | `/inward/investigation_search_for_reporting_bht.xhtml` | |
 | Inpatient Analytics | `/inward/inward_reports.xhtml` | |
+
+### Ward Pharmacy (accessible from admission profile)
+
+| Menu Item | Page | Controller | Notes |
+|---|---|---|---|
+| Receive Medicines from Pharmacy | `/ward/ward_pharmacy_bht_issue_receive_list.xhtml` → `/ward/ward_pharmacy_bht_issue_receive.xhtml` | `WardPharmacyBhtIssueReceiveController` | Ward confirms receipt of medicines issued via porter |
+| Return Medicines to Pharmacy | `/ward/ward_pharmacy_return_to_pharmacy.xhtml` | `WardPharmacyReturnToPharmacyController` | Ward returns unused stock to pharmacy via porter |
+| Deduct from Ward Stock | `/ward/ward_medication_administration_settle.xhtml` | `MedicationAdministrationStockSettlementController` | Bulk-deduct administered medicines from ward stock |
+
+### Clinical Data (privilege: varies)
+
+| Menu Item | Page | Controller | Notes |
+|---|---|---|---|
+| Letters | `/inward/inward_letters.xhtml` | `InpatientClinicalDataController` / `DocumentTemplateController` | Template-based covering letters with AI generation; Privilege: `InpatientLetter` |
 
 ---
 
@@ -270,6 +285,11 @@ Accessed via **Admin → Manage Inpatient Services** → `/inward/inward_adminis
 | `InwardReportControllerBht` | `com.divudi.bean.inward` | BHT-level reports |
 | `AdmissionTypeController` | `com.divudi.bean.inward` | Admission type master data |
 | `InwardPriceAdjustmntController` | `com.divudi.bean.inward` | Price adjustments (note: typo in class name is intentional — DB compatibility) |
+| `WardPharmacyBhtIssueReceiveController` | `com.divudi.bean.pharmacy` | Ward-side confirmation of medicines received from porter (#21468) |
+| `WardPharmacyReturnToPharmacyController` | `com.divudi.bean.pharmacy` | Ward-side return of unused stock to pharmacy via porter (#21470) |
+| `PharmacyReturnFromWardReceiveController` | `com.divudi.bean.pharmacy` | Pharmacy-side confirmation of returned medicines from ward (#21471) |
+| `MedicationAdministrationController` | `com.divudi.bean.inward` | Record medicine administration events — Stage 1 (#21469) |
+| `MedicationAdministrationStockSettlementController` | `com.divudi.bean.inward` | Bulk-deduct administered medicines from ward stock — Stage 2 (#21469) |
 | `PatientSampleController` | `com.divudi.bean.lab` | Lab sample collection |
 | `SampleController` | `com.divudi.bean.lab` | Lab sample management, receive/reject |
 
@@ -292,45 +312,30 @@ Two parallel workflows exist:
 - Nurse-initiated return request → pharmacist accepts (partially implemented — Issue #19312 related)
 - Direct return by pharmacist: `/inward/pharmacy_bill_return_bht_issue.xhtml`
 
----
+### Porter-Mediated Ward Pharmacy Workflow (Implemented — #21467–#21471)
 
-## Porter-Mediated Ward Pharmacy Workflow (Design — Issues #21466–#21472)
+The porter-mediated ward pharmacy workflow is now fully implemented. The design documented below informed the implementation; the key difference is that the porter-issue step (#21467) was integrated into the existing `ward_pharmacy_bht_issue.xhtml` page (extending `PharmacySaleBhtController`) rather than adapting `TransferIssueDirectController`.
 
-Investigation for #21466/#21467 found that the **existing pharmacy disbursement "Direct Issue" mechanism already implements most of the low-level machinery** needed for porter-mediated ward issue. This section records the findings and the proposed design so each sub-issue can be implemented incrementally without re-investigating.
+#### Implemented Pages
 
-### What already exists and works
+| Step | Page | Controller | Purpose |
+|---|---|---|---|
+| Ward Receive | `/ward/ward_pharmacy_bht_issue_receive_list.xhtml` → `/ward/ward_pharmacy_bht_issue_receive.xhtml` | `WardPharmacyBhtIssueReceiveController` | Ward confirms receipt of medicines from porter |
+| Ward Administer | Clinical Assessment → dialog | `MedicationAdministrationController` | Record administration events (Stage 1) |
+| Ward Stock Deduction | `/ward/ward_medication_administration_settle.xhtml` | `MedicationAdministrationStockSettlementController` | Bulk-deduct administered medicines (Stage 2) |
+| Ward Return | `/ward/ward_pharmacy_return_to_pharmacy.xhtml` | `WardPharmacyReturnToPharmacyController` | Ward returns unused stock to pharmacy via porter |
+| Pharmacy Accept Return | `/pharmacy/pharmacy_return_from_ward_receive_list.xhtml` → `/pharmacy/pharmacy_return_from_ward_receive.xhtml` | `PharmacyReturnFromWardReceiveController` | Pharmacy confirms receipt of returned medicines |
 
-- `TransferIssueDirectController` (`pharmacy_transfer_issue_direct_department.xhtml` → `pharmacy_transfer_issue_direct.xhtml`) lets pharmacy staff issue items to any department — **including ward-type departments**. Confirmed live: searching "ward" in the destination-department picker returns `Inward`, `Temp-Inward`, `Ward Pharmacy`.
-- On settle, `updateStocks()` already does exactly what #21467 asks for:
-  - Deducts from the issuing department's `Stock` via `PharmacyBean.deductFromStock(...)`.
-  - Adds the same quantity to the **selected porter's staff stock** via `PharmacyBean.addToStock(PharmaceuticalBillItem, qty, Staff)` (`Stock.staff` + `StockHistory.staff`).
-  - Bill is created with `BillTypeAtomic.PHARMACY_DIRECT_ISSUE`, `fromDepartment` = issuing pharmacy, `toDepartment` = destination department, `toStaff` = porter.
-- `TransferReceiveController` already implements the receive-side mirror (#21468's "receive from porter" pattern): it queries `Stock` where `staff = <porter>`, deducts it, and credits the receiving department's `Stock` — this is the template for #21468 and #21471.
+#### BillTypeAtomic Values Used
 
-### The gap: no link to a specific admission (BHT)
+| Value | Direction | Description |
+|---|---|---|
+| `ISSUE_MEDICINE_ON_REQUEST_INWARD` | Pharmacy → Ward | Pharmacy issues medicines against a ward request |
+| `ACCEPT_ISSUED_MEDICINE_INWARD` | Ward confirms | Ward confirms receipt of issued medicines |
+| `RETURN_MEDICINE_INWARD` | Ward → Pharmacy | Ward returns unused medicines to pharmacy |
+| `ACCEPT_RETURN_MEDICINE_INWARD` | Pharmacy confirms | Pharmacy confirms receipt of returned medicines |
 
-The disbursement flow above is **department-to-department** and has no concept of *which patient* the medicines are for. Ward medicine issue (`ward_pharmacy_bht_issue.xhtml`, originating from a request created in `ward_pharmacy_bht_issue_request_bill.xhtml`) is always tied to one **BHT / `PatientEncounter`**.
-
-Two entity fields already exist and are unused by the disbursement controllers, but solve this:
-
-- `Bill.fromDepartment` and `Bill.patientEncounter` (`Bill.java`) — every bill can carry a `PatientEncounter` reference.
-- `PatientEncounter.department` (`PatientEncounter.java`) — every admission already records **its own ward** as a `Department`. This means we don't need new per-ward `Department` records or a new destination picker — `patientEncounter.getDepartment()` gives the ward directly.
-
-### Proposed design for #21467 onward
-
-When a ward medicine request (tied to a `PatientEncounter`) is settled via the porter-issue mechanism:
-
-1. **fromDepartment** = the issuing pharmacy (as today).
-2. **toDepartment** = `patientEncounter.getDepartment()` — the ward where the patient is admitted (not a manually-picked department).
-3. **patientEncounter** = the BHT's `PatientEncounter`, set on the issue bill so every downstream step (#21468 ward receive, #21469 administration, #21470/#21471 returns) can trace back to the same admission.
-4. **toStaff** = the porter, with stock moved via the existing `addToStock(pbi, qty, Staff)` + `StockHistory` mechanism — no new entity needed for #21467.
-
-This reuses the proven staff-stock + stock-history mechanics from `TransferIssueDirectController` while adding the one missing link (`patientEncounter`) that the rest of the porter workflow (#21468–#21472) depends on. #21468's ward-receive step would then look up porter `Stock` filtered by `patientEncounter` (in addition to `staff`), crediting ward-held `Stock` (`department` = `patientEncounter.getDepartment()`). #21469 (administration) and #21470/#21471 (returns) chain off the same `patientEncounter` reference. #21472 (reporting) needs to add `patientEncounter`-based grouping to stock-in-transit/ward-stock reports, alongside the existing department-based grouping.
-
-### Open questions for implementation
-
-- Whether the porter-issue bill should be created from `ward_pharmacy_bht_issue.xhtml` directly (extending `PharmacySaleBhtController`) or by adapting `TransferIssueDirectController` to accept an optional `PatientEncounter` — needs a decision when #21467 is implemented.
-- Porter role/identification: #21467 originally proposed a dedicated "Porter" staff role; the existing `toStaff` field on `TransferIssueDirectController` already accepts any staff member via `staffController.completeStaffWithoutDoctors` — a dedicated role may be a UI/filtering nicety rather than a new entity.
+All steps carry `patientEncounter` on the bill for traceability. Porter in-transit stock is tracked via `Stock.staff` and `StockHistory.staff`.
 
 ---
 
