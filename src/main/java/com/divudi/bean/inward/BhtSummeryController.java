@@ -1938,7 +1938,18 @@ public class BhtSummeryController implements Serializable {
             
             System.out.println("DEBUG: Merging fees - ProfFee size = " + profesionallFee.size());
             System.out.println("DEBUG: Merging fees - AssistFee size = " + doctorAndNurseFee.size());
-            
+
+            // Assisting fees (non-Consultant staff) are never touched by setProfesionallFeeAdjusted,
+            // so their feeAdjusted stays 0. When merged into the Professional Fee list they would show
+            // a blank/zero Adjusted Value. Seed it from feeValue (mirrors the professional-fee behaviour)
+            // so the combined list shows a correct adjusted value for assistant doctors too.
+            for (BillFee assistFee : doctorAndNurseFee) {
+                if (assistFee.getFeeAdjusted() == 0.0) {
+                    assistFee.setFeeAdjusted(assistFee.getFeeValue());
+                    getBillFeeFacade().edit(assistFee);
+                }
+            }
+
             allDoctorCharges = new ArrayList<>();
             allDoctorCharges.addAll(profesionallFee);
             allDoctorCharges.addAll(doctorAndNurseFee);
