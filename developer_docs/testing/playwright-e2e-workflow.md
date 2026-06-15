@@ -120,13 +120,32 @@ This is a server-side change requiring rebuild. If a page has `p:inputText`
 fields with `p:ajax event="blur"` that must be filled, either add `async="true"`
 first, or have a human enter those values manually.
 
-### `p:autoComplete` — type into `_input`, click in `_panel` ✅
+### `p:autoComplete` — type slowly, Enter to select ✅
 
-PrimeFaces autocomplete works reliably with this pattern:
+Two proven patterns, depending on how specific your query is:
+
+**Pattern 1 — specific query, just press Enter (1 snapshot):**
+Use when your query narrows to the desired item as the first suggestion:
 ```text
-1. browser_click on the autocomplete textbox
-2. browser_type the search text (slowly)
-3. browser_wait_for the expected suggestion text (~1.5s)
+browser_click on autocomplete textbox
+browser_press_key Control+a
+browser_press_key Backspace
+browser_type "Paracetamol 500" slowly:true     ← character by character
+browser_wait_for text "Paracetamol 500Mg Tablet"
+browser_press_key Enter                         ← selects first match, no snapshot needed
+```
+
+**Pattern 2 — generic query, click from snapshot (2 snapshots):**
+Use when the desired item is not the first suggestion and you need to pick:
+```text
+browser_click → Ctrl+A → Backspace → browser_type slowly →
+browser_wait_for text → browser_snapshot →
+browser_click on suggestion ref
+```
+
+**Never use `browser_fill_form` or `fill()` for autocomplete** — they set
+the DOM value but don't fire the keyup events that PrimeFaces needs to
+query the server for suggestions.
 4. browser_snapshot — find the suggestion ref in the listbox/table
 5. browser_click the suggestion item
 ```
