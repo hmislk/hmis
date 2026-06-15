@@ -666,19 +666,29 @@
                     </p:panel>
 
                     <p:panel header="Profesionall Fee" class="mt-3">  
-                        <p:dataTable value="#{bhtSummeryController.profesionallFee}" var="pf"
+                        <p:dataTable 
+                            value="#{bhtSummeryController.profesionallFee}" 
+                            rowIndexVar="i"
+                            var="pf"
                                      rowStyleClass="#{pf.feeValue ne 0 
                                                       and pf.bill.cancelled eq false
                                                       and pf.bill.billClass eq 'class com.divudi.entity.BilledBill' ? '':'noDisplayRow'}">
-                            <p:column headerText="Name">
-                                #{pf.staff.person.nameWithTitle}
+                            
+                            <p:column headerText="#" style="padding: 7px; width: 2em;">
+                                <h:outputLabel value="#{i+1}"/>
                             </p:column>
-                            <p:column headerText="Fee Value" style="text-align: right;">
+                            
+                            <p:column headerText="Name" style="padding: 7px;">
+                                <h:outputLabel value="#{pf.staff.person.nameWithTitle}"/>
+                            </p:column>
+                            
+                            <p:column headerText="Fee Value" style="text-align: right; padding: 7px;">
                                 <h:outputLabel value="#{pf.feeValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Adjusted Value" style="text-align: right;">
+                            
+                            <p:column headerText="Adjusted Value" style="text-align: right; padding: 7px;">
                                 <p:inputText autocomplete="off" value="#{pf.feeAdjusted}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                     <p:ajax event="blur" process="@this"
