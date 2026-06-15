@@ -104,60 +104,51 @@ key/blur events** PrimeFaces relies on to commit a value. Symptoms: an
 autocomplete shows text but no selection is made; a quantity field looks filled
 but arrives as empty/`0` on the server.
 
-### Method A — PF widget API via jQuery (preferred, most reliable)
+### ⚠️ `p:inputText` with `p:ajax event="blur"` — cannot be automated
 
-Every `p:inputText` / `p:inputNumber` / `p:calendar` should carry a stable
-`widgetVar` attribute. There are TWO widget families with different APIs:
+**None of the following work** to commit a `p:inputText` value server-side via
+`p:ajax event="blur"`: jQuery `.trigger('blur')`, `.triggerHandler('blur')`,
+native `el.onblur()`, `dispatchEvent(new FocusEvent('blur'))`, or even
+Playwright's real `Tab` key press. JSF inspects the event source and rejects
+synthetic/programmatic events.
 
-**`p:inputNumber` / `p:calendar` — use `PF()` + `callBehavior()`:**
-```javascript
-await page.evaluate(() => {
-  PF('dpDoe').setDate(new Date(2027, 11, 31));
-  PF('dpDoe').callBehavior('dateSelect');
-});
+The **only known fix** is adding `async="true"` to the `<p:ajax>` tag:
+```xml
+<p:ajax event="blur" async="true" process="@this" update="..." />
 ```
+This is a server-side change requiring rebuild. If a page has `p:inputText`
+fields with `p:ajax event="blur"` that must be filled, either add `async="true"`
+first, or have a human enter those values manually.
 
-**`p:inputText` with `p:ajax event="blur"` — use jQuery `.trigger('blur')`:**
-These do NOT have PF behaviors — the AJAX handler is attached as a jQuery
-event. Set the value, then trigger a real jQuery blur event:
-```javascript
-await page.evaluate(async () => {
-  const $ = window.$;
-  $('#bill\\:txtPrate').focus().val('1.00').trigger('blur');
-  // Wait between fields so each AJAX completes before the next
-  await new Promise(r => setTimeout(r, 500));
-  $('#bill\\:txtQty').focus().val('100').trigger('blur');
-  await new Promise(r => setTimeout(r, 500));
-});
+### `p:autoComplete` — type into `_input`, click in `_panel` ✅
+
+PrimeFaces autocomplete works reliably with this pattern:
+```text
+1. browser_click on the autocomplete textbox
+2. browser_type the search text (slowly)
+3. browser_wait_for the expected suggestion text (~1.5s)
+4. browser_snapshot — find the suggestion ref in the listbox/table
+5. browser_click the suggestion item
 ```
-The 500ms wait between fields is critical: each blur fires a `p:ajax` that
-recalculates dependent fields server-side; the next field's set may need
-those updated values.
+Autocomplete items are in a `.ui-autocomplete-panel` that contains a `<table>`
+(not `<ul>/<li>`). Click the `<tr>` row directly. Do NOT set the hidden input
+value — the `itemSelect` AJAX must fire for the server to see the selection.
 
-**`p:autoComplete` — use `p:ajax event="itemSelect"` pattern:**
-Type the query with `pressSequentially`, wait 1.5s for suggestions,
-`ArrowDown` → `Enter` to select, then wait for `itemSelect` AJAX to land.
+### `p:selectOneMenu` — click-option pattern ✅
 
-**All `p:inputText` / `p:inputNumber` / `p:calendar` / `p:autoComplete`
-elements that a Playwright test needs to interact with MUST carry a
-`widgetVar` attribute.** Without one, the PF widget is registered under an
-auto-generated name that changes across sessions. Adding `widgetVar` costs
-nothing — do it on every page you touch.
+PrimeFaces dropdowns are not native `<select>` elements. `browser_select_option`
+fails. Instead: click the combobox → snapshot → click the option from the
+dropdown panel.
 
-### Method B — Real key events (fallback when no widgetVar)
+### `p:datePicker` / `p:calendar` — keyboard or click ✅
 
-**Use real key events instead:**
+Type the date string directly or click to open the calendar popup and select.
 
+### Always add `widgetVar`
 
-- **Autocomplete:** type the query slowly with `pressSequentially` (or
-  `browser_type` with `slowly: true`) → wait ~1.5 s for the suggestion panel →
-  `ArrowDown` → `Enter` to select the highlighted suggestion. Focus then
-  auto-advances (e.g. to the quantity field).
-- **Quantity / numeric fields:** type slowly, then **wait ~1 s** so the
-  keyup-AJAX commits the bound value **before** you click the Add/Save button.
-  Clicking immediately races the AJAX and submits a stale/empty value.
-- **Add a row reliably:** type item (select via Enter) → type qty slowly →
-  wait → click the Add button by its stable id (e.g. `#…:btnAddItem`).
+Every `p:inputText`, `p:autoComplete`, `p:calendar`, and `p:selectOneMenu`
+that a Playwright test needs to interact with MUST carry a `widgetVar`
+attribute. It costs nothing and makes elements identifiable across sessions.
 
 ---
 
