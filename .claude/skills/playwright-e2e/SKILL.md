@@ -28,6 +28,11 @@ Full operational workflow lives in
 read it before driving the browser. This skill is the entry point and adds the
 rebuild/redeploy and permission context.
 
+For general MCP tool mechanics (tool reference, clicking/dropdown/file-upload
+patterns, common errors) see the companion
+[Playwright MCP Guide](../../../developer_docs/tools/playwright-mcp-guide.md) —
+the workflow doc above is HMIS-specific; the guide is generic Playwright MCP usage.
+
 ## Workflow
 
 1. **Confirm the target** with the user: which feature/page, which local
@@ -41,15 +46,24 @@ rebuild/redeploy and permission context.
 4. **Drive the feature** using accessibility snapshots (`browser_snapshot`)
    to locate elements, real key events for PrimeFaces inputs (§3), and
    `browser_handle_dialog` for `confirm()` guards (§4). Wait on the expected
-   result (`browser_wait_for`) rather than fixed sleeps (§5a).
-5. **Verify in the database** — read-only `mysql` queries against the local
+   result (`browser_wait_for`) rather than fixed sleeps (§5a). Watch for
+   [§12](../../../developer_docs/testing/playwright-e2e-workflow.md#12-jsf-form-validation-blocks-navigation-buttons)
+   (required-field validation blocking unrelated nav buttons),
+   [§13](../../../developer_docs/testing/playwright-e2e-workflow.md#13-primefaces-pselectonemenu-is-not-a-native-select)
+   (`p:selectOneMenu` click-option pattern), and
+   [§14](../../../developer_docs/testing/playwright-e2e-workflow.md#14-non-ajax-search-buttons-can-timeout-on-click)
+   (non-AJAX search clicks that time out but still succeed).
+5. **If the DB lacks suitable test data, generate it through the app** — see
+   [§15](../../../developer_docs/testing/playwright-e2e-workflow.md#15-always-generate-test-data--never-fall-back-to-code-only-verification).
+   Never fall back to "code looks correct" as evidence.
+6. **Verify in the database** — read-only `mysql` queries against the local
    DB per [§6](../../../developer_docs/testing/playwright-e2e-workflow.md#6-verify-against-the-database).
    Credentials come from `C:\Credentials\` (outside the repo).
-6. **Capture evidence** into the project `tmp/` folder, then follow
+7. **Capture evidence** into the project `tmp/` folder, then follow
    [§8](../../../developer_docs/testing/playwright-e2e-workflow.md#8-publishing-screenshot-evidence)
    for anything destined for the wiki/issue. Remove temp screenshots from the
    repo afterwards.
-7. If Playwright can't find a control, treat it as a product accessibility gap
+8. If Playwright can't find a control, treat it as a product accessibility gap
    (§7) — fix the page, not the test.
 
 ## Required permissions
