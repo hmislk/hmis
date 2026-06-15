@@ -148,6 +148,7 @@ public class BhtSummeryController implements Serializable {
     private List<DepartmentBillItems> departmentBillItems;
     private List<BillFee> profesionallFee;
     private List<BillFee> doctorAndNurseFee;
+    private List<BillFee> allDoctorCharges;
     List<BillItem> pharmacyItems;
     private List<Bill> paymentBill;
     private List<Bill> pharmacyIssues;
@@ -1904,9 +1905,6 @@ public class BhtSummeryController implements Serializable {
     }
 
     public String toSettle() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
 
         if (getPatientEncounter() == null) {
             return "";
@@ -1935,6 +1933,31 @@ public class BhtSummeryController implements Serializable {
 
         childPatientEncouters = getInwardBean().fetchChildPatientEncounter(patientEncounter);
         createTables();
+
+        if (configOptionApplicationController.getBooleanValueByKey("Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false)) {
+            
+            System.out.println("DEBUG: Merging fees - ProfFee size = " + profesionallFee.size());
+            System.out.println("DEBUG: Merging fees - AssistFee size = " + doctorAndNurseFee.size());
+            
+            allDoctorCharges = new ArrayList<>();
+            allDoctorCharges.addAll(profesionallFee);
+            allDoctorCharges.addAll(doctorAndNurseFee);
+            
+            System.out.println("DEBUG: Merged total size = " + allDoctorCharges.size());
+            
+            profesionallFee.clear();
+            doctorAndNurseFee.clear();
+            System.out.println("DEBUG: Clear --> Profesionall Fee and  Assist Fee");
+            
+            profesionallFee.addAll(allDoctorCharges);
+            System.out.println("DEBUG: Back to Merged Profesionall Fee = " + profesionallFee.size());
+            
+            allDoctorCharges.clear();
+            System.out.println("DEBUG: Clear --> All Doctor harges");
+            
+            createChargeItemTotals();
+        }
+
         calculateDiscount();
         updateTotal();
         settleOriginalBill();
@@ -2129,7 +2152,7 @@ public class BhtSummeryController implements Serializable {
             } else {
                 if (configOptionApplicationController.getBooleanValueByKey("Create Professional Bill Fees For Assistant Chargers", false)) {
                     if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
-                        updateProBillFeeForDocAndNeurses(temBi);;
+                        updateProBillFeeForDocAndNeurses(temBi);
                     }
                 }
                 temHosFee += cit.getTotal();
@@ -2170,7 +2193,7 @@ public class BhtSummeryController implements Serializable {
             } else {
                 if (configOptionApplicationController.getBooleanValueByKey("Create Professional Bill Fees For Assistant Chargers", false)) {
                     if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
-                        updateProTempBillFeeForDocAndNeurses(temBi);;
+                        updateProTempBillFeeForDocAndNeurses(temBi);
                     }
                 }
                 temHosFee += cit.getTotal();
@@ -2357,6 +2380,7 @@ public class BhtSummeryController implements Serializable {
         profesionallFee = getInwardBean().createProfesionallFee(getPatientEncounter(), childPatientEncouters);
         doctorAndNurseFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(), childPatientEncouters);
         paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
+
         createChargeItemTotals();
         updateTotal();
 
@@ -2464,6 +2488,7 @@ public class BhtSummeryController implements Serializable {
         paid = 0.0;
         profesionallFee = null;
         doctorAndNurseFee = null;
+        allDoctorCharges = null;
         patientItems = null;
         paymentBill = null;
         departmentBillItems = null;
@@ -3185,10 +3210,20 @@ public class BhtSummeryController implements Serializable {
                     i.setTotal(getInwardBean().calNetCostOfIssue(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters));
                     break;
                 case ProfessionalCharge:
-                    i.setTotal(getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters, estimatedBillView));
+                    if (configOptionApplicationController.getBooleanValueByKey("Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false)) {
+                        double professionalFee = getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters, estimatedBillView);
+                        double assistingFee = getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters);
+                        i.setTotal(professionalFee + assistingFee);
+                    }else{
+                        i.setTotal(getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters, estimatedBillView));
+                    }
                     break;
                 case DoctorAndNurses:
-                    i.setTotal(getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters));
+                    if (configOptionApplicationController.getBooleanValueByKey("Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false)) {
+                        i.setTotal(0.0);
+                    }else{
+                        i.setTotal(getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters));
+                    }
                     break;
             }
         }
@@ -3623,6 +3658,14 @@ public class BhtSummeryController implements Serializable {
 
         return new RoomDurationBreakdown(totalMinutes, slotMinutes, completeSlots,
                 remainderMinutes, overshootMinutes, extraSlotCharged, billedSlots);
+    }
+
+    public List<BillFee> getAllDoctorCharges() {
+        return allDoctorCharges;
+    }
+
+    public void setAllDoctorCharges(List<BillFee> allDoctorCharges) {
+        this.allDoctorCharges = allDoctorCharges;
     }
 
     public static class RoomDurationBreakdown {
