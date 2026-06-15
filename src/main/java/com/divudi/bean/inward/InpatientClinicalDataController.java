@@ -4649,6 +4649,7 @@ public class InpatientClinicalDataController implements Serializable {
         fillCurrentPatientLists(admission.getPatient());
         fillCurrentEncounterLists(admission);
         diagnosisCardTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientDiagnosisCard);
+        refreshEncounterCreditCompanies();
         return "/inward/inward_diagnosis_cards?faces-redirect=true";
     }
 
@@ -4817,6 +4818,12 @@ public class InpatientClinicalDataController implements Serializable {
     }
 
     private String resolveDefaultEmailRecipient() {
+        EncounterCreditCompany selected = getSelectedEncounterCreditCompany();
+        if (selected != null && selected.getInstitution() != null
+                && selected.getInstitution().getEmail() != null
+                && !selected.getInstitution().getEmail().trim().isEmpty()) {
+            return selected.getInstitution().getEmail().trim();
+        }
         if (encounterCreditCompanies != null) {
             for (EncounterCreditCompany ecc : encounterCreditCompanies) {
                 if (ecc.getInstitution() != null

@@ -119,6 +119,7 @@
                                     <p:fileDownload value="#{inwardDocumentUploadController.getDownloadStream(doc)}" />
                                 </p:commandButton>
                                 <p:commandButton
+                                    id="btnSendEmail"
                                     icon="fas fa-envelope"
                                     title="Send by Email"
                                     class="ui-button-secondary me-1"
@@ -182,7 +183,8 @@
                 <p:dialog widgetVar="emailDocDialog" modal="true"
                           header="Send Document by Email"
                           width="400px" height="auto" resizable="false">
-                    <h:form id="emailDocDialogForm">
+                    <h:form id="emailDocDialogForm"
+                            onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }">
                         <div class="p-3">
                             <div class="mb-3">
                                 <p:outputLabel value="Document: " style="font-weight: bold;"/>
@@ -199,9 +201,9 @@
                                 <small class="text-muted">Note: The file is not attached. The recipient will be sent a cover note with the document details.</small>
                             </div>
                             <div class="d-flex justify-content-end gap-2">
-                                <p:commandButton value="Cancel" onclick="PF('emailDocDialog').hide();"
+                                <p:commandButton id="btnCancelDocEmail" value="Cancel" onclick="PF('emailDocDialog').hide();"
                                                  class="ui-button-secondary" type="button"/>
-                                <p:commandButton value="Send Email"
+                                <p:commandButton id="btnConfirmSendDocEmail" value="Send Email"
                                                  action="#{inwardDocumentUploadController.sendDocumentEmail}"
                                                  class="ui-button-success" icon="fas fa-envelope"
                                                  ajax="false" oncomplete="PF('emailDocDialog').hide();"/>

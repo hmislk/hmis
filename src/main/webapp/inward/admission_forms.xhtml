@@ -42,7 +42,7 @@
                         <p:commandButton value="Edit" icon="fa fa-pen" class="me-1"
                                          process="@this" update="@form"
                                          action="#{inwardFormController.editForm(entry)}" />
-                        <p:commandButton icon="fas fa-envelope" title="Send by Email" class="me-1"
+                        <p:commandButton id="btnSendFormEmail" icon="fas fa-envelope" title="Send by Email" class="me-1"
                                          styleClass="ui-button-secondary"
                                          process="@this"
                                          update=":emailFormDialogForm"
@@ -242,7 +242,8 @@
         <p:dialog widgetVar="emailFormDialog" modal="true"
                   header="Send Form by Email"
                   width="400px" height="auto" resizable="false">
-            <h:form id="emailFormDialogForm">
+            <h:form id="emailFormDialogForm"
+                    onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }">
                 <div class="p-3">
                     <div class="mb-3">
                         <p:outputLabel value="Form: " style="font-weight: bold;"/>
@@ -256,9 +257,9 @@
                                      required="true" requiredMessage="Email address is required"/>
                     </div>
                     <div class="d-flex justify-content-end gap-2">
-                        <p:commandButton value="Cancel" onclick="PF('emailFormDialog').hide();"
+                        <p:commandButton id="btnCancelFormEmail" value="Cancel" onclick="PF('emailFormDialog').hide();"
                                          class="ui-button-secondary" type="button"/>
-                        <p:commandButton value="Send Email"
+                        <p:commandButton id="btnConfirmSendFormEmail" value="Send Email"
                                          action="#{inwardFormController.sendFormEmail}"
                                          class="ui-button-success" icon="fas fa-envelope"
                                          ajax="false" oncomplete="PF('emailFormDialog').hide();"/>
