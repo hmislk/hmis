@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form id="formPhysicalDischarge">
+                    <p:growl id="growl" life="4000"/>
+
+                    <!-- Navigation bar -->
+                    <div class="row">
+                        <div class="col-12 px-4">
+                            <p:commandButton
+                                id="btnDashboard"
+                                value="Inpatient Dashboard"
+                                ajax="false"
+                                action="#{admissionController.navigateToAdmissionProfilePage}"
+                                icon="fa fa-id-card"
+                                class="p-0 m-1">
+                                <f:setPropertyActionListener
+                                    value="#{nursingDischargeController.currentEncounter}"
+                                    target="#{admissionController.current}" />
+                            </p:commandButton>
+                        </div>
+                    </div>
+
+                    <!-- Access denied panel -->
+                    <h:panelGroup layout="block" rendered="#{not webUserController.hasPrivilege('InwardPhysicalDischarge')}">
+                        <div class="row px-4">
+                            <div class="col-12">
+                                <p:panel class="m-1">
+                                    <h:outputText value="You do not have permission to access Physical Discharge." />
+                                </p:panel>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- Main content -->
+                    <h:panelGroup layout="block" rendered="#{webUserController.hasPrivilege('InwardPhysicalDischarge')}">
+
+                        <!-- Confirmation status banner -->
+                        <h:panelGroup layout="block"
+                                      rendered="#{nursingDischargeController.currentEncounter.physicalDischarged}">
+                            <div class="row px-4 pt-2">
+                                <div class="col-12">
+                                    <div class="alert alert-success" role="alert">
+                                        <i class="fa fa-check-circle mr-2"/>
+                                        Physical discharge confirmed by
+                                        <strong>#{nursingDischargeController.currentEncounter.physicalDischargedBy.name}</strong>
+                                        on
+                                        <h:outputText value="#{nursingDischargeController.currentEncounter.physicalDischargeDateTime}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
+                        <div class="row px-4 py-2">
+                            <div class="col-12">
+
+                                <!-- Physical Departure panel -->
+                                <p:panel class="w-100 m-1 p-0 mb-2">
+                                    <f:facet name="header">
+                                        <i class="fa fa-walking mr-2"/>
+                                        <h:outputText value="Physical Departure" />
+                                    </f:facet>
+                                    <div class="container-fluid">
+                                        <div class="row my-2">
+                                            <div class="col-12">
+                                                <p:outputText
+                                                    value="Confirm that the patient has physically left the hospital premises. The system will record the current date and time as the departure time."
+                                                    styleClass="text-muted" />
+                                            </div>
+                                        </div>
+                                        <h:panelGroup layout="block"
+                                                      rendered="#{nursingDischargeController.currentEncounter.physicalDischarged}">
+                                            <div class="row my-2">
+                                                <div class="col-md-4">
+                                                    <p:outputLabel value="Departure Time:" styleClass="font-weight-bold" />
+                                                    <p:outputText value="#{nursingDischargeController.currentEncounter.physicalDischargeDateTime}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                    </p:outputText>
+                                                </div>
+                                            </div>
+                                        </h:panelGroup>
+                                    </div>
+                                </p:panel>
+
+                                <!-- Action buttons -->
+                                <div class="d-flex justify-content-end my-2 mb-4">
+                                    <h:panelGroup rendered="#{not nursingDischargeController.currentEncounter.physicalDischarged}">
+                                        <p:commandButton
+                                            id="btnConfirmPhysicalDischarge"
+                                            value="Confirm Physical Discharge"
+                                            ajax="false"
+                                            action="#{nursingDischargeController.confirmPhysicalDischarge()}"
+                                            icon="fa fa-walking"
+                                            class="ui-button-success mx-1"
+                                            onclick="return confirm('Are you sure you want to confirm that the patient has physically left the hospital?')" />
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{nursingDischargeController.currentEncounter.physicalDischarged}">
+                                        <p:commandButton
+                                            id="btnCancelPhysicalDischarge"
+                                            value="Cancel Physical Discharge"
+                                            ajax="false"
+                                            action="#{nursingDischargeController.cancelPhysicalDischarge()}"
+                                            icon="fa fa-times"
+                                            class="ui-button-warning mx-1"
+                                            onclick="return confirm('Are you sure you want to cancel the physical discharge confirmation?')" />
+                                    </h:panelGroup>
+                                </div>
+
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
