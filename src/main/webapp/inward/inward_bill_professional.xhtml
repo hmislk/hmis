@@ -312,9 +312,13 @@
                                                     placeholder="Search Doctor..."
                                                     completeMethod="#{inwardProfessionalBillController.completeStaff}"
                                                     var="mys" 
+                                                    maxResults="20"
                                                     itemLabel="#{mys.person.nameWithTitle}" 
                                                     itemValue="#{mys}">
                                                     <f:ajax event="itemSelect" execute="scStaff" render="pIxAdd pBillDetails" />
+                                                    <p:column headerText="Doctor Name" style="padding: 5px;">
+                                                        <h:outputLabel value="#{mys.person.nameWithTitle}" styleClass="fw-bold" />
+                                                    </p:column>
                                                 </p:autoComplete>
                                             </div>
                                         </div>
