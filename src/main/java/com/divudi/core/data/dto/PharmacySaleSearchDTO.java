@@ -63,6 +63,7 @@ public class PharmacySaleSearchDTO implements Serializable {
     }
 
     // New 15-parameter constructor that includes comments
+    // delegates to the 14-parameter constructor via this(...)
     public PharmacySaleSearchDTO(
             Long id,
             String deptId,
@@ -79,20 +80,9 @@ public class PharmacySaleSearchDTO implements Serializable {
             Boolean refunded,
             Boolean cancelled,
             String comments) {
-        this.id = id;
-        this.deptId = deptId;
-        this.departmentName = departmentName;
-        this.createdAt = createdAt;
-        this.creatorName = creatorName;
-        this.patientName = patientName;
-        this.referredByName = referredByName;
-        this.paymentMethod = paymentMethod;
-        this.paymentSchemeName = paymentSchemeName;
-        this.total = total;
-        this.discount = discount;
-        this.netTotal = netTotal;
-        this.refunded = refunded;
-        this.cancelled = cancelled;
+        this(id, deptId, departmentName, createdAt, creatorName, patientName,
+                referredByName, paymentMethod, paymentSchemeName, total, discount,
+                netTotal, refunded, cancelled);
         this.comments = comments;
     }
 
