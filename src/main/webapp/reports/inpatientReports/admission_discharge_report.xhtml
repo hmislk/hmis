@@ -208,15 +208,16 @@
                             </h:panelGroup>
 
                             <h:panelGroup>
-                                <h:outputText styleClass="fa fa-medkit m-2"/>
-                                <p:outputLabel value="Discharge Type" class="m-3" />
+                                <h:outputText styleClass="fa fa-medkit mr-2"/>
+                                <p:outputLabel value="Discharge Type" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu  filter="true"  class="w-100 " >
+                            <p:selectOneMenu  filter="true"  class="w-100" value="#{inwardReportController.dischargeType}">
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems 
-                                               var="i"
+                                <f:selectItems value="#{dischargeConditionController.items}"
+                                               var="i" itemLabel="#{i.name}" itemValue="#{i}"
                                                ></f:selectItems>
                             </p:selectOneMenu>
+
                             <!-- Consultant -->
                             <h:panelGroup>
                                 <h:outputText styleClass="fa fa-user-md mr-2"/>
@@ -256,7 +257,6 @@
                             </h:panelGroup>
                             <p:selectOneMenu value="#{inwardReportController.patientCategory}" filter="true" class="w-100">
                                 <f:selectItem itemLabel="All Categories"/>
-
                             </p:selectOneMenu>
 
                             <!--Admission Status--> 
@@ -278,7 +278,7 @@
                             </h:panelGroup>
                             <p:selectOneMenu value="#{inwardReportController.admissionType}" filter="true" class="w-100">
                                 <f:selectItem itemLabel="All"/>
-                                <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" ></f:selectItems>
+                                <f:selectItems  value="#{admissionTypeController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
 
                             </p:selectOneMenu>
 

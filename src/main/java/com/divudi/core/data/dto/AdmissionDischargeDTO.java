@@ -68,6 +68,7 @@ public class AdmissionDischargeDTO implements Serializable {
     public AdmissionDischargeDTO(
             String phn,
             String patientName,
+            String mobileNumber,
             String bhtNo,
             String rawAddress,
             String comments,
@@ -93,6 +94,7 @@ public class AdmissionDischargeDTO implements Serializable {
     ) {
         this.phn = phn;
         this.patientName = patientName;
+        this.mobileNumber = mobileNumber;
         this.bhtNo = bhtNo;
         this.rawAddress = rawAddress;
         this.comments = comments;

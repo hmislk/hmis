@@ -2492,6 +2492,7 @@ public class InwardReportController implements Serializable {
         jpql.append("SELECT new com.divudi.core.data.dto.AdmissionDischargeDTO(")
                 .append("pe.patient.phn, ")
                 .append("pe.patient.person.name, ")
+                .append("pe.patient.person.mobile, ")
                 .append("pe.bhtNo, ")
                 .append("pe.patient.person.address, ")
                 .append("pe.comments, ")
@@ -2501,16 +2502,16 @@ public class InwardReportController implements Serializable {
                 .append("pe.department.name, ")
                 .append("pe.dateOfAdmission, ")
                 .append("pe.dateOfDischarge, ")
-                .append("dc.name, ") // FIX
-                .append("rfc.name, ") // FIX
-                .append("rcp.name, ") // FIX
-                .append("cc.name, ") // FIX
+                .append("dc.name, ")
+                .append("rfc.name, ")
+                .append("rcp.name, ")
+                .append("cc.name, ")
                 .append("pe.totalCompanyPaidAtFinalProcessing, ")
                 .append("pe.totalPatientPaidAtFinalProcessing, ")
                 .append("pe.discount, ")
                 .append("pe.netTotal, ")
                 .append("pe.amountDueAtFinalProcessing, ")
-                .append("cd.name, ") // FIX
+                .append("cd.name, ")
                 .append("pe.clinicalDischargeDateTime, ")
                 .append("fb.creater.name, ")
                 .append("fb.createdAt) ")
@@ -2524,11 +2525,6 @@ public class InwardReportController implements Serializable {
                 .append("LEFT JOIN pe.creditCompany cc ")
                 .append("LEFT JOIN pe.clinicalDischargedBy cd ")
                 .append("LEFT JOIN pe.finalBill fb ");
-
-        if (roomCategory != null) {
-            jpql.append("LEFT JOIN pe.currentPatientRoom room ")
-                    .append("LEFT JOIN room.roomFacilityCharge rfc ");
-        }
 
         jpql.append("WHERE pe.retired = :ret ")
                 .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ");
@@ -2599,7 +2595,6 @@ public class InwardReportController implements Serializable {
                     break;
                 case ANY_STATUS:
                 default:
-                    jpql.append("AND pe.paymentFinalized = FALSE ");
                     break;
             }
         }
@@ -2613,7 +2608,7 @@ public class InwardReportController implements Serializable {
                     TemporalType.TIMESTAMP
             );
         } catch (Exception e) {
-            JsfUtil.addErrorMessage("Error loading unsettled invoices: " + e.getMessage());
+            JsfUtil.addErrorMessage("Error loading admissions & discharges: " + e.getMessage());
             admissionDischargesList = new ArrayList<>();
         }
     }
