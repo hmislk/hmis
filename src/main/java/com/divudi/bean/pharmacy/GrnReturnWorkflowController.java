@@ -641,6 +641,13 @@ public class GrnReturnWorkflowController implements Serializable {
             return;
         }
 
+        // Sync fd.quantity from bi.qty for all items before stock validation.
+        // If the blur AJAX did not complete (user typed and immediately clicked
+        // Finalize), JSF will have updated BillItem.qty but fd.quantity would
+        // still hold the previous value, causing stock validation to use a
+        // stale quantity.
+        syncAllQuantitiesBeforeFinalize();
+
         // Validate stock availability before finalizing
         if (!validateAllItemsStockAvailability(true)) {
             JsfUtil.addErrorMessage("Cannot finalize: Stock validation failed. Please correct the quantities and try again.");
@@ -2713,6 +2720,19 @@ public class GrnReturnWorkflowController implements Serializable {
 
         // Always preserve the user-entered rate
         fd.setLineGrossRate(userEnteredRate);
+    }
+
+    private void syncAllQuantitiesBeforeFinalize() {
+        if (billItems == null) {
+            return;
+        }
+        for (BillItem bi : billItems) {
+            if (bi == null || bi.isRetired()) {
+                continue;
+            }
+            syncQuantitiesAfterQuantityChange(bi, "TotalQty");
+        }
+        calculateTotal();
     }
 
     public void onReturningTotalQtyChange(BillItem bi) {
