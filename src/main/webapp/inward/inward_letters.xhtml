@@ -249,6 +249,16 @@
                                                 title="Download as PDF">
                                                 <p:fileDownload value="#{inpatientClinicalDataController.downloadAsPdf()}"/>
                                             </p:commandButton>
+                                            <p:commandButton
+                                                id="btnEmailLetter"
+                                                icon="fas fa-envelope"
+                                                title="Send by Email"
+                                                class="ui-button-secondary"
+                                                action="#{inpatientClinicalDataController.prepareDocumentEmailDialog}"
+                                                process="@this"
+                                                update=":emailLetterDialogForm"
+                                                oncomplete="PF('emailLetterDialog').show();">
+                                            </p:commandButton>
                                         </div>
                                     </div>
                                 </f:facet>
@@ -320,6 +330,36 @@
                     </p:blockUI>
 
                 </h:form>
+
+                <!-- Send Email dialog -->
+                <p:dialog widgetVar="emailLetterDialog" modal="true"
+                          header="Send Letter by Email"
+                          width="400px" height="auto" resizable="false">
+                    <h:form id="emailLetterDialogForm"
+                            onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }">
+                        <div class="p-3">
+                            <div class="mb-3">
+                                <p:outputLabel value="Document: " style="font-weight: bold;"/>
+                                <p:outputLabel value="#{inpatientClinicalDataController.encounterReferral.stringValue}"/>
+                            </div>
+                            <div class="mb-3">
+                                <p:outputLabel for="emailLetterRecipient" value="Email Address:" class="form-label"/>
+                                <p:inputText id="emailLetterRecipient"
+                                             value="#{inpatientClinicalDataController.emailRecipient}"
+                                             class="w-100" placeholder="Enter email address"
+                                             required="true" requiredMessage="Email address is required"/>
+                            </div>
+                            <div class="d-flex justify-content-end gap-2">
+                                <p:commandButton id="btnCancelLetterEmail" value="Cancel" onclick="PF('emailLetterDialog').hide();"
+                                                 class="ui-button-secondary" type="button"/>
+                                <p:commandButton id="btnConfirmSendLetterEmail" value="Send Email"
+                                                 action="#{inpatientClinicalDataController.sendDocumentEmail}"
+                                                 class="ui-button-success" icon="fas fa-envelope"
+                                                 ajax="false" oncomplete="PF('emailLetterDialog').hide();"/>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
 
             </ui:define>
         </ui:composition>
