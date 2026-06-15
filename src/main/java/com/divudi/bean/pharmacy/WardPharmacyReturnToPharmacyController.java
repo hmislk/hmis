@@ -2,6 +2,8 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Bill;
@@ -63,6 +65,8 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
     private SessionController sessionController;
     @Inject
     private DepartmentController departmentController;
+    @Inject
+    private WebUserController webUserController;
 
     private Bill returnBill;
     private List<BillItem> returnItems;
@@ -163,10 +167,15 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
      * Cancels this ward-to-pharmacy return, provided the pharmacy has not yet
      * started accepting it (#21516). Mirrors
      * {@code PharmacyBillSearch.cancelInwardPharmacyRequestBill} - flags the
-     * bill as cancelled and records a {@link CancelledBill}, without reversing
-     * the ward/porter stock movements made on settle.
+     * bill as cancelled and records a {@link CancelledBill}, after reversing
+     * the ward/porter stock movements made on settle (deducts from the
+     * porter's staff stock and credits back to ward department stock).
      */
     public void cancelReturnBill() {
+        if (!webUserController.hasPrivilege(Privileges.InwardPharmacyReturnCancel.name())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to cancel this return.");
+            return;
+        }
         if (returnBill == null || returnBill.getId() == null) {
             JsfUtil.addErrorMessage("No return bill found.");
             return;
@@ -183,6 +192,11 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
             JsfUtil.addErrorMessage("This return has already been accepted by the pharmacy and can no longer be cancelled.");
             return;
         }
+        if (!porterStockCoversAllLines(returnBill)) {
+            return;
+        }
+
+        reverseReturnStockMovements(returnBill);
 
         CancelledBill cb = new CancelledBill();
         cb.setBilledBill(returnBill);
@@ -334,6 +348,70 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
             }
         }
         return allCovered;
+    }
+
+    /**
+     * Reverses the ward/porter stock movements made by {@link #doSettle()}
+     * when a settled return is cancelled before pharmacy acceptance
+     * (#21516): deducts the returned quantities from the porter's staff
+     * stock and credits them back to ward department stock.
+     */
+    private void reverseReturnStockMovements(Bill bill) {
+        Staff toStaff = bill.getToStaff();
+        Department wardDept = bill.getFromDepartment();
+        for (BillItem bi : bill.getBillItems()) {
+            double lineQty = bi.getQty();
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            if (lineQty <= 0 || pbi == null || pbi.getItemBatch() == null) {
+                continue;
+            }
+            pharmacyBean.deductFromStock(pbi, lineQty, toStaff);
+            pharmacyBean.addToStock(pbi, lineQty, wardDept);
+        }
+    }
+
+    /**
+     * Validates that the porter still holds ENOUGH staff stock for EVERY
+     * settled return line before cancellation reverses any stock, mirroring
+     * {@link #wardStockCoversAllLines()}.
+     */
+    private boolean porterStockCoversAllLines(Bill bill) {
+        Staff toStaff = bill.getToStaff();
+        Map<Long, Double> requiredByBatch = new HashMap<>();
+        Map<Long, BillItem> sampleByBatch = new HashMap<>();
+        for (BillItem bi : bill.getBillItems()) {
+            double lineQty = bi.getQty();
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            if (lineQty <= 0 || pbi == null || pbi.getItemBatch() == null || pbi.getItemBatch().getId() == null) {
+                continue;
+            }
+            Long batchId = pbi.getItemBatch().getId();
+            requiredByBatch.merge(batchId, lineQty, Double::sum);
+            sampleByBatch.put(batchId, bi);
+        }
+
+        boolean allCovered = true;
+        for (Map.Entry<Long, Double> e : requiredByBatch.entrySet()) {
+            BillItem bi = sampleByBatch.get(e.getKey());
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            Stock porterStock = findStaffStock(pbi.getItemBatch(), toStaff);
+            double available = porterStock == null ? 0.0 : porterStock.getStock();
+            if (available + 0.0001 < e.getValue()) {
+                JsfUtil.addErrorMessage("Cannot cancel: porter no longer holds enough stock of " + bi.getItem().getName()
+                        + " batch " + pbi.getItemBatch().getBatchNo()
+                        + " to reverse this return (need " + e.getValue() + ", available " + available + ").");
+                allCovered = false;
+            }
+        }
+        return allCovered;
+    }
+
+    private Stock findStaffStock(com.divudi.core.entity.pharmacy.ItemBatch itemBatch, Staff staff) {
+        String jpql = "SELECT s FROM Stock s WHERE s.itemBatch = :batch AND s.staff = :staff";
+        Map<String, Object> params = new HashMap<>();
+        params.put("batch", itemBatch);
+        params.put("staff", staff);
+        return stockFacade.findFirstByJpql(jpql, params, true);
     }
 
     public List<Department> getPharmacies() {

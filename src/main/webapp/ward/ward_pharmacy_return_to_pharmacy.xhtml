@@ -179,6 +179,7 @@
                             id="btnConfirmCancelReturn"
                             class="mx-2 ui-button-warning"
                             value="Yes"
+                            disabled="#{not webUserController.hasPrivilege('InwardPharmacyReturnCancel') or wardPharmacyReturnToPharmacyController.returnBill.cancelled or wardPharmacyReturnToPharmacyController.acceptanceStarted}"
                             update=":formWardReturnToPharmacy"
                             actionListener="#{wardPharmacyReturnToPharmacyController.cancelReturnBill}"
                             oncomplete="PF('confirmCancelReturnDialog').hide();"/>
