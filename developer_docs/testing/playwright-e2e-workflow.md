@@ -273,17 +273,63 @@ target", the tool schema may not be loaded yet; reload it via
 
 ---
 
+## 12. JSF form validation blocks navigation buttons
+
+On pages where the *same* `h:form` contains both a data-entry section (with
+required fields) and navigation buttons (e.g. "List GRNs"), clicking a
+navigation button can unexpectedly trigger form validation. If a required
+`p:selectOneMenu` (like Payment Method) is empty, JSF rejects the entire
+form submission and the navigation action never fires — the user sees a silent
+"Please select a payment method" error instead of the expected dialog/page.
+
+**Workaround:** Navigate directly to the target page URL instead of clicking
+the button, or fill all required fields first. Better: ensure the navigation
+button uses `process="@this"` or is in a separate form so it doesn't submit
+the data-entry fields.
+
+## 13. PrimeFaces `p:selectOneMenu` is not a native `<select>`
+
+`browser_select_option` fails with "Element is not a <select> element" on
+PrimeFaces dropdowns. Use the click-option pattern instead:
+1. Click the dropdown label/combobox to expand the panel
+2. `browser_snapshot` to find the option ref in the `listbox`
+3. Click the option by its `ref=` from the snapshot
+4. The value commits on selection; no extra "Select" click is needed
+
+## 14. Non-AJAX search buttons can timeout on click
+
+When a JSF search button triggers a full page reload (non-AJAX, `ajax="false"`),
+`browser_click` may time out with "waiting for scheduled navigations to finish"
+if the response is slow. The click usually succeeds — use `browser_snapshot`
+after the timeout to check the new page state rather than assuming the action
+failed. If stuck, `browser_navigate` directly to the page URL to recover.
+
+## 15. Code-level verification when test data is unavailable
+
+When the test database has no records for the department under test (zero
+stock, no GRN/DP bills), fall back to code-level verification:
+- `git diff` the hotfix commit to confirm every changed line
+- `grep` for removed anti-patterns (e.g. `setBill(null)`, `p:calendar`)
+- `grep` for added patterns (e.g. `reloadBill`, `p:datePicker`)
+- Page-load testing: navigate to every modified XHTML page and confirm no
+  JSF errors or stack traces in the server log
+- Server log scan: search for `SEVERE`, `Exception`, `FK`, `orphanRemoval`,
+  `IntegrityConstraintViolation` after exercising all accessible pages
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
 - [ ] Logged in, selected a department, reached an inner page (menu visible).
+- [ ] Checked for stale department pre-selection — the app remembers the last department; always re-select explicitly.
 - [ ] Clicked **Search** on every date-filtered list before expecting rows.
 - [ ] Used real key events (slow type + wait) for autocompletes and qty fields.
 - [ ] Handled `confirm()` dialogs; tested double-click on settle buttons.
 - [ ] Filled required fields before non-AJAX actions.
+- [ ] Checked that navigation buttons are not blocked by JSF validation on required fields in the same form.
 - [ ] Verified stock + bill-item integrity in the DB; cleaned up temp files.
 - [ ] Filed/fixed any accessibility gap that blocked the test.
 - [ ] Published only non-sensitive screenshot evidence and removed temporary files.
 - [ ] For canvas-based widgets (vis-timeline etc.), used `page.$`/bounding-box
       clicks and closed dialogs via `.ui-dialog-titlebar-close`, not `Escape`.
 - [ ] Re-logged in and re-selected department after any redeploy before continuing.
+- [ ] If test data is unavailable, performed code-level verification via git diff, grep, page-load tests, and server log scan.
