@@ -23,6 +23,9 @@ public class FavouriteMedicineCreateRequestDTO implements Serializable {
     private Double fromYears;           // Minimum age in years
     private Double toYears;             // Maximum age in years
 
+    // "FavouriteMedicine" (default) or "FavouriteDiagnosis"
+    private String type;
+
     // Medicine details
     private String categoryName;        // Medicine category (e.g., "suspension", "tablet")
 
@@ -41,7 +44,10 @@ public class FavouriteMedicineCreateRequestDTO implements Serializable {
     private boolean indoor = false;     // For indoor patients only
     private String sex;                 // "Male", "Female", or null for both
     private Double orderNo;             // Display order (auto-generated if not provided)
-    private String forItemName;         // The item this is a favourite for (optional)
+    // The item this is a favourite for. Optional for type=FavouriteMedicine (defaults to itemName itself).
+    // Required for type=FavouriteDiagnosis: the diagnosis name (resolved via
+    // GET /entities/diagnoses) that itemName is being suggested for.
+    private String forItemName;
 
     // Control flags
     private boolean createMissingEntities = false; // Auto-create missing entities
@@ -83,6 +89,14 @@ public class FavouriteMedicineCreateRequestDTO implements Serializable {
 
     public void setToYears(Double toYears) {
         this.toYears = toYears;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getCategoryName() {

@@ -89,11 +89,26 @@ The top-level menu entry is **Inpatient** (privilege: `Inward`).
 | Direct Issue to Theatre Cases | `/theater/inward_bill_surgery_issue.xhtml` | For theatre/OT pharmacy issues |
 | BHT Issue Requests | `/ward/ward_pharmacy_bht_issue_request_list_for_issue.xhtml` | Pharmacist view to action pending requests |
 | View Pharmacy Requests | `/ward/ward_pharmacy_bht_issue_request_bill_search.xhtml` | Search/view requests; Privilege: `InwardPharmacyIssueRequestSearch` |
+| Accept Returns from Ward | `/pharmacy/pharmacy_return_from_ward_receive_list.xhtml` | Pharmacy confirms receipt of returned medicines from ward via porter |
 | Search Inpatient Direct Issues by Bill | `/inward/pharmacy_search_sale_bill_bht.xhtml` | |
 | Search Inpatient Direct Issues by Item | `/inward/pharmacy_search_sale_bill_item_bht.xhtml` | |
 | Search Inpatient Direct Issue Returns by Bill/Item | `/inward/pharmacy_search_return_bill_bht.xhtml` | |
 | Investigation Trace | `/inward/investigation_search_for_reporting_bht.xhtml` | |
 | Inpatient Analytics | `/inward/inward_reports.xhtml` | |
+
+### Ward Pharmacy (accessible from admission profile)
+
+| Menu Item | Page | Controller | Notes |
+|---|---|---|---|
+| Receive Medicines from Pharmacy | `/ward/ward_pharmacy_bht_issue_receive_list.xhtml` → `/ward/ward_pharmacy_bht_issue_receive.xhtml` | `WardPharmacyBhtIssueReceiveController` | Ward confirms receipt of medicines issued via porter |
+| Return Medicines to Pharmacy | `/ward/ward_pharmacy_return_to_pharmacy.xhtml` | `WardPharmacyReturnToPharmacyController` | Ward returns unused stock to pharmacy via porter |
+| Deduct from Ward Stock | `/ward/ward_medication_administration_settle.xhtml` | `MedicationAdministrationStockSettlementController` | Bulk-deduct administered medicines from ward stock |
+
+### Clinical Data (privilege: varies)
+
+| Menu Item | Page | Controller | Notes |
+|---|---|---|---|
+| Letters | `/inward/inward_letters.xhtml` | `InpatientClinicalDataController` / `DocumentTemplateController` | Template-based covering letters with AI generation; Privilege: `InpatientLetter` |
 
 ---
 
@@ -270,6 +285,11 @@ Accessed via **Admin → Manage Inpatient Services** → `/inward/inward_adminis
 | `InwardReportControllerBht` | `com.divudi.bean.inward` | BHT-level reports |
 | `AdmissionTypeController` | `com.divudi.bean.inward` | Admission type master data |
 | `InwardPriceAdjustmntController` | `com.divudi.bean.inward` | Price adjustments (note: typo in class name is intentional — DB compatibility) |
+| `WardPharmacyBhtIssueReceiveController` | `com.divudi.bean.pharmacy` | Ward-side confirmation of medicines received from porter (#21468) |
+| `WardPharmacyReturnToPharmacyController` | `com.divudi.bean.pharmacy` | Ward-side return of unused stock to pharmacy via porter (#21470) |
+| `PharmacyReturnFromWardReceiveController` | `com.divudi.bean.pharmacy` | Pharmacy-side confirmation of returned medicines from ward (#21471) |
+| `MedicationAdministrationController` | `com.divudi.bean.inward` | Record medicine administration events — Stage 1 (#21469) |
+| `MedicationAdministrationStockSettlementController` | `com.divudi.bean.inward` | Bulk-deduct administered medicines from ward stock — Stage 2 (#21469) |
 | `PatientSampleController` | `com.divudi.bean.lab` | Lab sample collection |
 | `SampleController` | `com.divudi.bean.lab` | Lab sample management, receive/reject |
 
@@ -291,6 +311,31 @@ Two parallel workflows exist:
 ### Return Workflows
 - Nurse-initiated return request → pharmacist accepts (partially implemented — Issue #19312 related)
 - Direct return by pharmacist: `/inward/pharmacy_bill_return_bht_issue.xhtml`
+
+### Porter-Mediated Ward Pharmacy Workflow (Implemented — #21467–#21471)
+
+The porter-mediated ward pharmacy workflow is now fully implemented. The design documented below informed the implementation; the key difference is that the porter-issue step (#21467) was integrated into the existing `ward_pharmacy_bht_issue.xhtml` page (extending `PharmacySaleBhtController`) rather than adapting `TransferIssueDirectController`.
+
+#### Implemented Pages
+
+| Step | Page | Controller | Purpose |
+|---|---|---|---|
+| Ward Receive | `/ward/ward_pharmacy_bht_issue_receive_list.xhtml` → `/ward/ward_pharmacy_bht_issue_receive.xhtml` | `WardPharmacyBhtIssueReceiveController` | Ward confirms receipt of medicines from porter |
+| Ward Administer | Clinical Assessment → dialog | `MedicationAdministrationController` | Record administration events (Stage 1) |
+| Ward Stock Deduction | `/ward/ward_medication_administration_settle.xhtml` | `MedicationAdministrationStockSettlementController` | Bulk-deduct administered medicines (Stage 2) |
+| Ward Return | `/ward/ward_pharmacy_return_to_pharmacy.xhtml` | `WardPharmacyReturnToPharmacyController` | Ward returns unused stock to pharmacy via porter |
+| Pharmacy Accept Return | `/pharmacy/pharmacy_return_from_ward_receive_list.xhtml` → `/pharmacy/pharmacy_return_from_ward_receive.xhtml` | `PharmacyReturnFromWardReceiveController` | Pharmacy confirms receipt of returned medicines |
+
+#### BillTypeAtomic Values Used
+
+| Value | Direction | Description |
+|---|---|---|
+| `ISSUE_MEDICINE_ON_REQUEST_INWARD` | Pharmacy → Ward | Pharmacy issues medicines against a ward request |
+| `ACCEPT_ISSUED_MEDICINE_INWARD` | Ward confirms | Ward confirms receipt of issued medicines |
+| `RETURN_MEDICINE_INWARD` | Ward → Pharmacy | Ward returns unused medicines to pharmacy |
+| `ACCEPT_RETURN_MEDICINE_INWARD` | Pharmacy confirms | Pharmacy confirms receipt of returned medicines |
+
+All steps carry `patientEncounter` on the bill for traceability. Porter in-transit stock is tracked via `Stock.staff` and `StockHistory.staff`.
 
 ---
 

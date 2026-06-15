@@ -27,6 +27,28 @@ waste a session.
 
 ---
 
+## 0a. Rebuild and redeploy local code changes before testing
+
+If the change under test isn't deployed yet, rebuild and redeploy to the local
+Payara instance first (see [Local build tools](../../CLAUDE.md) for tool
+locations):
+
+```powershell
+$env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-11.0.23.9-hotspot"
+& "D:\Program Files\NetBeans-18\netbeans\java\maven\bin\mvn.cmd" clean package -DskipTests
+& "D:\Payara\bin\asadmin.bat" redeploy --name rh "D:\Development\2024\hmis\target\rh-3.0.0.war"
+```
+
+- `clean` is required when switching branches or after structural changes
+  (new/renamed/deleted classes, resources); a plain `compile`/`package` can
+  leave stale `.class` files in `target/`.
+- A redeploy invalidates the current session (see §1) — log in again
+  afterwards.
+- Watch `D:\Payara\glassfish\domains\*\logs\server.log` for deployment errors
+  before starting the browser flow.
+
+---
+
 ## 1. Login and department selection
 
 The HMIS login + landing flow has a fixed shape:
@@ -119,6 +141,22 @@ fields before exercising any non-AJAX button on the page.
 
 ---
 
+## 5a. Waiting for AJAX without hard timeouts
+
+- Prefer `browser_snapshot` (accessibility tree) over screenshots for finding
+  and confirming elements — it's far cheaper in tokens and is what the agent
+  actually reasons over.
+- After an AJAX action (PrimeFaces `p:ajax`/`update`), use `browser_wait_for`
+  on the expected resulting text/element rather than a fixed `sleep`. Fall
+  back to the explicit waits in §3 (slow type + ~1–1.5 s) only for the known
+  PrimeFaces commit-timing gotchas, since those are races against a keyup
+  handler that no DOM state change reliably signals.
+- `browser_network_requests` is useful to confirm a `javax.faces.partial.ajax`
+  POST actually fired (and what it returned) when a UI update silently does
+  nothing — cheaper than guessing at another `wait_for`.
+
+---
+
 ## 6. Verify against the database
 
 After the UI flow, confirm correctness directly in the DB (the local copy, with
@@ -178,6 +216,63 @@ ones into the wiki so they are not accidentally committed with application code.
 
 ---
 
+## 9. Interacting with non-accessible canvas widgets (e.g. `p:timeline` / vis-timeline)
+
+`p:timeline` renders into an HTML canvas-like DOM (vis-timeline `div`s with no
+useful accessibility tree), so `browser_click`/`browser_snapshot` `ref=`
+targeting won't find individual events. Use `browser_run_code_unsafe` instead:
+
+```js
+async (page) => {
+  const el = await page.$('.vis-item.mar-given'); // or .vis-item.timeline-active
+  const box = await el.boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await page.waitForTimeout(1500);
+  const dlg = await page.$('#formTimeline\\:panelAdministrationDetail');
+  return { style: await dlg.getAttribute('style'), text: await dlg.innerText() };
+}
+```
+
+To enumerate all items first (positions shift after dialogs open/close and
+change page layout):
+
+```js
+await page.$$eval('.vis-item', els =>
+  els.map(e => ({ cls: e.className, text: e.innerText, box: e.getBoundingClientRect() })));
+```
+
+**Closing a `p:dialog` after inspection**: pressing `Escape` does **not**
+reliably close a PrimeFaces modal `p:dialog` in a scripted session. Click the
+titlebar close button explicitly:
+
+```js
+await page.click('#formTimeline\\:panelAdministrationDetail .ui-dialog-titlebar-close');
+```
+
+If you click a timeline item while a previous dialog's overlay is still up, the
+click lands on the dialog/overlay (not the timeline) and silently produces no
+AJAX request — always close the prior dialog first and re-query item positions.
+
+## 10. `browser_click` / `browser_type` parameter name
+
+These tools take `target` (an element reference like `e123` from the latest
+`browser_snapshot`, or a selector) plus a human-readable `element` description —
+**not** `ref`. If a call fails with "expected string, received undefined at
+target", the tool schema may not be loaded yet; reload it via
+`ToolSearch` (`query: "browser_type playwright"`) and retry with `target`.
+
+## 11. Session is lost on redeploy and on stale snapshots
+
+- **A redeploy invalidates the session** (already noted in §1) — re-login and
+  re-select department before continuing.
+- If a click navigates somewhere unexpected (e.g. `about:blank` or a
+  `TypeError: Cannot read properties of undefined (reading 'url')`), the page
+  state and your last `browser_snapshot` have diverged. Re-navigate to the app
+  root (`/rh`), log in again, and re-take a snapshot before continuing — don't
+  keep issuing actions against stale `ref=` values.
+
+---
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
@@ -189,3 +284,6 @@ ones into the wiki so they are not accidentally committed with application code.
 - [ ] Verified stock + bill-item integrity in the DB; cleaned up temp files.
 - [ ] Filed/fixed any accessibility gap that blocked the test.
 - [ ] Published only non-sensitive screenshot evidence and removed temporary files.
+- [ ] For canvas-based widgets (vis-timeline etc.), used `page.$`/bounding-box
+      clicks and closed dialogs via `.ui-dialog-titlebar-close`, not `Escape`.
+- [ ] Re-logged in and re-selected department after any redeploy before continuing.

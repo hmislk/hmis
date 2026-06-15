@@ -1,0 +1,198 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="content">
+        <h:form id="formWardReturnToPharmacy" onkeypress="if(event.keyCode == 13 &amp;&amp; event.target.type != 'textarea') { return false; }">
+
+            <p:messages id="growlWardReturnToPharmacy" showDetail="true" autoUpdate="true"/>
+
+            <p:panel rendered="#{!wardPharmacyReturnToPharmacyController.printPreview}">
+                <f:facet name="header">
+                    <h:outputText styleClass="fa-solid fa-truck-ramp-box"/>
+                    <p:outputLabel value="Return Medicines to Pharmacy" class="mx-4"/>
+                </f:facet>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <p:outputLabel for="acReturnPorter" value="Porter / Staff Carrying Medicines to Pharmacy:"/>
+                        <p:autoComplete id="acReturnPorter"
+                                        completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                                        forceSelection="true"
+                                        var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
+                                        value="#{wardPharmacyReturnToPharmacyController.porter}"
+                                        maxResults="10"
+                                        styleClass="w-100"
+                                        placeholder="Search staff by name">
+                            <p:column headerText="Name">
+                                <h:outputText value="#{w.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Speciality">
+                                <h:outputText value="#{w.speciality.name}"/>
+                            </p:column>
+                            <p:column headerText="Staff Code">
+                                <h:outputText value="#{w.code}"/>
+                            </p:column>
+                        </p:autoComplete>
+                    </div>
+                    <div class="col-md-6">
+                        <p:outputLabel for="selReturnToDepartment" value="Return to Pharmacy:"/>
+                        <p:selectOneMenu id="selReturnToDepartment"
+                                         value="#{wardPharmacyReturnToPharmacyController.toDepartment}"
+                                         styleClass="w-100">
+                            <f:selectItem itemLabel="Select a Pharmacy" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{wardPharmacyReturnToPharmacyController.pharmacies}" var="ph"
+                                           itemLabel="#{ph.name}" itemValue="#{ph}"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+
+                <p:separator/>
+
+                <div class="row align-items-end">
+                    <div class="col-md-8">
+                        <p:outputLabel for="acReturnStock" value="Medicines/Devices (from ward stock)"/>
+                        <p:autoComplete id="acReturnStock"
+                                        value="#{wardPharmacyReturnToPharmacyController.tmpStock}"
+                                        minQueryLength="3" queryDelay="300"
+                                        completeMethod="#{stockController.completeAvailableStocks}"
+                                        var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}"
+                                        maxResults="10" size="100"
+                                        styleClass="w-100"
+                                        inputStyleClass="w-100 form-control">
+                            <p:column headerText="Item">
+                                <h:outputText value="#{i.itemBatch.item.name}"/>
+                            </p:column>
+                            <p:column headerText="Batch No">
+                                <h:outputText value="#{i.itemBatch.batchNo}"/>
+                            </p:column>
+                            <p:column headerText="Expiry">
+                                <h:outputText value="#{i.itemBatch.dateOfExpire}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Available">
+                                <h:outputText value="#{i.stock}">
+                                    <f:convertNumber pattern="#,###"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:ajax event="itemSelect" process="@this" update="txtReturnQty btnAddReturnItem"/>
+                        </p:autoComplete>
+                    </div>
+                    <div class="col-md-2">
+                        <p:outputLabel for="txtReturnQty" value="Quantity"/>
+                        <p:inputNumber id="txtReturnQty"
+                                       value="#{wardPharmacyReturnToPharmacyController.qty}"
+                                       decimalPlaces="2"
+                                       styleClass="w-100"/>
+                    </div>
+                    <div class="col-md-2">
+                        <p:commandButton id="btnAddReturnItem"
+                                         value="Add"
+                                         icon="pi pi-plus"
+                                         class="w-100"
+                                         process="@this acReturnStock txtReturnQty"
+                                         update=":formWardReturnToPharmacy:panelReturnItems growlWardReturnToPharmacy"
+                                         actionListener="#{wardPharmacyReturnToPharmacyController.addItem}"/>
+                    </div>
+                </div>
+
+                <h:panelGroup id="panelReturnItems" layout="block" styleClass="mt-3">
+                    <p:dataTable
+                        id="tblReturnItems"
+                        widgetVar="tblReturnItems"
+                        rowKey="#{bi.hashCode()}"
+                        value="#{wardPharmacyReturnToPharmacyController.returnItems}"
+                        var="bi"
+                        class="w-100"
+                        emptyMessage="No items added yet.">
+
+                        <p:column headerText="Item">
+                            <h:outputText value="#{bi.item.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Batch No">
+                            <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}"/>
+                        </p:column>
+
+                        <p:column headerText="Expiry">
+                            <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Qty">
+                            <h:outputText value="#{bi.qty}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Action" style="width: 6rem; text-align: center;">
+                            <p:commandButton icon="pi pi-trash"
+                                             title="Remove #{bi.item.name}"
+                                             class="ui-button-danger"
+                                             process="@this"
+                                             update=":formWardReturnToPharmacy:panelReturnItems"
+                                             actionListener="#{wardPharmacyReturnToPharmacyController.removeItem(bi)}"/>
+                        </p:column>
+
+                    </p:dataTable>
+                </h:panelGroup>
+
+                <div class="d-flex justify-content-end mt-3">
+                    <p:commandButton
+                        id="btnConfirmReturn"
+                        value="Confirm Return to Pharmacy"
+                        icon="fas fa-check"
+                        class="ui-button-success"
+                        update=":formWardReturnToPharmacy"
+                        actionListener="#{wardPharmacyReturnToPharmacyController.settle}"
+                        onclick="if (!confirm('Return the selected items to the pharmacy via the selected porter? This cannot be undone.')) { return false; }"/>
+                </div>
+            </p:panel>
+
+            <p:panel rendered="#{wardPharmacyReturnToPharmacyController.printPreview}">
+                <f:facet name="header">
+                    <p:outputLabel value="Returned to Pharmacy - Bill #{wardPharmacyReturnToPharmacyController.returnBill.deptId}"/>
+                </f:facet>
+
+                <p:dataTable
+                    id="tblReturnedItems"
+                    rowKey="#{i.id}"
+                    value="#{wardPharmacyReturnToPharmacyController.returnBill.billItems}"
+                    var="i"
+                    class="w-100">
+
+                    <p:column headerText="Item">
+                        <h:outputText value="#{i.item.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Batch No">
+                        <h:outputText value="#{i.pharmaceuticalBillItem.itemBatch.batchNo}"/>
+                    </p:column>
+
+                    <p:column headerText="Quantity Returned">
+                        <h:outputText value="#{i.qty}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </p:column>
+
+                </p:dataTable>
+
+                <p:commandButton
+                    id="btnBackAfterReturn"
+                    value="New Return"
+                    icon="fas fa-arrow-left"
+                    ajax="false"
+                    class="ui-button-secondary mt-3"
+                    action="#{wardPharmacyReturnToPharmacyController.navigateToReturn}"/>
+
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>
