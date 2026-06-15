@@ -669,8 +669,14 @@
                         <p:dataTable
                             id="professionalFeeTable"
                             value="#{bhtSummeryController.groupedProfessionalFees}"
+                            draggableRows="true"
                             rowIndexVar="i"
                             var="g">
+
+                            <p:ajax event="rowReorder"
+                                    listener="#{bhtSummeryController.onGroupedProfessionalFeeReorder}"
+                                    process="@this"
+                                    update="@this"/>
 
                             <p:column headerText="#" style="padding: 7px; width: 2em;">
                                 <h:outputLabel value="#{i+1}"/>

@@ -535,28 +535,51 @@ public class BhtSummeryController implements Serializable {
     }
 
     /**
-     * Handles manual drag-and-drop reordering of the Professional Fee table on
-     * the final bill. PrimeFaces has already moved the whole row (the BillFee
-     * object, with its name, fee value and adjusted value) within the bound
-     * {@code profesionallFee} list by the time this fires. We persist the new
-     * position into each fee's orderNo so the order survives without waiting for
-     * settle and is reproduced on the printed bill via @OrderBy("orderNo, ...").
+     * Handles drag-and-drop reordering of the doctor rows in the grouped
+     * Professional Fee table. The grouped list is rebuilt fresh on each render
+     * (so PrimeFaces' in-place reorder would be lost); instead we take the
+     * displayed order, apply the move via the event's from/to indices, and write
+     * a sequential orderNo onto every underlying fee. The next render re-groups
+     * ordered by orderNo, and the printed bill reproduces it via
+     * &#64;OrderBy("orderNo, feeAdjusted").
      */
-    public void onProfessionalFeeRowReorder(ReorderEvent event) {
-        if (profesionallFee != null) {
-            int serial = 0;
-            for (BillFee bf : profesionallFee) {
+    public void onGroupedProfessionalFeeReorder(ReorderEvent event) {
+        List<DoctorFeeGroup> groups = getGroupedProfessionalFees();
+        int from = event.getFromIndex();
+        int to = event.getToIndex();
+        if (from < 0 || to < 0 || from >= groups.size() || to >= groups.size()) {
+            return;
+        }
+        DoctorFeeGroup moved = groups.remove(from);
+        groups.add(to, moved);
+
+        int serial = 0;
+        for (DoctorFeeGroup grp : groups) {
+            for (BillFee bf : grp.getFees()) {
                 bf.setOrderNo(serial++);
-                // Keep the Adjusted Fee equal to the (read-only) Fee Value, which always travels
-                // correctly with its doctor. This re-syncs the editable Adjusted Value input after
-                // a drag so it never ends up showing the previous row's value.
-                bf.setFeeAdjusted(bf.getFeeValue());
                 getBillFeeFacade().edit(bf);
             }
         }
-        JsfUtil.addSuccessMessage("Row order updated");
+        JsfUtil.addSuccessMessage("Doctor order updated");
     }
 
+    /**
+     * Captures the professional fee list in its current displayed (grouped,
+     * doctor-by-doctor) order into orderNo. Called when Save Provisional Bill or
+     * Settle is clicked so the saved bill keeps exactly the order shown on screen,
+     * which the combined-doctor print preview then reproduces via
+     * &#64;OrderBy("orderNo, feeAdjusted").
+     */
+    private void persistGroupedProfessionalFeeOrder() {
+        int serial = 0;
+        for (DoctorFeeGroup grp : getGroupedProfessionalFees()) {
+            for (BillFee bf : grp.getFees()) {
+                bf.setOrderNo(serial++);
+                getBillFeeFacade().edit(bf);
+            }
+        }
+    }
+    
     /**
      * Groups the professional fee list by doctor so the final bill shows a single
      * line per doctor with the combined total. Each group keeps its individual
@@ -588,7 +611,18 @@ public class BhtSummeryController implements Serializable {
                 group.setTotalAdjusted(group.getTotalAdjusted() + adjusted);
             }
         }
-        return new ArrayList<>(groups.values());
+        List<DoctorFeeGroup> result = new ArrayList<>(groups.values());
+        // Order doctors by the smallest orderNo among their fees so a manual
+        // drag-reorder (which writes orderNo) is reproduced. A stable sort keeps
+        // first-appearance order when nothing has been reordered (all orderNo 0).
+        result.sort(Comparator.comparingInt(grp -> {
+            int min = Integer.MAX_VALUE;
+            for (BillFee bf : grp.getFees()) {
+                min = Math.min(min, bf.getOrderNo());
+            }
+            return min;
+        }));
+        return result;
     }
 
     /**
@@ -1501,6 +1535,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void createTempBill() {
+        // Capture the current grouped (doctor-by-doctor) professional fee order so the
+        // Temporary Bill preview shows the combined doctor list with the latest adjusted
+        // values, in the same order shown on screen.
+        persistGroupedProfessionalFeeOrder();
         tempBill = null;
         updateTotal();
         saveTempBill();
@@ -1511,6 +1549,8 @@ public class BhtSummeryController implements Serializable {
         if (errorCheck()) {
             return;
         }
+
+        
 
         originalBill.setDiscount(discount);
         originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
@@ -1532,6 +1572,8 @@ public class BhtSummeryController implements Serializable {
         if (errorCheck()) {
             return;
         }
+
+        persistGroupedProfessionalFeeOrder();
 
         originalBill.setDiscount(discount);
         originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
