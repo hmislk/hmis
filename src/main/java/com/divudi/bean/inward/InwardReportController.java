@@ -391,15 +391,16 @@ public class InwardReportController implements Serializable {
             JsfUtil.addErrorMessage("Please select a report type");
             return;
         }
+        if (visitType == null || visitType.trim().isEmpty() || visitType.equals("Any")) {
+            JsfUtil.addErrorMessage("Please select a visit type");
+            return;
+        }
         bundle = generateIpIncomeCategoryWiseReport();
     }
 
     public ReportTemplateRowBundle generateIpIncomeCategoryWiseReport() {
         ReportTemplateRowBundle rtrb = new ReportTemplateRowBundle();
 
-        if (visitType == null || visitType.trim().isEmpty()) {
-            visitType = "Any";
-        }
         if (paymentType == null || paymentType.trim().isEmpty()) {
             paymentType = "Any";
         }
@@ -483,19 +484,29 @@ public class InwardReportController implements Serializable {
         List<PaymentMethod> nonCreditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.NON_CREDIT);
 
         StringBuilder jpql = new StringBuilder();
-        jpql.append("select new com.divudi.core.data.dto.IpIncomeCategoryWiseRowDTO("
-                + " b.id, b.billClassType, b.billType, b.discount, b.deptId,"
-                + " bi.grossValue, bi.hospitalFee, bi.discount, bi.staffFee, bi.netValue,"
-                + " i.id, i.name, c.id, c.name,"
-                + " pe.paymentMethod, b.paymentMethod"
-                + ")"
-                + " from BillItem bi"
-                + " join bi.bill b"
-                + " left join bi.item i"
-                + " left join i.category c"
-                + " left join b.patientEncounter pe"
-                + " where b.retired = :br"
-                + " and b.createdAt between :fd and :td ");
+            jpql = new StringBuilder();
+            jpql.append("select new com.divudi.core.data.dto.IpIncomeCategoryWiseRowDTO("
+                    + " b.id, b.billClassType, b.billType, b.discount, b.deptId,"
+                    + " bi.grossValue, bi.hospitalFee, bi.discount, bi.staffFee, bi.netValue,"
+                    + " COALESCE(i.id, refI.id, refRefI.id),"
+                    + " COALESCE(i.name, refI.name, refRefI.name),"
+                    + " COALESCE(c.id, refC.id, refRefC.id),"
+                    + " COALESCE(c.name, refC.name, refRefC.name),"
+                    + " pe.paymentMethod, b.paymentMethod"
+                    + ")"
+                    + " from BillItem bi"
+                    + " join bi.bill b"
+                    + " left join bi.item i"
+                    + " left join i.category c"
+                    + " left join b.patientEncounter pe"
+                    + " left join bi.referanceBillItem refBi"
+                    + " left join refBi.item refI"
+                    + " left join refI.category refC"
+                    + " left join refBi.referanceBillItem refRefBi"
+                    + " left join refRefBi.item refRefI"
+                    + " left join refRefI.category refRefC"
+                    + " where b.retired = :br"
+                    + " and b.createdAt between :fd and :td ");
 
         Map<String, Object> m = new HashMap<>();
         m.put("br", false);
@@ -520,6 +531,7 @@ public class InwardReportController implements Serializable {
                     m.put("pmIp", "Credit".equals(paymentType) ? creditPaymentMethods : nonCreditPaymentMethods);
                 }
                 break;
+                
             case "OP":
                 jpql.append(" and bi.bill.billTypeAtomic in :btas ");
                 m.put("btas", btasOP);
@@ -531,28 +543,19 @@ public class InwardReportController implements Serializable {
                             : nonCreditPaymentMethods);
                 }
                 break;
-            case "Any":
-                jpql.append(" and bi.bill.billTypeAtomic in :btas ");
-                List<BillTypeAtomic> all = new ArrayList<>();
-                all.addAll(btasIP);
-                all.addAll(btasOP);
-                m.put("btas", all);
-
-                if (roomCategories != null && !roomCategories.isEmpty()) {
-                    jpql.append(" AND bi.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory IN :cat ");
-                    m.put("cat", roomCategories);
-                }
-                if (admissionTypes != null && !admissionTypes.isEmpty()) {
-                    jpql.append(" AND bi.bill.patientEncounter.admissionType IN :admTypes ");
-                    m.put("admTypes", admissionTypes);
-                }
-                if (paymentType != null && !paymentType.isEmpty() && !"Any".equalsIgnoreCase(paymentType)) {
-                    jpql.append(" and bi.bill.patientEncounter.paymentMethod in :pmIp ");
-                    m.put("pmIp", "Credit".equals(paymentType) ? creditPaymentMethods : nonCreditPaymentMethods);
-                }
-                break;
 
             default:
+                List<BillTypeAtomic> allBtas = new ArrayList<>();
+                allBtas.addAll(btasIP);
+                allBtas.addAll(btasOP);
+                if (!allBtas.isEmpty()) {
+                    jpql.append(" and bi.bill.billTypeAtomic in :btas ");
+                    m.put("btas", allBtas);
+                }
+                if (paymentType != null && !paymentType.isEmpty() && !"Any".equalsIgnoreCase(paymentType)) {
+                    jpql.append(" and bi.bill.patientEncounter.paymentMethod in :pmAny ");
+                    m.put("pmAny", "Credit".equals(paymentType) ? creditPaymentMethods : nonCreditPaymentMethods);
+                }
                 break;
         }
 
@@ -569,7 +572,11 @@ public class InwardReportController implements Serializable {
             m.put("site", site);
         }
         if (category != null) {
-            jpql.append(" and bi.item.category = :cat ");
+            if (withProfessionalFee) {
+                jpql.append(" and (i.category = :cat OR refI.category = :cat) ");
+            } else {
+                jpql.append(" and bi.item.category = :cat ");
+            }
             m.put("cat", category);
         }
 
@@ -1724,34 +1731,34 @@ public class InwardReportController implements Serializable {
                 sheet.setColumnWidth(i, colWidths[i]);
             }
 
-                // ── Charts sheet (native Excel charts) ─────────────────────────────
-                XSSFSheet chartSheet = workbook.createSheet("Charts");
-                XSSFDrawing drawing = chartSheet.createDrawingPatriarch();
+            // ── Charts sheet (native Excel charts) ─────────────────────────────
+            XSSFSheet chartSheet = workbook.createSheet("Charts");
+            XSSFDrawing drawing = chartSheet.createDrawingPatriarch();
 
-                List<SurgeryCountDoctorWiseDTO> doctorChartRows = getDoctorChartRows();
-                List<SurgeryCountDoctorWiseDTO> specialtyChartRows = getSpecialtyChartRows();
+            List<SurgeryCountDoctorWiseDTO> doctorChartRows = getDoctorChartRows();
+            List<SurgeryCountDoctorWiseDTO> specialtyChartRows = getSpecialtyChartRows();
 
-                int chartRowStart = 0;
-                if (!doctorChartRows.isEmpty()) {
+            int chartRowStart = 0;
+            if (!doctorChartRows.isEmpty()) {
                 int[] doctorBlock = writeChartDataBlock(
-                    chartSheet, chartRowStart, "Doctor", doctorChartRows, false);
+                        chartSheet, chartRowStart, "Doctor", doctorChartRows, false);
                 int doctorChartsStart = doctorBlock[2] + 2;
                 addLineChart(chartSheet, drawing, 0, doctorChartsStart, doctorBlock,
-                    "Doctor Wise Surgery Trend - Year " + reportYear);
+                        "Doctor Wise Surgery Trend - Year " + reportYear);
                 addBarChart(chartSheet, drawing, 0, doctorChartsStart + 22, doctorBlock,
-                    "Doctor Wise Surgery Count - Year " + reportYear);
+                        "Doctor Wise Surgery Count - Year " + reportYear);
                 chartRowStart = doctorChartsStart + 45;
-                }
+            }
 
-                if (!specialtyChartRows.isEmpty()) {
+            if (!specialtyChartRows.isEmpty()) {
                 int[] specialtyBlock = writeChartDataBlock(
-                    chartSheet, chartRowStart, "Speciality", specialtyChartRows, true);
+                        chartSheet, chartRowStart, "Speciality", specialtyChartRows, true);
                 int specialtyChartsStart = specialtyBlock[2] + 2;
                 addLineChart(chartSheet, drawing, 0, specialtyChartsStart, specialtyBlock,
-                    "Specialty Wise Surgery Trend - Year " + reportYear);
+                        "Specialty Wise Surgery Trend - Year " + reportYear);
                 addBarChart(chartSheet, drawing, 0, specialtyChartsStart + 22, specialtyBlock,
-                    "Specialty Wise Surgery Count - Year " + reportYear);
-                }
+                        "Specialty Wise Surgery Count - Year " + reportYear);
+            }
 
             // ── Write workbook to byte array first, then stream ────────────────────
             // Avoids "IOException never thrown" by separating workbook.write()
