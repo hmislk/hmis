@@ -1617,6 +1617,11 @@ public class BhtSummeryController implements Serializable {
                 JsfUtil.addErrorMessage("Discharge time must be on or after the nursing discharge time.");
                 return true;
             }
+            Date roomDt = getPatientEncounter().getRoomDischargeDateTime();
+            if (roomDt != null && date.before(roomDt)) {
+                JsfUtil.addErrorMessage("Discharge time must be on or after the room discharge time.");
+                return true;
+            }
         }
 
         return false;
