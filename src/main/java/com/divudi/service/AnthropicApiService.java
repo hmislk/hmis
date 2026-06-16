@@ -3777,7 +3777,7 @@ public class AnthropicApiService implements Serializable {
                 new String[][]{
                     {"GET",    "/price-matrix/inward?departmentId=&categoryId=&paymentMethod=&limit=", "List entries. Filters: departmentId, categoryId, paymentMethod, limit (default 50)"},
                     {"GET",    "/price-matrix/inward/{id}",                                   "Fetch one entry (flat DTO with departmentId/departmentName etc.)"},
-                    {"POST",   "/price-matrix/inward",                                         "Create. Body: departmentId (required), categoryId (required), margin (required), paymentMethod, discountPercent, fromPrice, toPrice, admissionTypeId, creditCompanyId"},
+                    {"POST",   "/price-matrix/inward",                                         "Create. Body: departmentId (required), categoryId (required), paymentMethod, margin, discountPercent, fromPrice, toPrice, admissionTypeId, creditCompanyId"},
                     {"PUT",    "/price-matrix/inward/{id}",                                   "Update. Body fields all optional — only supplied fields updated"},
                     {"DELETE", "/price-matrix/inward/{id}",                                   "Soft-retire entry. Optional: retireComments (query param)"}
                 });
