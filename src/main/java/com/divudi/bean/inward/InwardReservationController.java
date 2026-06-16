@@ -313,9 +313,11 @@ public class InwardReservationController implements Serializable {
         Map m = new HashMap();
         m.put("ret", false);
         m.put("deptType", DepartmentType.Theatre);
+        m.put("institution", sessionController.getInstitution());
         String jpql = "SELECT r FROM Reservation r "
                 + "WHERE r.retired = :ret "
-                + "AND r.room.department.departmentType = :deptType";
+                + "AND r.room.department.departmentType = :deptType "
+                + "AND r.room.department.institution = :institution";
         if (calanderStatus != null) {
             jpql += " AND r.appointment.status = :status";
             m.put("status", calanderStatus);

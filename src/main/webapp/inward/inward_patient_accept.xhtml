@@ -148,7 +148,8 @@
                     <p:column headerText="Notes">
                         <h:outputText value="#{ret.notes}"/>
                     </p:column>
-                    <p:column headerText="Actions" style="width:120px">
+                    <p:column headerText="Actions" style="width:120px"
+                              rendered="#{webUserController.hasPrivilege('WardAcceptTheatreReturn')}">
                         <p:commandButton
                             id="btnAcceptReturn"
                             value="Accept"
