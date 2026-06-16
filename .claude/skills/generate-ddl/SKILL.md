@@ -93,8 +93,14 @@ Find the built WAR and force-deploy it (this also triggers the singleton's
 
 ```bash
 WAR=$(ls target/*.war | head -1)
-/home/buddhika/payara/bin/asadmin deploy --force=true "$WAR"
+/home/buddhika/payara/bin/asadmin redeploy --name rh "$WAR"
 ```
+
+Use the explicit app name `rh` — the same name `dev-issue` and
+`playwright-e2e` redeploy under. Omitting `--name` lets `asadmin` derive the
+app name from the WAR filename (e.g. `rh-3.0.0`) instead of redeploying the
+existing `rh` app, which can leave two separate apps competing for the same
+hardcoded `/rh` context root (`glassfish-web.xml`).
 
 **If deploy fails with a JNDI lookup error for a datasource** (e.g.
 `jdbc/ruhunuAudit` not found): this is a pre-existing local-environment
@@ -132,7 +138,7 @@ pre-existing local-only change was already there before step 1 — never more.
 
 ```bash
 mvn -q package -DskipTests
-/home/buddhika/payara/bin/asadmin deploy --force=true "$(ls target/*.war | head -1)"
+/home/buddhika/payara/bin/asadmin redeploy --name rh "$(ls target/*.war | head -1)"
 ```
 
 If this redeploy fails for the same pre-existing JNDI reason noted in step
