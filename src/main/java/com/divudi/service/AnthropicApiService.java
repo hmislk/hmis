@@ -3355,7 +3355,8 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/finance/bill_item/{from}/{to}",                             "Get bills with line items for a date range"},
                     {"GET", "/finance/bill_item_cat/{bill_category}",                     "Get bills filtered by BillType category (today)"},
                     {"GET", "/finance/bill_item_cat/{date}/{bill_category}",              "Get bills by category for a specific date"},
-                    {"GET", "/finance/bill_item_cat/{from}/{to}/{bill_category}",         "Get bills by category for a date range"}
+                    {"GET", "/finance/bill_item_cat/{from}/{to}/{bill_category}",         "Get bills by category for a date range"},
+                    {"GET", "/finance/bill/search?billNumber={billNumber}",               "Look up bills by bill number (insId or deptId match)"}
                 });
 
         appendModule(sb, "Finance - QuickBooks Export", "/qb",
