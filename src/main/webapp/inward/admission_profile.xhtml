@@ -793,6 +793,30 @@
                                         styleClass="w-100 #{admissionController.current.clinicallyDischarged ? 'ui-button-success' : 'ui-button-warning'}">
                                     </p:commandButton>
                                 </div>
+                                <div class="col-12">
+                                    <p:commandButton
+                                        id="btnNursingDischarge"
+                                        value="Nursing Discharge"
+                                        ajax="false"
+                                        action="#{nursingDischargeController.navigateToNursingDischarge(admissionController.current)}"
+                                        icon="fa fa-user-nurse"
+                                        title="Navigate to Nursing Discharge"
+                                        rendered="#{webUserController.hasPrivilege('InwardNursingDischarge')}"
+                                        styleClass="w-100 #{admissionController.current.nursingDischarged ? 'ui-button-success' : 'ui-button-warning'}">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-12">
+                                    <p:commandButton
+                                        id="btnPhysicalDischarge"
+                                        value="Physical Discharge"
+                                        ajax="false"
+                                        action="#{nursingDischargeController.navigateToPhysicalDischarge(admissionController.current)}"
+                                        icon="fa fa-walking"
+                                        title="Navigate to Physical Discharge"
+                                        rendered="#{webUserController.hasPrivilege('InwardPhysicalDischarge')}"
+                                        styleClass="w-100 #{admissionController.current.physicalDischarged ? 'ui-button-success' : 'ui-button-warning'}">
+                                    </p:commandButton>
+                                </div>
                             </div>
                         </p:panel>
                     </div>

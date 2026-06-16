@@ -118,10 +118,13 @@ public enum Privileges {
     InwardPharmacyIssueRequest("Inward Pharmacy Issue Request"),
     InwardPharmacyIssueRequestCancel("Inward Pharmacy Issue Request Cancel"),
     InwardPharmacyIssueRequestSearch("Inward Pharmacy Issue Request Search"),
+    InwardPharmacyReturnCancel("Inward Pharmacy Return Cancel"),
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
     TheaterIssueBHT("Theater Issue BHT"),
     InpatientClinicalAssessment("Inpatient Clinical Assessment"),
     InpatientClinicalDischarge("Inpatient Clinical Discharge"),
+    InwardNursingDischarge("Inward Nursing Discharge"),
+    InwardPhysicalDischarge("Inward Physical Discharge"),
     InwardDocumentUpload("Inward Document Upload"),
     InpatientLetter("Inpatient Letter"),
     //</editor-fold>
@@ -516,6 +519,8 @@ public enum Privileges {
     PharmacyDischargeMedicineIssue("Pharmacy Discharge Medicine Issue"),
     PharmacyDirectIssueToTheaterCases("Pharmacy Direct Issue to Theater Cases"),
     PharmacyBhtIssueRequest("Pharmacy BHT Issue Request"),
+    PharmacyBhtRequestForceComplete("Pharmacy BHT Request Force Complete"),
+    PharmacyReturnFromWardForceComplete("Pharmacy Return From Ward Force Complete"),
     PharmacySearchInpatientDirectIssuesbyBill("Pharmacy Search Inpatient Direct Issues by Bill"),
     PharmacySearchInpatientDirectIssuesbyItem("Pharmacy Search Inpatient Direct Issues by Item"),
     PharmacySearchInpatientDirectIssueReturnsbyBill("Pharmacy Search Inpatient Direct Issue Returns by Bill"),
@@ -911,6 +916,9 @@ public enum Privileges {
             case PharmacyDischargeMedicineIssue:
             case PharmacyDirectIssueToTheaterCases:
             case PharmacyBhtIssueRequest:
+            case PharmacyBhtRequestForceComplete:
+            case PharmacyReturnFromWardForceComplete:
+            case InwardPharmacyReturnCancel:
             case PharmacySearchInpatientDirectIssuesbyBill:
             case PharmacySearchInpatientDirectIssuesbyItem:
             case PharmacySearchInpatientDirectIssueReturnsbyBill:
@@ -1086,6 +1094,8 @@ public enum Privileges {
             case InwardAppointmentCancel:
             case InpatientClinicalAssessment:
             case InpatientClinicalDischarge:
+            case InwardNursingDischarge:
+            case InwardPhysicalDischarge:
             case InwardDocumentUpload:
             case InpatientLetter:
             case InwardFormTemplateAdmin:
