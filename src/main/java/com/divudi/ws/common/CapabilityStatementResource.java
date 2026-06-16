@@ -341,7 +341,10 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Services", "/api/services",
-                        "OPD and Inward service management including fees and categories",
+                        "OPD and Inward service management including fees and categories. "
+                        + "Fee sub-paths: /{id}/fees (GET fees, POST add), /{id}/fees/{feeId} (PUT update, DELETE remove). "
+                        + "/fees/bulk-margin (POST bulk-update marginAllowed/discountAllowed on fees in a category). "
+                        + "/fees/margin-disabled?categoryId=X (GET diagnostic list of fees with marginAllowed=false/null).",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("Timed Items", "/api/timed-items",
