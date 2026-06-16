@@ -133,6 +133,7 @@
                                 <p:selectOneMenu
                                     class="w-100"
                                     value="#{admissionController.admissionStatusForSearch}" >
+                                    <f:selectItem itemLabel="Any Status"></f:selectItem>
                                     <f:selectItems value="#{enumController.admissionStatuses}"
                                                    var="status"
                                                    itemValue="#{status}" itemLabel="#{status.label}" />
