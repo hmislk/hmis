@@ -219,7 +219,7 @@
                             </h:panelGroup>
                         </h:panelGrid>
                     </div>
-                    
+
                     <p:panel header="Mandatory Charge Types" class="mt-3">
                         <p:tabView id="tabView">
 
@@ -229,30 +229,41 @@
                                         <h:outputLabel value="#{b.roomFacilityCharge.name}"/>
                                     </p:column>
                                     <p:column headerText="Printing Room">
-                                        <p:autoComplete forceSelection="true"
-                                                        value="#{b.printRoomFacilityCharge}"
-                                                        completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
-                                                        var="rf" itemLabel="#{rf.name}" itemValue="#{rf}">
-                                            <p:ajax event="itemSelect" process="@this"
-                                                    listener="#{patientRoomController.edit(b)}"/>
+                                        <p:autoComplete 
+                                            forceSelection="true"
+                                            value="#{b.printRoomFacilityCharge}"
+                                            completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
+                                            var="rf" 
+                                            itemLabel="#{rf.name}" 
+                                            itemValue="#{rf}">
+                                            <p:ajax 
+                                                event="itemSelect" 
+                                                process="@this"
+                                                listener="#{patientRoomController.edit(b)}"/>
                                         </p:autoComplete>
                                     </p:column>
                                     <p:column headerText="AdmittedAt">
-                                        <p:calendar navigator="true"
-                                                    id="printingRoomAdmittedTimeStamp"
-                                                    value="#{b.printAdmittedAt}"
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                                            <p:ajax event="change" process="@this"
-                                                    listener="#{patientRoomController.edit(b)}"/>
+                                        <p:calendar 
+                                            navigator="true"
+                                            id="printingRoomAdmittedTimeStamp"
+                                            value="#{b.printAdmittedAt}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                                            <p:ajax 
+                                                event="change" 
+                                                process="@this"
+                                                listener="#{patientRoomController.edit(b)}"/>
                                         </p:calendar>
                                     </p:column>
                                     <p:column headerText="DischargeAt">
-                                        <p:calendar navigator="true"
-                                                    id="printingRoomDischargeTimeStamp"
-                                                    value="#{b.printDischargeAt}"
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
-                                            <p:ajax event="change" process="@this"
-                                                    listener="#{patientRoomController.edit(b)}"/>
+                                        <p:calendar
+                                            navigator="true"
+                                            id="printingRoomDischargeTimeStamp"
+                                            value="#{b.printDischargeAt}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                                            <p:ajax 
+                                                event="change" 
+                                                process="@this"
+                                                listener="#{patientRoomController.edit(b)}"/>
                                         </p:calendar>
 
                                     </p:column>
@@ -547,7 +558,7 @@
                         </p:tabView>
 
                     </p:panel>
-                    
+
                     <p:panel header="Charge Types" class="mt-3">
                         <p:dataTable 
                             id="dList" 
@@ -729,54 +740,54 @@
                               width="1200"
                               style="max-height:70vh; overflow:auto; padding:20px; font-size:1.05rem;">
                         <h:panelGroup id="docFeeBreakdownContent" layout="block">
-                        <h:panelGroup rendered="#{bhtSummeryController.selectedDoctorFeeGroup ne null}">
-                            <div class="mb-3 fw-bold" style="font-size:1.2rem;">
-                                <i class="fa fa-user-md me-2"/>
-                                <h:outputText value="#{bhtSummeryController.selectedDoctorFeeGroup.staff.person.nameWithTitle}"/>
-                            </div>
-                            <p:dataTable id="breakdownTable" value="#{bhtSummeryController.selectedDoctorFeeGroup.fees}" var="fb">
-                                <p:column headerText="Bill No" style="padding: 6px;">
-                                    <h:outputText value="#{fb.bill.deptId}"/>
-                                </p:column>
-                                <p:column headerText="Date" style="padding: 6px;">
-                                    <h:outputText value="#{fb.feeAt ne null ? fb.feeAt : fb.createdAt}">
-                                        <f:convertDateTime timeZone="Asia/Colombo"
-                                                           pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Added User" style="padding: 6px;">
-                                    <h:outputText value="#{fb.bill.creater.webUserPerson.nameWithTitle}"/>
-                                </p:column>
-                                <p:column headerText="Fee Value" style="text-align: right; padding: 6px;">
-                                    <h:outputText value="#{fb.feeValue}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </p:column>
-                                <p:column headerText="Adjusted Value" style="text-align: right; padding: 6px;">
-                                    <p:inputText autocomplete="off" value="#{fb.feeAdjusted}" style="text-align: right;">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                        <p:ajax event="blur" process="@this"
-                                                update=":#{p:resolveFirstComponentWithId('breakdownTable',view).clientId} :#{p:resolveFirstComponentWithId('professionalFeeTable',view).clientId} :#{p:resolveFirstComponentWithId('dList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId}"
-                                                listener="#{bhtSummeryController.changeFeeAdjustedInBreakdown(fb)}"/>
-                                        <p:ajax process="@this" event="keyup"
-                                                update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
-                                                listener="#{bhtSummeryController.changeIsMade()}"/>
-                                    </p:inputText>
-                                </p:column>
-                                <p:columnGroup type="footer">
-                                    <p:row>
-                                        <p:column footerText="Total" colspan="4" style="text-align: right; padding: 6px; font-weight: bold;"/>
-                                        <p:column style="text-align: right; padding: 6px; font-weight: bold;">
-                                            <f:facet name="footer">
-                                                <h:outputText value="#{bhtSummeryController.selectedDoctorFeeGroup.totalAdjusted}">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputText>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row>
-                                </p:columnGroup>
-                            </p:dataTable>
-                        </h:panelGroup>
+                            <h:panelGroup rendered="#{bhtSummeryController.selectedDoctorFeeGroup ne null}">
+                                <div class="mb-3 fw-bold" style="font-size:1.2rem;">
+                                    <i class="fa fa-user-md me-2"/>
+                                    <h:outputText value="#{bhtSummeryController.selectedDoctorFeeGroup.staff.person.nameWithTitle}"/>
+                                </div>
+                                <p:dataTable id="breakdownTable" value="#{bhtSummeryController.selectedDoctorFeeGroup.fees}" var="fb">
+                                    <p:column headerText="Bill No" style="padding: 6px;">
+                                        <h:outputText value="#{fb.bill.deptId}"/>
+                                    </p:column>
+                                    <p:column headerText="Date" style="padding: 6px;">
+                                        <h:outputText value="#{fb.feeAt ne null ? fb.feeAt : fb.createdAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo"
+                                                               pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Added User" style="padding: 6px;">
+                                        <h:outputText value="#{fb.bill.creater.webUserPerson.nameWithTitle}"/>
+                                    </p:column>
+                                    <p:column headerText="Fee Value" style="text-align: right; padding: 6px;">
+                                        <h:outputText value="#{fb.feeValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Adjusted Value" style="text-align: right; padding: 6px;">
+                                        <p:inputText autocomplete="off" value="#{fb.feeAdjusted}" style="text-align: right;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                            <p:ajax event="blur" process="@this"
+                                                    update=":#{p:resolveFirstComponentWithId('breakdownTable',view).clientId} :#{p:resolveFirstComponentWithId('professionalFeeTable',view).clientId} :#{p:resolveFirstComponentWithId('dList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId}"
+                                                    listener="#{bhtSummeryController.changeFeeAdjustedInBreakdown(fb)}"/>
+                                            <p:ajax process="@this" event="keyup"
+                                                    update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                                    listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column footerText="Total" colspan="4" style="text-align: right; padding: 6px; font-weight: bold;"/>
+                                            <p:column style="text-align: right; padding: 6px; font-weight: bold;">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{bhtSummeryController.selectedDoctorFeeGroup.totalAdjusted}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:dataTable>
+                            </h:panelGroup>
                         </h:panelGroup>
                     </p:dialog>
 
