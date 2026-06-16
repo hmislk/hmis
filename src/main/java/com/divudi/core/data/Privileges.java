@@ -1104,6 +1104,10 @@ public enum Privileges {
             case InpatientLetter:
             case InwardFormTemplateAdmin:
             case InwardFormFill:
+            case TheatreSendPatient:
+            case TheatreAcceptPatient:
+            case TheatreReturnPatient:
+            case WardAcceptTheatreReturn:
                 return "Inward";
 
             case AdminInactivePatients:

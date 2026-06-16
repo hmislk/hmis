@@ -105,7 +105,7 @@ public class RoomFacilityChargeController implements Serializable {
         String sql = "SELECT rm FROM RoomFacilityCharge rm "
                 + "WHERE rm.retired = false "
                 + "AND rm.department.departmentType = :deptType "
-                + "AND (rm.name) LIKE :q "
+                + "AND UPPER(rm.name) LIKE :q "
                 + "ORDER BY rm.name";
         return getFacade().findByJpql(sql, hm);
     }

@@ -323,8 +323,8 @@ public class InwardReservationController implements Serializable {
             m.put("status", calanderStatus);
         }
         if (fromDate != null && toDate != null) {
-            jpql += " AND (r.reservedFrom BETWEEN :fd AND :td"
-                  + "   OR r.reservedTo BETWEEN :fd AND :td)";
+            jpql += " AND r.reservedFrom <= :td"
+                  + " AND (r.reservedTo IS NULL OR r.reservedTo >= :fd)";
             m.put("fd", fromDate);
             m.put("td", toDate);
         }

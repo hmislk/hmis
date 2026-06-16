@@ -118,6 +118,7 @@ public class TheatreDashboardController implements Serializable {
         cal.set(Calendar.HOUR_OF_DAY, 23);
         cal.set(Calendar.MINUTE, 59);
         cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
         Date endOfDay = cal.getTime();
 
         HashMap<String, Object> params = new HashMap<>();

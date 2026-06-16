@@ -30,6 +30,9 @@ public class TheatreRoomCard {
             since = currentRequest.getAcceptedAt();
         } else {
             switch (status) {
+                case SENT_TO_THEATRE:
+                    since = currentRequest.getInitiatedAt();
+                    break;
                 case IN_THEATRE:
                     since = currentRequest.getProcedureStartAt();
                     break;
@@ -49,7 +52,7 @@ public class TheatreRoomCard {
         if (since == null) {
             return 0;
         }
-        long diffMs = new Date().getTime() - since.getTime();
+        long diffMs = Math.max(0L, new Date().getTime() - since.getTime());
         return TimeUnit.MILLISECONDS.toMinutes(diffMs);
     }
 

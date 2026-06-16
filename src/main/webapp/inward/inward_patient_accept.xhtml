@@ -107,6 +107,7 @@
                             <span class="fw-bold">Patients Returning from Theatre</span>
                         </div>
                         <p:commandButton
+                            id="btnRefreshReturns"
                             value="Refresh Returns"
                             icon="fa fa-refresh"
                             ajax="false"
@@ -127,9 +128,6 @@
                     <p:column headerText="Patient">
                         <h:outputText value="#{ret.admission.patient.person.nameWithTitle}"/>
                     </p:column>
-                    <p:column headerText="Theatre Room">
-                        <h:outputText value="#{ret.fromPatientRoom.roomFacilityCharge.name}"/>
-                    </p:column>
                     <p:column headerText="Return To">
                         <h:outputText value="#{ret.toRoomFacilityCharge.name}"/>
                     </p:column>
@@ -142,7 +140,7 @@
                     </p:column>
                     <p:column headerText="Initiated At">
                         <h:outputText value="#{ret.initiatedAt}">
-                            <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                            <f:convertDateTime pattern="dd MMM yyyy HH:mm" timeZone="Asia/Colombo"/>
                         </h:outputText>
                     </p:column>
                     <p:column headerText="Notes">

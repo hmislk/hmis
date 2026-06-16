@@ -163,6 +163,7 @@
                                                 ajax="false"
                                                 class="ui-button-warning ui-button-sm"
                                                 rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')
+                                                            and card.currentRequest.theatreOccupancyStatus ne null
                                                             and card.currentRequest.theatreOccupancyStatus.name() == 'RECEIVED_IN_THEATRE'}"
                                                 action="#{theatreDashboardController.markInTheatre(card.currentRequest)}"
                                                 onclick="if (!confirm('Mark patient as In Theatre?')) return false;"/>
@@ -173,6 +174,7 @@
                                                 ajax="false"
                                                 class="ui-button-success ui-button-sm"
                                                 rendered="#{webUserController.hasPrivilege('TheatreReturnPatient')
+                                                            and card.currentRequest.theatreOccupancyStatus ne null
                                                             and card.currentRequest.theatreOccupancyStatus.name() == 'IN_THEATRE'}"
                                                 action="#{theatreDashboardController.markProcedureCompleted(card.currentRequest)}"
                                                 onclick="if (!confirm('Mark procedure as completed?')) return false;"/>
@@ -183,6 +185,7 @@
                                                 ajax="false"
                                                 class="ui-button-info ui-button-sm"
                                                 rendered="#{webUserController.hasPrivilege('TheatreReturnPatient')
+                                                            and card.currentRequest.theatreOccupancyStatus ne null
                                                             and card.currentRequest.theatreOccupancyStatus.name() == 'PROCEDURE_COMPLETED'}"
                                                 action="#{theatreDashboardController.returnToWard(card.currentRequest)}"
                                                 onclick="if (!confirm('Initiate return to ward?')) return false;"/>
@@ -335,6 +338,7 @@
                                 ajax="false"
                                 class="ui-button-warning ui-button-sm"
                                 rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')
+                                            and req.theatreOccupancyStatus ne null
                                             and req.theatreOccupancyStatus.name() == 'RECEIVED_IN_THEATRE'}"
                                 action="#{theatreDashboardController.markInTheatre(req)}"
                                 onclick="if (!confirm('Mark patient as In Theatre?')) return false;"/>
@@ -345,6 +349,7 @@
                                 ajax="false"
                                 class="ui-button-success ui-button-sm"
                                 rendered="#{webUserController.hasPrivilege('TheatreReturnPatient')
+                                            and req.theatreOccupancyStatus ne null
                                             and req.theatreOccupancyStatus.name() == 'IN_THEATRE'}"
                                 action="#{theatreDashboardController.markProcedureCompleted(req)}"
                                 onclick="if (!confirm('Mark procedure as completed?')) return false;"/>
@@ -355,6 +360,7 @@
                                 ajax="false"
                                 class="ui-button-info ui-button-sm"
                                 rendered="#{webUserController.hasPrivilege('TheatreReturnPatient')
+                                            and req.theatreOccupancyStatus ne null
                                             and req.theatreOccupancyStatus.name() == 'PROCEDURE_COMPLETED'}"
                                 action="#{theatreDashboardController.returnToWard(req)}"
                                 onclick="if (!confirm('Initiate return to ward?')) return false;"/>

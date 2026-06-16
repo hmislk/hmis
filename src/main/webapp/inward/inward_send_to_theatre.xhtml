@@ -8,7 +8,8 @@
                 xmlns:p="http://primefaces.org/ui">
 
     <ui:define name="content">
-        <h:form id="mainForm">
+        <h:form id="mainForm" onkeypress="if(event.keyCode==13){return false;}"
+                onkeydown="if(event.key==='Enter'){return false;}">
             <p:panel class="my-3">
                 <f:facet name="header">
                     <div class="d-flex justify-content-between align-items-center">
@@ -17,6 +18,7 @@
                             <span class="fw-bold">Send Patient to Theatre</span>
                         </div>
                         <p:commandButton
+                            id="btnBackToDashboard"
                             value="Back to Dashboard"
                             icon="fa fa-arrow-left"
                             ajax="false"
@@ -117,6 +119,7 @@
                             action="#{patientTransferController.sendToTheatre()}"
                             onclick="if (!confirm('Confirm sending patient to theatre?')) return false;"/>
                         <p:commandButton
+                            id="btnCancelSend"
                             value="Cancel"
                             icon="fa fa-times"
                             ajax="false"

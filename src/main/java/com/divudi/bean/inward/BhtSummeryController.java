@@ -265,7 +265,12 @@ public class BhtSummeryController implements Serializable {
      * Gantt bars merging ward room stays and theatre visits for the unified patient timeline.
      * Theatre bars are amber (active) or grey (completed).
      */
+    private transient List<RoomGanttBar> cachedUnifiedGanttBars;
+
     public List<RoomGanttBar> getUnifiedGanttBars() {
+        if (cachedUnifiedGanttBars != null) {
+            return cachedUnifiedGanttBars;
+        }
         List<PatientRoom> rooms = getPatientRooms();
         List<PatientTransferRequest> theatreRequests = loadTheatreRequestsForTimeline();
 
@@ -306,7 +311,8 @@ public class BhtSummeryController implements Serializable {
         }
 
         if (spanStart == null || spanEnd == null || !spanEnd.after(spanStart)) {
-            return getRoomGanttBars();
+            cachedUnifiedGanttBars = getRoomGanttBars();
+            return cachedUnifiedGanttBars;
         }
 
         long totalMs = spanEnd.getTime() - spanStart.getTime();
@@ -359,7 +365,8 @@ public class BhtSummeryController implements Serializable {
             ));
         }
 
-        return bars;
+        cachedUnifiedGanttBars = bars;
+        return cachedUnifiedGanttBars;
     }
 
     private List<PatientTransferRequest> loadTheatreRequestsForTimeline() {
@@ -3027,6 +3034,7 @@ public class BhtSummeryController implements Serializable {
     public void setPatientEncounter(PatientEncounter patientEncounter) {
 //        makeNull();
         this.patientEncounter = patientEncounter;
+        cachedUnifiedGanttBars = null;
     }
 
     public SessionController getSessionController() {

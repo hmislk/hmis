@@ -538,6 +538,10 @@ public class PatientTransferController implements Serializable {
         if (persisted == null) {
             return;
         }
+        if (persisted.getTheatreOccupancyStatus() != TheatreOccupancyStatus.RECEIVED_IN_THEATRE) {
+            JsfUtil.addErrorMessage("Patient must be in RECEIVED_IN_THEATRE status to mark as In Theatre.");
+            return;
+        }
         persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.IN_THEATRE);
         if (persisted.getProcedureStartAt() == null) {
             persisted.setProcedureStartAt(new Date());
@@ -556,6 +560,10 @@ public class PatientTransferController implements Serializable {
         if (persisted == null) {
             return;
         }
+        if (persisted.getTheatreOccupancyStatus() != TheatreOccupancyStatus.IN_THEATRE) {
+            JsfUtil.addErrorMessage("Patient must be IN_THEATRE status to mark procedure as completed.");
+            return;
+        }
         persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.PROCEDURE_COMPLETED);
         if (persisted.getProcedureEndAt() == null) {
             persisted.setProcedureEndAt(new Date());
@@ -572,6 +580,12 @@ public class PatientTransferController implements Serializable {
         }
         PatientTransferRequest persisted = patientTransferRequestFacade.find(theatreReq.getId());
         if (persisted == null) {
+            return;
+        }
+        TheatreOccupancyStatus currentStatus = persisted.getTheatreOccupancyStatus();
+        if (currentStatus != TheatreOccupancyStatus.PROCEDURE_COMPLETED
+                && currentStatus != TheatreOccupancyStatus.IN_RECOVERY) {
+            JsfUtil.addErrorMessage("Patient must have completed the procedure before returning to ward.");
             return;
         }
         if (persisted.getFromPatientRoom() == null || persisted.getFromPatientRoom().getRoomFacilityCharge() == null) {

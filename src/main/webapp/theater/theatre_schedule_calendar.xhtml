@@ -175,6 +175,7 @@
 
                         <div class="d-flex justify-content-end gap-2 mt-3">
                             <p:commandButton
+                                id="btnTheatreCalAdmit"
                                 value="Admit"
                                 icon="fa fa-check-circle"
                                 ajax="false"
@@ -184,6 +185,7 @@
                                             or inwardReservationController.currentReservationDTO.status eq 'COMPLETE'}"
                                 action="#{appointmentController.navigatePatientAdmit(inwardReservationController.currentReservationDTO.id)}"/>
                             <p:commandButton
+                                id="btnTheatreCalClose"
                                 value="Close"
                                 icon="fa fa-times"
                                 class="ui-button-secondary"

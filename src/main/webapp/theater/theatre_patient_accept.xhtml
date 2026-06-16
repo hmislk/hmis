@@ -21,6 +21,7 @@
                             <span class="fw-bold">Patients Awaiting Theatre Acceptance — #{sessionController.department.name}</span>
                         </div>
                         <p:commandButton
+                            id="btnRefreshPendingTheatre"
                             value="Refresh"
                             icon="fa fa-refresh"
                             ajax="false"
@@ -57,7 +58,7 @@
                     </p:column>
                     <p:column headerText="Sent At">
                         <h:outputText value="#{req.initiatedAt}">
-                            <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                            <f:convertDateTime pattern="dd MMM yyyy HH:mm" timeZone="Asia/Colombo"/>
                         </h:outputText>
                     </p:column>
                     <p:column headerText="Notes">
@@ -120,7 +121,7 @@
                     </p:column>
                     <p:column headerText="Accepted At">
                         <h:outputText value="#{req.acceptedAt}">
-                            <f:convertDateTime pattern="dd MMM yyyy HH:mm"/>
+                            <f:convertDateTime pattern="dd MMM yyyy HH:mm" timeZone="Asia/Colombo"/>
                         </h:outputText>
                     </p:column>
                     <p:column headerText="Actions" style="width:220px">
@@ -132,7 +133,8 @@
                                 ajax="false"
                                 class="ui-button-warning ui-button-sm"
                                 title="Mark patient as in theatre (procedure started)"
-                                rendered="#{req.theatreOccupancyStatus.name() == 'RECEIVED_IN_THEATRE'}"
+                                rendered="#{req.theatreOccupancyStatus ne null
+                                            and req.theatreOccupancyStatus.name() == 'RECEIVED_IN_THEATRE'}"
                                 action="#{patientTransferController.markInTheatre(req)}"
                                 onclick="if (!confirm('Mark patient as In Theatre?')) return false;"/>
                             <p:commandButton
@@ -142,7 +144,8 @@
                                 ajax="false"
                                 class="ui-button-success ui-button-sm"
                                 title="Mark procedure as completed"
-                                rendered="#{req.theatreOccupancyStatus.name() == 'IN_THEATRE'}"
+                                rendered="#{req.theatreOccupancyStatus ne null
+                                            and req.theatreOccupancyStatus.name() == 'IN_THEATRE'}"
                                 action="#{patientTransferController.markProcedureCompleted(req)}"
                                 onclick="if (!confirm('Mark procedure as completed?')) return false;"/>
                             <p:commandButton
@@ -152,7 +155,8 @@
                                 ajax="false"
                                 class="ui-button-info ui-button-sm"
                                 title="Send patient back to ward"
-                                rendered="#{req.theatreOccupancyStatus.name() == 'PROCEDURE_COMPLETED'}"
+                                rendered="#{req.theatreOccupancyStatus ne null
+                                            and req.theatreOccupancyStatus.name() == 'PROCEDURE_COMPLETED'}"
                                 action="#{patientTransferController.returnToWard(req)}"
                                 onclick="if (!confirm('Initiate return to ward?')) return false;"/>
                         </div>
