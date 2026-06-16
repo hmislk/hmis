@@ -80,12 +80,14 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.event.ReorderEvent;
 import org.primefaces.event.RowEditEvent;
 
 /**
@@ -148,6 +150,9 @@ public class BhtSummeryController implements Serializable {
     private List<DepartmentBillItems> departmentBillItems;
     private List<BillFee> profesionallFee;
     private List<BillFee> doctorAndNurseFee;
+    private List<BillFee> allDoctorCharges;
+    // Holds the doctor whose fee breakdown is shown in the "how the total is calculated" popup.
+    private DoctorFeeGroup selectedDoctorFeeGroup;
     List<BillItem> pharmacyItems;
     private List<Bill> paymentBill;
     private List<Bill> pharmacyIssues;
@@ -527,6 +532,240 @@ public class BhtSummeryController implements Serializable {
         }
 
         updateTotal();
+    }
+
+    /**
+     * Handles drag-and-drop reordering of the doctor rows in the grouped
+     * Professional Fee table. The grouped list is rebuilt fresh on each render
+     * (so PrimeFaces' in-place reorder would be lost); instead we take the
+     * displayed order, apply the move via the event's from/to indices, and write
+     * a sequential orderNo onto every underlying fee. The next render re-groups
+     * ordered by orderNo, and the printed bill reproduces it via
+     * &#64;OrderBy("orderNo, feeAdjusted").
+     */
+    public void onGroupedProfessionalFeeReorder(ReorderEvent event) {
+        List<DoctorFeeGroup> groups = getGroupedProfessionalFees();
+        int from = event.getFromIndex();
+        int to = event.getToIndex();
+        if (from < 0 || to < 0 || from >= groups.size() || to >= groups.size()) {
+            return;
+        }
+        DoctorFeeGroup moved = groups.remove(from);
+        groups.add(to, moved);
+
+        int serial = 0;
+        for (DoctorFeeGroup grp : groups) {
+            for (BillFee bf : grp.getFees()) {
+                bf.setOrderNo(serial++);
+                getBillFeeFacade().edit(bf);
+            }
+        }
+        JsfUtil.addSuccessMessage("Doctor order updated");
+    }
+
+    /**
+     * Captures the professional fee list in its current displayed (grouped,
+     * doctor-by-doctor) order into orderNo. Called when Save Provisional Bill or
+     * Settle is clicked so the saved bill keeps exactly the order shown on screen,
+     * which the combined-doctor print preview then reproduces via
+     * &#64;OrderBy("orderNo, feeAdjusted").
+     */
+    private void persistGroupedProfessionalFeeOrder() {
+        int serial = 0;
+        for (DoctorFeeGroup grp : getGroupedProfessionalFees()) {
+            for (BillFee bf : grp.getFees()) {
+                bf.setOrderNo(serial++);
+                getBillFeeFacade().edit(bf);
+            }
+        }
+    }
+    
+    /**
+     * Groups the professional fee list by doctor so the final bill shows a single
+     * line per doctor with the combined total. Each group keeps its individual
+     * fees so the breakdown popup can show how the total was calculated.
+     * Only the fees that are actually billed (not cancelled, real billed bill,
+     * non-zero amount) are included, matching what the per-fee table displayed.
+     */
+    public List<DoctorFeeGroup> getGroupedProfessionalFees() {
+        Map<Staff, DoctorFeeGroup> groups = new LinkedHashMap<>();
+        if (profesionallFee != null) {
+            for (BillFee bf : profesionallFee) {
+                if (bf.getStaff() == null || bf.getBill() == null) {
+                    continue;
+                }
+                if (bf.getBill().isCancelled() || !(bf.getBill() instanceof BilledBill)) {
+                    continue;
+                }
+                if (bf.getFeeValue() == 0) {
+                    continue;
+                }
+                double adjusted = bf.getFeeAdjusted() != 0 ? bf.getFeeAdjusted() : bf.getFeeValue();
+                DoctorFeeGroup group = groups.get(bf.getStaff());
+                if (group == null) {
+                    group = new DoctorFeeGroup(bf.getStaff());
+                    groups.put(bf.getStaff(), group);
+                }
+                group.getFees().add(bf);
+                group.setTotal(group.getTotal() + bf.getFeeValue());
+                group.setTotalAdjusted(group.getTotalAdjusted() + adjusted);
+            }
+        }
+        List<DoctorFeeGroup> result = new ArrayList<>(groups.values());
+        // Order doctors by the smallest orderNo among their fees so a manual
+        // drag-reorder (which writes orderNo) is reproduced. A stable sort keeps
+        // first-appearance order when nothing has been reordered (all orderNo 0).
+        result.sort(Comparator.comparingInt(grp -> {
+            int min = Integer.MAX_VALUE;
+            for (BillFee bf : grp.getFees()) {
+                min = Math.min(min, bf.getOrderNo());
+            }
+            return min;
+        }));
+        return result;
+    }
+
+    /**
+     * Applies an edited doctor-level Adjusted Value back onto that doctor's
+     * individual fees, split in proportion to their current adjusted amounts so
+     * the persisted bill and the printout stay consistent. The last fee absorbs
+     * any rounding remainder so the parts always sum to the entered total.
+     */
+    public void changeGroupedAdjustedValue(DoctorFeeGroup group) {
+        if (group == null || group.getFees().isEmpty()) {
+            return;
+        }
+        double newTotal = group.getTotalAdjusted();
+        List<BillFee> fees = group.getFees();
+
+        double oldSum = 0;
+        for (BillFee bf : fees) {
+            oldSum += bf.getFeeAdjusted() != 0 ? bf.getFeeAdjusted() : bf.getFeeValue();
+        }
+
+        double allocated = 0;
+        for (int k = 0; k < fees.size(); k++) {
+            BillFee bf = fees.get(k);
+            double share;
+            if (k == fees.size() - 1) {
+                share = newTotal - allocated;
+            } else if (oldSum != 0) {
+                double base = bf.getFeeAdjusted() != 0 ? bf.getFeeAdjusted() : bf.getFeeValue();
+                share = Math.round((newTotal * base / oldSum) * 100.0) / 100.0;
+                allocated += share;
+            } else {
+                share = Math.round((newTotal / fees.size()) * 100.0) / 100.0;
+                allocated += share;
+            }
+            bf.setFeeAdjusted(share);
+            getBillFeeFacade().edit(bf);
+        }
+
+        refreshProfessionalChargeAdjustedTotal();
+        updateTotal();
+    }
+
+    /**
+     * Refreshes the ProfessionalCharge category adjusted total from the grouped
+     * doctor fees the user actually sees. When the config flag merges assisting
+     * fees into {@code profesionallFee}, those fees live on a different bill type,
+     * so summing only {@code getProfessionalCharge(...)} (InwardProfessional) would
+     * silently drop the assisting-fee adjustments from settlement. Summing the
+     * grouped totals keeps the category total consistent with the displayed table
+     * in both the merged and non-merged configurations.
+     */
+    private void refreshProfessionalChargeAdjustedTotal() {
+        double groupedAdjusted = 0;
+        for (DoctorFeeGroup g : getGroupedProfessionalFees()) {
+            groupedAdjusted += g.getTotalAdjusted();
+        }
+        for (ChargeItemTotal chargeItemTotal : chargeItemTotals) {
+            if (chargeItemTotal.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
+                chargeItemTotal.setAdjustedTotal(groupedAdjusted);
+            }
+        }
+    }
+
+    /**
+     * Selects the doctor whose fee breakdown should be shown in the popup.
+     */
+    public void viewDoctorFeeBreakdown(DoctorFeeGroup group) {
+        selectedDoctorFeeGroup = group;
+    }
+
+    /**
+     * Persists an Adjusted Value edited directly on a single fee inside the
+     * breakdown popup, then refreshes the doctor's adjusted total (popup footer
+     * and grouped row) and the professional charge totals.
+     */
+    public void changeFeeAdjustedInBreakdown(BillFee billFee) {
+        getBillFeeFacade().edit(billFee);
+        if (selectedDoctorFeeGroup != null) {
+            double sum = 0;
+            for (BillFee bf : selectedDoctorFeeGroup.getFees()) {
+                sum += bf.getFeeAdjusted() != 0 ? bf.getFeeAdjusted() : bf.getFeeValue();
+            }
+            selectedDoctorFeeGroup.setTotalAdjusted(sum);
+        }
+        refreshProfessionalChargeAdjustedTotal();
+        updateTotal();
+    }
+
+    public DoctorFeeGroup getSelectedDoctorFeeGroup() {
+        return selectedDoctorFeeGroup;
+    }
+
+    public void setSelectedDoctorFeeGroup(DoctorFeeGroup selectedDoctorFeeGroup) {
+        this.selectedDoctorFeeGroup = selectedDoctorFeeGroup;
+    }
+
+    /**
+     * View model for one doctor's combined professional fee row on the final bill,
+     * carrying the summed total and the individual fees behind it.
+     */
+    public static class DoctorFeeGroup implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        private Staff staff;
+        private final List<BillFee> fees = new ArrayList<>();
+        private double total;
+        private double totalAdjusted;
+
+        public DoctorFeeGroup() {
+        }
+
+        public DoctorFeeGroup(Staff staff) {
+            this.staff = staff;
+        }
+
+        public Staff getStaff() {
+            return staff;
+        }
+
+        public void setStaff(Staff staff) {
+            this.staff = staff;
+        }
+
+        public List<BillFee> getFees() {
+            return fees;
+        }
+
+        public double getTotal() {
+            return total;
+        }
+
+        public void setTotal(double total) {
+            this.total = total;
+        }
+
+        public double getTotalAdjusted() {
+            return totalAdjusted;
+        }
+
+        public void setTotalAdjusted(double totalAdjusted) {
+            this.totalAdjusted = totalAdjusted;
+        }
     }
 
     public void changeAdjustedValueRoomCharge(PatientRoom pR) {
@@ -1311,6 +1550,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void createTempBill() {
+        // Capture the current grouped (doctor-by-doctor) professional fee order so the
+        // Temporary Bill preview shows the combined doctor list with the latest adjusted
+        // values, in the same order shown on screen.
+        persistGroupedProfessionalFeeOrder();
         tempBill = null;
         updateTotal();
         saveTempBill();
@@ -1321,6 +1564,8 @@ public class BhtSummeryController implements Serializable {
         if (errorCheck()) {
             return;
         }
+
+        
 
         originalBill.setDiscount(discount);
         originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
@@ -1342,6 +1587,8 @@ public class BhtSummeryController implements Serializable {
         if (errorCheck()) {
             return;
         }
+
+        persistGroupedProfessionalFeeOrder();
 
         originalBill.setDiscount(discount);
         originalBill.setNetTotal(originalBill.getGrantTotal() - discount);
@@ -1904,9 +2151,6 @@ public class BhtSummeryController implements Serializable {
     }
 
     public String toSettle() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
 
         if (getPatientEncounter() == null) {
             return "";
@@ -1935,6 +2179,24 @@ public class BhtSummeryController implements Serializable {
 
         childPatientEncouters = getInwardBean().fetchChildPatientEncounter(patientEncounter);
         createTables();
+
+        if (configOptionApplicationController.getBooleanValueByKey("Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false)) {
+            // Both lists already have feeAdjusted = feeValue (set by setProfesionallFeeAdjusted /
+            // setAssistingFeeAdjusted in createTables), so the merged list shows matching adjusted values.
+            allDoctorCharges = new ArrayList<>();
+            allDoctorCharges.addAll(profesionallFee);
+            allDoctorCharges.addAll(doctorAndNurseFee);
+
+            profesionallFee.clear();
+            doctorAndNurseFee.clear();
+
+            profesionallFee.addAll(allDoctorCharges);
+
+            allDoctorCharges.clear();
+
+            createChargeItemTotals();
+        }
+
         calculateDiscount();
         updateTotal();
         settleOriginalBill();
@@ -2129,7 +2391,7 @@ public class BhtSummeryController implements Serializable {
             } else {
                 if (configOptionApplicationController.getBooleanValueByKey("Create Professional Bill Fees For Assistant Chargers", false)) {
                     if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
-                        updateProBillFeeForDocAndNeurses(temBi);;
+                        updateProBillFeeForDocAndNeurses(temBi);
                     }
                 }
                 temHosFee += cit.getTotal();
@@ -2170,7 +2432,7 @@ public class BhtSummeryController implements Serializable {
             } else {
                 if (configOptionApplicationController.getBooleanValueByKey("Create Professional Bill Fees For Assistant Chargers", false)) {
                     if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
-                        updateProTempBillFeeForDocAndNeurses(temBi);;
+                        updateProTempBillFeeForDocAndNeurses(temBi);
                     }
                 }
                 temHosFee += cit.getTotal();
@@ -2228,46 +2490,71 @@ public class BhtSummeryController implements Serializable {
         getBillFacade().edit(getOriginalBill());
     }
 
-    private void updateProBillFee(BillItem bItem) {
-        for (BillFee bf : getProfesionallFee()) {
-            bf.setReferenceBillItem(bItem);
-            getBillFeeFacade().edit(bf);
+    private List<BillFee> feesOrderedByOrderNo(List<BillFee> fees) {
+        List<BillFee> ordered = new ArrayList<>(fees);
+        ordered.sort(Comparator.comparingInt(BillFee::getOrderNo));
+        return ordered;
+    }
 
-            bItem.getProFees().add(bf);
-
+    /**
+     * Stores ONE professional fee per doctor on the saved bill: a doctor's
+     * individual fees are merged into a single new BillFee (summed feeValue and
+     * feeAdjusted) attached to the final/temp bill item via referenceBillItem,
+     * preserving the manual doctor order via orderNo.
+     * <p>
+     * The original per-encounter fees are left untouched on their
+     * InwardProfessional bills, so doctor-payment/commission reports (which read
+     * those bills) stay correct. The merged fees belong to the final bill
+     * (InwardFinalBill), so they are distinguishable from the source fees by bill
+     * type. When {@code persist} is false (temp preview) the merged fees are kept
+     * in memory only.
+     */
+    private void addMergedDoctorFeesToProFees(List<BillFee> sourceFees, BillItem bItem, boolean persist) {
+        Map<Staff, BillFee> merged = new LinkedHashMap<>();
+        for (BillFee bf : feesOrderedByOrderNo(sourceFees)) {
+            Staff staff = bf.getStaff();
+            if (staff == null) {
+                continue;
+            }
+            double adjusted = bf.getFeeAdjusted() != 0 ? bf.getFeeAdjusted() : bf.getFeeValue();
+            BillFee m = merged.get(staff);
+            if (m == null) {
+                m = new BillFee();
+                m.setStaff(staff);
+                m.setFee(bf.getFee());
+                m.setBill(bItem.getBill());
+                m.setBillItem(bItem);
+                m.setReferenceBillItem(bItem);
+                m.setOrderNo(bf.getOrderNo());
+                m.setCreatedAt(new Date());
+                m.setCreater(getSessionController().getLoggedUser());
+                merged.put(staff, m);
+            }
+            m.setFeeValue(m.getFeeValue() + bf.getFeeValue());
+            m.setFeeAdjusted(m.getFeeAdjusted() + adjusted);
         }
+        for (BillFee m : merged.values()) {
+            if (persist) {
+                getBillFeeFacade().create(m);
+            }
+            bItem.getProFees().add(m);
+        }
+    }
 
+    private void updateProBillFee(BillItem bItem) {
+        addMergedDoctorFeesToProFees(getProfesionallFee(), bItem, true);
     }
 
     private void updateProTempBillFee(BillItem bItem) {
-        for (BillFee bf : getProfesionallFee()) {
-            bf.setReferenceBillItem(bItem);
-
-            bItem.getProFees().add(bf);
-
-        }
-
+        addMergedDoctorFeesToProFees(getProfesionallFee(), bItem, false);
     }
 
     private void updateProBillFeeForDocAndNeurses(BillItem bItem) {
-        for (BillFee bf : getDoctorAndNurseFee()) {
-            bf.setReferenceBillItem(bItem);
-            getBillFeeFacade().edit(bf);
-
-            bItem.getProFees().add(bf);
-
-        }
-
+        addMergedDoctorFeesToProFees(getDoctorAndNurseFee(), bItem, true);
     }
 
     private void updateProTempBillFeeForDocAndNeurses(BillItem bItem) {
-        for (BillFee bf : getDoctorAndNurseFee()) {
-            bf.setReferenceBillItem(bItem);
-
-            bItem.getProFees().add(bf);
-
-        }
-
+        addMergedDoctorFeesToProFees(getDoctorAndNurseFee(), bItem, false);
     }
 
     private void saveRefencePatientRoom(PatientRoom pr) {
@@ -2354,9 +2641,11 @@ public class BhtSummeryController implements Serializable {
         departmentBillItems = getInwardBean().createDepartmentBillItemsOptimized(patientEncounter, null, childPatientEncouters);
         additionalChargeBill = getInwardBean().fetchOutSideBill(getPatientEncounter(), childPatientEncouters);
         getInwardBean().setProfesionallFeeAdjusted(getPatientEncounter(), childPatientEncouters);
+        getInwardBean().setAssistingFeeAdjusted(getPatientEncounter(), childPatientEncouters);
         profesionallFee = getInwardBean().createProfesionallFee(getPatientEncounter(), childPatientEncouters);
         doctorAndNurseFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(), childPatientEncouters);
         paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
+
         createChargeItemTotals();
         updateTotal();
 
@@ -2393,6 +2682,7 @@ public class BhtSummeryController implements Serializable {
         departmentBillItems = getInwardBean().createDepartmentBillItemsOptimized(patientEncounter, null, childPatientEncouters);
         additionalChargeBill = getInwardBean().fetchOutSideBill(getPatientEncounter(), childPatientEncouters);
         getInwardBean().setProfesionallFeeAdjusted(getPatientEncounter(), childPatientEncouters);
+        getInwardBean().setAssistingFeeAdjusted(getPatientEncounter(), childPatientEncouters);
         profesionallFee = getInwardBean().createProfesionallFeeEstimated(getPatientEncounter());
         doctorAndNurseFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(), childPatientEncouters);
         paymentBill = getInwardBean().fetchPaymentBill(getPatientEncounter(), childPatientEncouters);
@@ -2464,6 +2754,7 @@ public class BhtSummeryController implements Serializable {
         paid = 0.0;
         profesionallFee = null;
         doctorAndNurseFee = null;
+        allDoctorCharges = null;
         patientItems = null;
         paymentBill = null;
         departmentBillItems = null;
@@ -2503,7 +2794,9 @@ public class BhtSummeryController implements Serializable {
 
     public List<BillItem> getSummaryOfDoctorChargers(List<BillItem> bi, PatientEncounter pe) {
         List<BillItem> newBillItems = new ArrayList<>();
-        Map<Staff, BillFee> staffFeeMap = new HashMap<>();
+        // LinkedHashMap preserves first-appearance order of each staff member, which follows
+        // the orderNo ordering of proFees, so the manual drag order survives in this layout too.
+        Map<Staff, BillFee> staffFeeMap = new LinkedHashMap<>();
         double totalFee = 0.0;
 
         for (BillItem i : bi) {
@@ -3185,10 +3478,20 @@ public class BhtSummeryController implements Serializable {
                     i.setTotal(getInwardBean().calNetCostOfIssue(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters));
                     break;
                 case ProfessionalCharge:
-                    i.setTotal(getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters, estimatedBillView));
+                    if (configOptionApplicationController.getBooleanValueByKey("Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false)) {
+                        double professionalFee = getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters, estimatedBillView);
+                        double assistingFee = getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters);
+                        i.setTotal(professionalFee + assistingFee);
+                    }else{
+                        i.setTotal(getInwardBean().calculateProfessionalCharges(getPatientEncounter(), childPatientEncouters, estimatedBillView));
+                    }
                     break;
                 case DoctorAndNurses:
-                    i.setTotal(getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters));
+                    if (configOptionApplicationController.getBooleanValueByKey("Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false)) {
+                        i.setTotal(0.0);
+                    }else{
+                        i.setTotal(getInwardBean().calculateDoctorAndNurseCharges(getPatientEncounter(), childPatientEncouters));
+                    }
                     break;
             }
         }
@@ -3623,6 +3926,14 @@ public class BhtSummeryController implements Serializable {
 
         return new RoomDurationBreakdown(totalMinutes, slotMinutes, completeSlots,
                 remainderMinutes, overshootMinutes, extraSlotCharged, billedSlots);
+    }
+
+    public List<BillFee> getAllDoctorCharges() {
+        return allDoctorCharges;
+    }
+
+    public void setAllDoctorCharges(List<BillFee> allDoctorCharges) {
+        this.allDoctorCharges = allDoctorCharges;
     }
 
     public static class RoomDurationBreakdown {
