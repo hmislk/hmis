@@ -58,7 +58,10 @@ import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientItemFacade;
+import com.divudi.core.data.inward.TheatreTransferType;
+import com.divudi.core.entity.inward.PatientTransferRequest;
 import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.PatientTransferRequestFacade;
 import com.divudi.core.facade.ServiceFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
 import com.divudi.core.util.JsfUtil;
@@ -103,6 +106,8 @@ public class BhtSummeryController implements Serializable {
 
     @EJB
     private PatientRoomFacade patientRoomFacade;
+    @EJB
+    private PatientTransferRequestFacade patientTransferRequestFacade;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -254,6 +259,130 @@ public class BhtSummeryController implements Serializable {
             ));
         }
         return bars;
+    }
+
+    /**
+     * Gantt bars merging ward room stays and theatre visits for the unified patient timeline.
+     * Theatre bars are amber (active) or grey (completed).
+     */
+    private transient List<RoomGanttBar> cachedUnifiedGanttBars;
+
+    public List<RoomGanttBar> getUnifiedGanttBars() {
+        if (cachedUnifiedGanttBars != null) {
+            return cachedUnifiedGanttBars;
+        }
+        List<PatientRoom> rooms = getPatientRooms();
+        List<PatientTransferRequest> theatreRequests = loadTheatreRequestsForTimeline();
+
+        if ((rooms == null || rooms.isEmpty()) && theatreRequests.isEmpty()) {
+            return new ArrayList<>();
+        }
+        if (rooms == null) {
+            rooms = new ArrayList<>();
+        }
+
+        Date now = new Date();
+        Date spanStart = null;
+        Date spanEnd = null;
+
+        for (PatientRoom r : rooms) {
+            if (r.getAdmittedAt() != null) {
+                if (spanStart == null || r.getAdmittedAt().before(spanStart)) {
+                    spanStart = r.getAdmittedAt();
+                }
+            }
+            Date end = r.getDischargedAt() != null ? r.getDischargedAt() : now;
+            if (spanEnd == null || end.after(spanEnd)) {
+                spanEnd = end;
+            }
+        }
+
+        for (PatientTransferRequest req : theatreRequests) {
+            if (req.getInitiatedAt() == null) {
+                continue;
+            }
+            Date end = req.getReturnedToWardAt() != null ? req.getReturnedToWardAt() : now;
+            if (spanStart == null || req.getInitiatedAt().before(spanStart)) {
+                spanStart = req.getInitiatedAt();
+            }
+            if (spanEnd == null || end.after(spanEnd)) {
+                spanEnd = end;
+            }
+        }
+
+        if (spanStart == null || spanEnd == null || !spanEnd.after(spanStart)) {
+            cachedUnifiedGanttBars = getRoomGanttBars();
+            return cachedUnifiedGanttBars;
+        }
+
+        long totalMs = spanEnd.getTime() - spanStart.getTime();
+        List<RoomGanttBar> bars = new ArrayList<>();
+
+        // Ward room bars (same colour logic as getRoomGanttBars)
+        for (PatientRoom r : rooms) {
+            if (r.getAdmittedAt() == null) {
+                continue;
+            }
+            Date barEnd = r.getDischargedAt() != null ? r.getDischargedAt() : now;
+            long offsetMs = r.getAdmittedAt().getTime() - spanStart.getTime();
+            long durationMs = barEnd.getTime() - r.getAdmittedAt().getTime();
+            double rawOffset = (offsetMs * 100.0) / totalMs;
+            double rawWidth = Math.max((durationMs * 100.0) / totalMs, 1.0);
+            boolean guardian = "class com.divudi.core.entity.inward.GuardianRoom"
+                    .equals(r.getPatientRoomClass());
+            bars.add(new RoomGanttBar(
+                    r.getRoomFacilityCharge() != null ? r.getRoomFacilityCharge().getName() : "—",
+                    guardian,
+                    !r.isDischarged(),
+                    String.format(java.util.Locale.US, "%.3f", rawOffset),
+                    String.format(java.util.Locale.US, "%.3f", rawWidth),
+                    rawWidth > 8.0
+            ));
+        }
+
+        // Theatre visit bars — amber while active, grey when returned
+        for (PatientTransferRequest req : theatreRequests) {
+            if (req.getInitiatedAt() == null) {
+                continue;
+            }
+            Date barEnd = req.getReturnedToWardAt() != null ? req.getReturnedToWardAt() : now;
+            boolean active = req.getReturnedToWardAt() == null;
+            long offsetMs = req.getInitiatedAt().getTime() - spanStart.getTime();
+            long durationMs = barEnd.getTime() - req.getInitiatedAt().getTime();
+            double rawOffset = (offsetMs * 100.0) / totalMs;
+            double rawWidth = Math.max((durationMs * 100.0) / totalMs, 1.0);
+            String theatreName = req.getToRoomFacilityCharge() != null
+                    ? req.getToRoomFacilityCharge().getName() : "Theatre";
+            String barColor = active
+                    ? "linear-gradient(90deg,#fd7e14,#ffc107)"
+                    : "linear-gradient(90deg,#adb5bd,#ced4da)";
+            bars.add(new RoomGanttBar(
+                    theatreName,
+                    barColor,
+                    String.format(java.util.Locale.US, "%.3f", rawOffset),
+                    String.format(java.util.Locale.US, "%.3f", rawWidth),
+                    rawWidth > 8.0
+            ));
+        }
+
+        cachedUnifiedGanttBars = bars;
+        return cachedUnifiedGanttBars;
+    }
+
+    private List<PatientTransferRequest> loadTheatreRequestsForTimeline() {
+        if (!(patientEncounter instanceof Admission)) {
+            return new ArrayList<>();
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("admission", patientEncounter);
+        params.put("type", TheatreTransferType.SEND_TO_THEATRE);
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.admission = :admission "
+                + "AND r.theatreTransferType = :type "
+                + "AND r.retired = false "
+                + "ORDER BY r.initiatedAt";
+        List<PatientTransferRequest> result = patientTransferRequestFacade.findByJpql(jpql, params);
+        return result != null ? result : new ArrayList<>();
     }
 
     public String navigateToInpatientProfile() {
@@ -2905,6 +3034,7 @@ public class BhtSummeryController implements Serializable {
     public void setPatientEncounter(PatientEncounter patientEncounter) {
 //        makeNull();
         this.patientEncounter = patientEncounter;
+        cachedUnifiedGanttBars = null;
     }
 
     public SessionController getSessionController() {

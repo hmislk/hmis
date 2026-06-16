@@ -9,10 +9,11 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.inward.RoomFacility;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.inward.TimedItemFee;
 import com.divudi.core.facade.RoomFacilityChargeFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
@@ -92,6 +93,21 @@ public class RoomFacilityChargeController implements Serializable {
             suggestions = getFacade().findByJpql(sql, hm);
         }
         return suggestions;
+    }
+
+    public List<RoomFacilityCharge> completeTheatreRoom(String query) {
+        if (query == null) {
+            return new ArrayList<>();
+        }
+        HashMap hm = new HashMap();
+        hm.put("q", "%" + query.toUpperCase() + "%");
+        hm.put("deptType", DepartmentType.Theatre);
+        String sql = "SELECT rm FROM RoomFacilityCharge rm "
+                + "WHERE rm.retired = false "
+                + "AND rm.department.departmentType = :deptType "
+                + "AND UPPER(rm.name) LIKE :q "
+                + "ORDER BY rm.name";
+        return getFacade().findByJpql(sql, hm);
     }
 
     public List<RoomFacilityCharge> completeRoomChargeAll(String query) {

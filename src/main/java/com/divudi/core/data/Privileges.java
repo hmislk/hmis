@@ -281,6 +281,10 @@ public enum Privileges {
     Theatre("Theater"),
     TheatreAddSurgery("Theater Add Surgery"),
     TheatreBilling("Theater Billing"),
+    TheatreSendPatient("Theatre Send Patient"),
+    TheatreAcceptPatient("Theatre Accept Patient"),
+    TheatreReturnPatient("Theatre Return Patient"),
+    WardAcceptTheatreReturn("Ward Accept Theatre Return"),
     TheaterTransfer("Theater Transfer"),
     TheaterTransferRequest("Theater Transfer Request"),
     TheaterTransferIssue("Theater Transfer Issue"),
@@ -1100,6 +1104,10 @@ public enum Privileges {
             case InpatientLetter:
             case InwardFormTemplateAdmin:
             case InwardFormFill:
+            case TheatreSendPatient:
+            case TheatreAcceptPatient:
+            case TheatreReturnPatient:
+            case WardAcceptTheatreReturn:
                 return "Inward";
 
             case AdminInactivePatients:
