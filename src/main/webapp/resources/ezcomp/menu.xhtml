@@ -1380,12 +1380,19 @@
                                 actionListener="#{searchController.makeListNull}"
                                 rendered="#{webUserController.hasPrivilege('TheatreBilling')}"/>
 
-                    <p:menuitem 
-                        ajax="false" 
-                        action="/pharmacy/pharmacy_analytics?faces-redirect=true"  
-                        value="Theatre Analytics" 
-                        icon="pi pi-chart-bar" 
+                    <p:menuitem
+                        ajax="false"
+                        action="/pharmacy/pharmacy_analytics?faces-redirect=true"
+                        value="Theatre Analytics"
+                        icon="pi pi-chart-bar"
                         rendered="#{webUserController.hasPrivilege('TheaterReports')}" ></p:menuitem>
+
+                    <p:menuitem
+                        ajax="false"
+                        action="#{inwardReservationController.navigateToTheatreScheduleCalendar()}"
+                        value="Theatre Schedule"
+                        icon="fa fa-calendar-alt"
+                        rendered="#{webUserController.hasPrivilege('Theatre')}"/>
                 </p:submenu>
 
                 <!--            Store Section-->

@@ -644,6 +644,29 @@
                                         class="w-100 ui-button-success">
                                     </p:commandButton>
                                 </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnSendToTheatre"
+                                        rendered="#{webUserController.hasPrivilege('TheatreSendPatient')}"
+                                        value="Send to Theatre"
+                                        ajax="false"
+                                        disabled="#{admissionController.current.discharged eq true}"
+                                        action="#{patientTransferController.navigateToSendToTheatre(admissionController.current)}"
+                                        icon="fa fa-procedures"
+                                        class="w-100 ui-button-warning">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnTheatreAccept"
+                                        rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')}"
+                                        value="Theatre Patients"
+                                        ajax="false"
+                                        action="#{patientTransferController.navigateToTheatreAccept()}"
+                                        icon="fa fa-hospital"
+                                        class="w-100 ui-button-info">
+                                    </p:commandButton>
+                                </div>
                             </div>
                         </p:panel>
                     </div>

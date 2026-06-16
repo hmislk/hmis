@@ -27,6 +27,16 @@ public class RoomGanttBar implements Serializable {
         }
     }
 
+    // Constructor for custom bar colours (theatre, ICU, etc.)
+    public RoomGanttBar(String roomName, String barColor,
+                        String offsetPct, String widthPct, boolean wide) {
+        this.roomName = roomName;
+        this.offsetPct = offsetPct;
+        this.widthPct = widthPct;
+        this.wide = wide;
+        this.barColor = barColor;
+    }
+
     public String getRoomName()  { return roomName; }
     public String getOffsetPct() { return offsetPct; }
     public String getWidthPct()  { return widthPct; }

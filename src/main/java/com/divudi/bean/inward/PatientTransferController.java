@@ -1,14 +1,19 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.inward.TheatreOccupancyStatus;
+import com.divudi.core.data.inward.TheatreTransferType;
 import com.divudi.core.data.inward.TransferRequestStatus;
-import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.PatientTransferRequest;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.AdmissionFacade;
+import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.facade.PatientTransferRequestFacade;
 import com.divudi.core.util.JsfUtil;
@@ -47,6 +52,8 @@ public class PatientTransferController implements Serializable {
     private PatientTransferRequestFacade patientTransferRequestFacade;
     @EJB
     private PatientRoomFacade patientRoomFacade;
+    @EJB
+    private BillFacade billFacade;
 
     private Admission current;
     private Institution institution;
@@ -58,6 +65,13 @@ public class PatientTransferController implements Serializable {
 
     // All transfer requests for the currently selected patient
     private List<PatientTransferRequest> currentAdmissionRequests;
+
+    // Theatre workflow fields
+    private Bill selectedSurgeryBill;
+    private List<Bill> surgeryBillsForCurrentAdmission;
+    private List<PatientTransferRequest> pendingTheatreRequests;
+    private List<PatientTransferRequest> inTheatreRequests;
+    private List<PatientTransferRequest> pendingReturnRequests;
 
     public List<Admission> completePatientByInstitution(String query) {
         return admissionController.completePatientNotFinalizedByInstitution(query, getInstitution());
@@ -101,6 +115,7 @@ public class PatientTransferController implements Serializable {
 
     public String navigateToPatientAccept() {
         loadPendingForDepartment();
+        loadPendingReturnsForWard();
         return "/inward/inward_patient_accept?faces-redirect=true";
     }
 
@@ -439,5 +454,393 @@ public class PatientTransferController implements Serializable {
             list.add(req);
         }
         return list;
+    }
+
+    // =========================================================================
+    // Theatre Workflow Methods
+    // =========================================================================
+
+    public String navigateToSendToTheatre(Admission admission) {
+        current = admission;
+        targetRoomFacilityCharge = null;
+        selectedSurgeryBill = null;
+        notes = null;
+        surgeryBillsForCurrentAdmission = loadSurgeryBillsForAdmission(admission);
+        return "/inward/inward_send_to_theatre?faces-redirect=true";
+    }
+
+    public String navigateToTheatreAccept() {
+        loadPendingForTheatre();
+        loadInTheatreRequests();
+        return "/theater/theatre_patient_accept?faces-redirect=true";
+    }
+
+    public void sendToTheatre() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected.");
+            return;
+        }
+        if (targetRoomFacilityCharge == null) {
+            JsfUtil.addErrorMessage("Please select a theatre room.");
+            return;
+        }
+        PatientTransferRequest existing = findActiveSendToTheatreRequest(current);
+        if (existing != null) {
+            JsfUtil.addErrorMessage("This patient already has an active theatre transfer in progress.");
+            return;
+        }
+        PatientTransferRequest req = new PatientTransferRequest();
+        req.setAdmission(current);
+        req.setFromPatientRoom(current.getCurrentPatientRoom());
+        req.setToRoomFacilityCharge(targetRoomFacilityCharge);
+        req.setTheatreTransferType(TheatreTransferType.SEND_TO_THEATRE);
+        req.setTheatreOccupancyStatus(TheatreOccupancyStatus.SENT_TO_THEATRE);
+        req.setSurgeryBill(selectedSurgeryBill);
+        req.setStatus(TransferRequestStatus.PENDING);
+        req.setNotes(notes);
+        req.setInitiatedAt(new Date());
+        req.setInitiatedBy(sessionController.getLoggedUser());
+        req.setCreatedAt(new Date());
+        req.setCreater(sessionController.getLoggedUser());
+        patientTransferRequestFacade.create(req);
+        lastInitiatedRequest = req;
+        JsfUtil.addSuccessMessage("Patient sent to theatre successfully.");
+        targetRoomFacilityCharge = null;
+        selectedSurgeryBill = null;
+        notes = null;
+    }
+
+    public void acceptInTheatre(PatientTransferRequest req) {
+        if (req == null || req.getId() == null) {
+            return;
+        }
+        PatientTransferRequest persisted = patientTransferRequestFacade.find(req.getId());
+        if (persisted == null || persisted.getStatus() != TransferRequestStatus.PENDING) {
+            JsfUtil.addErrorMessage("This request is no longer pending.");
+            loadPendingForTheatre();
+            return;
+        }
+        persisted.setStatus(TransferRequestStatus.ACCEPTED);
+        persisted.setAcceptedAt(new Date());
+        persisted.setAcceptedBy(sessionController.getLoggedUser());
+        persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.RECEIVED_IN_THEATRE);
+        patientTransferRequestFacade.edit(persisted);
+        loadPendingForTheatre();
+        loadInTheatreRequests();
+        JsfUtil.addSuccessMessage("Patient accepted in theatre.");
+    }
+
+    public void markInTheatre(PatientTransferRequest req) {
+        if (req == null || req.getId() == null) {
+            return;
+        }
+        PatientTransferRequest persisted = patientTransferRequestFacade.find(req.getId());
+        if (persisted == null) {
+            return;
+        }
+        persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.IN_THEATRE);
+        if (persisted.getProcedureStartAt() == null) {
+            persisted.setProcedureStartAt(new Date());
+        }
+        patientTransferRequestFacade.edit(persisted);
+        loadPendingForTheatre();
+        loadInTheatreRequests();
+        JsfUtil.addSuccessMessage("Patient marked as In Theatre.");
+    }
+
+    public void markProcedureCompleted(PatientTransferRequest req) {
+        if (req == null || req.getId() == null) {
+            return;
+        }
+        PatientTransferRequest persisted = patientTransferRequestFacade.find(req.getId());
+        if (persisted == null) {
+            return;
+        }
+        persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.PROCEDURE_COMPLETED);
+        if (persisted.getProcedureEndAt() == null) {
+            persisted.setProcedureEndAt(new Date());
+        }
+        patientTransferRequestFacade.edit(persisted);
+        loadPendingForTheatre();
+        loadInTheatreRequests();
+        JsfUtil.addSuccessMessage("Procedure marked as completed.");
+    }
+
+    public void returnToWard(PatientTransferRequest theatreReq) {
+        if (theatreReq == null || theatreReq.getId() == null) {
+            return;
+        }
+        PatientTransferRequest persisted = patientTransferRequestFacade.find(theatreReq.getId());
+        if (persisted == null) {
+            return;
+        }
+        if (persisted.getFromPatientRoom() == null || persisted.getFromPatientRoom().getRoomFacilityCharge() == null) {
+            JsfUtil.addErrorMessage("Cannot determine the ward room to return patient to.");
+            return;
+        }
+        PatientTransferRequest returnReq = new PatientTransferRequest();
+        returnReq.setAdmission(persisted.getAdmission());
+        returnReq.setFromPatientRoom(persisted.getFromPatientRoom());
+        returnReq.setToRoomFacilityCharge(persisted.getFromPatientRoom().getRoomFacilityCharge());
+        returnReq.setTheatreTransferType(TheatreTransferType.RETURN_TO_WARD);
+        returnReq.setSurgeryBill(persisted.getSurgeryBill());
+        returnReq.setStatus(TransferRequestStatus.PENDING);
+        returnReq.setNotes(notes);
+        returnReq.setInitiatedAt(new Date());
+        returnReq.setInitiatedBy(sessionController.getLoggedUser());
+        returnReq.setCreatedAt(new Date());
+        returnReq.setCreater(sessionController.getLoggedUser());
+        patientTransferRequestFacade.create(returnReq);
+
+        persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.RETURNED_TO_WARD);
+        if (persisted.getReturnedToWardAt() == null) {
+            persisted.setReturnedToWardAt(new Date());
+        }
+        patientTransferRequestFacade.edit(persisted);
+
+        notes = null;
+        loadPendingForTheatre();
+        loadInTheatreRequests();
+        JsfUtil.addSuccessMessage("Patient return to ward initiated.");
+    }
+
+    public void acceptReturnToWard(PatientTransferRequest returnReq) {
+        if (returnReq == null || returnReq.getId() == null) {
+            return;
+        }
+        PatientTransferRequest persisted = patientTransferRequestFacade.find(returnReq.getId());
+        if (persisted == null || persisted.getStatus() != TransferRequestStatus.PENDING) {
+            JsfUtil.addErrorMessage("This return request is no longer pending.");
+            loadPendingReturnsForWard();
+            return;
+        }
+        persisted.setStatus(TransferRequestStatus.ACCEPTED);
+        persisted.setAcceptedAt(new Date());
+        persisted.setAcceptedBy(sessionController.getLoggedUser());
+        patientTransferRequestFacade.edit(persisted);
+
+        // Update the master SEND_TO_THEATRE record's returnedToWardAt if not already set
+        PatientTransferRequest theatreReq = findActiveSendToTheatreRequestForReturn(persisted);
+        if (theatreReq != null && theatreReq.getReturnedToWardAt() == null) {
+            theatreReq.setReturnedToWardAt(new Date());
+            theatreReq.setTheatreOccupancyStatus(TheatreOccupancyStatus.RETURNED_TO_WARD);
+            patientTransferRequestFacade.edit(theatreReq);
+        }
+
+        loadPendingReturnsForWard();
+        JsfUtil.addSuccessMessage("Patient accepted back from theatre.");
+    }
+
+    public void loadPendingForTheatre() {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("status", TransferRequestStatus.PENDING);
+        params.put("type", TheatreTransferType.SEND_TO_THEATRE);
+        params.put("department", sessionController.getDepartment());
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.status = :status "
+                + "AND r.theatreTransferType = :type "
+                + "AND r.toRoomFacilityCharge.department = :department "
+                + "AND r.retired = false "
+                + "ORDER BY r.initiatedAt";
+        pendingTheatreRequests = patientTransferRequestFacade.findByJpql(jpql, params);
+        if (pendingTheatreRequests == null) {
+            pendingTheatreRequests = new ArrayList<>();
+        }
+    }
+
+    public void loadInTheatreRequests() {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("accepted", TransferRequestStatus.ACCEPTED);
+        params.put("type", TheatreTransferType.SEND_TO_THEATRE);
+        params.put("department", sessionController.getDepartment());
+        params.put("returned", TheatreOccupancyStatus.RETURNED_TO_WARD);
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.status = :accepted "
+                + "AND r.theatreTransferType = :type "
+                + "AND r.toRoomFacilityCharge.department = :department "
+                + "AND (r.theatreOccupancyStatus IS NULL OR r.theatreOccupancyStatus <> :returned) "
+                + "AND r.retired = false "
+                + "ORDER BY r.acceptedAt";
+        inTheatreRequests = patientTransferRequestFacade.findByJpql(jpql, params);
+        if (inTheatreRequests == null) {
+            inTheatreRequests = new ArrayList<>();
+        }
+    }
+
+    public void loadPendingReturnsForWard() {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("status", TransferRequestStatus.PENDING);
+        params.put("type", TheatreTransferType.RETURN_TO_WARD);
+        params.put("department", sessionController.getDepartment());
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.status = :status "
+                + "AND r.theatreTransferType = :type "
+                + "AND r.toRoomFacilityCharge.department = :department "
+                + "AND r.retired = false "
+                + "ORDER BY r.initiatedAt";
+        pendingReturnRequests = patientTransferRequestFacade.findByJpql(jpql, params);
+        if (pendingReturnRequests == null) {
+            pendingReturnRequests = new ArrayList<>();
+        }
+    }
+
+    public PatientTransferRequest findActiveSendToTheatreRequest(Admission admission) {
+        if (admission == null) {
+            return null;
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("admission", admission);
+        params.put("type", TheatreTransferType.SEND_TO_THEATRE);
+        params.put("returned", TheatreOccupancyStatus.RETURNED_TO_WARD);
+        params.put("cancelled", TransferRequestStatus.CANCELLED);
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.admission = :admission "
+                + "AND r.theatreTransferType = :type "
+                + "AND r.status <> :cancelled "
+                + "AND (r.theatreOccupancyStatus IS NULL OR r.theatreOccupancyStatus <> :returned) "
+                + "AND r.retired = false "
+                + "ORDER BY r.createdAt DESC";
+        List<PatientTransferRequest> results = patientTransferRequestFacade.findByJpql(jpql, params, 1);
+        return (results != null && !results.isEmpty()) ? results.get(0) : null;
+    }
+
+    private PatientTransferRequest findActiveSendToTheatreRequestForReturn(PatientTransferRequest returnReq) {
+        if (returnReq == null || returnReq.getAdmission() == null) {
+            return null;
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("admission", returnReq.getAdmission());
+        params.put("type", TheatreTransferType.SEND_TO_THEATRE);
+        params.put("accepted", TransferRequestStatus.ACCEPTED);
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.admission = :admission "
+                + "AND r.theatreTransferType = :type "
+                + "AND r.status = :accepted "
+                + "AND r.retired = false "
+                + "ORDER BY r.createdAt DESC";
+        List<PatientTransferRequest> results = patientTransferRequestFacade.findByJpql(jpql, params, 1);
+        return (results != null && !results.isEmpty()) ? results.get(0) : null;
+    }
+
+    private List<Bill> loadSurgeryBillsForAdmission(Admission admission) {
+        if (admission == null) {
+            return new ArrayList<>();
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("admission", admission);
+        params.put("billType", BillType.SurgeryBill);
+        String jpql = "SELECT b FROM Bill b "
+                + "WHERE b.patientEncounter = :admission "
+                + "AND b.billType = :billType "
+                + "AND b.cancelled = false "
+                + "AND b.retired = false "
+                + "ORDER BY b.createdAt";
+        List<Bill> result = billFacade.findByJpql(jpql, params);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    public List<Bill> getSurgeryBillsForCurrentAdmission() {
+        if (surgeryBillsForCurrentAdmission == null) {
+            surgeryBillsForCurrentAdmission = new ArrayList<>();
+        }
+        return surgeryBillsForCurrentAdmission;
+    }
+
+    public Bill getSelectedSurgeryBill() {
+        return selectedSurgeryBill;
+    }
+
+    public void setSelectedSurgeryBill(Bill selectedSurgeryBill) {
+        this.selectedSurgeryBill = selectedSurgeryBill;
+    }
+
+    public List<PatientTransferRequest> getPendingTheatreRequests() {
+        if (pendingTheatreRequests == null) {
+            pendingTheatreRequests = new ArrayList<>();
+        }
+        return pendingTheatreRequests;
+    }
+
+    public List<PatientTransferRequest> getPendingReturnRequests() {
+        if (pendingReturnRequests == null) {
+            pendingReturnRequests = new ArrayList<>();
+        }
+        return pendingReturnRequests;
+    }
+
+    public List<PatientTransferRequest> getInTheatreRequests() {
+        if (inTheatreRequests == null) {
+            inTheatreRequests = new ArrayList<>();
+        }
+        return inTheatreRequests;
+    }
+
+    // -----------------------------------------------------------------------
+    // Milestone stepper helpers — called from XHTML to colour each step circle
+    // Visual steps: 1=Sent, 2=Received, 3=In OT, 4=Proc Done, 5=Returned
+    // -----------------------------------------------------------------------
+
+    public String theatreStepBg(TheatreOccupancyStatus status, int visualStep) {
+        if (status == null) {
+            return "#dee2e6";
+        }
+        int s = status.getStepNumber();
+        int needed = theatreVisualToEnumStep(visualStep);
+        if (needed == 0) {
+            return "#dee2e6";
+        }
+        if (s > needed) {
+            return "#198754"; // completed: green
+        }
+        if (s == needed) {
+            return "#fd7e14"; // current: amber
+        }
+        return "#dee2e6";     // future: light grey
+    }
+
+    public String theatreStepColor(TheatreOccupancyStatus status, int visualStep) {
+        if (status == null) {
+            return "#9ca3af";
+        }
+        int s = status.getStepNumber();
+        int needed = theatreVisualToEnumStep(visualStep);
+        return (needed > 0 && s >= needed) ? "#fff" : "#9ca3af";
+    }
+
+    public String theatreLineBg(TheatreOccupancyStatus status, int afterVisualStep) {
+        if (status == null) {
+            return "#dee2e6";
+        }
+        int s = status.getStepNumber();
+        int needed = theatreVisualToEnumStep(afterVisualStep);
+        return (needed > 0 && s > needed) ? "#198754" : "#dee2e6";
+    }
+
+    private int theatreVisualToEnumStep(int visualStep) {
+        switch (visualStep) {
+            case 1: return 2; // SENT_TO_THEATRE
+            case 2: return 3; // RECEIVED_IN_THEATRE
+            case 3: return 4; // IN_THEATRE
+            case 4: return 5; // PROCEDURE_COMPLETED
+            case 5: return 7; // RETURNED_TO_WARD
+            default: return 0;
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // OT duration: formatted as "1h 35m" from procedureStartAt to procedureEndAt
+    // (or to now when still in progress)
+    // -----------------------------------------------------------------------
+
+    public String formatOtDuration(PatientTransferRequest req) {
+        if (req == null || req.getProcedureStartAt() == null) {
+            return "—";
+        }
+        java.util.Date end = req.getProcedureEndAt() != null ? req.getProcedureEndAt() : new java.util.Date();
+        long totalMinutes = (end.getTime() - req.getProcedureStartAt().getTime()) / 60_000L;
+        if (totalMinutes < 0) {
+            totalMinutes = 0;
+        }
+        return String.format("%dh %02dm", totalMinutes / 60, totalMinutes % 60);
     }
 }
