@@ -2737,6 +2737,56 @@ public class InwardBeanController implements Serializable {
         return tmp;
     }
 
+    public List<TimedItemFee> getAllTimedItemFees(TimedItem ti) {
+        if (ti == null || ti.getId() == null) {
+            return new ArrayList<>();
+        }
+        HashMap hm = new HashMap();
+        hm.put("id", ti.getId());
+        String sql = "SELECT tif FROM TimedItemFee tif WHERE tif.retired=false AND tif.item.id=:id ORDER BY tif.sortOrder ASC";
+        List<TimedItemFee> fees = getTimedItemFeeFacade().findByJpql(sql, hm);
+        return fees != null ? fees : new ArrayList<>();
+    }
+
+    public TimedItemFee getFeeForBlock(List<TimedItemFee> fees, int blockNumber) {
+        if (fees == null || fees.isEmpty()) {
+            return null;
+        }
+        if (blockNumber <= fees.size()) {
+            return fees.get(blockNumber - 1);
+        }
+        TimedItemFee lastFee = fees.get(fees.size() - 1);
+        if (lastFee.isRepeating() || fees.size() == 1) {
+            return lastFee;
+        }
+        return null;
+    }
+
+    public double calTotalTimedChargeForItem(TimedItem ti, Date fromTime, Date toTime, boolean foreigner) {
+        List<TimedItemFee> fees = getAllTimedItemFees(ti);
+        if (fees.isEmpty()) {
+            return 0.0;
+        }
+        TimedItemFee firstFee = fees.get(0);
+        double count = calCount(firstFee, fromTime, toTime);
+        int wholeBlocks = (int) count;
+        double total = 0.0;
+        for (int b = 1; b <= wholeBlocks; b++) {
+            TimedItemFee fee = getFeeForBlock(fees, b);
+            if (fee != null) {
+                total += foreigner ? fee.getFfee() : fee.getFee();
+            }
+        }
+        double remainder = count - wholeBlocks;
+        if (remainder > 0) {
+            TimedItemFee fee = getFeeForBlock(fees, wholeBlocks + 1);
+            if (fee != null) {
+                total += (foreigner ? fee.getFfee() : fee.getFee()) * remainder;
+            }
+        }
+        return total;
+    }
+
     public TimedItemFeeFacade getTimedItemFeeFacade() {
         return timedItemFeeFacade;
     }
