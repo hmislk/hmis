@@ -259,7 +259,10 @@ public class CapabilityStatementResource {
                 .add(resource("Users", "/api/users",
                         "User CRUD, password reset/change, loggable department assignment, "
                         + "and per-user privilege assignment with department scope. "
-                        + "Supports filtering by departmentId and query string.",
+                        + "Supports filtering by departmentId and query string. "
+                        + "DELETE /{id}/departments/{assignmentId} revokes one loggable department. "
+                        + "DELETE /{id}/departments/{departmentId}/privileges bulk-revokes all privileges for a department. "
+                        + "POST /{id}/departments/{departmentId}/privileges/all assigns every privilege for a department.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("User Bulk Privileges", "/api/users/bulk-privileges",
