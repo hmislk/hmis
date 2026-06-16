@@ -83,6 +83,16 @@ public class TimedItemFeeController implements Serializable {
             if (currentFee.getSortOrder() == 0) {
                 currentFee.setSortOrder(getCharges().size() + 1);
             }
+            if (currentFee.getSortOrder() < 1) {
+                JsfUtil.addErrorMessage("Slot Order must be 1 or greater.");
+                return;
+            }
+            boolean duplicateSortOrder = getCharges().stream()
+                    .anyMatch(f -> f.getSortOrder() == currentFee.getSortOrder());
+            if (duplicateSortOrder) {
+                JsfUtil.addErrorMessage("Slot Order must be unique per service.");
+                return;
+            }
             currentFee.setCreatedAt(new Date());
             currentFee.setCreater(getSessionController().getLoggedUser());
             getTimedItemFeeFacade().create(currentFee);
