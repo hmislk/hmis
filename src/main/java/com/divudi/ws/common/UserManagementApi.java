@@ -442,16 +442,11 @@ public class UserManagementApi {
         Map<String, Object> m = new HashMap<>();
         m.put("u", u);
         m.put("d", dept);
-        List<WebUserPrivilege> active = webUserPrivilegeFacade.findByJpql(
-                "select wp from WebUserPrivilege wp where wp.retired=false and wp.webUser=:u and wp.department=:d", m);
-        int revoked = 0;
-        for (WebUserPrivilege wp : active) {
-            wp.setRetired(true);
-            wp.setRetirer(apiUser);
-            wp.setRetiredAt(new Date());
-            webUserPrivilegeFacade.edit(wp);
-            revoked++;
-        }
+        m.put("retirer", apiUser);
+        m.put("retiredAt", new Date());
+        int revoked = webUserPrivilegeFacade.updateByJpql(
+                "update WebUserPrivilege wp set wp.retired=true, wp.retirer=:retirer, wp.retiredAt=:retiredAt "
+                + "where wp.retired=false and wp.webUser=:u and wp.department=:d", m);
         Map<String, Object> result = new HashMap<>();
         result.put("privilegesRevoked", revoked);
         return successResponse(result);
