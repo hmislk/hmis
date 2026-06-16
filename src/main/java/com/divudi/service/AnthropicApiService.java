@@ -1008,6 +1008,21 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject lookupFinanceBillTool = Json.createObjectBuilder()
+                .add("name", "lookup_finance_bill")
+                .add("description",
+                        "Look up bills from the HMIS Finance API by bill number (insId or deptId). "
+                        + "Returns all bills matching the given bill number, including both PreBill and BilledBill records. "
+                        + "Use this when the user asks to find or retrieve a specific bill by its printed number.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("billNumber", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "The bill number to search for, e.g. MP/SPB/26/027264. Matched against both insId and deptId.")))
+                        .add("required", Json.createArrayBuilder().add("billNumber")))
+                .build();
+
         return Json.createArrayBuilder()
                 .add(searchCodeTool)
                 .add(fetchFileTool)
@@ -1022,6 +1037,7 @@ public class AnthropicApiService implements Serializable {
                 .add(manageFormsTool)
                 .add(manageSubscriptionsTool)
                 .add(manageInpatientTemplates)
+                .add(lookupFinanceBillTool)
                 .build();
     }
 
@@ -1273,6 +1289,10 @@ public class AnthropicApiService implements Serializable {
                     String size          = toolInput.containsKey("size")           ? toolInput.getString("size", "")          : "";
                     return callInpatientTemplateApi(method, id, templateType, name, contents, defTemplate, autoGenerate,
                             query, size, hmisBaseUrl, hmisApiKey);
+                }
+                case "lookup_finance_bill": {
+                    String billNumber = toolInput.containsKey("billNumber") ? toolInput.getString("billNumber", "") : "";
+                    return lookupFinanceBillByNumber(billNumber, hmisBaseUrl, hmisApiKey);
                 }
                 default:
                     return "Unknown tool: " + toolName;
@@ -3694,6 +3714,30 @@ public class AnthropicApiService implements Serializable {
             LOG.log(Level.WARNING, "Error fetching doc {0}: {1}", new Object[]{url, e.getMessage()});
         }
         return null;
+    }
+
+    private String lookupFinanceBillByNumber(String billNumber, String hmisBaseUrl, String hmisApiKey) {
+        try {
+            String root = (hmisBaseUrl != null) ? hmisBaseUrl.trim().replaceAll("/+$", "") : "";
+            if (root.isEmpty()) return "Error: HMIS base URL is not configured.";
+            if (billNumber == null || billNumber.trim().isEmpty()) return "Error: billNumber is required.";
+            String key = (hmisApiKey != null) ? hmisApiKey.trim() : "";
+            String url = root + "/api/finance/bill/search?billNumber="
+                    + URLEncoder.encode(billNumber.trim(), StandardCharsets.UTF_8);
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+            HttpRequest.Builder rb = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .GET();
+            if (!key.isEmpty()) rb.header("Finance", key);
+            HttpResponse<String> resp = client.send(rb.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + resp.statusCode() + "\n" + resp.body();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Finance bill lookup interrupted.";
+        } catch (Exception e) {
+            return "Finance bill lookup error: " + e.getMessage();
+        }
     }
 
     // -------------------------------------------------------------------------

@@ -596,7 +596,11 @@ public class Finance {
             return errorMessageNotValidKey().toString();
         }
         if (billNumber == null || billNumber.trim().isEmpty()) {
-            return errorMessage().toString();
+            JSONObject out = new JSONObject();
+            out.put("code", 400);
+            out.put("type", "error");
+            out.put("message", "billNumber is required.");
+            return out.toString();
         }
         Map<String, Object> params = new HashMap<>();
         params.put("bn", billNumber.trim());
