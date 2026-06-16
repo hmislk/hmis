@@ -17,12 +17,15 @@ restored (unstaged) at the end.
 
 ## Step 1 — Stash Local persistence.xml Changes
 
+Only stash `persistence.xml` — not all uncommitted work. This prevents
+unrelated WIP from being moved onto `development` when the stash is popped.
+
 ```bash
-git stash
+git stash push -- src/main/resources/META-INF/persistence.xml
 ```
 
-If `git stash` reports "No local changes to save", that is fine — continue.
-Note whether a stash was created so you know whether to pop it in Step 6.
+If this reports "No local changes to save", that is fine — continue.
+Note whether a stash was created so you know whether to pop it in Step 7.
 
 ## Step 2 — Fetch Latest from Origin
 
@@ -78,29 +81,51 @@ git checkout development
 
 ## Step 5 — Delete Marked Branches
 
-For each branch marked for deletion:
+For each branch marked for deletion, first try the safe delete:
 
 ```bash
 git branch -d <branch>
 ```
 
-If `-d` refuses (because git does not consider it fully merged into the local
-`development` HEAD), use `-D` — the PR being merged on GitHub is authoritative
-and it is safe to force-delete:
+If `-d` refuses, check whether the local branch has commits that are not on
+the remote (i.e. local-only work added after the PR was merged):
 
 ```bash
-git branch -D <branch>
+git log origin/<branch>..<branch> --oneline
 ```
+
+- If the output is **empty** — the local tip matches the remote; the refusal
+  is just because the merge commit was squashed/rebased and git cannot trace
+  it locally. It is safe to force-delete:
+
+  ```bash
+  git branch -D <branch>
+  ```
+
+- If the output shows **local-only commits** — the branch has work that was
+  never pushed. **Skip this branch** and warn the user instead of deleting:
+
+  ```
+  ⚠ Skipped <branch>: has local commits not present on origin — delete manually after review.
+  ```
 
 ## Step 6 — Fast-Forward development to origin/development
 
+Use `--ff-only` so git stops with an error if the local `development` has
+diverged (e.g. local commits not yet pushed), rather than silently discarding
+them:
+
 ```bash
-git reset --hard origin/development
+git merge --ff-only origin/development
 ```
+
+If this fails with "Not possible to fast-forward", the local `development`
+has commits that are not on `origin/development`. Report this to the user and
+stop — do not force-reset. The user must resolve the divergence manually.
 
 ## Step 7 — Restore persistence.xml
 
-If a stash was created in Step 1:
+If a stash was created in Step 1 (only `persistence.xml` was stashed):
 
 ```bash
 git stash pop
