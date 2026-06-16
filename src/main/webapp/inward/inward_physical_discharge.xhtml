@@ -9,7 +9,8 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
 
-                <h:form id="formPhysicalDischarge">
+                <h:form id="formPhysicalDischarge"
+                        onkeydown="if(event.key==='Enter'&amp;&amp;event.target.tagName!=='TEXTAREA'){event.preventDefault();return false;}">
                     <p:growl id="growl" life="4000"/>
 
                     <!-- Navigation bar -->
@@ -73,7 +74,7 @@
                                     <div class="container-fluid">
                                         <div class="row my-2">
                                             <div class="col-12">
-                                                <p:outputText
+                                                <h:outputText
                                                     value="Confirm that the patient has physically left the hospital premises. The system will record the current date and time as the departure time."
                                                     styleClass="text-muted" />
                                             </div>
@@ -83,9 +84,9 @@
                                             <div class="row my-2">
                                                 <div class="col-md-4">
                                                     <p:outputLabel value="Departure Time:" styleClass="font-weight-bold" />
-                                                    <p:outputText value="#{nursingDischargeController.currentEncounter.physicalDischargeDateTime}">
+                                                    <h:outputText value="#{nursingDischargeController.currentEncounter.physicalDischargeDateTime}">
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                                    </p:outputText>
+                                                    </h:outputText>
                                                 </div>
                                             </div>
                                         </h:panelGroup>

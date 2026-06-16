@@ -9,7 +9,9 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
 
-                <h:form id="formNursingDischarge">
+                <h:form id="formNursingDischarge"
+                        onkeydown="if(event.key==='Enter'&amp;&amp;event.target.tagName!=='TEXTAREA'){event.preventDefault();return false;}">
+
                     <p:growl id="growl" life="4000"/>
 
                     <!-- Navigation bar -->
