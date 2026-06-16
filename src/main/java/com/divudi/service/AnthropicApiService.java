@@ -3563,6 +3563,21 @@ public class AnthropicApiService implements Serializable {
                     {"GET",    "/inward-price-adjustment/credit-companies/search?query=",          "Credit company name → id lookup"}
                 });
 
+        // ── Price Matrix Inward (Flat DTO, audit-logged) ──────────────────────
+        appendModule(sb, "Price Matrix Inward", "/price-matrix/inward",
+                "Manage InwardPriceAdjustment (margin/service charge) matrix entries with flat DTO format. "
+                + "All create/update/retire actions are audit-logged (PRICE_MATRIX_CREATED/UPDATED/RETIRED). "
+                + "Supports departmentId, categoryId, paymentMethod, margin, discountPercent, fromPrice, toPrice, admissionTypeId, creditCompanyId. "
+                + "POST rejects duplicates with 409 + existing id.",
+                null,
+                new String[][]{
+                    {"GET",    "/price-matrix/inward?departmentId=&categoryId=&paymentMethod=&limit=", "List entries. Filters: departmentId, categoryId, paymentMethod, limit (default 50)"},
+                    {"GET",    "/price-matrix/inward/{id}",                                   "Fetch one entry (flat DTO with departmentId/departmentName etc.)"},
+                    {"POST",   "/price-matrix/inward",                                         "Create. Body: departmentId (required), categoryId (required), margin (required), paymentMethod, discountPercent, fromPrice, toPrice, admissionTypeId, creditCompanyId"},
+                    {"PUT",    "/price-matrix/inward/{id}",                                   "Update. Body fields all optional — only supplied fields updated"},
+                    {"DELETE", "/price-matrix/inward/{id}",                                   "Soft-retire entry. Optional: retireComments (query param)"}
+                });
+
         appendModule(sb, "Inward Room Management", "/inward/room-categories, /inward/rooms, /inward/room-facility-charges",
                 "Manage inward room master data: room categories, rooms, and room facility charges (fee configurations). "
                 + "POST returns 409 with existing id when a duplicate name exists.",
