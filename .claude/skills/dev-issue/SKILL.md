@@ -67,6 +67,17 @@ JPQL-first, privilege system, AJAX update rules, etc.):
 Review the diffs from each agent before moving on — don't trust a summary
 without checking the actual edits.
 
+## 5a. Regenerate the DDL if the schema changed
+
+If step 5 added or renamed any entity field, or added a new entity/table,
+run the `generate-ddl` skill before moving on. This keeps
+`tmp/createDDL.jdbc` and the
+[Database-Schema-DDL-Generation-Guide](https://github.com/hmislk/hmis/wiki/Database-Schema-DDL-Generation-Guide)
+wiki page in sync with the actual schema, so other developers and fresh
+installs can pick up the new column/table without hand-writing a migration.
+Skip this step entirely if the issue only changed business logic with no
+new persisted fields.
+
 ## 6. Build and local redeploy ("deploy sos")
 
 Per `playwright-e2e` §0a:
