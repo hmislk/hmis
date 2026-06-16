@@ -107,7 +107,6 @@ public class NursingDischargeController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("pe", currentEncounter);
         params.put("btas", Arrays.asList(
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD));
         params.put("acceptBta", BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
         return (List<PendingPharmacyItemDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.DATE);
