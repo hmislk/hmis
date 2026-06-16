@@ -98,7 +98,8 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST"))
                 .add(resource("Finance", "/api/finance",
-                        "Finance operations and billing endpoints",
+                        "Finance operations and billing endpoints. "
+                        + "GET /bill/search?billNumber= looks up bills by bill number (insId or deptId).",
                         "API Key",
                         "GET", "POST"))
                 .add(resource("Balance History", "/api/balance_history",
