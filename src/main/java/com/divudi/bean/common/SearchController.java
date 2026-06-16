@@ -7735,7 +7735,9 @@ public class SearchController implements Serializable {
     private List<Bill> getBHTIssudBills(Bill b) {
         String sql = "Select b From Bill b where b.retired=false "
                 + " and b.billType=:btp "
-                + " and b.referenceBill=:ref ";
+                + " and b.referenceBill=:ref "
+                + " and b.cancelled=false "
+                + " and b.refunded=false ";
         HashMap hm = new HashMap();
         hm.put("ref", b);
         hm.put("btp", BillType.PharmacyBhtPre);

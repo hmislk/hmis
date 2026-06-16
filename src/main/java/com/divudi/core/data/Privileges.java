@@ -118,6 +118,7 @@ public enum Privileges {
     InwardPharmacyIssueRequest("Inward Pharmacy Issue Request"),
     InwardPharmacyIssueRequestCancel("Inward Pharmacy Issue Request Cancel"),
     InwardPharmacyIssueRequestSearch("Inward Pharmacy Issue Request Search"),
+    InwardPharmacyReturnCancel("Inward Pharmacy Return Cancel"),
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
     TheaterIssueBHT("Theater Issue BHT"),
     InpatientClinicalAssessment("Inpatient Clinical Assessment"),
@@ -915,6 +916,7 @@ public enum Privileges {
             case PharmacyBhtIssueRequest:
             case PharmacyBhtRequestForceComplete:
             case PharmacyReturnFromWardForceComplete:
+            case InwardPharmacyReturnCancel:
             case PharmacySearchInpatientDirectIssuesbyBill:
             case PharmacySearchInpatientDirectIssuesbyItem:
             case PharmacySearchInpatientDirectIssueReturnsbyBill:
