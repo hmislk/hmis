@@ -80,6 +80,9 @@ public class TimedItemFeeController implements Serializable {
         }
         currentFee.setItem(currentIx);
         if (currentFee.getId() == null || currentFee.getId() == 0) {
+            if (currentFee.getSortOrder() == 0) {
+                currentFee.setSortOrder(getCharges().size() + 1);
+            }
             currentFee.setCreatedAt(new Date());
             currentFee.setCreater(getSessionController().getLoggedUser());
             getTimedItemFeeFacade().create(currentFee);
