@@ -41,6 +41,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -91,6 +93,9 @@ public class PriceMatrixInwardApi {
     private static final Gson gson = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
             .create();
+
+    private static final DateTimeFormatter DATE_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     // =========================================================================
     // CRUD
@@ -375,8 +380,7 @@ public class PriceMatrixInwardApi {
             if (body.containsKey("departmentId")) {
                 Long departmentId = asLong(body.get("departmentId"));
                 if (departmentId == null) {
-                    entry.setDepartment(null);
-                    entry.setInstitution(null);
+                    return errorResponse("departmentId cannot be null", 400);
                 } else {
                     Department d = departmentFacade.find(departmentId);
                     if (d == null || d.isRetired()) {
@@ -390,7 +394,7 @@ public class PriceMatrixInwardApi {
             if (body.containsKey("categoryId")) {
                 Long categoryId = asLong(body.get("categoryId"));
                 if (categoryId == null) {
-                    entry.setCategory(null);
+                    return errorResponse("categoryId cannot be null", 400);
                 } else {
                     Category c = categoryFacade.find(categoryId);
                     if (c == null || c.isRetired()) {
@@ -595,7 +599,10 @@ public class PriceMatrixInwardApi {
 
         row.put("retired", pm.isRetired());
         if (pm.getCreatedAt() != null) {
-            row.put("createdAt", gson.toJson(pm.getCreatedAt()).replace("\"", ""));
+            row.put("createdAt", pm.getCreatedAt().toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime()
+                    .format(DATE_FORMATTER));
         } else {
             row.put("createdAt", null);
         }

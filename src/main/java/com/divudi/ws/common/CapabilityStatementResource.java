@@ -150,7 +150,8 @@ public class CapabilityStatementResource {
                         + "Price range lookup: fromPrice/toPrice define the gross value range to which the margin applies. "
                         + "Lookup sub-paths: /categories/search?scope=service|pharmacy, /departments/search, "
                         + "/payment-methods, /credit-companies/search. "
-                        + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
+                        + "POST returns HTTP 409 with existing id when a duplicate combination exists. "
+                        + "NOTE: For inward price adjustments, prefer the newer /api/price-matrix/inward endpoint.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Price Matrix Inward", "/api/price-matrix/inward",
