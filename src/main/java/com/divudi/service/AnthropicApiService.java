@@ -3271,7 +3271,10 @@ public class AnthropicApiService implements Serializable {
         // ── Users / Roles / Privileges ────────────────────────────────────────
         appendModule(sb, "User Management", "/users",
                 "Create, read, update, and retire HMIS web users. Manage passwords, loggable departments, "
-                + "and individual privilege assignments. Use /users/privileges/available to discover valid privilege names.",
+                + "and individual or bulk privilege assignments. Use /users/privileges/available to discover valid privilege names. "
+                + "DELETE /{id}/departments/{assignmentId} removes one loggable department. "
+                + "DELETE /{id}/departments/{deptId}/privileges bulk-revokes all privileges for a department. "
+                + "POST /{id}/departments/{deptId}/privileges/all grants every privilege for a department.",
                 githubUrl(branch, "developer_docs/API_USER_MANAGEMENT.md"),
                 new String[][]{
                     {"GET",    "/users",                          "List users. Filters: query, departmentId, page, size"},
@@ -3287,7 +3290,10 @@ public class AnthropicApiService implements Serializable {
                     {"GET",    "/users/{id}/departments",         "List loggable departments for a user"},
                     {"POST",   "/users/{id}/departments",         "Assign a loggable department to a user"},
                     {"GET",    "/users/privileges/available",     "List all valid privilege enum names"},
-                    {"POST",   "/users/bulk-privileges",          "Bulk-assign privileges to multiple users at once"}
+                    {"POST",   "/users/bulk-privileges",                              "Bulk-assign privileges to multiple users at once"},
+                    {"DELETE", "/users/{id}/departments/{assignmentId}",             "Revoke a loggable department assignment (by WebUserDepartment id)"},
+                    {"DELETE", "/users/{id}/departments/{departmentId}/privileges",  "Bulk-revoke all active privileges for a user scoped to a department"},
+                    {"POST",   "/users/{id}/departments/{departmentId}/privileges/all", "Assign every Privileges enum value to a user for a department (skips duplicates)"}
                 });
 
         appendModule(sb, "User Roles", "/user-roles",
