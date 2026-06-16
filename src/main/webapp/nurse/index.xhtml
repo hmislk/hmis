@@ -158,6 +158,7 @@
                                                 <p:panel header="Clinical Data">
                                                     <div class="d-grid gap-3">
                                                         <p:commandButton
+                                                            id="btnPatientHistoryNurse"
                                                             value="Patient History"
                                                             action="#{patientController.navigateToPatientProfileFromAdmissionProfile()}"
                                                             ajax="false"
@@ -169,6 +170,7 @@
                                                         </p:commandButton>
 
                                                         <p:commandButton
+                                                            id="btnClinicalNotesNurse"
                                                             value="Clinical Notes"
                                                             ajax="false"
                                                             action="#{admissionController.navigateToInpatientClinicalAssessmentList()}"
@@ -177,6 +179,7 @@
                                                         </p:commandButton>
 
                                                         <p:commandButton
+                                                            id="btnWardMedicationsNurse"
                                                             value="Ward Medications"
                                                             ajax="false"
                                                             action="#{inpatientClinicalDataController.navigateToInwardMedicinesFromAdmission(admissionController.current)}"
@@ -185,6 +188,7 @@
                                                         </p:commandButton>
 
                                                         <p:commandButton
+                                                            id="btnMedicineTimelineNurse"
                                                             rendered="#{webUserController.hasPrivilege('InpatientClinicalAssessment')}"
                                                             value="Medicine Timeline"
                                                             ajax="false"
@@ -194,6 +198,7 @@
                                                         </p:commandButton>
 
                                                         <p:commandButton
+                                                            id="btnDischargeMedicationsNurse"
                                                             value="Discharge Medications"
                                                             ajax="false"
                                                             action="#{inpatientClinicalDataController.navigateToDischargeMedicinesFromAdmission(admissionController.current)}"
@@ -202,6 +207,7 @@
                                                         </p:commandButton>
 
                                                         <p:commandButton
+                                                            id="btnInvestigationsNurse"
                                                             value="Investigations"
                                                             ajax="false"
                                                             action="#{admissionController.navigateToInpatientInvestigations()}"
@@ -210,6 +216,7 @@
                                                         </p:commandButton>
 
                                                         <p:commandButton
+                                                            id="btnImagesNurse"
                                                             value="Images"
                                                             ajax="false"
                                                             action="#{admissionController.navigateToInpatientImages}"
@@ -218,6 +225,7 @@
                                                         </p:commandButton>
 
                                                         <p:commandButton
+                                                            id="btnDiagnosisCardNurse"
                                                             value="Diagnosis Card"
                                                             ajax="false"
                                                             action="#{admissionController.navigateToInpatientDiagnosisCard()}"
@@ -226,6 +234,7 @@
                                                         </p:commandButton>
 
                                                         <p:commandButton
+                                                            id="btnClinicalDischargeNurse"
                                                             value="Clinical Discharge"
                                                             ajax="false"
                                                             action="#{inpatientClinicalDataController.navigateToClinicalDischargeFromAdmission(admissionController.current)}"
@@ -303,6 +312,7 @@
                                                         </p:commandButton>
 
                                                         <p:commandButton
+                                                            id="btnInitiateTransferNurse"
                                                             rendered="#{webUserController.hasPrivilege('InwardRoomTransferInitiate')}"
                                                             value="Initiate Transfer"
                                                             ajax="false"
@@ -313,6 +323,7 @@
                                                         </p:commandButton>
 
                                                         <p:commandButton
+                                                            id="btnAcceptPatientsNurse"
                                                             rendered="#{webUserController.hasPrivilege('InwardRoomPatientAccept')}"
                                                             value="Accept Patients"
                                                             ajax="false"
