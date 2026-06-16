@@ -3,6 +3,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.AppointmentStatus;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dto.ReservationDTO;
 import com.divudi.core.data.inward.InwardReservationEvent;
 
@@ -69,6 +70,9 @@ public class InwardReservationController implements Serializable {
     private InwardReservationEvent event = new InwardReservationEvent();
     
     private ReservationDTO currentReservationDTO;
+
+    private ScheduleModel theatreScheduleModel;
+    private List<Reservation> theatreReservations;
     
     private ReservationDTO convertToReservationDTO(Reservation r){
         Reservation reloadReservation = reservationFacade.find(r.getId());
@@ -285,5 +289,89 @@ public class InwardReservationController implements Serializable {
 
     public void setCalanderStatus(AppointmentStatus calanderStatus) {
         this.calanderStatus = calanderStatus;
+    }
+
+    // -----------------------------------------------------------------------
+    // Theatre Schedule Calendar — shows only Theatre-room reservations
+    // -----------------------------------------------------------------------
+
+    public String navigateToTheatreScheduleCalendar() {
+        currentReservationDTO = null;
+        fromDate = CommonFunctions.getStartOfDay();
+        Long noOfMonths = configOptionApplicationController.getLongValueByKey(
+                "Number of Months to Load During Reservation Calendar", 6L);
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(fromDate);
+        cal.add(Calendar.MONTH, noOfMonths.intValue());
+        toDate = cal.getTime();
+        calanderStatus = null;
+        findTheatreReservations();
+        return "/theater/theatre_schedule_calendar?faces-redirect=true";
+    }
+
+    public void findTheatreReservations() {
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("deptType", DepartmentType.Theatre);
+        m.put("institution", sessionController.getInstitution());
+        String jpql = "SELECT r FROM Reservation r "
+                + "WHERE r.retired = :ret "
+                + "AND r.room.department.departmentType = :deptType "
+                + "AND r.room.department.institution = :institution";
+        if (calanderStatus != null) {
+            jpql += " AND r.appointment.status = :status";
+            m.put("status", calanderStatus);
+        }
+        if (fromDate != null && toDate != null) {
+            jpql += " AND (r.reservedFrom BETWEEN :fd AND :td"
+                  + "   OR r.reservedTo BETWEEN :fd AND :td)";
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+        }
+        jpql += " ORDER BY r.reservedFrom";
+        theatreReservations = reservationFacade.findByJpqlWithoutCache(jpql, m, TemporalType.TIMESTAMP);
+        if (theatreReservations == null) {
+            theatreReservations = new java.util.ArrayList<>();
+        }
+        generateTheatreScheduleEvents(theatreReservations);
+    }
+
+    private void generateTheatreScheduleEvents(List<Reservation> reservations) {
+        theatreScheduleModel = new DefaultScheduleModel();
+        for (Reservation r : reservations) {
+            if (r.getReservedFrom() == null || r.getRoom() == null || r.getPatient() == null) {
+                continue;
+            }
+            Date end = r.getReservedTo() != null
+                    ? r.getReservedTo()
+                    : new Date(r.getReservedFrom().getTime() + 3_600_000L); // 1h default
+            String roomName = r.getRoom().getName() != null ? r.getRoom().getName() : "Theatre";
+            String patientName = r.getPatient().getPerson() != null
+                    ? r.getPatient().getPerson().getName() : "Patient";
+            DefaultScheduleEvent tempEvent = new DefaultScheduleEvent<SessionInstance>()
+                    .builder()
+                    .title(roomName + " — " + patientName)
+                    .borderColor(generateColor(roomName))
+                    .backgroundColor(generateColor(roomName))
+                    .startDate(CommonFunctions.convertDateToLocalDateTime(r.getReservedFrom()))
+                    .endDate(CommonFunctions.convertDateToLocalDateTime(end))
+                    .data(r)
+                    .build();
+            theatreScheduleModel.addEvent(tempEvent);
+        }
+    }
+
+    public ScheduleModel getTheatreScheduleModel() {
+        if (theatreScheduleModel == null) {
+            theatreScheduleModel = new DefaultScheduleModel();
+        }
+        return theatreScheduleModel;
+    }
+
+    public List<Reservation> getTheatreReservations() {
+        if (theatreReservations == null) {
+            theatreReservations = new java.util.ArrayList<>();
+        }
+        return theatreReservations;
     }
 }

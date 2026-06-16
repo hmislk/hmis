@@ -411,6 +411,45 @@
                                                     </div>
                                                 </p:panel>
                                             </div>
+
+                                            <div class="col-2">
+                                                <p:panel header="Theatre">
+                                                    <div class="d-grid gap-3">
+                                                        <p:commandButton
+                                                            value="Theatre Dashboard"
+                                                            icon="fa fa-procedures"
+                                                            ajax="false"
+                                                            rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient') or webUserController.hasPrivilege('TheatreSendPatient')}"
+                                                            action="#{theatreDashboardController.navigateToTheatreDashboard()}"
+                                                            class="w-100 ui-button-warning">
+                                                        </p:commandButton>
+                                                        <p:commandButton
+                                                            value="Send to Theatre"
+                                                            icon="fa fa-arrow-right"
+                                                            ajax="false"
+                                                            rendered="#{webUserController.hasPrivilege('TheatreSendPatient') and admissionController.current ne null}"
+                                                            action="#{patientTransferController.navigateToSendToTheatre(admissionController.current)}"
+                                                            class="w-100 ui-button-secondary">
+                                                        </p:commandButton>
+                                                        <p:commandButton
+                                                            value="Accept Theatre Patient"
+                                                            icon="fa fa-check-circle"
+                                                            ajax="false"
+                                                            rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')}"
+                                                            action="#{patientTransferController.navigateToTheatreAccept()}"
+                                                            class="w-100 ui-button-success">
+                                                        </p:commandButton>
+                                                        <p:commandButton
+                                                            value="Theatre Schedule"
+                                                            icon="fa fa-calendar-alt"
+                                                            ajax="false"
+                                                            rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient') or webUserController.hasPrivilege('TheatreSendPatient')}"
+                                                            action="#{inwardReservationController.navigateToTheatreScheduleCalendar()}"
+                                                            class="w-100 ui-button-info">
+                                                        </p:commandButton>
+                                                    </div>
+                                                </p:panel>
+                                            </div>
                                         </h:panelGroup>
                                     </div>
                                     <div class="row m-3">

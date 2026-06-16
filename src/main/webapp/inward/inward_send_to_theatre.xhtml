@@ -1,0 +1,145 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+        <h:form id="mainForm">
+            <p:panel class="my-3">
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fa fa-procedures fa-lg text-warning me-2"/>
+                            <span class="fw-bold">Send Patient to Theatre</span>
+                        </div>
+                        <p:commandButton
+                            value="Back to Dashboard"
+                            icon="fa fa-arrow-left"
+                            ajax="false"
+                            class="ui-button-secondary"
+                            action="#{admissionController.navigateToAdmissionProfilePage}"/>
+                    </div>
+                </f:facet>
+
+                <!-- Patient info banner -->
+                <h:panelGroup layout="block" rendered="#{patientTransferController.current ne null}"
+                              styleClass="alert alert-info mb-3">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>Patient:</strong>
+                            <h:outputText value=" #{patientTransferController.current.patient.person.nameWithTitle}"/>
+                        </div>
+                        <div class="col-md-2">
+                            <strong>BHT:</strong>
+                            <h:outputText value=" #{patientTransferController.current.bhtNo}"/>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Current Room:</strong>
+                            <h:outputText value=" #{patientTransferController.current.currentPatientRoom.roomFacilityCharge.name}"/>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Ward:</strong>
+                            <h:outputText value=" #{patientTransferController.current.currentPatientRoom.roomFacilityCharge.department.name}"/>
+                        </div>
+                    </div>
+                </h:panelGroup>
+
+                <div class="row g-3">
+
+                    <!-- Theatre Room -->
+                    <div class="col-md-6">
+                        <h:outputLabel for="acTheatreRoom" value="Theatre Room" styleClass="fw-bold mb-1"/>
+                        <div>
+                            <p:autoComplete
+                                id="acTheatreRoom"
+                                widgetVar="wTheatreRoom"
+                                forceSelection="true"
+                                value="#{patientTransferController.targetRoomFacilityCharge}"
+                                completeMethod="#{roomFacilityChargeController.completeTheatreRoom}"
+                                var="tr"
+                                itemLabel="#{tr.name}"
+                                itemValue="#{tr}"
+                                placeholder="Type theatre room name..."
+                                minQueryLength="1"
+                                maxResults="10"
+                                style="width:100%">
+                                <p:column headerText="Room">
+                                    <h:outputText value="#{tr.name}"/>
+                                </p:column>
+                                <p:column headerText="Department">
+                                    <h:outputText value="#{tr.department.name}"/>
+                                </p:column>
+                            </p:autoComplete>
+                        </div>
+                    </div>
+
+                    <!-- Surgery Bill -->
+                    <div class="col-md-6">
+                        <h:outputLabel for="selSurgery" value="Surgery (optional)" styleClass="fw-bold mb-1"/>
+                        <div>
+                            <p:selectOneMenu
+                                id="selSurgery"
+                                value="#{patientTransferController.selectedSurgeryBill}"
+                                style="width:100%">
+                                <f:selectItem itemLabel="— Select Surgery —" itemValue="#{null}"/>
+                                <f:selectItems
+                                    value="#{patientTransferController.surgeryBillsForCurrentAdmission}"
+                                    var="sb"
+                                    itemLabel="#{sb.procedure.item.name}"
+                                    itemValue="#{sb}"/>
+                            </p:selectOneMenu>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="col-12">
+                        <h:outputLabel for="txtNotes" value="Notes (optional)" styleClass="fw-bold mb-1"/>
+                        <p:inputTextarea
+                            id="txtNotes"
+                            value="#{patientTransferController.notes}"
+                            rows="3"
+                            style="width:100%"
+                            placeholder="Pre-operative notes, checklist items..."/>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="col-12 d-flex gap-2">
+                        <p:commandButton
+                            id="btnSend"
+                            value="Send to Theatre"
+                            icon="fa fa-procedures"
+                            ajax="false"
+                            class="ui-button-warning"
+                            action="#{patientTransferController.sendToTheatre()}"
+                            onclick="if (!confirm('Confirm sending patient to theatre?')) return false;"/>
+                        <p:commandButton
+                            value="Cancel"
+                            icon="fa fa-times"
+                            ajax="false"
+                            class="ui-button-secondary"
+                            action="#{admissionController.navigateToAdmissionProfilePage}"/>
+                    </div>
+
+                    <!-- Confirmation of last send -->
+                    <h:panelGroup layout="block"
+                                  rendered="#{patientTransferController.lastInitiatedRequest ne null
+                                              and patientTransferController.lastInitiatedRequest.theatreTransferType ne null}"
+                                  styleClass="col-12">
+                        <div class="alert alert-success">
+                            <i class="fa fa-check-circle me-2"/>
+                            Patient sent to theatre:
+                            <strong><h:outputText value="#{patientTransferController.lastInitiatedRequest.toRoomFacilityCharge.name}"/></strong>.
+                            Awaiting theatre acceptance.
+                        </div>
+                    </h:panelGroup>
+
+                </div>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

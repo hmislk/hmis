@@ -1,0 +1,475 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+        <h:form id="dashForm">
+
+            <!-- ============================================================ -->
+            <!-- Header                                                         -->
+            <!-- ============================================================ -->
+            <p:panel class="my-3">
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fa fa-procedures fa-lg text-warning me-2"/>
+                            <span class="fw-bold" style="font-size: 1.15em;">Theatre Dashboard</span>
+                            <span class="text-muted ms-2 small">— #{sessionController.institution.name}</span>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                id="btnRefresh"
+                                value="Refresh"
+                                icon="fa fa-refresh"
+                                ajax="false"
+                                class="ui-button-info"
+                                action="#{theatreDashboardController.navigateToTheatreDashboard()}"/>
+                            <p:commandButton
+                                value="Theatre Accept"
+                                icon="fa fa-check-circle"
+                                ajax="false"
+                                class="ui-button-success"
+                                rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')}"
+                                action="#{patientTransferController.navigateToTheatreAccept()}"/>
+                            <p:commandButton
+                                id="btnTheatreSchedule"
+                                value="Theatre Schedule"
+                                icon="fa fa-calendar-alt"
+                                ajax="false"
+                                class="ui-button-info"
+                                action="#{inwardReservationController.navigateToTheatreScheduleCalendar()}"/>
+                            <p:commandButton
+                                value="Back to Workbench"
+                                icon="fa fa-arrow-left"
+                                ajax="false"
+                                class="ui-button-secondary"
+                                action="#{nursingWorkBenchController.navigatetoNursingWorkBench()}"/>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <!-- Summary counters -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-3">
+                        <div class="card text-center border-warning h-100">
+                            <div class="card-body py-2">
+                                <div style="font-size:2rem; font-weight:700; color:#f59e0b;">
+                                    <h:outputText value="#{theatreDashboardController.pendingAcceptance.size()}"/>
+                                </div>
+                                <div class="text-muted small">Awaiting Acceptance</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card text-center border-danger h-100">
+                            <div class="card-body py-2">
+                                <div style="font-size:2rem; font-weight:700; color:#ef4444;">
+                                    <h:outputText value="#{theatreDashboardController.inTheatre.size()}"/>
+                                </div>
+                                <div class="text-muted small">In Theatre</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card text-center border-info h-100">
+                            <div class="card-body py-2">
+                                <div style="font-size:2rem; font-weight:700; color:#0ea5e9;">
+                                    <h:outputText value="#{theatreDashboardController.pendingReturns.size()}"/>
+                                </div>
+                                <div class="text-muted small">Pending Return to Ward</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card text-center border-secondary h-100">
+                            <div class="card-body py-2">
+                                <div style="font-size:2rem; font-weight:700; color:#64748b;">
+                                    <h:outputText value="#{theatreDashboardController.todaysList.size()}"/>
+                                </div>
+                                <div class="text-muted small">Today's Cases</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </p:panel>
+
+            <!-- ============================================================ -->
+            <!-- Section 1: Theatre Room Status Grid                            -->
+            <!-- ============================================================ -->
+            <p:panel class="my-3">
+                <f:facet name="header">
+                    <i class="fa fa-th me-2 text-warning"/>
+                    <span class="fw-bold">Theatre Room Status</span>
+                </f:facet>
+
+                <h:panelGroup layout="block"
+                              rendered="#{empty theatreDashboardController.roomCards}"
+                              styleClass="text-center text-muted py-3">
+                    <i class="fa fa-info-circle me-1"/>
+                    No theatre rooms configured. Set up theatre rooms under Room Management.
+                </h:panelGroup>
+
+                <div class="row g-3">
+                    <ui:repeat value="#{theatreDashboardController.roomCards}" var="card">
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="card h-100 border-2 #{card.cardStyleClass}">
+                                <div class="card-header d-flex justify-content-between align-items-center py-2">
+                                    <span class="fw-bold">
+                                        <i class="fa fa-procedures me-1"/>
+                                        <h:outputText value="#{card.theatreRoom.name}"/>
+                                    </span>
+                                    <span class="badge #{card.statusBadgeClass}">
+                                        <h:outputText value="#{card.statusLabel}"/>
+                                    </span>
+                                </div>
+                                <div class="card-body py-2">
+                                    <!-- Available -->
+                                    <h:panelGroup layout="block" rendered="#{not card.occupied}"
+                                                  styleClass="text-center text-success py-2">
+                                        <i class="fa fa-check-circle fa-2x mb-1"/>
+                                        <div class="small fw-bold">Available</div>
+                                    </h:panelGroup>
+                                    <!-- Occupied -->
+                                    <h:panelGroup layout="block" rendered="#{card.occupied}">
+                                        <div class="small mb-1">
+                                            <strong>Patient: </strong>
+                                            <h:outputText value="#{card.currentRequest.admission.patient.person.nameWithTitle}"/>
+                                        </div>
+                                        <div class="small mb-1">
+                                            <strong>BHT: </strong>
+                                            <h:outputText value="#{card.currentRequest.admission.bhtNo}"/>
+                                        </div>
+                                        <h:panelGroup rendered="#{card.currentRequest.surgeryBill ne null}">
+                                            <div class="small mb-1">
+                                                <strong>Procedure: </strong>
+                                                <h:outputText value="#{card.currentRequest.surgeryBill.procedure.item.name}"/>
+                                            </div>
+                                        </h:panelGroup>
+                                        <div class="small text-muted">
+                                            <i class="fa fa-clock me-1"/>
+                                            <h:outputText value="#{card.minutesInCurrentStatus}"/> min in current status
+                                        </div>
+                                        <!-- Quick action buttons -->
+                                        <div class="d-flex flex-wrap gap-1 mt-2">
+                                            <p:commandButton
+                                                id="btnCardMarkIn"
+                                                value="In Theatre"
+                                                icon="fa fa-play"
+                                                ajax="false"
+                                                class="ui-button-warning ui-button-sm"
+                                                rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')
+                                                            and card.currentRequest.theatreOccupancyStatus.name() == 'RECEIVED_IN_THEATRE'}"
+                                                action="#{theatreDashboardController.markInTheatre(card.currentRequest)}"
+                                                onclick="if (!confirm('Mark patient as In Theatre?')) return false;"/>
+                                            <p:commandButton
+                                                id="btnCardProcDone"
+                                                value="Proc. Done"
+                                                icon="fa fa-check-circle"
+                                                ajax="false"
+                                                class="ui-button-success ui-button-sm"
+                                                rendered="#{webUserController.hasPrivilege('TheatreReturnPatient')
+                                                            and card.currentRequest.theatreOccupancyStatus.name() == 'IN_THEATRE'}"
+                                                action="#{theatreDashboardController.markProcedureCompleted(card.currentRequest)}"
+                                                onclick="if (!confirm('Mark procedure as completed?')) return false;"/>
+                                            <p:commandButton
+                                                id="btnCardReturn"
+                                                value="Return"
+                                                icon="fa fa-arrow-left"
+                                                ajax="false"
+                                                class="ui-button-info ui-button-sm"
+                                                rendered="#{webUserController.hasPrivilege('TheatreReturnPatient')
+                                                            and card.currentRequest.theatreOccupancyStatus.name() == 'PROCEDURE_COMPLETED'}"
+                                                action="#{theatreDashboardController.returnToWard(card.currentRequest)}"
+                                                onclick="if (!confirm('Initiate return to ward?')) return false;"/>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </div>
+                    </ui:repeat>
+                </div>
+            </p:panel>
+
+            <!-- ============================================================ -->
+            <!-- Section 2: Pending Acceptance                                  -->
+            <!-- ============================================================ -->
+            <p:panel class="my-3">
+                <f:facet name="header">
+                    <i class="fa fa-clock fa-lg text-warning me-2"/>
+                    <span class="fw-bold">Awaiting Theatre Acceptance</span>
+                    <span class="badge bg-warning text-dark ms-2">#{theatreDashboardController.pendingAcceptance.size()}</span>
+                </f:facet>
+
+                <p:dataTable
+                    id="tblPending"
+                    value="#{theatreDashboardController.pendingAcceptance}"
+                    var="req"
+                    emptyMessage="No patients awaiting acceptance."
+                    styleClass="w-100">
+
+                    <p:column headerText="BHT" style="width:90px">
+                        <h:outputText value="#{req.admission.bhtNo}"/>
+                    </p:column>
+                    <p:column headerText="Patient">
+                        <h:outputText value="#{req.admission.patient.person.nameWithTitle}"/>
+                    </p:column>
+                    <p:column headerText="Theatre Room">
+                        <h:outputText value="#{req.toRoomFacilityCharge.name}"/>
+                    </p:column>
+                    <p:column headerText="Surgery">
+                        <h:outputText value="#{req.surgeryBill.procedure.item.name}" rendered="#{req.surgeryBill ne null}"/>
+                        <h:outputText value="—" rendered="#{req.surgeryBill eq null}"/>
+                    </p:column>
+                    <p:column headerText="Sent By">
+                        <h:outputText value="#{req.initiatedBy.webUserPerson.name}"/>
+                    </p:column>
+                    <p:column headerText="Sent At">
+                        <h:outputText value="#{req.initiatedAt}">
+                            <f:convertDateTime pattern="HH:mm dd MMM"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Actions" style="width:110px"
+                              rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')}">
+                        <p:commandButton
+                            id="btnAccept"
+                            value="Accept"
+                            icon="fa fa-check"
+                            ajax="false"
+                            class="ui-button-success ui-button-sm"
+                            title="Accept patient in theatre"
+                            action="#{theatreDashboardController.acceptInTheatre(req)}"
+                            onclick="if (!confirm('Accept this patient in theatre?')) return false;"/>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+            <!-- ============================================================ -->
+            <!-- Section 3: In Theatre                                         -->
+            <!-- ============================================================ -->
+            <p:panel class="my-3">
+                <f:facet name="header">
+                    <i class="fa fa-heartbeat fa-lg text-danger me-2"/>
+                    <span class="fw-bold">Currently in Theatre</span>
+                    <span class="badge bg-danger ms-2">#{theatreDashboardController.inTheatre.size()}</span>
+                </f:facet>
+
+                <p:dataTable
+                    id="tblInTheatre"
+                    value="#{theatreDashboardController.inTheatre}"
+                    var="req"
+                    emptyMessage="No patients currently in theatre."
+                    styleClass="w-100">
+
+                    <p:column headerText="BHT" style="width:90px">
+                        <h:outputText value="#{req.admission.bhtNo}"/>
+                    </p:column>
+                    <p:column headerText="Patient">
+                        <h:outputText value="#{req.admission.patient.person.nameWithTitle}"/>
+                    </p:column>
+                    <p:column headerText="Theatre Room">
+                        <h:outputText value="#{req.toRoomFacilityCharge.name}"/>
+                    </p:column>
+                    <p:column headerText="Surgery">
+                        <h:outputText value="#{req.surgeryBill.procedure.item.name}" rendered="#{req.surgeryBill ne null}"/>
+                        <h:outputText value="—" rendered="#{req.surgeryBill eq null}"/>
+                    </p:column>
+                    <p:column headerText="Milestone Progress" style="width:210px">
+                        <!-- 5-step visual stepper: Sent → Received → In OT → Done → Returned -->
+                        <div style="display:flex;align-items:center;gap:0;padding:3px 0;">
+                            <div title="Sent to Theatre"
+                                 style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;
+                                        background:#{patientTransferController.theatreStepBg(req.theatreOccupancyStatus,1)};
+                                        color:#{patientTransferController.theatreStepColor(req.theatreOccupancyStatus,1)};">1</div>
+                            <div style="flex:1;height:2px;min-width:8px;background:#{patientTransferController.theatreLineBg(req.theatreOccupancyStatus,1)};"/>
+                            <div title="Received in Theatre"
+                                 style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;
+                                        background:#{patientTransferController.theatreStepBg(req.theatreOccupancyStatus,2)};
+                                        color:#{patientTransferController.theatreStepColor(req.theatreOccupancyStatus,2)};">2</div>
+                            <div style="flex:1;height:2px;min-width:8px;background:#{patientTransferController.theatreLineBg(req.theatreOccupancyStatus,2)};"/>
+                            <div title="In Theatre — Procedure Active"
+                                 style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;
+                                        background:#{patientTransferController.theatreStepBg(req.theatreOccupancyStatus,3)};
+                                        color:#{patientTransferController.theatreStepColor(req.theatreOccupancyStatus,3)};">3</div>
+                            <div style="flex:1;height:2px;min-width:8px;background:#{patientTransferController.theatreLineBg(req.theatreOccupancyStatus,3)};"/>
+                            <div title="Procedure Completed"
+                                 style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;
+                                        background:#{patientTransferController.theatreStepBg(req.theatreOccupancyStatus,4)};
+                                        color:#{patientTransferController.theatreStepColor(req.theatreOccupancyStatus,4)};">4</div>
+                            <div style="flex:1;height:2px;min-width:8px;background:#{patientTransferController.theatreLineBg(req.theatreOccupancyStatus,4)};"/>
+                            <div title="Returned to Ward"
+                                 style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;
+                                        background:#{patientTransferController.theatreStepBg(req.theatreOccupancyStatus,5)};
+                                        color:#{patientTransferController.theatreStepColor(req.theatreOccupancyStatus,5)};">5</div>
+                        </div>
+                        <div style="font-size:0.62rem;color:#6c757d;margin-top:2px;">
+                            <h:outputText value="#{req.theatreOccupancyStatus}"/>
+                        </div>
+                    </p:column>
+                    <p:column headerText="Accepted At">
+                        <h:outputText value="#{req.acceptedAt}">
+                            <f:convertDateTime pattern="HH:mm dd MMM"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Proc Start">
+                        <h:outputText value="#{req.procedureStartAt}" rendered="#{req.procedureStartAt ne null}">
+                            <f:convertDateTime pattern="HH:mm"/>
+                        </h:outputText>
+                        <h:outputText value="—" rendered="#{req.procedureStartAt eq null}"/>
+                    </p:column>
+                    <p:column headerText="OT Duration" style="width:90px">
+                        <span class="fw-bold" style="font-size:0.85rem;">
+                            <h:outputText value="#{patientTransferController.formatOtDuration(req)}"/>
+                        </span>
+                    </p:column>
+                    <p:column headerText="Actions" style="width:200px">
+                        <div class="d-flex gap-1 flex-wrap">
+                            <p:commandButton
+                                id="btnMarkIn"
+                                value="In Theatre"
+                                icon="fa fa-play"
+                                ajax="false"
+                                class="ui-button-warning ui-button-sm"
+                                rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')
+                                            and req.theatreOccupancyStatus.name() == 'RECEIVED_IN_THEATRE'}"
+                                action="#{theatreDashboardController.markInTheatre(req)}"
+                                onclick="if (!confirm('Mark patient as In Theatre?')) return false;"/>
+                            <p:commandButton
+                                id="btnProcDone"
+                                value="Proc. Done"
+                                icon="fa fa-check-circle"
+                                ajax="false"
+                                class="ui-button-success ui-button-sm"
+                                rendered="#{webUserController.hasPrivilege('TheatreReturnPatient')
+                                            and req.theatreOccupancyStatus.name() == 'IN_THEATRE'}"
+                                action="#{theatreDashboardController.markProcedureCompleted(req)}"
+                                onclick="if (!confirm('Mark procedure as completed?')) return false;"/>
+                            <p:commandButton
+                                id="btnReturn"
+                                value="Return to Ward"
+                                icon="fa fa-arrow-left"
+                                ajax="false"
+                                class="ui-button-info ui-button-sm"
+                                rendered="#{webUserController.hasPrivilege('TheatreReturnPatient')
+                                            and req.theatreOccupancyStatus.name() == 'PROCEDURE_COMPLETED'}"
+                                action="#{theatreDashboardController.returnToWard(req)}"
+                                onclick="if (!confirm('Initiate return to ward?')) return false;"/>
+                        </div>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+            <!-- ============================================================ -->
+            <!-- Section 4: Pending Returns to Ward                            -->
+            <!-- ============================================================ -->
+            <p:panel class="my-3">
+                <f:facet name="header">
+                    <i class="fa fa-arrow-left fa-lg text-info me-2"/>
+                    <span class="fw-bold">Pending Return to Ward</span>
+                    <span class="badge bg-info ms-2">#{theatreDashboardController.pendingReturns.size()}</span>
+                </f:facet>
+
+                <p:dataTable
+                    id="tblReturns"
+                    value="#{theatreDashboardController.pendingReturns}"
+                    var="ret"
+                    emptyMessage="No patients pending return to ward."
+                    styleClass="w-100">
+
+                    <p:column headerText="BHT" style="width:90px">
+                        <h:outputText value="#{ret.admission.bhtNo}"/>
+                    </p:column>
+                    <p:column headerText="Patient">
+                        <h:outputText value="#{ret.admission.patient.person.nameWithTitle}"/>
+                    </p:column>
+                    <p:column headerText="Return To Ward">
+                        <h:outputText value="#{ret.toRoomFacilityCharge.department.name}"/>
+                    </p:column>
+                    <p:column headerText="Initiated At">
+                        <h:outputText value="#{ret.initiatedAt}">
+                            <f:convertDateTime pattern="HH:mm dd MMM"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Actions" style="width:110px"
+                              rendered="#{webUserController.hasPrivilege('WardAcceptTheatreReturn')}">
+                        <p:commandButton
+                            id="btnAcceptReturn"
+                            value="Accept Return"
+                            icon="fa fa-check"
+                            ajax="false"
+                            class="ui-button-success ui-button-sm"
+                            action="#{theatreDashboardController.acceptReturnToWard(ret)}"
+                            onclick="if (!confirm('Accept this patient back from theatre?')) return false;"/>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+            <!-- ============================================================ -->
+            <!-- Section 5: Today's Theatre List                               -->
+            <!-- ============================================================ -->
+            <p:panel class="my-3">
+                <f:facet name="header">
+                    <i class="fa fa-calendar-day fa-lg text-primary me-2"/>
+                    <span class="fw-bold">Today's Theatre List</span>
+                    <span class="badge bg-primary ms-2">#{theatreDashboardController.todaysList.size()}</span>
+                </f:facet>
+
+                <p:dataTable
+                    id="tblToday"
+                    value="#{theatreDashboardController.todaysList}"
+                    var="req"
+                    emptyMessage="No theatre cases recorded today."
+                    styleClass="w-100">
+
+                    <p:column headerText="BHT" style="width:90px">
+                        <h:outputText value="#{req.admission.bhtNo}"/>
+                    </p:column>
+                    <p:column headerText="Patient">
+                        <h:outputText value="#{req.admission.patient.person.nameWithTitle}"/>
+                    </p:column>
+                    <p:column headerText="Theatre Room">
+                        <h:outputText value="#{req.toRoomFacilityCharge.name}"/>
+                    </p:column>
+                    <p:column headerText="Surgery">
+                        <h:outputText value="#{req.surgeryBill.procedure.item.name}" rendered="#{req.surgeryBill ne null}"/>
+                        <h:outputText value="—" rendered="#{req.surgeryBill eq null}"/>
+                    </p:column>
+                    <p:column headerText="Status">
+                        <span class="badge bg-secondary">
+                            <h:outputText value="#{req.theatreOccupancyStatus}"/>
+                        </span>
+                    </p:column>
+                    <p:column headerText="Sent At">
+                        <h:outputText value="#{req.initiatedAt}">
+                            <f:convertDateTime pattern="HH:mm"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Proc Start">
+                        <h:outputText value="#{req.procedureStartAt}" rendered="#{req.procedureStartAt ne null}">
+                            <f:convertDateTime pattern="HH:mm"/>
+                        </h:outputText>
+                        <h:outputText value="—" rendered="#{req.procedureStartAt eq null}"/>
+                    </p:column>
+                    <p:column headerText="Proc End">
+                        <h:outputText value="#{req.procedureEndAt}" rendered="#{req.procedureEndAt ne null}">
+                            <f:convertDateTime pattern="HH:mm"/>
+                        </h:outputText>
+                        <h:outputText value="—" rendered="#{req.procedureEndAt eq null}"/>
+                    </p:column>
+                    <p:column headerText="Return">
+                        <h:outputText value="#{req.returnedToWardAt}" rendered="#{req.returnedToWardAt ne null}">
+                            <f:convertDateTime pattern="HH:mm"/>
+                        </h:outputText>
+                        <h:outputText value="—" rendered="#{req.returnedToWardAt eq null}"/>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>
