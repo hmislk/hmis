@@ -2769,11 +2769,19 @@ public class InwardBeanController implements Serializable {
         }
         TimedItemFee firstFee = fees.get(0);
         double count = calCount(firstFee, fromTime, toTime);
+        int wholeBlocks = (int) count;
         double total = 0.0;
-        for (int b = 1; b <= (int) count; b++) {
+        for (int b = 1; b <= wholeBlocks; b++) {
             TimedItemFee fee = getFeeForBlock(fees, b);
             if (fee != null) {
                 total += foreigner ? fee.getFfee() : fee.getFee();
+            }
+        }
+        double remainder = count - wholeBlocks;
+        if (remainder > 0) {
+            TimedItemFee fee = getFeeForBlock(fees, wholeBlocks + 1);
+            if (fee != null) {
+                total += (foreigner ? fee.getFfee() : fee.getFee()) * remainder;
             }
         }
         return total;
