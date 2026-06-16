@@ -61,7 +61,7 @@
                                     class="ui-button-info"
                                     icon="fas fa-print"
                                     value="Check Final Bill"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Print Button For Intermediate Bill on Final Bill Edit',false)}">
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Show an Intermediate Bill on Final Bill Edit',false) and configOptionApplicationController.getBooleanValueByKey('Show Print Button For Intermediate Bill on Final Bill Edit',false)}">
                                     <p:printer target="printTempBill" />
                                 </p:commandButton>
 
@@ -229,8 +229,9 @@
                                         <h:outputLabel value="#{b.roomFacilityCharge.name}"/>
                                     </p:column>
                                     <p:column headerText="Printing Room">
-                                        <p:autoComplete 
+                                        <p:autoComplete
                                             forceSelection="true"
+                                            maxResults="20"
                                             value="#{b.printRoomFacilityCharge}"
                                             completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
                                             var="rf" 
@@ -704,7 +705,7 @@
                             </p:column>
 
                             <p:column headerText="Adjusted Value" style="text-align: right; padding: 7px;">
-                                <h:outputLabel value="#{g.totalAdjusted}">
+                                <p:inputText autocomplete="off" value="#{g.totalAdjusted}" style="text-align: right;">
                                     <f:convertNumber pattern="#,##0.00"/>
                                     <p:ajax event="blur" process="@this"
                                             update=":#{p:resolveFirstComponentWithId('professionalFeeTable',view).clientId} :#{p:resolveFirstComponentWithId('dList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId}"
@@ -712,11 +713,12 @@
                                     <p:ajax process="@this" event="keyup"
                                             update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
                                             listener="#{bhtSummeryController.changeIsMade()}"/>
-                                </h:outputLabel>
+                                </p:inputText>
                             </p:column>
 
                             <p:column headerText="Breakdown" style="text-align: center; padding: 7px; width: 14em;">
                                 <p:commandButton value="View"
+                                                 id="viewDoctorFeeBreakdown"
                                                  icon="fa fa-list-ul"
                                                  class="ui-button-info ui-button-outlined"
                                                  process="@this"

@@ -661,12 +661,29 @@ public class BhtSummeryController implements Serializable {
             getBillFeeFacade().edit(bf);
         }
 
+        refreshProfessionalChargeAdjustedTotal();
+        updateTotal();
+    }
+
+    /**
+     * Refreshes the ProfessionalCharge category adjusted total from the grouped
+     * doctor fees the user actually sees. When the config flag merges assisting
+     * fees into {@code profesionallFee}, those fees live on a different bill type,
+     * so summing only {@code getProfessionalCharge(...)} (InwardProfessional) would
+     * silently drop the assisting-fee adjustments from settlement. Summing the
+     * grouped totals keeps the category total consistent with the displayed table
+     * in both the merged and non-merged configurations.
+     */
+    private void refreshProfessionalChargeAdjustedTotal() {
+        double groupedAdjusted = 0;
+        for (DoctorFeeGroup g : getGroupedProfessionalFees()) {
+            groupedAdjusted += g.getTotalAdjusted();
+        }
         for (ChargeItemTotal chargeItemTotal : chargeItemTotals) {
             if (chargeItemTotal.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
-                chargeItemTotal.setAdjustedTotal(getInwardBean().getProfessionalCharge(getPatientEncounter(), childPatientEncouters));
+                chargeItemTotal.setAdjustedTotal(groupedAdjusted);
             }
         }
-        updateTotal();
     }
 
     /**
@@ -690,11 +707,7 @@ public class BhtSummeryController implements Serializable {
             }
             selectedDoctorFeeGroup.setTotalAdjusted(sum);
         }
-        for (ChargeItemTotal chargeItemTotal : chargeItemTotals) {
-            if (chargeItemTotal.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
-                chargeItemTotal.setAdjustedTotal(getInwardBean().getProfessionalCharge(getPatientEncounter(), childPatientEncouters));
-            }
-        }
+        refreshProfessionalChargeAdjustedTotal();
         updateTotal();
     }
 
@@ -710,7 +723,9 @@ public class BhtSummeryController implements Serializable {
      * View model for one doctor's combined professional fee row on the final bill,
      * carrying the summed total and the individual fees behind it.
      */
-    public static class DoctorFeeGroup {
+    public static class DoctorFeeGroup implements Serializable {
+
+        private static final long serialVersionUID = 1L;
 
         private Staff staff;
         private final List<BillFee> fees = new ArrayList<>();
