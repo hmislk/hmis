@@ -1096,8 +1096,12 @@
                                             </h:panelGroup>
                                         </p:column>
                                         
-                                        <p:column headerText="Value" >
-                                            <h:outputLabel  value="#{p.netTotal}">
+                                        <p:column headerText="Payment Method" >
+                                            <h:outputLabel value="#{p.paymentMethod}"/>
+                                        </p:column>
+                                        
+                                        <p:column headerText="Value" class="text-end" width="6em;">
+                                            <h:outputLabel  value="#{p.netTotal}" class="text-end">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:column>
