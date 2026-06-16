@@ -112,6 +112,23 @@
                                     </p:column>
                                 </p:autoComplete>
 
+                                <p:outputLabel value="Occupation" ></p:outputLabel>
+                                <p:inputText
+                                    class="w-100"
+                                    value="#{admissionController.occupationForSearch}" >
+                                </p:inputText>
+
+                                <p:outputLabel value="Insurance Company" ></p:outputLabel>
+                                <p:selectOneMenu
+                                    class="w-100"
+                                    value="#{admissionController.creditCompanyForSearch}"
+                                    filter="true"
+                                    autoWidth="false"
+                                    >
+                                    <f:selectItem itemLabel="All"></f:selectItem>
+                                    <f:selectItems value="#{institutionController.creditCompanies}" var="cc" itemLabel="#{cc.name}" itemValue="#{cc}" />
+                                </p:selectOneMenu>
+
                                 <p:outputLabel value="Status" ></p:outputLabel>
                                 <p:selectOneMenu
                                     class="w-100"
