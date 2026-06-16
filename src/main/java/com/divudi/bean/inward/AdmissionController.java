@@ -1044,7 +1044,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (creditCompanyForSearch != null) {
-            j += " and c.id in (select ecc.patientEncounter.id from EncounterCreditCompany ecc where ecc.retired=false and ecc.institution=:cc) ";
+            j += " and (c.creditCompany=:cc or c.id in (select ecc.patientEncounter.id from EncounterCreditCompany ecc where ecc.retired=false and ecc.institution=:cc)) ";
             m.put("cc", creditCompanyForSearch);
         }
 
@@ -1153,7 +1153,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         if (creditCompanyForSearch != null) {
-            j += " and c.id in (select ecc.patientEncounter.id from EncounterCreditCompany ecc where ecc.retired=false and ecc.institution=:cc) ";
+            j += " and (c.creditCompany=:cc or c.id in (select ecc.patientEncounter.id from EncounterCreditCompany ecc where ecc.retired=false and ecc.institution=:cc)) ";
             m.put("cc", creditCompanyForSearch);
         }
 
