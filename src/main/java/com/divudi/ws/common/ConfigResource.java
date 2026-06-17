@@ -4,6 +4,7 @@ import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.ApiKeyType;
 import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.OptionValueType;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.ConfigOption;
 import com.divudi.core.entity.WebUser;
@@ -36,6 +37,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 
 /**
  * REST Web Service
@@ -117,10 +120,7 @@ public class ConfigResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchConfigOptions(@QueryParam("keyword") String keyword,
             @Context HttpHeaders headers) {
-        String apiKeyValue = headers.getHeaderString("Config");
-        ApiKey apiKey = apiKeyController.findApiKey(apiKeyValue);
-        if (apiKey == null || apiKey.getKeyType() != ApiKeyType.Config
-                || apiKey.getDateOfExpiary().before(new java.util.Date())) {
+        if (validateConfigKey(headers) == null) {
             return unauthorizedResponse();
         }
         if (keyword == null || keyword.trim().isEmpty()) {
@@ -256,6 +256,14 @@ public class ConfigResource {
             return notFoundResponse(key);
         }
 
+        // Sanitize LONG_TEXT the same way ConfigOptionApplicationController
+        // .setLongTextValueByKey() does, since some LONG_TEXT options are
+        // rendered with escape="false" in JSF — an unsanitized value would be a
+        // stored-XSS vector.
+        if (option.getValueType() == OptionValueType.LONG_TEXT) {
+            newValue = Jsoup.clean(newValue, Safelist.basic());
+        }
+
         String oldValue = option.getOptionValue();
         option.setOptionValue(newValue);
         configOptionFacade.edit(option);
@@ -296,7 +304,8 @@ public class ConfigResource {
     private ApiKey validateConfigKey(HttpHeaders headers) {
         String apiKeyValue = headers.getHeaderString("Config");
         ApiKey apiKey = apiKeyController.findApiKey(apiKeyValue);
-        if (apiKey == null || apiKey.getKeyType() != ApiKeyType.Config
+        if (apiKey == null || apiKey.isRetired()
+                || apiKey.getKeyType() != ApiKeyType.Config
                 || apiKey.getDateOfExpiary() == null
                 || apiKey.getDateOfExpiary().before(new java.util.Date())) {
             return null;
