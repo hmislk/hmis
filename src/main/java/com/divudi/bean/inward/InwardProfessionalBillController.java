@@ -206,6 +206,12 @@ public class InwardProfessionalBillController implements Serializable {
             return true;
         }
 
+        if (getBatchBill().getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
+            return true;
+        }
+
         return false;
 
     }
