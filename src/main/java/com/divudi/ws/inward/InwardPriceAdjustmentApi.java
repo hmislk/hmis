@@ -6,22 +6,35 @@
 package com.divudi.ws.inward;
 
 import com.divudi.bean.common.ApiKeyController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.PriceMatrixController;
+import com.divudi.core.data.FeeType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.EncounterCreditCompany;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.ServiceCategory;
 import com.divudi.core.entity.ServiceSubCategory;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.InwardPriceAdjustment;
+import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.InvestigationCategory;
 import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
 import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.EncounterCreditCompanyFacade;
 import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PriceMatrixFacade;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -86,6 +99,27 @@ public class InwardPriceAdjustmentApi {
 
     @EJB
     private InstitutionFacade institutionFacade;
+
+    @EJB
+    private ItemFacade itemFacade;
+
+    @EJB
+    private ItemFeeFacade itemFeeFacade;
+
+    @EJB
+    private PatientEncounterFacade patientEncounterFacade;
+
+    @EJB
+    private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
+
+    @Inject
+    private PriceMatrixController priceMatrixController;
+
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
+
+    private static final java.util.logging.Logger LOGGER =
+            java.util.logging.Logger.getLogger(InwardPriceAdjustmentApi.class.getName());
 
     private static final Gson gson = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -856,6 +890,212 @@ public class InwardPriceAdjustmentApi {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid numeric value: '" + o + "'");
         }
+    }
+
+    // =========================================================================
+    // Margin diagnostic
+    // =========================================================================
+
+    /**
+     * Diagnose whether inward service-charge margin will be applied for an item,
+     * and if not, which condition fails. Mirrors the eligibility logic in
+     * {@code InwardBeanController.setBillFeeMargin(...)} and the price-matrix
+     * lookup in {@code PriceMatrixController.fetchInwardMargin(...)} so the
+     * result matches real billing behaviour.
+     *
+     * GET /api/inward-price-adjustment/diagnose
+     *   ?itemId=&departmentId=&paymentMethod=&patientEncounterId=&price=
+     */
+    @GET
+    @Path("/diagnose")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response diagnoseInwardMargin() {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+
+            Long itemId = longParam("itemId");
+            Long departmentId = longParam("departmentId");
+            String paymentMethodStr = param("paymentMethod");
+            Long patientEncounterId = longParam("patientEncounterId");
+            Double priceParam = asDouble(param("price"));
+
+            if (itemId == null || departmentId == null
+                    || paymentMethodStr == null || paymentMethodStr.trim().isEmpty()
+                    || patientEncounterId == null) {
+                return errorResponse("itemId, departmentId, paymentMethod and patientEncounterId are required", 400);
+            }
+
+            if (priceParam != null && !Double.isFinite(priceParam)) {
+                return errorResponse("price must be a finite number", 400);
+            }
+
+            PaymentMethod paymentMethod;
+            try {
+                paymentMethod = PaymentMethod.valueOf(paymentMethodStr.trim());
+            } catch (IllegalArgumentException e) {
+                return errorResponse("Invalid paymentMethod: " + paymentMethodStr, 400);
+            }
+
+            Item item = itemFacade.find(itemId);
+            if (item == null) {
+                return errorResponse("Item not found with ID: " + itemId, 404);
+            }
+            Department department = departmentFacade.find(departmentId);
+            if (department == null) {
+                return errorResponse("Department not found with ID: " + departmentId, 404);
+            }
+            PatientEncounter encounter = patientEncounterFacade.find(patientEncounterId);
+            if (encounter == null) {
+                return errorResponse("PatientEncounter not found with ID: " + patientEncounterId, 404);
+            }
+
+            double price = priceParam != null ? priceParam : item.getTotal();
+            AdmissionType admissionType = encounter.getAdmissionType();
+            Institution creditCompany = resolveSingleCreditCompany(encounter);
+
+            // The category actually used by the price-matrix lookup: for an
+            // Investigation it is the investigation category (unless the config
+            // flag swaps it for the plain category), matching fetchInwardMargin.
+            Category effectiveCategory;
+            if (item instanceof Investigation
+                    && !configOptionApplicationController.getBooleanValueByKey("Get Category Instead of Investigation Category In Price Matrix")) {
+                effectiveCategory = ((Investigation) item).getInvestigationCategory();
+            } else {
+                effectiveCategory = item.getCategory();
+            }
+
+            // Price-matrix lookup: reuse the exact cascade + config gating used in billing.
+            PriceMatrix priceMatrix = priceMatrixController.fetchInwardMargin(item, price, department, paymentMethod, creditCompany);
+
+            // Margin is applied to every non-Staff fee on the item: BillBhtController
+            // creates a BillFee per item fee and calls setBillFeeMargin, whose
+            // eligibility only excludes FeeType.Staff and marginAllowed=false. So
+            // evaluate all non-Staff fees rather than assuming OwnInstitution.
+            List<ItemFee> nonStaffFees = findNonStaffFees(item);
+            boolean anyFeeAllowsMargin = false;
+            StringBuilder feeDetail = new StringBuilder();
+            for (ItemFee f : nonStaffFees) {
+                if (!Boolean.FALSE.equals(f.getMarginAllowed())) {
+                    anyFeeAllowsMargin = true;
+                }
+                if (feeDetail.length() > 0) {
+                    feeDetail.append("; ");
+                }
+                feeDetail.append(f.getFeeType()).append(" marginAllowed=").append(f.getMarginAllowed())
+                        .append(" (fee ID ").append(f.getId()).append(")");
+            }
+
+            boolean configPaymentMethodUsed = configOptionApplicationController.getBooleanValueByKey(
+                    "Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation", false);
+
+            List<Map<String, Object>> checks = new ArrayList<>();
+
+            boolean matrixFound = priceMatrix != null;
+            checks.add(check("PriceMatrix row found", matrixFound,
+                    matrixFound
+                            ? "ID " + priceMatrix.getId() + ", margin=" + priceMatrix.getMargin() + "%"
+                            : "No matching InwardPriceAdjustment for dept=" + departmentId
+                                    + ", category=" + (effectiveCategory != null ? effectiveCategory.getId() : "null")
+                                    + ", price=" + price
+                                    + (configPaymentMethodUsed ? ", paymentMethod=" + paymentMethod : "")));
+
+            boolean itemMarginOk = !item.isMarginNotAllowed();
+            checks.add(check("item.marginNotAllowed", itemMarginOk,
+                    "marginNotAllowed=" + item.isMarginNotAllowed()));
+
+            checks.add(check("fee.marginAllowed (billable non-Staff fee)", anyFeeAllowsMargin,
+                    nonStaffFees.isEmpty()
+                            ? "No non-Staff (billable) fee found for this item"
+                            : feeDetail.toString()));
+
+            boolean admissionOk = admissionType != null && admissionType.isAllowToCalculateMargin();
+            checks.add(check("admissionType.allowToCalculateMargin", admissionOk,
+                    admissionType == null
+                            ? "Encounter has no admission type"
+                            : admissionType.getName() + " (ID " + admissionType.getId()
+                                    + ") allowToCalculateMargin=" + admissionType.isAllowToCalculateMargin()));
+
+            boolean hasBillableFee = !nonStaffFees.isEmpty();
+            checks.add(check("has a billable (non-Staff) fee", hasBillableFee,
+                    "non-Staff fee count=" + nonStaffFees.size()));
+
+            // Informational: the config flag changes the lookup, it is not itself a pass/fail blocker.
+            checks.add(check("Config: paymentMethod used in lookup", true,
+                    "Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation = " + configPaymentMethodUsed));
+
+            boolean marginWillBeApplied = matrixFound && itemMarginOk && anyFeeAllowsMargin && admissionOk;
+
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("itemId", item.getId());
+            data.put("itemName", item.getName());
+            data.put("categoryId", effectiveCategory != null ? effectiveCategory.getId() : null);
+            data.put("categoryName", effectiveCategory != null ? effectiveCategory.getName() : null);
+            data.put("departmentId", department.getId());
+            data.put("departmentName", department.getName());
+            data.put("paymentMethod", paymentMethod.toString());
+            data.put("patientEncounterId", encounter.getId());
+            data.put("admissionTypeId", admissionType != null ? admissionType.getId() : null);
+            data.put("creditCompanyId", creditCompany != null ? creditCompany.getId() : null);
+            data.put("price", price);
+            data.put("marginWillBeApplied", marginWillBeApplied);
+            data.put("expectedMarginPercent", matrixFound ? priceMatrix.getMargin() : null);
+            data.put("expectedMarginValue",
+                    (marginWillBeApplied && priceMatrix.getMargin() != null) ? (price * priceMatrix.getMargin()) / 100.0 : null);
+            data.put("checks", checks);
+
+            LOGGER.log(java.util.logging.Level.INFO,
+                    "INWARD_MARGIN_DIAGNOSE item={0} dept={1} pm={2} encounter={3} marginWillBeApplied={4}",
+                    new Object[]{itemId, departmentId, paymentMethod, patientEncounterId, marginWillBeApplied});
+
+            return successResponse(data);
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), 400);
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    private Map<String, Object> check(String name, boolean passed, String detail) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("check", name);
+        m.put("passed", passed);
+        m.put("detail", detail);
+        return m;
+    }
+
+    /**
+     * The single credit company on an encounter, or null when none/ambiguous —
+     * mirrors InwardBeanController.resolveSingleCreditCompany.
+     */
+    private Institution resolveSingleCreditCompany(PatientEncounter encounter) {
+        if (encounter == null) {
+            return null;
+        }
+        Map<String, Object> hm = new HashMap<>();
+        hm.put("enc", encounter);
+        List<EncounterCreditCompany> list = encounterCreditCompanyFacade.findByJpql(
+                "select e from EncounterCreditCompany e where e.retired = false and e.patientEncounter = :enc", hm, 2);
+        if (list != null && list.size() == 1) {
+            return list.get(0).getInstitution();
+        }
+        return null;
+    }
+
+    /**
+     * The item's active non-Staff fees — these are the billable fees the inward
+     * margin can apply to (Staff fees are excluded by setBillFeeMargin). A null
+     * fee type is treated as non-Staff, matching {@code getFeeType() != Staff}.
+     */
+    private List<ItemFee> findNonStaffFees(Item item) {
+        Map<String, Object> hm = new HashMap<>();
+        hm.put("item", item);
+        hm.put("staff", FeeType.Staff);
+        return itemFeeFacade.findByJpql(
+                "select f from ItemFee f where f.retired = false and f.item = :item"
+                        + " and (f.feeType is null or f.feeType <> :staff) order by f.id", hm);
     }
 
     // -------- auth + response helpers --------
