@@ -1469,6 +1469,8 @@ public class PatientEncounterController implements Serializable {
         // Update prescription document
         updateOrGeneratePrescription();
 
+        setEncounterMedicine(null);
+
         // Show success message
         if (addedCount > 0) {
             JsfUtil.addSuccessMessage(addedCount + " favourite medicine(s) added from " + lookupMethod);
