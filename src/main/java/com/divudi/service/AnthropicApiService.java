@@ -3915,6 +3915,9 @@ public class AnthropicApiService implements Serializable {
                 + "IMPORTANT: Uses the 'Config' header for authentication, not 'Finance'.",
                 githubUrl(branch, "developer_docs/API_CONFIG.md"),
                 new String[][]{
+                    {"GET",  "/config?scope={tag}",  "List config options whose key contains {tag} (e.g. scope=inward); omit scope for all"},
+                    {"GET",  "/config/{key}",  "Read a single config option by exact key (key, type, scope, current value)"},
+                    {"PUT",  "/config/{key}",  "Update a config option value by key. Body {\"value\":\"...\"}. Flushes the cache immediately"},
                     {"GET",  "/config/search?keyword={keyword}", "Search config options by keyword (returns key, type, current value)"},
                     {"POST", "/config/setBoolean/{key}/{value}",  "Set a boolean config option by key name"},
                     {"POST", "/config/setLongText/{key}/{value}", "Set a text config option by key name"},
