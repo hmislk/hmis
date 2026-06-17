@@ -296,21 +296,7 @@
                                               styleClass="border-1 text-center group-header">
                                         <f:facet name="header"><h:outputText value="Rooms"/></f:facet>
                                     </p:column>
-<!--                                    <p:column colspan="4" styleClass="border-1 text-center group-header">
-                                        <f:facet name="header"><h:outputText value="I.C.U"/></f:facet>
-                                    </p:column>
-                                    <p:column colspan="4" styleClass="border-1 text-center group-header">
-                                        <f:facet name="header"><h:outputText value="Ward Bed Old"/></f:facet>
-                                    </p:column>
-                                    <p:column colspan="4" styleClass="border-1 text-center group-header">
-                                        <f:facet name="header"><h:outputText value="Ward Bed New"/></f:facet>
-                                    </p:column>
-                                    <p:column colspan="4" styleClass="border-1 text-center group-header total-header">
-                                        <f:facet name="header"><h:outputText value="Indoor Total"/></f:facet>
-                                    </p:column>
-                                    <p:column colspan="4" styleClass="border-1 text-center group-header total-header">
-                                        <f:facet name="header"><h:outputText value="I.C.U &amp; Ward Total"/></f:facet>
-                                    </p:column>-->
+
                                 </p:row>
 
                                 <!-- ROW 2: one 4-colspan cell per room category; fixed sections rowspan="2" -->
@@ -324,31 +310,6 @@
                                         </p:column>
                                     </c:forEach>
 
-<!--                                     ICU fixed (rowspan=2) 
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Rooms"/></f:facet></p:column>
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Days"/></f:facet></p:column>
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Avg"/></f:facet></p:column>
-                                     Ward Old fixed (rowspan=2) 
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Beds"/></f:facet></p:column>
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Days"/></f:facet></p:column>
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Avg"/></f:facet></p:column>
-                                     Ward New fixed (rowspan=2) 
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Beds"/></f:facet></p:column>
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Days"/></f:facet></p:column>
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Avg"/></f:facet></p:column>
-                                     Indoor Total fixed (rowspan=2) 
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Days"/></f:facet></p:column>
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Rooms"/></f:facet></p:column>
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Avg"/></f:facet></p:column>
-                                     ICU+Ward Total fixed (rowspan=2) 
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Days"/></f:facet></p:column>
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Beds"/></f:facet></p:column>
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
-                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Avg"/></f:facet></p:column>-->
                                 </p:row>
 
                                 <!-- ROW 3: 4-leaf cells per room category only (fixed sections absorbed by rowspan=2) -->
@@ -410,75 +371,6 @@
                                 </p:column>
                             </c:forEach>
 
-                            <!-- I.C.U (4 cols) -->
-<!--                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.icuOccupancy.numberOfUnits}"><f:convertNumber pattern="#,##0"/></h:outputText>
-                            </p:column>
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.icuOccupancy.numberOfDays}"><f:convertNumber pattern="#,##0"/></h:outputText>
-                            </p:column>
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.icuOccupancy.ratio}"><f:convertNumber pattern="0.00"/></h:outputText>
-                            </p:column>
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.icuOccupancy.avg}"><f:convertNumber pattern="0.00"/></h:outputText>
-                            </p:column>
-
-                             WARD BED(Old) (4 cols) 
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.wardBedOldOccupancy.numberOfUnits}"><f:convertNumber pattern="#,##0"/></h:outputText>
-                            </p:column>
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.wardBedOldOccupancy.numberOfDays}"><f:convertNumber pattern="#,##0"/></h:outputText>
-                            </p:column>
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.wardBedOldOccupancy.ratio}"><f:convertNumber pattern="0.00"/></h:outputText>
-                            </p:column>
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.wardBedOldOccupancy.avg}"><f:convertNumber pattern="0.00"/></h:outputText>
-                            </p:column>
-
-                             WARD BED(New) (4 cols) 
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.wardBedNewOccupancy.numberOfUnits}"><f:convertNumber pattern="#,##0"/></h:outputText>
-                            </p:column>
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.wardBedNewOccupancy.numberOfDays}"><f:convertNumber pattern="#,##0"/></h:outputText>
-                            </p:column>
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.wardBedNewOccupancy.ratio}"><f:convertNumber pattern="0.00"/></h:outputText>
-                            </p:column>
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.wardBedNewOccupancy.avg}"><f:convertNumber pattern="0.00"/></h:outputText>
-                            </p:column>
-
-                             INDOOR TOTAL (4 cols) 
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.indoorTotalDaysOccupied}"><f:convertNumber pattern="#,##0"/></h:outputText>
-                            </p:column>
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.indoorTotalNumberOfRooms}"><f:convertNumber pattern="#,##0"/></h:outputText>
-                            </p:column>
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.indoorTotalRatio}"><f:convertNumber pattern="0.00"/></h:outputText>
-                            </p:column>
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.indoorTotalAvg}"><f:convertNumber pattern="0.00"/></h:outputText>
-                            </p:column>
-
-                             ICU & WARD BED TOTAL (4 cols) 
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.icuWardTotalDaysOccupied}"><f:convertNumber pattern="#,##0"/></h:outputText>
-                            </p:column>
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.icuWardTotalNumberOfBeds}"><f:convertNumber pattern="#,##0"/></h:outputText>
-                            </p:column>
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.icuWardRatio}"><f:convertNumber pattern="0.00"/></h:outputText>
-                            </p:column>
-                            <p:column styleClass="metric-col border-1">
-                                <h:outputText value="#{row.icuWardAvg}"><f:convertNumber pattern="0.00"/></h:outputText>
-                            </p:column>-->
 
                             <!-- ═══════════════════════════════════════════════════
                                  FOOTER  (grand total from separate controller field)
@@ -521,35 +413,6 @@
                                         </p:column>
                                     </c:forEach>
 
-<!--                                     ICU totals 
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.icuOccupancy.numberOfUnits}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.icuOccupancy.numberOfDays}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.icuOccupancy.ratio}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.icuOccupancy.avg}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
-
-                                     Ward Old totals 
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.wardBedOldOccupancy.numberOfUnits}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.wardBedOldOccupancy.numberOfDays}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.wardBedOldOccupancy.ratio}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.wardBedOldOccupancy.avg}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
-
-                                     Ward New totals 
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.wardBedNewOccupancy.numberOfUnits}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.wardBedNewOccupancy.numberOfDays}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.wardBedNewOccupancy.ratio}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.wardBedNewOccupancy.avg}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
-
-                                     Indoor Total 
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.indoorTotalDaysOccupied}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.indoorTotalNumberOfRooms}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.indoorTotalRatio}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.indoorTotalAvg}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
-
-                                     ICU + Ward Total 
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.icuWardTotalDaysOccupied}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.icuWardTotalNumberOfBeds}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.icuWardRatio}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
-                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.icuWardAvg}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>-->
                                 </p:row>
                             </p:columnGroup>
 

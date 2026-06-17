@@ -338,15 +338,9 @@ public class InwardReportController implements Serializable {
 
 // Cache keyed by RoomCategory.id  →  count of available rooms
     private Map<Long, Long> categoryAvailableRoomsCache;
-// "ICU" / "WARD_OLD" / "WARD_NEW"  →  count of available beds
-    private Map<String, Long> bedSectionAvailableCache;
-
     private List<RoomOccupancyRowDTO> roomOccupancyList;
     private RoomOccupancyRowDTO roomOccupancyGrandTotal;
 
-// =====================================================================
-// ENTRY POINT
-// =====================================================================
     public void processRoomOccupancyReport() {
         if (fromDate == null || toDate == null) {
             JsfUtil.addErrorMessage("Please select From and To dates.");
@@ -364,9 +358,6 @@ public class InwardReportController implements Serializable {
         loadAvailableUnitCounts();
         loadAdmissionsIntoGrid(grid);
         loadCategoryOccupancyIntoGrid(grid);
-        loadIcuOccupancyIntoGrid(grid);
-        loadWardBedOldOccupancyIntoGrid(grid);
-        loadWardBedNewOccupancyIntoGrid(grid);
 
         roomOccupancyGrandTotal = new RoomOccupancyRowDTO(null, null);
         roomOccupancyGrandTotal.setGrandTotal(true);
@@ -395,14 +386,10 @@ public class InwardReportController implements Serializable {
         calculateRowDerived(roomOccupancyGrandTotal, totalDays);
     }
 
-// =====================================================================
 // LOAD: available counts  (cache by RoomCategory.id to avoid name bugs)
-// =====================================================================
     private void loadAvailableUnitCounts() {
         categoryAvailableRoomsCache = new HashMap<>();
-        bedSectionAvailableCache = new HashMap<>();
 
-        // Room categories (all non-retired)
         String jpql = "SELECT rfc.roomCategory.id, COUNT(DISTINCT rfc.id) "
                 + "FROM RoomFacilityCharge rfc "
                 + "WHERE rfc.retired = false "
@@ -414,31 +401,9 @@ public class InwardReportController implements Serializable {
             Long count = toLong(r[1]);
             categoryAvailableRoomsCache.put(categoryId, count);
         }
-
-        // ICU
-        bedSectionAvailableCache.put("ICU",
-                countAvailableByName("I.C.U"));
-        // WARD BED (Old)
-        bedSectionAvailableCache.put("WARD_OLD",
-                countAvailableByName("WARD BED(Old)"));
-        // WARD BED (New)
-        bedSectionAvailableCache.put("WARD_NEW",
-                countAvailableByName("WARD BED(New)"));
     }
 
-    private Long countAvailableByName(String categoryName) {
-        String jpql = "SELECT COUNT(DISTINCT rfc.id) FROM RoomFacilityCharge rfc "
-                + "JOIN rfc.roomCategory rc "
-                + "WHERE rfc.retired = false AND rc.name = :n";
-        Map<String, Object> p = new HashMap<>();
-        p.put("n", categoryName);
-        Long result = roomFacilityChargeFacade.findLongByJpql(jpql, p);
-        return result != null ? result : 0L;
-    }
-
-// =====================================================================
 // LOAD: admissions per year/month
-// =====================================================================
     private void loadAdmissionsIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT FUNCTION('YEAR', pe.dateOfAdmission), ")
@@ -459,9 +424,7 @@ public class InwardReportController implements Serializable {
         }
     }
 
-// =====================================================================
 // LOAD: per-category room occupancy days (driven by live roomCategories)
-// =====================================================================
     private void loadCategoryOccupancyIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
         if (roomCategories == null || roomCategories.isEmpty()) {
             return;
@@ -498,62 +461,6 @@ public class InwardReportController implements Serializable {
         }
     }
 
-// =====================================================================
-// LOAD: ICU / Ward Bed sections  (looked up by name — fixed sections)
-// =====================================================================
-    private void loadIcuOccupancyIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
-        loadBedSectionIntoGrid(grid, "I.C.U", true, false);
-    }
-
-    private void loadWardBedOldOccupancyIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
-        loadBedSectionIntoGrid(grid, "WARD BED(Old)", false, true);
-    }
-
-    private void loadWardBedNewOccupancyIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
-        loadBedSectionIntoGrid(grid, "WARD BED(New)", false, false);
-    }
-
-    /**
-     * @param isIcu true → write into icuOccupancy
-     * @param isWardOld true → write into wardBedOldOccupancy; false (and
-     * !isIcu) → wardBedNewOccupancy
-     */
-    private void loadBedSectionIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid,
-            String categoryName, boolean isIcu, boolean isWardOld) {
-        StringBuilder jpql = new StringBuilder();
-        jpql.append("SELECT FUNCTION('YEAR', pr.admittedAt), ")
-                .append("FUNCTION('MONTH', pr.admittedAt), ")
-                .append("COUNT(DISTINCT pr.id), ")
-                .append("SUM(FUNCTION('DATEDIFF', COALESCE(pr.dischargedAt, CURRENT_TIMESTAMP), pr.admittedAt) + 1) ")
-                .append("FROM PatientRoom pr ")
-                .append("JOIN pr.roomFacilityCharge rfc ")
-                .append("JOIN rfc.roomCategory rc ")
-                .append("WHERE pr.retired = false ")
-                .append("AND pr.admittedAt BETWEEN :fd AND :td ")
-                .append("AND rc.name = :categoryName ");
-        appendInstitutionSiteDepartmentFilters(jpql, "pr.patientEncounter");
-        jpql.append("GROUP BY FUNCTION('YEAR', pr.admittedAt), FUNCTION('MONTH', pr.admittedAt) ")
-                .append("ORDER BY 1, 2");
-
-        Map<String, Object> params = buildCommonParams();
-        params.put("categoryName", categoryName);
-
-        List<Object[]> rows = patientRoomFacade.findObjectsArrayByJpql(
-                jpql.toString(), params, TemporalType.TIMESTAMP);
-        for (Object[] r : rows) {
-            RoomOccupancyRowDTO row = getOrCreateRow(grid, toInteger(r[0]), toInteger(r[1]));
-            Long unitCount = toLong(r[2]);
-            Long dayCount = toLong(r[3]);
-
-            RoomBedOccupancyDTO target
-                    = isIcu ? row.getIcuOccupancy()
-                            : isWardOld ? row.getWardBedOldOccupancy()
-                                    : row.getWardBedNewOccupancy();
-            target.addUnitCount(unitCount);
-            target.addDayCount(dayCount);
-        }
-    }
-
     private Long toLong(Object value) {
         if (value == null) {
             return 0L;
@@ -574,9 +481,6 @@ public class InwardReportController implements Serializable {
         return Integer.valueOf(value.toString());
     }
 
-// =====================================================================
-// HELPERS
-// =====================================================================
     private RoomOccupancyRowDTO getOrCreateRow(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid,
             Integer year, Integer month) {
         return grid.computeIfAbsent(year, y -> new TreeMap<>())
@@ -619,9 +523,6 @@ public class InwardReportController implements Serializable {
             Long available = categoryAvailableRoomsCache.getOrDefault(e.getKey().getId(), 0L);
             e.getValue().setTotalAvailable(available);
         }
-        row.getIcuOccupancy().setTotalAvailable(bedSectionAvailableCache.getOrDefault("ICU", 0L));
-        row.getWardBedOldOccupancy().setTotalAvailable(bedSectionAvailableCache.getOrDefault("WARD_OLD", 0L));
-        row.getWardBedNewOccupancy().setTotalAvailable(bedSectionAvailableCache.getOrDefault("WARD_NEW", 0L));
     }
 
     private void calculateRowDerived(RoomOccupancyRowDTO row, long daysInPeriod) {
@@ -634,9 +535,6 @@ public class InwardReportController implements Serializable {
         row.calculateDerivedMetrics();
     }
 
-// =====================================================================
-// GETTERS / SETTERS
-// =====================================================================
     public List<RoomOccupancyRowDTO> getRoomOccupancyList() {
         return roomOccupancyList;
     }
