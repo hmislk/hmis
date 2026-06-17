@@ -98,7 +98,8 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST"))
                 .add(resource("Finance", "/api/finance",
-                        "Finance operations and billing endpoints",
+                        "Finance operations and billing endpoints. "
+                        + "GET /bill/search?billNumber= looks up bills by bill number (insId or deptId).",
                         "API Key",
                         "GET", "POST"))
                 .add(resource("Balance History", "/api/balance_history",
@@ -259,7 +260,10 @@ public class CapabilityStatementResource {
                 .add(resource("Users", "/api/users",
                         "User CRUD, password reset/change, loggable department assignment, "
                         + "and per-user privilege assignment with department scope. "
-                        + "Supports filtering by departmentId and query string.",
+                        + "Supports filtering by departmentId and query string. "
+                        + "DELETE /{id}/departments/{assignmentId} revokes one loggable department. "
+                        + "DELETE /{id}/departments/{departmentId}/privileges bulk-revokes all privileges for a department. "
+                        + "POST /{id}/departments/{departmentId}/privileges/all assigns every privilege for a department.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("User Bulk Privileges", "/api/users/bulk-privileges",
@@ -300,6 +304,14 @@ public class CapabilityStatementResource {
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories",
+                        "API Key",
+                        "GET", "POST", "PUT", "PATCH", "DELETE"))
+                .add(resource("Timed Items", "/api/timed-items",
+                        "Manage timed item master data (room rent, oxygen, ICU time, etc.) and their tiered fee slots (TimedItemFee). "
+                        + "TimedItem entities are consumed by the inward timed service page (/inward/inward_timed_service_consume.xhtml). "
+                        + "Fees are ordered by sortOrder and support durationHours/overShootHours/repeating for tiered block billing. "
+                        + "Sub-resource: /timed-items/{id}/fees for per-item fee management. "
+                        + "PATCH /activate and /deactivate control availability without retiring.",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("Collecting Centre Fees", "/api/pricing/collecting_centre_fees",

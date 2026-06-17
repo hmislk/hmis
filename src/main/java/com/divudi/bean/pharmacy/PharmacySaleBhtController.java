@@ -12,6 +12,7 @@ import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UserNotificationController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
@@ -23,6 +24,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.StockQty;
 import com.divudi.core.data.Title;
@@ -69,6 +71,7 @@ import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.service.pharmacy.DirectIssueBatchService;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -194,6 +197,8 @@ public class PharmacySaleBhtController implements Serializable {
     PharmacyCalculation pharmacyCalculation;
     @Inject
     UserNotificationController userNotificationController;
+    @Inject
+    WebUserController webUserController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -304,6 +309,10 @@ public class PharmacySaleBhtController implements Serializable {
         if (patientEncounter == null) {
             patientEncounter = getBatchBill().getPatientEncounter();
         }
+        if (patientEncounter.isNursingDischarged()) {
+            JsfUtil.addErrorMessage("Cannot issue medicines: nursing discharge has already been confirmed for this patient.");
+            return;
+        }
         if (patientEncounter.isDischarged()) {
             JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
@@ -394,9 +403,21 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
         Stock fetchedStock = tmp.getPharmaceuticalBillItem().getStock();
-        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > fetchedStock.getStock()) {
+        if (fetchedStock != null && tmp.getPharmaceuticalBillItem().getQtyInUnit() > fetchedStock.getStock()) {
             setZeroToQty(tmp);
             JsfUtil.addErrorMessage("No Sufficient Stocks?");
+            return;
+        }
+
+        if (tmp.getReferanceBillItem() != null) {
+            double remaining = getRemainingQuantityForItem(tmp.getReferanceBillItem());
+            if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > remaining) {
+                JsfUtil.addErrorMessage("Cannot issue " + tmp.getPharmaceuticalBillItem().getQtyInUnit()
+                        + " units of " + tmp.getItem().getName() + ". Only " + remaining + " units remaining to be issued.");
+                tmp.setQty(remaining);
+                tmp.getPharmaceuticalBillItem().setQtyInUnit((float) remaining);
+                userStockController.updateUserStock(tmp.getTransUserStock(), remaining);
+            }
         }
 
     }
@@ -1568,6 +1589,11 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
+        if (isFullyIssued(bhtRequestBill)) {
+            JsfUtil.addErrorMessage("This request has already been fully issued.");
+            return;
+        }
+
         if (hasAllergyConflicts(getBillItems())) {
             return;
         }
@@ -1582,14 +1608,41 @@ public class PharmacySaleBhtController implements Serializable {
 
         Department matrixDept = determineMatrixDepartment();
 
-        settleBhtIssueRequestAccept(bt, bta, matrixDept, BillNumberSuffix.PHISSUE);
-        
+        List<BillItem> issuedBillItems = new ArrayList<>(getBillItems());
+
+        if (!settleBhtIssueRequestAccept(bt, bta, matrixDept, BillNumberSuffix.PHISSUE)) {
+            return;
+        }
+
+        // Update remainingQty on the original request items using DB-derived issued total
+        for (BillItem tbi : issuedBillItems) {
+            BillItem refItem = tbi.getReferanceBillItem();
+            if (refItem == null || refItem.getId() == null) {
+                continue;
+            }
+            BillItem freshRefItem = billItemFacade.findWithoutCache(refItem.getId());
+            freshRefItem.setRemainingQty(getRemainingQuantityForItem(freshRefItem));
+            billItemFacade.editAndCommit(freshRefItem);
+        }
+
+        // Auto-complete the request once everything has been issued
+        if (!bhtRequestBill.isFullyIssued() && isFullyIssued(bhtRequestBill)) {
+            Bill freshRequestBill = getBillFacade().findWithoutCache(bhtRequestBill.getId());
+            freshRequestBill.setFullyIssued(true);
+            freshRequestBill.setFullyIssuedAt(new Date());
+            freshRequestBill.setFullyIssuedBy(sessionController.getLoggedUser());
+            getBillFacade().edit(freshRequestBill);
+            bhtRequestBill.setFullyIssued(true);
+            bhtRequestBill.setFullyIssuedAt(freshRequestBill.getFullyIssuedAt());
+            bhtRequestBill.setFullyIssuedBy(freshRequestBill.getFullyIssuedBy());
+        }
+
         //update Bill
-        if(completed){
+        if (completed && webUserController.hasPrivilege(Privileges.PharmacyBhtRequestForceComplete.toString())) {
             bhtRequestBill.setCompleted(true);
             bhtRequestBill.setCompletedAt(new Date());
             bhtRequestBill.setCompletedBy(sessionController.getLoggedUser());
-            
+
             billFacade.edit(bhtRequestBill);
         }
         completed = false;
@@ -1638,6 +1691,11 @@ public class PharmacySaleBhtController implements Serializable {
                 return true;
             }
 
+        }
+
+        if (getPatientEncounter().isNursingDischarged()) {
+            JsfUtil.addErrorMessage("Cannot issue medicines: nursing discharge has already been confirmed for this patient.");
+            return true;
         }
 
         if (getPatientEncounter().isDischarged()) {
@@ -1914,14 +1972,46 @@ public class PharmacySaleBhtController implements Serializable {
     }
     
     public double getRemainingQuantityForItem(BillItem referenceItem) {
-        if (referenceItem == null) {
+        if (referenceItem == null || referenceItem.getId() == null) {
             return 0.0;
         }
-        double requestedQty = referenceItem.getQty();
-        double alreadyIssued = referenceItem.getIssuedPhamaceuticalItemQty();
-        return Math.max(0.0, requestedQty - alreadyIssued);
+        // Issue bill items reference the request item directly. Cancellation/return
+        // bill items reference the issue bill item (one level further), so their
+        // qty is netted off via that second reference hop. See BhtIssueReturnController
+        // and PharmacyBillSearch#cancelPharmacyRequestIssueToBht for the chains.
+        String jpql = "SELECT SUM("
+                + "CASE WHEN bi.bill.billTypeAtomic = :issueBta THEN ABS(bi.qty) "
+                + "ELSE -ABS(bi.qty) END) FROM BillItem bi "
+                + "WHERE ((bi.bill.billTypeAtomic = :issueBta AND bi.referanceBillItem.id = :refId) "
+                + "OR (bi.bill.billTypeAtomic IN :reverseBtas AND bi.referanceBillItem.referanceBillItem.id = :refId)) "
+                + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL)";
+        Map<String, Object> params = new HashMap<>();
+        params.put("refId", referenceItem.getId());
+        params.put("issueBta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        params.put("reverseBtas", Arrays.asList(
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN));
+        double alreadyIssued = getBillItemFacade().findDoubleByJpql(jpql, params);
+        return Math.max(0.0, referenceItem.getQty() - alreadyIssued);
     }
-    
+
+    public boolean isFullyIssued(Bill requestBill) {
+        if (requestBill == null) {
+            return false;
+        }
+        Bill freshBill = getBillFacade().findWithoutCache(requestBill.getId());
+        if (freshBill == null || freshBill.getBillItems() == null || freshBill.getBillItems().isEmpty()) {
+            return false;
+        }
+        for (BillItem item : freshBill.getBillItems()) {
+            if (getRemainingQuantityForItem(item) > 0.001) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
     private BigDecimal determineTransferRate(ItemBatch itemBatch) {
         if (itemBatch == null) {
             return BigDecimal.ZERO;
@@ -1940,16 +2030,16 @@ public class PharmacySaleBhtController implements Serializable {
         }
     }
     
-    private void settleBhtIssueRequestAccept(BillType btp, BillTypeAtomic bta, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
+    private boolean settleBhtIssueRequestAccept(BillType btp, BillTypeAtomic bta, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
 
         if (matrixDepartment == null) {
             JsfUtil.addErrorMessage("This Bht can't issue as this Surgery Has No Department");
-            return;
+            return false;
         }
         List<BillItem> tmpBillItems = getBillItems();
 
         if (hasAllergyConflicts(tmpBillItems)) {
-            return;
+            return false;
         }
 
         if (!getBillItems().isEmpty()) {
@@ -1959,11 +2049,16 @@ public class PharmacySaleBhtController implements Serializable {
         for (BillItem tbi : tmpBillItems) {
             if (tbi.getPharmaceuticalBillItem().getQty() == 0.0) {
                 JsfUtil.addErrorMessage("Item Qty is Zero " + tbi.getItem().getName());
-                return;
+                return false;
             }
-            if (Math.abs(tbi.getPharmaceuticalBillItem().getQty()) > tbi.getPharmaceuticalBillItem().getStock().getStock()) {
+            Stock tbiStock = tbi.getPharmaceuticalBillItem().getStock();
+            if (tbiStock == null) {
+                JsfUtil.addErrorMessage("No stock available for " + tbi.getItem().getName() + ". Please check pharmacy stock.");
+                return false;
+            }
+            if (Math.abs(tbi.getPharmaceuticalBillItem().getQty()) > tbiStock.getStock()) {
                 JsfUtil.addErrorMessage("Not Enough Stock " + tbi.getItem().getName());
-                return;
+                return false;
             }
         }
 
@@ -1987,6 +2082,7 @@ public class PharmacySaleBhtController implements Serializable {
         clearBillItem();
         billPreview = true;
 
+        return true;
     }
 
     public void updateMargin(BillItem bi, Department matrixDepartment, PaymentMethod paymentMethod) {
@@ -2629,6 +2725,10 @@ public class PharmacySaleBhtController implements Serializable {
     public String navigateToIssueMedicinesDirectlyForBhtRequest() {
         if (bhtRequestBill == null) {
             JsfUtil.addErrorMessage("No Bill");
+            return "";
+        }
+        if (isFullyIssued(bhtRequestBill)) {
+            JsfUtil.addErrorMessage("This request has already been fully issued.");
             return "";
         }
         setCompleted(false);

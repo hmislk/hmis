@@ -530,17 +530,17 @@
                             <p:panel rendered="#{bhtSummeryController.patientEncounter.roomAdmitted}">
                                 <f:facet name="header">
                                     <i class="fa-solid fa-bars-progress me-2 text-primary"/>
-                                    <h:outputText value="Room Stay Timeline"/>
+                                    <h:outputText value="Patient Room &amp; Theatre Timeline"/>
                                 </f:facet>
 
-                                <h:panelGroup rendered="#{empty bhtSummeryController.roomGanttBars}" layout="block">
+                                <h:panelGroup rendered="#{empty bhtSummeryController.unifiedGanttBars}" layout="block">
                                     <div class="text-center py-3 text-muted">
                                         <i class="fa-solid fa-info-circle me-2"/>
                                         Timeline data unavailable (no valid timestamps).
                                     </div>
                                 </h:panelGroup>
 
-                                <h:panelGroup rendered="#{not empty bhtSummeryController.roomGanttBars}" layout="block"
+                                <h:panelGroup rendered="#{not empty bhtSummeryController.unifiedGanttBars}" layout="block"
                                               style="display:block; width:100%; overflow-x:auto; padding:12px 8px;">
 
                                     <!-- legend -->
@@ -557,10 +557,18 @@
                                             <h:panelGroup layout="block" style="width:16px; height:16px; border-radius:3px; background:linear-gradient(90deg,#6f42c1,#a56dff); flex-shrink:0;"/>
                                             <h:outputText value="Guardian"/>
                                         </h:panelGroup>
+                                        <h:panelGroup layout="block" style="display:flex; align-items:center; gap:6px;">
+                                            <h:panelGroup layout="block" style="width:16px; height:16px; border-radius:3px; background:linear-gradient(90deg,#fd7e14,#ffc107); flex-shrink:0;"/>
+                                            <h:outputText value="In Theatre"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup layout="block" style="display:flex; align-items:center; gap:6px;">
+                                            <h:panelGroup layout="block" style="width:16px; height:16px; border-radius:3px; background:linear-gradient(90deg,#adb5bd,#ced4da); flex-shrink:0;"/>
+                                            <h:outputText value="Theatre (completed)"/>
+                                        </h:panelGroup>
                                     </h:panelGroup>
 
-                                    <!-- one row per room -->
-                                    <ui:repeat value="#{bhtSummeryController.roomGanttBars}" var="bar">
+                                    <!-- one row per room / theatre visit -->
+                                    <ui:repeat value="#{bhtSummeryController.unifiedGanttBars}" var="bar">
                                         <h:panelGroup layout="block"
                                                       style="display:flex; align-items:center; margin-bottom:10px; min-height:38px;">
                                             <!-- label column -->

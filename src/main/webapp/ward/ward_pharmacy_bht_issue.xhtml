@@ -20,7 +20,8 @@
 
                             <p:selectBooleanCheckbox
                                 itemLabel="Complete the Request"
-                                value="#{pharmacySaleBhtController.completed}" >
+                                value="#{pharmacySaleBhtController.completed}"
+                                disabled="#{!webUserController.hasPrivilege('PharmacyBhtRequestForceComplete')}" >
                             </p:selectBooleanCheckbox>
 
                             <p:commandButton

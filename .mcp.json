@@ -6,15 +6,6 @@
         "code-review-graph",
         "serve"
       ]
-    },
-    "playwright": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@playwright/mcp@latest",
-        "--cdp-endpoint",
-        "http://localhost:9222"
-      ]
     }
   }
 }

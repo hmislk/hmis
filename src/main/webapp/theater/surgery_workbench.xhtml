@@ -203,6 +203,127 @@
                                     action="#{surgeryBillController.navigateToEditSurgery()}"
                                     disabled="#{surgeryBillController.surgeryBill.patientEncounter.paymentFinalized}"/>
                             </h:panelGroup>
+
+                            <!-- Theatre Status Panel — shown when a surgery is selected -->
+                            <h:panelGroup layout="block" styleClass="m-1"
+                                          rendered="#{surgeryBillController.surgeryBill.id ne null}">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fa fa-procedures text-warning"/>
+                                            <span class="fw-bold">Theatre Status</span>
+                                        </div>
+                                    </f:facet>
+
+                                    <!-- No active theatre request -->
+                                    <h:panelGroup layout="block"
+                                                  rendered="#{patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter) == null}">
+                                        <div class="text-center text-muted small py-2">
+                                            <i class="fa fa-info-circle me-1"/>
+                                            Not yet sent to theatre
+                                        </div>
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('TheatreSendPatient')}">
+                                            <p:commandButton
+                                                id="btnWbSendToTheatre"
+                                                value="Send to Theatre"
+                                                icon="fa fa-procedures"
+                                                ajax="false"
+                                                class="ui-button-warning w-100 mt-1"
+                                                action="#{patientTransferController.navigateToSendToTheatre(surgeryBillController.surgeryBill.patientEncounter)}">
+                                            </p:commandButton>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+
+                                    <!-- Active theatre request exists -->
+                                    <h:panelGroup layout="block"
+                                                  rendered="#{patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter) != null}">
+                                        <!-- 5-step milestone stepper -->
+                                        <div style="display:flex;align-items:center;gap:0;margin-bottom:4px;">
+                                            <div title="Sent to Theatre"
+                                                 style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;
+                                                        background:#{patientTransferController.theatreStepBg(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus,1)};
+                                                        color:#{patientTransferController.theatreStepColor(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus,1)};">1</div>
+                                            <div style="flex:1;height:2px;background:#{patientTransferController.theatreLineBg(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus,1)};"/>
+                                            <div title="Received in Theatre"
+                                                 style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;
+                                                        background:#{patientTransferController.theatreStepBg(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus,2)};
+                                                        color:#{patientTransferController.theatreStepColor(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus,2)};">2</div>
+                                            <div style="flex:1;height:2px;background:#{patientTransferController.theatreLineBg(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus,2)};"/>
+                                            <div title="In Theatre — Procedure Active"
+                                                 style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;
+                                                        background:#{patientTransferController.theatreStepBg(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus,3)};
+                                                        color:#{patientTransferController.theatreStepColor(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus,3)};">3</div>
+                                            <div style="flex:1;height:2px;background:#{patientTransferController.theatreLineBg(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus,3)};"/>
+                                            <div title="Procedure Completed"
+                                                 style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;
+                                                        background:#{patientTransferController.theatreStepBg(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus,4)};
+                                                        color:#{patientTransferController.theatreStepColor(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus,4)};">4</div>
+                                            <div style="flex:1;height:2px;background:#{patientTransferController.theatreLineBg(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus,4)};"/>
+                                            <div title="Returned to Ward"
+                                                 style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;flex-shrink:0;
+                                                        background:#{patientTransferController.theatreStepBg(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus,5)};
+                                                        color:#{patientTransferController.theatreStepColor(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus,5)};">5</div>
+                                        </div>
+                                        <div class="mb-2 small" style="font-size:0.72rem; color:#6c757d;">
+                                            <h:outputText value="#{patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus}"/>
+                                        </div>
+                                        <div class="mb-2 small">
+                                            <span class="fw-bold">Theatre Room: </span>
+                                            <h:outputText value="#{patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).toRoomFacilityCharge.name}"/>
+                                        </div>
+                                        <h:panelGroup layout="block"
+                                                      rendered="#{patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).procedureStartAt ne null}"
+                                                      styleClass="mb-2 small">
+                                            <span class="fw-bold">OT Duration: </span>
+                                            <span class="badge bg-info text-dark">
+                                                <h:outputText value="#{patientTransferController.formatOtDuration(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter))}"/>
+                                            </span>
+                                        </h:panelGroup>
+                                        <div class="d-flex flex-column gap-1 mt-2">
+                                            <p:commandButton
+                                                id="btnWbAcceptInTheatre"
+                                                value="Accept in Theatre"
+                                                icon="fa fa-check"
+                                                ajax="false"
+                                                class="ui-button-success w-100"
+                                                rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')
+                                                            and patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus.name() == 'SENT_TO_THEATRE'}"
+                                                action="#{patientTransferController.acceptInTheatre(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter))}"
+                                                onclick="if (!confirm('Accept patient in theatre?')) return false;"/>
+                                            <p:commandButton
+                                                id="btnWbMarkInTheatre"
+                                                value="Mark In Theatre"
+                                                icon="fa fa-play"
+                                                ajax="false"
+                                                class="ui-button-warning w-100"
+                                                rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')
+                                                            and patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus.name() == 'RECEIVED_IN_THEATRE'}"
+                                                action="#{patientTransferController.markInTheatre(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter))}"
+                                                onclick="if (!confirm('Mark patient as In Theatre?')) return false;"/>
+                                            <p:commandButton
+                                                id="btnWbProcDone"
+                                                value="Procedure Completed"
+                                                icon="fa fa-check-circle"
+                                                ajax="false"
+                                                class="ui-button-success w-100"
+                                                rendered="#{webUserController.hasPrivilege('TheatreReturnPatient')
+                                                            and patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus.name() == 'IN_THEATRE'}"
+                                                action="#{patientTransferController.markProcedureCompleted(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter))}"
+                                                onclick="if (!confirm('Mark procedure as completed?')) return false;"/>
+                                            <p:commandButton
+                                                id="btnWbReturn"
+                                                value="Return to Ward"
+                                                icon="fa fa-arrow-left"
+                                                ajax="false"
+                                                class="ui-button-info w-100"
+                                                rendered="#{webUserController.hasPrivilege('TheatreReturnPatient')
+                                                            and patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter).theatreOccupancyStatus.name() == 'PROCEDURE_COMPLETED'}"
+                                                action="#{patientTransferController.returnToWard(patientTransferController.findActiveSendToTheatreRequest(surgeryBillController.surgeryBill.patientEncounter))}"
+                                                onclick="if (!confirm('Initiate return to ward?')) return false;"/>
+                                        </div>
+                                    </h:panelGroup>
+                                </p:panel>
+                            </h:panelGroup>
                         </div>
 
                         <!-- Columns 2+3 when NO surgery selected: prominent "Add Surgery" card spanning col-9 -->

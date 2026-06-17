@@ -120,6 +120,20 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     private Date roomDischargeDateTime;
     @ManyToOne
     private WebUser roomDischargedBy;
+    // Nursing discharge (stage 4) — nurse confirms patient education, meds explained, transport arranged
+    private Boolean nursingDischarged = false;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date nursingDischargeDateTime;
+    @ManyToOne
+    private WebUser nursingDischargedBy;
+    @Lob
+    private String nursingDischargeNotes;
+    // Physical discharge (stage 5) — nurse marks time patient physically leaves the hospital
+    private Boolean physicalDischarged = false;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date physicalDischargeDateTime;
+    @ManyToOne
+    private WebUser physicalDischargedBy;
     double creditLimit;
     double creditUsedAmount;
     private double creditPaidAmount;
@@ -972,6 +986,70 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setRoomDischargedBy(WebUser roomDischargedBy) {
         this.roomDischargedBy = roomDischargedBy;
+    }
+
+    public Boolean getNursingDischarged() {
+        return nursingDischarged;
+    }
+
+    public boolean isNursingDischarged() {
+        return Boolean.TRUE.equals(nursingDischarged);
+    }
+
+    public void setNursingDischarged(Boolean nursingDischarged) {
+        this.nursingDischarged = nursingDischarged;
+    }
+
+    public Date getNursingDischargeDateTime() {
+        return nursingDischargeDateTime;
+    }
+
+    public void setNursingDischargeDateTime(Date nursingDischargeDateTime) {
+        this.nursingDischargeDateTime = nursingDischargeDateTime;
+    }
+
+    public WebUser getNursingDischargedBy() {
+        return nursingDischargedBy;
+    }
+
+    public void setNursingDischargedBy(WebUser nursingDischargedBy) {
+        this.nursingDischargedBy = nursingDischargedBy;
+    }
+
+    public String getNursingDischargeNotes() {
+        return nursingDischargeNotes;
+    }
+
+    public void setNursingDischargeNotes(String nursingDischargeNotes) {
+        this.nursingDischargeNotes = nursingDischargeNotes;
+    }
+
+    public Boolean getPhysicalDischarged() {
+        return physicalDischarged;
+    }
+
+    public boolean isPhysicalDischarged() {
+        return Boolean.TRUE.equals(physicalDischarged);
+    }
+
+    public void setPhysicalDischarged(Boolean physicalDischarged) {
+        this.physicalDischarged = physicalDischarged;
+    }
+
+    public Date getPhysicalDischargeDateTime() {
+        return physicalDischargeDateTime;
+    }
+
+    public void setPhysicalDischargeDateTime(Date physicalDischargeDateTime) {
+        this.physicalDischargeDateTime = physicalDischargeDateTime;
+    }
+
+    public WebUser getPhysicalDischargedBy() {
+        return physicalDischargedBy;
+    }
+
+    public void setPhysicalDischargedBy(WebUser physicalDischargedBy) {
+        this.physicalDischargedBy = physicalDischargedBy;
     }
 
     public ClinicalEntity getDischargeCondition() {
