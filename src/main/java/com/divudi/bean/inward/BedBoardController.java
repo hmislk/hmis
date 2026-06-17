@@ -18,13 +18,21 @@ import com.divudi.core.facade.RoomFacilityChargeFacade;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.parser.Parser;
 
 /**
  * Backing bean for the graphical SVG bed board (inward_bed_board.xhtml).
@@ -40,6 +48,29 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class BedBoardController implements Serializable {
+
+    // SVG sanitisation allowlist — safe structural/shape/text/gradient elements
+    // (lower-cased for comparison). Anything not listed (script, foreignObject,
+    // animate, set, animateTransform, etc.) is dropped.
+    private static final Set<String> ALLOWED_SVG_TAGS = new HashSet<>(Arrays.asList(
+            "svg", "g", "defs", "title", "desc", "symbol", "use",
+            "rect", "circle", "ellipse", "line", "polyline", "polygon",
+            "path", "text", "tspan", "tref", "textpath",
+            "lineargradient", "radialgradient", "stop", "clippath",
+            "pattern", "marker", "a"));
+    // Safe presentation/geometry attributes (lower-cased). on* handlers and any
+    // attribute not listed are dropped.
+    private static final Set<String> ALLOWED_SVG_ATTRS = new HashSet<>(Arrays.asList(
+            "id", "class", "style", "transform", "fill", "fill-opacity", "fill-rule",
+            "stroke", "stroke-width", "stroke-opacity", "stroke-linecap",
+            "stroke-linejoin", "stroke-dasharray", "opacity", "color", "display",
+            "visibility", "x", "y", "x1", "y1", "x2", "y2", "cx", "cy", "r", "rx", "ry",
+            "width", "height", "d", "points", "viewbox", "preserveaspectratio",
+            "offset", "stop-color", "stop-opacity", "gradientunits", "gradienttransform",
+            "patternunits", "clip-path", "clip-rule", "marker-start", "marker-mid",
+            "marker-end", "text-anchor", "dominant-baseline", "alignment-baseline",
+            "font-family", "font-size", "font-weight", "font-style", "letter-spacing",
+            "xmlns", "href", "xlink:href"));
 
     @Inject
     SessionController sessionController;
@@ -289,30 +320,66 @@ public class BedBoardController implements Serializable {
     /**
      * Defence-in-depth sanitisation for stored SVG before it is rendered with
      * escape="false". The bed-board SVG fields are admin/configuration data, but
-     * the planned API/AI write path (#21592) widens the input surface, so strip
-     * the obvious active-content vectors: &lt;script&gt; blocks, inline event
-     * handlers (on*="..."), and javascript:/data: URIs in href/xlink:href.
-     * This is an allow-by-default guard, not a full allowlist parser; legitimate
-     * shape/text/style markup is left intact.
+     * the planned API/AI write path (#21592) widens the input surface.
+     *
+     * Uses a jsoup DOM allowlist (not regex) so it resists the documented SVG
+     * XSS bypasses regex cannot catch: entity-encoded protocols
+     * (href="jav&#x61;script:...") — jsoup decodes before the protocol check —
+     * and SMIL animation elements (&lt;animate&gt;/&lt;set&gt;) that reassign
+     * href at runtime — these tags are simply not on the allowlist, so they are
+     * dropped. Only safe shape/text/group/structure tags and geometry/style
+     * presentation attributes survive; &lt;a&gt; is allowed but its href is
+     * restricted to http/https/# (no javascript:/data:).
      */
     public String sanitizeSvg(String svg) {
         if (svg == null || svg.isEmpty()) {
             return svg;
         }
-        String cleaned = svg;
-        // Remove <script>...</script> blocks (and stray <script .../> tags).
-        cleaned = cleaned.replaceAll("(?is)<\\s*script\\b[^>]*>.*?<\\s*/\\s*script\\s*>", "");
-        cleaned = cleaned.replaceAll("(?is)<\\s*script\\b[^>]*/?>", "");
-        // Remove <foreignObject> (can embed arbitrary HTML/scripts).
-        cleaned = cleaned.replaceAll("(?is)<\\s*foreignObject\\b[^>]*>.*?<\\s*/\\s*foreignObject\\s*>", "");
-        // Strip inline event-handler attributes: onload, onclick, onmouseover, ...
-        cleaned = cleaned.replaceAll("(?i)\\son[a-z]+\\s*=\\s*\"[^\"]*\"", "");
-        cleaned = cleaned.replaceAll("(?i)\\son[a-z]+\\s*=\\s*'[^']*'", "");
-        cleaned = cleaned.replaceAll("(?i)\\son[a-z]+\\s*=\\s*[^\\s>]+", "");
-        // Neutralise javascript: and data: URIs in href / xlink:href.
-        cleaned = cleaned.replaceAll("(?i)(href\\s*=\\s*[\"'])\\s*javascript:", "$1#");
-        cleaned = cleaned.replaceAll("(?i)(href\\s*=\\s*[\"'])\\s*data:", "$1#");
-        return cleaned;
+        // Parse as XML to preserve SVG element-name casing (viewBox, clipPath…);
+        // jsoup's HTML Cleaner is not suitable here (it lower-cases tags and
+        // discards XML-parsed content), so walk the DOM and prune by allowlist.
+        Document doc = Jsoup.parse(svg, "", Parser.xmlParser());
+        doc.outputSettings()
+                .syntax(Document.OutputSettings.Syntax.xml)
+                .prettyPrint(false);
+
+        List<Element> toRemove = new ArrayList<>();
+        for (Element el : doc.getAllElements()) {
+            if (el == doc) {
+                continue;
+            }
+            if (!ALLOWED_SVG_TAGS.contains(el.tagName().toLowerCase())) {
+                // Drops script, foreignObject, animate, set, animateTransform, …
+                toRemove.add(el);
+                continue;
+            }
+            List<String> attrsToDrop = new ArrayList<>();
+            for (Attribute at : el.attributes()) {
+                String key = at.getKey().toLowerCase();
+                String val = at.getValue() == null ? "" : at.getValue();
+                // jsoup has already decoded entities, so an entity-encoded
+                // "jav&#x61;script:" is now plain "javascript:" and is caught.
+                String norm = val.trim().toLowerCase().replaceAll("\\s+", "");
+                if (key.startsWith("on")) {
+                    attrsToDrop.add(at.getKey());
+                } else if (!ALLOWED_SVG_ATTRS.contains(key)) {
+                    attrsToDrop.add(at.getKey());
+                } else if ((key.equals("href") || key.equals("xlink:href"))
+                        && (norm.startsWith("javascript:") || norm.startsWith("data:")
+                        || norm.startsWith("vbscript:"))) {
+                    attrsToDrop.add(at.getKey());
+                } else if (key.equals("style") && norm.contains("javascript")) {
+                    attrsToDrop.add(at.getKey());
+                }
+            }
+            for (String k : attrsToDrop) {
+                el.removeAttr(k);
+            }
+        }
+        for (Element el : toRemove) {
+            el.remove();
+        }
+        return doc.html();
     }
 
     public String getBedStatusCssClass(RoomFacilityCharge rfc) {
