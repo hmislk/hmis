@@ -953,9 +953,9 @@ public class AnthropicApiService implements Serializable {
         JsonObject manageInpatientTemplates = Json.createObjectBuilder()
                 .add("name", "manage_inpatient_templates")
                 .add("description",
-                        "Create, read, update, and retire inpatient document templates stored in the HMIS. "
+                        "Create, read, update, and retire document templates stored in the HMIS. "
                         + "Templates are HTML-based with placeholder tokens that are substituted at generation time. "
-                        + "Two types are supported: InpatientDiagnosisCard and InpatientLetter.\n\n"
+                        + "Supported types: Prescription, MedicalCertificate, FitnessCertificate, Referral, InpatientDiagnosisCard, InpatientLetter.\n\n"
                         + "method: LIST | GET | POST | PUT | DELETE\n\n"
                         + "LIST: returns all non-retired templates; optional filters: type, query (name search), size.\n"
                         + "GET: returns a single template including the full contents field; requires id.\n"
@@ -3278,7 +3278,7 @@ public class AnthropicApiService implements Serializable {
         }
 
         sb.append("## Tools Available to You\n");
-        sb.append("You have thirteen tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, inward discount matrix entries, investigation master records, investigation report formats, dynamic clinical form templates, notification subscriptions, and inpatient document templates:\n\n");
+        sb.append("You have thirteen tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, inward discount matrix entries, investigation master records, investigation report formats, dynamic clinical form templates, notification subscriptions, and document templates:\n\n");
         sb.append("### search_github_code\n");
         sb.append("Searches the hmislk/hmis repository source code for files matching keywords. ");
         sb.append("Use this first when a user asks about system behaviour, page logic, or wants to understand how something works.\n\n");
@@ -3390,8 +3390,8 @@ public class AnthropicApiService implements Serializable {
           .append("PUT_FEE updates an existing fee tier (requires feeId). DELETE_FEE soft-retires a fee tier. ")
           .append("Always confirm with the user before POST, PUT, or DELETE — changes affect live inward timed billing.\n\n");
         sb.append("### manage_inpatient_templates\n");
-        sb.append("Create, read, update, and retire inpatient document templates (HTML with placeholder tokens). ")
-          .append("Types: InpatientDiagnosisCard (diagnosis & treatment cards) and InpatientLetter (covering letters, credit company letters, etc.). ")
+        sb.append("Create, read, update, and retire document templates (HTML with placeholder tokens). ")
+          .append("Supported types: Prescription, MedicalCertificate, FitnessCertificate, Referral, InpatientDiagnosisCard, InpatientLetter. ")
           .append("method: LIST | GET | POST | PUT | DELETE. ")
           .append("LIST: browse templates by type and name. GET /{id}: retrieve a template including its full HTML contents. ")
           .append("POST: create a new template (name, type, contents required). PUT: update name, type, contents, defaultTemplate, or autoGenerate flags. DELETE: soft-retire. ")

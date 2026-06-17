@@ -168,8 +168,8 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Inward Document Templates", "/api/inward/document-templates",
-                        "Manage inpatient document templates (HTML templates with placeholders). "
-                        + "Supports types: InpatientDiagnosisCard, InpatientLetter. "
+                        "Manage document templates (HTML templates with placeholders). "
+                        + "Supports all DocumentTemplateType values: Prescription, MedicalCertificate, FitnessCertificate, Referral, InpatientDiagnosisCard, InpatientLetter. "
                         + "Optional query params: type (filter by type), query (name search), size. "
                         + "GET /{id} includes full contents field. "
                         + "POST/PUT fields: name, type, contents (HTML with placeholders), defaultTemplate, autoGenerate.",
