@@ -187,9 +187,9 @@
                     <ui:repeat var="rfc" value="#{bedBoardController.bedBoardRooms}">
                         <h:panelGroup rendered="#{not empty rfc.room.svgChildView}"
                                       styleClass="child-svg-wrapper #{bedBoardController.getBedStatusCssClass(rfc)}">
-                            <p:commandLink process="@this" update="bedBoardForm"
+                            <p:commandLink process="@this"
                                            ajax="false"
-                                           action="#{bhtSummeryController.navigateToInpatientProfile}">
+                                           action="#{bedBoardController.openBed(rfc)}">
                                 <h:outputText value="#{rfc.room.svgChildView}" escape="false"/>
                             </p:commandLink>
                         </h:panelGroup>
@@ -219,9 +219,8 @@
                         <ui:repeat var="rfc" value="#{bedBoardController.bedBoardRooms}">
                             <p:commandLink styleClass="bed-card #{bedBoardController.getBedStatusCssClass(rfc)}"
                                            process="@this"
-                                           update="bedBoardForm"
                                            ajax="false"
-                                           action="#{bhtSummeryController.navigateToInpatientProfile}">
+                                           action="#{bedBoardController.openBed(rfc)}">
                                 <i class="fas fa-bed" style="font-size:1.4em; margin-bottom:4px;"/>
                                 <span>#{rfc.name}</span>
                                 <span class="bed-status-label">#{bedBoardController.getBedStatusLabel(rfc)}</span>

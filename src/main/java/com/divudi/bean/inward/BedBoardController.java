@@ -9,11 +9,13 @@ import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.inward.BedStatus;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.facade.RoomFacilityChargeFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +43,8 @@ public class BedBoardController implements Serializable {
 
     @Inject
     SessionController sessionController;
+    @Inject
+    BhtSummeryController bhtSummeryController;
 
     @EJB
     DepartmentFacade departmentFacade;
@@ -73,23 +77,40 @@ public class BedBoardController implements Serializable {
     }
 
     private Institution findSite() {
-        // Prefer a Site that has actually been configured for the bed board —
-        // i.e. it has a stored floor-plan SVG (svgParentView).
+        // Every lookup is scoped to the logged-in institution. A Site is reached
+        // through the departments owned by that institution (d.institution=:ins)
+        // whose d.site points at the Site — Sites themselves are not directly
+        // linked to the company, so we must go via departments.
+        Institution ins = sessionController.getInstitution();
+        if (ins == null) {
+            return null;
+        }
         Map<String, Object> params = new HashMap<>();
         params.put("type", InstitutionType.Site);
-        String configuredJpql = "SELECT i FROM Institution i "
-                + "WHERE i.retired=false "
-                + "AND i.institutionType=:type "
-                + "AND i.svgParentView IS NOT NULL "
-                + "ORDER BY i.name";
+        params.put("ins", ins);
+
+        // Prefer a Site this institution can reach that has actually been
+        // configured for the bed board — i.e. it has a stored floor-plan SVG.
+        String configuredJpql = "SELECT DISTINCT d.site FROM Department d "
+                + "WHERE d.retired=false "
+                + "AND d.inactive=false "
+                + "AND d.institution=:ins "
+                + "AND d.site IS NOT NULL "
+                + "AND d.site.retired=false "
+                + "AND d.site.institutionType=:type "
+                + "AND d.site.svgParentView IS NOT NULL "
+                + "ORDER BY d.site.name";
         List<Institution> configured = institutionFacade.findByJpql(configuredJpql, params);
         if (configured != null && !configured.isEmpty()) {
             return configured.get(0);
         }
-        // Otherwise, prefer a Site that has buildings (top-level departments).
+
+        // Otherwise, prefer a Site this institution can reach that has buildings
+        // (top-level departments).
         String jpql = "SELECT DISTINCT d.site FROM Department d "
                 + "WHERE d.retired=false "
                 + "AND d.inactive=false "
+                + "AND d.institution=:ins "
                 + "AND d.superDepartment IS NULL "
                 + "AND d.site IS NOT NULL "
                 + "AND d.site.retired=false "
@@ -99,8 +120,8 @@ public class BedBoardController implements Serializable {
         if (sites != null && !sites.isEmpty()) {
             return sites.get(0);
         }
+
         // Fall back to any Site institution belonging to the logged-in institution.
-        params.put("ins", sessionController.getInstitution());
         String fallbackJpql = "SELECT i FROM Institution i "
                 + "WHERE i.retired=false "
                 + "AND i.institutionType=:type "
@@ -110,7 +131,7 @@ public class BedBoardController implements Serializable {
         if (fallback != null && !fallback.isEmpty()) {
             return fallback.get(0);
         }
-        return sessionController.getInstitution();
+        return ins;
     }
 
     // -------------------------------------------------------------------------
@@ -136,6 +157,34 @@ public class BedBoardController implements Serializable {
 
     public void refresh() {
         loadCurrentLevel();
+    }
+
+    /**
+     * Open the inpatient profile of the patient currently in this bed.
+     * Resolves the active (undischarged) PatientRoom for the given
+     * RoomFacilityCharge and sets it on BhtSummeryController before navigating,
+     * so the profile shows the bed's actual occupant (not a stale selection).
+     */
+    public String openBed(RoomFacilityCharge rfc) {
+        if (rfc == null) {
+            JsfUtil.addErrorMessage("No bed selected");
+            return "";
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("rfc", rfc);
+        List<PatientRoom> rooms = patientRoomFacade.findByJpql(
+                "SELECT pr FROM PatientRoom pr "
+                + "WHERE pr.retired=false AND pr.discharged=false "
+                + "AND pr.roomFacilityCharge=:rfc "
+                + "ORDER BY pr.id DESC",
+                params);
+        if (rooms == null || rooms.isEmpty()
+                || rooms.get(0).getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("No patient is currently admitted in this bed");
+            return "";
+        }
+        bhtSummeryController.setPatientEncounter(rooms.get(0).getPatientEncounter());
+        return bhtSummeryController.navigateToInpatientProfile();
     }
 
     // -------------------------------------------------------------------------
