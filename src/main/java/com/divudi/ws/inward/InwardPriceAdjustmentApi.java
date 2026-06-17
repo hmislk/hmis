@@ -969,8 +969,23 @@ public class InwardPriceAdjustmentApi {
             probe.setItem(item);
             PriceMatrix priceMatrix = priceMatrixController.fetchInwardMargin(probe, price, department, paymentMethod, creditCompany);
 
-            // The OwnInstitution fee carries the hospital-portion margin flag.
-            ItemFee ownFee = findOwnInstitutionFee(item);
+            // Margin is applied to every non-Staff fee on the item: BillBhtController
+            // creates a BillFee per item fee and calls setBillFeeMargin, whose
+            // eligibility only excludes FeeType.Staff and marginAllowed=false. So
+            // evaluate all non-Staff fees rather than assuming OwnInstitution.
+            List<ItemFee> nonStaffFees = findNonStaffFees(item);
+            boolean anyFeeAllowsMargin = false;
+            StringBuilder feeDetail = new StringBuilder();
+            for (ItemFee f : nonStaffFees) {
+                if (!Boolean.FALSE.equals(f.getMarginAllowed())) {
+                    anyFeeAllowsMargin = true;
+                }
+                if (feeDetail.length() > 0) {
+                    feeDetail.append("; ");
+                }
+                feeDetail.append(f.getFeeType()).append(" marginAllowed=").append(f.getMarginAllowed())
+                        .append(" (fee ID ").append(f.getId()).append(")");
+            }
 
             boolean configPaymentMethodUsed = configOptionApplicationController.getBooleanValueByKey(
                     "Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation", false);
@@ -990,11 +1005,10 @@ public class InwardPriceAdjustmentApi {
             checks.add(check("item.marginNotAllowed", itemMarginOk,
                     "marginNotAllowed=" + item.isMarginNotAllowed()));
 
-            boolean feeMarginOk = ownFee != null && !Boolean.FALSE.equals(ownFee.getMarginAllowed());
-            checks.add(check("fee.marginAllowed (OwnInstitution)", feeMarginOk,
-                    ownFee == null
-                            ? "No OwnInstitution fee found for this item"
-                            : "marginAllowed=" + ownFee.getMarginAllowed() + " (fee ID " + ownFee.getId() + ")"));
+            checks.add(check("fee.marginAllowed (billable non-Staff fee)", anyFeeAllowsMargin,
+                    nonStaffFees.isEmpty()
+                            ? "No non-Staff (billable) fee found for this item"
+                            : feeDetail.toString()));
 
             boolean admissionOk = admissionType != null && admissionType.isAllowToCalculateMargin();
             checks.add(check("admissionType.allowToCalculateMargin", admissionOk,
@@ -1003,15 +1017,15 @@ public class InwardPriceAdjustmentApi {
                             : admissionType.getName() + " (ID " + admissionType.getId()
                                     + ") allowToCalculateMargin=" + admissionType.isAllowToCalculateMargin()));
 
-            boolean notStaff = ownFee != null && ownFee.getFeeType() != FeeType.Staff;
-            checks.add(check("feeType is not Staff", notStaff,
-                    ownFee == null ? "No OwnInstitution fee found" : "FeeType=" + ownFee.getFeeType()));
+            boolean hasBillableFee = !nonStaffFees.isEmpty();
+            checks.add(check("has a billable (non-Staff) fee", hasBillableFee,
+                    "non-Staff fee count=" + nonStaffFees.size()));
 
             // Informational: the config flag changes the lookup, it is not itself a pass/fail blocker.
             checks.add(check("Config: paymentMethod used in lookup", true,
                     "Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation = " + configPaymentMethodUsed));
 
-            boolean marginWillBeApplied = matrixFound && itemMarginOk && feeMarginOk && admissionOk && notStaff;
+            boolean marginWillBeApplied = matrixFound && itemMarginOk && anyFeeAllowsMargin && admissionOk;
 
             Map<String, Object> data = new LinkedHashMap<>();
             data.put("itemId", item.getId());
@@ -1070,15 +1084,17 @@ public class InwardPriceAdjustmentApi {
     }
 
     /**
-     * The item's active OwnInstitution fee — the hospital-portion fee whose
-     * marginAllowed flag gates the inward margin.
+     * The item's active non-Staff fees — these are the billable fees the inward
+     * margin can apply to (Staff fees are excluded by setBillFeeMargin). A null
+     * fee type is treated as non-Staff, matching {@code getFeeType() != Staff}.
      */
-    private ItemFee findOwnInstitutionFee(Item item) {
+    private List<ItemFee> findNonStaffFees(Item item) {
         Map<String, Object> hm = new HashMap<>();
         hm.put("item", item);
-        hm.put("ft", FeeType.OwnInstitution);
-        return itemFeeFacade.findFirstByJpql(
-                "select f from ItemFee f where f.retired = false and f.item = :item and f.feeType = :ft order by f.id", hm);
+        hm.put("staff", FeeType.Staff);
+        return itemFeeFacade.findByJpql(
+                "select f from ItemFee f where f.retired = false and f.item = :item"
+                        + " and (f.feeType is null or f.feeType <> :staff) order by f.id", hm);
     }
 
     // -------- auth + response helpers --------
