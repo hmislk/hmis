@@ -322,7 +322,7 @@
                                                                          id="btnAddFavDx"
                                                                          action="#{patientEncounterController.addFavouriteDiagnosis}"
                                                                          process="acDx txtDx btnAddFavDx"
-                                                                         update="acDx txtDx gpDx tblRxx :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
+                                                                         update="acDx txtDx gpDx tblRxx pnlIssuableSuggestions :#{p:resolveFirstComponentWithId('txtPrescriptionDoc',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId}"
                                                                          icon="fas fa-star">
                                                         </p:commandButton>
                                                     </div>
