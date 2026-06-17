@@ -381,7 +381,12 @@ public class DepartmentApiService implements Serializable {
         if (creating) {
             preference = new UserPreference();
             preference.setDepartment(department);
-            preference.setInstitution(department.getInstitution());
+            // Leave institution null: SessionController's institution-preference
+            // fallback query (`where p.institution=:ins`) does not exclude
+            // department-scoped rows, so setting institution here would let this
+            // department preference shadow the real institution-wide preference
+            // for every other department in the same institution. This matches
+            // the admin department-preference UI flow.
         }
 
         // Partial update: apply only the strategy fields supplied in the body.
