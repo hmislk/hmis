@@ -193,6 +193,7 @@
                                     itemValue="#{ti}"
                                     forceSelection="true"
                                     maxResults="10"
+                                    onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }"
                                     placeholder="Search Timed Item..."
                                     class="w-100">
                                     <p:ajax event="itemSelect" update="acTimedItem"/>
@@ -225,6 +226,7 @@
                             </p:column>
                             <p:column headerText="Action" style="width:100px; text-align:center">
                                 <p:commandButton
+                                    id="btnRemoveTimedItem"
                                     icon="fa fa-trash"
                                     class="ui-button-danger"
                                     process="@this"

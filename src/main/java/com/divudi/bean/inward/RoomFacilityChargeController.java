@@ -421,7 +421,7 @@ public class RoomFacilityChargeController implements Serializable {
     }
 
     public void reloadTimedItems() {
-        if (current == null) {
+        if (current == null || current.getId() == null) {
             currentTimedItems = new ArrayList<>();
             return;
         }
@@ -447,6 +447,10 @@ public class RoomFacilityChargeController implements Serializable {
     public void addTimedItem() {
         if (current == null) {
             JsfUtil.addErrorMessage("No room facility selected");
+            return;
+        }
+        if (current.getId() == null) {
+            JsfUtil.addErrorMessage("Please save the room facility before adding Timed Items");
             return;
         }
         if (selectedTimedItem == null) {

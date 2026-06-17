@@ -3294,7 +3294,8 @@ public class BhtSummeryController implements Serializable {
             if (tc.getTimedItem() == null) {
                 continue;
             }
-            double total = getInwardBean().calTotalTimedChargeForItem(tc.getTimedItem(), p.getAdmittedAt(), to, false);
+            boolean foreigner = p.getPatientEncounter() != null && p.getPatientEncounter().isForiegner();
+            double total = getInwardBean().calTotalTimedChargeForItem(tc.getTimedItem(), p.getAdmittedAt(), to, foreigner);
             tc.setCalculatedCharge(total);
             patientRoomTimedItemChargeFacade.edit(tc);
         }

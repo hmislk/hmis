@@ -2310,6 +2310,18 @@ public class InwardBeanController implements Serializable {
             return;
         }
         for (RoomFacilityTimedItem link : links) {
+            if (link.getTimedItem() == null) {
+                continue;
+            }
+            HashMap<String, Object> existsParams = new HashMap<>();
+            existsParams.put("pr", patientRoom);
+            existsParams.put("ti", link.getTimedItem());
+            PatientRoomTimedItemCharge existing = patientRoomTimedItemChargeFacade.findFirstByJpql(
+                    "SELECT t FROM PatientRoomTimedItemCharge t WHERE t.patientRoom = :pr AND t.timedItem = :ti",
+                    existsParams);
+            if (existing != null) {
+                continue;
+            }
             PatientRoomTimedItemCharge snapshot = new PatientRoomTimedItemCharge();
             snapshot.setPatientRoom(patientRoom);
             snapshot.setTimedItem(link.getTimedItem());
