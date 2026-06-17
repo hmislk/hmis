@@ -282,6 +282,39 @@ public class BedBoardController implements Serializable {
         return currentSite != null ? currentSite.getSvgParentView() : null;
     }
 
+    public String getCurrentSvgParentViewSanitized() {
+        return sanitizeSvg(getCurrentSvgParentView());
+    }
+
+    /**
+     * Defence-in-depth sanitisation for stored SVG before it is rendered with
+     * escape="false". The bed-board SVG fields are admin/configuration data, but
+     * the planned API/AI write path (#21592) widens the input surface, so strip
+     * the obvious active-content vectors: &lt;script&gt; blocks, inline event
+     * handlers (on*="..."), and javascript:/data: URIs in href/xlink:href.
+     * This is an allow-by-default guard, not a full allowlist parser; legitimate
+     * shape/text/style markup is left intact.
+     */
+    public String sanitizeSvg(String svg) {
+        if (svg == null || svg.isEmpty()) {
+            return svg;
+        }
+        String cleaned = svg;
+        // Remove <script>...</script> blocks (and stray <script .../> tags).
+        cleaned = cleaned.replaceAll("(?is)<\\s*script\\b[^>]*>.*?<\\s*/\\s*script\\s*>", "");
+        cleaned = cleaned.replaceAll("(?is)<\\s*script\\b[^>]*/?>", "");
+        // Remove <foreignObject> (can embed arbitrary HTML/scripts).
+        cleaned = cleaned.replaceAll("(?is)<\\s*foreignObject\\b[^>]*>.*?<\\s*/\\s*foreignObject\\s*>", "");
+        // Strip inline event-handler attributes: onload, onclick, onmouseover, ...
+        cleaned = cleaned.replaceAll("(?i)\\son[a-z]+\\s*=\\s*\"[^\"]*\"", "");
+        cleaned = cleaned.replaceAll("(?i)\\son[a-z]+\\s*=\\s*'[^']*'", "");
+        cleaned = cleaned.replaceAll("(?i)\\son[a-z]+\\s*=\\s*[^\\s>]+", "");
+        // Neutralise javascript: and data: URIs in href / xlink:href.
+        cleaned = cleaned.replaceAll("(?i)(href\\s*=\\s*[\"'])\\s*javascript:", "$1#");
+        cleaned = cleaned.replaceAll("(?i)(href\\s*=\\s*[\"'])\\s*data:", "$1#");
+        return cleaned;
+    }
+
     public String getBedStatusCssClass(RoomFacilityCharge rfc) {
         if (rfc == null || rfc.getId() == null) {
             return BedStatus.Available.getCssClass();

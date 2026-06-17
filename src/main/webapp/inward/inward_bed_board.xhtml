@@ -14,12 +14,49 @@
         </f:metadata>
 
         <h:outputStylesheet>
-            .bed-status-available    { background-color: #28a745; color: white; }
-            .bed-status-occupied     { background-color: #dc3545; color: white; }
-            .bed-status-housekeeping { background-color: #fd7e14; color: white; }
-            .bed-status-contaminated { background-color: #6f42c1; color: white; }
-            .bed-status-isolated     { background-color: #ffc107; color: #212529; }
-            .bed-status-outoforder   { background-color: #6c757d; color: white; }
+            /* Status colours apply only to the bed CARD (fallback grid) and the
+               legend badges — never to the full-canvas SVG overlay wrapper,
+               which would otherwise paint a screen-sized coloured layer and
+               mask the whole map. */
+            .bed-card.bed-status-available,
+            .legend-badge.bed-status-available    { background-color: #28a745; color: white; }
+            .bed-card.bed-status-occupied,
+            .legend-badge.bed-status-occupied     { background-color: #dc3545; color: white; }
+            .bed-card.bed-status-housekeeping,
+            .legend-badge.bed-status-housekeeping { background-color: #fd7e14; color: white; }
+            .bed-card.bed-status-contaminated,
+            .legend-badge.bed-status-contaminated { background-color: #6f42c1; color: white; }
+            .bed-card.bed-status-isolated,
+            .legend-badge.bed-status-isolated     { background-color: #ffc107; color: #212529; }
+            .bed-card.bed-status-outoforder,
+            .legend-badge.bed-status-outoforder   { background-color: #6c757d; color: white; }
+
+            /* In SVG mode, tint the bed's drawn shape by status instead of the
+               wrapper background. */
+            .child-svg-wrapper.bed-status-available  svg rect,
+            .child-svg-wrapper.bed-status-available  svg ellipse,
+            .child-svg-wrapper.bed-status-available  svg circle,
+            .child-svg-wrapper.bed-status-available  svg polygon { fill: #28a745; }
+            .child-svg-wrapper.bed-status-occupied   svg rect,
+            .child-svg-wrapper.bed-status-occupied   svg ellipse,
+            .child-svg-wrapper.bed-status-occupied   svg circle,
+            .child-svg-wrapper.bed-status-occupied   svg polygon { fill: #dc3545; }
+            .child-svg-wrapper.bed-status-housekeeping svg rect,
+            .child-svg-wrapper.bed-status-housekeeping svg ellipse,
+            .child-svg-wrapper.bed-status-housekeeping svg circle,
+            .child-svg-wrapper.bed-status-housekeeping svg polygon { fill: #fd7e14; }
+            .child-svg-wrapper.bed-status-contaminated svg rect,
+            .child-svg-wrapper.bed-status-contaminated svg ellipse,
+            .child-svg-wrapper.bed-status-contaminated svg circle,
+            .child-svg-wrapper.bed-status-contaminated svg polygon { fill: #6f42c1; }
+            .child-svg-wrapper.bed-status-isolated   svg rect,
+            .child-svg-wrapper.bed-status-isolated   svg ellipse,
+            .child-svg-wrapper.bed-status-isolated   svg circle,
+            .child-svg-wrapper.bed-status-isolated   svg polygon { fill: #ffc107; }
+            .child-svg-wrapper.bed-status-outoforder svg rect,
+            .child-svg-wrapper.bed-status-outoforder svg ellipse,
+            .child-svg-wrapper.bed-status-outoforder svg circle,
+            .child-svg-wrapper.bed-status-outoforder svg polygon { fill: #6c757d; }
 
             .bed-board-canvas {
                 position: relative;
@@ -169,8 +206,8 @@
                               rendered="#{not empty bedBoardController.currentSvgParentView}"
                               styleClass="bed-board-svg-overlay">
 
-                    <!-- Parent floor-plan SVG (background) -->
-                    <h:outputText value="#{bedBoardController.currentSvgParentView}" escape="false"/>
+                    <!-- Parent floor-plan SVG (background) — sanitised before render -->
+                    <h:outputText value="#{bedBoardController.currentSvgParentViewSanitized}" escape="false"/>
 
                     <!-- Child department svgChildViews overlaid on top -->
                     <ui:repeat var="dept" value="#{bedBoardController.childDepartments}">
@@ -178,7 +215,7 @@
                                       styleClass="child-svg-wrapper">
                             <p:commandLink process="@this" update="bedBoardForm"
                                            action="#{bedBoardController.drillInto(dept)}">
-                                <h:outputText value="#{dept.svgChildView}" escape="false"/>
+                                <h:outputText value="#{bedBoardController.sanitizeSvg(dept.svgChildView)}" escape="false"/>
                             </p:commandLink>
                         </h:panelGroup>
                     </ui:repeat>
@@ -190,7 +227,7 @@
                             <p:commandLink process="@this"
                                            ajax="false"
                                            action="#{bedBoardController.openBed(rfc)}">
-                                <h:outputText value="#{rfc.room.svgChildView}" escape="false"/>
+                                <h:outputText value="#{bedBoardController.sanitizeSvg(rfc.room.svgChildView)}" escape="false"/>
                             </p:commandLink>
                         </h:panelGroup>
                     </ui:repeat>
