@@ -498,6 +498,12 @@ public class DepartmentApi {
                 return errorResponse("Request body is required", 400);
             }
 
+            // Reject a payload departmentId that contradicts the path id
+            // (mirrors the check in updateDepartment)
+            if (request.getDepartmentId() != null && !request.getDepartmentId().equals(id)) {
+                return errorResponse("Path id and payload departmentId mismatch", 400);
+            }
+
             DepartmentPreferenceDTO response = departmentService.updateDepartmentPreferences(id, request, user);
             return successResponse(response);
 
