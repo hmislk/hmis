@@ -3587,7 +3587,8 @@ public class AnthropicApiService implements Serializable {
                     {"GET",    "/inward-price-adjustment/categories/search?scope=X&query=",       "Category name → id lookup (requires scope)"},
                     {"GET",    "/inward-price-adjustment/departments/search?query=",              "Department name → id lookup"},
                     {"GET",    "/inward-price-adjustment/payment-methods",                         "List PaymentMethod enum values"},
-                    {"GET",    "/inward-price-adjustment/credit-companies/search?query=",          "Credit company name → id lookup"}
+                    {"GET",    "/inward-price-adjustment/credit-companies/search?query=",          "Credit company name → id lookup"},
+                    {"GET",    "/inward-price-adjustment/diagnose?itemId=&departmentId=&paymentMethod=&patientEncounterId=&price=", "Explain whether inward service-charge margin will be applied for an item, with a per-condition pass/fail breakdown"}
                 });
 
         appendModule(sb, "Inward Room Management", "/inward/room-categories, /inward/rooms, /inward/room-facility-charges",
