@@ -44,7 +44,7 @@ $env:JAVA_HOME="<path-to-jdk>"
   (new/renamed/deleted classes, resources); a plain `compile`/`package` can
   leave stale `.class` files in `target/`.
 - A redeploy invalidates the current session (see §1) — log in again
-  afterwards.
+  afterward.
 - Watch `<payara-install>\glassfish\domains\domain1\logs\server.log` for deployment errors
   before starting the browser flow.
 

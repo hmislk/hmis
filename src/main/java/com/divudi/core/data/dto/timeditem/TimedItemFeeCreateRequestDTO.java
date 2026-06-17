@@ -25,7 +25,9 @@ public class TimedItemFeeCreateRequestDTO {
     }
 
     public boolean isValid() {
-        return name != null && !name.trim().isEmpty();
+        return name != null && !name.trim().isEmpty()
+                && durationHours > 0
+                && fee >= 0;
     }
 
     public String getName() {

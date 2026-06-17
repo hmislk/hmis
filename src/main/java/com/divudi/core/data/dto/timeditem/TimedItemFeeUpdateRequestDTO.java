@@ -25,7 +25,8 @@ public class TimedItemFeeUpdateRequestDTO {
     }
 
     public boolean isValid() {
-        return name != null || fee != null || ffee != null || durationHours != null
+        boolean hasValidName = name != null && !name.trim().isEmpty();
+        return hasValidName || fee != null || ffee != null || durationHours != null
                 || overShootHours != null || durationDaysForMoCharge != null
                 || sortOrder != null || repeating != null;
     }

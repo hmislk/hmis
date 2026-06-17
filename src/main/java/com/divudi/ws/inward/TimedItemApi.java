@@ -89,7 +89,11 @@ public class TimedItemApi {
 
             Boolean inactive = null;
             if (inactiveStr != null && !inactiveStr.trim().isEmpty()) {
-                inactive = Boolean.parseBoolean(inactiveStr.trim());
+                String raw = inactiveStr.trim().toLowerCase();
+                if (!"true".equals(raw) && !"false".equals(raw)) {
+                    return errorResponse("Invalid inactive value. Use true or false.", 400);
+                }
+                inactive = Boolean.parseBoolean(raw);
             }
 
             int limit = 30;
@@ -133,6 +137,9 @@ public class TimedItemApi {
             if (msg != null && msg.contains("not found")) {
                 return errorResponse(msg, 404);
             }
+            if (msg != null && msg.contains("Invalid")) {
+                return errorResponse(msg, 400);
+            }
             return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
     }
@@ -163,7 +170,7 @@ public class TimedItemApi {
             }
 
             TimedItemResponseDTO response = timedItemApiService.createTimedItem(request, user);
-            return Response.status(201).entity(gson.toJson(successData(response))).build();
+            return successResponse(201, response);
 
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);
@@ -204,6 +211,9 @@ public class TimedItemApi {
             if (msg != null && msg.contains("not found")) {
                 return errorResponse(msg, 404);
             }
+            if (msg != null && msg.contains("Invalid")) {
+                return errorResponse(msg, 400);
+            }
             return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
     }
@@ -231,6 +241,9 @@ public class TimedItemApi {
             if (msg != null && msg.contains("not found")) {
                 return errorResponse(msg, 404);
             }
+            if (msg != null && msg.contains("Invalid")) {
+                return errorResponse(msg, 400);
+            }
             return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
     }
@@ -257,6 +270,9 @@ public class TimedItemApi {
             if (msg != null && msg.contains("not found")) {
                 return errorResponse(msg, 404);
             }
+            if (msg != null && msg.contains("Invalid")) {
+                return errorResponse(msg, 400);
+            }
             return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
     }
@@ -282,6 +298,9 @@ public class TimedItemApi {
             String msg = e.getMessage();
             if (msg != null && msg.contains("not found")) {
                 return errorResponse(msg, 404);
+            }
+            if (msg != null && msg.contains("Invalid")) {
+                return errorResponse(msg, 400);
             }
             return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
@@ -312,6 +331,9 @@ public class TimedItemApi {
             String msg = e.getMessage();
             if (msg != null && msg.contains("not found")) {
                 return errorResponse(msg, 404);
+            }
+            if (msg != null && msg.contains("Invalid")) {
+                return errorResponse(msg, 400);
             }
             return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
@@ -344,12 +366,15 @@ public class TimedItemApi {
             }
 
             TimedItemResponseDTO response = timedItemApiService.addFee(id, request, user);
-            return Response.status(201).entity(gson.toJson(successData(response))).build();
+            return successResponse(201, response);
 
         } catch (Exception e) {
             String msg = e.getMessage();
             if (msg != null && msg.contains("not found")) {
                 return errorResponse(msg, 404);
+            }
+            if (msg != null && msg.contains("Invalid")) {
+                return errorResponse(msg, 400);
             }
             return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
@@ -389,6 +414,9 @@ public class TimedItemApi {
             if (msg != null && msg.contains("not found")) {
                 return errorResponse(msg, 404);
             }
+            if (msg != null && msg.contains("Invalid")) {
+                return errorResponse(msg, 400);
+            }
             return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
     }
@@ -414,6 +442,9 @@ public class TimedItemApi {
             String msg = e.getMessage();
             if (msg != null && msg.contains("not found")) {
                 return errorResponse(msg, 404);
+            }
+            if (msg != null && msg.contains("Invalid")) {
+                return errorResponse(msg, 400);
             }
             return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
@@ -450,7 +481,15 @@ public class TimedItemApi {
     }
 
     private Response successResponse(Object data) {
-        return Response.status(200).entity(gson.toJson(successData(data))).build();
+        return successResponse(200, data);
+    }
+
+    private Response successResponse(int status, Object data) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("code", status);
+        response.put("data", data);
+        return Response.status(status).entity(gson.toJson(response)).build();
     }
 
     private Map<String, Object> successData(Object data) {

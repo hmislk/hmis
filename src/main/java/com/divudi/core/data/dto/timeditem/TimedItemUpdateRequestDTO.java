@@ -26,9 +26,13 @@ public class TimedItemUpdateRequestDTO {
     }
 
     public boolean isValid() {
-        return name != null || code != null || printName != null || fullName != null
-                || departmentType != null || inwardChargeType != null
+        return hasText(name) || hasText(code) || printName != null || fullName != null
+                || hasText(departmentType) || hasText(inwardChargeType)
                 || departmentId != null || institutionId != null || inactive != null;
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 
     public String getName() {
