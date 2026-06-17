@@ -271,12 +271,14 @@ public class ConfigResource {
         configOptionApplicationController.loadApplicationOptions();
 
         // Audit trail: who changed which key, from what to what, and when.
+        // Fields are CR/LF-stripped so a crafted key/value cannot forge
+        // additional log lines.
         WebUser user = apiKey.getWebUser();
         LOGGER.log(Level.INFO, "CONFIG_UPDATED key=[{0}] oldValue=[{1}] newValue=[{2}] by user=[{3}] at=[{4}]",
-                new Object[]{key,
-                    maskSensitiveValue(key, oldValue),
-                    maskSensitiveValue(key, newValue),
-                    user != null ? user.getName() : "unknown",
+                new Object[]{sanitizeForLog(key),
+                    sanitizeForLog(maskSensitiveValue(key, oldValue)),
+                    sanitizeForLog(maskSensitiveValue(key, newValue)),
+                    sanitizeForLog(user != null ? user.getName() : "unknown"),
                     new java.util.Date()});
 
         return Response.ok(toJson(option).build().toString()).build();
@@ -326,15 +328,25 @@ public class ConfigResource {
     }
 
     private Response notFoundResponse(String key) {
-        return Response.status(Response.Status.NOT_FOUND)
-                .entity("{\"error\":\"Config option not found: " + key + "\"}")
-                .build();
+        String body = Json.createObjectBuilder()
+                .add("error", "Config option not found: " + (key != null ? key : ""))
+                .build().toString();
+        return Response.status(Response.Status.NOT_FOUND).entity(body).build();
     }
 
     private Response badRequestResponse(String message) {
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity("{\"error\":\"" + message + "\"}")
-                .build();
+        String body = Json.createObjectBuilder()
+                .add("error", message != null ? message : "")
+                .build().toString();
+        return Response.status(Response.Status.BAD_REQUEST).entity(body).build();
+    }
+
+    /**
+     * Strip CR/LF from a value before it is written to the audit log, so a
+     * crafted config key or value cannot inject forged log lines.
+     */
+    private static String sanitizeForLog(String value) {
+        return value == null ? null : value.replaceAll("[\\r\\n]", "_");
     }
 
     private String maskSensitiveValue(String key, String value) {

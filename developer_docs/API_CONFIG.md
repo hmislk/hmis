@@ -2,9 +2,12 @@
 
 Base path: `/api/config`
 Authentication: `Config` header (**not** `Finance` — this is a separate key)
-Content-Type: `text/plain`
 
-Used to set application configuration options at runtime without redeployment.
+Content types vary by endpoint:
+- The read/list/update endpoints (`GET /api/config`, `GET /api/config/{key}`, `PUT /api/config/{key}`) accept/return **`application/json`**.
+- The legacy `setBoolean`/`setLongText`/`setInteger` endpoints take the value in the path and return **`text/plain`**.
+
+Used to read and set application configuration options at runtime without redeployment.
 
 ## Endpoints
 
@@ -86,5 +89,5 @@ Header: Config: YOUR_CONFIG_API_KEY
 
 - The `{key}` is the config option name as stored in the database (URL-encode spaces as `%20`)
 - To discover valid config keys, query the database: `SELECT key_name FROM config_option_application`
-- Returns HTTP 200 plain text `"Success"` on success, 401 on invalid key
+- The legacy `setBoolean`/`setLongText`/`setInteger` endpoints return HTTP 200 plain text on success; the JSON read/update endpoints return a JSON body. All return 401 on an invalid/expired/retired key.
 - **Authentication header is `Config`, not `Finance`** — the Config API key is separate
