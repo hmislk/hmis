@@ -151,6 +151,8 @@ public class CapabilityStatementResource {
                         + "Price range lookup: fromPrice/toPrice define the gross value range to which the margin applies. "
                         + "Lookup sub-paths: /categories/search?scope=service|pharmacy, /departments/search, "
                         + "/payment-methods, /credit-companies/search. "
+                        + "Diagnostic sub-path: /diagnose?itemId=&departmentId=&paymentMethod=&patientEncounterId=&price= "
+                        + "explains whether inward service-charge margin will be applied for an item, with a per-condition breakdown. "
                         + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
@@ -304,6 +306,14 @@ public class CapabilityStatementResource {
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories",
+                        "API Key",
+                        "GET", "POST", "PUT", "PATCH", "DELETE"))
+                .add(resource("Timed Items", "/api/timed-items",
+                        "Manage timed item master data (room rent, oxygen, ICU time, etc.) and their tiered fee slots (TimedItemFee). "
+                        + "TimedItem entities are consumed by the inward timed service page (/inward/inward_timed_service_consume.xhtml). "
+                        + "Fees are ordered by sortOrder and support durationHours/overShootHours/repeating for tiered block billing. "
+                        + "Sub-resource: /timed-items/{id}/fees for per-item fee management. "
+                        + "PATCH /activate and /deactivate control availability without retiring.",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("Collecting Centre Fees", "/api/pricing/collecting_centre_fees",

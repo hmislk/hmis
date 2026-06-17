@@ -286,6 +286,13 @@
 
 
             </div>
+
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Comment on Inward Deposit Bill',false) and cc.attrs.bill.comments ne null and cc.attrs.bill.comments ne ''}">
+                <div class="billDetailsFiveFive" style="margin-top: 10px; text-align: left;">
+                    <h:outputLabel value="Comment : #{cc.attrs.bill.comments}" class="billDetailsFiveFive"/>
+                </div>
+            </h:panelGroup>
+
             <div style="text-decoration: overline; margin-top: 20px;">
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
             </div>

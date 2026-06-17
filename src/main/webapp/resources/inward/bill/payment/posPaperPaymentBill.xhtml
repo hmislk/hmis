@@ -273,14 +273,36 @@
                         </td>
                         <td>:</td>
                         <td style="width: 30%;" >
-                            <h:outputLabel 
-                                value="#{cc.attrs.bill.paymentMethod.label}"  
+                            <h:outputLabel
+                                value="#{cc.attrs.bill.paymentMethod.label}"
                                 style="text-align: center!important;
                                 font-size: 12px!important;
                                 font-family:Arial, Helvetica, sans-serif!important;">
                             </h:outputLabel>
                         </td>
                     </tr>
+
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Comment on Inward Deposit Bill',false) and cc.attrs.bill.comments ne null and cc.attrs.bill.comments ne ''}">
+                        <tr>
+                            <td style="width: 15% ;text-align: left;" >
+                                <h:outputLabel
+                                    value="Comment"
+                                    style="text-align: center!important;
+                                    font-size: 12px!important;
+                                    font-family:Arial, Helvetica, sans-serif!important;">
+                                </h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td style="width: 30%;" >
+                                <h:outputLabel
+                                    value="#{cc.attrs.bill.comments}"
+                                    style="text-align: center!important;
+                                    font-size: 12px!important;
+                                    font-family:Arial, Helvetica, sans-serif!important;">
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
                 </table>
             </div>
 

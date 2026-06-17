@@ -519,6 +519,41 @@
                                                         </tr>
                                                     </tbody>
                                                 </table>
+
+                                                <!-- Timed Item Charges for this stay segment -->
+                                                <h:panelGroup rendered="#{not empty rm.timedItemCharges}" layout="block" styleClass="mt-3">
+                                                    <div class="fw-semibold mb-1" style="font-size:0.85rem;">
+                                                        <i class="fa-solid fa-clock me-1 text-info"/>Duration-based Timed Item Charges
+                                                    </div>
+                                                    <table class="table table-sm table-bordered mb-0" style="font-size:0.83rem;">
+                                                        <thead class="table-info">
+                                                            <tr>
+                                                                <th>Item</th>
+                                                                <th>Charge Category</th>
+                                                                <th class="text-end">Calculated</th>
+                                                                <th class="text-end" style="color:#c0392b;">Discount</th>
+                                                                <th class="text-end fw-bold">Net</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <ui:repeat value="#{rm.timedItemCharges}" var="tc">
+                                                                <tr>
+                                                                    <td><h:outputText value="#{tc.timedItem.name}"/></td>
+                                                                    <td><h:outputText value="#{tc.timedItem.inwardChargeType}"/></td>
+                                                                    <td class="text-end">
+                                                                        <h:outputText value="#{tc.calculatedCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                                    </td>
+                                                                    <td class="text-end" style="color:#c0392b;">
+                                                                        <h:outputText value="#{tc.discountCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                                    </td>
+                                                                    <td class="text-end fw-semibold">
+                                                                        <h:outputText value="#{tc.calculatedCharge - tc.discountCharge}"><f:convertNumber pattern="#,##0.00"/></h:outputText>
+                                                                    </td>
+                                                                </tr>
+                                                            </ui:repeat>
+                                                        </tbody>
+                                                    </table>
+                                                </h:panelGroup>
                                             </div>
                                         </p:rowExpansion>
 
