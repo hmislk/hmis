@@ -12,7 +12,6 @@ import com.divudi.core.data.FeeType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.ApiKey;
-import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.EncounterCreditCompany;
@@ -929,6 +928,10 @@ public class InwardPriceAdjustmentApi {
                 return errorResponse("itemId, departmentId, paymentMethod and patientEncounterId are required", 400);
             }
 
+            if (priceParam != null && !Double.isFinite(priceParam)) {
+                return errorResponse("price must be a finite number", 400);
+            }
+
             PaymentMethod paymentMethod;
             try {
                 paymentMethod = PaymentMethod.valueOf(paymentMethodStr.trim());
@@ -965,9 +968,7 @@ public class InwardPriceAdjustmentApi {
             }
 
             // Price-matrix lookup: reuse the exact cascade + config gating used in billing.
-            BillItem probe = new BillItem();
-            probe.setItem(item);
-            PriceMatrix priceMatrix = priceMatrixController.fetchInwardMargin(probe, price, department, paymentMethod, creditCompany);
+            PriceMatrix priceMatrix = priceMatrixController.fetchInwardMargin(item, price, department, paymentMethod, creditCompany);
 
             // Margin is applied to every non-Staff fee on the item: BillBhtController
             // creates a BillFee per item fee and calls setBillFeeMargin, whose

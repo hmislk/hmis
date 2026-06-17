@@ -151,6 +151,8 @@ public class CapabilityStatementResource {
                         + "Price range lookup: fromPrice/toPrice define the gross value range to which the margin applies. "
                         + "Lookup sub-paths: /categories/search?scope=service|pharmacy, /departments/search, "
                         + "/payment-methods, /credit-companies/search. "
+                        + "Diagnostic sub-path: /diagnose?itemId=&departmentId=&paymentMethod=&patientEncounterId=&price= "
+                        + "explains whether inward service-charge margin will be applied for an item, with a per-condition breakdown. "
                         + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
