@@ -7,16 +7,20 @@ package com.divudi.service.institution;
 
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.ItemListingStrategy;
 import com.divudi.core.data.dto.department.DepartmentCreateRequestDTO;
+import com.divudi.core.data.dto.department.DepartmentPreferenceDTO;
 import com.divudi.core.data.dto.department.DepartmentRelationshipUpdateDTO;
 import com.divudi.core.data.dto.department.DepartmentResponseDTO;
 import com.divudi.core.data.dto.department.DepartmentUpdateRequestDTO;
 import com.divudi.core.data.dto.search.DepartmentDTO;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.UserPreference;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.UserPreferenceFacade;
 import com.divudi.core.util.CommonFunctions;
 
 import javax.ejb.EJB;
@@ -43,6 +47,9 @@ public class DepartmentApiService implements Serializable {
 
     @EJB
     private InstitutionFacade institutionFacade;
+
+    @EJB
+    private UserPreferenceFacade userPreferenceFacade;
 
     /**
      * Search departments by name or code with optional type and institution filtering
@@ -333,6 +340,109 @@ public class DepartmentApiService implements Serializable {
         departmentFacade.editAndFlush(department);
 
         return buildDepartmentResponseDTO(department, "Department relationships updated successfully");
+    }
+
+    /**
+     * Read the department-scoped UserPreference settings.
+     * Returns entity defaults (with preferenceExists=false) when the department
+     * has no persisted UserPreference yet.
+     */
+    public DepartmentPreferenceDTO getDepartmentPreferences(Long id) throws Exception {
+        Department department = loadAndValidateDepartment(id);
+
+        UserPreference preference = findDepartmentPreference(department);
+        boolean exists = preference != null;
+        if (!exists) {
+            // Transient instance so the getters supply the entity defaults
+            // without persisting anything.
+            preference = new UserPreference();
+        }
+
+        return buildDepartmentPreferenceDTO(department, preference, exists);
+    }
+
+    /**
+     * Update the department-scoped UserPreference settings.
+     * Only the fields present (non-null) in the request are changed; the
+     * UserPreference record is created if the department does not have one yet.
+     */
+    public DepartmentPreferenceDTO updateDepartmentPreferences(Long id, DepartmentPreferenceDTO request, WebUser user) throws Exception {
+        if (request == null) {
+            throw new Exception("Request body is required");
+        }
+        if (user == null) {
+            throw new Exception("User is required for updating department preferences");
+        }
+
+        Department department = loadAndValidateDepartment(id);
+
+        UserPreference preference = findDepartmentPreference(department);
+        boolean creating = preference == null;
+        if (creating) {
+            preference = new UserPreference();
+            preference.setDepartment(department);
+            preference.setInstitution(department.getInstitution());
+        }
+
+        // Partial update: apply only the strategy fields supplied in the body.
+        if (request.getOpdItemListingStrategy() != null) {
+            preference.setOpdItemListingStrategy(parseItemListingStrategy(request.getOpdItemListingStrategy(), "opdItemListingStrategy"));
+        }
+        if (request.getCcItemListingStrategy() != null) {
+            preference.setCcItemListingStrategy(parseItemListingStrategy(request.getCcItemListingStrategy(), "ccItemListingStrategy"));
+        }
+        if (request.getInwardItemListingStrategy() != null) {
+            preference.setInwardItemListingStrategy(parseItemListingStrategy(request.getInwardItemListingStrategy(), "inwardItemListingStrategy"));
+        }
+
+        if (creating) {
+            userPreferenceFacade.createAndFlush(preference);
+        } else {
+            userPreferenceFacade.editAndFlush(preference);
+        }
+
+        return buildDepartmentPreferenceDTO(department, preference, true);
+    }
+
+    /**
+     * Find the most recent UserPreference scoped to the given department, or
+     * null if the department has none. Mirrors the lookup used by
+     * SessionController.
+     */
+    private UserPreference findDepartmentPreference(Department department) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("dep", department);
+        return userPreferenceFacade.findFirstByJpql(
+                "select p from UserPreference p where p.department=:dep order by p.id desc",
+                params);
+    }
+
+    /**
+     * Parse an ItemListingStrategy enum name, throwing a descriptive exception
+     * for an unknown value so the API can return HTTP 400.
+     */
+    private ItemListingStrategy parseItemListingStrategy(String value, String fieldName) throws Exception {
+        try {
+            return ItemListingStrategy.valueOf(value.trim());
+        } catch (IllegalArgumentException e) {
+            throw new Exception("Invalid " + fieldName + " value: " + value);
+        }
+    }
+
+    /**
+     * Build a DepartmentPreferenceDTO from a (possibly transient) UserPreference.
+     * The getters apply the entity defaults when a value is unset.
+     */
+    private DepartmentPreferenceDTO buildDepartmentPreferenceDTO(Department department, UserPreference preference, boolean exists) {
+        DepartmentPreferenceDTO dto = new DepartmentPreferenceDTO();
+        dto.setId(preference.getId());
+        dto.setDepartmentId(department.getId());
+        dto.setDepartmentName(department.getName());
+        dto.setPreferenceExists(exists);
+        dto.setOpdItemListingStrategy(preference.getOpdItemListingStrategy().name());
+        dto.setCcItemListingStrategy(preference.getCcItemListingStrategy().name());
+        dto.setInwardItemListingStrategy(preference.getInwardItemListingStrategy().name());
+        return dto;
     }
 
     // Private helper methods

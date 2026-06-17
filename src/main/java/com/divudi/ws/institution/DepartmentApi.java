@@ -10,6 +10,7 @@ import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dto.config.DepartmentConfigDTO;
 import com.divudi.core.data.dto.config.DepartmentConfigUpdateDTO;
 import com.divudi.core.data.dto.department.DepartmentCreateRequestDTO;
+import com.divudi.core.data.dto.department.DepartmentPreferenceDTO;
 import com.divudi.core.data.dto.department.DepartmentRelationshipUpdateDTO;
 import com.divudi.core.data.dto.department.DepartmentResponseDTO;
 import com.divudi.core.data.dto.department.DepartmentUpdateRequestDTO;
@@ -426,6 +427,86 @@ public class DepartmentApi {
         } catch (Exception e) {
             if (e.getMessage().contains("not found")) {
                 return errorResponse(e.getMessage(), 404);
+            }
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get the department-scoped UserPreference settings
+     * GET /api/departments/{id}/preferences
+     */
+    @GET
+    @Path("/{id}/preferences")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDepartmentPreferences(@PathParam("id") Long id) {
+        try {
+            // Validate API key
+            String key = requestContext.getHeader("Finance");
+            WebUser user = validateApiKey(key);
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+
+            if (id == null) {
+                return errorResponse("Department ID is required", 400);
+            }
+
+            DepartmentPreferenceDTO result = departmentService.getDepartmentPreferences(id);
+            return successResponse(result);
+
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("not found")) {
+                return errorResponse(e.getMessage(), 404);
+            }
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
+     * Update the department-scoped UserPreference settings (partial update).
+     * Only fields present in the request body are changed; the record is
+     * created if the department has no UserPreference yet.
+     * PUT /api/departments/{id}/preferences
+     */
+    @PUT
+    @Path("/{id}/preferences")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateDepartmentPreferences(@PathParam("id") Long id, String requestBody) {
+        try {
+            // Validate API key
+            String key = requestContext.getHeader("Finance");
+            WebUser user = validateApiKey(key);
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+
+            if (id == null) {
+                return errorResponse("Department ID is required", 400);
+            }
+
+            // Parse request body
+            DepartmentPreferenceDTO request;
+            try {
+                request = gson.fromJson(requestBody, DepartmentPreferenceDTO.class);
+            } catch (JsonSyntaxException e) {
+                return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+            }
+
+            if (request == null) {
+                return errorResponse("Request body is required", 400);
+            }
+
+            DepartmentPreferenceDTO response = departmentService.updateDepartmentPreferences(id, request, user);
+            return successResponse(response);
+
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("not found")) {
+                return errorResponse(e.getMessage(), 404);
+            }
+            if (e.getMessage() != null && e.getMessage().startsWith("Invalid ")) {
+                return errorResponse(e.getMessage(), 400);
             }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
