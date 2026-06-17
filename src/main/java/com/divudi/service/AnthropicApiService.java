@@ -3510,7 +3510,9 @@ public class AnthropicApiService implements Serializable {
                     {"GET",    "/departments/{id}",   "Get department by ID"},
                     {"POST",   "/departments",         "Create a new department"},
                     {"PUT",    "/departments/{id}",   "Update a department"},
-                    {"DELETE", "/departments/{id}",   "Retire a department"}
+                    {"DELETE", "/departments/{id}",   "Retire a department"},
+                    {"GET",    "/departments/{id}/preferences", "Get department UserPreference settings (item-listing strategies)"},
+                    {"PUT",    "/departments/{id}/preferences", "Update department UserPreference settings (partial; creates if absent)"}
                 });
 
         appendModule(sb, "Sites", "/sites",
