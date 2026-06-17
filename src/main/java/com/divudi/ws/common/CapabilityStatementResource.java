@@ -306,6 +306,14 @@ public class CapabilityStatementResource {
                         "OPD and Inward service management including fees and categories",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
+                .add(resource("Timed Items", "/api/timed-items",
+                        "Manage timed item master data (room rent, oxygen, ICU time, etc.) and their tiered fee slots (TimedItemFee). "
+                        + "TimedItem entities are consumed by the inward timed service page (/inward/inward_timed_service_consume.xhtml). "
+                        + "Fees are ordered by sortOrder and support durationHours/overShootHours/repeating for tiered block billing. "
+                        + "Sub-resource: /timed-items/{id}/fees for per-item fee management. "
+                        + "PATCH /activate and /deactivate control availability without retiring.",
+                        "API Key",
+                        "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("Collecting Centre Fees", "/api/pricing/collecting_centre_fees",
                         "Manage item fees for collecting centres. "
                         + "GET ?institutionId=X lists all active fees for that centre. "

@@ -1008,6 +1008,85 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject manageTimedItemsTool = Json.createObjectBuilder()
+                .add("name", "manage_timed_items")
+                .add("description",
+                        "Manage timed item master data (room rent, oxygen, ICU time, etc.) and their tiered fee slots. "
+                        + "TimedItems are consumed by the inward timed service page to bill patients for duration-based charges. "
+                        + "Fees are ordered by sortOrder; each fee defines a durationHours block with an optional overShootHours grace window. "
+                        + "Methods for items: LIST, GET, POST, PUT, DELETE, ACTIVATE, DEACTIVATE. "
+                        + "Methods for fees: LIST_FEES, POST_FEE, PUT_FEE, DELETE_FEE. "
+                        + "Always confirm with the user before creating, updating, or retiring records.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("LIST").add("GET").add("POST").add("PUT").add("DELETE")
+                                                .add("ACTIVATE").add("DEACTIVATE")
+                                                .add("LIST_FEES").add("POST_FEE").add("PUT_FEE").add("DELETE_FEE"))
+                                        .add("description", "Operation to perform."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Timed item id. Required for GET, PUT, DELETE, ACTIVATE, DEACTIVATE, LIST_FEES, POST_FEE, PUT_FEE, DELETE_FEE."))
+                                .add("feeId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Fee id. Required for PUT_FEE and DELETE_FEE."))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Name of the timed item or fee. Required for POST and POST_FEE."))
+                                .add("code", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Short code. Optional; auto-generated from name if omitted on POST."))
+                                .add("departmentType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Department type enum value (e.g. Inward, Theatre). Required for POST."))
+                                .add("inwardChargeType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "InwardChargeType enum value (e.g. Room, Oxygen, NursingCharge). Required for POST."))
+                                .add("departmentId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Department id. Optional."))
+                                .add("institutionId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Institution id. Optional."))
+                                .add("inactive", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false — whether item is inactive. Optional."))
+                                .add("fee", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Fee amount for this tier block. Required for POST_FEE."))
+                                .add("ffee", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Foreigner fee amount. Optional; defaults to fee if omitted."))
+                                .add("durationHours", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Block duration in hours this fee tier covers. Required for POST_FEE (must be > 0)."))
+                                .add("overShootHours", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Grace hours beyond durationHours before the next tier applies. Optional."))
+                                .add("durationDaysForMoCharge", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Duration days for monthly charge calculation. Optional."))
+                                .add("sortOrder", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Fee tier ordering (ascending). Optional."))
+                                .add("repeating", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false — whether this fee repeats for multiple blocks. Optional."))
+                                .add("query", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Search text for LIST. Optional."))
+                                .add("size", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max results (1–100). Optional."))
+                                .add("retireComments", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Reason for retirement. Optional for DELETE/DELETE_FEE.")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         JsonObject lookupFinanceBillTool = Json.createObjectBuilder()
                 .add("name", "lookup_finance_bill")
                 .add("description",
@@ -1037,6 +1116,7 @@ public class AnthropicApiService implements Serializable {
                 .add(manageFormsTool)
                 .add(manageSubscriptionsTool)
                 .add(manageInpatientTemplates)
+                .add(manageTimedItemsTool)
                 .add(lookupFinanceBillTool)
                 .build();
     }
@@ -1293,6 +1373,32 @@ public class AnthropicApiService implements Serializable {
                 case "lookup_finance_bill": {
                     String billNumber = toolInput.containsKey("billNumber") ? toolInput.getString("billNumber", "") : "";
                     return lookupFinanceBillByNumber(billNumber, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_timed_items": {
+                    String method       = toolInput.getString("method", "LIST");
+                    String id           = toolInput.containsKey("id")           ? toolInput.getString("id", "")           : "";
+                    String feeId        = toolInput.containsKey("feeId")        ? toolInput.getString("feeId", "")        : "";
+                    String name         = toolInput.containsKey("name")         ? toolInput.getString("name", "")         : "";
+                    String code         = toolInput.containsKey("code")         ? toolInput.getString("code", "")         : "";
+                    String deptType     = toolInput.containsKey("departmentType")    ? toolInput.getString("departmentType", "")    : "";
+                    String chargeType   = toolInput.containsKey("inwardChargeType")  ? toolInput.getString("inwardChargeType", "")  : "";
+                    String departmentId = toolInput.containsKey("departmentId")      ? toolInput.getString("departmentId", "")      : "";
+                    String institutionId= toolInput.containsKey("institutionId")     ? toolInput.getString("institutionId", "")     : "";
+                    String inactive     = toolInput.containsKey("inactive")          ? toolInput.getString("inactive", "")          : "";
+                    String fee          = toolInput.containsKey("fee")               ? toolInput.getString("fee", "")               : "";
+                    String ffee         = toolInput.containsKey("ffee")              ? toolInput.getString("ffee", "")              : "";
+                    String durationHrs  = toolInput.containsKey("durationHours")     ? toolInput.getString("durationHours", "")     : "";
+                    String overShoot    = toolInput.containsKey("overShootHours")    ? toolInput.getString("overShootHours", "")    : "";
+                    String durationDays = toolInput.containsKey("durationDaysForMoCharge") ? toolInput.getString("durationDaysForMoCharge", "") : "";
+                    String sortOrder    = toolInput.containsKey("sortOrder")         ? toolInput.getString("sortOrder", "")         : "";
+                    String repeating    = toolInput.containsKey("repeating")         ? toolInput.getString("repeating", "")         : "";
+                    String query        = toolInput.containsKey("query")             ? toolInput.getString("query", "")             : "";
+                    String size         = toolInput.containsKey("size")              ? toolInput.getString("size", "")              : "";
+                    String retireComments = toolInput.containsKey("retireComments")  ? toolInput.getString("retireComments", "")    : "";
+                    return callTimedItemsApi(method, id, feeId, name, code, deptType, chargeType,
+                            departmentId, institutionId, inactive,
+                            fee, ffee, durationHrs, overShoot, durationDays, sortOrder, repeating,
+                            query, size, retireComments, hmisBaseUrl, hmisApiKey);
                 }
                 default:
                     return "Unknown tool: " + toolName;
@@ -2994,6 +3100,156 @@ public class AnthropicApiService implements Serializable {
         }
     }
 
+    private String callTimedItemsApi(String method, String id, String feeId, String name, String code,
+            String departmentType, String inwardChargeType, String departmentId, String institutionId,
+            String inactive, String fee, String ffee, String durationHours, String overShootHours,
+            String durationDaysForMoCharge, String sortOrder, String repeating,
+            String query, String size, String retireComments,
+            String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String baseUrl = hmisBaseUrl.replaceAll("/$", "") + "/api/timed-items";
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+
+            switch (method.toUpperCase()) {
+                case "LIST": {
+                    StringBuilder url = new StringBuilder(baseUrl).append("/search?limit=").append(size.isEmpty() ? "30" : size);
+                    if (!query.isEmpty()) url.append("&query=").append(URLEncoder.encode(query, StandardCharsets.UTF_8));
+                    if (!departmentType.isEmpty()) url.append("&departmentType=").append(URLEncoder.encode(departmentType, StandardCharsets.UTF_8));
+                    if (!inactive.isEmpty()) url.append("&inactive=").append(URLEncoder.encode(inactive, StandardCharsets.UTF_8));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(url.toString()))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "GET": {
+                    if (id.isEmpty()) return "Error: id is required for GET.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "POST": {
+                    if (name.isEmpty()) return "Error: name is required for POST.";
+                    if (departmentType.isEmpty()) return "Error: departmentType is required for POST.";
+                    if (inwardChargeType.isEmpty()) return "Error: inwardChargeType is required for POST.";
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder()
+                            .add("name", name)
+                            .add("departmentType", departmentType)
+                            .add("inwardChargeType", inwardChargeType);
+                    if (!code.isEmpty()) b.add("code", code);
+                    if (!departmentId.isEmpty()) b.add("departmentId", Long.parseLong(departmentId));
+                    if (!institutionId.isEmpty()) b.add("institutionId", Long.parseLong(institutionId));
+                    if (!inactive.isEmpty()) b.add("inactive", Boolean.parseBoolean(inactive));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(b.build().toString())).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "PUT": {
+                    if (id.isEmpty()) return "Error: id is required for PUT.";
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    if (!name.isEmpty()) b.add("name", name);
+                    if (!code.isEmpty()) b.add("code", code);
+                    if (!departmentType.isEmpty()) b.add("departmentType", departmentType);
+                    if (!inwardChargeType.isEmpty()) b.add("inwardChargeType", inwardChargeType);
+                    if (!departmentId.isEmpty()) b.add("departmentId", Long.parseLong(departmentId));
+                    if (!institutionId.isEmpty()) b.add("institutionId", Long.parseLong(institutionId));
+                    if (!inactive.isEmpty()) b.add("inactive", Boolean.parseBoolean(inactive));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .PUT(HttpRequest.BodyPublishers.ofString(b.build().toString())).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "DELETE": {
+                    if (id.isEmpty()) return "Error: id is required for DELETE.";
+                    String url = baseUrl + "/" + id + (retireComments.isEmpty() ? "" : "?retireComments=" + URLEncoder.encode(retireComments, StandardCharsets.UTF_8));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(url))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).DELETE().build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "ACTIVATE": {
+                    if (id.isEmpty()) return "Error: id is required for ACTIVATE.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/activate"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .method("PATCH", HttpRequest.BodyPublishers.noBody()).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "DEACTIVATE": {
+                    if (id.isEmpty()) return "Error: id is required for DEACTIVATE.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/deactivate"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .method("PATCH", HttpRequest.BodyPublishers.noBody()).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "LIST_FEES": {
+                    if (id.isEmpty()) return "Error: id is required for LIST_FEES.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/fees"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "POST_FEE": {
+                    if (id.isEmpty()) return "Error: id is required for POST_FEE.";
+                    if (name.isEmpty()) return "Error: name is required for POST_FEE.";
+                    if (durationHours.isEmpty()) return "Error: durationHours is required for POST_FEE.";
+                    double dh = Double.parseDouble(durationHours);
+                    if (dh <= 0) return "Error: durationHours must be > 0.";
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder()
+                            .add("name", name)
+                            .add("durationHours", dh)
+                            .add("fee", fee.isEmpty() ? 0.0 : Double.parseDouble(fee));
+                    if (!ffee.isEmpty()) b.add("ffee", Double.parseDouble(ffee));
+                    if (!overShootHours.isEmpty()) b.add("overShootHours", Double.parseDouble(overShootHours));
+                    if (!durationDaysForMoCharge.isEmpty()) b.add("durationDaysForMoCharge", Long.parseLong(durationDaysForMoCharge));
+                    if (!sortOrder.isEmpty()) b.add("sortOrder", Integer.parseInt(sortOrder));
+                    if (!repeating.isEmpty()) b.add("repeating", Boolean.parseBoolean(repeating));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/fees"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(b.build().toString())).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "PUT_FEE": {
+                    if (id.isEmpty()) return "Error: id is required for PUT_FEE.";
+                    if (feeId.isEmpty()) return "Error: feeId is required for PUT_FEE.";
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    if (!name.isEmpty()) b.add("name", name);
+                    if (!fee.isEmpty()) b.add("fee", Double.parseDouble(fee));
+                    if (!ffee.isEmpty()) b.add("ffee", Double.parseDouble(ffee));
+                    if (!durationHours.isEmpty()) b.add("durationHours", Double.parseDouble(durationHours));
+                    if (!overShootHours.isEmpty()) b.add("overShootHours", Double.parseDouble(overShootHours));
+                    if (!durationDaysForMoCharge.isEmpty()) b.add("durationDaysForMoCharge", Long.parseLong(durationDaysForMoCharge));
+                    if (!sortOrder.isEmpty()) b.add("sortOrder", Integer.parseInt(sortOrder));
+                    if (!repeating.isEmpty()) b.add("repeating", Boolean.parseBoolean(repeating));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/fees/" + feeId))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .PUT(HttpRequest.BodyPublishers.ofString(b.build().toString())).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "DELETE_FEE": {
+                    if (id.isEmpty()) return "Error: id is required for DELETE_FEE.";
+                    if (feeId.isEmpty()) return "Error: feeId is required for DELETE_FEE.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/fees/" + feeId))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).DELETE().build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                default:
+                    return "Unknown method: " + method + ". Valid: LIST, GET, POST, PUT, DELETE, ACTIVATE, DEACTIVATE, LIST_FEES, POST_FEE, PUT_FEE, DELETE_FEE";
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Timed items API call interrupted.";
+        } catch (Exception e) {
+            return "Timed items API error: " + e.getMessage();
+        }
+    }
+
     public String buildSystemPrompt(String hmisApiBaseUrl, String userHmisApiKey, String githubBranch) {
         String branch = (githubBranch != null && !githubBranch.trim().isEmpty())
                 ? githubBranch.trim() : "development";
@@ -3121,6 +3377,18 @@ public class AnthropicApiService implements Serializable {
           .append("POST returns 'already_exists' with the existing id when an identical non-retired subscription exists. ")
           .append("Use DELETE to soft-retire a subscription by id. ")
           .append("Always confirm with the user before POST or DELETE — these changes affect who receives live notifications.\n\n");
+        sb.append("### manage_timed_items\n");
+        sb.append("Manage timed item master data (room rent, oxygen, ICU time, etc.) and their tiered fee slots. ")
+          .append("TimedItems (DTYPE=TimedItem) are consumed by the inward timed service page to bill patients for duration-based charges. ")
+          .append("Use LIST to search items (filter by departmentType e.g. Inward or Theatre). ")
+          .append("Use GET to fetch a single item with its fees. ")
+          .append("Use POST to create a new timed item — required: name, departmentType, inwardChargeType. ")
+          .append("Use PUT to update name, code, departmentType, inwardChargeType, departmentId, institutionId, or inactive flag. ")
+          .append("Use DELETE to soft-retire an item. Use ACTIVATE / DEACTIVATE to toggle availability without retiring. ")
+          .append("For tiered fee management: LIST_FEES lists all fees ordered by sortOrder. ")
+          .append("POST_FEE creates a fee tier — required: name, durationHours (> 0). fee, ffee, overShootHours, sortOrder, repeating are optional. ")
+          .append("PUT_FEE updates an existing fee tier (requires feeId). DELETE_FEE soft-retires a fee tier. ")
+          .append("Always confirm with the user before POST, PUT, or DELETE — changes affect live inward timed billing.\n\n");
         sb.append("### manage_inpatient_templates\n");
         sb.append("Create, read, update, and retire inpatient document templates (HTML with placeholder tokens). ")
           .append("Types: InpatientDiagnosisCard (diagnosis & treatment cards) and InpatientLetter (covering letters, credit company letters, etc.). ")
@@ -3610,6 +3878,25 @@ public class AnthropicApiService implements Serializable {
                     {"POST",   "/inward/room-facility-charges",    "Create room facility charge. Body: name (required), roomId, roomCategoryId, departmentId, charge fields, timedItemFee fields"},
                     {"PUT",    "/inward/room-facility-charges/{id}", "Update room facility charge"},
                     {"DELETE", "/inward/room-facility-charges/{id}", "Soft-retire room facility charge"}
+                });
+
+        appendModule(sb, "Timed Items", "/timed-items",
+                "Manage timed item master data and their tiered fee slots for duration-based inward billing. "
+                + "Items have departmentType (Inward, Theatre) and inwardChargeType. "
+                + "Each item can have multiple TimedItemFee tiers ordered by sortOrder.",
+                githubUrl(branch, "developer_docs/api/rest-api-development-guide.md"),
+                new String[][]{
+                    {"GET",    "/timed-items/search?query=&departmentType=&limit=", "Search timed items"},
+                    {"GET",    "/timed-items/{id}",          "Fetch one timed item with fees"},
+                    {"POST",   "/timed-items",               "Create timed item. Body: name, departmentType, inwardChargeType (all required); code, departmentId, institutionId, inactive optional"},
+                    {"PUT",    "/timed-items/{id}",          "Update timed item (all fields optional)"},
+                    {"DELETE", "/timed-items/{id}",          "Soft-retire timed item"},
+                    {"PATCH",  "/timed-items/{id}/activate", "Set inactive=false"},
+                    {"PATCH",  "/timed-items/{id}/deactivate", "Set inactive=true"},
+                    {"GET",    "/timed-items/{id}/fees",     "List fee tiers for an item (ordered by sortOrder)"},
+                    {"POST",   "/timed-items/{id}/fees",     "Add fee tier. Body: name, durationHours (required); fee, ffee, overShootHours, sortOrder, repeating optional"},
+                    {"PUT",    "/timed-items/{id}/fees/{feeId}", "Update fee tier"},
+                    {"DELETE", "/timed-items/{id}/fees/{feeId}", "Soft-retire fee tier"}
                 });
 
         // ── Login History / Config ────────────────────────────────────────────
