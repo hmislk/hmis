@@ -1893,6 +1893,17 @@
                     </h:form>
                 </h:panelGroup>
 
+                <!-- Bed Board -->
+                <h:panelGroup rendered="#{ui.icon eq 'Bed_Board' and webUserController.hasPrivilege('InwardRoomRoomOccupency')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Bed_Board" value="Bed Board" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Bed_Board" ajax="false" action="#{admissionController.navigateToBedBoard()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/room-occupancy.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Bed Board"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
                 <!-- Room Vacancy -->
                 <h:panelGroup rendered="#{ui.icon eq 'Room_Vacancy' and webUserController.hasPrivilege('InwardRoomRoomOccupency')}" layout="block" class="col-1 p-1">
                     <h:form>
