@@ -3451,7 +3451,7 @@ public class AnthropicApiService implements Serializable {
                 "Retrieve pharmacy stock movement and history records.",
                 githubUrl(branch, "developer_docs/API_STOCK_HISTORY.md"),
                 new String[][]{
-                    {"GET", "/stock_history", "Get stock history with date range, item, and department filters"}
+                    {"GET", "/stock_history", "Get stock history with date range, item, and department filters. Pass includeArchived=true to also search archived rows beyond the retention window."}
                 });
 
         appendModule(sb, "Pharmaceutical Items", "/pharmaceutical_items",
