@@ -40,7 +40,11 @@ import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.entity.inward.TimedItemFee;
 import com.divudi.core.entity.inward.AdmissionNumber;
+import com.divudi.core.entity.inward.PatientRoomTimedItemCharge;
+import com.divudi.core.entity.inward.RoomFacilityTimedItem;
 import com.divudi.core.facade.AdmissionFacade;
+import com.divudi.core.facade.PatientRoomTimedItemChargeFacade;
+import com.divudi.core.facade.RoomFacilityTimedItemFacade;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.facade.BillFeeFacade;
@@ -101,6 +105,10 @@ public class InwardBeanController implements Serializable {
     PatientItemFacade patientItemFacade;
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
+    @EJB
+    private RoomFacilityTimedItemFacade roomFacilityTimedItemFacade;
+    @EJB
+    private PatientRoomTimedItemChargeFacade patientRoomTimedItemChargeFacade;
     @EJB
     private ItemFeeFacade itemFeeFacade;
     @EJB
@@ -1277,6 +1285,10 @@ public class InwardBeanController implements Serializable {
                 result.put(InwardChargeType.LinenCharges,         toDoubleOrZero(arr[6]));
             }
         }
+        Map<InwardChargeType, Double> timedItemSums = getTimedItemChargeSumsBulk(patientEncounter, cpts);
+        for (Map.Entry<InwardChargeType, Double> entry : timedItemSums.entrySet()) {
+            result.merge(entry.getKey(), entry.getValue(), Double::sum);
+        }
         return result;
     }
 
@@ -2169,6 +2181,7 @@ public class InwardBeanController implements Serializable {
         } else {
             getPatientRoomFacade().edit(patientRoom);
         }
+        snapshotTimedItems(patientRoom, newRoomFacilityCharge);
 
         return patientRoom;
     }
@@ -2215,6 +2228,7 @@ public class InwardBeanController implements Serializable {
         } else {
             getPatientRoomFacade().edit(patientRoom);
         }
+        snapshotTimedItems(patientRoom, newRoomFacilityCharge);
 
         return patientRoom;
     }
@@ -2279,8 +2293,69 @@ public class InwardBeanController implements Serializable {
         } else {
             getPatientRoomFacade().edit(patientRoom);
         }
+        snapshotTimedItems(patientRoom, newRoomFacilityCharge);
 
         return patientRoom;
+    }
+
+    public void snapshotTimedItems(PatientRoom patientRoom, RoomFacilityCharge rfc) {
+        if (patientRoom == null || rfc == null) {
+            return;
+        }
+        String jpql = "SELECT r FROM RoomFacilityTimedItem r WHERE r.roomFacilityCharge = :rfc AND r.retired = false";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("rfc", rfc);
+        List<RoomFacilityTimedItem> links = roomFacilityTimedItemFacade.findByJpql(jpql, params);
+        if (links == null || links.isEmpty()) {
+            return;
+        }
+        for (RoomFacilityTimedItem link : links) {
+            PatientRoomTimedItemCharge snapshot = new PatientRoomTimedItemCharge();
+            snapshot.setPatientRoom(patientRoom);
+            snapshot.setTimedItem(link.getTimedItem());
+            patientRoomTimedItemChargeFacade.create(snapshot);
+        }
+    }
+
+    public List<PatientRoomTimedItemCharge> fetchTimedItemCharges(PatientRoom patientRoom) {
+        if (patientRoom == null || patientRoom.getId() == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT t FROM PatientRoomTimedItemCharge t WHERE t.patientRoom = :pr";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("pr", patientRoom);
+        List result = patientRoomTimedItemChargeFacade.findByJpql(jpql, params);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    public Map<InwardChargeType, Double> getTimedItemChargeSumsBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        Map<InwardChargeType, Double> result = new EnumMap<>(InwardChargeType.class);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        String jpql = "SELECT t.timedItem.inwardChargeType, SUM(t.calculatedCharge - t.discountCharge)"
+                + " FROM PatientRoomTimedItemCharge t"
+                + " WHERE t.patientRoom.retired = false"
+                + " AND t.patientRoom.patientEncounter IN :pe"
+                + " GROUP BY t.timedItem.inwardChargeType";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("pe", pts);
+        List<Object> rows = patientRoomTimedItemChargeFacade.findObjectByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (rows != null) {
+            for (Object row : rows) {
+                if (row instanceof Object[]) {
+                    Object[] arr = (Object[]) row;
+                    if (arr[0] instanceof InwardChargeType && arr[1] instanceof Number) {
+                        InwardChargeType ict = (InwardChargeType) arr[0];
+                        double val = ((Number) arr[1]).doubleValue();
+                        result.merge(ict, val, Double::sum);
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     // Add business logic below. (Right-click in editor and choose
