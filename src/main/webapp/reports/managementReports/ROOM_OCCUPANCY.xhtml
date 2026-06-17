@@ -1,447 +1,563 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
     <h:body>
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
-                <h:form >
-                    <p:panel header="ROOM OCCUPANCY" styleClass="my-2" >
+                <style type="text/css">
+                    .room-occupancy-report .ui-datatable {
+                        border: 1px solid #d7dee8;
+                        border-radius: 6px;
+                        overflow: auto;
+                    }
+
+                    .room-occupancy-table-wrap {
+                        overflow-x: scroll;
+                        border: 1px solid #e1e6ef;
+                        border-radius: 6px;
+                    }
+
+                    .room-occupancy-table-wrap .ui-datatable {
+                        border: 0;
+                        border-radius: 0;
+                    }
+
+                    .room-occupancy-table .ui-datatable-tablewrapper {
+                        overflow: visible;
+                    }
+
+                    .room-occupancy-table table {
+                        table-layout: fixed;
+                        min-width: max-content;
+                    }
+
+                    .room-occupancy-table th,
+                    .room-occupancy-table td {
+                        border-color: #e4e9f1 !important;
+                        white-space: nowrap;
+                    }
+
+                    .room-occupancy-table th {
+                        background: #f7f9fc !important;
+                        color: #384150;
+                        font-size: 0.88rem;
+                        font-weight: 700;
+                        line-height: 1.3;
+                        padding: 0.65rem 0.75rem !important;
+                        text-transform: none;
+                    }
+
+                    .room-occupancy-table .group-header th,
+                    .room-occupancy-table .group-header {
+                        background: #e9eef6 !important;
+                        color: #253044;
+                        font-size: 0.95rem;
+                        text-transform: uppercase;
+                    }
+
+                    .room-occupancy-table .subgroup-header th,
+                    .room-occupancy-table .subgroup-header {
+                        background: #f1f5fa !important;
+                        color: #313b4c;
+                    }
+
+                    .room-occupancy-table td {
+                        color: #2f3846;
+                        font-size: 1rem;
+                        padding: 0.65rem 0.75rem !important;
+                    }
+
+                    .room-occupancy-table .text-col {
+                        width: 92px;
+                        min-width: 92px;
+                        text-align: left !important;
+                    }
+
+                    .room-occupancy-table .admission-col {
+                        width: 88px;
+                        min-width: 88px;
+                    }
+
+                    .room-occupancy-table .metric-col {
+                        width: 82px;
+                        min-width: 82px;
+                        text-align: justify !important;
+                    }
+
+                    .room-occupancy-table .category-header {
+                        min-width: 328px;
+                    }
+
+                    .room-occupancy-table .total-header {
+                        min-width: 328px;
+                    }
+
+                    .room-occupancy-table .ui-datatable-data tr:nth-child(even) td {
+                        background: #fbfcfe;
+                    }
+
+                    .room-occupancy-table .ui-datatable-data tr:hover td {
+                        background: #eef6ff;
+                    }
+
+                    .room-occupancy-table .ui-datatable-footer,
+                    .room-occupancy-table tfoot td {
+                        background: #eef2f7 !important;
+                        color: #1f2937;
+                        font-weight: 700;
+                    }
+
+                    .room-occupancy-table .sticky-col {
+                        position: sticky;
+                        z-index: 13;
+                        background: inherit;
+                    }
+
+                    .room-occupancy-table th.sticky-col {
+                        z-index: 15;
+                    }
+
+                    .room-occupancy-table .sticky-year {
+                        left: 0;
+                    }
+
+                    .room-occupancy-table .sticky-month {
+                        left: 92px;
+                    }
+
+                    .room-occupancy-table .sticky-admissions {
+                        left: 184px;
+                        box-shadow: 3px 0 4px rgba(31, 41, 55, 0.08);
+                    }
+                </style>
+                <h:form id="roomOccupancyForm">
+                    <p:panel header="ROOM OCCUPANCY" styleClass="my-2 room-occupancy-report">
                         <h:panelGrid columns="5" class="w-100">
+
+                            <!-- From Date -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
                                 <p:outputLabel value="From Date" for="fromDate" styleClass="m-3"/>
                             </h:panelGroup>
-
-                            <p:datePicker
-                                id="fromDate"
-                                styleClass="w-100"
-                                inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy HH:mm:ss"   
-                                showTime="true"                                                           
-                                monthNavigator="true"           
-                                yearNavigator="true"                              
-                                timeInput="true"                
-                                />
-
+                            <p:datePicker id="fromDate"
+                                          value="#{inwardReportController.fromDate}"
+                                          styleClass="w-100" inputStyleClass="w-100 form-control"
+                                          pattern="dd/MM/yyyy HH:mm:ss"
+                                          showTime="true" monthNavigator="true"
+                                          yearNavigator="true" timeInput="true"/>
                             <p:spacer width="40"/>
 
+                            <!-- To Date -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
                                 <p:outputLabel value="To Date" for="toDate" styleClass="m-3"/>
                             </h:panelGroup>
+                            <p:datePicker id="toDate"
+                                          value="#{inwardReportController.toDate}"
+                                          styleClass="w-100" inputStyleClass="w-100 form-control"
+                                          pattern="dd/MM/yyyy HH:mm:ss"
+                                          showTime="true" monthNavigator="true"
+                                          yearNavigator="true" timeInput="true"/>
 
-                            <p:datePicker
-                                id="toDate"
-                                styleClass="w-100"
-                                inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy HH:mm:ss"   
-                                showTime="true"                                                         
-                                monthNavigator="true"           
-                                yearNavigator="true"                              
-                                timeInput="true"                
-                                />
-
+                            <!-- Institution -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2"/>
                                 <p:outputLabel value="Institution" for="phmIns" class="m-3"/>
-
                             </h:panelGroup>
-                            <p:selectOneMenu
-                                id="phmIns"
-                                class="w-100"
-                                filter="true">
-                                <f:selectItem itemLabel="All"/>
+                            <p:selectOneMenu id="phmIns" class="w-100"
+                                             value="#{inwardReportController.institution}" filter="true">
+                                <f:selectItem itemLabel="All Institutions"/>
+                                <f:selectItems value="#{institutionController.companies}"
+                                               var="ins" itemLabel="#{ins.name}" itemValue="#{ins}"/>
+                                <p:ajax process="phmIns" update="phmDept"/>
                             </p:selectOneMenu>
+                            <p:spacer width="20"/>
 
-                            <p:spacer width="40"></p:spacer>
-
+                            <!-- Site -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
                                 <p:outputLabel value="Site" for="phmSite" class="m-3"/>
-
                             </h:panelGroup>
-                            <p:selectOneMenu
-                                id="phmSite"
-                                class="w-100"
-                                filter="true">
-                                <f:selectItem itemLabel="All"/>
+                            <p:selectOneMenu id="phmSite" class="w-100"
+                                             value="#{inwardReportController.site}" filter="true">
+                                <f:selectItem itemLabel="All Sites"/>
+                                <f:selectItems value="#{institutionController.sites}"
+                                               var="site" itemLabel="#{site.name}" itemValue="#{site}"/>
+                                <p:ajax process="phmSite" update="phmDept"/>
                             </p:selectOneMenu>
+                            <p:spacer width="20"/>
 
-
+                            <!-- Department -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2"/>
                                 <p:outputLabel value="Department" for="phmDept" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu
-                                id="phmDept"
-                                class="w-100"
-                                filter="true">
-                                <f:selectItem itemLabel="All"/>
-                            </p:selectOneMenu>
-
-                            <p:spacer width="40"></p:spacer>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf236;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Room Category" for="rCat" class="m-3"/>
+                            <h:panelGroup id="phmDept">
+                                <p:selectOneMenu
+                                    rendered="#{inwardReportController.institution eq null and inwardReportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{inwardReportController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                   var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"/>
+                                </p:selectOneMenu>
+                                <p:selectOneMenu
+                                    rendered="#{inwardReportController.institution eq null and inwardReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{inwardReportController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.site)}"
+                                                   var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"/>
+                                </p:selectOneMenu>
+                                <p:selectOneMenu
+                                    rendered="#{inwardReportController.institution ne null and inwardReportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{inwardReportController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.institution)}"
+                                                   var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"/>
+                                </p:selectOneMenu>
+                                <p:selectOneMenu
+                                    rendered="#{inwardReportController.institution ne null and inwardReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{inwardReportController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardReportController.institution, inwardReportController.site)}"
+                                                   var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"/>
+                                </p:selectOneMenu>
                             </h:panelGroup>
-                            <p:selectCheckboxMenu id="rCat"
-                                                  styleClass="w-100"
-                                                  label="Select Category"
-                                                  updateLabel="true">
-                                <f:selectItem itemLabel="Normal Room" itemValue="1" />
-                                <f:selectItem itemLabel="A/C Room" itemValue="2" />
-                                <f:selectItem itemLabel="Super Deluxe(Old)" itemValue="3" />
-                                <f:selectItem itemLabel="Super Deluxe(New)" itemValue="4" />
-                                <f:selectItem itemLabel="Deluxe" itemValue="5" />
-                            </p:selectCheckboxMenu>
-
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf080;" styleClass="fa mr-2"/> 
-                                <p:outputLabel value="Chart" for="chartType" styleClass="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu id="chartType" styleClass="w-100">
-                                <f:selectItem itemLabel="Select Chart" itemValue="" noSelectionOption="true"/>
-                                <f:selectItem itemLabel="Total Occupied Days" itemValue="toc"/>
-                                <f:selectItem itemLabel="Selected Categories" itemValue="sc"/>
-                                <f:selectItem itemLabel="Total Occupancy %" itemValue="to"/>
-                            </p:selectOneMenu>
 
                         </h:panelGrid>
 
+                        <!-- Action Buttons -->
                         <div class="d-flex align-items-center my-4">
-
-                            <p:commandButton 
-                                class="ui-button-warning mx-1"
-                                icon="fas fa-cogs"
-                                ajax="false"
-                                value="Process" />
-
-                            <p:commandButton 
-                                class="ui-button-primary mx-1"
-                                icon="fas fa-print"
-                                ajax="false"
-                                value="Print All" />
-
-                            <p:commandButton 
-                                class="ui-button-success mx-1"
-                                icon="fas fa-file-excel"
-                                ajax="false"
-                                value="Download" />
-
-                            <p:commandButton 
-                                class="ui-button-danger mx-1"
-                                icon="fas fa-file-pdf"
-                                ajax="false"
-                                value="PDF" />
-
+                            <p:commandButton class="ui-button-warning mx-1"
+                                             icon="fas fa-cogs" ajax="false"
+                                             action="#{inwardReportController.processRoomOccupancyReport()}"
+                                             value="Process"/>
+                            <p:commandButton class="ui-button-primary mx-1"
+                                             icon="fas fa-print" ajax="false"
+                                             onclick="window.print()"
+                                             value="Print All"/>
+                            <p:commandButton class="ui-button-success mx-1"
+                                             icon="fas fa-file-excel" ajax="false"
+                                             action="#{inwardReportController.downloadRoomOccupancyExcel()}"
+                                             value="Download"/>
+                            <p:commandButton class="ui-button-danger mx-1"
+                                             icon="fas fa-file-pdf" ajax="false"
+                                             action="#{inwardReportController.downloadRoomOccupancyPdf()}"
+                                             value="PDF"/>
                         </div>
 
-                        <p:dataTable id="tb"
-                                     var="var"
-                                     rowIndexVar="n"
-                                     paginator="true"
-                                     paginatorPosition="bottom"
-                                     rows="10"
-                                     rendered="true"
-                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
-                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
-                                     styleClass="table-sm"
-                                     >
+                        <div class="room-occupancy-table-wrap">
+                            <p:dataTable id="tb"
+                                         value="#{inwardReportController.roomOccupancyList}"
+                                         var="row"
+                                         rowIndexVar="n"
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         rows="10"
+                                         rendered="#{not empty inwardReportController.roomOccupancyList}"
+                                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                         rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                                         styleClass="table-sm room-occupancy-table"
+                                         rowStyleClass="#{row.grandTotal ? 'font-weight-bold' : ''}">
 
-                            <p:columnGroup  type="header">
+                            <!-- ═══════════════════════════════════════════════════
+                                 3-ROW HEADER
+                                 Dynamic category colspan = size(roomCategories) * 4
+                            ═══════════════════════════════════════════════════ -->
+                            <p:columnGroup type="header">
+
+                                <!-- ROW 1: top-level group spans -->
                                 <p:row>
-                                    <p:column width="8em" rowspan="3" styleClass="border-1 text-center">
+                                    <p:column rowspan="3" styleClass="border-1 text-center text-col sticky-col sticky-year">
                                         <f:facet name="header"><h:outputText value="Year"/></f:facet>
                                     </p:column>
-                                    <p:column width="8em" rowspan="3" styleClass="border-1 text-center">
+                                    <p:column rowspan="3" styleClass="border-1 text-center text-col sticky-col sticky-month">
                                         <f:facet name="header"><h:outputText value="Month"/></f:facet>
                                     </p:column>
-                                    <p:column width="8em" rowspan="3" styleClass="border-1 text-center">
-                                        <f:facet name="header"><h:outputText value="Number of Admissions"/></f:facet>
+                                    <p:column rowspan="3" styleClass="border-1 text-center admission-col sticky-col sticky-admissions">
+                                        <f:facet name="header"><h:outputText value="No of Admission"/></f:facet>
                                     </p:column>
-                                    <p:column width="160em" colspan="20" styleClass="border-1 text-center">
+                                    <!-- "Rooms" spans 4 cols × number of live room categories -->
+                                    <p:column colspan="#{inwardReportController.roomCategories.size() * 4}"
+                                              styleClass="border-1 text-center group-header">
                                         <f:facet name="header"><h:outputText value="Rooms"/></f:facet>
                                     </p:column>
-                                    <p:column width="32em" colspan="4" styleClass="border-1 text-center">
+<!--                                    <p:column colspan="4" styleClass="border-1 text-center group-header">
                                         <f:facet name="header"><h:outputText value="I.C.U"/></f:facet>
                                     </p:column>
-                                    <p:column width="32em" colspan="4" styleClass="border-1 text-center">
-                                        <f:facet name="header"><h:outputText value="WARD BED(Old)"/></f:facet>
+                                    <p:column colspan="4" styleClass="border-1 text-center group-header">
+                                        <f:facet name="header"><h:outputText value="Ward Bed Old"/></f:facet>
                                     </p:column>
-                                    <p:column width="32em" colspan="4" styleClass="border-1 text-center">
-                                        <f:facet name="header"><h:outputText value="WARD BED(New)"/></f:facet>
+                                    <p:column colspan="4" styleClass="border-1 text-center group-header">
+                                        <f:facet name="header"><h:outputText value="Ward Bed New"/></f:facet>
                                     </p:column>
-                                    <p:column width="40em" colspan="5" styleClass="border-1 text-center">
-                                        <f:facet name="header"><h:outputText value="INDOOR TOTAL"/></f:facet>
+                                    <p:column colspan="4" styleClass="border-1 text-center group-header total-header">
+                                        <f:facet name="header"><h:outputText value="Indoor Total"/></f:facet>
                                     </p:column>
-                                    <p:column  width="40em" colspan="5" styleClass="border-1 text-center">
-                                        <f:facet name="header"><h:outputText value="I.C.U &amp; WARD BED TOTAL"/></f:facet>
-                                    </p:column>
+                                    <p:column colspan="4" styleClass="border-1 text-center group-header total-header">
+                                        <f:facet name="header"><h:outputText value="I.C.U &amp; Ward Total"/></f:facet>
+                                    </p:column>-->
                                 </p:row>
 
+                                <!-- ROW 2: one 4-colspan cell per room category; fixed sections rowspan="2" -->
                                 <p:row>
-                                    <p:column colspan="4" styleClass="border-1 text-center">
-                                        <f:facet name="header"><h:outputText value="Normal Room"/></f:facet>
-                                    </p:column>
-                                    <p:column  colspan="4" styleClass="border-1 text-center">
-                                        <f:facet name="header"><h:outputText value="A/C Room"/></f:facet>
-                                    </p:column>
-                                    <p:column  colspan="4" styleClass="border-1 text-center">
-                                        <f:facet name="header"><h:outputText value="Super Deluxe(Old)"/></f:facet>
-                                    </p:column>
-                                    <p:column colspan="4" styleClass="border-1 text-center">
-                                        <f:facet name="header"><h:outputText value="Super Deluxe(New)"/></f:facet>
-                                    </p:column>
-                                    <p:column  colspan="4" styleClass="border-1 text-center">
-                                        <f:facet name="header"><h:outputText value="Deluxe"/></f:facet>
-                                    </p:column>
+                                    <!-- Dynamic room category sub-headers -->
+                                    <c:forEach items="#{inwardReportController.roomCategories}" var="rc">
+                                        <p:column colspan="4" styleClass="border-1 text-center subgroup-header category-header">
+                                            <f:facet name="header">
+                                                <h:outputText value="#{rc.name}"/>
+                                            </f:facet>
+                                        </p:column>
+                                    </c:forEach>
 
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Number of Rooms"/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Number of Days"/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
-
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Number of Beds"/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Number of Days"/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
-
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Number of Beds"/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Number of Days"/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
-
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="No of Days Occupied"/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Number of Rooms"/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value=""/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
-
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="No of Days Occupied"/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Number of Beds"/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value=""/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
-                                    <p:column styleClass="border-1" rowspan="2"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
-
+<!--                                     ICU fixed (rowspan=2) 
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Rooms"/></f:facet></p:column>
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Days"/></f:facet></p:column>
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Avg"/></f:facet></p:column>
+                                     Ward Old fixed (rowspan=2) 
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Beds"/></f:facet></p:column>
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Days"/></f:facet></p:column>
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Avg"/></f:facet></p:column>
+                                     Ward New fixed (rowspan=2) 
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Beds"/></f:facet></p:column>
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Days"/></f:facet></p:column>
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Avg"/></f:facet></p:column>
+                                     Indoor Total fixed (rowspan=2) 
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Days"/></f:facet></p:column>
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Rooms"/></f:facet></p:column>
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Avg"/></f:facet></p:column>
+                                     ICU+Ward Total fixed (rowspan=2) 
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Days"/></f:facet></p:column>
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Beds"/></f:facet></p:column>
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                    <p:column styleClass="border-1 metric-col" rowspan="2"><f:facet name="header"><h:outputText value="Avg"/></f:facet></p:column>-->
                                 </p:row>
 
+                                <!-- ROW 3: 4-leaf cells per room category only (fixed sections absorbed by rowspan=2) -->
                                 <p:row>
-
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Rooms"/></f:facet></p:column>
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Days"/></f:facet></p:column>
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
-
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Rooms"/></f:facet></p:column>
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Days"/></f:facet></p:column>
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
-
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Rooms"/></f:facet></p:column>
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Days"/></f:facet></p:column>
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
-
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Rooms"/></f:facet></p:column>
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Days"/></f:facet></p:column>
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
-
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Room"/></f:facet></p:column>
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Number of Days"/></f:facet></p:column>
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
-                                    <p:column styleClass="border-1"><f:facet name="header"><h:outputText value="AVG"/></f:facet></p:column>
-
+                                    <c:forEach items="#{inwardReportController.roomCategories}" var="rc">
+                                        <p:column styleClass="border-1 metric-col"><f:facet name="header"><h:outputText value="Rooms"/></f:facet></p:column>
+                                        <p:column styleClass="border-1 metric-col"><f:facet name="header"><h:outputText value="Days"/></f:facet></p:column>
+                                        <p:column styleClass="border-1 metric-col"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                        <p:column styleClass="border-1 metric-col"><f:facet name="header"><h:outputText value="Avg"/></f:facet></p:column>
+                                    </c:forEach>
                                 </p:row>
                             </p:columnGroup>
 
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            
+                            <!-- ═══════════════════════════════════════════════════
+                                 DATA BODY COLUMNS
+                            ═══════════════════════════════════════════════════ -->
+
+                            <!-- Year / Month / Admissions -->
+                            <p:column styleClass="text-col sticky-col sticky-year border-1">
+                                <h:outputText value="#{row.year}"       rendered="#{not row.grandTotal}"/>
+                                <h:outputText value="Grand Total"       rendered="#{row.grandTotal}"/>
+                            </p:column>
+                            <p:column styleClass="text-col sticky-col sticky-month border-1">
+                                <h:outputText value="#{row.monthName}"/>
+                            </p:column>
+                            <p:column styleClass="metric-col admission-col sticky-col sticky-admissions border-1">
+                                <h:outputText value="#{row.numberOfAdmissions}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
+                            </p:column>
+
+                            <!--
+                              Dynamic room-category columns.
+                              c:forEach runs at VIEW BUILD time so the column
+                              count is fixed once the page renders — which is
+                              exactly what PrimeFaces columnGroup requires.
+                              row.metricFor(rc) returns a zero-safe DTO.
+                            -->
+                            <c:forEach items="#{inwardReportController.roomCategories}" var="rc">
+                                <p:column styleClass="metric-col border-1">
+                                    <h:outputText value="#{row.metricFor(rc).numberOfRooms}">
+                                        <f:convertNumber pattern="#,##0"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column styleClass="metric-col border-1">
+                                    <h:outputText value="#{row.metricFor(rc).numberOfDays}">
+                                        <f:convertNumber pattern="#,##0"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column styleClass="metric-col border-1">
+                                    <h:outputText value="#{row.metricFor(rc).ratio}">
+                                        <f:convertNumber pattern="0.00"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column styleClass="metric-col border-1">
+                                    <h:outputText value="#{row.metricFor(rc).avg}">
+                                        <f:convertNumber pattern="0.00"/>
+                                    </h:outputText>
+                                </p:column>
+                            </c:forEach>
+
+                            <!-- I.C.U (4 cols) -->
+<!--                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.icuOccupancy.numberOfUnits}"><f:convertNumber pattern="#,##0"/></h:outputText>
+                            </p:column>
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.icuOccupancy.numberOfDays}"><f:convertNumber pattern="#,##0"/></h:outputText>
+                            </p:column>
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.icuOccupancy.ratio}"><f:convertNumber pattern="0.00"/></h:outputText>
+                            </p:column>
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.icuOccupancy.avg}"><f:convertNumber pattern="0.00"/></h:outputText>
+                            </p:column>
+
+                             WARD BED(Old) (4 cols) 
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.wardBedOldOccupancy.numberOfUnits}"><f:convertNumber pattern="#,##0"/></h:outputText>
+                            </p:column>
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.wardBedOldOccupancy.numberOfDays}"><f:convertNumber pattern="#,##0"/></h:outputText>
+                            </p:column>
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.wardBedOldOccupancy.ratio}"><f:convertNumber pattern="0.00"/></h:outputText>
+                            </p:column>
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.wardBedOldOccupancy.avg}"><f:convertNumber pattern="0.00"/></h:outputText>
+                            </p:column>
+
+                             WARD BED(New) (4 cols) 
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.wardBedNewOccupancy.numberOfUnits}"><f:convertNumber pattern="#,##0"/></h:outputText>
+                            </p:column>
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.wardBedNewOccupancy.numberOfDays}"><f:convertNumber pattern="#,##0"/></h:outputText>
+                            </p:column>
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.wardBedNewOccupancy.ratio}"><f:convertNumber pattern="0.00"/></h:outputText>
+                            </p:column>
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.wardBedNewOccupancy.avg}"><f:convertNumber pattern="0.00"/></h:outputText>
+                            </p:column>
+
+                             INDOOR TOTAL (4 cols) 
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.indoorTotalDaysOccupied}"><f:convertNumber pattern="#,##0"/></h:outputText>
+                            </p:column>
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.indoorTotalNumberOfRooms}"><f:convertNumber pattern="#,##0"/></h:outputText>
+                            </p:column>
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.indoorTotalRatio}"><f:convertNumber pattern="0.00"/></h:outputText>
+                            </p:column>
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.indoorTotalAvg}"><f:convertNumber pattern="0.00"/></h:outputText>
+                            </p:column>
+
+                             ICU & WARD BED TOTAL (4 cols) 
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.icuWardTotalDaysOccupied}"><f:convertNumber pattern="#,##0"/></h:outputText>
+                            </p:column>
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.icuWardTotalNumberOfBeds}"><f:convertNumber pattern="#,##0"/></h:outputText>
+                            </p:column>
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.icuWardRatio}"><f:convertNumber pattern="0.00"/></h:outputText>
+                            </p:column>
+                            <p:column styleClass="metric-col border-1">
+                                <h:outputText value="#{row.icuWardAvg}"><f:convertNumber pattern="0.00"/></h:outputText>
+                            </p:column>-->
+
+                            <!-- ═══════════════════════════════════════════════════
+                                 FOOTER  (grand total from separate controller field)
+                            ═══════════════════════════════════════════════════ -->
                             <p:columnGroup type="footer">
                                 <p:row>
-                                    <p:column colspan="2">
-                                        <f:facet name="footer">
-                                            <h:outputText value="Total:" />
-                                        </f:facet> 
+                                    <p:column colspan="3" styleClass="sticky-col sticky-year">
+                                        <f:facet name="footer"><h:outputText value="Grand Total"/></f:facet>
                                     </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column colspan="3">
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column colspan="3">
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column colspan="3">
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column colspan="3">
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column colspan="3">
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column colspan="3">
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column colspan="3">
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column colspan="3">
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column colspan="3">
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column colspan="3">
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    
+
+                                    <!-- Dynamic category totals -->
+                                    <c:forEach items="#{inwardReportController.roomCategories}" var="rc">
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.metricFor(rc).numberOfRooms}">
+                                                    <f:convertNumber pattern="#,##0"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.metricFor(rc).numberOfDays}">
+                                                    <f:convertNumber pattern="#,##0"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.metricFor(rc).ratio}">
+                                                    <f:convertNumber pattern="0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column>
+                                            <f:facet name="footer">
+                                                <h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.metricFor(rc).avg}">
+                                                    <f:convertNumber pattern="0.00"/>
+                                                </h:outputText>
+                                            </f:facet>
+                                        </p:column>
+                                    </c:forEach>
+
+<!--                                     ICU totals 
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.icuOccupancy.numberOfUnits}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.icuOccupancy.numberOfDays}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.icuOccupancy.ratio}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.icuOccupancy.avg}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
+
+                                     Ward Old totals 
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.wardBedOldOccupancy.numberOfUnits}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.wardBedOldOccupancy.numberOfDays}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.wardBedOldOccupancy.ratio}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.wardBedOldOccupancy.avg}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
+
+                                     Ward New totals 
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.wardBedNewOccupancy.numberOfUnits}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.wardBedNewOccupancy.numberOfDays}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.wardBedNewOccupancy.ratio}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.wardBedNewOccupancy.avg}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
+
+                                     Indoor Total 
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.indoorTotalDaysOccupied}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.indoorTotalNumberOfRooms}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.indoorTotalRatio}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.indoorTotalAvg}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
+
+                                     ICU + Ward Total 
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.icuWardTotalDaysOccupied}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.icuWardTotalNumberOfBeds}"><f:convertNumber pattern="#,##0"/></h:outputText></f:facet></p:column>
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.icuWardRatio}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>
+                                    <p:column><f:facet name="footer"><h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.icuWardAvg}"><f:convertNumber pattern="0.00"/></h:outputText></f:facet></p:column>-->
                                 </p:row>
                             </p:columnGroup>
 
-                        </p:dataTable>
-
-
+                            </p:dataTable>
+                        </div>
                     </p:panel>
-
                 </h:form>
-
             </ui:define>
         </ui:composition>
-
     </h:body>
 </html>

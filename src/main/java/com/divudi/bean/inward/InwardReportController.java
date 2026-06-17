@@ -64,6 +64,11 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.common.EnumController;
+import com.divudi.core.data.dto.RoomBedOccupancyDTO;
+import com.divudi.core.data.dto.RoomCategoryOccupancyDTO;
+import com.divudi.core.data.dto.RoomOccupancyRowDTO;
+import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.RoomFacilityChargeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -187,6 +192,10 @@ public class InwardReportController implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     BillFeeFacade billFeeFacade;
+    @EJB
+    RoomFacilityChargeFacade roomFacilityChargeFacade;
+    @EJB
+    PatientRoomFacade patientRoomFacade;
 
     @Inject
     SessionController sessionController;
@@ -198,6 +207,8 @@ public class InwardReportController implements Serializable {
     InwardBeanController inwardBeanController;
     @Inject
     EnumController enumController;
+    @Inject
+    RoomCategoryController roomCategoryController;
 
     PaymentMethod paymentMethod;
     AdmissionType admissionType;
@@ -324,6 +335,319 @@ public class InwardReportController implements Serializable {
     }
     double netTotal;
     double netPaid;
+
+// Cache keyed by RoomCategory.id  →  count of available rooms
+    private Map<Long, Long> categoryAvailableRoomsCache;
+// "ICU" / "WARD_OLD" / "WARD_NEW"  →  count of available beds
+    private Map<String, Long> bedSectionAvailableCache;
+
+    private List<RoomOccupancyRowDTO> roomOccupancyList;
+    private RoomOccupancyRowDTO roomOccupancyGrandTotal;
+
+// =====================================================================
+// ENTRY POINT
+// =====================================================================
+    public void processRoomOccupancyReport() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select From and To dates.");
+            return;
+        }
+
+        // Load all active room categories that appear in the "Rooms" section
+        // (exclude ICU / Ward-bed which have their own sections).
+        // Adjust the exclusion logic to match your actual RoomCategory.name values.
+        roomCategories = roomCategoryController.getItems();
+
+        roomOccupancyList = new ArrayList<>();
+        Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid = new TreeMap<>();
+
+        loadAvailableUnitCounts();
+        loadAdmissionsIntoGrid(grid);
+        loadCategoryOccupancyIntoGrid(grid);
+        loadIcuOccupancyIntoGrid(grid);
+        loadWardBedOldOccupancyIntoGrid(grid);
+        loadWardBedNewOccupancyIntoGrid(grid);
+
+        roomOccupancyGrandTotal = new RoomOccupancyRowDTO(null, null);
+        roomOccupancyGrandTotal.setGrandTotal(true);
+
+        for (Map.Entry<Integer, Map<Integer, RoomOccupancyRowDTO>> yearEntry : grid.entrySet()) {
+            for (Map.Entry<Integer, RoomOccupancyRowDTO> monthEntry : yearEntry.getValue().entrySet()) {
+                RoomOccupancyRowDTO row = monthEntry.getValue();
+
+                // Zero-fill every category slot for safe XHTML iteration
+                row.ensureCategories(roomCategories);
+                applyAvailableCounts(row);
+
+                int daysInMonth = java.time.YearMonth.of(
+                        yearEntry.getKey(), monthEntry.getKey()).lengthOfMonth();
+                calculateRowDerived(row, daysInMonth);
+
+                roomOccupancyList.add(row);
+                roomOccupancyGrandTotal.merge(row);
+            }
+        }
+
+        roomOccupancyGrandTotal.ensureCategories(roomCategories);
+        applyAvailableCounts(roomOccupancyGrandTotal);
+        long totalDays = java.time.temporal.ChronoUnit.DAYS.between(
+                fromDate.toInstant(), toDate.toInstant()) + 1;
+        calculateRowDerived(roomOccupancyGrandTotal, totalDays);
+    }
+
+// =====================================================================
+// LOAD: available counts  (cache by RoomCategory.id to avoid name bugs)
+// =====================================================================
+    private void loadAvailableUnitCounts() {
+        categoryAvailableRoomsCache = new HashMap<>();
+        bedSectionAvailableCache = new HashMap<>();
+
+        // Room categories (all non-retired)
+        String jpql = "SELECT rfc.roomCategory.id, COUNT(DISTINCT rfc.id) "
+                + "FROM RoomFacilityCharge rfc "
+                + "WHERE rfc.retired = false "
+                + "GROUP BY rfc.roomCategory.id";
+        Map<String, Object> p = new HashMap<>();
+        List<Object[]> rows = roomFacilityChargeFacade.findObjectsArrayByJpql(jpql, p, TemporalType.DATE);
+        for (Object[] r : rows) {
+            Long categoryId = toLong(r[0]);
+            Long count = toLong(r[1]);
+            categoryAvailableRoomsCache.put(categoryId, count);
+        }
+
+        // ICU
+        bedSectionAvailableCache.put("ICU",
+                countAvailableByName("I.C.U"));
+        // WARD BED (Old)
+        bedSectionAvailableCache.put("WARD_OLD",
+                countAvailableByName("WARD BED(Old)"));
+        // WARD BED (New)
+        bedSectionAvailableCache.put("WARD_NEW",
+                countAvailableByName("WARD BED(New)"));
+    }
+
+    private Long countAvailableByName(String categoryName) {
+        String jpql = "SELECT COUNT(DISTINCT rfc.id) FROM RoomFacilityCharge rfc "
+                + "JOIN rfc.roomCategory rc "
+                + "WHERE rfc.retired = false AND rc.name = :n";
+        Map<String, Object> p = new HashMap<>();
+        p.put("n", categoryName);
+        Long result = roomFacilityChargeFacade.findLongByJpql(jpql, p);
+        return result != null ? result : 0L;
+    }
+
+// =====================================================================
+// LOAD: admissions per year/month
+// =====================================================================
+    private void loadAdmissionsIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT FUNCTION('YEAR', pe.dateOfAdmission), ")
+                .append("FUNCTION('MONTH', pe.dateOfAdmission), ")
+                .append("COUNT(pe.id) ")
+                .append("FROM PatientEncounter pe ")
+                .append("WHERE pe.retired = false ")
+                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ");
+        appendInstitutionSiteDepartmentFilters(jpql, "pe");
+        jpql.append("GROUP BY FUNCTION('YEAR', pe.dateOfAdmission), FUNCTION('MONTH', pe.dateOfAdmission) ")
+                .append("ORDER BY 1, 2");
+
+        List<Object[]> rows = peFacade.findObjectsArrayByJpql(
+                jpql.toString(), buildCommonParams(), TemporalType.TIMESTAMP);
+        for (Object[] r : rows) {
+            RoomOccupancyRowDTO row = getOrCreateRow(grid, toInteger(r[0]), toInteger(r[1]));
+            row.addAdmissions(toLong(r[2]));
+        }
+    }
+
+// =====================================================================
+// LOAD: per-category room occupancy days (driven by live roomCategories)
+// =====================================================================
+    private void loadCategoryOccupancyIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
+        if (roomCategories == null || roomCategories.isEmpty()) {
+            return;
+        }
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT FUNCTION('YEAR', pr.admittedAt), ")
+                .append("FUNCTION('MONTH', pr.admittedAt), ")
+                .append("rfc.roomCategory, ") // returns RoomCategory entity
+                .append("COUNT(DISTINCT pr.id), ")
+                .append("SUM(FUNCTION('DATEDIFF', COALESCE(pr.dischargedAt, CURRENT_TIMESTAMP), pr.admittedAt) + 1) ")
+                .append("FROM PatientRoom pr ")
+                .append("JOIN pr.roomFacilityCharge rfc ")
+                .append("WHERE pr.retired = false ")
+                .append("AND pr.admittedAt BETWEEN :fd AND :td ")
+                .append("AND rfc.roomCategory IN :categories ");
+        appendInstitutionSiteDepartmentFilters(jpql, "pr.patientEncounter");
+        jpql.append("GROUP BY FUNCTION('YEAR', pr.admittedAt), FUNCTION('MONTH', pr.admittedAt), rfc.roomCategory ")
+                .append("ORDER BY 1, 2, 3");
+
+        Map<String, Object> params = buildCommonParams();
+        params.put("categories", roomCategories);                  // List<RoomCategory>
+
+        List<Object[]> rows = patientRoomFacade.findObjectsArrayByJpql(
+                jpql.toString(), params, TemporalType.TIMESTAMP);
+        for (Object[] r : rows) {
+            Integer year = toInteger(r[0]);
+            Integer month = toInteger(r[1]);
+            RoomCategory category = (RoomCategory) r[2];
+            Long roomCount = toLong(r[3]);
+            Long dayCount = toLong(r[4]);
+
+            getOrCreateRow(grid, year, month).addCategoryDays(category, roomCount, dayCount);
+        }
+    }
+
+// =====================================================================
+// LOAD: ICU / Ward Bed sections  (looked up by name — fixed sections)
+// =====================================================================
+    private void loadIcuOccupancyIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
+        loadBedSectionIntoGrid(grid, "I.C.U", true, false);
+    }
+
+    private void loadWardBedOldOccupancyIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
+        loadBedSectionIntoGrid(grid, "WARD BED(Old)", false, true);
+    }
+
+    private void loadWardBedNewOccupancyIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
+        loadBedSectionIntoGrid(grid, "WARD BED(New)", false, false);
+    }
+
+    /**
+     * @param isIcu true → write into icuOccupancy
+     * @param isWardOld true → write into wardBedOldOccupancy; false (and
+     * !isIcu) → wardBedNewOccupancy
+     */
+    private void loadBedSectionIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid,
+            String categoryName, boolean isIcu, boolean isWardOld) {
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT FUNCTION('YEAR', pr.admittedAt), ")
+                .append("FUNCTION('MONTH', pr.admittedAt), ")
+                .append("COUNT(DISTINCT pr.id), ")
+                .append("SUM(FUNCTION('DATEDIFF', COALESCE(pr.dischargedAt, CURRENT_TIMESTAMP), pr.admittedAt) + 1) ")
+                .append("FROM PatientRoom pr ")
+                .append("JOIN pr.roomFacilityCharge rfc ")
+                .append("JOIN rfc.roomCategory rc ")
+                .append("WHERE pr.retired = false ")
+                .append("AND pr.admittedAt BETWEEN :fd AND :td ")
+                .append("AND rc.name = :categoryName ");
+        appendInstitutionSiteDepartmentFilters(jpql, "pr.patientEncounter");
+        jpql.append("GROUP BY FUNCTION('YEAR', pr.admittedAt), FUNCTION('MONTH', pr.admittedAt) ")
+                .append("ORDER BY 1, 2");
+
+        Map<String, Object> params = buildCommonParams();
+        params.put("categoryName", categoryName);
+
+        List<Object[]> rows = patientRoomFacade.findObjectsArrayByJpql(
+                jpql.toString(), params, TemporalType.TIMESTAMP);
+        for (Object[] r : rows) {
+            RoomOccupancyRowDTO row = getOrCreateRow(grid, toInteger(r[0]), toInteger(r[1]));
+            Long unitCount = toLong(r[2]);
+            Long dayCount = toLong(r[3]);
+
+            RoomBedOccupancyDTO target
+                    = isIcu ? row.getIcuOccupancy()
+                            : isWardOld ? row.getWardBedOldOccupancy()
+                                    : row.getWardBedNewOccupancy();
+            target.addUnitCount(unitCount);
+            target.addDayCount(dayCount);
+        }
+    }
+
+    private Long toLong(Object value) {
+        if (value == null) {
+            return 0L;
+        }
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
+        }
+        return Long.valueOf(value.toString());
+    }
+
+    private Integer toInteger(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+        return Integer.valueOf(value.toString());
+    }
+
+// =====================================================================
+// HELPERS
+// =====================================================================
+    private RoomOccupancyRowDTO getOrCreateRow(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid,
+            Integer year, Integer month) {
+        return grid.computeIfAbsent(year, y -> new TreeMap<>())
+                .computeIfAbsent(month, m -> new RoomOccupancyRowDTO(year, month));
+    }
+
+    private void appendInstitutionSiteDepartmentFilters(StringBuilder jpql, String alias) {
+        if (institution != null) {
+            jpql.append("AND ").append(alias).append(".institution = :institution ");
+        }
+        if (site != null) {
+            jpql.append("AND ").append(alias).append(".department.site = :site ");
+        }
+        if (department != null) {
+            jpql.append("AND ").append(alias).append(".department = :department ");
+        }
+    }
+
+    private Map<String, Object> buildCommonParams() {
+        Map<String, Object> params = new HashMap<>();
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        if (institution != null) {
+            params.put("institution", institution);
+        }
+        if (site != null) {
+            params.put("site", site);
+        }
+        if (department != null) {
+            params.put("department", department);
+        }
+        return params;
+    }
+
+    /**
+     * Sets totalAvailable on each category slot using the id-keyed cache.
+     */
+    private void applyAvailableCounts(RoomOccupancyRowDTO row) {
+        for (Map.Entry<RoomCategory, RoomCategoryOccupancyDTO> e : row.getCategoryMetrics().entrySet()) {
+            Long available = categoryAvailableRoomsCache.getOrDefault(e.getKey().getId(), 0L);
+            e.getValue().setTotalAvailable(available);
+        }
+        row.getIcuOccupancy().setTotalAvailable(bedSectionAvailableCache.getOrDefault("ICU", 0L));
+        row.getWardBedOldOccupancy().setTotalAvailable(bedSectionAvailableCache.getOrDefault("WARD_OLD", 0L));
+        row.getWardBedNewOccupancy().setTotalAvailable(bedSectionAvailableCache.getOrDefault("WARD_NEW", 0L));
+    }
+
+    private void calculateRowDerived(RoomOccupancyRowDTO row, long daysInPeriod) {
+        for (RoomCategoryOccupancyDTO cat : row.getCategoryMetrics().values()) {
+            cat.calculateDerived(daysInPeriod);
+        }
+        row.getIcuOccupancy().calculateDerived(daysInPeriod);
+        row.getWardBedOldOccupancy().calculateDerived(daysInPeriod);
+        row.getWardBedNewOccupancy().calculateDerived(daysInPeriod);
+        row.calculateDerivedMetrics();
+    }
+
+// =====================================================================
+// GETTERS / SETTERS
+// =====================================================================
+    public List<RoomOccupancyRowDTO> getRoomOccupancyList() {
+        return roomOccupancyList;
+    }
+
+    public void setRoomOccupancyList(List<RoomOccupancyRowDTO> v) {
+        roomOccupancyList = v;
+    }
+
+    public RoomOccupancyRowDTO getRoomOccupancyGrandTotal() {
+        return roomOccupancyGrandTotal;
+    }
 
     public void fillAdmissionBook() {
         Date startTime = new Date();
@@ -867,7 +1191,7 @@ public class InwardReportController implements Serializable {
         jpql.append(" ORDER BY b.staff.speciality.name, b.staff.person.name ");
 
         List<SurgeryCountDoctorWiseDTO> rawList = (List<SurgeryCountDoctorWiseDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        
+
         // Post-process to set the doctor name with title
         for (SurgeryCountDoctorWiseDTO dto : rawList) {
             if (dto.getStaff() != null && dto.getStaff().getPerson() != null) {
@@ -1724,34 +2048,34 @@ public class InwardReportController implements Serializable {
                 sheet.setColumnWidth(i, colWidths[i]);
             }
 
-                // ── Charts sheet (native Excel charts) ─────────────────────────────
-                XSSFSheet chartSheet = workbook.createSheet("Charts");
-                XSSFDrawing drawing = chartSheet.createDrawingPatriarch();
+            // ── Charts sheet (native Excel charts) ─────────────────────────────
+            XSSFSheet chartSheet = workbook.createSheet("Charts");
+            XSSFDrawing drawing = chartSheet.createDrawingPatriarch();
 
-                List<SurgeryCountDoctorWiseDTO> doctorChartRows = getDoctorChartRows();
-                List<SurgeryCountDoctorWiseDTO> specialtyChartRows = getSpecialtyChartRows();
+            List<SurgeryCountDoctorWiseDTO> doctorChartRows = getDoctorChartRows();
+            List<SurgeryCountDoctorWiseDTO> specialtyChartRows = getSpecialtyChartRows();
 
-                int chartRowStart = 0;
-                if (!doctorChartRows.isEmpty()) {
+            int chartRowStart = 0;
+            if (!doctorChartRows.isEmpty()) {
                 int[] doctorBlock = writeChartDataBlock(
-                    chartSheet, chartRowStart, "Doctor", doctorChartRows, false);
+                        chartSheet, chartRowStart, "Doctor", doctorChartRows, false);
                 int doctorChartsStart = doctorBlock[2] + 2;
                 addLineChart(chartSheet, drawing, 0, doctorChartsStart, doctorBlock,
-                    "Doctor Wise Surgery Trend - Year " + reportYear);
+                        "Doctor Wise Surgery Trend - Year " + reportYear);
                 addBarChart(chartSheet, drawing, 0, doctorChartsStart + 22, doctorBlock,
-                    "Doctor Wise Surgery Count - Year " + reportYear);
+                        "Doctor Wise Surgery Count - Year " + reportYear);
                 chartRowStart = doctorChartsStart + 45;
-                }
+            }
 
-                if (!specialtyChartRows.isEmpty()) {
+            if (!specialtyChartRows.isEmpty()) {
                 int[] specialtyBlock = writeChartDataBlock(
-                    chartSheet, chartRowStart, "Speciality", specialtyChartRows, true);
+                        chartSheet, chartRowStart, "Speciality", specialtyChartRows, true);
                 int specialtyChartsStart = specialtyBlock[2] + 2;
                 addLineChart(chartSheet, drawing, 0, specialtyChartsStart, specialtyBlock,
-                    "Specialty Wise Surgery Trend - Year " + reportYear);
+                        "Specialty Wise Surgery Trend - Year " + reportYear);
                 addBarChart(chartSheet, drawing, 0, specialtyChartsStart + 22, specialtyBlock,
-                    "Specialty Wise Surgery Count - Year " + reportYear);
-                }
+                        "Specialty Wise Surgery Count - Year " + reportYear);
+            }
 
             // ── Write workbook to byte array first, then stream ────────────────────
             // Avoids "IOException never thrown" by separating workbook.write()
