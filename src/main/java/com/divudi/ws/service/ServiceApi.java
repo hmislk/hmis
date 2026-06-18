@@ -469,8 +469,14 @@ public class ServiceApi {
                 return errorResponse("Request body is required", 400);
             }
 
-            Long categoryId = body.get("categoryId") instanceof Number
-                    ? ((Number) body.get("categoryId")).longValue() : null;
+            Long categoryId = null;
+            if (body.get("categoryId") instanceof Number) {
+                Number n = (Number) body.get("categoryId");
+                if (n.doubleValue() != Math.floor(n.doubleValue()) || Double.isInfinite(n.doubleValue())) {
+                    return errorResponse("categoryId must be a whole number", 400);
+                }
+                categoryId = n.longValue();
+            }
             String feeType = body.get("feeType") != null ? body.get("feeType").toString() : null;
 
             Boolean marginAllowed = null;

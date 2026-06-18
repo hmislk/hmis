@@ -660,7 +660,7 @@ public class ServiceApiService implements Serializable {
             throw new Exception("At least one of marginAllowed or discountAllowed must be provided");
         }
 
-        FeeType feeType = FeeType.OwnInstitution;
+        FeeType feeType = null;
         if (feeTypeStr != null && !feeTypeStr.trim().isEmpty()) {
             try {
                 feeType = FeeType.valueOf(feeTypeStr.trim());
@@ -669,19 +669,23 @@ public class ServiceApiService implements Serializable {
             }
         }
 
-        String jpql = "SELECT f FROM ItemFee f "
+        StringBuilder jpqlBuilder = new StringBuilder("SELECT f FROM ItemFee f "
                 + "WHERE f.item.category.id = :catId "
-                + "AND f.feeType = :ft "
-                + "AND f.retired = false";
+                + "AND f.retired = false");
         Map<String, Object> params = new HashMap<>();
         params.put("catId", categoryId);
-        params.put("ft", feeType);
+        if (feeType != null) {
+            jpqlBuilder.append(" AND f.feeType = :ft");
+            params.put("ft", feeType);
+        }
 
-        List<ItemFee> fees = itemFeeFacade.findByJpql(jpql, params);
+        List<ItemFee> fees = itemFeeFacade.findByJpql(jpqlBuilder.toString(), params);
         int count = 0;
         Map<String, Object> changes = new HashMap<>();
         changes.put("categoryId", categoryId);
-        changes.put("feeType", feeType.name());
+        if (feeType != null) {
+            changes.put("feeType", feeType.name());
+        }
         if (marginAllowed != null) {
             changes.put("marginAllowed", marginAllowed);
         }
