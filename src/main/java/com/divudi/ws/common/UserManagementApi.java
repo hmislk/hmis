@@ -2,10 +2,12 @@ package com.divudi.ws.common;
 
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.bean.common.SecurityController;
+import com.divudi.core.data.LoginPage;
 import com.divudi.core.data.Privileges;
 import com.divudi.core.data.dto.user.BulkPrivilegeAssignmentRequestDTO;
 import com.divudi.core.data.dto.user.DepartmentAssignmentRequestDTO;
 import com.divudi.core.data.dto.user.PasswordChangeRequestDTO;
+import com.divudi.core.data.dto.user.PrivilegeCategoryAssignmentRequestDTO;
 import com.divudi.core.data.dto.user.PrivilegeAssignmentRequestDTO;
 import com.divudi.core.data.dto.user.UserUpsertRequestDTO;
 import com.divudi.core.entity.*;
@@ -104,7 +106,9 @@ public class UserManagementApi {
             int to = Math.min(from + size, users.size());
             List<WebUserLight> out = new ArrayList<>();
             for (WebUser w : users.subList(from, to)) {
-                out.add(new WebUserLight(w.getName(), w.getWebUserPerson() != null ? w.getWebUserPerson().getName() : null, w.getId(), w.getCode(), w.getStaff() != null && w.getStaff().getPerson() != null ? w.getStaff().getPerson().getNameWithTitle() : null));
+                WebUserLight light = new WebUserLight(w.getName(), w.getWebUserPerson() != null ? w.getWebUserPerson().getName() : null, w.getId(), w.getCode(), w.getStaff() != null && w.getStaff().getPerson() != null ? w.getStaff().getPerson().getNameWithTitle() : null);
+                light.setLoginPage(w.getLoginPage() != null ? w.getLoginPage().name() : null);
+                out.add(light);
             }
             return successResponse(out);
         } catch (Exception e) {
@@ -163,6 +167,8 @@ public class UserManagementApi {
             return successResponse(toUserMap(u));
         } catch (JsonSyntaxException e) {
             return errorResponse("Invalid JSON format", 400);
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), 400);
         } catch (Exception e) {
             return errorResponse("Internal server error", 500);
         }
@@ -197,6 +203,8 @@ public class UserManagementApi {
             return successResponse(toUserMap(u));
         } catch (JsonSyntaxException e) {
             return errorResponse("Invalid JSON format", 400);
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), 400);
         } catch (Exception e) {
             return errorResponse("Internal server error", 500);
         }
@@ -301,7 +309,9 @@ public class UserManagementApi {
             if (u == null || u.isRetired()) return errorResponse("User not found", 404);
             PrivilegeAssignmentRequestDTO req = gson.fromJson(body, PrivilegeAssignmentRequestDTO.class);
             if (req == null || req.getPrivileges() == null || req.getPrivileges().isEmpty()) return errorResponse("privileges are required", 400);
-            Department d = req.getDepartmentId() != null ? departmentFacade.find(req.getDepartmentId()) : null;
+            if (req.getDepartmentId() == null) return errorResponse("departmentId is required for privileges to take effect", 400);
+            Department d = departmentFacade.find(req.getDepartmentId());
+            if (d == null) return errorResponse("Department not found: " + req.getDepartmentId(), 404);
             for (String pName : req.getPrivileges()) {
                 Privileges p;
                 try {
@@ -314,7 +324,7 @@ public class UserManagementApi {
                 m.put("p", p);
                 m.put("d", d);
                 List<WebUserPrivilege> ex = webUserPrivilegeFacade.findByJpql(
-                        "select wp from WebUserPrivilege wp where wp.retired=false and wp.webUser=:u and wp.privilege=:p and ((:d is null and wp.department is null) or wp.department=:d)",
+                        "select wp from WebUserPrivilege wp where wp.retired=false and wp.webUser=:u and wp.privilege=:p and wp.department=:d",
                         m);
                 if (!ex.isEmpty()) continue;
                 WebUserPrivilege wp = new WebUserPrivilege();
@@ -326,6 +336,80 @@ public class UserManagementApi {
                 webUserPrivilegeFacade.create(wp);
             }
             return listUserPrivileges(id);
+        } catch (Exception e) {
+            return errorResponse("Internal server error", 500);
+        }
+    }
+
+    @POST
+    @Path("/{id}/departments/{departmentId}/privileges/category")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response assignUserPrivilegeCategories(@PathParam("id") Long id, @PathParam("departmentId") Long departmentId, String body) {
+        try {
+            WebUser apiUser = validateApiUser();
+            if (apiUser == null) return errorResponse("Not a valid key", 401);
+            if (!isAdmin(apiUser)) return errorResponse("Insufficient privileges", 403);
+            WebUser u = webUserFacade.find(id);
+            if (u == null || u.isRetired()) return errorResponse("User not found", 404);
+            Department d = departmentFacade.find(departmentId);
+            if (d == null) return errorResponse("Department not found: " + departmentId, 404);
+            PrivilegeCategoryAssignmentRequestDTO req = gson.fromJson(body, PrivilegeCategoryAssignmentRequestDTO.class);
+            if (req == null || req.getCategories() == null || req.getCategories().isEmpty()) return errorResponse("categories are required", 400);
+
+            Set<String> requestedCategories = new LinkedHashSet<>();
+            for (String category : req.getCategories()) {
+                if (category == null || category.trim().isEmpty()) return errorResponse("categories cannot contain blank values", 400);
+                requestedCategories.add(category.trim());
+            }
+
+            List<Privileges> matchingPrivileges = new ArrayList<>();
+            Set<String> matchedCategories = new HashSet<>();
+            for (Privileges p : Privileges.values()) {
+                String category = p.getCategory();
+                if (category != null && requestedCategories.contains(category)) {
+                    matchingPrivileges.add(p);
+                    matchedCategories.add(category);
+                }
+            }
+            Set<String> missingCategories = new LinkedHashSet<>(requestedCategories);
+            missingCategories.removeAll(matchedCategories);
+            if (!missingCategories.isEmpty()) return errorResponse("Unknown privilege categories: " + missingCategories, 400);
+
+            int added = 0;
+            int skipped = 0;
+            for (Privileges p : matchingPrivileges) {
+                Map<String, Object> m = new HashMap<>();
+                m.put("u", u);
+                m.put("p", p);
+                m.put("d", d);
+                List<WebUserPrivilege> ex = webUserPrivilegeFacade.findByJpql(
+                        "select wp from WebUserPrivilege wp where wp.retired=false and wp.webUser=:u and wp.privilege=:p and wp.department=:d",
+                        m);
+                if (!ex.isEmpty()) {
+                    skipped++;
+                    continue;
+                }
+                WebUserPrivilege wp = new WebUserPrivilege();
+                wp.setWebUser(u);
+                wp.setPrivilege(p);
+                wp.setDepartment(d);
+                wp.setCreater(apiUser);
+                wp.setCreatedAt(new Date());
+                webUserPrivilegeFacade.create(wp);
+                added++;
+            }
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("userId", u.getId());
+            result.put("departmentId", d.getId());
+            result.put("categories", requestedCategories);
+            result.put("privilegesMatched", matchingPrivileges.size());
+            result.put("privilegesAdded", added);
+            result.put("privilegesSkipped", skipped);
+            return successResponse(result);
+        } catch (JsonSyntaxException e) {
+            return errorResponse("Invalid JSON format", 400);
         } catch (Exception e) {
             return errorResponse("Internal server error", 500);
         }
@@ -635,6 +719,18 @@ public class UserManagementApi {
         if (req.getDepartmentId() != null) u.setDepartment(departmentFacade.find(req.getDepartmentId()));
         if (req.getRoleId() != null) u.setRole(webUserRoleFacade.find(req.getRoleId()));
         if (req.getActivated() != null) u.setActivated(req.getActivated());
+        if (req.getLoginPage() != null) {
+            String loginPage = req.getLoginPage().trim();
+            if (loginPage.isEmpty()) {
+                u.setLoginPage(null);
+            } else {
+                try {
+                    u.setLoginPage(LoginPage.valueOf(loginPage));
+                } catch (IllegalArgumentException e) {
+                    throw new IllegalArgumentException("Invalid loginPage: " + req.getLoginPage());
+                }
+            }
+        }
         if (req.getPassword() != null && !req.getPassword().trim().isEmpty()) u.setWebUserPassword(securityController.hashAndCheck(req.getPassword()));
         if (u.getWebUserPerson() != null) {
             if (req.getPersonName() != null) u.getWebUserPerson().setName(req.getPersonName());
@@ -661,6 +757,7 @@ public class UserManagementApi {
         m.put("telNo", u.getTelNo());
         m.put("activated", u.isActivated());
         m.put("retired", u.isRetired());
+        m.put("loginPage", u.getLoginPage() != null ? u.getLoginPage().name() : null);
         m.put("institutionId", u.getInstitution() != null ? u.getInstitution().getId() : null);
         m.put("departmentId", u.getDepartment() != null ? u.getDepartment().getId() : null);
         m.put("siteId", u.getSite() != null ? u.getSite().getId() : null);
