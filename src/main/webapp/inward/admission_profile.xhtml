@@ -667,6 +667,28 @@
                                         class="w-100 ui-button-info">
                                     </p:commandButton>
                                 </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnTheatreDashboard"
+                                        rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient') or webUserController.hasPrivilege('TheatreSendPatient')}"
+                                        value="Theatre Dashboard"
+                                        ajax="false"
+                                        action="#{theatreDashboardController.navigateToTheatreDashboard()}"
+                                        icon="fa fa-columns"
+                                        class="w-100 ui-button-secondary">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnTheatreSchedule"
+                                        rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient') or webUserController.hasPrivilege('TheatreSendPatient')}"
+                                        value="Theatre Schedule"
+                                        ajax="false"
+                                        action="#{inwardReservationController.navigateToTheatreScheduleCalendar()}"
+                                        icon="fa fa-calendar-alt"
+                                        class="w-100 ui-button-info">
+                                    </p:commandButton>
+                                </div>
                             </div>
                         </p:panel>
                     </div>
