@@ -17,7 +17,7 @@ public enum EncounterRegistrationFlag {
 
     STANDARD("Standard"),                       // normal admission — default value, no badge shown
     ON_ADMISSION_DEATH("On Admission Death"),   // patient arrived dead or died before registration was completed
-    RAPID_TEMP_AE("Rapid / Temp A&E");          // quick/temporary A&E registration — demographics may be incomplete (see separate issue)
+    RAPID_TEMP_AE("Provisional Emergency");      // quick/temporary A&E registration — demographics may be incomplete (see separate issue)
 
     private final String label;
 

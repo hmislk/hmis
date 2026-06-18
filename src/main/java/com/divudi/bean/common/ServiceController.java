@@ -66,6 +66,8 @@ public class ServiceController implements Serializable {
     SessionController sessionController;
     @Inject
     private ServiceSubCategoryController serviceSubCategoryController;
+    @Inject
+    private ItemController itemController;
     @EJB
     private ServiceFacade ejbFacade;
     @EJB
@@ -458,7 +460,6 @@ public class ServiceController implements Serializable {
         String depPat = "";
         String chagPat = "";
 
-
         if (ins != null) {
             insPat = ins.substring(0, 3);
         }
@@ -497,103 +498,69 @@ public class ServiceController implements Serializable {
         }
     }
 
-    public Boolean checkServiceCodeDuplicate(String genaratedServiceCode) {
-        Service temp;
-        HashMap hash = new HashMap();
-        String sql = "select c from Service c "
-                + "where c.retired = false "
-                + "and c.code = :sCode "
-                + "and c.id != :id ";
-
-        hash.put("sCode", genaratedServiceCode);
-        hash.put("id", getCurrent().getId());
-        temp = ejbFacade.findFirstByJpql(sql, hash, TemporalType.TIMESTAMP);
-        if (temp != null) {
-            return false;
-        }
-        return true;
-
+    public void generateCode() {
+        String code = itemController.generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
+        getCurrent().setCode(code);
     }
 
+    /**
+     * Returns true when the code is free to use (no other item already has it),
+     * false when it is a duplicate. Delegates to
+     * {@link ItemController#isItemCodeDuplicate(String, Long)} so the check runs
+     * against the base Item entity and correctly handles new records (null id).
+     */
+    public Boolean checkServiceCodeDuplicate(String genaratedServiceCode) {
+        return !itemController.isItemCodeDuplicate(genaratedServiceCode, getCurrent().getId());
+    }
+
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+
     public void saveSelected() {
-        if (getCurrent().getDepartment() == null) {
-            JsfUtil.addErrorMessage("Please Select Department");
+        if (getCurrent().getName() == null || getCurrent().getName().isEmpty()) {
+            JsfUtil.addErrorMessage("Please Enter a name");
             return;
         }
+
+        if (getCurrent().getCategory() == null) {
+            JsfUtil.addErrorMessage("Please Select Category");
+            return;
+        }
+
         if (getCurrent().getInwardChargeType() == null) {
             JsfUtil.addErrorMessage("Please Select Inward Charge type");
             return;
         }
-        if (getCurrent().getName() == null || getCurrent().getName().isEmpty()) {
-            JsfUtil.addErrorMessage("Please Enter a name");
-        } else {
-            if (getCurrent().getFullName() == null) {
-                getCurrent().setFullName(getCurrent().getName());
-            }
-            if (getCurrent().getPrintName() == null) {
-                getCurrent().setPrintName(getCurrent().getName());
+
+        if (getCurrent().getDepartment() == null) {
+            JsfUtil.addErrorMessage("Please Select Department");
+            return;
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Item Codes Generate - Automatically create Item Codes by Department.", false)) {
+            if (getCurrent().getId() == null) {
+                if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()) {
+                    String code = itemController.generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
+                    getCurrent().setCode(code);
+                }
             }
         }
 
-        if (getCurrent().getCode() == null || getCurrent().getCode().isEmpty()) {
-            setServiceCode();
+        if (!checkServiceCodeDuplicate(getCurrent().getCode())) {
+            JsfUtil.addErrorMessage("Service code is alredy used");
+            return;
         }
 
-//        if (errorCheck()) {
-//            return;
-//        }
-//        if (getServiceSubCategoryController().getParentCategory() != null) {
-//            getCurrent().setCategory(getServiceSubCategoryController().getParentCategory());
-//        }
-        ////// // System.out.println("getCurrent().getId() = " + getCurrent());
-        ////// // System.out.println("getCurrent().getId() = " + getCurrent().getId());
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
-            //////// // System.out.println("1");
-            if (billedAs == false) {
-                //////// // System.out.println("2");
-                getCurrent().setBilledAs(getCurrent());
-
-            }
-            if (reportedAs == false) {
-                //////// // System.out.println("3");
-                getCurrent().setReportedAs(getCurrent());
-            }
-
-            if (!checkServiceCodeDuplicate(getCurrent().getCode())) {
-                JsfUtil.addErrorMessage("Service code is alredy used");
-                return;
-            } else {
-                getFacade().edit(getCurrent());
-                JsfUtil.addSuccessMessage("Saved Old Successfully");
-            }
-
+            getFacade().edit(getCurrent());
+            JsfUtil.addSuccessMessage("Update Successfully");
         } else {
-            //////// // System.out.println("4");
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
-
-            if (!checkServiceCodeDuplicate(getCurrent().getCode())) {
-                JsfUtil.addErrorMessage("Service code is alredy used");
-                return;
-            } else {
-                getFacade().create(getCurrent());
-            }
-
-            if (billedAs == false) {
-                //////// // System.out.println("5");
-                getCurrent().setBilledAs(getCurrent());
-            }
-            if (reportedAs == false) {
-                //////// // System.out.println("6");
-                getCurrent().setReportedAs(getCurrent());
-            }
-
-            if (checkServiceCodeDuplicate(genaratedServiceCode)) {
-                getFacade().edit(getCurrent());
-                JsfUtil.addSuccessMessage("Saved Successfully");
-            }
-
+            getFacade().create(getCurrent());
+            JsfUtil.addSuccessMessage("Saved Successfully");
         }
+
         recreateModel();
         getItems();
     }
@@ -853,7 +820,7 @@ public class ServiceController implements Serializable {
         Map<String, Double> resultMap = new HashMap<>();
 
         if (file != null) {
-            try ( InputStream input = file.getInputStream()) {
+            try (InputStream input = file.getInputStream()) {
                 Workbook workbook = new XSSFWorkbook(input);
                 Sheet sheet = workbook.getSheetAt(0);
                 for (Row row : sheet) {

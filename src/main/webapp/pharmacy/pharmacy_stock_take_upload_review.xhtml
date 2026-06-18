@@ -21,7 +21,7 @@
                                         <p:panelGrid columns="2" styleClass="ui-panelgrid-blank"
                                                      columnClasses="text-right pr-3 font-weight-bold,text-left">
                                             <h:outputText value="Summary:" style="font-weight:bold; color: #6c757d;"/>
-                                            <h:outputText value="#{pharmacyStockTakeController.nativeSqlSummary}"
+                                            <h:outputText value="Items: #{pharmacyStockTakeController.physicalCountBill.billItems.size()}"
                                                           style="color: #495057;"/>
                                         </p:panelGrid>
                                     </div>
@@ -35,7 +35,7 @@
                                                              styleClass="ui-button-success mx-2"
                                                              icon="fa fa-check"
                                                              rendered="#{webUserController.hasPrivilege('PharmacyStockTakeApprove')}"
-                                                             action="#{pharmacyStockTakeController.approvePhysicalCount}">
+                                                             action="#{pharmacyStockTakeController.confirmUploadAndApprove}">
                                                 <p:confirm header="Confirm Stock Adjustment"
                                                            message="Are you sure you want to apply this stock adjustment? This will update stock levels based on the uploaded counts."
                                                            icon="fa fa-exclamation-triangle"/>
@@ -51,7 +51,7 @@
 
                                 <p:separator/>
 
-                                <p:dataTable value="#{pharmacyStockTakeController.nativeSqlReviewData}"
+                                <p:dataTable value="#{pharmacyStockTakeController.physicalCountBill.billItems}"
                                              var="row"
                                              rows="25"
                                              paginator="true"
@@ -62,41 +62,41 @@
                                              emptyMessage="No stock items found in uploaded count."
                                              sortMode="multiple">
 
-                                    <p:column headerText="Code" sortBy="#{row.itemCode}"
-                                              filterBy="#{row.itemCode}" filterMatchMode="contains"
+                                    <p:column headerText="Code" sortBy="#{row.item.code}"
+                                              filterBy="#{row.item.code}" filterMatchMode="contains"
                                               style="width: 100px;">
-                                        <h:outputText value="#{row.itemCode}" style="color: #6c757d; font-family: monospace;"/>
+                                        <h:outputText value="#{row.item.code}" style="color: #6c757d; font-family: monospace;"/>
                                     </p:column>
 
-                                    <p:column headerText="Item" sortBy="#{row.itemName}"
-                                              filterBy="#{row.itemName}" filterMatchMode="contains"
+                                    <p:column headerText="Item" sortBy="#{row.item.name}"
+                                              filterBy="#{row.item.name}" filterMatchMode="contains"
                                               style="min-width: 200px;">
-                                        <h:outputText value="#{row.itemName}" style="color: #495057; font-weight: 500;"/>
+                                        <h:outputText value="#{row.item.name}" style="color: #495057; font-weight: 500;"/>
                                     </p:column>
 
-                                    <p:column headerText="Batch No." sortBy="#{row.batchNumber}"
-                                              filterBy="#{row.batchNumber}" filterMatchMode="contains"
+                                    <p:column headerText="Batch No." sortBy="#{row.pharmaceuticalBillItem.itemBatch.batchNo}"
+                                              filterBy="#{row.pharmaceuticalBillItem.itemBatch.batchNo}" filterMatchMode="contains"
                                               style="width: 110px; text-align: center;">
-                                        <h:outputText value="#{row.batchNumber}" style="color: #6c757d; font-family: monospace;"/>
+                                        <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.batchNo}" style="color: #6c757d; font-family: monospace;"/>
                                     </p:column>
 
-                                    <p:column headerText="Expiry Date" sortBy="#{row.expiryDate}"
+                                    <p:column headerText="Expiry Date" sortBy="#{row.pharmaceuticalBillItem.itemBatch.dateOfExpire}"
                                               style="width: 110px; text-align: center;">
-                                        <h:outputText value="#{row.expiryDate}" style="color: #6c757d;">
+                                        <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.dateOfExpire}" style="color: #6c757d;">
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="System Qty" sortBy="#{row.systemQty}"
+                                    <p:column headerText="System Qty" sortBy="#{row.referanceBillItem.qty}"
                                               style="width: 100px; text-align: right;">
-                                        <h:outputText value="#{row.systemQty}" style="color: #6c757d;">
+                                        <h:outputText value="#{row.referanceBillItem.qty}" style="color: #6c757d;">
                                             <f:convertNumber pattern="#,##0.##"/>
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Physical Qty" sortBy="#{row.physicalQty}"
+                                    <p:column headerText="Physical Qty" sortBy="#{row.qty}"
                                               style="width: 100px; text-align: right;">
-                                        <h:outputText value="#{row.physicalQty}" style="color: #495057; font-weight: 500;">
+                                        <h:outputText value="#{row.qty}" style="color: #495057; font-weight: 500;">
                                             <f:convertNumber pattern="#,##0.##"/>
                                         </h:outputText>
                                     </p:column>
@@ -109,16 +109,16 @@
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Cost Rate" sortBy="#{row.costRate}"
+                                    <p:column headerText="Cost Rate" sortBy="#{row.pharmaceuticalBillItem.itemBatch.costRate}"
                                               style="width: 100px; text-align: right;">
-                                        <h:outputText value="#{row.costRate}" style="color: #6c757d;">
+                                        <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.costRate}" style="color: #6c757d;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Retail Rate" sortBy="#{row.retailRate}"
+                                    <p:column headerText="Retail Rate" sortBy="#{row.pharmaceuticalBillItem.itemBatch.retailRate}"
                                               style="width: 100px; text-align: right;">
-                                        <h:outputText value="#{row.retailRate}" style="color: #6c757d;">
+                                        <h:outputText value="#{row.pharmaceuticalBillItem.itemBatch.retailRate}" style="color: #6c757d;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>

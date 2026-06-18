@@ -94,6 +94,22 @@ public class EnumController implements Serializable {
         return pettyCashBillTypes;
     }
 
+    List<InwardChargeType> roomChargeType;
+
+    public List<InwardChargeType> getRoomChargeType() {
+        if (roomChargeType == null) {
+            roomChargeType = new ArrayList<>();
+            roomChargeType.add(InwardChargeType.AdministrationCharge);
+            roomChargeType.add(InwardChargeType.LinenCharges);
+            roomChargeType.add(InwardChargeType.MaintainCharges);
+            roomChargeType.add(InwardChargeType.MedicalCareICU);
+            roomChargeType.add(InwardChargeType.MOCharges);
+            roomChargeType.add(InwardChargeType.NursingCharges);
+            roomChargeType.add(InwardChargeType.RoomCharges);
+        }
+        return roomChargeType;
+    }
+
     public Sex[] getSex() {
         return Sex.values();
     }

@@ -1,4 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
+<!--
+  DEPRECATED: Old normal-path Transfer Receive with Approval page (TransferReceiveController).
+  Replaced by pharmacy_transfer_receive_native_with_approval.xhtml (native SQL path).
+  Do NOT delete — retained for reference until TransferReceiveController is fully retired.
+-->
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/pharmacy/disbursement_index.xhtml"
@@ -84,7 +89,7 @@
                             </p:column> 
 
                             <p:column headerText="Expiry Date"  style="width:25px!important;">  
-                                <h:outputText id="doe" value="#{ph.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" >  
+                                <h:outputText id="doe" value="#{ph.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >  
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputText>
                             </p:column>  

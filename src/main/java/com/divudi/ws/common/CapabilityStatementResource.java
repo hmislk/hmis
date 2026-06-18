@@ -80,7 +80,9 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Clinical Favourite Medicines", "/api/clinical/favourite_medicines",
-                        "Clinical favourite medicine management",
+                        "Clinical favourite medicine templates and favourite-diagnosis medicine suggestions "
+                        + "(type=FavouriteMedicine default, or type=FavouriteDiagnosis). "
+                        + "Includes /entities/diagnoses for searching diagnoses to use as forItemName.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Membership", "/api/apiMembership",
@@ -96,7 +98,8 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST"))
                 .add(resource("Finance", "/api/finance",
-                        "Finance operations and billing endpoints",
+                        "Finance operations and billing endpoints. "
+                        + "GET /bill/search?billNumber= looks up bills by bill number (insId or deptId).",
                         "API Key",
                         "GET", "POST"))
                 .add(resource("Balance History", "/api/balance_history",
@@ -116,15 +119,27 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET"))
                 .add(resource("Departments", "/api/departments",
-                        "Department management",
+                        "Department management. Create/update bodies and GET responses include the "
+                        + "bed-board SVG fields svgParentView and svgChildView (issue #21592). "
+                        + "Dedicated sub-resource: GET/PUT /api/departments/{id}/svg "
+                        + "(body { svgParentView, svgChildView }) reads/sets just the drawings. "
+                        + "SVG is stored verbatim; it is sanitised at render time on the bed board.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Institutions", "/api/institutions",
-                        "Institution management",
+                        "Institution management. Create/update bodies and GET responses include the "
+                        + "bed-board SVG fields svgParentView and svgChildView (issue #21592). "
+                        + "Dedicated sub-resource: GET/PUT /api/institutions/{id}/svg "
+                        + "(body { svgParentView, svgChildView }) reads/sets just the drawings. "
+                        + "SVG is stored verbatim; it is sanitised at render time on the bed board.",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("Sites", "/api/sites",
-                        "Site management",
+                        "Site management. Create/update bodies and GET responses include the "
+                        + "bed-board SVG fields svgParentView and svgChildView (issue #21592). "
+                        + "Dedicated sub-resource: GET/PUT /api/sites/{id}/svg "
+                        + "(body { svgParentView, svgChildView }) reads/sets just the drawings. "
+                        + "SVG is stored verbatim; it is sanitised at render time on the bed board.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Inward", "/api/apiInward",
@@ -134,9 +149,32 @@ public class CapabilityStatementResource {
                 .add(resource("Inward Discount Matrix", "/api/inward-discount-matrix",
                         "Manage inward discount matrix entries for services/investigations and pharmacy. "
                         + "Supports scope=service|pharmacy to restrict category types. "
+                        + "Optional creditCompanyId filters or sets a credit-company-specific override row. "
                         + "Lookup sub-paths for resolving names to IDs: "
                         + "/admission-types/search, /payment-schemes/search, "
-                        + "/pharmaceutical-item-categories/search, /payment-methods. "
+                        + "/pharmaceutical-item-categories/search, /payment-methods, /credit-companies/search. "
+                        + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Price Adjustment", "/api/inward-price-adjustment",
+                        "Manage inward price adjustment (margin) matrix entries for services, investigations, and pharmacy. "
+                        + "Supports scope=service|pharmacy to restrict category types. "
+                        + "Optional creditCompanyId sets a credit-company-specific margin override. "
+                        + "Price range lookup: fromPrice/toPrice define the gross value range to which the margin applies. "
+                        + "Lookup sub-paths: /categories/search?scope=service|pharmacy, /departments/search, "
+                        + "/payment-methods, /credit-companies/search. "
+                        + "Diagnostic sub-path: /diagnose?itemId=&departmentId=&paymentMethod=&patientEncounterId=&price= "
+                        + "explains whether inward service-charge margin will be applied for an item, with a per-condition breakdown. "
+                        + "POST returns HTTP 409 with existing id when a duplicate combination exists. "
+                        + "NOTE: For inward price adjustments, prefer the newer /api/price-matrix/inward endpoint.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Price Matrix Inward", "/api/price-matrix/inward",
+                        "Manage InwardPriceAdjustment (margin/service charge) matrix entries. "
+                        + "Flat DTO format with departmentId/departmentName etc. "
+                        + "Supports discountPercent, admissionTypeId, and creditCompanyId. "
+                        + "All create/update/retire actions are audit-logged (PRICE_MATRIX_CREATED/UPDATED/RETIRED). "
+                        + "Query params: categoryId, departmentId, paymentMethod, limit. "
                         + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
@@ -148,7 +186,20 @@ public class CapabilityStatementResource {
                 .add(resource("Inward Rooms", "/api/inward/rooms",
                         "Manage inward rooms (backs /inward/inward_room.xhtml). "
                         + "Supports optional filter roomCategoryId. "
-                        + "POST returns HTTP 409 with existing id when a duplicate name already exists.",
+                        + "POST returns HTTP 409 with existing id when a duplicate name already exists. "
+                        + "Create/update bodies and GET responses include the bed-board child-tile field "
+                        + "svgChildView (a Room is a leaf, so it has no svgParentView) (issue #21592). "
+                        + "Dedicated sub-resource: GET/PUT /api/inward/rooms/{id}/svg "
+                        + "(body { svgChildView }) reads/sets just the drawing. "
+                        + "SVG is stored verbatim; it is sanitised at render time on the bed board.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Inward Document Templates", "/api/inward/document-templates",
+                        "Manage document templates (HTML templates with placeholders). "
+                        + "Supports all DocumentTemplateType values: Prescription, MedicalCertificate, FitnessCertificate, Referral, InpatientDiagnosisCard, InpatientLetter. "
+                        + "Optional query params: type (filter by type), query (name search), size. "
+                        + "GET /{id} includes full contents field. "
+                        + "POST/PUT fields: name, type, contents (HTML with placeholders), defaultTemplate, autoGenerate.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Inward Room Facility Charges", "/api/inward/room-facility-charges",
@@ -205,7 +256,9 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST", "PUT", "PATCH"))
                 .add(resource("Pharmaceutical Items", "/api/pharmaceutical_items",
-                        "Pharmaceutical item master data",
+                        "Pharmaceutical item master data. AMP create/update accepts "
+                        + "strengthOfAnIssueUnit (Double) and strengthUnitId (Long, MeasurementUnit) "
+                        + "for strength-ratio based dispensing substitution.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Pharmacy Adjustments", "/api/pharmacy_adjustments",
@@ -236,7 +289,10 @@ public class CapabilityStatementResource {
                 .add(resource("Users", "/api/users",
                         "User CRUD, password reset/change, loggable department assignment, "
                         + "and per-user privilege assignment with department scope. "
-                        + "Supports filtering by departmentId and query string.",
+                        + "Supports filtering by departmentId and query string. "
+                        + "DELETE /{id}/departments/{assignmentId} revokes one loggable department. "
+                        + "DELETE /{id}/departments/{departmentId}/privileges bulk-revokes all privileges for a department. "
+                        + "POST /{id}/departments/{departmentId}/privileges/all assigns every privilege for a department.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("User Bulk Privileges", "/api/users/bulk-privileges",
@@ -254,6 +310,16 @@ public class CapabilityStatementResource {
                         "User role CRUD and role-level privilege assignment with optional department scope.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Subscriptions", "/api/subscriptions",
+                        "Manage notification trigger subscriptions (who receives which notification, in which department). "
+                        + "GET /subscriptions lists subscriptions (filters: triggerType, userId, departmentId, applicationWide=true). "
+                        + "GET /subscriptions/trigger-types lists all available TriggerType values (name, label, medium, parent). "
+                        + "POST /subscriptions creates a subscription (body: userId, triggerType, and EITHER departmentId OR applicationWide:true); "
+                        + "returns already_exists when an identical non-retired subscription exists. "
+                        + "DELETE /subscriptions/{id} soft-retires a subscription. "
+                        + "An application-wide subscription (null department) matches every department across the whole application.",
+                        "API Key",
+                        "GET", "POST", "DELETE"))
                                 .add(resource("Investigations", "/api/investigations",
                         "Investigation master management including search, create, update, and activate/deactivate for item import workflows",
                         "API Key",
@@ -267,6 +333,14 @@ public class CapabilityStatementResource {
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories",
+                        "API Key",
+                        "GET", "POST", "PUT", "PATCH", "DELETE"))
+                .add(resource("Timed Items", "/api/timed-items",
+                        "Manage timed item master data (room rent, oxygen, ICU time, etc.) and their tiered fee slots (TimedItemFee). "
+                        + "TimedItem entities are consumed by the inward timed service page (/inward/inward_timed_service_consume.xhtml). "
+                        + "Fees are ordered by sortOrder and support durationHours/overShootHours/repeating for tiered block billing. "
+                        + "Sub-resource: /timed-items/{id}/fees for per-item fee management. "
+                        + "PATCH /activate and /deactivate control availability without retiring.",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("Collecting Centre Fees", "/api/pricing/collecting_centre_fees",
@@ -288,6 +362,16 @@ public class CapabilityStatementResource {
                         + "Auth: Finance header.",
                         "API Key (Finance header)",
                         "GET", "POST"))
+                .add(resource("Dynamic Forms", "/api/forms",
+                        "Design and manage dynamic clinical form templates and capture filled values. "
+                        + "Templates: GET /forms/templates lists all; GET /forms/templates/{id} returns one with field count; POST creates; PUT updates; DELETE retires. "
+                        + "Fields: GET /forms/templates/{id}/fields; POST adds a field (componentPresentationType, componentDataType, editHtml, viewHtml, choices). "
+                        + "PUT /forms/fields/{id} updates; DELETE /forms/fields/{id} retires. "
+                        + "Choices: GET /forms/fields/{id}/choices; POST adds; PUT /forms/choices/{id} updates; DELETE /forms/choices/{id} retires. "
+                        + "Filled data: GET /forms/entries/{admissionId} lists all PatientFormEntry records for an admission; "
+                        + "GET /forms/entries/{entryId}/values lists all CaptureComponent values for a filled entry.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("SAP Integration - Inventory", "/api/sap/inventory",
                         "SAP S/4HANA Cloud MM inventory sync. "
                         + "GET /sync?fromDate=yyyy-MM-dd&toDate=yyyy-MM-dd fetches SAP goods-receipt material documents "

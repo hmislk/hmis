@@ -29,6 +29,9 @@ public class BillListReportDTO implements Serializable {
     private BigDecimal total;
     private BigDecimal discount;
     private BigDecimal netTotal;
+    private String bhtNo;
+    private String deptId;
+    private BigDecimal serviceCharge;
 
     // Default constructor
     public BillListReportDTO() {
@@ -82,6 +85,41 @@ public class BillListReportDTO implements Serializable {
         this.total = total;
         this.discount = discount;
         this.netTotal = netTotal;
+    }
+
+    // Constructor for the encounter-scoped Inward Service Bill list (issue #21247).
+    // Deliberately omits billClass (enum) to avoid COALESCE(enum,'') projection
+    // issues, and carries BHT number, printed bill number (deptId) and service
+    // charge (margin) needed by the list. All parameter types map cleanly from
+    // a JPQL NEW projection.
+    // Numeric params are Double (not BigDecimal): Bill.total/discount/netTotal/margin
+    // are primitive double on the entity, so a JPQL NEW projection over them yields
+    // Double. Matching that here keeps EclipseLink's reflective constructor binding
+    // unambiguous (a BigDecimal signature throws "argument type mismatch").
+    public BillListReportDTO(Long billId, String billNumber,
+                            BillTypeAtomic billTypeAtomicEnum, PaymentMethod paymentMethodEnum,
+                            String patientName, Date createdAt,
+                            String createdUserName, Boolean retired,
+                            Boolean cancelled, Boolean refunded,
+                            Double total, Double discount,
+                            Double netTotal,
+                            String bhtNo, String deptId, Double serviceCharge) {
+        this.billId = billId;
+        this.billNumber = billNumber;
+        this.billTypeAtomic = billTypeAtomicEnum != null ? billTypeAtomicEnum.toString() : null;
+        this.paymentMethod = paymentMethodEnum != null ? paymentMethodEnum.toString() : null;
+        this.patientName = patientName;
+        this.createdAt = createdAt;
+        this.createdUserName = createdUserName;
+        this.retired = retired;
+        this.cancelled = cancelled;
+        this.refunded = refunded;
+        this.total = total != null ? BigDecimal.valueOf(total) : null;
+        this.discount = discount != null ? BigDecimal.valueOf(discount) : null;
+        this.netTotal = netTotal != null ? BigDecimal.valueOf(netTotal) : null;
+        this.bhtNo = bhtNo;
+        this.deptId = deptId;
+        this.serviceCharge = serviceCharge != null ? BigDecimal.valueOf(serviceCharge) : null;
     }
 
     // Getters and Setters
@@ -195,6 +233,30 @@ public class BillListReportDTO implements Serializable {
 
     public void setNetTotal(BigDecimal netTotal) {
         this.netTotal = netTotal;
+    }
+
+    public String getBhtNo() {
+        return bhtNo;
+    }
+
+    public void setBhtNo(String bhtNo) {
+        this.bhtNo = bhtNo;
+    }
+
+    public String getDeptId() {
+        return deptId;
+    }
+
+    public void setDeptId(String deptId) {
+        this.deptId = deptId;
+    }
+
+    public BigDecimal getServiceCharge() {
+        return serviceCharge;
+    }
+
+    public void setServiceCharge(BigDecimal serviceCharge) {
+        this.serviceCharge = serviceCharge;
     }
 
     @Override

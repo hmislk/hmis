@@ -95,6 +95,73 @@
 
                 </p:dataTable>
             </p:panel>
+
+            <!-- ============================================================ -->
+            <!-- Theatre Returns — patients coming back from theatre            -->
+            <!-- ============================================================ -->
+            <p:panel class="my-3">
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fa fa-arrow-left fa-lg text-info me-2"/>
+                            <span class="fw-bold">Patients Returning from Theatre</span>
+                        </div>
+                        <p:commandButton
+                            id="btnRefreshReturns"
+                            value="Refresh Returns"
+                            icon="fa fa-refresh"
+                            ajax="false"
+                            class="ui-button-info"
+                            action="#{patientTransferController.navigateToPatientAccept()}"/>
+                    </div>
+                </f:facet>
+
+                <p:dataTable
+                    id="tblReturns"
+                    value="#{patientTransferController.pendingReturnRequests}"
+                    var="ret"
+                    emptyMessage="No patients returning from theatre.">
+
+                    <p:column headerText="BHT">
+                        <h:outputText value="#{ret.admission.bhtNo}"/>
+                    </p:column>
+                    <p:column headerText="Patient">
+                        <h:outputText value="#{ret.admission.patient.person.nameWithTitle}"/>
+                    </p:column>
+                    <p:column headerText="Return To">
+                        <h:outputText value="#{ret.toRoomFacilityCharge.name}"/>
+                    </p:column>
+                    <p:column headerText="Surgery">
+                        <h:outputText value="#{ret.surgeryBill.procedure.item.name}" rendered="#{ret.surgeryBill ne null}"/>
+                        <h:outputText value="—" rendered="#{ret.surgeryBill eq null}"/>
+                    </p:column>
+                    <p:column headerText="Initiated By">
+                        <h:outputText value="#{ret.initiatedBy.webUserPerson.name}"/>
+                    </p:column>
+                    <p:column headerText="Initiated At">
+                        <h:outputText value="#{ret.initiatedAt}">
+                            <f:convertDateTime pattern="dd MMM yyyy HH:mm" timeZone="Asia/Colombo"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Notes">
+                        <h:outputText value="#{ret.notes}"/>
+                    </p:column>
+                    <p:column headerText="Actions" style="width:120px"
+                              rendered="#{webUserController.hasPrivilege('WardAcceptTheatreReturn')}">
+                        <p:commandButton
+                            id="btnAcceptReturn"
+                            value="Accept"
+                            icon="fa fa-check"
+                            ajax="false"
+                            class="ui-button-success ui-button-sm"
+                            title="Accept patient returning from theatre"
+                            action="#{patientTransferController.acceptReturnToWard(ret)}"
+                            onclick="if (!confirm('Accept this patient back from theatre?')) return false;"/>
+                    </p:column>
+
+                </p:dataTable>
+            </p:panel>
+
         </h:form>
     </ui:define>
 

@@ -112,10 +112,28 @@
                                     </p:column>
                                 </p:autoComplete>
 
+                                <p:outputLabel value="Occupation" ></p:outputLabel>
+                                <p:inputText
+                                    class="w-100"
+                                    value="#{admissionController.occupationForSearch}" >
+                                </p:inputText>
+
+                                <p:outputLabel value="Insurance Company" ></p:outputLabel>
+                                <p:selectOneMenu
+                                    class="w-100"
+                                    value="#{admissionController.creditCompanyForSearch}"
+                                    filter="true"
+                                    autoWidth="false"
+                                    >
+                                    <f:selectItem itemLabel="All"></f:selectItem>
+                                    <f:selectItems value="#{institutionController.creditCompanies}" var="cc" itemLabel="#{cc.name}" itemValue="#{cc}" />
+                                </p:selectOneMenu>
+
                                 <p:outputLabel value="Status" ></p:outputLabel>
                                 <p:selectOneMenu
                                     class="w-100"
                                     value="#{admissionController.admissionStatusForSearch}" >
+                                    <f:selectItem itemLabel="Any Status"></f:selectItem>
                                     <f:selectItems value="#{enumController.admissionStatuses}"
                                                    var="status"
                                                    itemValue="#{status}" itemLabel="#{status.label}" />
@@ -139,7 +157,9 @@
                                     >
                                     <f:selectItem itemLabel="All"></f:selectItem>
                                     <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                    <p:ajax process="cmbFromInstitution" update="cmbSite" />
+                                    <p:ajax process="@this"
+                                            listener="#{admissionController.onInstitutionForSearchChange}"
+                                            update=":#{p:resolveFirstComponentWithId('cmbSite',view).clientId} :#{p:resolveFirstComponentWithId('cmbFromLoggedDepartment',view).clientId}" />
                                 </p:selectOneMenu>
 
                                 <h:panelGroup  rendered="#{webUserController.hasPrivilege('InwardSearchServiceBillUnrestrictedAccess') or !configOptionApplicationController.getBooleanValueByKey('Restirct Inward Admission Search to Logged Department of the User')}" >
@@ -153,7 +173,9 @@
                                         >
                                         <f:selectItem itemLabel="All"></f:selectItem>
                                         <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                                        <p:ajax process="cmbSite" update="cmbFromLoggedDepartment" />
+                                        <p:ajax process="@this"
+                                                listener="#{admissionController.onSiteForSearchChange}"
+                                                update=":#{p:resolveFirstComponentWithId('cmbFromLoggedDepartment',view).clientId}" />
                                     </p:selectOneMenu>
 
                                     <p:outputLabel value="Department"></p:outputLabel>
@@ -196,11 +218,17 @@
                                         <p:column headerText="Patient Name"  >
                                             <h:outputText value="#{a.patient.person.nameWithTitle}" ></h:outputText>
                                             <!-- Encounter flag badge — hidden for the STANDARD default. (Issue #21182) -->
-                                            <ui:fragment rendered="#{a.encounterRegistrationFlag ne null and a.encounterRegistrationFlag ne 'STANDARD'}">
+                                            <ui:fragment rendered="#{a.encounterRegistrationFlag eq 'ON_ADMISSION_DEATH'}">
                                                 <br/>
                                                 <p:tag value="#{a.encounterRegistrationFlag.label}"
                                                        icon="fas fa-cross"
                                                        style="background-color:#455a64; color:#ffffff;"/>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{a.encounterRegistrationFlag eq 'RAPID_TEMP_AE'}">
+                                                <br/>
+                                                <p:tag value="#{a.encounterRegistrationFlag.label}"
+                                                       icon="fas fa-truck-medical"
+                                                       style="background-color:#f0ad4e; color:#212529;"/>
                                             </ui:fragment>
                                         </p:column>
                                         <p:column headerText="Phone/Mobile" >

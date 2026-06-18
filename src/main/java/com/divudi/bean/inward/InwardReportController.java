@@ -64,6 +64,7 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.common.EnumController;
+import com.divudi.core.data.dto.AdmissionDischargeDTO;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -284,6 +285,7 @@ public class InwardReportController implements Serializable {
     private Staff consultant;
     private List<IpUnsettledInvoiceDTO> unsettledInvoicesList;
     private List<AdmissionCategoryWiseAdmissionDTO> admissionCategoryWiseAdmissionList;
+    private List<AdmissionDischargeDTO> admissionDischargesList;
     private Item surgeryItem;
 
     // for specialty/doctor wise income
@@ -391,15 +393,16 @@ public class InwardReportController implements Serializable {
             JsfUtil.addErrorMessage("Please select a report type");
             return;
         }
+        if (visitType == null || visitType.trim().isEmpty() || visitType.equals("Any")) {
+            JsfUtil.addErrorMessage("Please select a visit type");
+            return;
+        }
         bundle = generateIpIncomeCategoryWiseReport();
     }
 
     public ReportTemplateRowBundle generateIpIncomeCategoryWiseReport() {
         ReportTemplateRowBundle rtrb = new ReportTemplateRowBundle();
 
-        if (visitType == null || visitType.trim().isEmpty()) {
-            visitType = "Any";
-        }
         if (paymentType == null || paymentType.trim().isEmpty()) {
             paymentType = "Any";
         }
@@ -483,19 +486,29 @@ public class InwardReportController implements Serializable {
         List<PaymentMethod> nonCreditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.NON_CREDIT);
 
         StringBuilder jpql = new StringBuilder();
-        jpql.append("select new com.divudi.core.data.dto.IpIncomeCategoryWiseRowDTO("
-                + " b.id, b.billClassType, b.billType, b.discount, b.deptId,"
-                + " bi.grossValue, bi.hospitalFee, bi.discount, bi.staffFee, bi.netValue,"
-                + " i.id, i.name, c.id, c.name,"
-                + " pe.paymentMethod, b.paymentMethod"
-                + ")"
-                + " from BillItem bi"
-                + " join bi.bill b"
-                + " left join bi.item i"
-                + " left join i.category c"
-                + " left join b.patientEncounter pe"
-                + " where b.retired = :br"
-                + " and b.createdAt between :fd and :td ");
+            jpql = new StringBuilder();
+            jpql.append("select new com.divudi.core.data.dto.IpIncomeCategoryWiseRowDTO("
+                    + " b.id, b.billClassType, b.billType, b.discount, b.deptId,"
+                    + " bi.grossValue, bi.hospitalFee, bi.discount, bi.staffFee, bi.netValue,"
+                    + " COALESCE(i.id, refI.id, refRefI.id),"
+                    + " COALESCE(i.name, refI.name, refRefI.name),"
+                    + " COALESCE(c.id, refC.id, refRefC.id),"
+                    + " COALESCE(c.name, refC.name, refRefC.name),"
+                    + " pe.paymentMethod, b.paymentMethod"
+                    + ")"
+                    + " from BillItem bi"
+                    + " join bi.bill b"
+                    + " left join bi.item i"
+                    + " left join i.category c"
+                    + " left join b.patientEncounter pe"
+                    + " left join bi.referanceBillItem refBi"
+                    + " left join refBi.item refI"
+                    + " left join refI.category refC"
+                    + " left join refBi.referanceBillItem refRefBi"
+                    + " left join refRefBi.item refRefI"
+                    + " left join refRefI.category refRefC"
+                    + " where b.retired = :br"
+                    + " and b.createdAt between :fd and :td ");
 
         Map<String, Object> m = new HashMap<>();
         m.put("br", false);
@@ -520,6 +533,7 @@ public class InwardReportController implements Serializable {
                     m.put("pmIp", "Credit".equals(paymentType) ? creditPaymentMethods : nonCreditPaymentMethods);
                 }
                 break;
+                
             case "OP":
                 jpql.append(" and bi.bill.billTypeAtomic in :btas ");
                 m.put("btas", btasOP);
@@ -531,28 +545,19 @@ public class InwardReportController implements Serializable {
                             : nonCreditPaymentMethods);
                 }
                 break;
-            case "Any":
-                jpql.append(" and bi.bill.billTypeAtomic in :btas ");
-                List<BillTypeAtomic> all = new ArrayList<>();
-                all.addAll(btasIP);
-                all.addAll(btasOP);
-                m.put("btas", all);
-
-                if (roomCategories != null && !roomCategories.isEmpty()) {
-                    jpql.append(" AND bi.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory IN :cat ");
-                    m.put("cat", roomCategories);
-                }
-                if (admissionTypes != null && !admissionTypes.isEmpty()) {
-                    jpql.append(" AND bi.bill.patientEncounter.admissionType IN :admTypes ");
-                    m.put("admTypes", admissionTypes);
-                }
-                if (paymentType != null && !paymentType.isEmpty() && !"Any".equalsIgnoreCase(paymentType)) {
-                    jpql.append(" and bi.bill.patientEncounter.paymentMethod in :pmIp ");
-                    m.put("pmIp", "Credit".equals(paymentType) ? creditPaymentMethods : nonCreditPaymentMethods);
-                }
-                break;
 
             default:
+                List<BillTypeAtomic> allBtas = new ArrayList<>();
+                allBtas.addAll(btasIP);
+                allBtas.addAll(btasOP);
+                if (!allBtas.isEmpty()) {
+                    jpql.append(" and bi.bill.billTypeAtomic in :btas ");
+                    m.put("btas", allBtas);
+                }
+                if (paymentType != null && !paymentType.isEmpty() && !"Any".equalsIgnoreCase(paymentType)) {
+                    jpql.append(" and bi.bill.patientEncounter.paymentMethod in :pmAny ");
+                    m.put("pmAny", "Credit".equals(paymentType) ? creditPaymentMethods : nonCreditPaymentMethods);
+                }
                 break;
         }
 
@@ -569,7 +574,11 @@ public class InwardReportController implements Serializable {
             m.put("site", site);
         }
         if (category != null) {
-            jpql.append(" and bi.item.category = :cat ");
+            if (withProfessionalFee) {
+                jpql.append(" and (i.category = :cat OR refI.category = :cat) ");
+            } else {
+                jpql.append(" and bi.item.category = :cat ");
+            }
             m.put("cat", category);
         }
 
@@ -867,6 +876,13 @@ public class InwardReportController implements Serializable {
         jpql.append(" ORDER BY b.staff.speciality.name, b.staff.person.name ");
 
         List<SurgeryCountDoctorWiseDTO> rawList = (List<SurgeryCountDoctorWiseDTO>) billFeeFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        // Post-process to set the doctor name with title
+        for (SurgeryCountDoctorWiseDTO dto : rawList) {
+            if (dto.getStaff() != null && dto.getStaff().getPerson() != null) {
+                dto.setDoctorName(dto.getStaff().getPerson().getNameWithTitle());
+            }
+        }
 
         // Group by specialty and doctor, count surgeries month-wise
         Map<String, Map<Long, SurgeryCountDoctorWiseDTO>> specialtyDoctorMap = new LinkedHashMap<>();
@@ -1717,34 +1733,34 @@ public class InwardReportController implements Serializable {
                 sheet.setColumnWidth(i, colWidths[i]);
             }
 
-                // ── Charts sheet (native Excel charts) ─────────────────────────────
-                XSSFSheet chartSheet = workbook.createSheet("Charts");
-                XSSFDrawing drawing = chartSheet.createDrawingPatriarch();
+            // ── Charts sheet (native Excel charts) ─────────────────────────────
+            XSSFSheet chartSheet = workbook.createSheet("Charts");
+            XSSFDrawing drawing = chartSheet.createDrawingPatriarch();
 
-                List<SurgeryCountDoctorWiseDTO> doctorChartRows = getDoctorChartRows();
-                List<SurgeryCountDoctorWiseDTO> specialtyChartRows = getSpecialtyChartRows();
+            List<SurgeryCountDoctorWiseDTO> doctorChartRows = getDoctorChartRows();
+            List<SurgeryCountDoctorWiseDTO> specialtyChartRows = getSpecialtyChartRows();
 
-                int chartRowStart = 0;
-                if (!doctorChartRows.isEmpty()) {
+            int chartRowStart = 0;
+            if (!doctorChartRows.isEmpty()) {
                 int[] doctorBlock = writeChartDataBlock(
-                    chartSheet, chartRowStart, "Doctor", doctorChartRows, false);
+                        chartSheet, chartRowStart, "Doctor", doctorChartRows, false);
                 int doctorChartsStart = doctorBlock[2] + 2;
                 addLineChart(chartSheet, drawing, 0, doctorChartsStart, doctorBlock,
-                    "Doctor Wise Surgery Trend - Year " + reportYear);
+                        "Doctor Wise Surgery Trend - Year " + reportYear);
                 addBarChart(chartSheet, drawing, 0, doctorChartsStart + 22, doctorBlock,
-                    "Doctor Wise Surgery Count - Year " + reportYear);
+                        "Doctor Wise Surgery Count - Year " + reportYear);
                 chartRowStart = doctorChartsStart + 45;
-                }
+            }
 
-                if (!specialtyChartRows.isEmpty()) {
+            if (!specialtyChartRows.isEmpty()) {
                 int[] specialtyBlock = writeChartDataBlock(
-                    chartSheet, chartRowStart, "Speciality", specialtyChartRows, true);
+                        chartSheet, chartRowStart, "Speciality", specialtyChartRows, true);
                 int specialtyChartsStart = specialtyBlock[2] + 2;
                 addLineChart(chartSheet, drawing, 0, specialtyChartsStart, specialtyBlock,
-                    "Specialty Wise Surgery Trend - Year " + reportYear);
+                        "Specialty Wise Surgery Trend - Year " + reportYear);
                 addBarChart(chartSheet, drawing, 0, specialtyChartsStart + 22, specialtyBlock,
-                    "Specialty Wise Surgery Count - Year " + reportYear);
-                }
+                        "Specialty Wise Surgery Count - Year " + reportYear);
+            }
 
             // ── Write workbook to byte array first, then stream ────────────────────
             // Avoids "IOException never thrown" by separating workbook.write()
@@ -2473,6 +2489,134 @@ public class InwardReportController implements Serializable {
 
             dto.setNetTotal(total);
             dto.setCreditPaidAmount(collected);
+        }
+    }
+
+    public void processAdmissionDischargeReport() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append("SELECT new com.divudi.core.data.dto.AdmissionDischargeDTO(")
+                .append("pe.patient.phn, ")
+                .append("pe.patient.person.name, ")
+                .append("pe.patient.person.mobile, ")
+                .append("pe.bhtNo, ")
+                .append("pe.patient.person.address, ")
+                .append("pe.comments, ")
+                .append("pe.admissionType.name, ")
+                .append("pe.patient.person.dob, ")
+                .append("pe.patient.person.sex, ")
+                .append("pe.department.name, ")
+                .append("pe.dateOfAdmission, ")
+                .append("pe.dateOfDischarge, ")
+                .append("dc.name, ")
+                .append("rfc.name, ")
+                .append("rcp.name, ")
+                .append("cc.name, ")
+                .append("pe.totalCompanyPaidAtFinalProcessing, ")
+                .append("pe.totalPatientPaidAtFinalProcessing, ")
+                .append("pe.discount, ")
+                .append("pe.netTotal, ")
+                .append("pe.amountDueAtFinalProcessing, ")
+                .append("cd.name, ")
+                .append("pe.clinicalDischargeDateTime, ")
+                .append("fb.creater.name, ")
+                .append("fb.createdAt) ")
+                .append("FROM PatientEncounter pe ")
+                .append("LEFT JOIN pe.dischargeCondition d ")
+                .append("LEFT JOIN d.category dc ")
+                .append("LEFT JOIN pe.currentPatientRoom room ")
+                .append("LEFT JOIN room.roomFacilityCharge rfc ")
+                .append("LEFT JOIN pe.referringConsultant rc ")
+                .append("LEFT JOIN rc.person rcp ")
+                .append("LEFT JOIN pe.creditCompany cc ")
+                .append("LEFT JOIN pe.clinicalDischargedBy cd ")
+                .append("LEFT JOIN pe.finalBill fb ");
+
+        jpql.append("WHERE pe.retired = :ret ")
+                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ");
+        params.put("ret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if (dischargeFromDate != null && dischargeToDate != null) {
+            jpql.append("AND pe.dateOfDischarge BETWEEN :dfd AND :dtd ");
+            params.put("dfd", dischargeFromDate);
+            params.put("dtd", dischargeToDate);
+        }
+        if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
+            jpql.append("AND pe.finalBill IS NOT NULL ")
+                    .append("AND pe.finalBill.createdAt BETWEEN :iafd AND :iatd ");
+            params.put("iafd", invoiceApprovedFromDate);
+            params.put("iatd", invoiceApprovedToDate);
+        }
+        if (institution != null) {
+            jpql.append("AND pe.institution = :inst ");
+            params.put("inst", institution);
+        }
+        if (site != null) {
+            jpql.append("AND pe.department.site = :site ");
+            params.put("site", site);
+        }
+        if (department != null) {
+            jpql.append("AND pe.department = :dept ");
+            params.put("dept", department);
+        }
+        if (consultant != null) {
+            jpql.append("AND pe.referringConsultant = :cons ");
+            params.put("cons", consultant);
+        }
+        if (serviceCenter != null) {
+            jpql.append("AND pe.department = :sc ");
+            params.put("sc", serviceCenter);
+        }
+        if (sponsor != null) {
+            jpql.append("AND pe.creditCompany = :sponsor ");
+            params.put("sponsor", sponsor);
+        }
+        if (admissionType != null) {
+            jpql.append("AND pe.admissionType = :at ");
+            params.put("at", admissionType);
+        }
+        if (paymentMethod != null) {
+            jpql.append("AND pe.paymentMethod = :pm ");
+            params.put("pm", paymentMethod);
+        }
+        if (roomCategory != null) {
+            jpql.append("AND rfc.roomCategory = :rc ");
+            params.put("rc", roomCategory);
+        }
+        if (admissionStatus != null) {
+            switch (admissionStatus) {
+                case ADMITTED_BUT_NOT_DISCHARGED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
+                    params.put("dis", false);
+                    break;
+                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
+                    params.put("dis", true);
+                    break;
+                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = TRUE ");
+                    params.put("dis", true);
+                    break;
+                case ANY_STATUS:
+                default:
+                    break;
+            }
+        }
+
+        jpql.append("ORDER BY pe.dateOfAdmission ");
+
+        try {
+            admissionDischargesList = (List<AdmissionDischargeDTO>) peFacade.findLightsByJpql(
+                    jpql.toString(),
+                    params,
+                    TemporalType.TIMESTAMP
+            );
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error loading admissions & discharges: " + e.getMessage());
+            admissionDischargesList = new ArrayList<>();
         }
     }
 
@@ -6325,6 +6469,14 @@ public class InwardReportController implements Serializable {
 
     public void setIpIncomeTotalBillDiscount(double ipIncomeTotalBillDiscount) {
         this.ipIncomeTotalBillDiscount = ipIncomeTotalBillDiscount;
+    }
+
+    public List<AdmissionDischargeDTO> getAdmissionDischargesList() {
+        return admissionDischargesList;
+    }
+
+    public void setAdmissionDischargesList(List<AdmissionDischargeDTO> admissionDischargesList) {
+        this.admissionDischargesList = admissionDischargesList;
     }
 
     public class IncomeByCategoryRecord {

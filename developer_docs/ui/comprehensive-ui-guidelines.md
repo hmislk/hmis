@@ -87,6 +87,92 @@ Example:
 
 ---
 
+### Panel Header — Three-Zone Layout (required for action-rich panels)
+
+When a panel header contains both navigation and actions, divide it into three zones using a full-width flex row. This layout is aligned with enterprise UI standards (SAP Fiori shell bar, IBM Carbon top navigation).
+
+```text
+[title + config]          [navigation buttons]          [secondary actions → primary]
+LEFT                       CENTER                         RIGHT
+```
+
+**Zone rules:**
+
+| Zone | Contents | Button style |
+|------|----------|--------------|
+| **Left** | Panel title (icon + label) + contextual config button (admin-only) | Config: `ui-button-secondary ui-button-outlined` |
+| **Center** | Entity navigation buttons (e.g. Patient Lookup, Patient Profile) | `ui-button-info ui-button-outlined` |
+| **Right** | Page actions, **ordered left → right by ascending importance** | See action styles below |
+
+**Right-zone action ordering (left = least prominent → right = most prominent):**
+1. Rarely-used / dangerous / irreversible actions → `ui-button-secondary` (leftmost)
+2. Fast-path or warning actions → `ui-button-warning`
+3. **Primary action → `ui-button-success`, rightmost, with an icon and `style="min-width:120px"`**
+
+**Rules:**
+- The primary action MUST be the rightmost button. Users scan left-to-right; the last element is the natural "confirm" position.
+- Short-label primary buttons (e.g. "Admit", "Save", "Submit") look weak without an icon and minimum width. Always add `icon="pi pi-check-circle"` (or equivalent) and `style="min-width:120px"`.
+- Config belongs in the left zone, next to the title it configures — not on the far right. Wrap it in `rendered="#{webUserController.hasPrivilege('Admin')}"`.
+- Navigation buttons go in the center zone, never mixed into the action zone. Navigation style is `ui-button-info ui-button-outlined`.
+- Remove explicit `ms-*` / `mx-*` spacing classes from buttons inside a flex container; use `gap-2` on the parent instead.
+
+**Skeleton:**
+```xhtml
+<f:facet name="header">
+    <div class="d-flex justify-content-between align-items-center w-100">
+
+        <!-- LEFT: title + contextual config -->
+        <div class="d-flex align-items-center gap-2">
+            <h:outputText styleClass="fa fa-some-icon" />
+            <h:outputText value="Panel Title"/>
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                <p:commandButton value="Config" icon="fa fa-cog"
+                                 immediate="true" ajax="false"
+                                 title="Configure settings"
+                                 action="#{controller.navigateToConfig()}"
+                                 styleClass="ui-button-secondary ui-button-outlined"/>
+            </h:panelGroup>
+        </div>
+
+        <!-- CENTER: entity-level navigation -->
+        <div class="d-flex gap-2">
+            <p:commandButton value="Patient Lookup" icon="fa fa-search"
+                             ajax="false" immediate="true"
+                             action="#{patientController.navigateToSearchPatients()}"
+                             styleClass="ui-button-info ui-button-outlined"/>
+            <p:commandButton value="Patient Profile" icon="fa fa-user"
+                             ajax="false" immediate="true"
+                             action="#{patientController.navigateToOpdPatientProfile()}"
+                             styleClass="ui-button-info ui-button-outlined"/>
+        </div>
+
+        <!-- RIGHT: actions, left=least important → right=primary -->
+        <div class="d-flex gap-2 align-items-center">
+            <!-- Rare / dangerous — leftmost -->
+            <p:commandButton value="Dangerous Action" icon="fas fa-exclamation"
+                             styleClass="ui-button-secondary"
+                             onclick="PF('dlgConfirm').show();"/>
+            <!-- Warning fast-path — middle -->
+            <p:commandButton value="Emergency Action" icon="fas fa-bolt"
+                             styleClass="ui-button-warning"
+                             onclick="PF('dlgEmergency').show();"/>
+            <!-- Primary action — rightmost, widened -->
+            <p:commandButton id="btnPrimary"
+                             value="Save" icon="pi pi-check-circle"
+                             action="#{controller.save}"
+                             update="@form"
+                             style="min-width:120px"
+                             styleClass="ui-button-success"/>
+        </div>
+
+    </div>
+</f:facet>
+```
+
+Reference implementation: `src/main/webapp/inward/inward_admission.xhtml`
+
+---
+
 ## Forms and Input Patterns
 - Align labels and inputs with `p:outputLabel` + PrimeFaces components; include `for` attributes for accessibility.
 - Reuse controller state; avoid duplicating filters or adding new global variables when not required.
@@ -231,6 +317,51 @@ We drive Chrome via the Playwright MCP server for end-to-end verification. Playw
 - For status badges and other read-only indicators, prefer text + colour over colour alone, and surface the status in a `title` if the badge is icon-only.
 
 When you finish a UI change, mentally check: "If I asked Playwright to click the Fast Receive button on row PHPHTI/2878, can it identify that row uniquely from the accessibility snapshot?" If not, add titles until it can.
+
+### Data-entry components — make them automatable and robust (required)
+
+These patterns came out of end-to-end transfer testing. Apply them **while
+writing the page** so both real users and the Playwright MCP server can drive
+the form reliably. The runtime counterpart is
+[Playwright E2E Testing Workflow](../testing/playwright-e2e-workflow.md).
+
+- **Give every actionable button a stable `id`.** Add/Save/Settle/Issue/Receive
+  buttons must have an explicit `id` (e.g. `id="btnAddItem"`,
+  `id="btnSettleReceive"`). Reference one button from another component's
+  JavaScript via `#{p:resolveFirstComponentWithId('btnAddItem',view).clientId}`.
+  Do **not** use the `p:component(...)` EL function — it is not registered in
+  this project and throws a 500 (`Function 'p:component' not found`).
+
+- **Limit autocomplete result counts.** Add `maxResults="10"` (or a config-driven
+  cap) to every `p:autoComplete`. Unbounded result lists are slow and unusable.
+  For large master lists (staff, items), also set `minQueryLength="3"` and
+  `queryDelay="600"` so the server query fires once the user pauses, not on every
+  keystroke.
+
+- **Never let Enter clear or wrongly submit the form.** A JSF form with no
+  default command submits on Enter via the first command button, which on an
+  item-entry page silently wipes the in-progress bill. Guard it:
+  - On the item autocomplete, `onkeydown`: when the suggestion panel is open, let
+    Enter select the highlighted item; otherwise `event.preventDefault()` so
+    Enter does not submit.
+  - On the quantity field, `onkeydown`: `preventDefault()` on Enter to stop the
+    submit; `onkeyup`: on Enter, after a short `setTimeout` (≈350 ms, to let the
+    keyup-AJAX commit the bound quantity first) click the Add button by its
+    resolved client id. The delay matters — without it the quantity arrives empty.
+
+- **Multi-word search must match in any order.** When a `completeMethod` backs a
+  full-name search (staff, patients), split the query on whitespace and AND each
+  token across the relevant fields (name/code) server-side. A naïve single-`LIKE`
+  query fails the moment the user types `First Last`. (See
+  `StaffController.completeStaffWithoutDoctors`.)
+
+- **Protect settle/issue/receive against double submission.** Use a JS
+  `confirm()` guard in `onclick`
+  (`onclick="if (!confirm('Are you sure …?')) return false;"`) **and** a
+  server-side re-entrancy guard (a `synchronized` settle method and/or a boolean
+  `settling` flag) so a rapid double-click cannot create duplicate bills/items.
+  Do **not** rely on `this.disabled=true` in `onclick` — disabled fields are
+  excluded from the POST, so the values they hold never reach the server.
 
 ---
 

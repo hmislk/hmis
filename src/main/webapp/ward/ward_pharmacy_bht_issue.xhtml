@@ -14,16 +14,41 @@
             <p:panel rendered="#{!pharmacySaleBhtController.billPreview}">
 
                 <f:facet name="header" >
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <p:outputLabel value="BHT Issue" class="m-2"/>
-                        <div class="d-flex gap-2">
+                        <div class="d-flex gap-2 flex-wrap">
+
+                            <p:commandButton
+                                id="btnInpatientDashboard"
+                                value="Inpatient Dashboard"
+                                icon="fa fa-id-card"
+                                ajax="false"
+                                class="ui-button-secondary"
+                                rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}"
+                                action="#{admissionController.navigateToAdmissionProfilePage}">
+                                <f:setPropertyActionListener
+                                    value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter}"
+                                    target="#{admissionController.current}"/>
+                            </p:commandButton>
+
+                            <p:commandButton
+                                id="btnWardMedications"
+                                value="Ward Medications"
+                                icon="fa fa-pills"
+                                ajax="false"
+                                class="ui-button-info"
+                                rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}"
+                                action="#{inpatientClinicalDataController.navigateToInwardMedicinesFromAdmission(pharmacySaleBhtController.bhtRequestBill.patientEncounter)}">
+                            </p:commandButton>
 
                             <p:selectBooleanCheckbox
                                 itemLabel="Complete the Request"
-                                value="#{pharmacySaleBhtController.completed}" >
+                                value="#{pharmacySaleBhtController.completed}"
+                                disabled="#{!webUserController.hasPrivilege('PharmacyBhtRequestForceComplete')}" >
                             </p:selectBooleanCheckbox>
 
                             <p:commandButton
+                                id="btnIssue"
                                 style="float: right;"
                                 class="ui-button-success"
                                 icon="fa fa-check"
@@ -37,6 +62,30 @@
                     </div>
 
                 </f:facet>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h:outputLabel value="Porter / Staff Carrying Medicines to Ward:" for="acPorter" />
+                        <p:autoComplete id="acPorter"
+                                        completeMethod="#{staffController.completeStaffWithoutDoctors}"
+                                        forceSelection="true"
+                                        var="w" itemLabel="#{w.person.name}" itemValue="#{w}"
+                                        value="#{pharmacySaleBhtController.preBill.toStaff}"
+                                        maxResults="10"
+                                        placeholder="Search staff by name">
+
+                            <p:column headerText="Name">
+                                <h:outputText value="#{w.person.nameWithTitle}" />
+                            </p:column>
+                            <p:column headerText="Speciality">
+                                <h:outputText value="#{w.speciality.name}" />
+                            </p:column>
+                            <p:column headerText="Staff Code">
+                                <h:outputText value="#{w.code}" />
+                            </p:column>
+                        </p:autoComplete>
+                    </div>
+                </div>
 
                 <h:panelGroup class="row">
                     <h:panelGroup class="row" rendered="#{configOptionApplicationController.getBooleanValueByKey('Adding new items for inpatient requests are allowed.',true)}">
@@ -138,6 +187,12 @@
                                         <p:outputLabel value="BHT No" ></p:outputLabel>
                                         <p:outputLabel value=":" ></p:outputLabel>
                                         <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.bhtNo}" ></p:outputLabel>
+                                        <p:outputLabel value="From Department"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.fromDepartment ne null}"></p:outputLabel>
+                                        <p:outputLabel value=":"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.fromDepartment ne null}"></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.fromDepartment.name}"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.fromDepartment ne null}"></p:outputLabel>
                                         <p:outputLabel value="Credit Company" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
                                         <p:outputLabel value=":" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
                                         <!-- Credit company name, only render if paymentMethod is Credit and creditCompany is non-null -->
@@ -165,6 +220,25 @@
                                         <p:outputLabel value="Time" ></p:outputLabel>
                                         <p:outputLabel value=":" ></p:outputLabel>
                                         <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.createdAt}" > <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" /></p:outputLabel>
+                                        <p:outputLabel value="Requested By"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.creater ne null
+                                                                   and pharmacySaleBhtController.bhtRequestBill.creater.webUserPerson ne null}"></p:outputLabel>
+                                        <p:outputLabel value=":"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.creater ne null
+                                                                   and pharmacySaleBhtController.bhtRequestBill.creater.webUserPerson ne null}"></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.creater.webUserPerson.name}"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.creater ne null
+                                                                   and pharmacySaleBhtController.bhtRequestBill.creater.webUserPerson ne null}"></p:outputLabel>
+                                        <p:outputLabel value="Priority"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.priority ne null
+                                                                   and pharmacySaleBhtController.bhtRequestBill.priority.name() ne 'NORMAL'}"></p:outputLabel>
+                                        <p:outputLabel value=":"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.priority ne null
+                                                                   and pharmacySaleBhtController.bhtRequestBill.priority.name() ne 'NORMAL'}"></p:outputLabel>
+                                        <p:tag value="#{pharmacySaleBhtController.bhtRequestBill.priority.displayName}"
+                                               rendered="#{pharmacySaleBhtController.bhtRequestBill.priority ne null
+                                                           and pharmacySaleBhtController.bhtRequestBill.priority.name() ne 'NORMAL'}"
+                                               style="background-color:#{pharmacySaleBhtController.bhtRequestBill.priority.priorityColor}; color:#212529;"></p:tag>
                                         <p:outputLabel value="Discount" ></p:outputLabel>
                                         <p:outputLabel value=":" ></p:outputLabel>
                                         <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.discount}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
@@ -173,7 +247,7 @@
                                         <p:outputLabel value="#{pharmacySaleBhtController.billItemTotal}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
                                         <p:outputLabel value="Comment" ></p:outputLabel>
                                         <p:outputLabel value=":" ></p:outputLabel>
-                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.comments}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.comments}" ></p:outputLabel>
                                     </h:panelGrid>
                                 </p:panel>
                             </div>
@@ -184,18 +258,29 @@
                 </h:panelGroup>
 
                 <p:panel header="Available Items" class="mt-2">
-                    <p:dataTable 
+                    <style>
+                        .auto-substituted-row { background-color: #FFF3CD !important; }
+                        .auto-substituted-row td { background-color: #FFF3CD !important; }
+                    </style>
+                    <p:dataTable
                         var="bItm"
                         value="#{pharmacySaleBhtController.billItems}"
                         id="itemList"
-                        sortBy="#{bItm.searialNo}"  
+                        sortBy="#{bItm.searialNo}"
+                        rowStyleClass="#{bItm.autoSubstituted ? 'auto-substituted-row' : ''}"
                         editable="true">
                         <p:ajax event="rowEdit" listener="#{pharmacySaleBhtController.onEditing}" update="itemList" />
                         <p:ajax event="rowEditCancel" listener="#{pharmacySaleBhtController.onEditing}" update="itemList" />
 
                         <p:column headerText="Requested Item" style="width: 50px!important; padding: 6px;">
-                            <div style="display:flex;align-items:center;">
+                            <div style="display:flex;align-items:center;gap:4px;">
                                 <h:outputText id="item" value="#{bItm.referanceBillItem.item.name}" />
+                                <h:outputText
+                                    rendered="#{bItm.autoSubstituted}"
+                                    value="&#xf0ec;"
+                                    escape="false"
+                                    style="font-family:'Font Awesome 5 Free';font-weight:900;color:#e67e22;"
+                                    title="Auto-substituted for: #{bItm.requestedItemName}" />
                                 <p:commandButton
                                     icon="pi pi-refresh"
                                     id="btnSelectSubstitute"
@@ -214,9 +299,12 @@
                         </p:column>
 
 
-                        <p:column headerText="Description" style="width: 50px!important; padding: 6px;"  >
-                            <h:outputText id="dis" value="#{bItm.item.descreption}" >
-                            </h:outputText>
+                        <p:column headerText="Description" style="width: 50px!important; padding: 6px;">
+                            <h:outputText id="dis" value="#{bItm.item.descreption}" />
+                            <h:panelGroup rendered="#{bItm.autoSubstituted}" layout="block"
+                                          style="margin-top:2px;font-size:0.85em;color:#e67e22;font-style:italic;">
+                                <h:outputText value="Auto-sub: #{bItm.requestedItemName} → #{bItm.item.name}" />
+                            </h:panelGroup>
                         </p:column>
 
                         <p:column headerText="Batch No"  style="width:50px!important; text-align: right; padding: 6px;">

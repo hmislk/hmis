@@ -167,32 +167,13 @@ public class PharmacyStockTakeController implements Serializable {
     private boolean enableLightweightBillLoading = true; // Feature flag for lightweight bill loading
 
     // Batch processing optimization configuration
-    @Named("pharmacy.stock.upload.optimized")
-    private Boolean useOptimizedUploadMethod = true; // Feature flag for optimized parseAndPersistNavigate
-
     @Named("pharmacy.stock.upload.batchSize")
     private Integer configuredBatchSize = 30; // Optimal batch size based on JPA performance research
-
-    // Native SQL method for critical performance issues (bypasses JPA completely)
-    @Named("pharmacy.stock.upload.useNativeSQL")
-    private Boolean useNativeSqlMethod = true; // Default enabled due to JPA performance crisis
-
-    @Named("pharmacy.stock.upload.nativeSQL.batchSize")
-    private Integer nativeSqlBatchSize = 50; // Optimal batch size for MySQL bulk INSERTs
 
     // Batch size configuration based on internet research optimal range (20-50)
     private int getOptimalBatchSize() {
         return configuredBatchSize != null ? configuredBatchSize : 30;
     }
-
-    private int getNativeSqlBatchSize() {
-        return nativeSqlBatchSize != null ? nativeSqlBatchSize : 50;
-    }
-
-    // Native SQL review data (DTO-based approach for maximum performance)
-    private Long nativeSqlBillId;
-    private Integer nativeSqlItemCount;
-    private java.util.List<StockCountReviewDTO> nativeSqlReviewData;
 
     /**
      * Generate stock count bill preview without persisting.
@@ -1174,41 +1155,11 @@ public class PharmacyStockTakeController implements Serializable {
 
     /**
      * Parse, persist a Physical Count bill, and navigate to review page.
-     * Uses feature flags to choose between native SQL, optimized JPA, and legacy implementations.
      */
     public String parseAndPersistNavigate() {
-        // Reset state from any previous upload so the review page shows fresh data
         printPreview = false;
         physicalCountBill = null;
-        // Priority 1: Native SQL method for critical performance issues
-        if (Boolean.TRUE.equals(useNativeSqlMethod)) {
-            System.out.println("DEBUG: Using native SQL upload method (feature flag enabled)");
-            try {
-                return parseAndPersistNavigateNativeSQL();
-            } catch (Exception e) {
-                System.err.println("ERROR: Native SQL upload failed, falling back to JPA method");
-                System.err.println("ERROR Details: " + e.getMessage());
-                e.printStackTrace();
-                // Clear any partial state before fallback
-                physicalCountBill = null;
-                // Automatic fallback to optimized JPA method
-                return parseAndPersistNavigateOptimized();
-            }
-        }
-
-        // Priority 2: Optimized JPA method
-        if (Boolean.TRUE.equals(useOptimizedUploadMethod)) {
-            System.out.println("DEBUG: Using optimized upload method (feature flag enabled)");
-            // Ensure snapshot display is available, fallback to legacy if not
-            if (snapshotBillDisplay == null) {
-                System.out.println("DEBUG: snapshotBillDisplay is null, falling back to legacy method");
-                return parseAndPersistNavigateLegacy();
-            }
-            return parseAndPersistNavigateOptimized();
-        } else {
-            System.out.println("DEBUG: Using legacy upload method (feature flags disabled)");
-            return parseAndPersistNavigateLegacy();
-        }
+        return parseAndPersistNavigateNativeSQL();
     }
 
 
@@ -1561,7 +1512,7 @@ public class PharmacyStockTakeController implements Serializable {
         } catch (Exception e) {
             physicalCountBill = null;
             JsfUtil.addErrorMessage("Upload failed: " + e.getMessage());
-            throw new RuntimeException("Upload failed", e);
+            return null;
         }
     }
 
@@ -1628,135 +1579,6 @@ public class PharmacyStockTakeController implements Serializable {
     }
 
     /**
-     * Creates Bill entity using JPA (fast for single record) to get ID for bulk operations.
-     * Uses native SQL for bulk BillItem and PharmaceuticalBillItem creation where performance matters.
-     */
-    private Long createBillWithHybridApproach() throws Exception {
-        // Generate bill number using existing business logic
-        Department dept = sessionController.getDepartment();
-        String deptId = billNumberBean.departmentBillNumberGenerator(dept, BillType.PharmacyPhysicalCountBill, BillClassType.BilledBill, BillNumberSuffix.NONE);
-
-        System.out.println("PERF: Creating Bill with JPA (hybrid approach)...");
-
-        // Use JPA for Bill creation (single record, fast) to easily get the ID
-        Bill bill = new Bill();
-        bill.setBillType(BillType.PharmacyPhysicalCountBill);
-        bill.setBillClassType(BillClassType.BilledBill);
-        bill.setDepartment(sessionController.getDepartment());
-        bill.setInstitution(sessionController.getInstitution());
-        bill.setCreatedAt(new Date());
-        bill.setCreater(sessionController.getLoggedUser());
-        bill.setReferenceBill(billFacade.getReference(snapshotBillDisplay.getId()));
-        bill.setInsId(deptId);
-        bill.setDeptId(deptId);
-
-        billFacade.create(bill);
-        Long billId = bill.getId();
-
-        System.out.println("PERF: Bill created with ID: " + billId + ", deptId: " + deptId);
-        return billId;
-    }
-
-    /**
-     * Creates BillItems using bulk native SQL INSERTs for maximum performance.
-     * Processes data in batches to handle large datasets efficiently.
-     */
-    /**
-     * Allocates a contiguous block of IDs from EclipseLink's SEQUENCE table.
-     * Delegates to BillItemFacade.allocateSequenceBlock() which runs in REQUIRES_NEW,
-     * ensuring the SEQUENCE row lock is acquired and released in its own transaction
-     * before this method returns. This prevents lock-wait timeouts when EclipseLink's
-     * own sequence allocator later updates the same SEQUENCE row inside the main
-     * JTA transaction (e.g. during billFacade.edit() in completeStockTaking()).
-     */
-    private long allocateIdBlock(int count) throws Exception {
-        return billItemFacade.allocateSequenceBlock(count);
-    }
-
-    private java.util.List<Long> createBillItemsWithBulkSQL(Long billId, java.util.List<StockCountRowData> stockCountData) throws Exception {
-        java.util.List<Long> billItemIds = new java.util.ArrayList<>();
-        int batchSize = getNativeSqlBatchSize();
-        int totalItems = stockCountData.size();
-
-        Date createdAt = new Date();
-        Long createrId = sessionController.getLoggedUser().getId();
-
-        // Pre-allocate all IDs in one shot from the sequence table
-        long firstId = allocateIdBlock(totalItems);
-        System.out.println("PERF: Allocated ID block starting at " + firstId + " for " + totalItems + " BillItems");
-
-        for (int i = 0; i < totalItems; i += batchSize) {
-            int endIndex = Math.min(i + batchSize, totalItems);
-            java.util.List<StockCountRowData> batch = stockCountData.subList(i, endIndex);
-
-            StringBuilder bulkInsertSQL = new StringBuilder();
-            bulkInsertSQL.append("INSERT INTO billitem (ID, bill_id, item_id, qty, createdAt, creater_id, ");
-            bulkInsertSQL.append("referanceBillItem_id, adjustedValue, retired, searialno) VALUES ");
-
-            java.util.List<Object> batchParams = new java.util.ArrayList<>();
-            for (int j = 0; j < batch.size(); j++) {
-                if (j > 0) bulkInsertSQL.append(", ");
-                bulkInsertSQL.append("(?, ?, ?, ?, ?, ?, ?, ?, 0, ?)");
-                long assignedId = firstId + i + j;
-                billItemIds.add(assignedId);
-                StockCountRowData rowData = batch.get(j);
-                batchParams.add(assignedId);
-                batchParams.add(billId);
-                batchParams.add(rowData.itemId);
-                batchParams.add(rowData.physicalQty);
-                batchParams.add(createdAt);
-                batchParams.add(createrId);
-                batchParams.add(rowData.referanceBillItemId);
-                batchParams.add(rowData.adjustedValue);
-                batchParams.add(i + j + 1);
-            }
-
-            billItemFacade.executeNativeSql(bulkInsertSQL.toString(), batchParams);
-            System.out.println("PERF: BillItem batch " + (i / batchSize + 1) + " done (" + batch.size() + " rows)");
-        }
-
-        System.out.println("PERF: All BillItems created, total: " + billItemIds.size());
-        return billItemIds;
-    }
-
-    /**
-     * Creates PharmaceuticalBillItems with explicit IDs (required — no AUTO_INCREMENT).
-     * Uses pre-allocated billItem IDs from createBillItemsWithBulkSQL to guarantee a
-     * deterministic 1-to-1 link — no subquery that could match the wrong row.
-     */
-    private void createPharmaceuticalBillItemsWithDirectSQL(java.util.List<Long> billItemIds, java.util.List<StockCountRowData> stockCountData) throws Exception {
-        System.out.println("PERF: Starting bulk PharmaceuticalBillItem creation for " + stockCountData.size() + " items");
-        if (stockCountData.isEmpty()) return;
-
-        long firstPbiId = allocateIdBlock(stockCountData.size());
-        System.out.println("PERF: Allocated PharmaceuticalBillItem ID block starting at " + firstPbiId);
-
-        int batchSize = 50;
-        for (int i = 0; i < stockCountData.size(); i += batchSize) {
-            int end = Math.min(i + batchSize, stockCountData.size());
-
-            StringBuilder sql = new StringBuilder(
-                "INSERT INTO pharmaceuticalbillitem (ID, billItem_id, itemBatch_id, stock_id, qty, freeQty) VALUES ");
-            java.util.List<Object> params = new java.util.ArrayList<>();
-            for (int j = i; j < end; j++) {
-                if (j > i) sql.append(", ");
-                sql.append("(?, ?, ?, ?, ?, 0.0)");
-                StockCountRowData r = stockCountData.get(j);
-                params.add(firstPbiId + j);       // pbi ID
-                params.add(billItemIds.get(j));    // deterministic billItem_id
-                params.add(r.itemBatchId);
-                params.add(r.stockId);
-                params.add(r.physicalQty);
-            }
-
-            pharmaceuticalBillItemFacade.executeNativeSql(sql.toString(), params);
-            System.out.println("PERF: PharmaceuticalBillItem batch " + (i / batchSize + 1) + " done (" + (end - i) + " rows)");
-        }
-
-        System.out.println("PERF: All PharmaceuticalBillItems created successfully (bulk batches)");
-    }
-
-    /**
      * Loads the physical count bill with all associations needed by approvePhysicalCount
      * in a single JOIN FETCH query to avoid N+1 lazy loading during approval.
      */
@@ -1792,78 +1614,6 @@ public class PharmacyStockTakeController implements Serializable {
             e.printStackTrace();
             return billFacade.find(billId);
         }
-    }
-
-    /**
-     * Load review data using DTOs for maximum performance.
-     * Called by the native SQL review page to display upload results without entity overhead.
-     */
-    public java.util.List<StockCountReviewDTO> loadNativeSqlReviewData() {
-        if (nativeSqlBillId == null) {
-            System.err.println("ERROR: No native SQL bill ID available for review");
-            return new java.util.ArrayList<>();
-        }
-
-        System.out.println("PERF: Loading review data for Bill ID: " + nativeSqlBillId);
-        long startTime = System.currentTimeMillis();
-
-        try {
-            // Use JPQL with DTO constructor for maximum performance
-            String jpql = "SELECT NEW com.divudi.bean.pharmacy.PharmacyStockTakeController$StockCountReviewDTO(" +
-                         "bi.id, i.code, i.name, ib.batchNo, ib.dateOfExpire, rbi.qty, bi.qty, bi.adjustedValue, " +
-                         "COALESCE(ib.costRate, 0.0), COALESCE(ib.retailRate, 0.0)) " +
-                         "FROM BillItem bi " +
-                         "JOIN bi.item i " +
-                         "JOIN bi.pharmaceuticalBillItem pbi " +
-                         "LEFT JOIN pbi.itemBatch ib " +
-                         "LEFT JOIN bi.referanceBillItem rbi " +
-                         "WHERE bi.bill.id = :billId " +
-                         "ORDER BY i.name, ib.batchNo";
-
-            java.util.Map<String, Object> params = new java.util.HashMap<>();
-            params.put("billId", nativeSqlBillId);
-
-            nativeSqlReviewData = (java.util.List<StockCountReviewDTO>) billItemFacade.findLightsByJpql(jpql, params);
-
-            System.out.println("PERF: Review data loaded in " + (System.currentTimeMillis() - startTime) +
-                             "ms, " + nativeSqlReviewData.size() + " items");
-
-            return nativeSqlReviewData;
-
-        } catch (Exception e) {
-            System.err.println("ERROR: Failed to load native SQL review data: " + e.getMessage());
-            e.printStackTrace();
-            return new java.util.ArrayList<>();
-        }
-    }
-
-    /**
-     * Get review data for the native SQL review page.
-     */
-    public java.util.List<StockCountReviewDTO> getNativeSqlReviewData() {
-        if (nativeSqlReviewData == null || nativeSqlReviewData.isEmpty()) {
-            return loadNativeSqlReviewData();
-        }
-        return nativeSqlReviewData;
-    }
-
-    /**
-     * Get summary information for the native SQL review page.
-     */
-    public String getNativeSqlSummary() {
-        if (nativeSqlItemCount != null) {
-            return "Items processed: " + nativeSqlItemCount + " (Ultra-Fast Native SQL)";
-        }
-        return "Native SQL upload completed";
-    }
-
-    // Getters for native SQL review page
-    public Long getNativeSqlBillId() {
-        return nativeSqlBillId;
-    }
-
-    public Integer getNativeSqlItemCount() {
-        return nativeSqlItemCount;
     }
 
     @Deprecated
@@ -4982,19 +4732,6 @@ public class PharmacyStockTakeController implements Serializable {
         public String getBatch() { return batchNo; }
     }
 
-    /**
-     * Data structure for collecting Excel row data for native SQL bulk operations.
-     * Used to minimize memory footprint and eliminate JPA entity creation overhead.
-     */
-    private static class StockCountRowData {
-        double physicalQty;
-        Long itemId;
-        Long referanceBillItemId;
-        double adjustedValue;
-        Long itemBatchId;
-        Long stockId;
-    }
-
     /** Scalar snapshot reference — replaces full BillItem entity pre-load. */
     private static class SnapBillItemData {
         final Long itemId;
@@ -5009,77 +4746,4 @@ public class PharmacyStockTakeController implements Serializable {
         }
     }
 
-    /**
-     * DTO for native SQL review page - maximum performance with no entity loading.
-     * Contains all necessary data for review without JPA overhead.
-     */
-    public static class StockCountReviewDTO {
-        private Long billItemId;
-        private String itemCode;
-        private String itemName;
-        private String batchNumber;
-        private Date expiryDate;
-        private Double systemQty;
-        private Double physicalQty;
-        private Double adjustedValue;
-        private Double costRate;
-        private Double retailRate;
-
-        // Constructors
-        public StockCountReviewDTO() {}
-
-        public StockCountReviewDTO(Long billItemId, String itemCode, String itemName,
-                                  String batchNumber, Date expiryDate, Double systemQty,
-                                  Double physicalQty, Double adjustedValue, Double costRate, Double retailRate) {
-            this.billItemId = billItemId;
-            this.itemCode = itemCode;
-            this.itemName = itemName;
-            this.batchNumber = batchNumber;
-            this.expiryDate = expiryDate;
-            this.systemQty = systemQty;
-            this.physicalQty = physicalQty;
-            this.adjustedValue = adjustedValue;
-            this.costRate = costRate;
-            this.retailRate = retailRate;
-        }
-
-        // Getters and setters
-        public Long getBillItemId() { return billItemId; }
-        public void setBillItemId(Long billItemId) { this.billItemId = billItemId; }
-
-        public String getItemCode() { return itemCode; }
-        public void setItemCode(String itemCode) { this.itemCode = itemCode; }
-
-        public String getItemName() { return itemName; }
-        public void setItemName(String itemName) { this.itemName = itemName; }
-
-        public String getBatchNumber() { return batchNumber; }
-        public void setBatchNumber(String batchNumber) { this.batchNumber = batchNumber; }
-
-        public Date getExpiryDate() { return expiryDate; }
-        public void setExpiryDate(Date expiryDate) { this.expiryDate = expiryDate; }
-
-        public Double getSystemQty() { return systemQty; }
-        public void setSystemQty(Double systemQty) { this.systemQty = systemQty; }
-
-        public Double getPhysicalQty() { return physicalQty; }
-        public void setPhysicalQty(Double physicalQty) { this.physicalQty = physicalQty; }
-
-        public Double getAdjustedValue() { return adjustedValue; }
-        public void setAdjustedValue(Double adjustedValue) { this.adjustedValue = adjustedValue; }
-
-        public Double getCostRate() { return costRate; }
-        public void setCostRate(Double costRate) { this.costRate = costRate; }
-
-        public Double getRetailRate() { return retailRate; }
-        public void setRetailRate(Double retailRate) { this.retailRate = retailRate; }
-
-        public Double getAdjustmentCostValue() {
-            return (adjustedValue != null && costRate != null) ? adjustedValue * costRate : 0.0;
-        }
-
-        public String getFormattedExpiryDate() {
-            return expiryDate != null ? java.text.DateFormat.getDateInstance().format(expiryDate) : "";
-        }
-    }
 }

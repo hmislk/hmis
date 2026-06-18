@@ -10,11 +10,6 @@
 ### Working Directory
 0. **🚨 NEVER USE WORKTREE ISOLATION**: Always work directly in the main project checkout directory. Do NOT use `isolation: "worktree"` when spawning agents. If you find yourself in a path like `.claude/worktrees/*`, stop and perform all file edits in the main project directory instead. Worktrees cause the developer's local branch to go out of sync with remote commits, leading to confusing stale-file compilation errors. (Issue: hmislk/hmis#19944)
 
-### User Control
-1. **🚨 NO AUTO-ACTIONS**: Do NOT commit, build, run, or push code unless the user explicitly requests it
-2. **🚨 EXPLICIT COMMANDS ONLY**: Wait for user confirmation before executing Git operations, Maven builds, or deployment commands
-3. **🚨 NO AUTO-COMPILE**: Never run Maven compile unless explicitly requested
-
 ### Code Integrity
 4. **🚨 NO MOCK DATA**: NEVER use mock bills, fake entities, or temporary workarounds in business logic
 5. **🚨 DISCUSS UNCERTAINTIES**: ALWAYS discuss with user when uncertain about implementation approach
@@ -47,8 +42,11 @@
 - [Deployment Recovery Guide](developer_docs/deployment/deployment-recovery-guide.md) - How to recover when root-owned files break CI/CD deployment
 
 ### When Working on UI/XHTML
-- [UI Development Handbook](developer_docs/ui/comprehensive-ui-guidelines.md) - Complete UI reference
+- [UI Development Handbook](developer_docs/ui/comprehensive-ui-guidelines.md) - Complete UI reference. **Authoring data-entry pages**: every actionable button needs a stable `id`; cap `p:autoComplete` with `maxResults`; guard the Enter key so it never clears/submits the form; make settle/issue/receive double-click-safe (JS `confirm()` + server-side re-entrancy guard). See § Accessibility-first development and § Data-entry components.
 - [Icon Management](developer_docs/ui/icon-management.md) - Standard icons and sizing
+
+### When Testing with Playwright (E2E verification)
+- [Playwright E2E Testing Workflow](developer_docs/testing/playwright-e2e-workflow.md) - Login + department selection, committing PrimeFaces inputs with real key events (plain `fill()` does not commit), date-filtered lists need Search clicked, confirm-dialog & double-click handling, DB verification. **Accessibility-first**: if Playwright can't find a control, fix the page (stable id/title), not the test.
 
 ### When Working on JSF/AJAX
 - [JSF AJAX Update Guidelines](developer_docs/jsf/ajax-update-guidelines.md) - Critical AJAX rules

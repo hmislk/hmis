@@ -57,18 +57,18 @@ public class PriceMatrixController implements Serializable {
     private transient Map<String, Double> discountPercentCache;
 
     public PriceMatrix fetchInwardMargin(BillItem billItem, double serviceValue, Department department, PaymentMethod paymentMethod) {
-        PriceMatrix inwardPriceAdjustment;
-        Category category;
+        return fetchInwardMargin(billItem.getItem(), serviceValue, department, paymentMethod);
+    }
+
+    /**
+     * Item-based inward-margin lookup. The BillItem overload delegates here.
+     * Exposed so read-only callers (e.g. the inward margin diagnostic API) can
+     * run the exact same lookup without constructing a BillItem.
+     */
+    public PriceMatrix fetchInwardMargin(Item item, double serviceValue, Department department, PaymentMethod paymentMethod) {
         boolean isPaymentMethodAllowedInInwardMatrix = configOptionApplicationController.getBooleanValueByKey("Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation", false);
-        if (billItem.getItem() instanceof Investigation) {
-            if (configOptionApplicationController.getBooleanValueByKey("Get Category Instead of Investigation Category In Price Matrix")) {
-                category = ((Investigation) billItem.getItem()).getCategory();
-            } else {
-                category = ((Investigation) billItem.getItem()).getInvestigationCategory();
-            }
-        } else {
-            category = billItem.getItem().getCategory();
-        }
+        Category category = resolveInwardMatrixCategory(item);
+        PriceMatrix inwardPriceAdjustment;
         if (isPaymentMethodAllowedInInwardMatrix) {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category, paymentMethod);
         } else {
@@ -81,11 +81,53 @@ public class PriceMatrixController implements Serializable {
                 inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory());
             }
         }
-//        if (inwardPriceAdjustment == null) {
-//            return null;
-//        }
         return inwardPriceAdjustment;
+    }
 
+    public PriceMatrix fetchInwardMargin(BillItem billItem, double serviceValue, Department department, PaymentMethod paymentMethod, Institution creditCompany) {
+        return fetchInwardMargin(billItem.getItem(), serviceValue, department, paymentMethod, creditCompany);
+    }
+
+    public PriceMatrix fetchInwardMargin(Item item, double serviceValue, Department department, PaymentMethod paymentMethod, Institution creditCompany) {
+        if (creditCompany != null) {
+            PriceMatrix result = fetchInwardMarginWithCreditCompany(item, serviceValue, department, paymentMethod, creditCompany);
+            if (result != null) {
+                return result;
+            }
+        }
+        return fetchInwardMargin(item, serviceValue, department, paymentMethod);
+    }
+
+    private PriceMatrix fetchInwardMarginWithCreditCompany(Item item, double serviceValue, Department department, PaymentMethod paymentMethod, Institution creditCompany) {
+        boolean isPaymentMethodAllowedInInwardMatrix = configOptionApplicationController.getBooleanValueByKey("Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation", false);
+        Category category = resolveInwardMatrixCategory(item);
+        PriceMatrix result;
+        if (isPaymentMethodAllowedInInwardMatrix) {
+            result = getInwardPriceAdjustment(department, serviceValue, category, paymentMethod, creditCompany);
+        } else {
+            result = getInwardPriceAdjustment(department, serviceValue, category, creditCompany);
+        }
+        if (result == null && category != null) {
+            if (isPaymentMethodAllowedInInwardMatrix) {
+                result = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory(), paymentMethod, creditCompany);
+            } else {
+                result = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory(), creditCompany);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * The category the inward price-matrix lookup uses for an item: the
+     * investigation category for investigations (unless the config flag swaps
+     * it for the plain category), otherwise the item's category.
+     */
+    private Category resolveInwardMatrixCategory(Item item) {
+        if (item instanceof Investigation
+                && !configOptionApplicationController.getBooleanValueByKey("Get Category Instead of Investigation Category In Price Matrix")) {
+            return ((Investigation) item).getInvestigationCategory();
+        }
+        return item.getCategory();
     }
 
     public PriceMatrix fetchInwardMargin(Item item, double serviceValue, Department department) {
@@ -146,7 +188,8 @@ public class PriceMatrixController implements Serializable {
                 + " where a.retired=false"
                 + " and a.category=:cat "
                 + " and  a.department=:dep"
-                + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)";
+                + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)"
+                + " and a.creditCompany is null";
         HashMap hm = new HashMap();
         hm.put("dep", department);
         hm.put("frPrice", dbl);
@@ -162,7 +205,8 @@ public class PriceMatrixController implements Serializable {
                 + " and a.category=:cat "
                 + " and  a.department=:dep"
                 + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)"
-                + " and a.paymentMethod=:pm";
+                + " and a.paymentMethod=:pm"
+                + " and a.creditCompany is null";
 
         HashMap hm = new HashMap();
 
@@ -172,6 +216,46 @@ public class PriceMatrixController implements Serializable {
         hm.put("tPrice", dbl);
         hm.put("cat", category);
 
+        return (InwardPriceAdjustment) getPriceMatrixFacade().findFirstByJpql(sql, hm);
+    }
+
+    public InwardPriceAdjustment getInwardPriceAdjustment(Department department, double dbl, Category category, Institution creditCompany) {
+        if (creditCompany == null) {
+            return getInwardPriceAdjustment(department, dbl, category);
+        }
+        String sql = "select a from InwardPriceAdjustment a "
+                + " where a.retired=false"
+                + " and a.category=:cat "
+                + " and a.department=:dep"
+                + " and (a.fromPrice < :frPrice and a.toPrice > :tPrice)"
+                + " and a.creditCompany=:cc";
+        HashMap hm = new HashMap();
+        hm.put("dep", department);
+        hm.put("frPrice", dbl);
+        hm.put("tPrice", dbl);
+        hm.put("cat", category);
+        hm.put("cc", creditCompany);
+        return (InwardPriceAdjustment) getPriceMatrixFacade().findFirstByJpql(sql, hm);
+    }
+
+    public InwardPriceAdjustment getInwardPriceAdjustment(Department department, double dbl, Category category, PaymentMethod paymentMethod, Institution creditCompany) {
+        if (creditCompany == null) {
+            return getInwardPriceAdjustment(department, dbl, category, paymentMethod);
+        }
+        String sql = "select a from InwardPriceAdjustment a "
+                + " where a.retired=false"
+                + " and a.category=:cat "
+                + " and a.department=:dep"
+                + " and (a.fromPrice < :frPrice and a.toPrice > :tPrice)"
+                + " and a.paymentMethod=:pm"
+                + " and a.creditCompany=:cc";
+        HashMap hm = new HashMap();
+        hm.put("pm", paymentMethod);
+        hm.put("dep", department);
+        hm.put("frPrice", dbl);
+        hm.put("tPrice", dbl);
+        hm.put("cat", category);
+        hm.put("cc", creditCompany);
         return (InwardPriceAdjustment) getPriceMatrixFacade().findFirstByJpql(sql, hm);
     }
 
@@ -1079,13 +1163,37 @@ public class PriceMatrixController implements Serializable {
      */
     public double getInwardDiscountPercent(PaymentMethod bhtType, PaymentScheme scheme,
             AdmissionType admissionType, Department department, Item item) {
+        return getInwardDiscountPercent(bhtType, scheme, admissionType, department, item, null);
+    }
+
+    public double getInwardDiscountPercent(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, Department department, Item item, Institution creditCompany) {
         if (bhtType == null || admissionType == null) {
             return 0.0;
         }
 
-        Category category = null;
-        if (item != null) {
-            category = item.getCategory();
+        Category category = item != null ? item.getCategory() : null;
+
+        if (creditCompany != null) {
+            Double pct = fetchInwardDiscountPercentForItem(bhtType, scheme, admissionType, item, creditCompany);
+            if (pct == null) {
+                pct = fetchInwardDiscountPercentForCategory(bhtType, scheme, admissionType, department, category, creditCompany);
+            }
+            if (pct == null && category != null) {
+                pct = fetchInwardDiscountPercentForCategory(bhtType, scheme, admissionType, department, category.getParentCategory(), creditCompany);
+            }
+            if (pct == null) {
+                pct = fetchInwardDiscountPercentForDepartment(bhtType, scheme, admissionType, department, creditCompany);
+            }
+            if (pct == null) {
+                pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, null, null, null, creditCompany);
+                if (pct == null && scheme != null) {
+                    pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, null, null, null, creditCompany);
+                }
+            }
+            if (pct != null) {
+                return pct;
+            }
         }
 
         Double pct = fetchInwardDiscountPercentForItem(bhtType, scheme, admissionType, item);
@@ -1098,7 +1206,6 @@ public class PriceMatrixController implements Serializable {
         if (pct == null) {
             pct = fetchInwardDiscountPercentForDepartment(bhtType, scheme, admissionType, department);
         }
-        // Global wildcard: rows with null dept/category/item apply to everything
         if (pct == null) {
             pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, null, null, null);
             if (pct == null && scheme != null) {
@@ -1120,6 +1227,18 @@ public class PriceMatrixController implements Serializable {
         return pct;
     }
 
+    private Double fetchInwardDiscountPercentForItem(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, Item item, Institution creditCompany) {
+        if (item == null) {
+            return null;
+        }
+        Double pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, null, null, item, creditCompany);
+        if (pct == null && scheme != null) {
+            pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, null, null, item, creditCompany);
+        }
+        return pct;
+    }
+
     private Double fetchInwardDiscountPercentForCategory(PaymentMethod bhtType, PaymentScheme scheme,
             AdmissionType admissionType, Department department, Category category) {
         if (category == null) {
@@ -1128,6 +1247,18 @@ public class PriceMatrixController implements Serializable {
         Double pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, department, category, null);
         if (pct == null && scheme != null) {
             pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, department, category, null);
+        }
+        return pct;
+    }
+
+    private Double fetchInwardDiscountPercentForCategory(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, Department department, Category category, Institution creditCompany) {
+        if (category == null) {
+            return null;
+        }
+        Double pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, department, category, null, creditCompany);
+        if (pct == null && scheme != null) {
+            pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, department, category, null, creditCompany);
         }
         return pct;
     }
@@ -1144,6 +1275,18 @@ public class PriceMatrixController implements Serializable {
         return pct;
     }
 
+    private Double fetchInwardDiscountPercentForDepartment(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, Department department, Institution creditCompany) {
+        if (department == null) {
+            return null;
+        }
+        Double pct = fetchInwardDiscountMatrixPercent(bhtType, scheme, admissionType, department, null, null, creditCompany);
+        if (pct == null && scheme != null) {
+            pct = fetchInwardDiscountMatrixPercent(bhtType, null, admissionType, department, null, null, creditCompany);
+        }
+        return pct;
+    }
+
     /**
      * Single-row matrix fetch for service/pharmacy discounts (rows where
      * inwardChargeType IS NULL). Each argument except bhtType and admissionType
@@ -1152,7 +1295,12 @@ public class PriceMatrixController implements Serializable {
      */
     private Double fetchInwardDiscountMatrixPercent(PaymentMethod bhtType, PaymentScheme scheme,
             AdmissionType admissionType, Department department, Category category, Item item) {
-        return fetchInwardDiscountMatrixPercentCore(bhtType, scheme, admissionType, department, category, item, null, false);
+        return fetchInwardDiscountMatrixPercentCore(bhtType, scheme, admissionType, department, category, item, null, false, null);
+    }
+
+    private Double fetchInwardDiscountMatrixPercent(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, Department department, Category category, Item item, Institution creditCompany) {
+        return fetchInwardDiscountMatrixPercentCore(bhtType, scheme, admissionType, department, category, item, null, false, creditCompany);
     }
 
     /**
@@ -1162,7 +1310,12 @@ public class PriceMatrixController implements Serializable {
      */
     private Double fetchInwardDiscountMatrixPercentForChargeType(PaymentMethod bhtType, PaymentScheme scheme,
             AdmissionType admissionType, InwardChargeType chargeType) {
-        return fetchInwardDiscountMatrixPercentCore(bhtType, scheme, admissionType, null, null, null, chargeType, true);
+        return fetchInwardDiscountMatrixPercentCore(bhtType, scheme, admissionType, null, null, null, chargeType, true, null);
+    }
+
+    private Double fetchInwardDiscountMatrixPercentForChargeType(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, InwardChargeType chargeType, Institution creditCompany) {
+        return fetchInwardDiscountMatrixPercentCore(bhtType, scheme, admissionType, null, null, null, chargeType, true, creditCompany);
     }
 
     /**
@@ -1173,7 +1326,7 @@ public class PriceMatrixController implements Serializable {
      */
     private Double fetchInwardDiscountMatrixPercentCore(PaymentMethod bhtType, PaymentScheme scheme,
             AdmissionType admissionType, Department department, Category category, Item item,
-            InwardChargeType chargeType, boolean chargeTypeSpecific) {
+            InwardChargeType chargeType, boolean chargeTypeSpecific, Institution creditCompany) {
         StringBuilder jpql = new StringBuilder(
                 "select a.discountPercent from InwardDiscountMatrix a"
                 + " where a.retired = false");
@@ -1219,12 +1372,16 @@ public class PriceMatrixController implements Serializable {
             jpql.append(" and a.item is null");
         }
         if (chargeTypeSpecific) {
-            // Room-charge-type lookup: match the specific charge type
             jpql.append(" and a.inwardChargeType = :chargeType");
             params.put("chargeType", chargeType);
         } else {
-            // Service/pharmacy lookup: only rows with no charge-type restriction
             jpql.append(" and a.inwardChargeType is null");
+        }
+        if (creditCompany != null) {
+            jpql.append(" and a.creditCompany = :cc");
+            params.put("cc", creditCompany);
+        } else {
+            jpql.append(" and a.creditCompany is null");
         }
         // Prefer specific rows over wildcards: non-null fields rank higher
         jpql.append(" order by"
@@ -1262,12 +1419,23 @@ public class PriceMatrixController implements Serializable {
      */
     public double getInwardDiscountPercentForChargeType(PaymentMethod bhtType, PaymentScheme scheme,
             AdmissionType admissionType, InwardChargeType chargeType) {
+        return getInwardDiscountPercentForChargeType(bhtType, scheme, admissionType, chargeType, null);
+    }
+
+    public double getInwardDiscountPercentForChargeType(PaymentMethod bhtType, PaymentScheme scheme,
+            AdmissionType admissionType, InwardChargeType chargeType, Institution creditCompany) {
         if (bhtType == null || admissionType == null || chargeType == null) {
             return 0.0;
         }
-        // Try charge-type-specific row first; no fallback to service/pharmacy
-        // wildcard rows (inwardChargeType IS NULL) — absence of a room-charge
-        // row means 0% discount, not inheritance of a service discount.
+        if (creditCompany != null) {
+            Double pct = fetchInwardDiscountMatrixPercentForChargeType(bhtType, scheme, admissionType, chargeType, creditCompany);
+            if (pct == null && scheme != null) {
+                pct = fetchInwardDiscountMatrixPercentForChargeType(bhtType, null, admissionType, chargeType, creditCompany);
+            }
+            if (pct != null) {
+                return pct;
+            }
+        }
         Double pct = fetchInwardDiscountMatrixPercentForChargeType(bhtType, scheme, admissionType, chargeType);
         if (pct == null && scheme != null) {
             pct = fetchInwardDiscountMatrixPercentForChargeType(bhtType, null, admissionType, chargeType);

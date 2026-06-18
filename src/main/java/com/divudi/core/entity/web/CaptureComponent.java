@@ -11,7 +11,11 @@ import com.divudi.core.entity.Item;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.PatientFormEntry;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -21,6 +25,7 @@ import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
+import javax.persistence.Transient;
 
 /**
  *
@@ -66,6 +71,23 @@ public class CaptureComponent implements Serializable {
 
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date dateValue;
+
+    private String placeholder;
+    @javax.persistence.Column(name = "min_value")
+    private Double minValue;
+    @javax.persistence.Column(name = "max_value")
+    private Double maxValue;
+    private Double stepSize;
+    private Integer maxRating;
+    private String onLabel;
+    private String offLabel;
+    @Lob
+    private String editHtml;
+    @Lob
+    private String viewHtml;
+
+    @Transient
+    private List<String> selectedValues;
 
     @ManyToOne
     private PatientFormEntry patientFormEntry;
@@ -307,6 +329,101 @@ public class CaptureComponent implements Serializable {
 
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
+    }
+
+    public String getPlaceholder() {
+        return placeholder;
+    }
+
+    public void setPlaceholder(String placeholder) {
+        this.placeholder = placeholder;
+    }
+
+    public Double getMinValue() {
+        return minValue;
+    }
+
+    public void setMinValue(Double minValue) {
+        this.minValue = minValue;
+    }
+
+    public Double getMaxValue() {
+        return maxValue;
+    }
+
+    public void setMaxValue(Double maxValue) {
+        this.maxValue = maxValue;
+    }
+
+    public Double getStepSize() {
+        return stepSize;
+    }
+
+    public void setStepSize(Double stepSize) {
+        this.stepSize = stepSize;
+    }
+
+    public Integer getMaxRating() {
+        return maxRating;
+    }
+
+    public void setMaxRating(Integer maxRating) {
+        this.maxRating = maxRating;
+    }
+
+    public String getOnLabel() {
+        return onLabel;
+    }
+
+    public void setOnLabel(String onLabel) {
+        this.onLabel = onLabel;
+    }
+
+    public String getOffLabel() {
+        return offLabel;
+    }
+
+    public void setOffLabel(String offLabel) {
+        this.offLabel = offLabel;
+    }
+
+    public String getEditHtml() {
+        return editHtml;
+    }
+
+    public void setEditHtml(String editHtml) {
+        this.editHtml = editHtml;
+    }
+
+    public String getViewHtml() {
+        return viewHtml;
+    }
+
+    public void setViewHtml(String viewHtml) {
+        this.viewHtml = viewHtml;
+    }
+
+    private static final String MULTI_SELECT_DELIMITER = "|";
+    private static final String MULTI_SELECT_DELIMITER_REGEX = "\\|";
+
+    public List<String> getSelectedValues() {
+        if (selectedValues == null) {
+            if (longTextValue != null && !longTextValue.trim().isEmpty()) {
+                selectedValues = new ArrayList<>(Arrays.asList(longTextValue.split(MULTI_SELECT_DELIMITER_REGEX)));
+            } else {
+                selectedValues = new ArrayList<>();
+            }
+        }
+        return selectedValues;
+    }
+
+    public void setSelectedValues(List<String> selectedValues) {
+        this.selectedValues = selectedValues;
+        if (selectedValues == null || selectedValues.isEmpty()) {
+            this.longTextValue = null;
+        } else {
+            this.longTextValue = selectedValues.stream().collect(Collectors.joining(MULTI_SELECT_DELIMITER));
+        }
     }
 
 }

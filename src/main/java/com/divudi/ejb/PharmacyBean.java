@@ -924,6 +924,14 @@ public class PharmacyBean {
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
             s.setStock(qty);
             ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            // The ItemBatch may be a minimal DTO-constructed object (id set, but no item/dateOfExpire).
+            // Load the full entity so metadata fields on the Staff Stock row are populated correctly.
+            if (ib != null && ib.getItem() == null && ib.getId() != null) {
+                ItemBatch full = itemBatchFacade.find(ib.getId());
+                if (full != null) {
+                    ib = full;
+                }
+            }
             Item i = null;
             if (ib != null) {
                 i = ib.getItem();
@@ -1061,6 +1069,12 @@ public class PharmacyBean {
             s.setStaff(staff);
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
             ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            if (ib != null && ib.getItem() == null && ib.getId() != null) {
+                ItemBatch full = itemBatchFacade.find(ib.getId());
+                if (full != null) {
+                    ib = full;
+                }
+            }
             Item i = null;
             if (ib != null) {
                 i = ib.getItem();
@@ -1328,9 +1342,11 @@ public class PharmacyBean {
         Map<String, Object> m = new HashMap<>();
         m.put("vtm", vtm);
         m.put("ret", false);
-        String jpql = "select vpi from VirtualProductIngredient vpi "
+
+        // Primary path: VirtualProductIngredient join table
+        String vpiJpql = "select vpi from VirtualProductIngredient vpi "
                 + " where vpi.retired=:ret and vpi.vtm=:vtm";
-        List<VirtualProductIngredient> vpis = virtualProductIngredientFacade.findByJpql(jpql, m);
+        List<VirtualProductIngredient> vpis = virtualProductIngredientFacade.findByJpql(vpiJpql, m);
         List<Amp> allAmps = new ArrayList<>();
         if (vpis != null) {
             for (VirtualProductIngredient vpi : vpis) {
@@ -1339,6 +1355,22 @@ public class PharmacyBean {
                     if (amps != null) {
                         allAmps.addAll(amps);
                     }
+                }
+            }
+        }
+        if (!allAmps.isEmpty()) {
+            return allAmps;
+        }
+
+        // Fallback: VirtualProductIngredient table is unpopulated on many deployments.
+        // VMPs carry a direct vtm reference (VMP.VTM_ID) — use that instead.
+        String vmpJpql = "select vmp from Vmp vmp where vmp.retired=:ret and vmp.vtm=:vtm";
+        List<Vmp> vmps = vmpFacade.findByJpql(vmpJpql, m);
+        if (vmps != null) {
+            for (Vmp vmp : vmps) {
+                List<Amp> amps = findAmpsForVmp(vmp);
+                if (amps != null) {
+                    allAmps.addAll(amps);
                 }
             }
         }

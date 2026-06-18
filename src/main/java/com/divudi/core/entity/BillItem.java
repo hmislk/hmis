@@ -202,7 +202,10 @@ public class BillItem implements Serializable, RetirableEntity {
     @OneToMany(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBillItem", fetch = FetchType.LAZY)
-    @OrderBy("feeAdjusted")
+    // orderNo holds the manual (drag-and-drop) display order set at settle time;
+    // feeAdjusted is the secondary key so historical bills (orderNo all 0) keep
+    // their original adjusted-fee ordering.
+    @OrderBy("orderNo, feeAdjusted")
     private List<BillFee> proFees = new ArrayList<>();
     @OneToMany(mappedBy = "parentBillItem")
     private List<BillItem> chiledBillItems;
@@ -213,6 +216,10 @@ public class BillItem implements Serializable, RetirableEntity {
     double transWithOutCCFee;
     @Transient
     boolean transRefund;
+    @Transient
+    private boolean autoSubstituted = false;
+    @Transient
+    private String requestedItemName = null;
 
     public double getVat() {
         return vat;
@@ -996,6 +1003,22 @@ public class BillItem implements Serializable, RetirableEntity {
 
     public void setTransRefund(boolean transRefund) {
         this.transRefund = transRefund;
+    }
+
+    public boolean isAutoSubstituted() {
+        return autoSubstituted;
+    }
+
+    public void setAutoSubstituted(boolean autoSubstituted) {
+        this.autoSubstituted = autoSubstituted;
+    }
+
+    public String getRequestedItemName() {
+        return requestedItemName;
+    }
+
+    public void setRequestedItemName(String requestedItemName) {
+        this.requestedItemName = requestedItemName;
     }
 
     public double getVatPlusNetValue() {

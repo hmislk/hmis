@@ -6,6 +6,7 @@
 package com.divudi.service.institution;
 
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.dto.bedboard.BedBoardSvgDTO;
 import com.divudi.core.data.dto.institution.InstitutionCreateRequestDTO;
 import com.divudi.core.data.dto.institution.InstitutionRelationshipUpdateDTO;
 import com.divudi.core.data.dto.institution.InstitutionResponseDTO;
@@ -123,6 +124,15 @@ public class InstitutionApiService implements Serializable {
         institution.setOwnerName(request.getOwnerName());
         institution.setOwnerEmail(request.getOwnerEmail());
 
+        // Bed-board SVG fields (issue #21592) — stored verbatim; sanitised at
+        // render time by BedBoardController.sanitizeSvg().
+        if (request.getSvgParentView() != null) {
+            institution.setSvgParentView(request.getSvgParentView());
+        }
+        if (request.getSvgChildView() != null) {
+            institution.setSvgChildView(request.getSvgChildView());
+        }
+
         // Set parent institution if provided
         if (request.getParentInstitutionId() != null) {
             Institution parentInstitution = loadAndValidateInstitution(request.getParentInstitutionId());
@@ -207,6 +217,14 @@ public class InstitutionApiService implements Serializable {
 
         if (request.getOwnerEmail() != null) {
             institution.setOwnerEmail(request.getOwnerEmail());
+        }
+
+        // Bed-board SVG fields (issue #21592) — stored verbatim.
+        if (request.getSvgParentView() != null) {
+            institution.setSvgParentView(request.getSvgParentView());
+        }
+        if (request.getSvgChildView() != null) {
+            institution.setSvgChildView(request.getSvgChildView());
         }
 
         // Save updated institution and flush so response reflects persisted state
@@ -400,6 +418,9 @@ public class InstitutionApiService implements Serializable {
         response.setOwnerEmail(institution.getOwnerEmail());
         response.setActive(!institution.isRetired());
         response.setCreatedAt(institution.getCreatedAt());
+        // Bed-board SVG fields (issue #21592) — returned verbatim.
+        response.setSvgParentView(institution.getSvgParentView());
+        response.setSvgChildView(institution.getSvgChildView());
 
         // Set parent institution details if exists
         if (institution.getInstitution() != null) {
@@ -409,5 +430,45 @@ public class InstitutionApiService implements Serializable {
 
         response.setMessage(message);
         return response;
+    }
+
+    /**
+     * Read just the bed-board SVG fields of an institution (issue #21592).
+     * Returned verbatim — sanitisation happens at render time on the bed board.
+     */
+    public BedBoardSvgDTO getInstitutionSvg(Long id) throws Exception {
+        if (id == null) {
+            throw new Exception("Institution ID is required");
+        }
+        Institution institution = loadAndValidateInstitution(id);
+        return new BedBoardSvgDTO(institution.getId(), institution.getName(),
+                institution.getSvgParentView(), institution.getSvgChildView());
+    }
+
+    /**
+     * Update just the bed-board SVG fields of an institution (issue #21592).
+     * Only the fields present (non-null) in the request are changed; pass an
+     * empty string to clear a drawing. SVG is stored verbatim.
+     */
+    public BedBoardSvgDTO updateInstitutionSvg(Long id, BedBoardSvgDTO request, WebUser user) throws Exception {
+        if (id == null) {
+            throw new Exception("Institution ID is required");
+        }
+        if (request == null) {
+            throw new Exception("Request body is required");
+        }
+        if (user == null) {
+            throw new Exception("User is required for updating institution SVG");
+        }
+        Institution institution = loadAndValidateInstitution(id);
+        if (request.getSvgParentView() != null) {
+            institution.setSvgParentView(request.getSvgParentView());
+        }
+        if (request.getSvgChildView() != null) {
+            institution.setSvgChildView(request.getSvgChildView());
+        }
+        institutionFacade.editAndFlush(institution);
+        return new BedBoardSvgDTO(institution.getId(), institution.getName(),
+                institution.getSvgParentView(), institution.getSvgChildView());
     }
 }
