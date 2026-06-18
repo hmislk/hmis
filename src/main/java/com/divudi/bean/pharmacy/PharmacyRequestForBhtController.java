@@ -176,6 +176,11 @@ public class PharmacyRequestForBhtController implements Serializable {
             return;
         }
 
+        if (getBatchBill().getPatientEncounter().isNursingDischarged()) {
+            JsfUtil.addErrorMessage("Cannot issue medicines: nursing discharge has already been confirmed for this patient.");
+            return;
+        }
+
         if (getBatchBill().getPatientEncounter().isDischarged()) {
             JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
@@ -915,6 +920,11 @@ public class PharmacyRequestForBhtController implements Serializable {
             return;
         }
 
+        if (getPatientEncounter().isNursingDischarged()) {
+            JsfUtil.addErrorMessage("Cannot issue medicines: nursing discharge has already been confirmed for this patient.");
+            return;
+        }
+
         if (getPatientEncounter().isDischarged()) {
             JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
@@ -1018,6 +1028,11 @@ public class PharmacyRequestForBhtController implements Serializable {
 
         if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
             JsfUtil.addErrorMessage("Please Set Room");
+            return true;
+        }
+
+        if (getPatientEncounter().isNursingDischarged()) {
+            JsfUtil.addErrorMessage("Cannot issue medicines: nursing discharge has already been confirmed for this patient.");
             return true;
         }
 

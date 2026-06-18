@@ -78,7 +78,7 @@ public class PharmacyItemApi {
             String departmentId = param("departmentId");
 
             Map<String, Object> params = new HashMap<>();
-            StringBuilder jpql = new StringBuilder("select p from PharmaceuticalItem p where p.retired=false");
+            StringBuilder jpql = new StringBuilder("select p from PharmaceuticalItem p where p.retired=false and TYPE(p) = PharmaceuticalItem");
             if (query != null && !query.trim().isEmpty()) {
                 jpql.append(" and (upper(p.name) like :q or upper(p.code) like :q)");
                 params.put("q", "%" + query.trim().toUpperCase() + "%");
@@ -115,7 +115,7 @@ public class PharmacyItemApi {
         WebUser user = validateApiKey(requestContext.getHeader("Finance"));
         if (user == null) return errorResponse("Not a valid key", 401);
         PharmaceuticalItem item = pharmaceuticalItemFacade.find(id);
-        if (item == null || item.isRetired()) return errorResponse("Pharmacy item not found", 404);
+        if (item == null || item.isRetired() || item.getClass() != PharmaceuticalItem.class) return errorResponse("Pharmacy item not found", 404);
         return successResponse(toDto(item));
     }
 
@@ -166,7 +166,7 @@ public class PharmacyItemApi {
             WebUser user = validateApiKey(requestContext.getHeader("Finance"));
             if (user == null) return errorResponse("Not a valid key", 401);
             PharmaceuticalItem item = pharmaceuticalItemFacade.find(id);
-            if (item == null || item.isRetired()) return errorResponse("Pharmacy item not found", 404);
+            if (item == null || item.isRetired() || item.getClass() != PharmaceuticalItem.class) return errorResponse("Pharmacy item not found", 404);
             PharmacyItemRequest req = gson.fromJson(body, PharmacyItemRequest.class);
             if (req == null) return errorResponse("Request body is required", 400);
 
@@ -199,7 +199,7 @@ public class PharmacyItemApi {
         WebUser user = validateApiKey(requestContext.getHeader("Finance"));
         if (user == null) return errorResponse("Not a valid key", 401);
         PharmaceuticalItem item = pharmaceuticalItemFacade.find(id);
-        if (item == null || item.isRetired()) return errorResponse("Pharmacy item not found", 404);
+        if (item == null || item.isRetired() || item.getClass() != PharmaceuticalItem.class) return errorResponse("Pharmacy item not found", 404);
         item.setRetired(true);
         item.setRetiredAt(new Date());
         item.setRetirer(user);
@@ -253,7 +253,7 @@ public class PharmacyItemApi {
         params.put("name", name.trim().toUpperCase());
         params.put("institution", institution);
         params.put("department", department);
-        String jpql = "select p from PharmaceuticalItem p where p.retired=false and upper(p.name)=:name "
+        String jpql = "select p from PharmaceuticalItem p where p.retired=false and TYPE(p) = PharmaceuticalItem and upper(p.name)=:name "
                 + "and ((:institution is null and p.institution is null) or p.institution=:institution) "
                 + "and ((:department is null and p.department is null) or p.department=:department)";
         if (excludeId != null) {

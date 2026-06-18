@@ -34,17 +34,18 @@ Payara instance first (see [Local build tools](../../CLAUDE.md) for tool
 locations):
 
 ```powershell
-$env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-11.0.23.9-hotspot"
-& "D:\Program Files\NetBeans-18\netbeans\java\maven\bin\mvn.cmd" clean package -DskipTests
-& "D:\Payara\bin\asadmin.bat" redeploy --name rh "D:\Development\2024\hmis\target\rh-3.0.0.war"
+# Paths vary per machine — check C:\Credentials\Credentials.txt for your local values
+$env:JAVA_HOME="<path-to-jdk>"
+& "<path-to-mvn.cmd>" clean package -DskipTests
+& "<path-to-asadmin.bat>" [--port <admin-port>] redeploy --name rh "<project-root>\target\rh-3.0.0.war"
 ```
 
 - `clean` is required when switching branches or after structural changes
   (new/renamed/deleted classes, resources); a plain `compile`/`package` can
   leave stale `.class` files in `target/`.
 - A redeploy invalidates the current session (see §1) — log in again
-  afterwards.
-- Watch `D:\Payara\glassfish\domains\*\logs\server.log` for deployment errors
+  afterward.
+- Watch `<payara-install>\glassfish\domains\domain1\logs\server.log` for deployment errors
   before starting the browser flow.
 
 ---

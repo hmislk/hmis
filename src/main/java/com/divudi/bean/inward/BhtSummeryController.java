@@ -46,6 +46,7 @@ import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.GuardianRoom;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.PatientRoomTimedItemCharge;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.entity.inward.TimedItemFee;
@@ -61,6 +62,7 @@ import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.data.inward.TheatreTransferType;
 import com.divudi.core.entity.inward.PatientTransferRequest;
 import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.PatientRoomTimedItemChargeFacade;
 import com.divudi.core.facade.PatientTransferRequestFacade;
 import com.divudi.core.facade.ServiceFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
@@ -106,6 +108,8 @@ public class BhtSummeryController implements Serializable {
 
     @EJB
     private PatientRoomFacade patientRoomFacade;
+    @EJB
+    private PatientRoomTimedItemChargeFacade patientRoomTimedItemChargeFacade;
     @EJB
     private PatientTransferRequestFacade patientTransferRequestFacade;
     @EJB
@@ -1608,18 +1612,18 @@ public class BhtSummeryController implements Serializable {
 
         if (getPatientEncounter().getAdmissionType() != null
                 && getPatientEncounter().getAdmissionType().isRoomChargesAllowed()) {
-            if (patientRooms == null || patientRooms.isEmpty()) {
-                JsfUtil.addErrorMessage("Room must be assigned before discharge");
+            if (!getPatientEncounter().isNursingDischarged()) {
+                JsfUtil.addErrorMessage("Nursing discharge must be completed before the bill can be settled.");
                 return true;
             }
-
-            if (checkRoomIsDischarged()) {
-                JsfUtil.addErrorMessage("Please Discharged From Room");
+            Date nursingDt = getPatientEncounter().getNursingDischargeDateTime();
+            if (nursingDt != null && date.before(nursingDt)) {
+                JsfUtil.addErrorMessage("Discharge time must be on or after the nursing discharge time.");
                 return true;
             }
-
-            if (getInwardBean().checkRoomDischarge(date, getPatientEncounter())) {
-                JsfUtil.addErrorMessage("Check Discharge Time should be after Room Discharge Time");
+            Date roomDt = getPatientEncounter().getRoomDischargeDateTime();
+            if (roomDt != null && date.before(roomDt)) {
+                JsfUtil.addErrorMessage("Discharge time must be on or after the room discharge time.");
                 return true;
             }
         }
@@ -2002,21 +2006,6 @@ public class BhtSummeryController implements Serializable {
         }
     }
 
-    private boolean checkRoomIsDischarged() {
-        if (patientRooms == null || patientRooms.isEmpty()) {
-            return true;
-        }
-        PatientRoom currentRoom = getPatientEncounter().getCurrentPatientRoom();
-        if (currentRoom == null) {
-            return true;
-        }
-        for (PatientRoom pr : patientRooms) {
-            if (currentRoom.getId() != pr.getId() && pr.getDischargedAt() == null) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     private boolean checkPatientItems() {
         List<PatientItem> lst = createPatientItems();
@@ -3114,6 +3103,7 @@ public class BhtSummeryController implements Serializable {
                 calculateAdministrationCharge(p);
                 calculateMedicalCareCharge(p);
             }
+            calculateTimedItemCharges(p);
 
             applyRoomChargeDiscounts(p, roomPct, maintainPct, linenPct, nursingPct, moPct, adminPct, medicalCarePct);
 
@@ -3292,6 +3282,23 @@ public class BhtSummeryController implements Serializable {
         double calculated = getCharge(p, maintanance) + p.getAddedMaintainCharge();
 
         p.setCalculatedMaintainCharge(calculated);
+    }
+
+    private void calculateTimedItemCharges(PatientRoom p) {
+        List<PatientRoomTimedItemCharge> charges = getInwardBean().fetchTimedItemCharges(p);
+        if (charges == null || charges.isEmpty()) {
+            return;
+        }
+        Date to = p.getDischargedAt() != null ? p.getDischargedAt() : new Date();
+        for (PatientRoomTimedItemCharge tc : charges) {
+            if (tc.getTimedItem() == null) {
+                continue;
+            }
+            boolean foreigner = p.getPatientEncounter() != null && p.getPatientEncounter().isForiegner();
+            double total = getInwardBean().calTotalTimedChargeForItem(tc.getTimedItem(), p.getAdmittedAt(), to, foreigner);
+            tc.setCalculatedCharge(total);
+            patientRoomTimedItemChargeFacade.edit(tc);
+        }
     }
 
     public PatientRoomFacade getPatientRoomFacade() {

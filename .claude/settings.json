@@ -4,6 +4,12 @@
       "C:\\Development\\hmis.wiki"
     ],
     "allow": [
+      "Bash(git stash*)",
+      "Bash(git fetch *)",
+      "Bash(git checkout development*)",
+      "Bash(git branch *)",
+      "Bash(git reset --hard origin/development*)",
+      "Bash(gh pr list *)",
       "Bash(mysql *)",
       "Bash(curl -s *)",
       "Bash(curl -sS *)",

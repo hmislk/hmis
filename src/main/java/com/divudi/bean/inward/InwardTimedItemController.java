@@ -10,6 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -62,6 +63,8 @@ public class InwardTimedItemController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     //////////////////////
     private List<PatientItem> items;
     private PatientItem current;
@@ -236,6 +239,12 @@ public class InwardTimedItemController implements Serializable {
             return true;
         }
 
+        if (getBatchBill().getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
+            return true;
+        }
+
         return false;
 
     }
@@ -261,10 +270,12 @@ public class InwardTimedItemController implements Serializable {
     }
 
     private double savePatientItem(PatientItem patientItem) {
-        TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) patientItem.getItem());
-        double count = getInwardBean().calCount(timedItemFee, patientItem.getFromTime(), patientItem.getToTime());
-
-        patientItem.setServiceValue(count * timedItemFee.getFee());
+        double value = getInwardBean().calTotalTimedChargeForItem(
+                (TimedItem) patientItem.getItem(),
+                patientItem.getFromTime(),
+                patientItem.getToTime(),
+                patientItem.getPatientEncounter() != null && patientItem.getPatientEncounter().isForiegner());
+        patientItem.setServiceValue(value);
         patientItem.setPatientEncounter(getBatchBill().getPatientEncounter());
         if (patientItem.getId() == null) {
             patientItem.setCreater(getSessionController().getLoggedUser());
@@ -566,6 +577,11 @@ public class InwardTimedItemController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Service");
             return true;
         }
+        if (getCurrent().getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
+            return true;
+        }
         return false;
     }
 
@@ -573,18 +589,15 @@ public class InwardTimedItemController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) getCurrent().getItem());
         if (getCurrent().getToTime() == null) {
             getCurrent().setToTime(new Date());
         }
-        double count = getInwardBean().calCount(timedItemFee, getCurrent().getPatientEncounter().getDateOfAdmission(), getCurrent().getToTime());
-
-
-        if (getCurrent().getPatientEncounter().isForiegner()) {
-            getCurrent().setServiceValue(count * timedItemFee.getFfee());
-        } else {
-            getCurrent().setServiceValue(count * timedItemFee.getFee());
-        }
+        double value = getInwardBean().calTotalTimedChargeForItem(
+                (TimedItem) getCurrent().getItem(),
+                getCurrent().getPatientEncounter().getDateOfAdmission(),
+                getCurrent().getToTime(),
+                getCurrent().getPatientEncounter().isForiegner());
+        getCurrent().setServiceValue(value);
 
         getCurrent().setCreater(getSessionController().getLoggedUser());
         getCurrent().setCreatedAt(Calendar.getInstance().getTime());
@@ -630,16 +643,12 @@ public class InwardTimedItemController implements Serializable {
             temPi = pic;
         }
 
-        TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) temPi.getItem());
-        double count = getInwardBean().calCount(timedItemFee, temPi.getFromTime(), temPi.getToTime());
-
-        System.out.println("pic.getPatientEncounter().isForiegner() = " + pic.getPatientEncounter().isForiegner());
-
-        if (pic.getPatientEncounter().isForiegner()) {
-            pic.setServiceValue(count * timedItemFee.getFfee());
-        } else {
-            pic.setServiceValue(count * timedItemFee.getFee());
-        }
+        double value = getInwardBean().calTotalTimedChargeForItem(
+                (TimedItem) temPi.getItem(),
+                temPi.getFromTime(),
+                temPi.getToTime(),
+                pic.getPatientEncounter().isForiegner());
+        pic.setServiceValue(value);
 
         getPatientItemFacade().edit(pic);
 
@@ -661,14 +670,12 @@ public class InwardTimedItemController implements Serializable {
         }
 
         for (PatientItem pi : items) {
-            TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) pi.getItem());
-            double count = getInwardBean().calCount(timedItemFee, pi.getFromTime(), pi.getToTime());
-            if (getCurrent().getPatientEncounter().isForiegner()) {
-                pi.setServiceValue(count * timedItemFee.getFfee());
-            } else {
-                pi.setServiceValue(count * timedItemFee.getFee());
-            }
-
+            double value = getInwardBean().calTotalTimedChargeForItem(
+                    (TimedItem) pi.getItem(),
+                    pi.getFromTime(),
+                    pi.getToTime(),
+                    getCurrent().getPatientEncounter().isForiegner());
+            pi.setServiceValue(value);
         }
     }
 

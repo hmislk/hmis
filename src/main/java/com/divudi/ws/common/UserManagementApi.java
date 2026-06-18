@@ -492,6 +492,92 @@ public class UserManagementApi {
         }
     }
 
+    @DELETE
+    @Path("/{id}/departments/{assignmentId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response revokeUserDepartment(@PathParam("id") Long id, @PathParam("assignmentId") Long assignmentId) {
+        WebUser apiUser = validateApiUser();
+        if (apiUser == null) return errorResponse("Not a valid key", 401);
+        if (!isAdmin(apiUser)) return errorResponse("Insufficient privileges", 403);
+        WebUser u = webUserFacade.find(id);
+        if (u == null || u.isRetired()) return errorResponse("User not found", 404);
+        WebUserDepartment wud = webUserDepartmentFacade.find(assignmentId);
+        if (wud == null || wud.isRetired() || wud.getWebUser() == null || !wud.getWebUser().getId().equals(id)) {
+            return errorResponse("Department assignment not found", 404);
+        }
+        wud.setRetired(true);
+        wud.setRetirer(apiUser);
+        wud.setRetiredAt(new Date());
+        webUserDepartmentFacade.edit(wud);
+        return successResponse("Department assignment revoked");
+    }
+
+    @DELETE
+    @Path("/{id}/departments/{departmentId}/privileges")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response revokeAllDepartmentPrivileges(@PathParam("id") Long id, @PathParam("departmentId") Long departmentId) {
+        WebUser apiUser = validateApiUser();
+        if (apiUser == null) return errorResponse("Not a valid key", 401);
+        if (!isAdmin(apiUser)) return errorResponse("Insufficient privileges", 403);
+        WebUser u = webUserFacade.find(id);
+        if (u == null || u.isRetired()) return errorResponse("User not found", 404);
+        Department dept = departmentFacade.find(departmentId);
+        if (dept == null) return errorResponse("Department not found", 404);
+        Map<String, Object> m = new HashMap<>();
+        m.put("u", u);
+        m.put("d", dept);
+        m.put("retirer", apiUser);
+        m.put("retiredAt", new Date());
+        int revoked = webUserPrivilegeFacade.updateByJpql(
+                "update WebUserPrivilege wp set wp.retired=true, wp.retirer=:retirer, wp.retiredAt=:retiredAt "
+                + "where wp.retired=false and wp.webUser=:u and wp.department=:d", m);
+        Map<String, Object> result = new HashMap<>();
+        result.put("privilegesRevoked", revoked);
+        return successResponse(result);
+    }
+
+    @POST
+    @Path("/{id}/departments/{departmentId}/privileges/all")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response assignAllDepartmentPrivileges(@PathParam("id") Long id, @PathParam("departmentId") Long departmentId) {
+        WebUser apiUser = validateApiUser();
+        if (apiUser == null) return errorResponse("Not a valid key", 401);
+        if (!isAdmin(apiUser)) return errorResponse("Insufficient privileges", 403);
+        WebUser u = webUserFacade.find(id);
+        if (u == null || u.isRetired()) return errorResponse("User not found", 404);
+        Department dept = departmentFacade.find(departmentId);
+        if (dept == null) return errorResponse("Department not found", 404);
+        Map<String, Object> existing = new HashMap<>();
+        existing.put("u", u);
+        existing.put("d", dept);
+        List<WebUserPrivilege> currentPrivileges = webUserPrivilegeFacade.findByJpql(
+                "select wp from WebUserPrivilege wp where wp.retired=false and wp.webUser=:u and wp.department=:d", existing);
+        Set<Privileges> alreadyAssigned = new HashSet<>();
+        for (WebUserPrivilege wp : currentPrivileges) {
+            if (wp.getPrivilege() != null) alreadyAssigned.add(wp.getPrivilege());
+        }
+        int added = 0;
+        int skipped = 0;
+        for (Privileges p : Privileges.values()) {
+            if (alreadyAssigned.contains(p)) {
+                skipped++;
+                continue;
+            }
+            WebUserPrivilege wp = new WebUserPrivilege();
+            wp.setWebUser(u);
+            wp.setPrivilege(p);
+            wp.setDepartment(dept);
+            wp.setCreater(apiUser);
+            wp.setCreatedAt(new Date());
+            webUserPrivilegeFacade.create(wp);
+            added++;
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("privilegesAdded", added);
+        result.put("privilegesSkipped", skipped);
+        return successResponse(result);
+    }
+
     @GET
     @Path("/privileges/available")
     @Produces(MediaType.APPLICATION_JSON)

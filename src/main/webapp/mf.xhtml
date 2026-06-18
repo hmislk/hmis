@@ -44,18 +44,11 @@
         <!-- Not migration pending: admin only -->
         <h:panelGroup rendered="#{not applicationController.databaseMigrationPending}">
 
-            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+            <h:panelGroup >
                 <ez:midding_data_fields/>
             </h:panelGroup>
 
-            <h:panelGroup rendered="#{not webUserController.hasPrivilege('Admin')}">
-                <div class="container mt-5">
-                    <div class="alert alert-danger text-center" role="alert">
-                        <h:outputText value="Access Denied" styleClass="alert-heading h4"/>
-                        <p>This page is restricted to administrators. No database migration is currently pending.</p>
-                    </div>
-                </div>
-            </h:panelGroup>
+           
 
         </h:panelGroup>
 

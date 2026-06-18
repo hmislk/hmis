@@ -87,6 +87,7 @@ public enum Privileges {
     InwardServicesAndItemsAddOutSideCharges("Inward Add Outside Charges"),
     InwardServicesAndItemsAddProfessionalFee("Inward Add Professional Fee"),
     InwardServicesAndItemsAddTimedServices("Inward Add Timed Services"),
+    InwardAddChargesAfterNursingDischarge("Inward Add Charges After Nursing Discharge"),
     InwardBilling("Inward Billing"),
     InwardBillingInterimBill("Inward Interim Bill"),
     InwardBillingInterimBillSearch("Inward Interim Bill Search"),
@@ -1137,6 +1138,7 @@ public enum Privileges {
             case InpatientClinicalDischarge:
             case InwardNursingDischarge:
             case InwardPhysicalDischarge:
+            case InwardAddChargesAfterNursingDischarge:
             case InwardDocumentUpload:
             case InpatientLetter:
             case InwardFormTemplateAdmin:

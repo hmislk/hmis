@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad32a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E7490;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#155E75;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad32" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#F0FDFA"/>
+  <g filter="url(#shad32)">
+    <!-- Pill (left) -->
+    <rect x="22" y="78" width="80" height="28" rx="14" fill="url(#grad32a)"/>
+    <rect x="22" y="78" width="40" height="28" rx="14" fill="#22D3EE"/>
+    <line x1="62" y1="78" x2="62" y2="106" stroke="white" stroke-width="2"/>
+    <!-- Return arrow -->
+    <path d="M106 85 Q130 65 152 85" fill="none" stroke="#22D3EE" stroke-width="5" stroke-linecap="round"/>
+    <polygon points="147,77 155,85 146,91" fill="#22D3EE"/>
+    <path d="M106 115 Q130 135 152 115" fill="none" stroke="#22D3EE" stroke-width="5" stroke-linecap="round"/>
+    <polygon points="109,107 101,115 110,120" fill="#22D3EE"/>
+    <!-- Magnifying glass (bottom) -->
+    <circle cx="100" cy="155" r="30" fill="none" stroke="url(#grad32a)" stroke-width="10"/>
+    <circle cx="100" cy="155" r="20" fill="#F0FDFA"/>
+    <!-- Mini pill inside magnifier -->
+    <rect x="84" y="150" width="32" height="11" rx="5" fill="url(#grad32a)" opacity="0.7"/>
+    <rect x="84" y="150" width="16" height="11" rx="5" fill="#22D3EE" opacity="0.7"/>
+    <line x1="127" y1="178" x2="138" y2="189" stroke="url(#grad32a)" stroke-width="10" stroke-linecap="round"/>
+  </g>
+</svg>
