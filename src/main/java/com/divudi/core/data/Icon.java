@@ -170,7 +170,8 @@ public enum Icon {
     Search_Final_Bill_By_Discharge_Date("Search Final Bill by Discharge Date", INPATIENT_BILLING),
     Request_Medicines_From_Pharmacy("Request Medicines from Pharmacy", INPATIENT_SERVICES),
     View_Pharmacy_Requests("View Pharmacy Requests", INPATIENT_SERVICES),
-    Inward_Analytics("Inward Analytics", INPATIENT_ANALYTICS);
+    Inward_Analytics("Inward Analytics", INPATIENT_ANALYTICS),
+    Bed_Board("Bed Board", INPATIENT_ROOMS);
 
     private final String label;
     private final IconGroup iconGroup;
