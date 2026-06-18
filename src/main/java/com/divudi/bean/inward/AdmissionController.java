@@ -744,6 +744,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return "/inward/inward_room_occupancy?faces-redirect=true";
     }
 
+    public String navigateToBedBoard() {
+        return "/inward/inward_bed_board?faces-redirect=true";
+    }
+
     public String navigateToRoomVacancy() {
         roomOccupancyController.setRoomFacilityCharges(null);
         return "/inward/inward_room_vacant?faces-redirect=true";

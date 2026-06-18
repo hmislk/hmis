@@ -65,6 +65,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.inward.InwardDiscountMatrixApi.class);
         resources.add(com.divudi.ws.inward.InwardDocumentTemplateApi.class);
         resources.add(com.divudi.ws.inward.InwardPriceAdjustmentApi.class);
+        resources.add(com.divudi.ws.inward.PriceMatrixInwardApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomCategoryApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomFacilityChargeApi.class);

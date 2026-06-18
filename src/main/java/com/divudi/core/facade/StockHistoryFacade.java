@@ -9,6 +9,8 @@ package com.divudi.core.facade;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.dto.StockHistoryDTO;
 import com.divudi.core.entity.pharmacy.StockHistory;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.Stateless;
@@ -431,6 +433,48 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
 
     public List<StockHistoryDTO> findStockHistoryDtos(Long itemId, Long departmentId, Long billId, Date fromDate, Date toDate,
             HistoryType historyType, int maxResults) {
+        return findStockHistoryDtos(itemId, departmentId, billId, fromDate, toDate, historyType, maxResults, false);
+    }
+
+    /**
+     * Stock history lookup with optional inclusion of archived rows.
+     *
+     * When {@code includeArchived} is true, the live {@code StockHistory} table
+     * and the {@code StockHistoryArchive} table are each queried with the same
+     * JPQL projection, then merged, ordered by id descending, and capped at
+     * {@code maxResults}. JPA has no UNION operator, so the two entities are
+     * queried separately and combined in memory rather than via native SQL
+     * (per the project's JPQL-first rule). {@code StockHistoryArchive} keeps the
+     * original {@code StockHistory} id, so ids stay unique and comparable across
+     * both tables, preserving the same id-descending ordering as the live-only
+     * query.
+     */
+    public List<StockHistoryDTO> findStockHistoryDtos(Long itemId, Long departmentId, Long billId, Date fromDate, Date toDate,
+            HistoryType historyType, int maxResults, boolean includeArchived) {
+        List<StockHistoryDTO> results = queryStockHistoryDtos("StockHistory", itemId, departmentId, billId,
+                fromDate, toDate, historyType, maxResults);
+
+        if (!includeArchived) {
+            return results;
+        }
+
+        List<StockHistoryDTO> archived = queryStockHistoryDtos("StockHistoryArchive", itemId, departmentId, billId,
+                fromDate, toDate, historyType, maxResults);
+
+        List<StockHistoryDTO> combined = new ArrayList<>(results.size() + archived.size());
+        combined.addAll(results);
+        combined.addAll(archived);
+        // Match the live-only ORDER BY sh.id DESC across the merged set.
+        combined.sort(Comparator.comparing(StockHistoryDTO::getId, Comparator.nullsLast(Comparator.reverseOrder())));
+
+        if (combined.size() > maxResults) {
+            return new ArrayList<>(combined.subList(0, maxResults));
+        }
+        return combined;
+    }
+
+    private List<StockHistoryDTO> queryStockHistoryDtos(String entityName, Long itemId, Long departmentId, Long billId,
+            Date fromDate, Date toDate, HistoryType historyType, int maxResults) {
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.StockHistoryDTO(")
                 .append("sh.id, sh.createdAt, sh.stockAt, sh.historyType, ")
@@ -445,7 +489,7 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
                 .append("sh.institutionBatchStockValueAtSaleRate, sh.institutionBatchStockValueAtPurchaseRate, sh.institutionBatchStockValueAtCostRate, ")
                 .append("sh.totalBatchStockValueAtSaleRate, sh.totalBatchStockValueAtPurchaseRate, sh.totalBatchStockValueAtCostRate")
                 .append(") ")
-                .append("FROM StockHistory sh ")
+                .append("FROM ").append(entityName).append(" sh ")
                 .append("LEFT JOIN sh.item item ")
                 .append("LEFT JOIN sh.itemBatch ib ")
                 .append("LEFT JOIN sh.department dept ")

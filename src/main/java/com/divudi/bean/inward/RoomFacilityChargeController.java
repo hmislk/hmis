@@ -14,8 +14,12 @@ import com.divudi.core.data.inward.RoomFacility;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.inward.RoomFacilityTimedItem;
+import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.entity.inward.TimedItemFee;
 import com.divudi.core.facade.RoomFacilityChargeFacade;
+import com.divudi.core.facade.RoomFacilityTimedItemFacade;
+import com.divudi.core.facade.TimedItemFacade;
 import com.divudi.core.facade.TimedItemFeeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -45,6 +49,10 @@ public class RoomFacilityChargeController implements Serializable {
     SessionController sessionController;
     @EJB
     private RoomFacilityChargeFacade ejbFacade;
+    @EJB
+    private RoomFacilityTimedItemFacade roomFacilityTimedItemFacade;
+    @EJB
+    private TimedItemFacade timedItemFacade;
     List<RoomFacilityCharge> selectedItems;
     private RoomFacilityCharge current;
     private List<RoomFacilityCharge> items = null;
@@ -285,6 +293,7 @@ public class RoomFacilityChargeController implements Serializable {
 
     public void setCurrent(RoomFacilityCharge current) {
         this.current = current;
+        currentTimedItems = null;
     }
 
     public void delete() {
@@ -391,6 +400,94 @@ public class RoomFacilityChargeController implements Serializable {
 
     public void setLinenCharge(double linenCharge) {
         this.linenCharge = linenCharge;
+    }
+
+    private TimedItem selectedTimedItem;
+    private List<RoomFacilityTimedItem> currentTimedItems;
+
+    public TimedItem getSelectedTimedItem() {
+        return selectedTimedItem;
+    }
+
+    public void setSelectedTimedItem(TimedItem selectedTimedItem) {
+        this.selectedTimedItem = selectedTimedItem;
+    }
+
+    public List<RoomFacilityTimedItem> getCurrentTimedItems() {
+        if (currentTimedItems == null && current != null) {
+            reloadTimedItems();
+        }
+        return currentTimedItems;
+    }
+
+    public void reloadTimedItems() {
+        if (current == null || current.getId() == null) {
+            currentTimedItems = new ArrayList<>();
+            return;
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("rfc", current);
+        currentTimedItems = roomFacilityTimedItemFacade.findByJpql(
+                "SELECT r FROM RoomFacilityTimedItem r WHERE r.roomFacilityCharge = :rfc AND r.retired = false ORDER BY r.id",
+                params);
+        if (currentTimedItems == null) {
+            currentTimedItems = new ArrayList<>();
+        }
+    }
+
+    public List<TimedItem> completeTimedItem(String query) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("q", "%" + query.toUpperCase() + "%");
+        List<TimedItem> results = timedItemFacade.findByJpql(
+                "SELECT t FROM TimedItem t WHERE t.retired = false AND UPPER(t.name) LIKE :q ORDER BY t.name",
+                params);
+        return results != null ? results : new ArrayList<>();
+    }
+
+    public void addTimedItem() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No room facility selected");
+            return;
+        }
+        if (current.getId() == null) {
+            JsfUtil.addErrorMessage("Please save the room facility before adding Timed Items");
+            return;
+        }
+        if (selectedTimedItem == null) {
+            JsfUtil.addErrorMessage("Please select a Timed Item");
+            return;
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("rfc", current);
+        params.put("ti", selectedTimedItem);
+        List existing = roomFacilityTimedItemFacade.findByJpql(
+                "SELECT r FROM RoomFacilityTimedItem r WHERE r.roomFacilityCharge = :rfc AND r.timedItem = :ti AND r.retired = false",
+                params);
+        if (existing != null && !existing.isEmpty()) {
+            JsfUtil.addErrorMessage("This Timed Item is already attached to this room facility");
+            return;
+        }
+        RoomFacilityTimedItem link = new RoomFacilityTimedItem();
+        link.setRoomFacilityCharge(current);
+        link.setTimedItem(selectedTimedItem);
+        link.setCreater(sessionController.getLoggedUser());
+        link.setCreatedAt(new Date());
+        roomFacilityTimedItemFacade.create(link);
+        selectedTimedItem = null;
+        reloadTimedItems();
+        JsfUtil.addSuccessMessage("Timed Item added successfully");
+    }
+
+    public void removeTimedItem(RoomFacilityTimedItem link) {
+        if (link == null) {
+            return;
+        }
+        link.setRetired(true);
+        link.setRetirer(sessionController.getLoggedUser());
+        link.setRetiredAt(new Date());
+        roomFacilityTimedItemFacade.edit(link);
+        reloadTimedItems();
+        JsfUtil.addSuccessMessage("Timed Item removed");
     }
 
     /**
