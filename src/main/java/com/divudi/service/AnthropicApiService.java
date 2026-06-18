@@ -538,6 +538,62 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject priceMatrixInwardTool = Json.createObjectBuilder()
+                .add("name", "manage_price_matrix_inward")
+                .add("description",
+                        "Manage Inward Price Matrix (InwardPriceAdjustment) entries with flat DTO format. "
+                        + "Each row maps a price range (fromPrice, toPrice) to a margin % and optional discount %. "
+                        + "Methods: LIST, GET, POST (create), PUT (partial update), DELETE (soft-retire). "
+                        + "All create/update/retire actions are audit-logged. "
+                        + "POST returns HTTP 409 with existing id when a duplicate combination exists. "
+                        + "Required for POST: departmentId, categoryId, margin.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("LIST").add("GET").add("POST").add("PUT").add("DELETE"))
+                                        .add("description", "Operation to perform."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Entry id. Required for GET, PUT, DELETE."))
+                                .add("departmentId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Department id. Required for POST. Optional filter for LIST."))
+                                .add("categoryId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Category id. Required for POST. Optional filter for LIST."))
+                                .add("paymentMethod", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PaymentMethod enum name, e.g. Cash, Credit. Optional."))
+                                .add("margin", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Margin percentage. Required for POST."))
+                                .add("discountPercent", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Discount percentage (default 0). Optional."))
+                                .add("fromPrice", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Lower bound of the gross value range (default 0). Optional."))
+                                .add("toPrice", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Upper bound of the gross value range (default 9999999999). Optional."))
+                                .add("admissionTypeId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Admission type id. Optional."))
+                                .add("creditCompanyId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Credit company institution id. Optional."))
+                                .add("limit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max results (1-1000, default 50). Optional for LIST."))
+                                .add("retireComments", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Reason for retirement. Optional for DELETE.")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         JsonObject inwardRoomsTool = Json.createObjectBuilder()
                 .add("name", "manage_inward_rooms")
                 .add("description",
@@ -1150,6 +1206,7 @@ public class AnthropicApiService implements Serializable {
                 .add(collectingCentreFeesTool)
                 .add(inwardDiscountMatrixTool)
                 .add(inwardPriceAdjustmentTool)
+                .add(priceMatrixInwardTool)
                 .add(inwardRoomsTool)
                 .add(bedBoardSvgTool)
                 .add(manageInvestigationsTool)
@@ -1257,6 +1314,25 @@ public class AnthropicApiService implements Serializable {
                     return callInwardPriceAdjustmentApi(method, scope, id, departmentId, categoryId,
                             paymentMethod2, fromPrice, toPrice, margin, creditCompanyId2,
                             query2, limit2, retireComments2, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_price_matrix_inward": {
+                    String method         = toolInput.getString("method", "LIST");
+                    String id             = toolInput.containsKey("id")             ? toolInput.getString("id", "")             : "";
+                    String departmentId   = toolInput.containsKey("departmentId")   ? toolInput.getString("departmentId", "")   : "";
+                    String categoryId     = toolInput.containsKey("categoryId")     ? toolInput.getString("categoryId", "")     : "";
+                    String paymentMethod  = toolInput.containsKey("paymentMethod")  ? toolInput.getString("paymentMethod", "")  : "";
+                    String margin         = toolInput.containsKey("margin")         ? toolInput.getString("margin", "")         : "";
+                    String discountPercent = toolInput.containsKey("discountPercent") ? toolInput.getString("discountPercent", "") : "";
+                    String fromPrice      = toolInput.containsKey("fromPrice")      ? toolInput.getString("fromPrice", "")      : "";
+                    String toPrice        = toolInput.containsKey("toPrice")        ? toolInput.getString("toPrice", "")        : "";
+                    String admissionTypeId = toolInput.containsKey("admissionTypeId") ? toolInput.getString("admissionTypeId", "") : "";
+                    String creditCompanyId = toolInput.containsKey("creditCompanyId") ? toolInput.getString("creditCompanyId", "") : "";
+                    String limit          = toolInput.containsKey("limit")          ? toolInput.getString("limit", "")          : "";
+                    String retireComments = toolInput.containsKey("retireComments") ? toolInput.getString("retireComments", "") : "";
+                    return callPriceMatrixInwardApi(method, id, departmentId, categoryId,
+                            paymentMethod, margin, discountPercent, fromPrice, toPrice,
+                            admissionTypeId, creditCompanyId, limit, retireComments,
+                            hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_investigations": {
                     String method = toolInput.getString("method", "GET");
@@ -2320,6 +2396,134 @@ public class AnthropicApiService implements Serializable {
             return "Inward price adjustment API call interrupted.";
         } catch (Exception e) {
             return "Inward price adjustment API error: " + e.getMessage();
+        }
+    }
+
+    private String callPriceMatrixInwardApi(
+            String method, String id, String departmentId, String categoryId,
+            String paymentMethod, String margin, String discountPercent,
+            String fromPrice, String toPrice, String admissionTypeId,
+            String creditCompanyId, String limit, String retireComments,
+            String hmisBaseUrl, String hmisApiKey) {
+
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: No active HMIS API key found for the current user.";
+        }
+
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+            String root = hmisBaseUrl.trim().replaceAll("/+$", "");
+            String base = root + "/api/price-matrix/inward";
+            String url;
+            String requestBody = null;
+            String httpMethod;
+
+            switch (method == null ? "" : method.toUpperCase()) {
+                case "LIST": {
+                    StringBuilder urlBuilder = new StringBuilder(base);
+                    boolean first = true;
+                    if (departmentId != null && !departmentId.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("departmentId=").append(departmentId);
+                        first = false;
+                    }
+                    if (categoryId != null && !categoryId.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("categoryId=").append(categoryId);
+                        first = false;
+                    }
+                    if (paymentMethod != null && !paymentMethod.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("paymentMethod=")
+                                .append(URLEncoder.encode(paymentMethod, StandardCharsets.UTF_8));
+                        first = false;
+                    }
+                    if (limit != null && !limit.isEmpty()) {
+                        urlBuilder.append(first ? "?" : "&").append("limit=").append(limit);
+                    }
+                    url = urlBuilder.toString();
+                    httpMethod = "GET";
+                    break;
+                }
+                case "GET": {
+                    if (id == null || id.trim().isEmpty()) return "Error: id is required for GET.";
+                    url = base + "/" + id.trim();
+                    httpMethod = "GET";
+                    break;
+                }
+                case "POST": {
+                    url = base;
+                    httpMethod = "POST";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    if (departmentId != null && !departmentId.trim().isEmpty()) bodyBuilder.add("departmentId", Long.parseLong(departmentId.trim()));
+                    if (categoryId != null && !categoryId.trim().isEmpty()) bodyBuilder.add("categoryId", Long.parseLong(categoryId.trim()));
+                    if (margin != null && !margin.trim().isEmpty()) bodyBuilder.add("margin", Double.parseDouble(margin.trim()));
+                    if (paymentMethod != null && !paymentMethod.isEmpty()) bodyBuilder.add("paymentMethod", paymentMethod);
+                    if (discountPercent != null && !discountPercent.trim().isEmpty()) bodyBuilder.add("discountPercent", Double.parseDouble(discountPercent.trim()));
+                    if (fromPrice != null && !fromPrice.trim().isEmpty()) bodyBuilder.add("fromPrice", Double.parseDouble(fromPrice.trim()));
+                    if (toPrice != null && !toPrice.trim().isEmpty()) bodyBuilder.add("toPrice", Double.parseDouble(toPrice.trim()));
+                    if (admissionTypeId != null && !admissionTypeId.trim().isEmpty()) bodyBuilder.add("admissionTypeId", Long.parseLong(admissionTypeId.trim()));
+                    if (creditCompanyId != null && !creditCompanyId.trim().isEmpty()) bodyBuilder.add("creditCompanyId", Long.parseLong(creditCompanyId.trim()));
+                    requestBody = bodyBuilder.build().toString();
+                    break;
+                }
+                case "PUT": {
+                    if (id == null || id.trim().isEmpty()) return "Error: id is required for PUT.";
+                    url = base + "/" + id.trim();
+                    httpMethod = "PUT";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    if (departmentId != null && !departmentId.trim().isEmpty()) bodyBuilder.add("departmentId", Long.parseLong(departmentId.trim()));
+                    if (categoryId != null && !categoryId.trim().isEmpty()) bodyBuilder.add("categoryId", Long.parseLong(categoryId.trim()));
+                    if (margin != null && !margin.trim().isEmpty()) bodyBuilder.add("margin", Double.parseDouble(margin.trim()));
+                    if (paymentMethod != null && !paymentMethod.isEmpty()) bodyBuilder.add("paymentMethod", paymentMethod);
+                    if (discountPercent != null && !discountPercent.trim().isEmpty()) bodyBuilder.add("discountPercent", Double.parseDouble(discountPercent.trim()));
+                    if (fromPrice != null && !fromPrice.trim().isEmpty()) bodyBuilder.add("fromPrice", Double.parseDouble(fromPrice.trim()));
+                    if (toPrice != null && !toPrice.trim().isEmpty()) bodyBuilder.add("toPrice", Double.parseDouble(toPrice.trim()));
+                    if (admissionTypeId != null && !admissionTypeId.trim().isEmpty()) bodyBuilder.add("admissionTypeId", Long.parseLong(admissionTypeId.trim()));
+                    if (creditCompanyId != null && !creditCompanyId.trim().isEmpty()) bodyBuilder.add("creditCompanyId", Long.parseLong(creditCompanyId.trim()));
+                    requestBody = bodyBuilder.build().toString();
+                    break;
+                }
+                case "DELETE": {
+                    if (id == null || id.trim().isEmpty()) return "Error: id is required for DELETE.";
+                    StringBuilder urlBuilder = new StringBuilder(base).append("/").append(id.trim());
+                    if (retireComments != null && !retireComments.isEmpty()) {
+                        urlBuilder.append("?retireComments=")
+                                .append(URLEncoder.encode(retireComments, StandardCharsets.UTF_8));
+                    }
+                    url = urlBuilder.toString();
+                    httpMethod = "DELETE";
+                    break;
+                }
+                default:
+                    return "Error: Unknown method: " + method;
+            }
+
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Finance", hmisApiKey)
+                    .header("Content-Type", "application/json");
+
+            if (requestBody != null) {
+                reqBuilder.method(httpMethod, HttpRequest.BodyPublishers.ofString(requestBody));
+            } else if ("DELETE".equals(httpMethod)) {
+                reqBuilder.DELETE();
+            } else {
+                reqBuilder.GET();
+            }
+
+            HttpResponse<String> response = client.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + "\n" + response.body();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Price matrix inward API call interrupted.";
+        } catch (Exception e) {
+            return "Price matrix inward API error: " + e.getMessage();
         }
     }
 
@@ -4017,6 +4221,21 @@ public class AnthropicApiService implements Serializable {
                     {"GET",    "/inward-price-adjustment/payment-methods",                         "List PaymentMethod enum values"},
                     {"GET",    "/inward-price-adjustment/credit-companies/search?query=",          "Credit company name → id lookup"},
                     {"GET",    "/inward-price-adjustment/diagnose?itemId=&departmentId=&paymentMethod=&patientEncounterId=&price=", "Explain whether inward service-charge margin will be applied for an item, with a per-condition pass/fail breakdown"}
+                });
+
+        // ── Price Matrix Inward (Flat DTO, audit-logged) ──────────────────────
+        appendModule(sb, "Price Matrix Inward", "/price-matrix/inward",
+                "Manage InwardPriceAdjustment (margin/service charge) matrix entries with flat DTO format. "
+                + "All create/update/retire actions are audit-logged (PRICE_MATRIX_CREATED/UPDATED/RETIRED). "
+                + "Supports departmentId, categoryId, paymentMethod, margin, discountPercent, fromPrice, toPrice, admissionTypeId, creditCompanyId. "
+                + "POST rejects duplicates with 409 + existing id.",
+                null,
+                new String[][]{
+                    {"GET",    "/price-matrix/inward?departmentId=&categoryId=&paymentMethod=&limit=", "List entries. Filters: departmentId, categoryId, paymentMethod, limit (default 50)"},
+                    {"GET",    "/price-matrix/inward/{id}",                                   "Fetch one entry (flat DTO with departmentId/departmentName etc.)"},
+                    {"POST",   "/price-matrix/inward",                                         "Create. Body: departmentId (required), categoryId (required), paymentMethod, margin, discountPercent, fromPrice, toPrice, admissionTypeId, creditCompanyId"},
+                    {"PUT",    "/price-matrix/inward/{id}",                                   "Update. Body fields all optional — only supplied fields updated"},
+                    {"DELETE", "/price-matrix/inward/{id}",                                   "Soft-retire entry. Optional: retireComments (query param)"}
                 });
 
         appendModule(sb, "Inward Room Management", "/inward/room-categories, /inward/rooms, /inward/room-facility-charges",

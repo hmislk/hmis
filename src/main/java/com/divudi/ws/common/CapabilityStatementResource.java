@@ -165,6 +165,16 @@ public class CapabilityStatementResource {
                         + "/payment-methods, /credit-companies/search. "
                         + "Diagnostic sub-path: /diagnose?itemId=&departmentId=&paymentMethod=&patientEncounterId=&price= "
                         + "explains whether inward service-charge margin will be applied for an item, with a per-condition breakdown. "
+                        + "POST returns HTTP 409 with existing id when a duplicate combination exists. "
+                        + "NOTE: For inward price adjustments, prefer the newer /api/price-matrix/inward endpoint.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Price Matrix Inward", "/api/price-matrix/inward",
+                        "Manage InwardPriceAdjustment (margin/service charge) matrix entries. "
+                        + "Flat DTO format with departmentId/departmentName etc. "
+                        + "Supports discountPercent, admissionTypeId, and creditCompanyId. "
+                        + "All create/update/retire actions are audit-logged (PRICE_MATRIX_CREATED/UPDATED/RETIRED). "
+                        + "Query params: categoryId, departmentId, paymentMethod, limit. "
                         + "POST returns HTTP 409 with existing id when a duplicate combination exists.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
