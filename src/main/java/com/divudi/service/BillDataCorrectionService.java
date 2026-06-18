@@ -45,7 +45,7 @@ public class BillDataCorrectionService {
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
 
-    private static final Set<String> BILL_FIELDS = new HashSet<>(Arrays.asList("netTotal", "grossTotal", "comments"));
+    private static final Set<String> BILL_FIELDS = new HashSet<>(Arrays.asList("netTotal", "grossTotal", "comments", "retired", "retireComments"));
     private static final Set<String> BILL_ITEM_FIELDS = new HashSet<>(Arrays.asList("qty", "rate", "grossValue", "netValue", "discount"));
     private static final Set<String> BILL_FINANCE_FIELDS = new HashSet<>(Arrays.asList("totalRetailSaleValue", "totalCostValue", "totalPurchaseValue", "netTotal", "grossTotal", "billExpensesConsideredForCosting", "billExpensesNotConsideredForCosting", "totalBillValue"));
     private static final Set<String> BILL_FEE_FIELDS = new HashSet<>(Arrays.asList("feeValue", "grossValue"));
@@ -144,9 +144,47 @@ public class BillDataCorrectionService {
             entity.setComments(value);
             newValues.put("comments", entity.getComments());
         }
+        if (fields.containsKey("retired")) {
+            boolean requestedRetire = toBooleanValue(fields.get("retired"), "retired");
+            if (requestedRetire) {
+                guardEmptyBillForRetire(entity);
+                previousValues.put("retired", entity.isRetired());
+                String retireComments = fields.containsKey("retireComments")
+                        ? toStringValue(fields.get("retireComments")) : null;
+                entity.setRetired(true);
+                entity.setRetiredAt(new Date());
+                entity.setRetireComments(retireComments);
+                newValues.put("retired", true);
+            }
+        }
 
         billFacade.edit(entity);
         return entity;
+    }
+
+    private void guardEmptyBillForRetire(Bill bill) {
+        Map<String, Object> params = new java.util.HashMap<>();
+        params.put("b", bill);
+
+        long itemCount = billItemFacade.findLongByJpql(
+                "SELECT COUNT(bi) FROM BillItem bi WHERE bi.bill = :b AND bi.retired = false", params);
+        if (itemCount > 0) {
+            throw new IllegalStateException(
+                    "Bill " + bill.getId() + " has " + itemCount + " active bill items — retire them first");
+        }
+
+        long feeCount = billFeeFacade.findLongByJpql(
+                "SELECT COUNT(bf) FROM BillFee bf WHERE bf.bill = :b AND bf.retired = false", params);
+        if (feeCount > 0) {
+            throw new IllegalStateException(
+                    "Bill " + bill.getId() + " has " + feeCount + " active bill fees — retire them first");
+        }
+
+        if (bill.getNetTotal() != 0.0 || bill.getTotal() != 0.0) {
+            throw new IllegalStateException(
+                    "Bill " + bill.getId() + " has non-zero totals (net=" + bill.getNetTotal()
+                    + ", gross=" + bill.getTotal() + ") — only zero-value bills may be retired via this API");
+        }
     }
 
     private Bill updateBillItem(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues) {
@@ -429,5 +467,18 @@ public class BillDataCorrectionService {
 
     private String toStringValue(Object value) {
         return value == null ? null : value.toString();
+    }
+
+    private boolean toBooleanValue(Object value, String fieldName) {
+        if (value == null) {
+            throw new IllegalArgumentException("Field '" + fieldName + "' cannot be null");
+        }
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        }
+        String s = value.toString().trim().toLowerCase();
+        if ("true".equals(s) || "1".equals(s)) return true;
+        if ("false".equals(s) || "0".equals(s)) return false;
+        throw new IllegalArgumentException("Field '" + fieldName + "' must be a boolean (true/false)");
     }
 }
