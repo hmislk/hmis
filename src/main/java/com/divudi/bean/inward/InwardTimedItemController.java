@@ -568,6 +568,13 @@ public class InwardTimedItemController implements Serializable {
         return "/theater/inward_timed_service_consume_surgery?faces-redirect=true";
     }
 
+    public String navigateToSurgeryTimedServices(Bill surgeryBill) {
+        makeNull();
+        batchBill = surgeryBill;
+        selectSurgeryBillListener();
+        return "/theater/inward_timed_service_consume_surgery?faces-redirect=true";
+    }
+
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("Please Select BHT");
