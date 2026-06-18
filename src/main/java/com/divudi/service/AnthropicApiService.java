@@ -636,6 +636,9 @@ public class AnthropicApiService implements Serializable {
                                 .add("filled", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Whether room is under construction (true/false). Optional for POST_ROOM/PUT_ROOM."))
+                                .add("svgChildView", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Bed-board child-tile SVG markup for the room (issue #21592). Optional for POST_ROOM/PUT_ROOM. A Room is a leaf in the bed-board hierarchy, so it has only this child view (no parent canvas). Or use the dedicated manage_bed_board_svg tool."))
                                 .add("roomCharge", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Room charge per block. Optional for POST_CHARGE/PUT_CHARGE."))
@@ -679,6 +682,43 @@ public class AnthropicApiService implements Serializable {
                                         .add("type", "string")
                                         .add("description", "Reason for retirement. Optional for DELETE methods.")))
                         .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
+        JsonObject bedBoardSvgTool = Json.createObjectBuilder()
+                .add("name", "manage_bed_board_svg")
+                .add("description",
+                        "Read and set the graphical bed-board SVG drawings (issue #21592) used by the "
+                        + "Inpatient Bed Board page. Each entity stores drawings on a shared "
+                        + "viewBox=\"0 0 1000 600\" grid: svgParentView is the entity's own empty floor-plan "
+                        + "canvas (shown when you navigate into it), and svgChildView is the small shape "
+                        + "showing how this entity looks as a tile inside its parent's canvas. "
+                        + "Sites, institutions, and departments have both views; a room (leaf) has only svgChildView. "
+                        + "Methods: GET_SITE, SET_SITE, GET_INSTITUTION, SET_INSTITUTION, GET_DEPARTMENT, SET_DEPARTMENT, GET_ROOM, SET_ROOM. "
+                        + "On SET, only the fields you supply are changed; pass an empty string to clear a drawing. "
+                        + "SVG is stored verbatim and sanitised when the bed board renders it. "
+                        + "Authoring guidance (viewBox, copy-paste examples, draw-your-own primer) is on the "
+                        + "wiki page 'Inpatient — Bed Board'. Always confirm with the user before SET.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("GET_SITE").add("SET_SITE")
+                                                .add("GET_INSTITUTION").add("SET_INSTITUTION")
+                                                .add("GET_DEPARTMENT").add("SET_DEPARTMENT")
+                                                .add("GET_ROOM").add("SET_ROOM"))
+                                        .add("description", "Operation to perform. SITE targets /api/sites, INSTITUTION targets /api/institutions, DEPARTMENT targets /api/departments, ROOM targets /api/inward/rooms."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Entity id (site/department/room). Required for all methods."))
+                                .add("svgParentView", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Parent-canvas SVG markup. Used by SET_SITE/SET_DEPARTMENT. Ignored for rooms (a room has no parent view). Pass an empty string to clear."))
+                                .add("svgChildView", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Child-tile SVG markup. Used by SET_SITE/SET_DEPARTMENT/SET_ROOM. Pass an empty string to clear.")))
+                        .add("required", Json.createArrayBuilder().add("method").add("id")))
                 .build();
 
         JsonObject manageInvestigationsTool = Json.createObjectBuilder()
@@ -1009,9 +1049,9 @@ public class AnthropicApiService implements Serializable {
         JsonObject manageInpatientTemplates = Json.createObjectBuilder()
                 .add("name", "manage_inpatient_templates")
                 .add("description",
-                        "Create, read, update, and retire inpatient document templates stored in the HMIS. "
+                        "Create, read, update, and retire document templates stored in the HMIS. "
                         + "Templates are HTML-based with placeholder tokens that are substituted at generation time. "
-                        + "Two types are supported: InpatientDiagnosisCard and InpatientLetter.\n\n"
+                        + "Supported types: Prescription, MedicalCertificate, FitnessCertificate, Referral, InpatientDiagnosisCard, InpatientLetter.\n\n"
                         + "method: LIST | GET | POST | PUT | DELETE\n\n"
                         + "LIST: returns all non-retired templates; optional filters: type, query (name search), size.\n"
                         + "GET: returns a single template including the full contents field; requires id.\n"
@@ -1064,6 +1104,100 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject manageTimedItemsTool = Json.createObjectBuilder()
+                .add("name", "manage_timed_items")
+                .add("description",
+                        "Manage timed item master data (room rent, oxygen, ICU time, etc.) and their tiered fee slots. "
+                        + "TimedItems are consumed by the inward timed service page to bill patients for duration-based charges. "
+                        + "Fees are ordered by sortOrder; each fee defines a durationHours block with an optional overShootHours grace window. "
+                        + "Methods for items: LIST, GET, POST, PUT, DELETE, ACTIVATE, DEACTIVATE. "
+                        + "Methods for fees: LIST_FEES, POST_FEE, PUT_FEE, DELETE_FEE. "
+                        + "Always confirm with the user before creating, updating, or retiring records.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("LIST").add("GET").add("POST").add("PUT").add("DELETE")
+                                                .add("ACTIVATE").add("DEACTIVATE")
+                                                .add("LIST_FEES").add("POST_FEE").add("PUT_FEE").add("DELETE_FEE"))
+                                        .add("description", "Operation to perform."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Timed item id. Required for GET, PUT, DELETE, ACTIVATE, DEACTIVATE, LIST_FEES, POST_FEE, PUT_FEE, DELETE_FEE."))
+                                .add("feeId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Fee id. Required for PUT_FEE and DELETE_FEE."))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Name of the timed item or fee. Required for POST and POST_FEE."))
+                                .add("code", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Short code. Optional; auto-generated from name if omitted on POST."))
+                                .add("departmentType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Department type enum value (e.g. Inward, Theatre). Required for POST."))
+                                .add("inwardChargeType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "InwardChargeType enum value (e.g. Room, Oxygen, NursingCharge). Required for POST."))
+                                .add("departmentId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Department id. Optional."))
+                                .add("institutionId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Institution id. Optional."))
+                                .add("inactive", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false — whether item is inactive. Optional."))
+                                .add("fee", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Fee amount for this tier block. Required for POST_FEE."))
+                                .add("ffee", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Foreigner fee amount. Optional; defaults to fee if omitted."))
+                                .add("durationHours", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Block duration in hours this fee tier covers. Required for POST_FEE (must be > 0)."))
+                                .add("overShootHours", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Grace hours beyond durationHours before the next tier applies. Optional."))
+                                .add("durationDaysForMoCharge", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Duration days for monthly charge calculation. Optional."))
+                                .add("sortOrder", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Fee tier ordering (ascending). Optional."))
+                                .add("repeating", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false — whether this fee repeats for multiple blocks. Optional."))
+                                .add("query", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Search text for LIST. Optional."))
+                                .add("size", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max results (1–100). Optional."))
+                                .add("retireComments", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Reason for retirement. Optional for DELETE/DELETE_FEE.")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
+        JsonObject lookupFinanceBillTool = Json.createObjectBuilder()
+                .add("name", "lookup_finance_bill")
+                .add("description",
+                        "Look up bills from the HMIS Finance API by bill number (insId or deptId). "
+                        + "Returns all bills matching the given bill number, including both PreBill and BilledBill records. "
+                        + "Use this when the user asks to find or retrieve a specific bill by its printed number.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("billNumber", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "The bill number to search for, e.g. MP/SPB/26/027264. Matched against both insId and deptId.")))
+                        .add("required", Json.createArrayBuilder().add("billNumber")))
+                .build();
+
         return Json.createArrayBuilder()
                 .add(searchCodeTool)
                 .add(fetchFileTool)
@@ -1074,11 +1208,14 @@ public class AnthropicApiService implements Serializable {
                 .add(inwardPriceAdjustmentTool)
                 .add(priceMatrixInwardTool)
                 .add(inwardRoomsTool)
+                .add(bedBoardSvgTool)
                 .add(manageInvestigationsTool)
                 .add(manageInvestigationFormatTool)
                 .add(manageFormsTool)
                 .add(manageSubscriptionsTool)
                 .add(manageInpatientTemplates)
+                .add(manageTimedItemsTool)
+                .add(lookupFinanceBillTool)
                 .build();
     }
 
@@ -1275,6 +1412,9 @@ public class AnthropicApiService implements Serializable {
                     String roomId         = toolInput.containsKey("roomId")                         ? toolInput.getString("roomId", "")                         : "";
                     String departmentId   = toolInput.containsKey("departmentId")                   ? toolInput.getString("departmentId", "")                   : "";
                     String filled         = toolInput.containsKey("filled")                         ? toolInput.getString("filled", "")                         : "";
+                    // null = caller omitted the field (leave unchanged); a non-null
+                    // value, including "", is forwarded ("" clears the drawing).
+                    String svgChildView   = toolInput.containsKey("svgChildView")                   ? toolInput.getString("svgChildView", "")                   : null;
                     String roomCharge     = toolInput.containsKey("roomCharge")                     ? toolInput.getString("roomCharge", "")                     : "";
                     String maintCharge    = toolInput.containsKey("maintananceCharge")              ? toolInput.getString("maintananceCharge", "")              : "";
                     String linenCharge    = toolInput.containsKey("linenCharge")                    ? toolInput.getString("linenCharge", "")                    : "";
@@ -1290,10 +1430,17 @@ public class AnthropicApiService implements Serializable {
                     String size           = toolInput.containsKey("size")                           ? toolInput.getString("size", "")                           : "";
                     String retireComments = toolInput.containsKey("retireComments")                 ? toolInput.getString("retireComments", "")                 : "";
                     return callInwardRoomsApi(method, id, name, code, desc, roomCategoryId, roomId,
-                            departmentId, filled, roomCharge, maintCharge, linenCharge, nursingCharge,
+                            departmentId, filled, svgChildView, roomCharge, maintCharge, linenCharge, nursingCharge,
                             moCharge, moAfterCharge, adminCharge, medCareCharge,
                             durationHours, overShoot, durationDays,
                             query, size, retireComments, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_bed_board_svg": {
+                    String method        = toolInput.getString("method", "GET_SITE");
+                    String id            = toolInput.containsKey("id")            ? toolInput.getString("id", "")            : "";
+                    String svgParentView = toolInput.containsKey("svgParentView") ? toolInput.getString("svgParentView", "") : null;
+                    String svgChildView  = toolInput.containsKey("svgChildView")  ? toolInput.getString("svgChildView", "")  : null;
+                    return callBedBoardSvgApi(method, id, svgParentView, svgChildView, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_forms": {
                     String resourceType = toolInput.getString("resource_type", "TEMPLATE");
@@ -1349,6 +1496,36 @@ public class AnthropicApiService implements Serializable {
                     String size          = toolInput.containsKey("size")           ? toolInput.getString("size", "")          : "";
                     return callInpatientTemplateApi(method, id, templateType, name, contents, defTemplate, autoGenerate,
                             query, size, hmisBaseUrl, hmisApiKey);
+                }
+                case "lookup_finance_bill": {
+                    String billNumber = toolInput.containsKey("billNumber") ? toolInput.getString("billNumber", "") : "";
+                    return lookupFinanceBillByNumber(billNumber, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_timed_items": {
+                    String method       = toolInput.getString("method", "LIST");
+                    String id           = toolInput.containsKey("id")           ? toolInput.getString("id", "")           : "";
+                    String feeId        = toolInput.containsKey("feeId")        ? toolInput.getString("feeId", "")        : "";
+                    String name         = toolInput.containsKey("name")         ? toolInput.getString("name", "")         : "";
+                    String code         = toolInput.containsKey("code")         ? toolInput.getString("code", "")         : "";
+                    String deptType     = toolInput.containsKey("departmentType")    ? toolInput.getString("departmentType", "")    : "";
+                    String chargeType   = toolInput.containsKey("inwardChargeType")  ? toolInput.getString("inwardChargeType", "")  : "";
+                    String departmentId = toolInput.containsKey("departmentId")      ? toolInput.getString("departmentId", "")      : "";
+                    String institutionId= toolInput.containsKey("institutionId")     ? toolInput.getString("institutionId", "")     : "";
+                    String inactive     = toolInput.containsKey("inactive")          ? toolInput.getString("inactive", "")          : "";
+                    String fee          = toolInput.containsKey("fee")               ? toolInput.getString("fee", "")               : "";
+                    String ffee         = toolInput.containsKey("ffee")              ? toolInput.getString("ffee", "")              : "";
+                    String durationHrs  = toolInput.containsKey("durationHours")     ? toolInput.getString("durationHours", "")     : "";
+                    String overShoot    = toolInput.containsKey("overShootHours")    ? toolInput.getString("overShootHours", "")    : "";
+                    String durationDays = toolInput.containsKey("durationDaysForMoCharge") ? toolInput.getString("durationDaysForMoCharge", "") : "";
+                    String sortOrder    = toolInput.containsKey("sortOrder")         ? toolInput.getString("sortOrder", "")         : "";
+                    String repeating    = toolInput.containsKey("repeating")         ? toolInput.getString("repeating", "")         : "";
+                    String query        = toolInput.containsKey("query")             ? toolInput.getString("query", "")             : "";
+                    String size         = toolInput.containsKey("size")              ? toolInput.getString("size", "")              : "";
+                    String retireComments = toolInput.containsKey("retireComments")  ? toolInput.getString("retireComments", "")    : "";
+                    return callTimedItemsApi(method, id, feeId, name, code, deptType, chargeType,
+                            departmentId, institutionId, inactive,
+                            fee, ffee, durationHrs, overShoot, durationDays, sortOrder, repeating,
+                            query, size, retireComments, hmisBaseUrl, hmisApiKey);
                 }
                 default:
                     return "Unknown tool: " + toolName;
@@ -2365,7 +2542,7 @@ public class AnthropicApiService implements Serializable {
 
     private String callInwardRoomsApi(
             String method, String id, String name, String code, String description,
-            String roomCategoryId, String roomId, String departmentId, String filled,
+            String roomCategoryId, String roomId, String departmentId, String filled, String svgChildView,
             String roomCharge, String maintananceCharge, String linenCharge, String nursingCharge,
             String moCharge, String moChargeForAfterDuration, String adminstrationCharge, String medicalCareCharge,
             String timedItemFeeDurationHours, String timedItemFeeOverShootHours, String timedItemFeeDurationDaysForMoCharge,
@@ -2461,6 +2638,7 @@ public class AnthropicApiService implements Serializable {
                     if (description != null && !description.isEmpty()) bodyMap.put("description", description);
                     if (roomCategoryId != null && !roomCategoryId.isEmpty()) bodyMap.put("roomCategoryId", Long.parseLong(roomCategoryId));
                     if (filled != null && !filled.isEmpty()) bodyMap.put("filled", Boolean.parseBoolean(filled));
+                    if (svgChildView != null) bodyMap.put("svgChildView", svgChildView);
                     String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
                     request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/rooms"))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
@@ -2476,6 +2654,7 @@ public class AnthropicApiService implements Serializable {
                     if (description != null && !description.isEmpty()) bodyMap.put("description", description);
                     if (roomCategoryId != null && !roomCategoryId.isEmpty()) bodyMap.put("roomCategoryId", Long.parseLong(roomCategoryId));
                     if (filled != null && !filled.isEmpty()) bodyMap.put("filled", Boolean.parseBoolean(filled));
+                    if (svgChildView != null) bodyMap.put("svgChildView", svgChildView);
                     String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
                     request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/rooms/" + id))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
@@ -2577,6 +2756,96 @@ public class AnthropicApiService implements Serializable {
         } catch (Exception e) {
             LOG.log(java.util.logging.Level.WARNING, "callInwardRoomsApi error: {0}", e.getMessage());
             return "Error calling Inward Rooms API: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Read/set the bed-board SVG drawings of a site, department, or room (issue
+     * #21592) via the dedicated /{id}/svg sub-resources. SVG is sent verbatim;
+     * the bed board sanitises it at render time.
+     */
+    private String callBedBoardSvgApi(String method, String id, String svgParentView, String svgChildView,
+            String hmisBaseUrl, String hmisApiKey) {
+
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        if (id == null || id.isEmpty()) {
+            return "Error: id is required for " + method + ".";
+        }
+
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+            String baseUrl = hmisBaseUrl.endsWith("/") ? hmisBaseUrl.substring(0, hmisBaseUrl.length() - 1) : hmisBaseUrl;
+
+            // Resolve the entity path from the method.
+            String entityPath;
+            boolean isRoom;
+            if (method.endsWith("_SITE")) {
+                entityPath = "/api/sites/";
+                isRoom = false;
+            } else if (method.endsWith("_INSTITUTION")) {
+                entityPath = "/api/institutions/";
+                isRoom = false;
+            } else if (method.endsWith("_DEPARTMENT")) {
+                entityPath = "/api/departments/";
+                isRoom = false;
+            } else if (method.endsWith("_ROOM")) {
+                entityPath = "/api/inward/rooms/";
+                isRoom = true;
+            } else {
+                return "Unknown method: " + method;
+            }
+
+            String url = baseUrl + entityPath + id + "/svg";
+            HttpRequest request;
+
+            if (method.startsWith("GET_")) {
+                request = HttpRequest.newBuilder().uri(URI.create(url))
+                        .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+            } else if (method.startsWith("SET_")) {
+                java.util.Map<String, Object> bodyMap = new java.util.LinkedHashMap<>();
+                // Only include fields the caller actually supplied (null = omit, so
+                // the entity field is left unchanged). A non-null value — including
+                // an empty string, which clears the drawing — is forwarded.
+                // A room has no parent canvas, so svgParentView is ignored for rooms.
+                if (!isRoom && svgParentView != null) {
+                    bodyMap.put("svgParentView", svgParentView);
+                }
+                if (svgChildView != null) {
+                    bodyMap.put("svgChildView", svgChildView);
+                }
+                // Reject an empty SET so the tool can't silently report success
+                // without changing anything.
+                if (bodyMap.isEmpty()) {
+                    return isRoom
+                            ? "Error: svgChildView is required for " + method + " (rooms have no parent canvas)."
+                            : "Error: svgParentView or svgChildView is required for " + method + ".";
+                }
+                String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
+                request = HttpRequest.newBuilder().uri(URI.create(url))
+                        .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                        .header("Content-Type", "application/json")
+                        .PUT(HttpRequest.BodyPublishers.ofString(bodyJson)).build();
+            } else {
+                return "Unknown method: " + method;
+            }
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + ": " + response.body();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Bed Board SVG API call interrupted.";
+        } catch (Exception e) {
+            LOG.log(java.util.logging.Level.WARNING, "callBedBoardSvgApi error: {0}", e.getMessage());
+            return "Error calling Bed Board SVG API: " + e.getMessage();
         }
     }
 
@@ -3178,6 +3447,156 @@ public class AnthropicApiService implements Serializable {
         }
     }
 
+    private String callTimedItemsApi(String method, String id, String feeId, String name, String code,
+            String departmentType, String inwardChargeType, String departmentId, String institutionId,
+            String inactive, String fee, String ffee, String durationHours, String overShootHours,
+            String durationDaysForMoCharge, String sortOrder, String repeating,
+            String query, String size, String retireComments,
+            String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String baseUrl = hmisBaseUrl.replaceAll("/$", "") + "/api/timed-items";
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+
+            switch (method.toUpperCase()) {
+                case "LIST": {
+                    StringBuilder url = new StringBuilder(baseUrl).append("/search?limit=").append(size.isEmpty() ? "30" : size);
+                    if (!query.isEmpty()) url.append("&query=").append(URLEncoder.encode(query, StandardCharsets.UTF_8));
+                    if (!departmentType.isEmpty()) url.append("&departmentType=").append(URLEncoder.encode(departmentType, StandardCharsets.UTF_8));
+                    if (!inactive.isEmpty()) url.append("&inactive=").append(URLEncoder.encode(inactive, StandardCharsets.UTF_8));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(url.toString()))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "GET": {
+                    if (id.isEmpty()) return "Error: id is required for GET.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "POST": {
+                    if (name.isEmpty()) return "Error: name is required for POST.";
+                    if (departmentType.isEmpty()) return "Error: departmentType is required for POST.";
+                    if (inwardChargeType.isEmpty()) return "Error: inwardChargeType is required for POST.";
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder()
+                            .add("name", name)
+                            .add("departmentType", departmentType)
+                            .add("inwardChargeType", inwardChargeType);
+                    if (!code.isEmpty()) b.add("code", code);
+                    if (!departmentId.isEmpty()) b.add("departmentId", Long.parseLong(departmentId));
+                    if (!institutionId.isEmpty()) b.add("institutionId", Long.parseLong(institutionId));
+                    if (!inactive.isEmpty()) b.add("inactive", Boolean.parseBoolean(inactive));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(b.build().toString())).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "PUT": {
+                    if (id.isEmpty()) return "Error: id is required for PUT.";
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    if (!name.isEmpty()) b.add("name", name);
+                    if (!code.isEmpty()) b.add("code", code);
+                    if (!departmentType.isEmpty()) b.add("departmentType", departmentType);
+                    if (!inwardChargeType.isEmpty()) b.add("inwardChargeType", inwardChargeType);
+                    if (!departmentId.isEmpty()) b.add("departmentId", Long.parseLong(departmentId));
+                    if (!institutionId.isEmpty()) b.add("institutionId", Long.parseLong(institutionId));
+                    if (!inactive.isEmpty()) b.add("inactive", Boolean.parseBoolean(inactive));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .PUT(HttpRequest.BodyPublishers.ofString(b.build().toString())).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "DELETE": {
+                    if (id.isEmpty()) return "Error: id is required for DELETE.";
+                    String url = baseUrl + "/" + id + (retireComments.isEmpty() ? "" : "?retireComments=" + URLEncoder.encode(retireComments, StandardCharsets.UTF_8));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(url))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).DELETE().build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "ACTIVATE": {
+                    if (id.isEmpty()) return "Error: id is required for ACTIVATE.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/activate"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .method("PATCH", HttpRequest.BodyPublishers.noBody()).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "DEACTIVATE": {
+                    if (id.isEmpty()) return "Error: id is required for DEACTIVATE.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/deactivate"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .method("PATCH", HttpRequest.BodyPublishers.noBody()).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "LIST_FEES": {
+                    if (id.isEmpty()) return "Error: id is required for LIST_FEES.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/fees"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "POST_FEE": {
+                    if (id.isEmpty()) return "Error: id is required for POST_FEE.";
+                    if (name.isEmpty()) return "Error: name is required for POST_FEE.";
+                    if (durationHours.isEmpty()) return "Error: durationHours is required for POST_FEE.";
+                    double dh = Double.parseDouble(durationHours);
+                    if (dh <= 0) return "Error: durationHours must be > 0.";
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder()
+                            .add("name", name)
+                            .add("durationHours", dh)
+                            .add("fee", fee.isEmpty() ? 0.0 : Double.parseDouble(fee));
+                    if (!ffee.isEmpty()) b.add("ffee", Double.parseDouble(ffee));
+                    if (!overShootHours.isEmpty()) b.add("overShootHours", Double.parseDouble(overShootHours));
+                    if (!durationDaysForMoCharge.isEmpty()) b.add("durationDaysForMoCharge", Long.parseLong(durationDaysForMoCharge));
+                    if (!sortOrder.isEmpty()) b.add("sortOrder", Integer.parseInt(sortOrder));
+                    if (!repeating.isEmpty()) b.add("repeating", Boolean.parseBoolean(repeating));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/fees"))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .POST(HttpRequest.BodyPublishers.ofString(b.build().toString())).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "PUT_FEE": {
+                    if (id.isEmpty()) return "Error: id is required for PUT_FEE.";
+                    if (feeId.isEmpty()) return "Error: feeId is required for PUT_FEE.";
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    if (!name.isEmpty()) b.add("name", name);
+                    if (!fee.isEmpty()) b.add("fee", Double.parseDouble(fee));
+                    if (!ffee.isEmpty()) b.add("ffee", Double.parseDouble(ffee));
+                    if (!durationHours.isEmpty()) b.add("durationHours", Double.parseDouble(durationHours));
+                    if (!overShootHours.isEmpty()) b.add("overShootHours", Double.parseDouble(overShootHours));
+                    if (!durationDaysForMoCharge.isEmpty()) b.add("durationDaysForMoCharge", Long.parseLong(durationDaysForMoCharge));
+                    if (!sortOrder.isEmpty()) b.add("sortOrder", Integer.parseInt(sortOrder));
+                    if (!repeating.isEmpty()) b.add("repeating", Boolean.parseBoolean(repeating));
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/fees/" + feeId))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                            .header("Content-Type", "application/json")
+                            .PUT(HttpRequest.BodyPublishers.ofString(b.build().toString())).build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                case "DELETE_FEE": {
+                    if (id.isEmpty()) return "Error: id is required for DELETE_FEE.";
+                    if (feeId.isEmpty()) return "Error: feeId is required for DELETE_FEE.";
+                    HttpRequest req = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/" + id + "/fees/" + feeId))
+                            .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).DELETE().build();
+                    return client.send(req, HttpResponse.BodyHandlers.ofString()).body();
+                }
+                default:
+                    return "Unknown method: " + method + ". Valid: LIST, GET, POST, PUT, DELETE, ACTIVATE, DEACTIVATE, LIST_FEES, POST_FEE, PUT_FEE, DELETE_FEE";
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Timed items API call interrupted.";
+        } catch (Exception e) {
+            return "Timed items API error: " + e.getMessage();
+        }
+    }
+
     public String buildSystemPrompt(String hmisApiBaseUrl, String userHmisApiKey, String githubBranch) {
         String branch = (githubBranch != null && !githubBranch.trim().isEmpty())
                 ? githubBranch.trim() : "development";
@@ -3206,7 +3625,7 @@ public class AnthropicApiService implements Serializable {
         }
 
         sb.append("## Tools Available to You\n");
-        sb.append("You have thirteen tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, inward discount matrix entries, investigation master records, investigation report formats, dynamic clinical form templates, notification subscriptions, and inpatient document templates:\n\n");
+        sb.append("You have thirteen tools to ground your answers in the actual codebase, live configuration, clinical master data, collecting-centre fees, inward discount matrix entries, investigation master records, investigation report formats, dynamic clinical form templates, notification subscriptions, and document templates:\n\n");
         sb.append("### search_github_code\n");
         sb.append("Searches the hmislk/hmis repository source code for files matching keywords. ");
         sb.append("Use this first when a user asks about system behaviour, page logic, or wants to understand how something works.\n\n");
@@ -3272,6 +3691,21 @@ public class AnthropicApiService implements Serializable {
           .append("PUT_CATEGORY / PUT_ROOM / PUT_CHARGE to update. ")
           .append("DELETE_CATEGORY / DELETE_ROOM / DELETE_CHARGE to soft-retire. ")
           .append("Always confirm with the user before POST, PUT, or DELETE — these changes affect live inward room billing.\n\n");
+        sb.append("### manage_bed_board_svg\n");
+        sb.append("Read and set the graphical bed-board SVG drawings used by the Inpatient Bed Board page. ")
+          .append("Every bed-board entity stores two drawings on a shared viewBox=\"0 0 1000 600\" grid: ")
+          .append("svgParentView (the entity's own empty floor-plan canvas, shown when you navigate into it) and ")
+          .append("svgChildView (the small shape showing how this entity looks as a tile inside its parent's canvas). ")
+          .append("Sites and departments have both; a room is a leaf and has only svgChildView. ")
+          .append("Methods: GET_SITE / SET_SITE / GET_DEPARTMENT / SET_DEPARTMENT / GET_ROOM / SET_ROOM (id required). ")
+          .append("On SET, only the fields you pass are changed; pass an empty string to clear a drawing. ")
+          .append("SVG is stored verbatim and sanitised when the bed board renders it. ")
+          .append("Before authoring drawings, consult the bed-board authoring guidance on the wiki page ")
+          .append("'Inpatient — Bed Board' (https://github.com/hmislk/hmis/wiki/Inpatient-Bed-Board); if you cannot reach it, ask the user to paste it. ")
+          .append("The guidance documents the viewBox, the site→building→floor→unit hierarchy, copy-paste SVG examples, and a ")
+          .append("draw-your-own-shapes primer (rect / ellipse / text / polygon). The same SVG fields are also accepted on ")
+          .append("the normal create/update bodies of /api/sites, /api/departments, and /api/inward/rooms, but this tool is the focused way to read or set just the drawings. ")
+          .append("Always confirm with the user before any SET.\n\n");
         sb.append("### manage_forms\n");
         sb.append("Design and manage dynamic clinical form templates end-to-end. ")
           .append("resource_type: TEMPLATE | FIELD | CHOICE | ENTRY | VALUE. ")
@@ -3305,9 +3739,21 @@ public class AnthropicApiService implements Serializable {
           .append("POST returns 'already_exists' with the existing id when an identical non-retired subscription exists. ")
           .append("Use DELETE to soft-retire a subscription by id. ")
           .append("Always confirm with the user before POST or DELETE — these changes affect who receives live notifications.\n\n");
+        sb.append("### manage_timed_items\n");
+        sb.append("Manage timed item master data (room rent, oxygen, ICU time, etc.) and their tiered fee slots. ")
+          .append("TimedItems (DTYPE=TimedItem) are consumed by the inward timed service page to bill patients for duration-based charges. ")
+          .append("Use LIST to search items (filter by departmentType e.g. Inward or Theatre). ")
+          .append("Use GET to fetch a single item with its fees. ")
+          .append("Use POST to create a new timed item — required: name, departmentType, inwardChargeType. ")
+          .append("Use PUT to update name, code, departmentType, inwardChargeType, departmentId, institutionId, or inactive flag. ")
+          .append("Use DELETE to soft-retire an item. Use ACTIVATE / DEACTIVATE to toggle availability without retiring. ")
+          .append("For tiered fee management: LIST_FEES lists all fees ordered by sortOrder. ")
+          .append("POST_FEE creates a fee tier — required: name, durationHours (> 0). fee, ffee, overShootHours, sortOrder, repeating are optional. ")
+          .append("PUT_FEE updates an existing fee tier (requires feeId). DELETE_FEE soft-retires a fee tier. ")
+          .append("Always confirm with the user before POST, PUT, or DELETE — changes affect live inward timed billing.\n\n");
         sb.append("### manage_inpatient_templates\n");
-        sb.append("Create, read, update, and retire inpatient document templates (HTML with placeholder tokens). ")
-          .append("Types: InpatientDiagnosisCard (diagnosis & treatment cards) and InpatientLetter (covering letters, credit company letters, etc.). ")
+        sb.append("Create, read, update, and retire document templates (HTML with placeholder tokens). ")
+          .append("Supported types: Prescription, MedicalCertificate, FitnessCertificate, Referral, InpatientDiagnosisCard, InpatientLetter. ")
           .append("method: LIST | GET | POST | PUT | DELETE. ")
           .append("LIST: browse templates by type and name. GET /{id}: retrieve a template including its full HTML contents. ")
           .append("POST: create a new template (name, type, contents required). PUT: update name, type, contents, defaultTemplate, or autoGenerate flags. DELETE: soft-retire. ")
@@ -3367,7 +3813,7 @@ public class AnthropicApiService implements Serializable {
                 "Retrieve pharmacy stock movement and history records.",
                 githubUrl(branch, "developer_docs/API_STOCK_HISTORY.md"),
                 new String[][]{
-                    {"GET", "/stock_history", "Get stock history with date range, item, and department filters"}
+                    {"GET", "/stock_history", "Get stock history with date range, item, and department filters. Pass includeArchived=true to also search archived rows beyond the retention window."}
                 });
 
         appendModule(sb, "Pharmaceutical Items", "/pharmaceutical_items",
@@ -3426,7 +3872,9 @@ public class AnthropicApiService implements Serializable {
                     {"GET",    "/departments/{id}",   "Get department by ID"},
                     {"POST",   "/departments",         "Create a new department"},
                     {"PUT",    "/departments/{id}",   "Update a department"},
-                    {"DELETE", "/departments/{id}",   "Retire a department"}
+                    {"DELETE", "/departments/{id}",   "Retire a department"},
+                    {"GET",    "/departments/{id}/preferences", "Get department UserPreference settings (item-listing strategies)"},
+                    {"PUT",    "/departments/{id}/preferences", "Update department UserPreference settings (partial; creates if absent)"}
                 });
 
         appendModule(sb, "Sites", "/sites",
@@ -3475,7 +3923,10 @@ public class AnthropicApiService implements Serializable {
         // ── Users / Roles / Privileges ────────────────────────────────────────
         appendModule(sb, "User Management", "/users",
                 "Create, read, update, and retire HMIS web users. Manage passwords, loggable departments, "
-                + "and individual privilege assignments. Use /users/privileges/available to discover valid privilege names.",
+                + "and individual or bulk privilege assignments. Use /users/privileges/available to discover valid privilege names. "
+                + "DELETE /{id}/departments/{assignmentId} removes one loggable department. "
+                + "DELETE /{id}/departments/{deptId}/privileges bulk-revokes all privileges for a department. "
+                + "POST /{id}/departments/{deptId}/privileges/all grants every privilege for a department.",
                 githubUrl(branch, "developer_docs/API_USER_MANAGEMENT.md"),
                 new String[][]{
                     {"GET",    "/users",                          "List users. Filters: query, departmentId, page, size"},
@@ -3491,7 +3942,10 @@ public class AnthropicApiService implements Serializable {
                     {"GET",    "/users/{id}/departments",         "List loggable departments for a user"},
                     {"POST",   "/users/{id}/departments",         "Assign a loggable department to a user"},
                     {"GET",    "/users/privileges/available",     "List all valid privilege enum names"},
-                    {"POST",   "/users/bulk-privileges",          "Bulk-assign privileges to multiple users at once"}
+                    {"POST",   "/users/bulk-privileges",                              "Bulk-assign privileges to multiple users at once"},
+                    {"DELETE", "/users/{id}/departments/{assignmentId}",             "Revoke a loggable department assignment (by WebUserDepartment id)"},
+                    {"DELETE", "/users/{id}/departments/{departmentId}/privileges",  "Bulk-revoke all active privileges for a user scoped to a department"},
+                    {"POST",   "/users/{id}/departments/{departmentId}/privileges/all", "Assign every Privileges enum value to a user for a department (skips duplicates)"}
                 });
 
         appendModule(sb, "User Roles", "/user-roles",
@@ -3559,7 +4013,8 @@ public class AnthropicApiService implements Serializable {
                     {"GET", "/finance/bill_item/{from}/{to}",                             "Get bills with line items for a date range"},
                     {"GET", "/finance/bill_item_cat/{bill_category}",                     "Get bills filtered by BillType category (today)"},
                     {"GET", "/finance/bill_item_cat/{date}/{bill_category}",              "Get bills by category for a specific date"},
-                    {"GET", "/finance/bill_item_cat/{from}/{to}/{bill_category}",         "Get bills by category for a date range"}
+                    {"GET", "/finance/bill_item_cat/{from}/{to}/{bill_category}",         "Get bills by category for a date range"},
+                    {"GET", "/finance/bill/search?billNumber={billNumber}",               "Look up bills by bill number (insId or deptId match)"}
                 });
 
         appendModule(sb, "Finance - QuickBooks Export", "/qb",
@@ -3764,7 +4219,8 @@ public class AnthropicApiService implements Serializable {
                     {"GET",    "/inward-price-adjustment/categories/search?scope=X&query=",       "Category name → id lookup (requires scope)"},
                     {"GET",    "/inward-price-adjustment/departments/search?query=",              "Department name → id lookup"},
                     {"GET",    "/inward-price-adjustment/payment-methods",                         "List PaymentMethod enum values"},
-                    {"GET",    "/inward-price-adjustment/credit-companies/search?query=",          "Credit company name → id lookup"}
+                    {"GET",    "/inward-price-adjustment/credit-companies/search?query=",          "Credit company name → id lookup"},
+                    {"GET",    "/inward-price-adjustment/diagnose?itemId=&departmentId=&paymentMethod=&patientEncounterId=&price=", "Explain whether inward service-charge margin will be applied for an item, with a per-condition pass/fail breakdown"}
                 });
 
         // ── Price Matrix Inward (Flat DTO, audit-logged) ──────────────────────
@@ -3804,6 +4260,25 @@ public class AnthropicApiService implements Serializable {
                     {"DELETE", "/inward/room-facility-charges/{id}", "Soft-retire room facility charge"}
                 });
 
+        appendModule(sb, "Timed Items", "/timed-items",
+                "Manage timed item master data and their tiered fee slots for duration-based inward billing. "
+                + "Items have departmentType (Inward, Theatre) and inwardChargeType. "
+                + "Each item can have multiple TimedItemFee tiers ordered by sortOrder.",
+                githubUrl(branch, "developer_docs/api/rest-api-development-guide.md"),
+                new String[][]{
+                    {"GET",    "/timed-items/search?query=&departmentType=&limit=", "Search timed items"},
+                    {"GET",    "/timed-items/{id}",          "Fetch one timed item with fees"},
+                    {"POST",   "/timed-items",               "Create timed item. Body: name, departmentType, inwardChargeType (all required); code, departmentId, institutionId, inactive optional"},
+                    {"PUT",    "/timed-items/{id}",          "Update timed item (all fields optional)"},
+                    {"DELETE", "/timed-items/{id}",          "Soft-retire timed item"},
+                    {"PATCH",  "/timed-items/{id}/activate", "Set inactive=false"},
+                    {"PATCH",  "/timed-items/{id}/deactivate", "Set inactive=true"},
+                    {"GET",    "/timed-items/{id}/fees",     "List fee tiers for an item (ordered by sortOrder)"},
+                    {"POST",   "/timed-items/{id}/fees",     "Add fee tier. Body: name, durationHours (required); fee, ffee, overShootHours, sortOrder, repeating optional"},
+                    {"PUT",    "/timed-items/{id}/fees/{feeId}", "Update fee tier"},
+                    {"DELETE", "/timed-items/{id}/fees/{feeId}", "Soft-retire fee tier"}
+                });
+
         // ── Login History / Config ────────────────────────────────────────────
         appendModule(sb, "Login History", "/logins",
                 "Query user login history filtered by department, user, and date range.",
@@ -3818,6 +4293,9 @@ public class AnthropicApiService implements Serializable {
                 + "IMPORTANT: Uses the 'Config' header for authentication, not 'Finance'.",
                 githubUrl(branch, "developer_docs/API_CONFIG.md"),
                 new String[][]{
+                    {"GET",  "/config?scope={tag}",  "List config options whose key contains {tag} (e.g. scope=inward); omit scope for all"},
+                    {"GET",  "/config/{key}",  "Read a single config option by exact key (key, type, scope, current value)"},
+                    {"PUT",  "/config/{key}",  "Update a config option value by key. Body {\"value\":\"...\"}. Flushes the cache immediately"},
                     {"GET",  "/config/search?keyword={keyword}", "Search config options by keyword (returns key, type, current value)"},
                     {"POST", "/config/setBoolean/{key}/{value}",  "Set a boolean config option by key name"},
                     {"POST", "/config/setLongText/{key}/{value}", "Set a text config option by key name"},
@@ -3912,6 +4390,30 @@ public class AnthropicApiService implements Serializable {
             LOG.log(Level.WARNING, "Error fetching doc {0}: {1}", new Object[]{url, e.getMessage()});
         }
         return null;
+    }
+
+    private String lookupFinanceBillByNumber(String billNumber, String hmisBaseUrl, String hmisApiKey) {
+        try {
+            String root = (hmisBaseUrl != null) ? hmisBaseUrl.trim().replaceAll("/+$", "") : "";
+            if (root.isEmpty()) return "Error: HMIS base URL is not configured.";
+            if (billNumber == null || billNumber.trim().isEmpty()) return "Error: billNumber is required.";
+            String key = (hmisApiKey != null) ? hmisApiKey.trim() : "";
+            String url = root + "/api/finance/bill/search?billNumber="
+                    + URLEncoder.encode(billNumber.trim(), StandardCharsets.UTF_8);
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+            HttpRequest.Builder rb = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .GET();
+            if (!key.isEmpty()) rb.header("Finance", key);
+            HttpResponse<String> resp = client.send(rb.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + resp.statusCode() + "\n" + resp.body();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Finance bill lookup interrupted.";
+        } catch (Exception e) {
+            return "Finance bill lookup error: " + e.getMessage();
+        }
     }
 
     // -------------------------------------------------------------------------

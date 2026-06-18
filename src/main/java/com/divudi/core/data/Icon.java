@@ -170,7 +170,22 @@ public enum Icon {
     Search_Final_Bill_By_Discharge_Date("Search Final Bill by Discharge Date", INPATIENT_BILLING),
     Request_Medicines_From_Pharmacy("Request Medicines from Pharmacy", INPATIENT_SERVICES),
     View_Pharmacy_Requests("View Pharmacy Requests", INPATIENT_SERVICES),
-    Inward_Analytics("Inward Analytics", INPATIENT_ANALYTICS);
+    Inward_Analytics("Inward Analytics", INPATIENT_ANALYTICS),
+    Bed_Board("Bed Board", INPATIENT_ROOMS),
+    Patient_Lookup_Registration("Patient Lookup & Registration", INPATIENT_ADMISSIONS),
+    Initiate_Transfer("Initiate Transfer", INPATIENT_ROOMS),
+    Accept_Patients("Accept Patients", INPATIENT_ROOMS),
+    Accept_Returns_from_Ward("Accept Returns from Ward", INPATIENT_DIRECT_ISSUES),
+    Nursing_Work_Bench("Nursing WorkBench", INPATIENT_SERVICES);
+
+    private static final java.util.Set<IconGroup> INPATIENT_GROUPS = java.util.EnumSet.of(
+            IconGroup.INPATIENT_ADMISSIONS,
+            IconGroup.INPATIENT_ROOMS,
+            IconGroup.INPATIENT_SERVICES,
+            IconGroup.INPATIENT_BILLING,
+            IconGroup.INPATIENT_ANALYTICS,
+            IconGroup.INPATIENT_DIRECT_ISSUES
+    );
 
     private final String label;
     private final IconGroup iconGroup;
@@ -190,12 +205,13 @@ public enum Icon {
 
     /**
      * Returns the image filename for this icon.
-     * Icons from Patient_Deposit_Management onwards use .svg extension.
-     * Earlier icons use .png extension (legacy format).
-     *
-     * @return Image filename with extension (e.g., "Patient_Lookup.png" or "Patient_Deposit_Management.svg")
+     * All inpatient-group icons use .svg; icons from Patient_Deposit_Management
+     * onwards also use .svg; all others use .png (legacy format).
      */
     public String getImage() {
+        if (iconGroup != null && INPATIENT_GROUPS.contains(iconGroup)) {
+            return this.name() + ".svg";
+        }
         if (this.ordinal() >= Patient_Deposit_Management.ordinal()) {
             return this.name() + ".svg";
         }

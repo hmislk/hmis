@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad19a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E7490;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#155E75;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad19" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#F0FDFA"/>
+  <g filter="url(#shad19)">
+    <!-- Receipt/paper -->
+    <rect x="42" y="40" width="95" height="130" rx="5" fill="url(#grad19a)"/>
+    <!-- Receipt zigzag bottom -->
+    <path d="M42 162 L53 152 L64 162 L75 152 L86 162 L97 152 L108 162 L119 152 L130 162 L137 152 L137 170 L42 170 Z" fill="url(#grad19a)"/>
+    <!-- Receipt lines -->
+    <rect x="52" y="55" width="75" height="5" rx="2" fill="white" opacity="0.8"/>
+    <line x1="52" y1="70" x2="127" y2="70" stroke="white" stroke-width="1" opacity="0.3"/>
+    <rect x="52" y="76" width="55" height="4" rx="2" fill="white" opacity="0.55"/>
+    <rect x="52" y="88" width="60" height="4" rx="2" fill="white" opacity="0.55"/>
+    <rect x="52" y="100" width="50" height="4" rx="2" fill="white" opacity="0.55"/>
+    <rect x="52" y="112" width="65" height="4" rx="2" fill="white" opacity="0.55"/>
+    <line x1="52" y1="123" x2="127" y2="123" stroke="white" stroke-width="1" opacity="0.3"/>
+    <rect x="52" y="129" width="75" height="5" rx="2" fill="#22D3EE" opacity="0.9"/>
+    <!-- Plus sign badge -->
+    <circle cx="150" cy="55" width="0" r="24" fill="white"/>
+    <circle cx="150" cy="55" r="24" fill="white"/>
+    <circle cx="150" cy="55" r="20" fill="#22D3EE"/>
+    <rect x="142" y="52" width="16" height="6" rx="3" fill="white"/>
+    <rect x="147" y="47" width="6" height="16" rx="3" fill="white"/>
+  </g>
+</svg>

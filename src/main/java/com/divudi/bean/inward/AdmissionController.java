@@ -192,6 +192,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private String bhtNumberForSearch;
     private Doctor referringDoctorForSearch;
     private Institution institutionForSearch;
+    private String occupationForSearch;
+    private Institution creditCompanyForSearch;
     private AdmissionStatus admissionStatusForSearch;
     private AdmissionType admissionTypeForSearch;
     private Admission perantAddmission;
@@ -742,6 +744,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return "/inward/inward_room_occupancy?faces-redirect=true";
     }
 
+    public String navigateToBedBoard() {
+        return "/inward/inward_bed_board?faces-redirect=true";
+    }
+
     public String navigateToRoomVacancy() {
         roomOccupancyController.setRoomFacilityCharges(null);
         return "/inward/inward_room_vacant?faces-redirect=true";
@@ -1030,6 +1036,22 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             m.put("nic", patientIdentityNumberFilter);
         }
 
+        if (referringDoctorForSearch != null) {
+            j += " and c.referringDoctor=:refDoc ";
+            m.put("refDoc", referringDoctorForSearch);
+        }
+
+        String occupationFilter = normalizeSearchFilter(occupationForSearch);
+        if (occupationFilter != null) {
+            j += " and c.patient.person.occupation.name like :occ ";
+            m.put("occ", "%" + occupationFilter + "%");
+        }
+
+        if (creditCompanyForSearch != null) {
+            j += " and (c.creditCompany=:cc or c.id in (select ecc.patientEncounter.id from EncounterCreditCompany ecc where ecc.retired=false and ecc.institution=:cc)) ";
+            m.put("cc", creditCompanyForSearch);
+        }
+
         if (admissionStatusForSearch != null) {
             if (null != admissionStatusForSearch) {
                 switch (admissionStatusForSearch) {
@@ -1121,6 +1143,22 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (patientIdentityNumberFilter != null) {
             j += " and c.patient.person.nic =:nic";
             m.put("nic", patientIdentityNumberFilter);
+        }
+
+        if (referringDoctorForSearch != null) {
+            j += " and c.referringDoctor=:refDoc ";
+            m.put("refDoc", referringDoctorForSearch);
+        }
+
+        String occupationFilter = normalizeSearchFilter(occupationForSearch);
+        if (occupationFilter != null) {
+            j += " and c.patient.person.occupation.name like :occ ";
+            m.put("occ", "%" + occupationFilter + "%");
+        }
+
+        if (creditCompanyForSearch != null) {
+            j += " and (c.creditCompany=:cc or c.id in (select ecc.patientEncounter.id from EncounterCreditCompany ecc where ecc.retired=false and ecc.institution=:cc)) ";
+            m.put("cc", creditCompanyForSearch);
         }
 
         if (admissionStatusForSearch != null) {
@@ -1371,6 +1409,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         patientNumberForSearch = null;
         bhtNumberForSearch = null;
         referringDoctorForSearch = null;
+        occupationForSearch = null;
+        creditCompanyForSearch = null;
         institutionForSearch = null;
         admissionStatusForSearch = null;
         admissionTypeForSearch = null;
@@ -2879,6 +2919,22 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setReferringDoctorForSearch(Doctor referringDoctorForSearch) {
         this.referringDoctorForSearch = referringDoctorForSearch;
+    }
+
+    public String getOccupationForSearch() {
+        return occupationForSearch;
+    }
+
+    public void setOccupationForSearch(String occupationForSearch) {
+        this.occupationForSearch = occupationForSearch;
+    }
+
+    public Institution getCreditCompanyForSearch() {
+        return creditCompanyForSearch;
+    }
+
+    public void setCreditCompanyForSearch(Institution creditCompanyForSearch) {
+        this.creditCompanyForSearch = creditCompanyForSearch;
     }
 
     public InwardStaffPaymentBillController getInwardStaffPaymentBillController() {

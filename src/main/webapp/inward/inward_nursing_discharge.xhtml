@@ -63,6 +63,51 @@
                             </div>
                         </h:panelGroup>
 
+                        <!-- Pending pharmacy items panel -->
+                        <h:panelGroup id="pnlPendingPharmacy" layout="block">
+
+                            <h:panelGroup layout="block"
+                                          rendered="#{not empty nursingDischargeController.pendingPharmacyItems}">
+                                <div class="row px-4 pt-2">
+                                    <div class="col-12">
+                                        <div class="alert alert-warning" role="alert">
+                                            <strong><i class="fa fa-exclamation-triangle mr-2"/>Pending Pharmacy Items</strong>
+                                            <p class="mb-2">Nursing discharge is blocked until all items below are resolved (issued, accepted, cancelled, or force-completed).</p>
+                                            <p:dataTable id="tblPendingPharmacy"
+                                                         value="#{nursingDischargeController.pendingPharmacyItems}"
+                                                         var="item"
+                                                         styleClass="w-100">
+                                                <p:column headerText="Bill No" style="width:15%">
+                                                    <h:outputText value="#{item.billNumber}" />
+                                                </p:column>
+                                                <p:column headerText="Date" style="width:15%">
+                                                    <h:outputText value="#{item.billDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                                    </h:outputText>
+                                                </p:column>
+                                                <p:column headerText="Pending Item">
+                                                    <h:outputText value="#{item.pendingTypeLabel}" />
+                                                </p:column>
+                                            </p:dataTable>
+                                        </div>
+                                    </div>
+                                </div>
+                            </h:panelGroup>
+
+                            <div class="row px-4">
+                                <div class="col-12 d-flex justify-content-end">
+                                    <p:commandButton
+                                        id="btnRefreshPendingPharmacy"
+                                        value="Refresh Pending Items"
+                                        action="#{nursingDischargeController.loadPendingPharmacyItems()}"
+                                        update="pnlPendingPharmacy pnlActionButtons"
+                                        icon="fa fa-sync"
+                                        class="ui-button-secondary mx-1 mb-2" />
+                                </div>
+                            </div>
+
+                        </h:panelGroup>
+
                         <div class="row px-4 py-2">
                             <div class="col-12">
 
@@ -90,7 +135,8 @@
                                 </p:panel>
 
                                 <!-- Action buttons -->
-                                <div class="d-flex justify-content-end my-2 mb-4">
+                                <h:panelGroup id="pnlActionButtons" layout="block"
+                                              styleClass="d-flex justify-content-end my-2 mb-4">
                                     <h:panelGroup rendered="#{not nursingDischargeController.currentEncounter.nursingDischarged}">
                                         <p:commandButton
                                             id="btnConfirmNursingDischarge"
@@ -99,6 +145,7 @@
                                             action="#{nursingDischargeController.confirmNursingDischarge()}"
                                             icon="fa fa-check"
                                             class="ui-button-success mx-1"
+                                            disabled="#{nursingDischargeController.hasPendingPharmacyItems()}"
                                             onclick="return confirm('Are you sure you want to confirm nursing discharge? This will lock the record.')" />
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{nursingDischargeController.currentEncounter.nursingDischarged}">
@@ -111,7 +158,7 @@
                                             class="ui-button-warning mx-1"
                                             onclick="return confirm('Are you sure you want to cancel the nursing discharge confirmation?')" />
                                     </h:panelGroup>
-                                </div>
+                                </h:panelGroup>
 
                             </div>
                         </div>

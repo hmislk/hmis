@@ -19,6 +19,7 @@ import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemMappingController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.inward.BhtSummeryController;
 
 import com.divudi.core.data.BillClassType;
@@ -94,6 +95,8 @@ public class BillBhtController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     BhtSummeryController bhtSummeryController;
     @Inject
@@ -610,6 +613,12 @@ public class BillBhtController implements Serializable {
             return;
         }
 
+        if (getBatchBill().getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
+            return;
+        }
+
         if (getBatchBill().getPatientEncounter().isDischarged()) {
             JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
             return;
@@ -748,6 +757,12 @@ public class BillBhtController implements Serializable {
             if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
                 return true;
             }
+        }
+
+        if (getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
+            return true;
         }
 
         if (getPatientEncounter().isDischarged()) {

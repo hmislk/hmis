@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad44a" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E7490;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#155E75;stop-opacity:1"/>
+    </linearGradient>
+    <linearGradient id="grad44b" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#22D3EE;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#0E7490;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad44" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#F0FDFA"/>
+  <g filter="url(#shad44)">
+    <!-- Axes -->
+    <line x1="35" y1="155" x2="172" y2="155" stroke="url(#grad44a)" stroke-width="5" stroke-linecap="round"/>
+    <line x1="35" y1="40" x2="35" y2="155" stroke="url(#grad44a)" stroke-width="5" stroke-linecap="round"/>
+    <!-- Bar 1 (short) -->
+    <rect x="50" y="125" width="24" height="30" rx="4" fill="url(#grad44a)"/>
+    <!-- Bar 2 (medium) -->
+    <rect x="84" y="100" width="24" height="55" rx="4" fill="url(#grad44a)"/>
+    <!-- Bar 3 (tall) -->
+    <rect x="118" y="72" width="24" height="83" rx="4" fill="url(#grad44b)"/>
+    <!-- Trend line -->
+    <path d="M62 120 Q96 92 130 68" fill="none" stroke="#22D3EE" stroke-width="4" stroke-linecap="round" stroke-dasharray="6,3"/>
+    <!-- Upward arrow -->
+    <path d="M148 58 L160 38 L172 58" fill="none" stroke="#22D3EE" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="160" y1="38" x2="160" y2="72" stroke="#22D3EE" stroke-width="5" stroke-linecap="round"/>
+    <!-- White highlights on tallest bar -->
+    <rect x="121" y="76" width="8" height="12" rx="3" fill="white" opacity="0.25"/>
+  </g>
+</svg>

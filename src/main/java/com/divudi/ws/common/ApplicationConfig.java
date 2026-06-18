@@ -88,6 +88,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.sap.SapBillingApi.class);
         resources.add(com.divudi.ws.sap.SapInventoryApi.class);
         resources.add(com.divudi.ws.service.ServiceApi.class);
+        resources.add(com.divudi.ws.inward.TimedItemApi.class);
     }
     
 }

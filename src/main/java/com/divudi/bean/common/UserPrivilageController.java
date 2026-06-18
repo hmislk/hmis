@@ -190,6 +190,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServicesAndItemsAddOutSideCharges, "Add Outside Charges"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServicesAndItemsAddProfessionalFee, "Add Professional Fee"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServicesAndItemsAddTimedServices, "Add Timed Services"), servicesItemsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAddChargesAfterNursingDischarge, "Add Charges After Nursing Discharge"), servicesItemsNode);
 
         TreeNode inwardBillingNode = new DefaultTreeNode(new PrivilegeHolder(null, "Billing"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardBilling, "Billing Menu"), inwardBillingNode);
@@ -248,6 +249,10 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.Theatre, "Theatre Menu"), theatreNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.TheatreAddSurgery, "Add Surgery"), theatreNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.TheatreBilling, "Theatre Billing"), theatreNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.TheatreSendPatient, "Send Patient to Theatre"), theatreNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.TheatreAcceptPatient, "Accept Patient in Theatre"), theatreNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.TheatreReturnPatient, "Return Patient to Ward"), theatreNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.WardAcceptTheatreReturn, "Accept Patient Returning from Theatre"), theatreNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.TheaterTransfer, "Theatre Transfer Menu Item"), theatreNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.TheaterTransferRequest, "Theatre Transfer Request"), theatreNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.TheaterTransferIssue, "Theatre Transfer Issue"), theatreNode);
