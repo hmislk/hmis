@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad4a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E7490;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#155E75;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad4" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#F0FDFA"/>
+  <g filter="url(#shad4)">
+    <!-- Document -->
+    <rect x="35" y="45" width="95" height="120" rx="6" fill="url(#grad4a)"/>
+    <rect x="45" y="65" width="75" height="5" rx="2" fill="white" opacity="0.8"/>
+    <rect x="45" y="80" width="62" height="5" rx="2" fill="white" opacity="0.6"/>
+    <rect x="45" y="95" width="70" height="5" rx="2" fill="white" opacity="0.6"/>
+    <rect x="45" y="110" width="55" height="5" rx="2" fill="white" opacity="0.6"/>
+    <rect x="45" y="125" width="65" height="5" rx="2" fill="white" opacity="0.6"/>
+    <rect x="45" y="140" width="48" height="5" rx="2" fill="white" opacity="0.6"/>
+    <!-- Document top fold -->
+    <path d="M110 45 L130 45 L130 65 L110 65 Z" fill="#155E75" opacity="0.6"/>
+    <path d="M110 45 L130 65 L110 65 Z" fill="#0E7490" opacity="0.8"/>
+    <!-- Pencil -->
+    <g transform="rotate(-40 148 118)">
+      <rect x="138" y="78" width="14" height="55" rx="3" fill="#22D3EE"/>
+      <polygon points="138,133 152,133 145,152" fill="#0E7490"/>
+      <rect x="138" y="78" width="14" height="10" rx="2" fill="white" opacity="0.9"/>
+      <rect x="140" y="145" width="10" height="5" fill="#F0FDFA" opacity="0.7"/>
+    </g>
+  </g>
+</svg>

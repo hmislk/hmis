@@ -151,9 +151,13 @@
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Comments" >
+                                    <p:column headerText="Comments"
+                                              filterBy="#{bill.comments}"
+                                              filterMatchMode="contains"
+                                              sortBy="#{bill.comments}">
                                         <p:badge value="Refunded" severity="warning" rendered="#{bill.refunded}"/>
                                         <p:badge value="Cancelled" severity="danger" rendered="#{bill.cancelled}"/>
+                                        <h:outputText value="#{bill.comments}" rendered="#{not empty bill.comments}" />
                                     </p:column>
 
                                     <p:column headerText="Actions" >

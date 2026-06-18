@@ -12,7 +12,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.Duration;
 import java.util.Properties;
-import javax.ejb.EJB;
+import javax.inject.Inject;
 import com.divudi.service.ApplicationStartupTimeService;
 
 /**
@@ -23,7 +23,7 @@ import com.divudi.service.ApplicationStartupTimeService;
 @ApplicationScoped
 public class VersionController {
 
-    @EJB
+    @Inject
     private ApplicationStartupTimeService startupTimeService;
 
     private String systemVersion; // Stores the system version read from VERSION.txt

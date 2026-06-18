@@ -57,7 +57,8 @@ public class StockHistoryApi {
             @QueryParam("fromDate") String fromDateStr,
             @QueryParam("toDate") String toDateStr,
             @QueryParam("historyType") String historyTypeStr,
-            @QueryParam("limit") Integer limit) {
+            @QueryParam("limit") Integer limit,
+            @QueryParam("includeArchived") boolean includeArchived) {
 
         try {
             String key = requestContext.getHeader("Finance");
@@ -101,7 +102,8 @@ public class StockHistoryApi {
                     fromDate,
                     toDate,
                     historyType,
-                    maxResults
+                    maxResults,
+                    includeArchived
             );
 
             return successResponse(results);

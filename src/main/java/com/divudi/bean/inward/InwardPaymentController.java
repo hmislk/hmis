@@ -614,6 +614,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             finalBillDeptId = pe.getFinalBill().getDeptId();
         }
 
+        boolean showInwardDepositComment = configOptionApplicationController.getBooleanValueByKey("Show Comment on Inward Deposit Bill", false);
+
         String output;
         output = template
                 .replace("{dept_id}", bill.getDeptId() != null ? String.valueOf(bill.getDeptId()) : "")
@@ -649,7 +651,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 .replace("{bill_date}", bill.getBillDate() != null ? formatDate(bill.getBillDate(), sessionController) : "")
                 .replace("{bill_time}", bill.getBillTime() != null ? formatTime(bill.getBillTime(), sessionController) : "")
                 .replace("{time_of_admission}", pe.getDateOfAdmission() != null ? formatDate(pe.getDateOfAdmission(), sessionController) : "")
-                .replace("{time_of_discharge}", pe.getDateOfDischarge() != null ? formatTime(pe.getDateOfDischarge(), sessionController) : "");
+                .replace("{time_of_discharge}", pe.getDateOfDischarge() != null ? formatTime(pe.getDateOfDischarge(), sessionController) : "")
+                .replace("{comment}", showInwardDepositComment && bill.getComments() != null ? bill.getComments() : "")
+                .replace("{bill_comment}", showInwardDepositComment && bill.getComments() != null ? bill.getComments() : "");
 
         return output;
     }
