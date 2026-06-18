@@ -950,6 +950,107 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject manageUsersTool = Json.createObjectBuilder()
+                .add("name", "manage_users")
+                .add("description",
+                        "Manage HMIS users, passwords, loggable departments, and department-scoped privileges.\n\n"
+                        + "method: LIST | GET | POST | PUT | DELETE | RESET_PASSWORD | CHANGE_PASSWORD | "
+                        + "LIST_PRIVILEGES | ASSIGN_PRIVILEGES | REVOKE_PRIVILEGE | LIST_DEPARTMENTS | ASSIGN_DEPARTMENTS | "
+                        + "LIST_AVAILABLE_PRIVILEGES | BULK_ASSIGN_PRIVILEGES | ASSIGN_PRIVILEGE_CATEGORIES\n\n"
+                        + "Privilege assignment requires departmentId; category assignment uses /users/{id}/departments/{departmentId}/privileges/category. "
+                        + "Use LIST_AVAILABLE_PRIVILEGES before assigning explicit privilege names.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder().add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("LIST").add("GET").add("POST").add("PUT").add("DELETE")
+                                                .add("RESET_PASSWORD").add("CHANGE_PASSWORD")
+                                                .add("LIST_PRIVILEGES").add("ASSIGN_PRIVILEGES").add("REVOKE_PRIVILEGE")
+                                                .add("LIST_DEPARTMENTS").add("ASSIGN_DEPARTMENTS")
+                                                .add("LIST_AVAILABLE_PRIVILEGES").add("BULK_ASSIGN_PRIVILEGES")
+                                                .add("ASSIGN_PRIVILEGE_CATEGORIES")))
+                                .add("id", Json.createObjectBuilder().add("type", "string").add("description", "User ID for user-specific operations"))
+                                .add("privilegeId", Json.createObjectBuilder().add("type", "string").add("description", "Privilege assignment ID for REVOKE_PRIVILEGE"))
+                                .add("query", Json.createObjectBuilder().add("type", "string").add("description", "User list/search query"))
+                                .add("page", Json.createObjectBuilder().add("type", "string").add("description", "LIST page number"))
+                                .add("size", Json.createObjectBuilder().add("type", "string").add("description", "LIST page size"))
+                                .add("name", Json.createObjectBuilder().add("type", "string"))
+                                .add("code", Json.createObjectBuilder().add("type", "string"))
+                                .add("email", Json.createObjectBuilder().add("type", "string"))
+                                .add("telNo", Json.createObjectBuilder().add("type", "string"))
+                                .add("personName", Json.createObjectBuilder().add("type", "string"))
+                                .add("personMobile", Json.createObjectBuilder().add("type", "string"))
+                                .add("institutionId", Json.createObjectBuilder().add("type", "string"))
+                                .add("siteId", Json.createObjectBuilder().add("type", "string"))
+                                .add("departmentId", Json.createObjectBuilder().add("type", "string"))
+                                .add("roleId", Json.createObjectBuilder().add("type", "string"))
+                                .add("activated", Json.createObjectBuilder().add("type", "string").add("description", "'true' or 'false'"))
+                                .add("loginPage", Json.createObjectBuilder().add("type", "string").add("description", "LoginPage enum name"))
+                                .add("password", Json.createObjectBuilder().add("type", "string").add("description", "Password for POST"))
+                                .add("newPassword", Json.createObjectBuilder().add("type", "string").add("description", "New password for RESET_PASSWORD or CHANGE_PASSWORD"))
+                                .add("currentPassword", Json.createObjectBuilder().add("type", "string").add("description", "Current password for own CHANGE_PASSWORD"))
+                                .add("privileges", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated privilege enum names"))
+                                .add("categories", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated Privileges.getCategory() names"))
+                                .add("userIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated user IDs for BULK_ASSIGN_PRIVILEGES"))
+                                .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs for ASSIGN_DEPARTMENTS"))
+                                .add("retireComments", Json.createObjectBuilder().add("type", "string")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
+        JsonObject managePharmacyItemsTool = Json.createObjectBuilder()
+                .add("name", "manage_pharmacy_items")
+                .add("description",
+                        "Create, search, update, get, or retire dispensable pharmacy PharmaceuticalItem records used by dispensing.\n\n"
+                        + "method: SEARCH | GET | POST | PUT | DELETE. "
+                        + "For classification hierarchy items such as AMP/VMP, use the pharmaceutical_items API instead.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("SEARCH").add("GET").add("POST").add("PUT").add("DELETE")))
+                                .add("id", Json.createObjectBuilder().add("type", "string"))
+                                .add("query", Json.createObjectBuilder().add("type", "string"))
+                                .add("size", Json.createObjectBuilder().add("type", "string"))
+                                .add("name", Json.createObjectBuilder().add("type", "string"))
+                                .add("code", Json.createObjectBuilder().add("type", "string"))
+                                .add("categoryId", Json.createObjectBuilder().add("type", "string"))
+                                .add("dosageFormId", Json.createObjectBuilder().add("type", "string"))
+                                .add("ampId", Json.createObjectBuilder().add("type", "string"))
+                                .add("institutionId", Json.createObjectBuilder().add("type", "string"))
+                                .add("departmentId", Json.createObjectBuilder().add("type", "string"))
+                                .add("retailRate", Json.createObjectBuilder().add("type", "string"))
+                                .add("allowFractions", Json.createObjectBuilder().add("type", "string").add("description", "'true' or 'false'"))
+                                .add("discountAllowed", Json.createObjectBuilder().add("type", "string").add("description", "'true' or 'false'"))
+                                .add("retireComments", Json.createObjectBuilder().add("type", "string")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
+        JsonObject manageChannelBookingTool = Json.createObjectBuilder()
+                .add("name", "manage_channel_booking")
+                .add("description",
+                        "Call documented Channel / Booking API operations. Uses the HMIS API key as the Token header, not Finance. "
+                        + "Confirm doctor/session availability before save/edit/complete/cancel operations.\n\n"
+                        + "operation: SPECIALIZATIONS | HOSPITALS | DOCTORS | DOCTOR_AVAILABILITY | DOCTOR_SESSIONS | DOCTOR_SESSION | "
+                        + "SAVE | EDIT | COMPLETE | CHANNEL_HISTORY_LIST | CHANNEL_HISTORY_BY_REF | CANCELLATION\n"
+                        + "For POST operations, provide requestBody as a JSON object string expected by the endpoint.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("operation", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("SPECIALIZATIONS").add("HOSPITALS").add("DOCTORS")
+                                                .add("DOCTOR_AVAILABILITY").add("DOCTOR_SESSIONS").add("DOCTOR_SESSION")
+                                                .add("SAVE").add("EDIT").add("COMPLETE")
+                                                .add("CHANNEL_HISTORY_LIST").add("CHANNEL_HISTORY_BY_REF").add("CANCELLATION")))
+                                .add("requestBody", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Raw JSON request body for the selected endpoint")))
+                        .add("required", Json.createArrayBuilder().add("operation")))
+                .build();
+
         JsonObject manageInpatientTemplates = Json.createObjectBuilder()
                 .add("name", "manage_inpatient_templates")
                 .add("description",
@@ -1021,6 +1122,9 @@ public class AnthropicApiService implements Serializable {
                 .add(manageInvestigationFormatTool)
                 .add(manageFormsTool)
                 .add(manageSubscriptionsTool)
+                .add(manageUsersTool)
+                .add(managePharmacyItemsTool)
+                .add(manageChannelBookingTool)
                 .add(manageInpatientTemplates)
                 .build();
     }
@@ -1260,6 +1364,15 @@ public class AnthropicApiService implements Serializable {
                     String applicationWide = toolInput.containsKey("applicationWide") ? toolInput.getString("applicationWide", "") : "";
                     return callSubscriptionApi(method, id, triggerType, userId, departmentId, applicationWide,
                             hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_users": {
+                    return callUsersApi(toolInput, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_pharmacy_items": {
+                    return callPharmacyItemsApi(toolInput, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_channel_booking": {
+                    return callChannelBookingApi(toolInput, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_inpatient_templates": {
                     String method        = toolInput.getString("method", "LIST");
@@ -2974,6 +3087,347 @@ public class AnthropicApiService implements Serializable {
         }
     }
 
+    private String callUsersApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        String method = input.getString("method", "LIST").toUpperCase();
+        String id = jsonString(input, "id");
+        String departmentId = jsonString(input, "departmentId");
+        try {
+            String base = hmisBaseUrl.replaceAll("/$", "") + "/api/users";
+            String url = base;
+            String httpMethod = "GET";
+            String body = null;
+
+            switch (method) {
+                case "LIST":
+                    url = base + "?" + queryParam("query", jsonString(input, "query"))
+                            + "&" + queryParam("departmentId", departmentId)
+                            + "&" + queryParam("page", defaultString(jsonString(input, "page"), "0"))
+                            + "&" + queryParam("size", defaultString(jsonString(input, "size"), "20"));
+                    break;
+                case "GET":
+                    url = base + "/" + requireText(id, "id");
+                    break;
+                case "POST":
+                    httpMethod = "POST";
+                    body = userBody(input, true);
+                    break;
+                case "PUT":
+                    httpMethod = "PUT";
+                    url = base + "/" + requireText(id, "id");
+                    body = userBody(input, false);
+                    break;
+                case "DELETE":
+                    httpMethod = "DELETE";
+                    url = base + "/" + requireText(id, "id");
+                    String retireComments = jsonString(input, "retireComments");
+                    if (!retireComments.isEmpty()) url += "?" + queryParam("retireComments", retireComments);
+                    break;
+                case "RESET_PASSWORD":
+                    httpMethod = "POST";
+                    url = base + "/" + requireText(id, "id") + "/reset-password";
+                    body = Json.createObjectBuilder().add("newPassword", requireText(jsonString(input, "newPassword"), "newPassword")).build().toString();
+                    break;
+                case "CHANGE_PASSWORD":
+                    httpMethod = "POST";
+                    url = base + "/" + requireText(id, "id") + "/change-password";
+                    javax.json.JsonObjectBuilder change = Json.createObjectBuilder()
+                            .add("newPassword", requireText(jsonString(input, "newPassword"), "newPassword"));
+                    addString(change, "currentPassword", jsonString(input, "currentPassword"));
+                    body = change.build().toString();
+                    break;
+                case "LIST_PRIVILEGES":
+                    url = base + "/" + requireText(id, "id") + "/privileges";
+                    break;
+                case "ASSIGN_PRIVILEGES":
+                    httpMethod = "POST";
+                    url = base + "/" + requireText(id, "id") + "/privileges";
+                    body = Json.createObjectBuilder()
+                            .add("departmentId", parseLongRequired(departmentId, "departmentId"))
+                            .add("privileges", csvArray(jsonString(input, "privileges")))
+                            .build().toString();
+                    break;
+                case "REVOKE_PRIVILEGE":
+                    httpMethod = "DELETE";
+                    url = base + "/" + requireText(id, "id") + "/privileges/" + requireText(jsonString(input, "privilegeId"), "privilegeId");
+                    break;
+                case "LIST_DEPARTMENTS":
+                    url = base + "/" + requireText(id, "id") + "/departments";
+                    break;
+                case "ASSIGN_DEPARTMENTS":
+                    httpMethod = "POST";
+                    url = base + "/" + requireText(id, "id") + "/departments";
+                    body = Json.createObjectBuilder()
+                            .add("departmentIds", csvLongArray(jsonString(input, "departmentIds")))
+                            .build().toString();
+                    break;
+                case "LIST_AVAILABLE_PRIVILEGES":
+                    url = base + "/privileges/available";
+                    break;
+                case "BULK_ASSIGN_PRIVILEGES": {
+                    httpMethod = "POST";
+                    url = base + "/bulk-privileges";
+                    javax.json.JsonObjectBuilder bulk = Json.createObjectBuilder()
+                            .add("userIds", csvLongArray(jsonString(input, "userIds")))
+                            .add("privileges", csvArray(jsonString(input, "privileges")));
+                    if (!departmentId.isEmpty()) bulk.add("departmentId", parseLongRequired(departmentId, "departmentId"));
+                    body = bulk.build().toString();
+                    break;
+                }
+                case "ASSIGN_PRIVILEGE_CATEGORIES":
+                    httpMethod = "POST";
+                    url = base + "/" + requireText(id, "id") + "/departments/" + requireText(departmentId, "departmentId") + "/privileges/category";
+                    body = Json.createObjectBuilder()
+                            .add("categories", csvArray(jsonString(input, "categories")))
+                            .build().toString();
+                    break;
+                default:
+                    return "Unknown method: " + method;
+            }
+            return callHmisApi(url, httpMethod, body, hmisApiKey);
+        } catch (Exception e) {
+            return "Users API error: " + e.getMessage();
+        }
+    }
+
+    private String callPharmacyItemsApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        String method = input.getString("method", "SEARCH").toUpperCase();
+        String id = jsonString(input, "id");
+        try {
+            String base = hmisBaseUrl.replaceAll("/$", "") + "/api/pharmacy/items";
+            String url = base;
+            String httpMethod = "GET";
+            String body = null;
+            switch (method) {
+                case "SEARCH":
+                    url = base + "/search?" + queryParam("query", jsonString(input, "query"))
+                            + "&" + queryParam("institutionId", jsonString(input, "institutionId"))
+                            + "&" + queryParam("departmentId", jsonString(input, "departmentId"))
+                            + "&" + queryParam("size", defaultString(jsonString(input, "size"), "50"));
+                    break;
+                case "GET":
+                    url = base + "/" + requireText(id, "id");
+                    break;
+                case "POST":
+                    httpMethod = "POST";
+                    body = pharmacyItemBody(input, true);
+                    break;
+                case "PUT":
+                    httpMethod = "PUT";
+                    url = base + "/" + requireText(id, "id");
+                    body = pharmacyItemBody(input, false);
+                    break;
+                case "DELETE":
+                    httpMethod = "DELETE";
+                    url = base + "/" + requireText(id, "id");
+                    String retireComments = jsonString(input, "retireComments");
+                    if (!retireComments.isEmpty()) url += "?" + queryParam("retireComments", retireComments);
+                    break;
+                default:
+                    return "Unknown method: " + method;
+            }
+            return callHmisApi(url, httpMethod, body, hmisApiKey);
+        } catch (Exception e) {
+            return "Pharmacy items API error: " + e.getMessage();
+        }
+    }
+
+    private String callChannelBookingApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        String operation = input.getString("operation", "").toUpperCase();
+        String path;
+        switch (operation) {
+            case "SPECIALIZATIONS": path = "/specializations"; break;
+            case "HOSPITALS": path = "/hospitals"; break;
+            case "DOCTORS": path = "/doctors"; break;
+            case "DOCTOR_AVAILABILITY": path = "/doctorAvailability"; break;
+            case "DOCTOR_SESSIONS": path = "/doctorSessions"; break;
+            case "DOCTOR_SESSION": path = "/doctorSession"; break;
+            case "SAVE": path = "/save"; break;
+            case "EDIT": path = "/edit"; break;
+            case "COMPLETE": path = "/complete"; break;
+            case "CHANNEL_HISTORY_LIST": path = "/channelHistoryList"; break;
+            case "CHANNEL_HISTORY_BY_REF": path = "/channelHistoryByRef"; break;
+            case "CANCELLATION": path = "/cancellation"; break;
+            default: return "Unknown operation: " + operation;
+        }
+        String body = jsonString(input, "requestBody");
+        if (body.isEmpty()) body = "{}";
+        try {
+            String url = hmisBaseUrl.replaceAll("/$", "") + "/api/channel" + path;
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(30))
+                    .header("Token", hmisApiKey)
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(body))
+                    .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + ": " + response.body();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Channel booking API call interrupted.";
+        } catch (Exception e) {
+            return "Channel booking API error: " + e.getMessage();
+        }
+    }
+
+    private String userBody(JsonObject input, boolean create) {
+        javax.json.JsonObjectBuilder body = Json.createObjectBuilder();
+        addString(body, "name", jsonString(input, "name"));
+        addString(body, "code", jsonString(input, "code"));
+        addString(body, "email", jsonString(input, "email"));
+        addString(body, "telNo", jsonString(input, "telNo"));
+        addString(body, "personName", jsonString(input, "personName"));
+        addString(body, "personMobile", jsonString(input, "personMobile"));
+        addLong(body, "institutionId", jsonString(input, "institutionId"));
+        addLong(body, "siteId", jsonString(input, "siteId"));
+        addLong(body, "departmentId", jsonString(input, "departmentId"));
+        addLong(body, "roleId", jsonString(input, "roleId"));
+        addBoolean(body, "activated", jsonString(input, "activated"));
+        addString(body, "loginPage", jsonString(input, "loginPage"));
+        addString(body, "password", jsonString(input, "password"));
+        if (create && jsonString(input, "password").isEmpty()) {
+            throw new IllegalArgumentException("password is required for POST");
+        }
+        return body.build().toString();
+    }
+
+    private String pharmacyItemBody(JsonObject input, boolean create) {
+        javax.json.JsonObjectBuilder body = Json.createObjectBuilder();
+        addString(body, "name", jsonString(input, "name"));
+        addString(body, "code", jsonString(input, "code"));
+        addLong(body, "categoryId", jsonString(input, "categoryId"));
+        addLong(body, "dosageFormId", jsonString(input, "dosageFormId"));
+        addLong(body, "ampId", jsonString(input, "ampId"));
+        addLong(body, "institutionId", jsonString(input, "institutionId"));
+        addLong(body, "departmentId", jsonString(input, "departmentId"));
+        addDouble(body, "retailRate", jsonString(input, "retailRate"));
+        addBoolean(body, "allowFractions", jsonString(input, "allowFractions"));
+        addBoolean(body, "discountAllowed", jsonString(input, "discountAllowed"));
+        if (create && jsonString(input, "name").isEmpty()) {
+            throw new IllegalArgumentException("name is required for POST");
+        }
+        return body.build().toString();
+    }
+
+    private String callHmisApi(String url, String method, String body, String hmisApiKey) throws Exception {
+        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(20))
+                .header("Finance", hmisApiKey);
+        if (body != null) {
+            builder.header("Content-Type", "application/json");
+        }
+        switch (method) {
+            case "POST":
+                builder.POST(HttpRequest.BodyPublishers.ofString(body != null ? body : ""));
+                break;
+            case "PUT":
+                builder.PUT(HttpRequest.BodyPublishers.ofString(body != null ? body : ""));
+                break;
+            case "DELETE":
+                builder.DELETE();
+                break;
+            default:
+                builder.GET();
+        }
+        HttpResponse<String> response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+        return "HTTP " + response.statusCode() + ": " + response.body();
+    }
+
+    private String jsonString(JsonObject input, String key) {
+        return input.containsKey(key) && !input.isNull(key) ? input.getString(key, "").trim() : "";
+    }
+
+    private String defaultString(String value, String defaultValue) {
+        return value == null || value.isEmpty() ? defaultValue : value;
+    }
+
+    private String requireText(String value, String field) {
+        if (value == null || value.trim().isEmpty()) {
+            throw new IllegalArgumentException(field + " is required");
+        }
+        return value.trim();
+    }
+
+    private String queryParam(String key, String value) {
+        return URLEncoder.encode(key, StandardCharsets.UTF_8) + "="
+                + URLEncoder.encode(value == null ? "" : value, StandardCharsets.UTF_8);
+    }
+
+    private long parseLongRequired(String value, String field) {
+        try {
+            return Long.parseLong(requireText(value, field));
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(field + " must be numeric");
+        }
+    }
+
+    private javax.json.JsonArrayBuilder csvArray(String csv) {
+        javax.json.JsonArrayBuilder array = Json.createArrayBuilder();
+        if (csv == null || csv.trim().isEmpty()) {
+            throw new IllegalArgumentException("comma-separated values are required");
+        }
+        for (String value : csv.split(",")) {
+            String trimmed = value.trim();
+            if (!trimmed.isEmpty()) array.add(trimmed);
+        }
+        return array;
+    }
+
+    private javax.json.JsonArrayBuilder csvLongArray(String csv) {
+        javax.json.JsonArrayBuilder array = Json.createArrayBuilder();
+        if (csv == null || csv.trim().isEmpty()) {
+            throw new IllegalArgumentException("comma-separated numeric values are required");
+        }
+        for (String value : csv.split(",")) {
+            String trimmed = value.trim();
+            if (!trimmed.isEmpty()) array.add(parseLongRequired(trimmed, "array value"));
+        }
+        return array;
+    }
+
+    private void addString(javax.json.JsonObjectBuilder body, String key, String value) {
+        if (value != null && !value.isEmpty()) body.add(key, value);
+    }
+
+    private void addLong(javax.json.JsonObjectBuilder body, String key, String value) {
+        if (value != null && !value.isEmpty()) body.add(key, parseLongRequired(value, key));
+    }
+
+    private void addDouble(javax.json.JsonObjectBuilder body, String key, String value) {
+        if (value != null && !value.isEmpty()) {
+            try {
+                body.add(key, Double.parseDouble(value));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(key + " must be numeric");
+            }
+        }
+    }
+
+    private void addBoolean(javax.json.JsonObjectBuilder body, String key, String value) {
+        if (value != null && !value.isEmpty()) body.add(key, Boolean.parseBoolean(value));
+    }
+
     public String buildSystemPrompt(String hmisApiBaseUrl, String userHmisApiKey, String githubBranch) {
         String branch = (githubBranch != null && !githubBranch.trim().isEmpty())
                 ? githubBranch.trim() : "development";
@@ -3180,6 +3634,17 @@ public class AnthropicApiService implements Serializable {
                     {"PATCH",  "/pharmaceutical_items/{type}/{id}/deactivate",     "Deactivate a pharmaceutical item"}
                 });
 
+        appendModule(sb, "Pharmacy Items", "/pharmacy/items",
+                "Manage dispensable pharmacy PharmaceuticalItem records used by billing and dispensing. This is separate from the pharmaceutical hierarchy API.",
+                null,
+                new String[][]{
+                    {"GET",    "/pharmacy/items/search", "Search dispensable pharmacy items. Filters: query, institutionId, departmentId, size"},
+                    {"GET",    "/pharmacy/items/{id}",   "Get one dispensable pharmacy item"},
+                    {"POST",   "/pharmacy/items",        "Create a dispensable pharmacy item. Body: name, code, categoryId, dosageFormId, ampId, institutionId, departmentId, retailRate, allowFractions, discountAllowed"},
+                    {"PUT",    "/pharmacy/items/{id}",   "Update a dispensable pharmacy item"},
+                    {"DELETE", "/pharmacy/items/{id}",   "Retire a dispensable pharmacy item"}
+                });
+
         appendModule(sb, "Pharmaceutical Config", "/pharmaceutical_config",
                 "Manage pharmaceutical configuration entities: categories, dosage forms, and measurement units.",
                 githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
@@ -3271,7 +3736,8 @@ public class AnthropicApiService implements Serializable {
         // ── Users / Roles / Privileges ────────────────────────────────────────
         appendModule(sb, "User Management", "/users",
                 "Create, read, update, and retire HMIS web users. Manage passwords, loggable departments, "
-                + "and individual privilege assignments. Use /users/privileges/available to discover valid privilege names.",
+                + "and department-scoped privilege assignments. Create/update supports loginPage. "
+                + "Use /users/privileges/available to discover valid privilege names.",
                 githubUrl(branch, "developer_docs/API_USER_MANAGEMENT.md"),
                 new String[][]{
                     {"GET",    "/users",                          "List users. Filters: query, departmentId, page, size"},
@@ -3282,7 +3748,8 @@ public class AnthropicApiService implements Serializable {
                     {"POST",   "/users/{id}/reset-password",      "Admin reset of user password"},
                     {"POST",   "/users/{id}/change-password",     "User changes own password"},
                     {"GET",    "/users/{id}/privileges",          "List privileges for a user"},
-                    {"POST",   "/users/{id}/privileges",          "Assign a privilege to a user"},
+                    {"POST",   "/users/{id}/privileges",          "Assign privileges to a user; departmentId is required"},
+                    {"POST",   "/users/{id}/departments/{departmentId}/privileges/category", "Assign privileges by category for one department"},
                     {"DELETE", "/users/{id}/privileges",          "Remove a privilege from a user"},
                     {"GET",    "/users/{id}/departments",         "List loggable departments for a user"},
                     {"POST",   "/users/{id}/departments",         "Assign a loggable department to a user"},

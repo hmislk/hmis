@@ -231,6 +231,12 @@ public class CapabilityStatementResource {
                         + "for strength-ratio based dispensing substitution.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Pharmacy Items", "/api/pharmacy/items",
+                        "Create, search, update, and retire dispensable pharmacy PharmaceuticalItem records used by pharmacy billing and dispensing. "
+                        + "POST/PUT fields include name, code, categoryId, dosageFormId, ampId, institutionId, departmentId, retailRate, allowFractions, discountAllowed. "
+                        + "GET /search supports query, institutionId, departmentId, size.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Pharmacy Adjustments", "/api/pharmacy_adjustments",
                         "Pharmacy stock and adjustment operations",
                         "API Key",
@@ -259,6 +265,9 @@ public class CapabilityStatementResource {
                 .add(resource("Users", "/api/users",
                         "User CRUD, password reset/change, loggable department assignment, "
                         + "and per-user privilege assignment with department scope. "
+                        + "Create/update accepts optional loginPage. "
+                        + "POST /{id}/privileges requires departmentId. "
+                        + "POST /{id}/departments/{departmentId}/privileges/category assigns all privileges from named categories. "
                         + "Supports filtering by departmentId and query string.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))

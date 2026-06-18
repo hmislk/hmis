@@ -727,6 +727,7 @@ public enum Privileges {
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Approval">
+    RequestManager("Request Manager"),
     BillCancelRequestApproval("Bill Cancel Request Approval"),
     ItemRefundRequestApproval("Item Refund Request Approval"),
     DrawerAdjustmentRequestApproval("Drawer Adjustment Request Approval"),
@@ -1037,6 +1038,41 @@ public enum Privileges {
 
                 return "Pharmacy";
 
+            case Store:
+            case StoreIssue:
+            case StoreIssueInwardBilling:
+            case StoreIssueSearchBill:
+            case StoreIssueBillItems:
+            case StorePurchase:
+            case StorePurchaseOrder:
+            case StorePurchaseOrderApprove:
+            case StorePurchaseOrderApproveSearch:
+            case StorePurchaseGRNRecive:
+            case StorePurchaseGRNReturn:
+            case StorePurchasePurchase:
+            case StoreTransfer:
+            case StoreTransferRequest:
+            case StoreTransferIssue:
+            case StoreTransferRecive:
+            case StoreTransferReport:
+            case StoreAdjustment:
+            case StoreAdjustmentDepartmentStock:
+            case StoreAdjustmentStaffStock:
+            case StoreAdjustmentPurchaseRate:
+            case StoreAdjustmentSaleRate:
+            case StoreDealorPayment:
+            case StoreDealorPaymentDueSearch:
+            case StoreDealorPaymentDueByAge:
+            case StoreDealorPaymentPayment:
+            case StoreDealorPaymentPaymentGRN:
+            case StoreDealorPaymentPaymentGRNSelect:
+            case StoreDealorPaymentGRNDoneSearch:
+            case StoreSearch:
+            case StoreReports:
+            case StoreSummery:
+            case StoreAdministration:
+                return "Store";
+
             case Clinic:
             case ClinicCalendar:
             case ClinicDisplay:
@@ -1063,6 +1099,7 @@ public enum Privileges {
                 return "Collecting Centre";
             
             // Approval Privileges
+            case RequestManager:
             case BillCancelRequestApproval:
             case ItemRefundRequestApproval:
             case DrawerAdjustmentRequestApproval:

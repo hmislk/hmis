@@ -1823,6 +1823,7 @@
                 <p:menuitem
                     ajax="false"
                     title="Request Manager"
+                    rendered="#{webUserController.hasPrivilege('RequestManager')}"
                     action="#{requestController.navigateToSearchRequest()}"
                     actionListener="#{requestController.makeNull()}"
                     icon="fa-solid fa-envelope">
@@ -2040,7 +2041,7 @@
                         action="/store/store_admin?faces-redirect=true"  
                         value="Manage Store" 
                         icon="fa fa-fw fa-store"
-                        rendered="#{webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
+                        rendered="#{webUserController.hasPrivilege('Store') and webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
                     <p:menuitem  
                         ajax="false"  
                         action="#{feeController.navigateToAdminFee()}" 
