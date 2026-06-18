@@ -119,15 +119,27 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET"))
                 .add(resource("Departments", "/api/departments",
-                        "Department management",
+                        "Department management. Create/update bodies and GET responses include the "
+                        + "bed-board SVG fields svgParentView and svgChildView (issue #21592). "
+                        + "Dedicated sub-resource: GET/PUT /api/departments/{id}/svg "
+                        + "(body { svgParentView, svgChildView }) reads/sets just the drawings. "
+                        + "SVG is stored verbatim; it is sanitised at render time on the bed board.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Institutions", "/api/institutions",
-                        "Institution management",
+                        "Institution management. Create/update bodies and GET responses include the "
+                        + "bed-board SVG fields svgParentView and svgChildView (issue #21592). "
+                        + "Dedicated sub-resource: GET/PUT /api/institutions/{id}/svg "
+                        + "(body { svgParentView, svgChildView }) reads/sets just the drawings. "
+                        + "SVG is stored verbatim; it is sanitised at render time on the bed board.",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("Sites", "/api/sites",
-                        "Site management",
+                        "Site management. Create/update bodies and GET responses include the "
+                        + "bed-board SVG fields svgParentView and svgChildView (issue #21592). "
+                        + "Dedicated sub-resource: GET/PUT /api/sites/{id}/svg "
+                        + "(body { svgParentView, svgChildView }) reads/sets just the drawings. "
+                        + "SVG is stored verbatim; it is sanitised at render time on the bed board.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Inward", "/api/apiInward",
@@ -164,7 +176,12 @@ public class CapabilityStatementResource {
                 .add(resource("Inward Rooms", "/api/inward/rooms",
                         "Manage inward rooms (backs /inward/inward_room.xhtml). "
                         + "Supports optional filter roomCategoryId. "
-                        + "POST returns HTTP 409 with existing id when a duplicate name already exists.",
+                        + "POST returns HTTP 409 with existing id when a duplicate name already exists. "
+                        + "Create/update bodies and GET responses include the bed-board child-tile field "
+                        + "svgChildView (a Room is a leaf, so it has no svgParentView) (issue #21592). "
+                        + "Dedicated sub-resource: GET/PUT /api/inward/rooms/{id}/svg "
+                        + "(body { svgChildView }) reads/sets just the drawing. "
+                        + "SVG is stored verbatim; it is sanitised at render time on the bed board.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Inward Document Templates", "/api/inward/document-templates",

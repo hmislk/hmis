@@ -580,6 +580,9 @@ public class AnthropicApiService implements Serializable {
                                 .add("filled", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Whether room is under construction (true/false). Optional for POST_ROOM/PUT_ROOM."))
+                                .add("svgChildView", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Bed-board child-tile SVG markup for the room (issue #21592). Optional for POST_ROOM/PUT_ROOM. A Room is a leaf in the bed-board hierarchy, so it has only this child view (no parent canvas). Or use the dedicated manage_bed_board_svg tool."))
                                 .add("roomCharge", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Room charge per block. Optional for POST_CHARGE/PUT_CHARGE."))
@@ -623,6 +626,43 @@ public class AnthropicApiService implements Serializable {
                                         .add("type", "string")
                                         .add("description", "Reason for retirement. Optional for DELETE methods.")))
                         .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
+        JsonObject bedBoardSvgTool = Json.createObjectBuilder()
+                .add("name", "manage_bed_board_svg")
+                .add("description",
+                        "Read and set the graphical bed-board SVG drawings (issue #21592) used by the "
+                        + "Inpatient Bed Board page. Each entity stores drawings on a shared "
+                        + "viewBox=\"0 0 1000 600\" grid: svgParentView is the entity's own empty floor-plan "
+                        + "canvas (shown when you navigate into it), and svgChildView is the small shape "
+                        + "showing how this entity looks as a tile inside its parent's canvas. "
+                        + "Sites, institutions, and departments have both views; a room (leaf) has only svgChildView. "
+                        + "Methods: GET_SITE, SET_SITE, GET_INSTITUTION, SET_INSTITUTION, GET_DEPARTMENT, SET_DEPARTMENT, GET_ROOM, SET_ROOM. "
+                        + "On SET, only the fields you supply are changed; pass an empty string to clear a drawing. "
+                        + "SVG is stored verbatim and sanitised when the bed board renders it. "
+                        + "Authoring guidance (viewBox, copy-paste examples, draw-your-own primer) is on the "
+                        + "wiki page 'Inpatient — Bed Board'. Always confirm with the user before SET.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("GET_SITE").add("SET_SITE")
+                                                .add("GET_INSTITUTION").add("SET_INSTITUTION")
+                                                .add("GET_DEPARTMENT").add("SET_DEPARTMENT")
+                                                .add("GET_ROOM").add("SET_ROOM"))
+                                        .add("description", "Operation to perform. SITE targets /api/sites, INSTITUTION targets /api/institutions, DEPARTMENT targets /api/departments, ROOM targets /api/inward/rooms."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Entity id (site/department/room). Required for all methods."))
+                                .add("svgParentView", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Parent-canvas SVG markup. Used by SET_SITE/SET_DEPARTMENT. Ignored for rooms (a room has no parent view). Pass an empty string to clear."))
+                                .add("svgChildView", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Child-tile SVG markup. Used by SET_SITE/SET_DEPARTMENT/SET_ROOM. Pass an empty string to clear.")))
+                        .add("required", Json.createArrayBuilder().add("method").add("id")))
                 .build();
 
         JsonObject manageInvestigationsTool = Json.createObjectBuilder()
@@ -1111,6 +1151,7 @@ public class AnthropicApiService implements Serializable {
                 .add(inwardDiscountMatrixTool)
                 .add(inwardPriceAdjustmentTool)
                 .add(inwardRoomsTool)
+                .add(bedBoardSvgTool)
                 .add(manageInvestigationsTool)
                 .add(manageInvestigationFormatTool)
                 .add(manageFormsTool)
@@ -1295,6 +1336,9 @@ public class AnthropicApiService implements Serializable {
                     String roomId         = toolInput.containsKey("roomId")                         ? toolInput.getString("roomId", "")                         : "";
                     String departmentId   = toolInput.containsKey("departmentId")                   ? toolInput.getString("departmentId", "")                   : "";
                     String filled         = toolInput.containsKey("filled")                         ? toolInput.getString("filled", "")                         : "";
+                    // null = caller omitted the field (leave unchanged); a non-null
+                    // value, including "", is forwarded ("" clears the drawing).
+                    String svgChildView   = toolInput.containsKey("svgChildView")                   ? toolInput.getString("svgChildView", "")                   : null;
                     String roomCharge     = toolInput.containsKey("roomCharge")                     ? toolInput.getString("roomCharge", "")                     : "";
                     String maintCharge    = toolInput.containsKey("maintananceCharge")              ? toolInput.getString("maintananceCharge", "")              : "";
                     String linenCharge    = toolInput.containsKey("linenCharge")                    ? toolInput.getString("linenCharge", "")                    : "";
@@ -1310,10 +1354,17 @@ public class AnthropicApiService implements Serializable {
                     String size           = toolInput.containsKey("size")                           ? toolInput.getString("size", "")                           : "";
                     String retireComments = toolInput.containsKey("retireComments")                 ? toolInput.getString("retireComments", "")                 : "";
                     return callInwardRoomsApi(method, id, name, code, desc, roomCategoryId, roomId,
-                            departmentId, filled, roomCharge, maintCharge, linenCharge, nursingCharge,
+                            departmentId, filled, svgChildView, roomCharge, maintCharge, linenCharge, nursingCharge,
                             moCharge, moAfterCharge, adminCharge, medCareCharge,
                             durationHours, overShoot, durationDays,
                             query, size, retireComments, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_bed_board_svg": {
+                    String method        = toolInput.getString("method", "GET_SITE");
+                    String id            = toolInput.containsKey("id")            ? toolInput.getString("id", "")            : "";
+                    String svgParentView = toolInput.containsKey("svgParentView") ? toolInput.getString("svgParentView", "") : null;
+                    String svgChildView  = toolInput.containsKey("svgChildView")  ? toolInput.getString("svgChildView", "")  : null;
+                    return callBedBoardSvgApi(method, id, svgParentView, svgChildView, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_forms": {
                     String resourceType = toolInput.getString("resource_type", "TEMPLATE");
@@ -2287,7 +2338,7 @@ public class AnthropicApiService implements Serializable {
 
     private String callInwardRoomsApi(
             String method, String id, String name, String code, String description,
-            String roomCategoryId, String roomId, String departmentId, String filled,
+            String roomCategoryId, String roomId, String departmentId, String filled, String svgChildView,
             String roomCharge, String maintananceCharge, String linenCharge, String nursingCharge,
             String moCharge, String moChargeForAfterDuration, String adminstrationCharge, String medicalCareCharge,
             String timedItemFeeDurationHours, String timedItemFeeOverShootHours, String timedItemFeeDurationDaysForMoCharge,
@@ -2383,6 +2434,7 @@ public class AnthropicApiService implements Serializable {
                     if (description != null && !description.isEmpty()) bodyMap.put("description", description);
                     if (roomCategoryId != null && !roomCategoryId.isEmpty()) bodyMap.put("roomCategoryId", Long.parseLong(roomCategoryId));
                     if (filled != null && !filled.isEmpty()) bodyMap.put("filled", Boolean.parseBoolean(filled));
+                    if (svgChildView != null) bodyMap.put("svgChildView", svgChildView);
                     String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
                     request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/rooms"))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
@@ -2398,6 +2450,7 @@ public class AnthropicApiService implements Serializable {
                     if (description != null && !description.isEmpty()) bodyMap.put("description", description);
                     if (roomCategoryId != null && !roomCategoryId.isEmpty()) bodyMap.put("roomCategoryId", Long.parseLong(roomCategoryId));
                     if (filled != null && !filled.isEmpty()) bodyMap.put("filled", Boolean.parseBoolean(filled));
+                    if (svgChildView != null) bodyMap.put("svgChildView", svgChildView);
                     String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
                     request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/rooms/" + id))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
@@ -2499,6 +2552,96 @@ public class AnthropicApiService implements Serializable {
         } catch (Exception e) {
             LOG.log(java.util.logging.Level.WARNING, "callInwardRoomsApi error: {0}", e.getMessage());
             return "Error calling Inward Rooms API: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Read/set the bed-board SVG drawings of a site, department, or room (issue
+     * #21592) via the dedicated /{id}/svg sub-resources. SVG is sent verbatim;
+     * the bed board sanitises it at render time.
+     */
+    private String callBedBoardSvgApi(String method, String id, String svgParentView, String svgChildView,
+            String hmisBaseUrl, String hmisApiKey) {
+
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        if (id == null || id.isEmpty()) {
+            return "Error: id is required for " + method + ".";
+        }
+
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+            String baseUrl = hmisBaseUrl.endsWith("/") ? hmisBaseUrl.substring(0, hmisBaseUrl.length() - 1) : hmisBaseUrl;
+
+            // Resolve the entity path from the method.
+            String entityPath;
+            boolean isRoom;
+            if (method.endsWith("_SITE")) {
+                entityPath = "/api/sites/";
+                isRoom = false;
+            } else if (method.endsWith("_INSTITUTION")) {
+                entityPath = "/api/institutions/";
+                isRoom = false;
+            } else if (method.endsWith("_DEPARTMENT")) {
+                entityPath = "/api/departments/";
+                isRoom = false;
+            } else if (method.endsWith("_ROOM")) {
+                entityPath = "/api/inward/rooms/";
+                isRoom = true;
+            } else {
+                return "Unknown method: " + method;
+            }
+
+            String url = baseUrl + entityPath + id + "/svg";
+            HttpRequest request;
+
+            if (method.startsWith("GET_")) {
+                request = HttpRequest.newBuilder().uri(URI.create(url))
+                        .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
+            } else if (method.startsWith("SET_")) {
+                java.util.Map<String, Object> bodyMap = new java.util.LinkedHashMap<>();
+                // Only include fields the caller actually supplied (null = omit, so
+                // the entity field is left unchanged). A non-null value — including
+                // an empty string, which clears the drawing — is forwarded.
+                // A room has no parent canvas, so svgParentView is ignored for rooms.
+                if (!isRoom && svgParentView != null) {
+                    bodyMap.put("svgParentView", svgParentView);
+                }
+                if (svgChildView != null) {
+                    bodyMap.put("svgChildView", svgChildView);
+                }
+                // Reject an empty SET so the tool can't silently report success
+                // without changing anything.
+                if (bodyMap.isEmpty()) {
+                    return isRoom
+                            ? "Error: svgChildView is required for " + method + " (rooms have no parent canvas)."
+                            : "Error: svgParentView or svgChildView is required for " + method + ".";
+                }
+                String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
+                request = HttpRequest.newBuilder().uri(URI.create(url))
+                        .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
+                        .header("Content-Type", "application/json")
+                        .PUT(HttpRequest.BodyPublishers.ofString(bodyJson)).build();
+            } else {
+                return "Unknown method: " + method;
+            }
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + ": " + response.body();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Bed Board SVG API call interrupted.";
+        } catch (Exception e) {
+            LOG.log(java.util.logging.Level.WARNING, "callBedBoardSvgApi error: {0}", e.getMessage());
+            return "Error calling Bed Board SVG API: " + e.getMessage();
         }
     }
 
@@ -3344,6 +3487,21 @@ public class AnthropicApiService implements Serializable {
           .append("PUT_CATEGORY / PUT_ROOM / PUT_CHARGE to update. ")
           .append("DELETE_CATEGORY / DELETE_ROOM / DELETE_CHARGE to soft-retire. ")
           .append("Always confirm with the user before POST, PUT, or DELETE — these changes affect live inward room billing.\n\n");
+        sb.append("### manage_bed_board_svg\n");
+        sb.append("Read and set the graphical bed-board SVG drawings used by the Inpatient Bed Board page. ")
+          .append("Every bed-board entity stores two drawings on a shared viewBox=\"0 0 1000 600\" grid: ")
+          .append("svgParentView (the entity's own empty floor-plan canvas, shown when you navigate into it) and ")
+          .append("svgChildView (the small shape showing how this entity looks as a tile inside its parent's canvas). ")
+          .append("Sites and departments have both; a room is a leaf and has only svgChildView. ")
+          .append("Methods: GET_SITE / SET_SITE / GET_DEPARTMENT / SET_DEPARTMENT / GET_ROOM / SET_ROOM (id required). ")
+          .append("On SET, only the fields you pass are changed; pass an empty string to clear a drawing. ")
+          .append("SVG is stored verbatim and sanitised when the bed board renders it. ")
+          .append("Before authoring drawings, consult the bed-board authoring guidance on the wiki page ")
+          .append("'Inpatient — Bed Board' (https://github.com/hmislk/hmis/wiki/Inpatient-Bed-Board); if you cannot reach it, ask the user to paste it. ")
+          .append("The guidance documents the viewBox, the site→building→floor→unit hierarchy, copy-paste SVG examples, and a ")
+          .append("draw-your-own-shapes primer (rect / ellipse / text / polygon). The same SVG fields are also accepted on ")
+          .append("the normal create/update bodies of /api/sites, /api/departments, and /api/inward/rooms, but this tool is the focused way to read or set just the drawings. ")
+          .append("Always confirm with the user before any SET.\n\n");
         sb.append("### manage_forms\n");
         sb.append("Design and manage dynamic clinical form templates end-to-end. ")
           .append("resource_type: TEMPLATE | FIELD | CHOICE | ENTRY | VALUE. ")
