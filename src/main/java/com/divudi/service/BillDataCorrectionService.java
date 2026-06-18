@@ -12,6 +12,7 @@ import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillFinanceDetailsFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BillItemFinanceDetailsFacade;
+import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -41,6 +42,9 @@ public class BillDataCorrectionService {
 
     @EJB
     private BillItemFinanceDetailsFacade billItemFinanceDetailsFacade;
+
+    @EJB
+    private PaymentFacade paymentFacade;
 
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
@@ -126,6 +130,11 @@ public class BillDataCorrectionService {
         }
         validateAllowedFields(fields, BILL_FIELDS, "BILL");
 
+        // Capture original persisted totals before any in-memory mutations so the retire guard
+        // always checks the true DB values, not values already changed in this same request.
+        final double originalNetTotal = entity.getNetTotal();
+        final double originalTotal = entity.getTotal();
+
         if (fields.containsKey("netTotal")) {
             previousValues.put("netTotal", entity.getNetTotal());
             double value = toDouble(fields.get("netTotal"), "netTotal");
@@ -147,7 +156,7 @@ public class BillDataCorrectionService {
         if (fields.containsKey("retired")) {
             boolean requestedRetire = toBooleanValue(fields.get("retired"), "retired");
             if (requestedRetire) {
-                guardEmptyBillForRetire(entity);
+                guardEmptyBillForRetire(entity, originalNetTotal, originalTotal);
                 previousValues.put("retired", entity.isRetired());
                 String retireComments = fields.containsKey("retireComments")
                         ? toStringValue(fields.get("retireComments")) : null;
@@ -162,7 +171,7 @@ public class BillDataCorrectionService {
         return entity;
     }
 
-    private void guardEmptyBillForRetire(Bill bill) {
+    private void guardEmptyBillForRetire(Bill bill, double originalNetTotal, double originalTotal) {
         Map<String, Object> params = new java.util.HashMap<>();
         params.put("b", bill);
 
@@ -180,10 +189,17 @@ public class BillDataCorrectionService {
                     "Bill " + bill.getId() + " has " + feeCount + " active bill fees — retire them first");
         }
 
-        if (bill.getNetTotal() != 0.0 || bill.getTotal() != 0.0) {
+        long paymentCount = paymentFacade.findLongByJpql(
+                "SELECT COUNT(p) FROM Payment p WHERE p.bill = :b AND p.retired = false", params);
+        if (paymentCount > 0) {
             throw new IllegalStateException(
-                    "Bill " + bill.getId() + " has non-zero totals (net=" + bill.getNetTotal()
-                    + ", gross=" + bill.getTotal() + ") — only zero-value bills may be retired via this API");
+                    "Bill " + bill.getId() + " has " + paymentCount + " active payments — retire them first");
+        }
+
+        if (originalNetTotal != 0.0 || originalTotal != 0.0) {
+            throw new IllegalStateException(
+                    "Bill " + bill.getId() + " has non-zero totals (net=" + originalNetTotal
+                    + ", gross=" + originalTotal + ") — only zero-value bills may be retired via this API");
         }
     }
 
