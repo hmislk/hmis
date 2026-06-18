@@ -138,10 +138,8 @@
                                         <p:commandButton value="Surgery Dashboard" icon="fa fa-arrow-left"
                                                          ajax="false" immediate="true"
                                                          title="Return to surgery dashboard"
-                                                         action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile()}"
-                                                         styleClass="ui-button-info ui-button-outlined">
-                                            <f:setPropertyActionListener value="#{pharmacySaleBhtController.batchBill}" target="#{surgeryBillController.surgeryBill}"/>
-                                        </p:commandButton>
+                                                         action="/theater/surgery_workbench?faces-redirect=true"
+                                                         styleClass="ui-button-info ui-button-outlined"/>
                                         <p:commandButton value="Patient Lookup" icon="fa fa-search"
                                                          ajax="false" immediate="true"
                                                          title="Search for a patient"
@@ -394,10 +392,8 @@
                                     <p:commandButton value="Surgery Dashboard" icon="fa fa-arrow-left"
                                                      ajax="false" immediate="true"
                                                      title="Return to surgery dashboard"
-                                                     action="#{surgeryBillController.navigateToAddSurgeriesFromAdmissionProfile()}"
-                                                     styleClass="ui-button-info ui-button-outlined">
-                                        <f:setPropertyActionListener value="#{pharmacySaleBhtController.batchBill}" target="#{surgeryBillController.surgeryBill}"/>
-                                    </p:commandButton>
+                                                     action="/theater/surgery_workbench?faces-redirect=true"
+                                                     styleClass="ui-button-info ui-button-outlined"/>
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                         <p:commandButton value="Inpatient Dashboard" icon="fas fa-id-card"
                                                          ajax="false" immediate="true"
