@@ -68,7 +68,6 @@ import com.divudi.core.data.dto.RoomBedOccupancyDTO;
 import com.divudi.core.data.dto.RoomCategoryOccupancyDTO;
 import com.divudi.core.data.dto.RoomOccupancyRowDTO;
 import com.divudi.core.facade.PatientRoomFacade;
-import com.divudi.core.facade.RoomFacilityChargeFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -192,8 +191,6 @@ public class InwardReportController implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     BillFeeFacade billFeeFacade;
-    @EJB
-    RoomFacilityChargeFacade roomFacilityChargeFacade;
     @EJB
     PatientRoomFacade patientRoomFacade;
 
@@ -336,10 +333,10 @@ public class InwardReportController implements Serializable {
     double netTotal;
     double netPaid;
 
-// Cache keyed by RoomCategory.id  →  count of available rooms
     private Map<Long, Long> categoryAvailableRoomsCache;
     private List<RoomOccupancyRowDTO> roomOccupancyList;
     private RoomOccupancyRowDTO roomOccupancyGrandTotal;
+    private String roomOccupancyRatioMode = RoomCategoryOccupancyDTO.RATIO_MODE_AGGREGATED_ROOM_UTILIZATION;
 
     public void processRoomOccupancyReport() {
         if (fromDate == null || toDate == null) {
@@ -355,9 +352,8 @@ public class InwardReportController implements Serializable {
         roomOccupancyList = new ArrayList<>();
         Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid = new TreeMap<>();
 
-        loadAvailableUnitCounts();
         loadAdmissionsIntoGrid(grid);
-        loadCategoryOccupancyIntoGrid(grid);
+        loadRoomCategoryMetricsIntoGrid(grid);
 
         roomOccupancyGrandTotal = new RoomOccupancyRowDTO(null, null);
         roomOccupancyGrandTotal.setGrandTotal(true);
@@ -366,7 +362,6 @@ public class InwardReportController implements Serializable {
             for (Map.Entry<Integer, RoomOccupancyRowDTO> monthEntry : yearEntry.getValue().entrySet()) {
                 RoomOccupancyRowDTO row = monthEntry.getValue();
 
-                // Zero-fill every category slot for safe XHTML iteration
                 row.ensureCategories(roomCategories);
                 applyAvailableCounts(row);
 
@@ -386,25 +381,9 @@ public class InwardReportController implements Serializable {
         calculateRowDerived(roomOccupancyGrandTotal, totalDays);
     }
 
-// LOAD: available counts  (cache by RoomCategory.id to avoid name bugs)
-    private void loadAvailableUnitCounts() {
-        categoryAvailableRoomsCache = new HashMap<>();
-
-        String jpql = "SELECT rfc.roomCategory.id, COUNT(DISTINCT rfc.id) "
-                + "FROM RoomFacilityCharge rfc "
-                + "WHERE rfc.retired = false "
-                + "GROUP BY rfc.roomCategory.id";
-        Map<String, Object> p = new HashMap<>();
-        List<Object[]> rows = roomFacilityChargeFacade.findObjectsArrayByJpql(jpql, p, TemporalType.DATE);
-        for (Object[] r : rows) {
-            Long categoryId = toLong(r[0]);
-            Long count = toLong(r[1]);
-            categoryAvailableRoomsCache.put(categoryId, count);
-        }
-    }
-
 // LOAD: admissions per year/month
     private void loadAdmissionsIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
+        Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT FUNCTION('YEAR', pe.dateOfAdmission), ")
                 .append("FUNCTION('MONTH', pe.dateOfAdmission), ")
@@ -412,41 +391,84 @@ public class InwardReportController implements Serializable {
                 .append("FROM PatientEncounter pe ")
                 .append("WHERE pe.retired = false ")
                 .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ");
-        appendInstitutionSiteDepartmentFilters(jpql, "pe");
+
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if (institution != null) {
+            jpql.append(" and pe.institution = :ins ");
+            params.put("ins", institution);
+        }
+        if (site != null) {
+            jpql.append(" and pe.department.site = :site ");
+            params.put("site", site);
+        }
+        if (department != null) {
+            jpql.append(" and pe.department = :dep ");
+            params.put("dep", department);
+        }
+        if (roomCategories != null && !roomCategories.isEmpty()) {
+            jpql.append("AND pe.currentPatientRoom.roomFacilityCharge.roomCategory IN :cat ");
+            params.put("cat", roomCategories);
+        }
+
         jpql.append("GROUP BY FUNCTION('YEAR', pe.dateOfAdmission), FUNCTION('MONTH', pe.dateOfAdmission) ")
                 .append("ORDER BY 1, 2");
 
         List<Object[]> rows = peFacade.findObjectsArrayByJpql(
-                jpql.toString(), buildCommonParams(), TemporalType.TIMESTAMP);
+                jpql.toString(), params, TemporalType.TIMESTAMP);
         for (Object[] r : rows) {
             RoomOccupancyRowDTO row = getOrCreateRow(grid, toInteger(r[0]), toInteger(r[1]));
             row.addAdmissions(toLong(r[2]));
         }
     }
 
-// LOAD: per-category room occupancy days (driven by live roomCategories)
-    private void loadCategoryOccupancyIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
+    private void loadRoomCategoryMetricsIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
+        categoryAvailableRoomsCache = new HashMap<>();
+
         if (roomCategories == null || roomCategories.isEmpty()) {
             return;
         }
 
+        Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT FUNCTION('YEAR', pr.admittedAt), ")
                 .append("FUNCTION('MONTH', pr.admittedAt), ")
-                .append("rfc.roomCategory, ") // returns RoomCategory entity
+                .append("rfc.roomCategory, ")
+                .append("pr.patientEncounter.id, ")
                 .append("COUNT(DISTINCT pr.id), ")
-                .append("SUM(FUNCTION('DATEDIFF', COALESCE(pr.dischargedAt, CURRENT_TIMESTAMP), pr.admittedAt) + 1) ")
+                .append("SUM(FUNCTION('DATEDIFF', COALESCE(pr.dischargedAt, CURRENT_TIMESTAMP), pr.admittedAt) + 1), ")
+                .append("MAX(FUNCTION('DATEDIFF', COALESCE(pr.patientEncounter.dateOfDischarge, CURRENT_TIMESTAMP), pr.patientEncounter.dateOfAdmission) + 1), ")
+                .append("(SELECT COUNT(DISTINCT availableRfc.id) ")
+                .append("FROM RoomFacilityCharge availableRfc ")
+                .append("WHERE availableRfc.retired = false ")
+                .append("AND availableRfc.roomCategory = rfc.roomCategory) ")
                 .append("FROM PatientRoom pr ")
                 .append("JOIN pr.roomFacilityCharge rfc ")
                 .append("WHERE pr.retired = false ")
-                .append("AND pr.admittedAt BETWEEN :fd AND :td ")
-                .append("AND rfc.roomCategory IN :categories ");
-        appendInstitutionSiteDepartmentFilters(jpql, "pr.patientEncounter");
-        jpql.append("GROUP BY FUNCTION('YEAR', pr.admittedAt), FUNCTION('MONTH', pr.admittedAt), rfc.roomCategory ")
-                .append("ORDER BY 1, 2, 3");
+                .append("AND pr.admittedAt BETWEEN :fd AND :td ");
+        params.put("fd", fromDate);
+        params.put("td", toDate);
 
-        Map<String, Object> params = buildCommonParams();
-        params.put("categories", roomCategories);                  // List<RoomCategory>
+        if (institution != null) {
+            jpql.append(" and rfc.company = :ins ");
+            params.put("ins", institution);
+        }
+        if (site != null) {
+            jpql.append(" and rfc.department.site = :site ");
+            params.put("site", site);
+        }
+        if (department != null) {
+            jpql.append(" and rfc.department = :dep ");
+            params.put("dep", department);
+        }
+        if (roomCategories != null && !roomCategories.isEmpty()) {
+            jpql.append(" AND rfc.roomCategory IN :cat ");
+            params.put("cat", roomCategories);
+        }
+        jpql.append("GROUP BY FUNCTION('YEAR', pr.admittedAt), FUNCTION('MONTH', pr.admittedAt), ")
+                .append("rfc.roomCategory, pr.patientEncounter.id ")
+                .append("ORDER BY 1, 2, 3");
 
         List<Object[]> rows = patientRoomFacade.findObjectsArrayByJpql(
                 jpql.toString(), params, TemporalType.TIMESTAMP);
@@ -454,10 +476,18 @@ public class InwardReportController implements Serializable {
             Integer year = toInteger(r[0]);
             Integer month = toInteger(r[1]);
             RoomCategory category = (RoomCategory) r[2];
-            Long roomCount = toLong(r[3]);
-            Long dayCount = toLong(r[4]);
+            Long roomCount = toLong(r[4]);
+            Long categoryDays = toLong(r[5]);
+            Long totalLengthOfStayDays = toLong(r[6]);
+            Long availableRooms = toLong(r[7]);
 
-            getOrCreateRow(grid, year, month).addCategoryDays(category, roomCount, dayCount);
+            if (category != null && category.getId() != null) {
+                categoryAvailableRoomsCache.put(category.getId(), availableRooms);
+            }
+
+            RoomOccupancyRowDTO row = getOrCreateRow(grid, year, month);
+            row.addCategoryDays(category, roomCount, categoryDays);
+            row.addCategoryPatientRatioDays(category, categoryDays, totalLengthOfStayDays);
         }
     }
 
@@ -487,34 +517,6 @@ public class InwardReportController implements Serializable {
                 .computeIfAbsent(month, m -> new RoomOccupancyRowDTO(year, month));
     }
 
-    private void appendInstitutionSiteDepartmentFilters(StringBuilder jpql, String alias) {
-        if (institution != null) {
-            jpql.append("AND ").append(alias).append(".institution = :institution ");
-        }
-        if (site != null) {
-            jpql.append("AND ").append(alias).append(".department.site = :site ");
-        }
-        if (department != null) {
-            jpql.append("AND ").append(alias).append(".department = :department ");
-        }
-    }
-
-    private Map<String, Object> buildCommonParams() {
-        Map<String, Object> params = new HashMap<>();
-        params.put("fd", fromDate);
-        params.put("td", toDate);
-        if (institution != null) {
-            params.put("institution", institution);
-        }
-        if (site != null) {
-            params.put("site", site);
-        }
-        if (department != null) {
-            params.put("department", department);
-        }
-        return params;
-    }
-
     /**
      * Sets totalAvailable on each category slot using the id-keyed cache.
      */
@@ -527,7 +529,7 @@ public class InwardReportController implements Serializable {
 
     private void calculateRowDerived(RoomOccupancyRowDTO row, long daysInPeriod) {
         for (RoomCategoryOccupancyDTO cat : row.getCategoryMetrics().values()) {
-            cat.calculateDerived(daysInPeriod);
+            cat.calculateDerived(daysInPeriod, roomOccupancyRatioMode);
         }
         row.getIcuOccupancy().calculateDerived(daysInPeriod);
         row.getWardBedOldOccupancy().calculateDerived(daysInPeriod);
@@ -545,6 +547,22 @@ public class InwardReportController implements Serializable {
 
     public RoomOccupancyRowDTO getRoomOccupancyGrandTotal() {
         return roomOccupancyGrandTotal;
+    }
+
+    public String getRoomOccupancyRatioMode() {
+        return roomOccupancyRatioMode;
+    }
+
+    public void setRoomOccupancyRatioMode(String roomOccupancyRatioMode) {
+        this.roomOccupancyRatioMode = roomOccupancyRatioMode;
+    }
+
+    public String getRoomOccupancyRatioModeAggregatedRoomUtilization() {
+        return RoomCategoryOccupancyDTO.RATIO_MODE_AGGREGATED_ROOM_UTILIZATION;
+    }
+
+    public String getRoomOccupancyRatioModePatientCategoryDuration() {
+        return RoomCategoryOccupancyDTO.RATIO_MODE_PATIENT_CATEGORY_DURATION;
     }
 
     public void fillAdmissionBook() {

@@ -191,7 +191,7 @@
                                                var="site" itemLabel="#{site.name}" itemValue="#{site}"/>
                                 <p:ajax process="phmSite" update="phmDept"/>
                             </p:selectOneMenu>
-                            <p:spacer width="20"/>
+                            
 
                             <!-- Department -->
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -236,6 +236,24 @@
                                                    var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"/>
                                 </p:selectOneMenu>
                             </h:panelGroup>
+                            <p:spacer width="20"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf236;" styleClass="fa mr-2" />
+                                <h:outputLabel value="Room Category" for="rCat" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectCheckboxMenu id="rCat"
+                                                  value="#{inwardReportController.roomCategories}"
+                                                  converter="#{roomCategoryConverter}"
+                                                  styleClass="w-100"
+                                                  label="Select Category"
+                                                  updateLabel="true">
+                                <f:selectItems
+                                    value="#{roomCategoryController.items}"
+                                    var="cat"
+                                    itemLabel="#{cat.name}"
+                                    itemValue="#{cat}" />
+                            </p:selectCheckboxMenu>
 
                         </h:panelGrid>
 
