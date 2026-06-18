@@ -147,14 +147,73 @@ known-good state when it isn't. The previous (DDL-generation-enabled)
 deployment will keep running in that case until the underlying datasource
 issue is fixed.
 
-## After this skill finishes
+### 8. Publish the DDL to the wiki
 
-`$DDL_DIR/createDDL.jdbc` contains the full script. To publish it, update
-the **Database-Schema-DDL-Generation-Guide** wiki page in the sibling
-`../hmis.wiki` repo: replace the `## Full DDL File Contents` code block with
-the new content and update the `## Last Update - YYYY.MM.DD HH.MM -
-(Name)` line above it. Use [publish-wiki](../publish-wiki/SKILL.md) to
-commit and push.
+Write the updated wiki page. The wiki lives in the sibling `../hmis.wiki`
+repo. If that directory does not exist, print a warning and skip steps 8–9
+(the DDL file is still useful locally).
+
+```bash
+WIKI_DIR="$(git rev-parse --show-toplevel)/../hmis.wiki"
+WIKI_FILE="$WIKI_DIR/Database-Schema-DDL-Generation-Guide.md"
+UPDATE_TS="$(date '+%Y.%m.%d %H.%M')"
+AUTHOR="$(git config user.name | awk '{print $NF}')"   # last name only
+
+if [ ! -d "$WIKI_DIR" ]; then
+  echo "WARNING: wiki repo not found at $WIKI_DIR — skipping wiki publish"
+else
+  # Write header + fresh DDL wrapped in a sql fence
+  cat > "$WIKI_FILE" << WIKI_HEADER
+This page explains how to generate and apply the full database schema for the
+application, including all missing tables and fields. This is especially
+useful when setting up a fresh instance of the application or restoring a
+database structure.
+
+## Steps to Generate the DDL File
+
+1. Locate the \`persistence.xml\` file in your project you use for development.
+2. Replace its contents with the configuration from \`persistence_for_database_generation_script.xml\`.
+3. Adjust the values in that file, especially the location where the DDL file should be generated on your computer.
+4. Run the application once. This will generate the full database schema as a DDL script in the specified file location.
+5. Open the generated DDL file and copy its contents.
+6. In the application where you want to update the database, go to **Menu > Administration > Manage Metadata > Add Missing Fields**, paste the copied DDL content into the provided text area, and click the **Update Database** button.
+7. The contents of the latest version of the ddl file is given below so that you need not to generate it yourself.
+
+## Last Update - $UPDATE_TS - ($AUTHOR)
+
+## Full DDL File Contents
+
+\`\`\`sql
+WIKI_HEADER
+  cat "$DDL_DIR/createDDL.jdbc" >> "$WIKI_FILE"
+  printf '\n```\n' >> "$WIKI_FILE"
+  echo "Wiki page written: $WIKI_FILE"
+fi
+```
+
+### 9. Commit and push the wiki
+
+```bash
+if [ -d "$WIKI_DIR" ]; then
+  cd "$WIKI_DIR"
+  # Pull in any concurrent wiki edits; if this file conflicts, keep ours
+  git stash --include-untracked
+  git pull --rebase origin master || true
+  git stash pop || true
+  # Re-apply our version of the DDL page (in case of rebase conflict)
+  git checkout --theirs Database-Schema-DDL-Generation-Guide.md 2>/dev/null || true
+  git add Database-Schema-DDL-Generation-Guide.md
+  git rebase --continue 2>/dev/null || true
+  # Commit (skip if nothing staged, e.g. rebase already applied it)
+  git diff --cached --quiet || git commit -m "docs(wiki): update DDL generation guide with $(date '+%Y-%m-%d') schema"
+  git push origin master
+  cd -
+fi
+```
+
+If the push is rejected again (another concurrent push), re-run the
+`pull --rebase` + `push` cycle once more by hand — two concurrent DDL
+regenerations are rare enough that a single retry is sufficient.
 
 ## Notes
 
