@@ -8,6 +8,7 @@ package com.divudi.service.institution;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.ItemListingStrategy;
+import com.divudi.core.data.dto.bedboard.BedBoardSvgDTO;
 import com.divudi.core.data.dto.department.DepartmentCreateRequestDTO;
 import com.divudi.core.data.dto.department.DepartmentPreferenceDTO;
 import com.divudi.core.data.dto.department.DepartmentRelationshipUpdateDTO;
@@ -151,6 +152,15 @@ public class DepartmentApiService implements Serializable {
         department.setFax(request.getFax());
         department.setEmail(request.getEmail());
 
+        // Bed-board SVG fields (issue #21592) — stored verbatim; sanitised at
+        // render time by BedBoardController.sanitizeSvg().
+        if (request.getSvgParentView() != null) {
+            department.setSvgParentView(request.getSvgParentView());
+        }
+        if (request.getSvgChildView() != null) {
+            department.setSvgChildView(request.getSvgChildView());
+        }
+
         // Set site if provided
         if (request.getSiteId() != null) {
             Institution site = loadAndValidateSite(request.getSiteId());
@@ -250,6 +260,14 @@ public class DepartmentApiService implements Serializable {
 
         if (request.getPharmacyMarginFromPurchaseRate() != null) {
             department.setPharmacyMarginFromPurchaseRate(request.getPharmacyMarginFromPurchaseRate());
+        }
+
+        // Bed-board SVG fields (issue #21592) — stored verbatim.
+        if (request.getSvgParentView() != null) {
+            department.setSvgParentView(request.getSvgParentView());
+        }
+        if (request.getSvgChildView() != null) {
+            department.setSvgChildView(request.getSvgChildView());
         }
 
         // Save updated department and flush so response reflects persisted state
@@ -584,6 +602,9 @@ public class DepartmentApiService implements Serializable {
         response.setPharmacyMarginFromPurchaseRate(department.getPharmacyMarginFromPurchaseRate());
         response.setActive(!department.isRetired());
         response.setCreatedAt(department.getCreatedAt());
+        // Bed-board SVG fields (issue #21592) — returned verbatim.
+        response.setSvgParentView(department.getSvgParentView());
+        response.setSvgChildView(department.getSvgChildView());
 
         // Set institution details
         if (department.getInstitution() != null) {
@@ -605,5 +626,39 @@ public class DepartmentApiService implements Serializable {
 
         response.setMessage(message);
         return response;
+    }
+
+    /**
+     * Read just the bed-board SVG fields of a department (issue #21592).
+     * Returned verbatim — sanitisation happens at render time on the bed board.
+     */
+    public BedBoardSvgDTO getDepartmentSvg(Long id) throws Exception {
+        Department department = loadAndValidateDepartment(id);
+        return new BedBoardSvgDTO(department.getId(), department.getName(),
+                department.getSvgParentView(), department.getSvgChildView());
+    }
+
+    /**
+     * Update just the bed-board SVG fields of a department (issue #21592).
+     * Only the fields present (non-null) in the request are changed; pass an
+     * empty string to clear a drawing. SVG is stored verbatim.
+     */
+    public BedBoardSvgDTO updateDepartmentSvg(Long id, BedBoardSvgDTO request, WebUser user) throws Exception {
+        if (request == null) {
+            throw new Exception("Request body is required");
+        }
+        if (user == null) {
+            throw new Exception("User is required for updating department SVG");
+        }
+        Department department = loadAndValidateDepartment(id);
+        if (request.getSvgParentView() != null) {
+            department.setSvgParentView(request.getSvgParentView());
+        }
+        if (request.getSvgChildView() != null) {
+            department.setSvgChildView(request.getSvgChildView());
+        }
+        departmentFacade.editAndFlush(department);
+        return new BedBoardSvgDTO(department.getId(), department.getName(),
+                department.getSvgParentView(), department.getSvgChildView());
     }
 }
