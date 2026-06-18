@@ -212,9 +212,15 @@ public class InwardRoomApi {
                 room.setFilled(filledVal);
             }
             // Bed-board child-tile SVG (issue #21592) — stored verbatim; sanitised
-            // at render time by BedBoardController.sanitizeSvg().
+            // at render time by BedBoardController.sanitizeSvg(). Non-string is rejected.
             if (body.containsKey("svgChildView")) {
-                room.setSvgChildView(asString(body.get("svgChildView")));
+                Object raw = body.get("svgChildView");
+                if (raw != null && !(raw instanceof String)) {
+                    return errorResponse("Invalid value for 'svgChildView': must be a string", 400);
+                }
+                if (raw != null) {
+                    room.setSvgChildView((String) raw);
+                }
             }
             room.setCreatedAt(new Date());
             room.setCreater(user);
@@ -306,8 +312,16 @@ public class InwardRoomApi {
                 room.setFilled(filledVal);
             }
             // Bed-board child-tile SVG (issue #21592) — stored verbatim.
+            // JSON null = no-op (leave unchanged, matching the service partial-update
+            // semantics); an empty string clears the drawing; non-string is rejected.
             if (body.containsKey("svgChildView")) {
-                room.setSvgChildView(asString(body.get("svgChildView")));
+                Object raw = body.get("svgChildView");
+                if (raw != null && !(raw instanceof String)) {
+                    return errorResponse("Invalid value for 'svgChildView': must be a string", 400);
+                }
+                if (raw != null) {
+                    room.setSvgChildView((String) raw);
+                }
             }
 
             roomFacade.edit(room);
@@ -416,8 +430,15 @@ public class InwardRoomApi {
             if (body == null) {
                 return errorResponse("Request body is required", 400);
             }
+            // JSON null = no-op (leave unchanged); empty string clears; non-string rejected.
             if (body.containsKey("svgChildView")) {
-                room.setSvgChildView(asString(body.get("svgChildView")));
+                Object raw = body.get("svgChildView");
+                if (raw != null && !(raw instanceof String)) {
+                    return errorResponse("Invalid value for 'svgChildView': must be a string", 400);
+                }
+                if (raw != null) {
+                    room.setSvgChildView((String) raw);
+                }
             }
             roomFacade.edit(room);
             return successResponse(svgDto(room));

@@ -314,6 +314,10 @@ public class SiteApi {
             if (request == null) {
                 return errorResponse("Request body is required", 400);
             }
+            // Reject a payload id that contradicts the path id (mirrors updateDepartment)
+            if (request.getId() != null && !request.getId().equals(id)) {
+                return errorResponse("Path id and payload id mismatch", 400);
+            }
             BedBoardSvgDTO response = siteService.updateSiteSvg(id, request, user);
             return successResponse(response);
         } catch (Exception e) {

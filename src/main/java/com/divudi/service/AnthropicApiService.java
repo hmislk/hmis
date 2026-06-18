@@ -636,8 +636,8 @@ public class AnthropicApiService implements Serializable {
                         + "viewBox=\"0 0 1000 600\" grid: svgParentView is the entity's own empty floor-plan "
                         + "canvas (shown when you navigate into it), and svgChildView is the small shape "
                         + "showing how this entity looks as a tile inside its parent's canvas. "
-                        + "Sites and departments have both views; a room (leaf) has only svgChildView. "
-                        + "Methods: GET_SITE, SET_SITE, GET_DEPARTMENT, SET_DEPARTMENT, GET_ROOM, SET_ROOM. "
+                        + "Sites, institutions, and departments have both views; a room (leaf) has only svgChildView. "
+                        + "Methods: GET_SITE, SET_SITE, GET_INSTITUTION, SET_INSTITUTION, GET_DEPARTMENT, SET_DEPARTMENT, GET_ROOM, SET_ROOM. "
                         + "On SET, only the fields you supply are changed; pass an empty string to clear a drawing. "
                         + "SVG is stored verbatim and sanitised when the bed board renders it. "
                         + "Authoring guidance (viewBox, copy-paste examples, draw-your-own primer) is on the "
@@ -649,9 +649,10 @@ public class AnthropicApiService implements Serializable {
                                         .add("type", "string")
                                         .add("enum", Json.createArrayBuilder()
                                                 .add("GET_SITE").add("SET_SITE")
+                                                .add("GET_INSTITUTION").add("SET_INSTITUTION")
                                                 .add("GET_DEPARTMENT").add("SET_DEPARTMENT")
                                                 .add("GET_ROOM").add("SET_ROOM"))
-                                        .add("description", "Operation to perform. SITE targets /api/sites, DEPARTMENT targets /api/departments, ROOM targets /api/inward/rooms."))
+                                        .add("description", "Operation to perform. SITE targets /api/sites, INSTITUTION targets /api/institutions, DEPARTMENT targets /api/departments, ROOM targets /api/inward/rooms."))
                                 .add("id", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Entity id (site/department/room). Required for all methods."))
@@ -1335,7 +1336,9 @@ public class AnthropicApiService implements Serializable {
                     String roomId         = toolInput.containsKey("roomId")                         ? toolInput.getString("roomId", "")                         : "";
                     String departmentId   = toolInput.containsKey("departmentId")                   ? toolInput.getString("departmentId", "")                   : "";
                     String filled         = toolInput.containsKey("filled")                         ? toolInput.getString("filled", "")                         : "";
-                    String svgChildView   = toolInput.containsKey("svgChildView")                   ? toolInput.getString("svgChildView", "")                   : "";
+                    // null = caller omitted the field (leave unchanged); a non-null
+                    // value, including "", is forwarded ("" clears the drawing).
+                    String svgChildView   = toolInput.containsKey("svgChildView")                   ? toolInput.getString("svgChildView", "")                   : null;
                     String roomCharge     = toolInput.containsKey("roomCharge")                     ? toolInput.getString("roomCharge", "")                     : "";
                     String maintCharge    = toolInput.containsKey("maintananceCharge")              ? toolInput.getString("maintananceCharge", "")              : "";
                     String linenCharge    = toolInput.containsKey("linenCharge")                    ? toolInput.getString("linenCharge", "")                    : "";
@@ -2431,7 +2434,7 @@ public class AnthropicApiService implements Serializable {
                     if (description != null && !description.isEmpty()) bodyMap.put("description", description);
                     if (roomCategoryId != null && !roomCategoryId.isEmpty()) bodyMap.put("roomCategoryId", Long.parseLong(roomCategoryId));
                     if (filled != null && !filled.isEmpty()) bodyMap.put("filled", Boolean.parseBoolean(filled));
-                    if (svgChildView != null && !svgChildView.isEmpty()) bodyMap.put("svgChildView", svgChildView);
+                    if (svgChildView != null) bodyMap.put("svgChildView", svgChildView);
                     String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
                     request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/rooms"))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
@@ -2447,7 +2450,7 @@ public class AnthropicApiService implements Serializable {
                     if (description != null && !description.isEmpty()) bodyMap.put("description", description);
                     if (roomCategoryId != null && !roomCategoryId.isEmpty()) bodyMap.put("roomCategoryId", Long.parseLong(roomCategoryId));
                     if (filled != null && !filled.isEmpty()) bodyMap.put("filled", Boolean.parseBoolean(filled));
-                    if (svgChildView != null && !svgChildView.isEmpty()) bodyMap.put("svgChildView", svgChildView);
+                    if (svgChildView != null) bodyMap.put("svgChildView", svgChildView);
                     String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
                     request = HttpRequest.newBuilder().uri(URI.create(baseUrl + "/api/inward/rooms/" + id))
                             .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey)
@@ -2583,6 +2586,9 @@ public class AnthropicApiService implements Serializable {
             if (method.endsWith("_SITE")) {
                 entityPath = "/api/sites/";
                 isRoom = false;
+            } else if (method.endsWith("_INSTITUTION")) {
+                entityPath = "/api/institutions/";
+                isRoom = false;
             } else if (method.endsWith("_DEPARTMENT")) {
                 entityPath = "/api/departments/";
                 isRoom = false;
@@ -2601,13 +2607,22 @@ public class AnthropicApiService implements Serializable {
                         .timeout(Duration.ofSeconds(15)).header("Finance", hmisApiKey).GET().build();
             } else if (method.startsWith("SET_")) {
                 java.util.Map<String, Object> bodyMap = new java.util.LinkedHashMap<>();
-                // Only include fields the caller actually supplied (null = omit).
+                // Only include fields the caller actually supplied (null = omit, so
+                // the entity field is left unchanged). A non-null value — including
+                // an empty string, which clears the drawing — is forwarded.
                 // A room has no parent canvas, so svgParentView is ignored for rooms.
                 if (!isRoom && svgParentView != null) {
                     bodyMap.put("svgParentView", svgParentView);
                 }
                 if (svgChildView != null) {
                     bodyMap.put("svgChildView", svgChildView);
+                }
+                // Reject an empty SET so the tool can't silently report success
+                // without changing anything.
+                if (bodyMap.isEmpty()) {
+                    return isRoom
+                            ? "Error: svgChildView is required for " + method + " (rooms have no parent canvas)."
+                            : "Error: svgParentView or svgChildView is required for " + method + ".";
                 }
                 String bodyJson = new com.google.gson.Gson().toJson(bodyMap);
                 request = HttpRequest.newBuilder().uri(URI.create(url))
@@ -2621,6 +2636,9 @@ public class AnthropicApiService implements Serializable {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             return "HTTP " + response.statusCode() + ": " + response.body();
 
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Bed Board SVG API call interrupted.";
         } catch (Exception e) {
             LOG.log(java.util.logging.Level.WARNING, "callBedBoardSvgApi error: {0}", e.getMessage());
             return "Error calling Bed Board SVG API: " + e.getMessage();
@@ -3478,8 +3496,9 @@ public class AnthropicApiService implements Serializable {
           .append("Methods: GET_SITE / SET_SITE / GET_DEPARTMENT / SET_DEPARTMENT / GET_ROOM / SET_ROOM (id required). ")
           .append("On SET, only the fields you pass are changed; pass an empty string to clear a drawing. ")
           .append("SVG is stored verbatim and sanitised when the bed board renders it. ")
-          .append("Before authoring drawings, read the wiki page 'Inpatient — Bed Board' (via fetch_wiki_file or web) — ")
-          .append("it documents the viewBox, the site→building→floor→unit hierarchy, copy-paste SVG examples, and a ")
+          .append("Before authoring drawings, consult the bed-board authoring guidance on the wiki page ")
+          .append("'Inpatient — Bed Board' (https://github.com/hmislk/hmis/wiki/Inpatient-Bed-Board); if you cannot reach it, ask the user to paste it. ")
+          .append("The guidance documents the viewBox, the site→building→floor→unit hierarchy, copy-paste SVG examples, and a ")
           .append("draw-your-own-shapes primer (rect / ellipse / text / polygon). The same SVG fields are also accepted on ")
           .append("the normal create/update bodies of /api/sites, /api/departments, and /api/inward/rooms, but this tool is the focused way to read or set just the drawings. ")
           .append("Always confirm with the user before any SET.\n\n");
