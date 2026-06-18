@@ -211,6 +211,11 @@ public class InwardRoomApi {
                 }
                 room.setFilled(filledVal);
             }
+            // Bed-board child-tile SVG (issue #21592) — stored verbatim; sanitised
+            // at render time by BedBoardController.sanitizeSvg().
+            if (body.containsKey("svgChildView")) {
+                room.setSvgChildView(asString(body.get("svgChildView")));
+            }
             room.setCreatedAt(new Date());
             room.setCreater(user);
             roomFacade.create(room);
@@ -300,6 +305,10 @@ public class InwardRoomApi {
                 }
                 room.setFilled(filledVal);
             }
+            // Bed-board child-tile SVG (issue #21592) — stored verbatim.
+            if (body.containsKey("svgChildView")) {
+                room.setSvgChildView(asString(body.get("svgChildView")));
+            }
 
             roomFacade.edit(room);
             return successResponse(toDto(room));
@@ -352,9 +361,82 @@ public class InwardRoomApi {
         }
     }
 
+    /**
+     * Get the bed-board child-tile SVG of a room (issue #21592).
+     * A Room only has svgChildView (no parent canvas) — it is always a leaf in
+     * the bed-board hierarchy.
+     * GET /api/inward/rooms/{id}/svg
+     */
+    @GET
+    @Path("/{id}/svg")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getRoomSvg(@PathParam("id") Long id) {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            Room room = roomFacade.find(id);
+            if (room == null || room.isRetired()) {
+                return errorResponse("Room not found: " + id, 404);
+            }
+            return successResponse(svgDto(room));
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
+     * Set the bed-board child-tile SVG of a room (issue #21592).
+     * Only svgChildView present in the body is changed; pass an empty string to
+     * clear the drawing. SVG is stored verbatim.
+     * PUT /api/inward/rooms/{id}/svg
+     * Body: { "svgChildView": "..." }
+     */
+    @PUT
+    @Path("/{id}/svg")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateRoomSvg(@PathParam("id") Long id, String requestBody) {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            Room room = roomFacade.find(id);
+            if (room == null || room.isRetired()) {
+                return errorResponse("Room not found: " + id, 404);
+            }
+            Map<?, ?> body;
+            try {
+                body = gson.fromJson(requestBody, Map.class);
+            } catch (JsonSyntaxException e) {
+                return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+            }
+            if (body == null) {
+                return errorResponse("Request body is required", 400);
+            }
+            if (body.containsKey("svgChildView")) {
+                room.setSvgChildView(asString(body.get("svgChildView")));
+            }
+            roomFacade.edit(room);
+            return successResponse(svgDto(room));
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
     // =========================================================================
     // Helpers
     // =========================================================================
+
+    private Map<String, Object> svgDto(Room r) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("id", r.getId());
+        row.put("name", r.getName());
+        row.put("svgChildView", r.getSvgChildView());
+        return row;
+    }
 
     private Map<String, Object> toDto(Room r) {
         Map<String, Object> row = new LinkedHashMap<>();
@@ -364,6 +446,8 @@ public class InwardRoomApi {
         row.put("description", r.getDescription());
         row.put("filled", r.isFilled());
         row.put("retired", r.isRetired());
+        // Bed-board child-tile SVG (issue #21592) — returned verbatim.
+        row.put("svgChildView", r.getSvgChildView());
         if (r.getParentCategory() != null) {
             Map<String, Object> cat = new LinkedHashMap<>();
             cat.put("id", r.getParentCategory().getId());

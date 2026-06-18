@@ -7,6 +7,7 @@ package com.divudi.ws.institution;
 
 import com.divudi.bean.common.ApiKeyController;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.dto.bedboard.BedBoardSvgDTO;
 import com.divudi.core.data.dto.config.DepartmentConfigDTO;
 import com.divudi.core.data.dto.config.DepartmentConfigUpdateDTO;
 import com.divudi.core.data.dto.department.DepartmentCreateRequestDTO;
@@ -513,6 +514,73 @@ public class DepartmentApi {
             }
             if (e.getMessage() != null && e.getMessage().startsWith("Invalid ")) {
                 return errorResponse(e.getMessage(), 400);
+            }
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get the bed-board SVG drawings of a department (issue #21592)
+     * GET /api/departments/{id}/svg
+     */
+    @GET
+    @Path("/{id}/svg")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getDepartmentSvg(@PathParam("id") Long id) {
+        try {
+            String key = requestContext.getHeader("Finance");
+            WebUser user = validateApiKey(key);
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            if (id == null) {
+                return errorResponse("Department ID is required", 400);
+            }
+            BedBoardSvgDTO result = departmentService.getDepartmentSvg(id);
+            return successResponse(result);
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("not found")) {
+                return errorResponse(e.getMessage(), 404);
+            }
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
+     * Set the bed-board SVG drawings of a department (issue #21592).
+     * Only fields present in the body are changed; pass an empty string to clear
+     * a drawing. SVG is stored verbatim.
+     * PUT /api/departments/{id}/svg
+     * Body: { "svgParentView": "...", "svgChildView": "..." }
+     */
+    @PUT
+    @Path("/{id}/svg")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateDepartmentSvg(@PathParam("id") Long id, String requestBody) {
+        try {
+            String key = requestContext.getHeader("Finance");
+            WebUser user = validateApiKey(key);
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            if (id == null) {
+                return errorResponse("Department ID is required", 400);
+            }
+            BedBoardSvgDTO request;
+            try {
+                request = gson.fromJson(requestBody, BedBoardSvgDTO.class);
+            } catch (JsonSyntaxException e) {
+                return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+            }
+            if (request == null) {
+                return errorResponse("Request body is required", 400);
+            }
+            BedBoardSvgDTO response = departmentService.updateDepartmentSvg(id, request, user);
+            return successResponse(response);
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("not found")) {
+                return errorResponse(e.getMessage(), 404);
             }
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
