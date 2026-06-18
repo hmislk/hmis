@@ -156,6 +156,11 @@ public class UserManagementApi {
             if (!webUserFacade.findByJpql("select w from WebUser w where w.retired=false and lower(w.name)=:n", Collections.singletonMap("n", normalizedName.toLowerCase())).isEmpty()) {
                 return errorResponse("User name already exists", 400);
             }
+            Staff linkedStaff = null;
+            if (req.getStaffId() != null) {
+                linkedStaff = staffFacade.find(req.getStaffId());
+                if (linkedStaff == null || linkedStaff.isRetired()) return errorResponse("Staff not found: " + req.getStaffId(), 404);
+            }
             WebUser u = new WebUser();
             Person p = new Person();
             p.setName(req.getPersonName() != null ? req.getPersonName() : normalizedName);
@@ -164,10 +169,8 @@ public class UserManagementApi {
             p.setCreater(apiUser);
             personFacade.create(p);
             u.setWebUserPerson(p);
-            if (req.getStaffId() != null) {
-                Staff staff = staffFacade.find(req.getStaffId());
-                if (staff == null || staff.isRetired()) return errorResponse("Staff not found: " + req.getStaffId(), 404);
-                u.setStaff(staff);
+            if (linkedStaff != null) {
+                u.setStaff(linkedStaff);
             }
             applyUserChanges(u, req, apiUser, true);
             webUserFacade.create(u);
@@ -612,8 +615,13 @@ public class UserManagementApi {
                     if (req != null && req.containsKey("departmentIds")) {
                         Object deptIdsObj = req.get("departmentIds");
                         if (deptIdsObj instanceof List) {
-                            for (Object item : (List<?>) deptIdsObj) {
-                                if (item instanceof Number) requestedDeptIds.add(((Number) item).longValue());
+                            List<?> rawList = (List<?>) deptIdsObj;
+                            for (Object item : rawList) {
+                                if (item instanceof Number) {
+                                    requestedDeptIds.add(((Number) item).longValue());
+                                } else {
+                                    return errorResponse("departmentIds must be an array of integers, got: " + item, 400);
+                                }
                             }
                         }
                     }
