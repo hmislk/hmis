@@ -2590,7 +2590,7 @@ public class InwardBeanController implements Serializable {
                 Department dept = item.getDepartment() != null ? item.getDepartment()
                         : (bi.getBill() != null ? bi.getBill().getDepartment() : null);
                 PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(bi, svcValue, dept,
-                        patientEncounter.getPaymentMethod(), cc);
+                        patientEncounter.getPaymentMethod(), cc, patientEncounter.getAdmissionType());
                 if (ccMatrix != null) {
                     effectivePriceMatrix = ccMatrix;
                 }
@@ -2688,7 +2688,7 @@ public class InwardBeanController implements Serializable {
             com.divudi.core.entity.Institution creditCompany = resolveSingleCreditCompany(patientEncounter);
             if (creditCompany != null) {
                 PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(billItem, serviceValue, matrixDepartment,
-                        patientEncounter.getPaymentMethod(), creditCompany);
+                        patientEncounter.getPaymentMethod(), creditCompany, patientEncounter.getAdmissionType());
                 if (ccMatrix != null) {
                     effectivePriceMatrix = ccMatrix;
                 }
@@ -2717,7 +2717,7 @@ public class InwardBeanController implements Serializable {
             com.divudi.core.entity.Institution creditCompany = resolveSingleCreditCompany(patientEncounter);
             if (creditCompany != null) {
                 PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(billFee.getBillItem(), serviceValue,
-                        matrixDepartment, patientEncounter.getPaymentMethod(), creditCompany);
+                        matrixDepartment, patientEncounter.getPaymentMethod(), creditCompany, patientEncounter.getAdmissionType());
                 if (ccMatrix != null) {
                     effectivePriceMatrix = ccMatrix;
                 }
