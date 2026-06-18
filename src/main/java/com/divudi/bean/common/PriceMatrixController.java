@@ -159,9 +159,9 @@ public class PriceMatrixController implements Serializable {
     //
     // Mirror the existing fetchInwardMargin chain but thread the bill's
     // admission type through to the admission-type-aware getInwardPriceAdjustment
-    // lookups. A null admissionType degrades to the existing wildcard behaviour,
-    // so callers that have no admission context can simply pass null (or keep
-    // using the legacy overloads).
+    // lookups. A null admissionType restricts the lookup to wildcard (NULL)
+    // rows only — admission-type-specific rows are never returned without an
+    // admission context — so callers with no admission context pass null safely.
     // =========================================================================
 
     public PriceMatrix fetchInwardMargin(BillItem billItem, double serviceValue, Department department, PaymentMethod paymentMethod, AdmissionType admissionType) {
@@ -169,9 +169,6 @@ public class PriceMatrixController implements Serializable {
     }
 
     public PriceMatrix fetchInwardMargin(Item item, double serviceValue, Department department, PaymentMethod paymentMethod, AdmissionType admissionType) {
-        if (admissionType == null) {
-            return fetchInwardMargin(item, serviceValue, department, paymentMethod);
-        }
         boolean isPaymentMethodAllowedInInwardMatrix = configOptionApplicationController.getBooleanValueByKey("Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation", false);
         Category category = resolveInwardMatrixCategory(item);
         PriceMatrix inwardPriceAdjustment;
@@ -195,9 +192,6 @@ public class PriceMatrixController implements Serializable {
     }
 
     public PriceMatrix fetchInwardMargin(Item item, double serviceValue, Department department, PaymentMethod paymentMethod, Institution creditCompany, AdmissionType admissionType) {
-        if (admissionType == null) {
-            return fetchInwardMargin(item, serviceValue, department, paymentMethod, creditCompany);
-        }
         if (creditCompany != null) {
             PriceMatrix result = fetchInwardMarginWithCreditCompany(item, serviceValue, department, paymentMethod, creditCompany, admissionType);
             if (result != null) {
@@ -367,31 +361,43 @@ public class PriceMatrixController implements Serializable {
         return getPriceMatrixFacade().findByJpql(jpql, hm, 2);
     }
 
-    public InwardPriceAdjustment getInwardPriceAdjustment(Department department, double dbl, Category category, AdmissionType admissionType) {
+    /**
+     * Builds the admission-type WHERE/ORDER fragment for inward margin lookups.
+     *
+     * When {@code admissionType} is null (no admission context) the lookup must
+     * still exclude admission-type-specific rows — those apply ONLY to their
+     * admission type — so it restricts to wildcard (NULL) rows. When an
+     * admission type is supplied, both the matching specific row and the
+     * wildcard row are eligible, with the specific row ordered first so it wins.
+     */
+    private String admissionTypePredicate(AdmissionType admissionType) {
         if (admissionType == null) {
-            return getInwardPriceAdjustment(department, dbl, category);
+            return " and a.admissionType is null";
         }
+        return " and (a.admissionType=:at or a.admissionType is null)"
+                + " order by case when a.admissionType is null then 1 else 0 end";
+    }
+
+    public InwardPriceAdjustment getInwardPriceAdjustment(Department department, double dbl, Category category, AdmissionType admissionType) {
         String sql = "select a from InwardPriceAdjustment a "
                 + " where a.retired=false"
                 + " and a.category=:cat "
                 + " and  a.department=:dep"
                 + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)"
                 + " and a.creditCompany is null"
-                + " and (a.admissionType=:at or a.admissionType is null)"
-                + " order by case when a.admissionType is null then 1 else 0 end";
+                + admissionTypePredicate(admissionType);
         HashMap hm = new HashMap();
         hm.put("dep", department);
         hm.put("frPrice", dbl);
         hm.put("tPrice", dbl);
         hm.put("cat", category);
-        hm.put("at", admissionType);
+        if (admissionType != null) {
+            hm.put("at", admissionType);
+        }
         return firstInwardPriceAdjustment(findInwardPriceAdjustments(sql, hm));
     }
 
     public InwardPriceAdjustment getInwardPriceAdjustment(Department department, double dbl, Category category, PaymentMethod paymentMethod, AdmissionType admissionType) {
-        if (admissionType == null) {
-            return getInwardPriceAdjustment(department, dbl, category, paymentMethod);
-        }
         String sql = "select a from InwardPriceAdjustment a "
                 + " where a.retired=false"
                 + " and a.category=:cat "
@@ -399,22 +405,20 @@ public class PriceMatrixController implements Serializable {
                 + " and (a.fromPrice< :frPrice and a.toPrice >:tPrice)"
                 + " and a.paymentMethod=:pm"
                 + " and a.creditCompany is null"
-                + " and (a.admissionType=:at or a.admissionType is null)"
-                + " order by case when a.admissionType is null then 1 else 0 end";
+                + admissionTypePredicate(admissionType);
         HashMap hm = new HashMap();
         hm.put("pm", paymentMethod);
         hm.put("dep", department);
         hm.put("frPrice", dbl);
         hm.put("tPrice", dbl);
         hm.put("cat", category);
-        hm.put("at", admissionType);
+        if (admissionType != null) {
+            hm.put("at", admissionType);
+        }
         return firstInwardPriceAdjustment(findInwardPriceAdjustments(sql, hm));
     }
 
     public InwardPriceAdjustment getInwardPriceAdjustment(Department department, double dbl, Category category, Institution creditCompany, AdmissionType admissionType) {
-        if (admissionType == null) {
-            return getInwardPriceAdjustment(department, dbl, category, creditCompany);
-        }
         if (creditCompany == null) {
             return getInwardPriceAdjustment(department, dbl, category, admissionType);
         }
@@ -424,22 +428,20 @@ public class PriceMatrixController implements Serializable {
                 + " and a.department=:dep"
                 + " and (a.fromPrice < :frPrice and a.toPrice > :tPrice)"
                 + " and a.creditCompany=:cc"
-                + " and (a.admissionType=:at or a.admissionType is null)"
-                + " order by case when a.admissionType is null then 1 else 0 end";
+                + admissionTypePredicate(admissionType);
         HashMap hm = new HashMap();
         hm.put("dep", department);
         hm.put("frPrice", dbl);
         hm.put("tPrice", dbl);
         hm.put("cat", category);
         hm.put("cc", creditCompany);
-        hm.put("at", admissionType);
+        if (admissionType != null) {
+            hm.put("at", admissionType);
+        }
         return firstInwardPriceAdjustment(findInwardPriceAdjustments(sql, hm));
     }
 
     public InwardPriceAdjustment getInwardPriceAdjustment(Department department, double dbl, Category category, PaymentMethod paymentMethod, Institution creditCompany, AdmissionType admissionType) {
-        if (admissionType == null) {
-            return getInwardPriceAdjustment(department, dbl, category, paymentMethod, creditCompany);
-        }
         if (creditCompany == null) {
             return getInwardPriceAdjustment(department, dbl, category, paymentMethod, admissionType);
         }
@@ -450,8 +452,7 @@ public class PriceMatrixController implements Serializable {
                 + " and (a.fromPrice < :frPrice and a.toPrice > :tPrice)"
                 + " and a.paymentMethod=:pm"
                 + " and a.creditCompany=:cc"
-                + " and (a.admissionType=:at or a.admissionType is null)"
-                + " order by case when a.admissionType is null then 1 else 0 end";
+                + admissionTypePredicate(admissionType);
         HashMap hm = new HashMap();
         hm.put("pm", paymentMethod);
         hm.put("dep", department);
@@ -459,7 +460,9 @@ public class PriceMatrixController implements Serializable {
         hm.put("tPrice", dbl);
         hm.put("cat", category);
         hm.put("cc", creditCompany);
-        hm.put("at", admissionType);
+        if (admissionType != null) {
+            hm.put("at", admissionType);
+        }
         return firstInwardPriceAdjustment(findInwardPriceAdjustments(sql, hm));
     }
 
