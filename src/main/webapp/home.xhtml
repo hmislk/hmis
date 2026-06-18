@@ -2146,6 +2146,61 @@
                     </h:form>
                 </h:panelGroup>
 
+                <!-- Patient Lookup & Registration -->
+                <h:panelGroup rendered="#{ui.icon eq 'Patient_Lookup_Registration' and webUserController.hasPrivilege('OpdPreBilling')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Patient_Lookup_Registration" value="Patient Lookup &amp; Registration" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Patient_Lookup_Registration" ajax="false" action="#{opdBillController.navigateToSearchPatients()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search-patient.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Patient Lookup &amp; Registration"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Initiate Transfer -->
+                <h:panelGroup rendered="#{ui.icon eq 'Initiate_Transfer' and webUserController.hasPrivilege('InwardRoomTransferInitiate')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Initiate_Transfer" value="Initiate Transfer" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Initiate_Transfer" ajax="false" action="#{patientTransferController.navigateToInitiateTransfer()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/transfer.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Initiate Transfer"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Accept Patients -->
+                <h:panelGroup rendered="#{ui.icon eq 'Accept_Patients' and webUserController.hasPrivilege('InwardRoomPatientAccept')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Accept_Patients" value="Accept Patients" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Accept_Patients" ajax="false" action="#{patientTransferController.navigateToPatientAccept()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/add-patient.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Accept Patients"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Accept Returns from Ward -->
+                <h:panelGroup rendered="#{ui.icon eq 'Accept_Returns_from_Ward' and webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Accept_Returns_from_Ward" value="Accept Returns from Ward" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Accept_Returns_from_Ward" ajax="false" action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/truck-solid.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Accept Returns from Ward"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Nursing WorkBench -->
+                <h:panelGroup rendered="#{ui.icon eq 'Nursing_Work_Bench' and webUserController.hasPrivilege('NursingWorkBench')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Nursing_Work_Bench" value="Nursing WorkBench" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Nursing_Work_Bench" ajax="false" action="#{nursingWorkBenchController.navigatetoNursingWorkBench()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/health-worker-form.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Nursing WorkBench"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
                     </ui:repeat>
                 </div>
             </p:panel>
