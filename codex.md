@@ -8,13 +8,12 @@ This file mirrors the repository-level Codex operating guidance and is intended 
 
 ## Codex Operating Summary
 1. Use the main checkout directory (no worktree isolation).
-2. Do not auto-run commit/build/push/deploy actions unless explicitly requested.
-3. Prefer JPQL; use native SQL only when required by proven constraints.
-4. Preserve backward compatibility (intentional typo fields, composite component names, existing constructor signatures).
-5. Use `./detect-maven.sh test` when tests are needed; JSF-only changes do not require compile/tests.
-6. Validate `persistence.xml` placeholders before push (`${JDBC_DATASOURCE}`, `${JDBC_AUDIT_DATASOURCE}`) and avoid hardcoded local paths.
-7. Target `development` for normal PRs; production hotfix branches must end with `-hotfix`.
-8. Include issue auto-close keywords (`Closes #N`) in commit/PR messages.
+2. Prefer JPQL; use native SQL only when required by proven constraints.
+3. Preserve backward compatibility (intentional typo fields, composite component names, existing constructor signatures).
+4. Use `./detect-maven.sh test` when tests are needed; JSF-only changes do not require compile/tests.
+5. Validate `persistence.xml` placeholders before push (`${JDBC_DATASOURCE}`, `${JDBC_AUDIT_DATASOURCE}`) and avoid hardcoded local paths.
+6. Target `development` for normal PRs; production hotfix branches must end with `-hotfix`.
+7. Include issue auto-close keywords (`Closes #N`) in commit/PR messages.
 
 ## Key References
 - `AGENTS.md`

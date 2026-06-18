@@ -816,7 +816,7 @@
                                         </td>
                                         <td>
                                             <table>
-                                                <ui:repeat value="#{cc.attrs.bill.backwardReferenceBills}" var="b">
+                                                <ui:repeat value="#{cc.attrs.bill.patientEncounter.finalBill ne null ? cc.attrs.bill.patientEncounter.finalBill.backwardReferenceBills : cc.attrs.bill.backwardReferenceBills}" var="b">
                                                     <h:panelGroup rendered="#{(b.netTotal ne 0 )
                                                                               and
                                                                               ((b.cancelled eq false
@@ -826,13 +826,14 @@
                                                                               and b.refundedBill eq null
                                                                               and b.billClass eq 'class com.divudi.core.entity.RefundBill')) and b.billTypeAtomic ne 'INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED'}">
                                                         <div class="d-flex gap-3" style="font-size: 11px;">
-                                                            <h:outputLabel value="#{b.comments}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Comments of Payments on Final Bill On Final Bill Print',false)}"/>
                                                             <h:outputLabel value="#{b.deptId}"/>
                                                             <h:outputLabel value="#{b.paymentMethod}" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Payment Method on Payments on Final Bill On Final Bill Print',false)}"/>
                                                             <h:outputLabel value="#{b.netTotal}"
-                                                                           style="width: 30px; text-align: right;">
+                                                                           style="text-align: right;">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputLabel>
+                                                            <h:outputLabel value="(#{b.comments})" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Comments of Payments on Final Bill On Final Bill Print',false) and b.comments ne null and b.comments ne ''}"/>
+
                                                         </div>
 
                                                     </h:panelGroup>
@@ -858,7 +859,7 @@
                                         </td>
                                         <td>
                                             <table>
-                                                <ui:repeat value="#{cc.attrs.bill.backwardReferenceBills}" var="b">
+                                                <ui:repeat value="#{cc.attrs.bill.patientEncounter.finalBill ne null ? cc.attrs.bill.patientEncounter.finalBill.backwardReferenceBills : cc.attrs.bill.backwardReferenceBills}" var="b">
                                                     <h:panelGroup rendered="#{(b.netTotal ne 0 )
                                                                               and
                                                                               ((b.cancelled eq false

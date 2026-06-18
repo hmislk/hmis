@@ -449,11 +449,18 @@
                     </p:submenu>
 
                     <p:submenu label="Room" icon="fa fa-door-open" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
-                        <p:menuitem 
-                            ajax="false" 
-                            action="#{admissionController.navigateToRoomOccupancy()}" 
-                            value="Room Occupancy" 
-                            icon="fa fa-bed" 
+                        <p:menuitem
+                            ajax="false"
+                            action="#{admissionController.navigateToRoomOccupancy()}"
+                            value="Room Occupancy"
+                            icon="fa fa-bed"
+                            rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" >
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{admissionController.navigateToBedBoard()}"
+                            value="Bed Board"
+                            icon="fa fa-th"
                             rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" >
                         </p:menuitem>
                         <p:menuitem 
@@ -1380,12 +1387,19 @@
                                 actionListener="#{searchController.makeListNull}"
                                 rendered="#{webUserController.hasPrivilege('TheatreBilling')}"/>
 
-                    <p:menuitem 
-                        ajax="false" 
-                        action="/pharmacy/pharmacy_analytics?faces-redirect=true"  
-                        value="Theatre Analytics" 
-                        icon="pi pi-chart-bar" 
+                    <p:menuitem
+                        ajax="false"
+                        action="/pharmacy/pharmacy_analytics?faces-redirect=true"
+                        value="Theatre Analytics"
+                        icon="pi pi-chart-bar"
                         rendered="#{webUserController.hasPrivilege('TheaterReports')}" ></p:menuitem>
+
+                    <p:menuitem
+                        ajax="false"
+                        action="#{inwardReservationController.navigateToTheatreScheduleCalendar()}"
+                        value="Theatre Schedule"
+                        icon="fa fa-calendar-alt"
+                        rendered="#{webUserController.hasPrivilege('Theatre')}"/>
                 </p:submenu>
 
                 <!--            Store Section-->

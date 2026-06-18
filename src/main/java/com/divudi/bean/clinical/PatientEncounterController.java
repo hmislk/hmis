@@ -1469,6 +1469,8 @@ public class PatientEncounterController implements Serializable {
         // Update prescription document
         updateOrGeneratePrescription();
 
+        setEncounterMedicine(null);
+
         // Show success message
         if (addedCount > 0) {
             JsfUtil.addSuccessMessage(addedCount + " favourite medicine(s) added from " + lookupMethod);
@@ -1508,11 +1510,7 @@ public class PatientEncounterController implements Serializable {
 
         // Now find and add medicines for this diagnosis based on age group
         Patient patient = current.getPatient();
-        System.out.println("DEBUG: Starting medicine lookup for patient: " + (patient != null ? patient.getPerson().getNameWithTitle() : "NULL"));
-        System.out.println("DEBUG: Selected diagnosis: " + (selectedDiagnosis != null ? selectedDiagnosis.getName() : "NULL"));
-
         if (patient == null) {
-            System.out.println("DEBUG: Patient is null, stopping medicine lookup");
             JsfUtil.addSuccessMessage("Diagnosis added");
             return;
         }
@@ -1524,27 +1522,20 @@ public class PatientEncounterController implements Serializable {
         List<PrescriptionTemplate> favouriteMedicines = new ArrayList<>();
         String lookupMethod = "";
 
-        // Get patient weight from current encounter
         Double patientWeight = current.getWeight();
-        System.out.println("DEBUG: Patient weight: " + patientWeight);
-
-        // Get patient age in days
         Long patientAgeInDays = patient.getAgeInDays();
-        System.out.println("DEBUG: Patient age in days: " + patientAgeInDays + " (approx " + (patientAgeInDays != null ? patientAgeInDays / 365.0 : "null") + " years)");
 
         // Step 1: Find which medicines are recommended for this diagnosis (from FavouriteDiagnosis)
         List<PrescriptionTemplate> diagnosisMedicineList = new ArrayList<>();
 
         // Method 1: By Patient Weight Group (if weight is available)
         if (patientWeight != null && patientWeight > 0) {
-            System.out.println("DEBUG: Step 1 - Finding medicine list by weight group: " + patientWeight);
             diagnosisMedicineList = favouriteController.listFavouriteItems(
                     selectedDiagnosis,
                     PrescriptionTemplateType.FavouriteDiagnosis,
                     patientWeight,
                     null
             );
-            System.out.println("DEBUG: Weight-based lookup found " + (diagnosisMedicineList != null ? diagnosisMedicineList.size() : "null") + " medicine recommendations");
             if (diagnosisMedicineList != null && !diagnosisMedicineList.isEmpty()) {
                 lookupMethod = "weight group (" + patientWeight + " kg)";
             }
@@ -1552,14 +1543,12 @@ public class PatientEncounterController implements Serializable {
 
         // Method 2: By Patient Age Group (fallback when weight is not available or no weight-based favourites found)
         if ((diagnosisMedicineList == null || diagnosisMedicineList.isEmpty()) && patientAgeInDays != null && patientAgeInDays > 0) {
-            System.out.println("DEBUG: Step 1 - Finding medicine list by age group: " + patientAgeInDays + " days");
             diagnosisMedicineList = favouriteController.listFavouriteItems(
                     selectedDiagnosis,
                     PrescriptionTemplateType.FavouriteDiagnosis,
                     null,
                     patientAgeInDays
             );
-            System.out.println("DEBUG: Age-based lookup found " + (diagnosisMedicineList != null ? diagnosisMedicineList.size() : "null") + " medicine recommendations");
             if (diagnosisMedicineList != null && !diagnosisMedicineList.isEmpty()) {
                 lookupMethod = "age group (" + (patientAgeInDays / 365) + " years)";
             }
@@ -1569,14 +1558,12 @@ public class PatientEncounterController implements Serializable {
         // recorded (ageInDays == null or 0).  Returns all FavouriteDiagnosis templates for
         // this diagnosis regardless of age range so the doctor still gets suggestions.
         if (diagnosisMedicineList == null || diagnosisMedicineList.isEmpty()) {
-            System.out.println("DEBUG: Step 1 - No age/weight data available; fetching all templates for diagnosis");
             diagnosisMedicineList = favouriteController.listFavouriteItems(
                     selectedDiagnosis,
                     PrescriptionTemplateType.FavouriteDiagnosis,
                     null,
                     null
             );
-            System.out.println("DEBUG: Unrestricted lookup found " + (diagnosisMedicineList != null ? diagnosisMedicineList.size() : "null") + " medicine recommendations");
             if (diagnosisMedicineList != null && !diagnosisMedicineList.isEmpty()) {
                 lookupMethod = "diagnosis templates (no age/weight filter)";
             }
@@ -1584,20 +1571,13 @@ public class PatientEncounterController implements Serializable {
 
         // Step 2: For each recommended medicine, get its detailed configuration from FavouriteMedicine
         if (diagnosisMedicineList != null && !diagnosisMedicineList.isEmpty()) {
-            System.out.println("DEBUG: Step 2 - Getting detailed configurations for " + diagnosisMedicineList.size() + " medicines");
-
             for (PrescriptionTemplate diagnosisTemplate : diagnosisMedicineList) {
                 if (diagnosisTemplate == null || diagnosisTemplate.getItem() == null) {
-                    System.out.println("DEBUG: Skipping null diagnosis template or item");
                     continue;
                 }
 
-                System.out.println("DEBUG: Looking for detailed config for medicine: " + diagnosisTemplate.getItem().getName());
-
-                // Look for this medicine's detailed configuration in FavouriteMedicine
                 List<PrescriptionTemplate> medicineConfigs = null;
 
-                // Try weight-based first if we have weight
                 if (patientWeight != null && patientWeight > 0) {
                     medicineConfigs = favouriteController.listFavouriteItems(
                             diagnosisTemplate.getItem(),
@@ -1605,10 +1585,8 @@ public class PatientEncounterController implements Serializable {
                             patientWeight,
                             null
                     );
-                    System.out.println("DEBUG: Weight-based medicine config found " + (medicineConfigs != null ? medicineConfigs.size() : "null") + " results");
                 }
 
-                // Try age-based if weight didn't work or no weight available
                 if ((medicineConfigs == null || medicineConfigs.isEmpty()) && patientAgeInDays != null && patientAgeInDays > 0) {
                     medicineConfigs = favouriteController.listFavouriteItems(
                             diagnosisTemplate.getItem(),
@@ -1616,10 +1594,8 @@ public class PatientEncounterController implements Serializable {
                             null,
                             patientAgeInDays
                     );
-                    System.out.println("DEBUG: Age-based medicine config found " + (medicineConfigs != null ? medicineConfigs.size() : "null") + " results");
                 }
 
-                // Try no-filter if weight and age are both unavailable/zero
                 if (medicineConfigs == null || medicineConfigs.isEmpty()) {
                     medicineConfigs = favouriteController.listFavouriteItems(
                             diagnosisTemplate.getItem(),
@@ -1627,80 +1603,26 @@ public class PatientEncounterController implements Serializable {
                             null,
                             null
                     );
-                    System.out.println("DEBUG: No-filter medicine config found " + (medicineConfigs != null ? medicineConfigs.size() : "null") + " results");
                 }
 
-                // Use the first valid configuration found
                 if (medicineConfigs != null && !medicineConfigs.isEmpty()) {
-                    PrescriptionTemplate medicineTemplate = medicineConfigs.get(0);
-                    favouriteMedicines.add(medicineTemplate);
-                    System.out.println("DEBUG: Added medicine config: " + medicineTemplate.getItem().getName() +
-                                     " with dose=" + medicineTemplate.getDose() +
-                                     ", frequency=" + (medicineTemplate.getFrequencyUnit() != null ? medicineTemplate.getFrequencyUnit().getName() : "null"));
+                    favouriteMedicines.add(medicineConfigs.get(0));
                 } else {
-                    // No separate FavouriteMedicine configuration exists for this medicine -
-                    // fall back to the dose/frequency/duration already stored on the
-                    // FavouriteDiagnosis template itself.
-                    System.out.println("DEBUG: No separate FavouriteMedicine configuration found for " + diagnosisTemplate.getItem().getName() + " - using FavouriteDiagnosis template directly");
+                    // No separate FavouriteMedicine configuration exists — fall back to the
+                    // dose/frequency/duration stored on the FavouriteDiagnosis template itself.
                     favouriteMedicines.add(diagnosisTemplate);
                 }
             }
         }
 
-        System.out.println("DEBUG: Final medicine list size: " + (favouriteMedicines != null ? favouriteMedicines.size() : "null"));
-        if (favouriteMedicines != null && !favouriteMedicines.isEmpty()) {
-            System.out.println("DEBUG: Found medicines:");
-            for (int i = 0; i < favouriteMedicines.size(); i++) {
-                PrescriptionTemplate template = favouriteMedicines.get(i);
-                System.out.println("DEBUG:   " + (i+1) + ". " + (template != null && template.getItem() != null ? template.getItem().getName() : "NULL TEMPLATE/ITEM"));
-            }
-        } else {
-            System.out.println("DEBUG: No medicines found - checking possible reasons:");
-            System.out.println("DEBUG:   - selectedDiagnosis: " + (selectedDiagnosis != null ? "OK" : "NULL"));
-            System.out.println("DEBUG:   - PrescriptionTemplateType.FavouriteDiagnosis: " + PrescriptionTemplateType.FavouriteDiagnosis);
-            System.out.println("DEBUG:   - Patient weight: " + patientWeight);
-            System.out.println("DEBUG:   - Patient age: " + patientAgeInDays);
-        }
-
         // Add medicines if found
         int medicineCount = 0;
-        System.out.println("DEBUG: Starting to add medicines...");
         if (favouriteMedicines != null && !favouriteMedicines.isEmpty()) {
-            System.out.println("DEBUG: Processing " + favouriteMedicines.size() + " favourite medicines");
             for (PrescriptionTemplate template : favouriteMedicines) {
-                System.out.println("DEBUG: Processing template: " + (template != null ? "OK" : "NULL"));
                 if (template == null || template.getItem() == null) {
-                    System.out.println("DEBUG: Skipping null template or null item");
                     continue;
                 }
 
-                System.out.println("DEBUG: Adding medicine: " + template.getItem().getName());
-                System.out.println("DEBUG:   Dose: " + template.getDose() + " " + (template.getDoseUnit() != null ? template.getDoseUnit().getName() : "null"));
-                System.out.println("DEBUG:   Frequency: " + (template.getFrequencyUnit() != null ? template.getFrequencyUnit().getName() : "null"));
-                System.out.println("DEBUG:   Duration: " + template.getDuration() + " " + (template.getDurationUnit() != null ? template.getDurationUnit().getName() : "null"));
-                System.out.println("DEBUG:   Indoor: " + template.isIndoor());
-                System.out.println("DEBUG:   Template Type: " + template.getType());
-                System.out.println("DEBUG:   Template ForItem: " + (template.getForItem() != null ? template.getForItem().getName() : "null"));
-                System.out.println("DEBUG:   Template ID: " + template.getId());
-
-                // Check if any values are null or zero that shouldn't be
-                if (template.getDose() == null || template.getDose() == 0) {
-                    System.out.println("DEBUG: WARNING - Dose is null or zero!");
-                }
-                if (template.getDoseUnit() == null) {
-                    System.out.println("DEBUG: WARNING - DoseUnit is null!");
-                }
-                if (template.getFrequencyUnit() == null) {
-                    System.out.println("DEBUG: WARNING - FrequencyUnit is null!");
-                }
-                if (template.getDuration() == null || template.getDuration() == 0) {
-                    System.out.println("DEBUG: WARNING - Duration is null or zero!");
-                }
-                if (template.getDurationUnit() == null) {
-                    System.out.println("DEBUG: WARNING - DurationUnit is null!");
-                }
-
-                // Create ClinicalFindingValue for medicine (following addEncounterMedicine pattern)
                 ClinicalFindingValue cfv = new ClinicalFindingValue();
                 cfv.setEncounter(current);
                 cfv.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
@@ -1716,65 +1638,32 @@ public class PatientEncounterController implements Serializable {
 
                 cfv.setPrescription(pres);
 
-                // Debug: Check what we're about to save
-                System.out.println("DEBUG: About to save prescription:");
-                System.out.println("DEBUG:   Item: " + (pres.getItem() != null ? pres.getItem().getName() : "null"));
-                System.out.println("DEBUG:   Dose: " + pres.getDose());
-                System.out.println("DEBUG:   DoseUnit: " + (pres.getDoseUnit() != null ? pres.getDoseUnit().getName() : "null"));
-                System.out.println("DEBUG:   FrequencyUnit: " + (pres.getFrequencyUnit() != null ? pres.getFrequencyUnit().getName() : "null"));
-                System.out.println("DEBUG:   Duration: " + pres.getDuration());
-                System.out.println("DEBUG:   DurationUnit: " + (pres.getDurationUnit() != null ? pres.getDurationUnit().getName() : "null"));
-                System.out.println("DEBUG:   Indoor: " + pres.isIndoor());
-
-                // Persist the prescription and clinical finding value
                 try {
                     if (pres.getId() == null) {
                         prescriptionFacade.create(pres);
-                        System.out.println("DEBUG: Created prescription with ID: " + pres.getId());
                     } else {
                         prescriptionFacade.edit(pres);
-                        System.out.println("DEBUG: Updated prescription with ID: " + pres.getId());
                     }
                     if (cfv.getId() == null) {
                         clinicalFindingValueFacade.create(cfv);
-                        System.out.println("DEBUG: Created clinical finding value with ID: " + cfv.getId());
                     } else {
                         clinicalFindingValueFacade.edit(cfv);
-                        System.out.println("DEBUG: Updated clinical finding value with ID: " + cfv.getId());
                     }
-
                     getEncounterFindingValues().add(cfv);
                     medicineCount++;
-                    System.out.println("DEBUG: Successfully added medicine #" + medicineCount);
                 } catch (Exception e) {
-                    System.out.println("DEBUG: Error adding medicine: " + e.getMessage());
-                    e.printStackTrace();
+                    // individual medicine failure should not abort the rest
                 }
             }
-            // Refresh the encounter medicines list
-            System.out.println("DEBUG: Refreshing encounter medicines list...");
             encounterMedicines = fillEncounterMedicines(current);
             refreshIssuableSuggestions();
-            System.out.println("DEBUG: Encounter medicines list now has " + (encounterMedicines != null ? encounterMedicines.size() : "null") + " items");
-
-            // Update/generate prescription like addEncounterMedicine does
-            System.out.println("DEBUG: Updating prescription document...");
-            try {
-                updateOrGeneratePrescription();
-                System.out.println("DEBUG: Successfully updated prescription document");
-            } catch (Exception e) {
-                System.out.println("DEBUG: Error updating prescription: " + e.getMessage());
-            }
-        } else {
-            System.out.println("DEBUG: No medicines to add - list is null or empty");
+            updateOrGeneratePrescription();
         }
 
-        // Show success message
         String message = "Diagnosis added";
         if (medicineCount > 0) {
             message += " with " + medicineCount + " medicine(s) from " + lookupMethod;
         }
-        System.out.println("DEBUG: Final result - " + message);
         JsfUtil.addSuccessMessage(message);
     }
     

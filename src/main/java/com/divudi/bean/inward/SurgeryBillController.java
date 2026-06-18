@@ -8,6 +8,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.AuditEventController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -97,6 +98,8 @@ public class SurgeryBillController implements Serializable {
     //////
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     InwardTimedItemController inwardTimedItemController;
     @Inject
@@ -910,6 +913,12 @@ public class SurgeryBillController implements Serializable {
 
         if (getSurgeryBill().getPatientEncounter().isPaymentFinalized()) {
             JsfUtil.addErrorMessage("Final Payment is Finalized");
+            return true;
+        }
+
+        if (getSurgeryBill().getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
             return true;
         }
 
