@@ -998,7 +998,9 @@ public class AnthropicApiService implements Serializable {
                         + "LIST_PRIVILEGES | ASSIGN_PRIVILEGES | REVOKE_PRIVILEGE | LIST_DEPARTMENTS | ASSIGN_DEPARTMENTS | "
                         + "LIST_AVAILABLE_PRIVILEGES | BULK_ASSIGN_PRIVILEGES | ASSIGN_PRIVILEGE_CATEGORIES\n\n"
                         + "Privilege assignment requires departmentId; category assignment uses /users/{id}/departments/{departmentId}/privileges/category. "
-                        + "Use LIST_AVAILABLE_PRIVILEGES before assigning explicit privilege names.")
+                        + "Use LIST_AVAILABLE_PRIVILEGES before assigning explicit privilege names. "
+                        + "Always confirm with the user before POST, PUT, DELETE, RESET_PASSWORD, CHANGE_PASSWORD, "
+                        + "ASSIGN_PRIVILEGES, REVOKE_PRIVILEGE, ASSIGN_DEPARTMENTS, BULK_ASSIGN_PRIVILEGES, or ASSIGN_PRIVILEGE_CATEGORIES.")
                 .add("input_schema", Json.createObjectBuilder()
                         .add("type", "object")
                         .add("properties", Json.createObjectBuilder()
@@ -1043,7 +1045,8 @@ public class AnthropicApiService implements Serializable {
                 .add("description",
                         "Create, search, update, get, or retire dispensable pharmacy PharmaceuticalItem records used by dispensing.\n\n"
                         + "method: SEARCH | GET | POST | PUT | DELETE. "
-                        + "For classification hierarchy items such as AMP/VMP, use the pharmaceutical_items API instead.")
+                        + "For classification hierarchy items such as AMP/VMP, use the pharmaceutical_items API instead. "
+                        + "Always confirm with the user before POST, PUT, or DELETE — these changes affect live dispensing and billing.")
                 .add("input_schema", Json.createObjectBuilder()
                         .add("type", "object")
                         .add("properties", Json.createObjectBuilder()
@@ -1074,7 +1077,8 @@ public class AnthropicApiService implements Serializable {
                         + "Confirm doctor/session availability before save/edit/complete/cancel operations.\n\n"
                         + "operation: SPECIALIZATIONS | HOSPITALS | DOCTORS | DOCTOR_AVAILABILITY | DOCTOR_SESSIONS | DOCTOR_SESSION | "
                         + "SAVE | EDIT | COMPLETE | CHANNEL_HISTORY_LIST | CHANNEL_HISTORY_BY_REF | CANCELLATION\n"
-                        + "For POST operations, provide requestBody as a JSON object string expected by the endpoint.")
+                        + "For POST operations, provide requestBody as a JSON object string expected by the endpoint. "
+                        + "Always confirm with the user before SAVE, EDIT, COMPLETE, or CANCELLATION.")
                 .add("input_schema", Json.createObjectBuilder()
                         .add("type", "object")
                         .add("properties", Json.createObjectBuilder()
@@ -3694,7 +3698,11 @@ public class AnthropicApiService implements Serializable {
     }
 
     private void addBoolean(javax.json.JsonObjectBuilder body, String key, String value) {
-        if (value != null && !value.isEmpty()) body.add(key, Boolean.parseBoolean(value));
+        if (value == null || value.isEmpty()) return;
+        String normalized = value.trim().toLowerCase(java.util.Locale.ROOT);
+        if ("true".equals(normalized)) { body.add(key, true); return; }
+        if ("false".equals(normalized)) { body.add(key, false); return; }
+        throw new IllegalArgumentException(key + " must be 'true' or 'false', got: " + value);
     }
 
     private String callTimedItemsApi(String method, String id, String feeId, String name, String code,
@@ -4200,7 +4208,7 @@ public class AnthropicApiService implements Serializable {
                     {"GET",    "/users/{id}/privileges",          "List privileges for a user"},
                     {"POST",   "/users/{id}/privileges",          "Assign privileges to a user; departmentId is required"},
                     {"POST",   "/users/{id}/departments/{departmentId}/privileges/category", "Assign privileges by category for one department"},
-                    {"DELETE", "/users/{id}/privileges",          "Remove a privilege from a user"},
+                    {"DELETE", "/users/{id}/privileges/{privilegeId}", "Remove one privilege assignment from a user"},
                     {"GET",    "/users/{id}/departments",         "List loggable departments for a user"},
                     {"POST",   "/users/{id}/departments",         "Assign a loggable department to a user"},
                     {"GET",    "/users/privileges/available",     "List all valid privilege enum names"},

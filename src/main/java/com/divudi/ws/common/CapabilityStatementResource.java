@@ -255,7 +255,7 @@ public class CapabilityStatementResource {
                         "Create, search, update, and retire dispensable pharmacy PharmaceuticalItem records used by pharmacy billing and dispensing. "
                         + "POST/PUT fields include name, code, categoryId, dosageFormId, ampId, institutionId, departmentId, retailRate, allowFractions, discountAllowed. "
                         + "GET /search supports query, institutionId, departmentId, size.",
-                        "API Key",
+                        "API Key (Finance header)",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Pharmacy Adjustments", "/api/pharmacy_adjustments",
                         "Pharmacy stock and adjustment operations",

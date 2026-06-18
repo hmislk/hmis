@@ -135,10 +135,10 @@ public class PharmacyItemApi {
             PharmaceuticalItem existing = findDuplicate(name, refs.institution, refs.department, null);
             if (existing != null) {
                 Map<String, Object> already = new LinkedHashMap<>();
-                already.put("status", "already_exists");
+                already.put("alreadyExists", true);
                 already.put("id", existing.getId());
                 already.put("name", existing.getName());
-                return Response.status(200).entity(gson.toJson(already)).build();
+                return Response.status(200).entity(gson.toJson(successData(already, 200))).build();
             }
 
             PharmaceuticalItem item = new PharmaceuticalItem();
