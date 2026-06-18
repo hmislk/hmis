@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad45a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E7490;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#155E75;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad45" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#F0FDFA"/>
+  <g filter="url(#shad45)">
+    <!-- Nurse cap (top) -->
+    <path d="M62 72 Q100 42 138 72 L130 85 Q100 70 70 85 Z" fill="url(#grad45a)"/>
+    <!-- Red cross on nurse cap -->
+    <rect x="92" y="52" width="16" height="6" rx="3" fill="#22D3EE"/>
+    <rect x="97" y="47" width="6" height="16" rx="3" fill="#22D3EE"/>
+    <!-- Clipboard (below hat) -->
+    <rect x="52" y="95" width="96" height="90" rx="7" fill="url(#grad45a)"/>
+    <!-- Clipboard top clip -->
+    <rect x="78" y="85" width="44" height="20" rx="5" fill="#155E75"/>
+    <rect x="86" y="87" width="28" height="13" rx="3" fill="url(#grad45a)"/>
+    <!-- Lines on clipboard -->
+    <rect x="64" y="115" width="72" height="5" rx="2" fill="white" opacity="0.75"/>
+    <rect x="64" y="128" width="58" height="5" rx="2" fill="white" opacity="0.55"/>
+    <rect x="64" y="141" width="65" height="5" rx="2" fill="white" opacity="0.55"/>
+    <rect x="64" y="154" width="50" height="5" rx="2" fill="white" opacity="0.55"/>
+    <!-- Medical cross badge bottom-right -->
+    <circle cx="148" cy="168" r="16" fill="white"/>
+    <circle cx="148" cy="168" r="13" fill="#22D3EE"/>
+    <rect x="141" y="165" width="14" height="6" rx="3" fill="white"/>
+    <rect x="145" y="161" width="6" height="14" rx="3" fill="white"/>
+  </g>
+</svg>
