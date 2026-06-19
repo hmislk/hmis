@@ -561,6 +561,19 @@ public class TimedItemApi {
             String name = nameObj.toString().trim();
             String code = body.get("code") != null ? body.get("code").toString().trim() : null;
 
+            Map<String, Object> dupParams = new HashMap<>();
+            dupParams.put("name", name.toUpperCase());
+            List<Category> existing = categoryFacade.findByJpql(
+                    "select c from TimedItemCategory c where upper(c.name) = :name and c.retired = false",
+                    dupParams, 1);
+            if (existing != null && !existing.isEmpty()) {
+                Map<String, Object> conflict = new LinkedHashMap<>();
+                conflict.put("status", "already_exists");
+                conflict.put("id", existing.get(0).getId());
+                conflict.put("name", existing.get(0).getName());
+                return Response.status(409).entity(gson.toJson(conflict)).build();
+            }
+
             TimedItemCategory cat = new TimedItemCategory();
             cat.setName(name);
             if (code != null && !code.isEmpty()) {
@@ -643,6 +656,7 @@ public class TimedItemApi {
             }
             c.setRetired(true);
             c.setRetiredAt(new Date());
+            c.setRetirer(user);
             String retireComments = uriInfo.getQueryParameters().getFirst("retireComments");
             if (retireComments != null && !retireComments.trim().isEmpty()) {
                 c.setRetireComments(retireComments.trim());
