@@ -584,9 +584,22 @@ public class UserManagementApi {
     public Response listAvailablePrivileges() {
         WebUser apiUser = validateApiUser();
         if (apiUser == null) return errorResponse("Not a valid key", 401);
+        // Build canonical map: lowercase name → last enum constant with that lowercase name.
+        // This collapses case-insensitive duplicates (e.g. PharmacySaleWithoutStock vs
+        // PharmacySaleWithOutStock) so that only the canonical form is advertised — the one
+        // whose name() MySQL can actually store and retrieve without a case-collision.
+        Map<String, String> canonicals = new LinkedHashMap<>();
+        for (Privileges p : Privileges.values()) {
+            canonicals.put(p.name().toLowerCase(), p.name());
+        }
+        // Emit one entry per unique lowercase key, preserving enum order of first occurrence.
+        Set<String> seenLower = new LinkedHashSet<>();
         List<String> out = new ArrayList<>();
         for (Privileges p : Privileges.values()) {
-            out.add(p.name());
+            String lower = p.name().toLowerCase();
+            if (seenLower.add(lower)) {
+                out.add(canonicals.get(lower));
+            }
         }
         return successResponse(out);
     }
