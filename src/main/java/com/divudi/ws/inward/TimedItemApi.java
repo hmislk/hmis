@@ -14,12 +14,16 @@ import com.divudi.core.data.dto.timeditem.TimedItemResponseDTO;
 import com.divudi.core.data.dto.timeditem.TimedItemSearchResultDTO;
 import com.divudi.core.data.dto.timeditem.TimedItemUpdateRequestDTO;
 import com.divudi.core.entity.ApiKey;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.inward.TimedItemCategory;
+import com.divudi.core.facade.CategoryFacade;
 import com.divudi.service.inward.TimedItemApiService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 
+import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -28,8 +32,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -56,6 +62,9 @@ public class TimedItemApi {
 
     @Inject
     private TimedItemApiService timedItemApiService;
+
+    @EJB
+    private CategoryFacade categoryFacade;
 
     private static final Gson gson = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -448,6 +457,210 @@ public class TimedItemApi {
             }
             return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
         }
+    }
+
+    // =========================================================================
+    // Timed Item Category CRUD
+    // =========================================================================
+
+    /**
+     * List all non-retired TimedItemCategory entries.
+     * GET /api/timed-items/categories?query=&limit=50
+     */
+    @GET
+    @Path("/categories")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listCategories() {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            String query = uriInfo.getQueryParameters().getFirst("query");
+            String limitStr = uriInfo.getQueryParameters().getFirst("limit");
+            int limit = 50;
+            if (limitStr != null && !limitStr.trim().isEmpty()) {
+                try { limit = Math.min(Math.max(Integer.parseInt(limitStr.trim()), 1), 500); }
+                catch (NumberFormatException ignored) { }
+            }
+            StringBuilder jpql = new StringBuilder(
+                    "select c from TimedItemCategory c where c.retired = false");
+            Map<String, Object> params = new HashMap<>();
+            if (query != null && !query.trim().isEmpty()) {
+                jpql.append(" and upper(c.name) like :q");
+                params.put("q", "%" + query.trim().toUpperCase() + "%");
+            }
+            jpql.append(" order by c.name");
+            List<Category> cats = categoryFacade.findByJpql(jpql.toString(), params, limit);
+            List<Map<String, Object>> payload = new ArrayList<>();
+            if (cats != null) {
+                for (Category c : cats) {
+                    payload.add(toCategoryDto(c));
+                }
+            }
+            return successResponse(payload);
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get a single TimedItemCategory by id.
+     * GET /api/timed-items/categories/{id}
+     */
+    @GET
+    @Path("/categories/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getCategory(@PathParam("id") Long id) {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            Category c = categoryFacade.find(id);
+            if (c == null || c.isRetired() || !(c instanceof TimedItemCategory)) {
+                return errorResponse("Timed item category not found: " + id, 404);
+            }
+            return successResponse(toCategoryDto(c));
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
+     * Create a new TimedItemCategory.
+     * POST /api/timed-items/categories
+     * Body: { "name": "ICU Charges", "code": "ICU" }
+     */
+    @POST
+    @Path("/categories")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createCategory(String requestBody) {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            Map<?, ?> body;
+            try {
+                body = gson.fromJson(requestBody, Map.class);
+            } catch (JsonSyntaxException e) {
+                return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+            }
+            if (body == null) {
+                return errorResponse("Request body is required", 400);
+            }
+            Object nameObj = body.get("name");
+            if (nameObj == null || nameObj.toString().trim().isEmpty()) {
+                return errorResponse("name is required", 400);
+            }
+            String name = nameObj.toString().trim();
+            String code = body.get("code") != null ? body.get("code").toString().trim() : null;
+
+            TimedItemCategory cat = new TimedItemCategory();
+            cat.setName(name);
+            if (code != null && !code.isEmpty()) {
+                cat.setCode(code);
+            }
+            cat.setCreatedAt(new Date());
+            cat.setCreater(user);
+            categoryFacade.create(cat);
+            return Response.status(201).entity(gson.toJson(successData(toCategoryDto(cat)))).build();
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
+     * Update an existing TimedItemCategory.
+     * PUT /api/timed-items/categories/{id}
+     * Body: { "name": "New Name", "code": "NEW" }
+     */
+    @PUT
+    @Path("/categories/{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateCategory(@PathParam("id") Long id, String requestBody) {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            Category c = categoryFacade.find(id);
+            if (c == null || c.isRetired() || !(c instanceof TimedItemCategory)) {
+                return errorResponse("Timed item category not found: " + id, 404);
+            }
+            Map<?, ?> body;
+            try {
+                body = gson.fromJson(requestBody, Map.class);
+            } catch (JsonSyntaxException e) {
+                return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+            }
+            if (body == null) {
+                return errorResponse("Request body is required", 400);
+            }
+            if (body.containsKey("name")) {
+                Object nameObj = body.get("name");
+                if (nameObj == null || nameObj.toString().trim().isEmpty()) {
+                    return errorResponse("name cannot be empty", 400);
+                }
+                c.setName(nameObj.toString().trim());
+            }
+            if (body.containsKey("code")) {
+                Object codeObj = body.get("code");
+                c.setCode(codeObj != null ? codeObj.toString().trim() : null);
+            }
+            categoryFacade.edit(c);
+            return successResponse(toCategoryDto(c));
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
+     * Soft-retire a TimedItemCategory.
+     * DELETE /api/timed-items/categories/{id}?retireComments=reason
+     */
+    @DELETE
+    @Path("/categories/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response retireCategory(@PathParam("id") Long id) {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            Category c = categoryFacade.find(id);
+            if (c == null || !(c instanceof TimedItemCategory)) {
+                return errorResponse("Timed item category not found: " + id, 404);
+            }
+            if (c.isRetired()) {
+                return errorResponse("Timed item category is already retired: " + id, 400);
+            }
+            c.setRetired(true);
+            c.setRetiredAt(new Date());
+            String retireComments = uriInfo.getQueryParameters().getFirst("retireComments");
+            if (retireComments != null && !retireComments.trim().isEmpty()) {
+                c.setRetireComments(retireComments.trim());
+            }
+            categoryFacade.edit(c);
+            Map<String, Object> resp = new LinkedHashMap<>();
+            resp.put("id", c.getId());
+            resp.put("retired", true);
+            return successResponse(resp);
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    private Map<String, Object> toCategoryDto(Category c) {
+        Map<String, Object> dto = new LinkedHashMap<>();
+        dto.put("id", c.getId());
+        dto.put("name", c.getName());
+        dto.put("code", c.getCode());
+        dto.put("retired", c.isRetired());
+        return dto;
     }
 
     // =========================================================================
