@@ -654,6 +654,203 @@ public class InwardReportController implements Serializable {
         return categories != null ? categories : new ArrayList<>();
     }
 
+    public void downloadRoomOccupancyPdf() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select From and To dates.");
+            return;
+        }
+
+        if (roomOccupancyList == null || roomOccupancyList.isEmpty()) {
+            processRoomOccupancyReport();
+        }
+
+        if (roomOccupancyList == null || roomOccupancyList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = facesContext.getExternalContext();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        SimpleDateFormat fileDateFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            Document document = new Document(com.lowagie.text.PageSize.A3.rotate(), 18, 18, 24, 18);
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
+            document.open();
+
+            List<RoomCategory> exportCategories = getRoomOccupancyCategoriesForReport();
+
+            com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            com.lowagie.text.Font infoLabelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            com.lowagie.text.Font infoValueFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            int totalColumns = 3 + (exportCategories.size() * 4);
+            float tableFontSize = totalColumns > 35 ? 5f : totalColumns > 25 ? 6f : 7f;
+            com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, tableFontSize,
+                    com.lowagie.text.Font.NORMAL, java.awt.Color.WHITE);
+            com.lowagie.text.Font subHeaderFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, tableFontSize);
+            com.lowagie.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, tableFontSize);
+            com.lowagie.text.Font totalFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, tableFontSize);
+
+            Paragraph title = new Paragraph("Room Occupancy Report", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(8);
+            document.add(title);
+
+            PdfPTable infoTable = new PdfPTable(2);
+            infoTable.setWidthPercentage(45);
+            infoTable.setHorizontalAlignment(Element.ALIGN_LEFT);
+            infoTable.setWidths(new float[]{1.4f, 3f});
+            infoTable.setSpacingAfter(10);
+
+            addRoomOccupancyPdfInfoRow(infoTable, "From Date:", sdf.format(fromDate), infoLabelFont, infoValueFont);
+            addRoomOccupancyPdfInfoRow(infoTable, "To Date:", sdf.format(toDate), infoLabelFont, infoValueFont);
+            addRoomOccupancyPdfInfoRow(infoTable, "Institution:", institution != null ? institution.getName() : "All", infoLabelFont, infoValueFont);
+            addRoomOccupancyPdfInfoRow(infoTable, "Site:", site != null ? site.getName() : "All", infoLabelFont, infoValueFont);
+            addRoomOccupancyPdfInfoRow(infoTable, "Department:", department != null ? department.getName() : "All", infoLabelFont, infoValueFont);
+            addRoomOccupancyPdfInfoRow(infoTable, "Ratio Mode:", formatRoomOccupancyRatioMode(), infoLabelFont, infoValueFont);
+            addRoomOccupancyPdfInfoRow(infoTable, "Generated:", sdf.format(new Date()), infoLabelFont, infoValueFont);
+            document.add(infoTable);
+
+            PdfPTable table = new PdfPTable(totalColumns);
+            table.setWidthPercentage(100);
+            table.setWidths(buildRoomOccupancyPdfColumnWidths(exportCategories.size()));
+            table.setHeaderRows(3);
+            table.setSpacingBefore(5);
+
+            java.awt.Color headerBg = new java.awt.Color(41, 128, 185);
+            java.awt.Color subHeaderBg = new java.awt.Color(224, 224, 224);
+            java.awt.Color totalBg = new java.awt.Color(255, 242, 204);
+            java.awt.Color oddRowBg = new java.awt.Color(248, 249, 250);
+
+            addRoomOccupancyPdfHeaderCell(table, "Year", headerFont, headerBg, 3, 1);
+            addRoomOccupancyPdfHeaderCell(table, "Month", headerFont, headerBg, 3, 1);
+            addRoomOccupancyPdfHeaderCell(table, "No of Admission", headerFont, headerBg, 3, 1);
+            if (!exportCategories.isEmpty()) {
+                addRoomOccupancyPdfHeaderCell(table, "Rooms", headerFont, headerBg, 1, exportCategories.size() * 4);
+            }
+
+            for (RoomCategory category : exportCategories) {
+                addRoomOccupancyPdfHeaderCell(table, category != null ? category.getName() : "",
+                        subHeaderFont, subHeaderBg, 1, 4);
+            }
+
+            for (int i = 0; i < exportCategories.size(); i++) {
+                addRoomOccupancyPdfHeaderCell(table, "Rooms", subHeaderFont, subHeaderBg, 1, 1);
+                addRoomOccupancyPdfHeaderCell(table, "Days", subHeaderFont, subHeaderBg, 1, 1);
+                addRoomOccupancyPdfHeaderCell(table, "Ratio", subHeaderFont, subHeaderBg, 1, 1);
+                addRoomOccupancyPdfHeaderCell(table, "Avg", subHeaderFont, subHeaderBg, 1, 1);
+            }
+
+            int rowIndex = 0;
+            for (RoomOccupancyRowDTO row : roomOccupancyList) {
+                java.awt.Color rowBg = rowIndex % 2 == 0 ? null : oddRowBg;
+                addRoomOccupancyPdfRow(table, row, exportCategories, normalFont, rowBg);
+                rowIndex++;
+            }
+
+            if (roomOccupancyGrandTotal != null) {
+                addRoomOccupancyPdfRow(table, roomOccupancyGrandTotal, exportCategories, totalFont, totalBg);
+            }
+
+            document.add(table);
+            document.close();
+
+            byte[] pdfBytes = baos.toByteArray();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+            externalContext.setResponseContentLength(pdfBytes.length);
+            externalContext.setResponseHeader("Content-Disposition",
+                    "attachment; filename=\"Room_Occupancy_" + fileDateFormat.format(new Date()) + ".pdf\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            out.write(pdfBytes);
+            out.flush();
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+        }
+    }
+
+    private void addRoomOccupancyPdfInfoRow(PdfPTable table, String label, String value,
+            com.lowagie.text.Font labelFont, com.lowagie.text.Font valueFont) {
+        PdfPCell labelCell = new PdfPCell(new Phrase(label, labelFont));
+        labelCell.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
+        labelCell.setPadding(2);
+        table.addCell(labelCell);
+
+        PdfPCell valueCell = new PdfPCell(new Phrase(value != null ? value : "", valueFont));
+        valueCell.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
+        valueCell.setPadding(2);
+        table.addCell(valueCell);
+    }
+
+    private float[] buildRoomOccupancyPdfColumnWidths(int categoryCount) {
+        float[] widths = new float[3 + (categoryCount * 4)];
+        widths[0] = 1.0f;
+        widths[1] = 1.0f;
+        widths[2] = 1.6f;
+        int index = 3;
+        for (int i = 0; i < categoryCount; i++) {
+            widths[index++] = 1.0f;
+            widths[index++] = 1.0f;
+            widths[index++] = 1.0f;
+            widths[index++] = 1.0f;
+        }
+        return widths;
+    }
+
+    private void addRoomOccupancyPdfHeaderCell(PdfPTable table, String value, com.lowagie.text.Font font,
+            java.awt.Color backgroundColor, int rowspan, int colspan) {
+        PdfPCell cell = new PdfPCell(new Phrase(value != null ? value : "", font));
+        cell.setBackgroundColor(backgroundColor);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPadding(3);
+        cell.setRowspan(rowspan);
+        cell.setColspan(colspan);
+        table.addCell(cell);
+    }
+
+    private void addRoomOccupancyPdfRow(PdfPTable table, RoomOccupancyRowDTO row,
+            List<RoomCategory> categories, com.lowagie.text.Font font, java.awt.Color backgroundColor) {
+        boolean grandTotalRow = row != null && row.isGrandTotal();
+        addRoomOccupancyPdfCell(table, grandTotalRow ? "Grand Total" : row != null && row.getYear() != null ? row.getYear().toString() : "",
+                font, backgroundColor, Element.ALIGN_LEFT);
+        addRoomOccupancyPdfCell(table, grandTotalRow || row == null ? "" : row.getMonthName(),
+                font, backgroundColor, Element.ALIGN_LEFT);
+        addRoomOccupancyPdfCell(table, formatRoomOccupancyLong(row != null ? row.getNumberOfAdmissions() : null),
+                font, backgroundColor, Element.ALIGN_RIGHT);
+
+        for (RoomCategory category : categories) {
+            RoomCategoryOccupancyDTO metric = row != null ? row.metricFor(category) : new RoomCategoryOccupancyDTO();
+            addRoomOccupancyPdfCell(table, formatRoomOccupancyLong(metric.getNumberOfRooms()), font, backgroundColor, Element.ALIGN_RIGHT);
+            addRoomOccupancyPdfCell(table, formatRoomOccupancyLong(metric.getNumberOfDays()), font, backgroundColor, Element.ALIGN_RIGHT);
+            addRoomOccupancyPdfCell(table, formatRoomOccupancyDouble(metric.getRatio()), font, backgroundColor, Element.ALIGN_RIGHT);
+            addRoomOccupancyPdfCell(table, formatRoomOccupancyDouble(metric.getAvg()), font, backgroundColor, Element.ALIGN_RIGHT);
+        }
+    }
+
+    private void addRoomOccupancyPdfCell(PdfPTable table, String value, com.lowagie.text.Font font,
+            java.awt.Color backgroundColor, int alignment) {
+        PdfPCell cell = new PdfPCell(new Phrase(value != null ? value : "", font));
+        if (backgroundColor != null) {
+            cell.setBackgroundColor(backgroundColor);
+        }
+        cell.setHorizontalAlignment(alignment);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPadding(2);
+        table.addCell(cell);
+    }
+
+    private String formatRoomOccupancyLong(Long value) {
+        return String.format("%,d", value != null ? value : 0L);
+    }
+
+    private String formatRoomOccupancyDouble(Double value) {
+        return String.format("%.2f", value != null ? value : 0.0);
+    }
+
 // LOAD: admissions per year/month
     private void loadAdmissionsIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
         Map<String, Object> params = new HashMap<>();
