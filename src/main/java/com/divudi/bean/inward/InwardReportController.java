@@ -338,6 +338,7 @@ public class InwardReportController implements Serializable {
     private RoomOccupancyRowDTO roomOccupancyGrandTotal;
     private String roomOccupancyRatioMode = RoomCategoryOccupancyDTO.RATIO_MODE_AGGREGATED_ROOM_UTILIZATION;
     private List<RoomCategory> allRoomCategories;
+    private List<RoomCategory> selectedRoomCategories;
 
     public void processRoomOccupancyReport() {
         if (fromDate == null || toDate == null) {
@@ -345,13 +346,7 @@ public class InwardReportController implements Serializable {
             return;
         }
 
-        // Load all active room categories that appear in the "Rooms" section
-        // Adjust the exclusion logic to match your actual RoomCategory.name values.
-        if (roomCategories == null || roomCategories.isEmpty()) {
-            allRoomCategories = roomCategoryController.getItems();
-        } else {
-            allRoomCategories = roomCategories;
-        }
+        allRoomCategories = new ArrayList<>(getRoomOccupancyCategoriesForReport());
 
         roomOccupancyList = new ArrayList<>();
         Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid = new TreeMap<>();
@@ -366,7 +361,7 @@ public class InwardReportController implements Serializable {
             for (Map.Entry<Integer, RoomOccupancyRowDTO> monthEntry : yearEntry.getValue().entrySet()) {
                 RoomOccupancyRowDTO row = monthEntry.getValue();
 
-                row.ensureCategories(roomCategories);
+                row.ensureCategories(allRoomCategories);
                 applyAvailableCounts(row);
 
                 int daysInMonth = java.time.YearMonth.of(
@@ -378,11 +373,285 @@ public class InwardReportController implements Serializable {
             }
         }
 
-        roomOccupancyGrandTotal.ensureCategories(roomCategories);
+        roomOccupancyGrandTotal.ensureCategories(allRoomCategories);
         applyAvailableCounts(roomOccupancyGrandTotal);
         long totalDays = java.time.temporal.ChronoUnit.DAYS.between(
                 fromDate.toInstant(), toDate.toInstant()) + 1;
         calculateRowDerived(roomOccupancyGrandTotal, totalDays);
+    }
+
+    public void downloadRoomOccupancyExcel() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select From and To dates.");
+            return;
+        }
+
+        if (roomOccupancyList == null || roomOccupancyList.isEmpty()) {
+            processRoomOccupancyReport();
+        }
+
+        if (roomOccupancyList == null || roomOccupancyList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            XSSFSheet sheet = workbook.createSheet("Room Occupancy");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            SimpleDateFormat fileDateFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
+
+            List<RoomCategory> exportCategories = allRoomCategories != null
+                    ? allRoomCategories : new ArrayList<>();
+            int lastColumn = 2 + (exportCategories.size() * 4);
+
+            XSSFCellStyle titleStyle = workbook.createCellStyle();
+            XSSFFont titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 14);
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            XSSFCellStyle infoLabelStyle = workbook.createCellStyle();
+            XSSFFont infoLabelFont = workbook.createFont();
+            infoLabelFont.setBold(true);
+            infoLabelStyle.setFont(infoLabelFont);
+
+            XSSFCellStyle headerStyle = createRoomOccupancyHeaderStyle(workbook);
+            XSSFCellStyle subHeaderStyle = createRoomOccupancySubHeaderStyle(workbook);
+            XSSFCellStyle textStyle = createRoomOccupancyTextStyle(workbook);
+            XSSFCellStyle integerStyle = createRoomOccupancyNumberStyle(workbook, "#,##0");
+            XSSFCellStyle decimalStyle = createRoomOccupancyNumberStyle(workbook, "0.00");
+            XSSFCellStyle totalTextStyle = createRoomOccupancyTotalStyle(workbook, false, null);
+            XSSFCellStyle totalIntegerStyle = createRoomOccupancyTotalStyle(workbook, true, "#,##0");
+            XSSFCellStyle totalDecimalStyle = createRoomOccupancyTotalStyle(workbook, true, "0.00");
+
+            int rowIndex = 0;
+            Row titleRow = sheet.createRow(rowIndex++);
+            titleRow.setHeightInPoints(24);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Room Occupancy Report");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, lastColumn));
+
+            String[][] infoRows = {
+                {"From Date:", sdf.format(fromDate)},
+                {"To Date:", sdf.format(toDate)},
+                {"Institution:", institution != null ? institution.getName() : "All"},
+                {"Site:", site != null ? site.getName() : "All"},
+                {"Department:", department != null ? department.getName() : "All"},
+                {"Ratio Mode:", formatRoomOccupancyRatioMode()},
+                {"Generated:", sdf.format(new Date())}
+            };
+            for (String[] info : infoRows) {
+                Row infoRow = sheet.createRow(rowIndex++);
+                Cell labelCell = infoRow.createCell(0);
+                labelCell.setCellValue(info[0]);
+                labelCell.setCellStyle(infoLabelStyle);
+                infoRow.createCell(1).setCellValue(info[1]);
+            }
+
+            rowIndex++;
+
+            int headerStartRow = rowIndex;
+            Row groupHeaderRow = sheet.createRow(rowIndex++);
+            Row categoryHeaderRow = sheet.createRow(rowIndex++);
+            Row metricHeaderRow = sheet.createRow(rowIndex++);
+
+            createMergedHeaderCell(sheet, groupHeaderRow, headerStartRow, headerStartRow + 2, 0, 0, "Year", headerStyle);
+            createMergedHeaderCell(sheet, groupHeaderRow, headerStartRow, headerStartRow + 2, 1, 1, "Month", headerStyle);
+            createMergedHeaderCell(sheet, groupHeaderRow, headerStartRow, headerStartRow + 2, 2, 2, "No of Admission", headerStyle);
+
+            if (!exportCategories.isEmpty()) {
+                createMergedHeaderCell(sheet, groupHeaderRow, headerStartRow, headerStartRow, 3, lastColumn, "Rooms", headerStyle);
+            }
+
+            int column = 3;
+            for (RoomCategory category : exportCategories) {
+                createMergedHeaderCell(sheet, categoryHeaderRow, headerStartRow + 1, headerStartRow + 1,
+                        column, column + 3, category != null ? category.getName() : "", subHeaderStyle);
+                String[] metricHeaders = {"Rooms", "Days", "Ratio", "Avg"};
+                for (String metricHeader : metricHeaders) {
+                    Cell cell = metricHeaderRow.createCell(column++);
+                    cell.setCellValue(metricHeader);
+                    cell.setCellStyle(subHeaderStyle);
+                }
+            }
+
+            for (RoomOccupancyRowDTO rowDto : roomOccupancyList) {
+                Row dataRow = sheet.createRow(rowIndex++);
+                writeRoomOccupancyRow(dataRow, rowDto, exportCategories, textStyle, integerStyle, decimalStyle);
+            }
+
+            if (roomOccupancyGrandTotal != null) {
+                Row totalRow = sheet.createRow(rowIndex++);
+                writeRoomOccupancyRow(totalRow, roomOccupancyGrandTotal, exportCategories,
+                        totalTextStyle, totalIntegerStyle, totalDecimalStyle);
+            }
+
+            sheet.createFreezePane(3, headerStartRow + 3);
+            sheet.setAutoFilter(new CellRangeAddress(headerStartRow + 2, rowIndex - 1, 0, lastColumn));
+            sheet.setColumnWidth(0, 2500);
+            sheet.setColumnWidth(1, 2500);
+            sheet.setColumnWidth(2, 4200);
+            for (int i = 3; i <= lastColumn; i++) {
+                sheet.setColumnWidth(i, 3000);
+            }
+
+            workbook.write(baos);
+            byte[] excelBytes = baos.toByteArray();
+
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            externalContext.setResponseContentLength(excelBytes.length);
+            externalContext.setResponseHeader("Content-Disposition",
+                    "attachment; filename=\"Room_Occupancy_" + fileDateFormat.format(new Date()) + ".xlsx\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            out.write(excelBytes);
+            out.flush();
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating Excel: " + e.getMessage());
+        }
+    }
+
+    private void writeRoomOccupancyRow(Row dataRow, RoomOccupancyRowDTO rowDto, List<RoomCategory> categories,
+            CellStyle textStyle, CellStyle integerStyle, CellStyle decimalStyle) {
+        boolean grandTotalRow = rowDto != null && rowDto.isGrandTotal();
+        Cell yearCell = dataRow.createCell(0);
+        if (grandTotalRow) {
+            yearCell.setCellValue("Grand Total");
+        } else if (rowDto != null && rowDto.getYear() != null) {
+            yearCell.setCellValue(rowDto.getYear());
+        } else {
+            yearCell.setCellValue("");
+        }
+        yearCell.setCellStyle(textStyle);
+
+        Cell monthCell = dataRow.createCell(1);
+        monthCell.setCellValue(grandTotalRow || rowDto == null ? "" : rowDto.getMonthName());
+        monthCell.setCellStyle(textStyle);
+
+        Cell admissionsCell = dataRow.createCell(2);
+        admissionsCell.setCellValue(rowDto != null && rowDto.getNumberOfAdmissions() != null
+                ? rowDto.getNumberOfAdmissions() : 0L);
+        admissionsCell.setCellStyle(integerStyle);
+
+        int column = 3;
+        for (RoomCategory category : categories) {
+            RoomCategoryOccupancyDTO metric = rowDto != null ? rowDto.metricFor(category) : new RoomCategoryOccupancyDTO();
+            createLongCell(dataRow, column++, metric.getNumberOfRooms(), integerStyle);
+            createLongCell(dataRow, column++, metric.getNumberOfDays(), integerStyle);
+            createDoubleCell(dataRow, column++, metric.getRatio(), decimalStyle);
+            createDoubleCell(dataRow, column++, metric.getAvg(), decimalStyle);
+        }
+    }
+
+    private void createLongCell(Row row, int column, Long value, CellStyle style) {
+        Cell cell = row.createCell(column);
+        cell.setCellValue(value != null ? value : 0L);
+        cell.setCellStyle(style);
+    }
+
+    private void createDoubleCell(Row row, int column, Double value, CellStyle style) {
+        Cell cell = row.createCell(column);
+        cell.setCellValue(value != null ? value : 0.0);
+        cell.setCellStyle(style);
+    }
+
+    private void createMergedHeaderCell(Sheet sheet, Row row, int firstRow, int lastRow,
+            int firstColumn, int lastColumn, String value, CellStyle style) {
+        Cell cell = row.createCell(firstColumn);
+        cell.setCellValue(value);
+        cell.setCellStyle(style);
+        if (firstRow != lastRow || firstColumn != lastColumn) {
+            sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstColumn, lastColumn));
+        }
+        for (int column = firstColumn + 1; column <= lastColumn; column++) {
+            row.createCell(column).setCellStyle(style);
+        }
+    }
+
+    private XSSFCellStyle createRoomOccupancyHeaderStyle(XSSFWorkbook workbook) {
+        XSSFCellStyle style = workbook.createCellStyle();
+        XSSFFont font = workbook.createFont();
+        font.setBold(true);
+        font.setColor(IndexedColors.WHITE.getIndex());
+        style.setFont(font);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        style.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        applyRoomOccupancyBorders(style);
+        return style;
+    }
+
+    private XSSFCellStyle createRoomOccupancySubHeaderStyle(XSSFWorkbook workbook) {
+        XSSFCellStyle style = workbook.createCellStyle();
+        XSSFFont font = workbook.createFont();
+        font.setBold(true);
+        style.setFont(font);
+        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setVerticalAlignment(VerticalAlignment.CENTER);
+        style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        applyRoomOccupancyBorders(style);
+        return style;
+    }
+
+    private XSSFCellStyle createRoomOccupancyTextStyle(XSSFWorkbook workbook) {
+        XSSFCellStyle style = workbook.createCellStyle();
+        style.setAlignment(HorizontalAlignment.LEFT);
+        applyRoomOccupancyBorders(style);
+        return style;
+    }
+
+    private XSSFCellStyle createRoomOccupancyNumberStyle(XSSFWorkbook workbook, String format) {
+        XSSFCellStyle style = workbook.createCellStyle();
+        style.setAlignment(HorizontalAlignment.RIGHT);
+        style.setDataFormat(workbook.createDataFormat().getFormat(format));
+        applyRoomOccupancyBorders(style);
+        return style;
+    }
+
+    private XSSFCellStyle createRoomOccupancyTotalStyle(XSSFWorkbook workbook, boolean numeric, String format) {
+        XSSFCellStyle style = workbook.createCellStyle();
+        XSSFFont font = workbook.createFont();
+        font.setBold(true);
+        style.setFont(font);
+        style.setAlignment(numeric ? HorizontalAlignment.RIGHT : HorizontalAlignment.LEFT);
+        style.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        if (format != null) {
+            style.setDataFormat(workbook.createDataFormat().getFormat(format));
+        }
+        applyRoomOccupancyBorders(style);
+        return style;
+    }
+
+    private void applyRoomOccupancyBorders(CellStyle style) {
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+    }
+
+    private String formatRoomOccupancyRatioMode() {
+        if (RoomCategoryOccupancyDTO.RATIO_MODE_PATIENT_CATEGORY_DURATION.equals(roomOccupancyRatioMode)) {
+            return "Patient Category Duration";
+        }
+        return "Aggregated Room Utilization";
+    }
+
+    private List<RoomCategory> getRoomOccupancyCategoriesForReport() {
+        if (selectedRoomCategories != null && !selectedRoomCategories.isEmpty()) {
+            return selectedRoomCategories;
+        }
+        List<RoomCategory> categories = roomCategoryController != null ? roomCategoryController.getItems() : null;
+        return categories != null ? categories : new ArrayList<>();
     }
 
 // LOAD: admissions per year/month
@@ -411,9 +680,9 @@ public class InwardReportController implements Serializable {
             jpql.append(" and pe.department = :dep ");
             params.put("dep", department);
         }
-        if (roomCategories != null && !roomCategories.isEmpty()) {
+        if (selectedRoomCategories != null && !selectedRoomCategories.isEmpty()) {
             jpql.append("AND pe.currentPatientRoom.roomFacilityCharge.roomCategory IN :cat ");
-            params.put("cat", roomCategories);
+            params.put("cat", selectedRoomCategories);
         }
 
         jpql.append("GROUP BY FUNCTION('YEAR', pe.dateOfAdmission), FUNCTION('MONTH', pe.dateOfAdmission) ")
@@ -430,7 +699,9 @@ public class InwardReportController implements Serializable {
     private void loadRoomCategoryMetricsIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
         categoryAvailableRoomsCache = new HashMap<>();
 
-        if (roomCategories == null || roomCategories.isEmpty()) {
+        List<RoomCategory> reportCategories = allRoomCategories != null
+                ? allRoomCategories : getRoomOccupancyCategoriesForReport();
+        if (reportCategories.isEmpty()) {
             return;
         }
 
@@ -466,10 +737,8 @@ public class InwardReportController implements Serializable {
             jpql.append(" and rfc.department = :dep ");
             params.put("dep", department);
         }
-        if (roomCategories != null && !roomCategories.isEmpty()) {
-            jpql.append(" AND rfc.roomCategory IN :cat ");
-            params.put("cat", roomCategories);
-        }
+        jpql.append(" AND rfc.roomCategory IN :cat ");
+        params.put("cat", reportCategories);
         jpql.append("GROUP BY FUNCTION('YEAR', pr.admittedAt), FUNCTION('MONTH', pr.admittedAt), ")
                 .append("rfc.roomCategory, pr.patientEncounter.id ")
                 .append("ORDER BY 1, 2, 3");
@@ -6584,6 +6853,14 @@ public class InwardReportController implements Serializable {
 
     public void setAllRoomCategories(List<RoomCategory> allRoomCategories) {
         this.allRoomCategories = allRoomCategories;
+    }
+
+    public List<RoomCategory> getSelectedRoomCategories() {
+        return selectedRoomCategories;
+    }
+
+    public void setSelectedRoomCategories(List<RoomCategory> selectedRoomCategories) {
+        this.selectedRoomCategories = selectedRoomCategories;
     }
 
     public class IncomeByCategoryRecord {
