@@ -244,10 +244,10 @@
                             </h:panelGroup>
                             <p:selectCheckboxMenu id="rCat"
                                                   value="#{inwardReportController.roomCategories}"
-                                                  converter="#{roomCategoryConverter}"
                                                   styleClass="w-100"
                                                   label="Select Category"
-                                                  updateLabel="true">
+                                                  updateLabel="true"
+                                                  converter="#{roomCategoryConverter}">
                                 <f:selectItems
                                     value="#{roomCategoryController.items}"
                                     var="cat"
@@ -310,7 +310,7 @@
                                         <f:facet name="header"><h:outputText value="No of Admission"/></f:facet>
                                     </p:column>
                                     <!-- "Rooms" spans 4 cols × number of live room categories -->
-                                    <p:column colspan="#{inwardReportController.roomCategories.size() * 4}"
+                                    <p:column colspan="#{inwardReportController.allRoomCategories.size() * 4}"
                                               styleClass="border-1 text-center group-header">
                                         <f:facet name="header"><h:outputText value="Rooms"/></f:facet>
                                     </p:column>
@@ -320,7 +320,7 @@
                                 <!-- ROW 2: one 4-colspan cell per room category; fixed sections rowspan="2" -->
                                 <p:row>
                                     <!-- Dynamic room category sub-headers -->
-                                    <c:forEach items="#{inwardReportController.roomCategories}" var="rc">
+                                    <c:forEach items="#{inwardReportController.allRoomCategories}" var="rc">
                                         <p:column colspan="4" styleClass="border-1 text-center subgroup-header category-header">
                                             <f:facet name="header">
                                                 <h:outputText value="#{rc.name}"/>
@@ -332,7 +332,7 @@
 
                                 <!-- ROW 3: 4-leaf cells per room category only (fixed sections absorbed by rowspan=2) -->
                                 <p:row>
-                                    <c:forEach items="#{inwardReportController.roomCategories}" var="rc">
+                                    <c:forEach items="#{inwardReportController.allRoomCategories}" var="rc">
                                         <p:column styleClass="border-1 metric-col"><f:facet name="header"><h:outputText value="Rooms"/></f:facet></p:column>
                                         <p:column styleClass="border-1 metric-col"><f:facet name="header"><h:outputText value="Days"/></f:facet></p:column>
                                         <p:column styleClass="border-1 metric-col"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
@@ -366,7 +366,7 @@
                               exactly what PrimeFaces columnGroup requires.
                               row.metricFor(rc) returns a zero-safe DTO.
                             -->
-                            <c:forEach items="#{inwardReportController.roomCategories}" var="rc">
+                            <c:forEach items="#{inwardReportController.allRoomCategories}" var="rc">
                                 <p:column styleClass="metric-col border-1">
                                     <h:outputText value="#{row.metricFor(rc).numberOfRooms}">
                                         <f:convertNumber pattern="#,##0"/>
@@ -400,7 +400,7 @@
                                     </p:column>
 
                                     <!-- Dynamic category totals -->
-                                    <c:forEach items="#{inwardReportController.roomCategories}" var="rc">
+                                    <c:forEach items="#{inwardReportController.allRoomCategories}" var="rc">
                                         <p:column>
                                             <f:facet name="footer">
                                                 <h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.metricFor(rc).numberOfRooms}">

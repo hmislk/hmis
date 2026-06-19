@@ -337,6 +337,7 @@ public class InwardReportController implements Serializable {
     private List<RoomOccupancyRowDTO> roomOccupancyList;
     private RoomOccupancyRowDTO roomOccupancyGrandTotal;
     private String roomOccupancyRatioMode = RoomCategoryOccupancyDTO.RATIO_MODE_AGGREGATED_ROOM_UTILIZATION;
+    private List<RoomCategory> allRoomCategories;
 
     public void processRoomOccupancyReport() {
         if (fromDate == null || toDate == null) {
@@ -345,9 +346,12 @@ public class InwardReportController implements Serializable {
         }
 
         // Load all active room categories that appear in the "Rooms" section
-        // (exclude ICU / Ward-bed which have their own sections).
         // Adjust the exclusion logic to match your actual RoomCategory.name values.
-        roomCategories = roomCategoryController.getItems();
+        if (roomCategories == null || roomCategories.isEmpty()) {
+            allRoomCategories = roomCategoryController.getItems();
+        } else {
+            allRoomCategories = roomCategories;
+        }
 
         roomOccupancyList = new ArrayList<>();
         Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid = new TreeMap<>();
@@ -6572,6 +6576,14 @@ public class InwardReportController implements Serializable {
 
     public void setIpIncomeTotalBillDiscount(double ipIncomeTotalBillDiscount) {
         this.ipIncomeTotalBillDiscount = ipIncomeTotalBillDiscount;
+    }
+
+    public List<RoomCategory> getAllRoomCategories() {
+        return allRoomCategories;
+    }
+
+    public void setAllRoomCategories(List<RoomCategory> allRoomCategories) {
+        this.allRoomCategories = allRoomCategories;
     }
 
     public class IncomeByCategoryRecord {
