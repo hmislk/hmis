@@ -683,9 +683,7 @@ public class ServiceApiService implements Serializable {
         int count = 0;
         Map<String, Object> changes = new HashMap<>();
         changes.put("categoryId", categoryId);
-        if (feeType != null) {
-            changes.put("feeType", feeType.name());
-        }
+        changes.put("feeType", feeType != null ? feeType.name() : "ALL_TYPES");
         if (marginAllowed != null) {
             changes.put("marginAllowed", marginAllowed);
         }
