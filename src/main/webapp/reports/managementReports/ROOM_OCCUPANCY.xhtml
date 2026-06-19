@@ -263,10 +263,12 @@
                                              icon="fas fa-cogs" ajax="false"
                                              action="#{inwardReportController.processRoomOccupancyReport()}"
                                              value="Process"/>
-                            <p:commandButton class="ui-button-primary mx-1"
-                                             icon="fas fa-print" ajax="false"
-                                             onclick="window.print()"
-                                             value="Print All"/>
+                            <p:commandButton
+                                class="mx-2 ui-button-info m-1"
+                                icon="fa-solid fa-print"
+                                ajax="false"
+                                action="ROOM_OCCUPANCY_print?faces-redirect=true"
+                                value="To Print"/>
                             <p:commandButton class="ui-button-success mx-1"
                                              icon="fas fa-file-excel" ajax="false"
                                              action="#{inwardReportController.downloadRoomOccupancyExcel()}"
