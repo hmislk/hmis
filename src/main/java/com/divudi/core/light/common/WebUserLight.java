@@ -10,6 +10,7 @@ public class WebUserLight {
     private String staffNameWithTitle;
     private String institutionName;
     private String departmentName;
+    private String loginPage;
 
     public WebUserLight() {
     }
@@ -101,5 +102,13 @@ public class WebUserLight {
 
     public void setDepartmentName(String departmentName) {
         this.departmentName = departmentName;
+    }
+
+    public String getLoginPage() {
+        return loginPage;
+    }
+
+    public void setLoginPage(String loginPage) {
+        this.loginPage = loginPage;
     }
 }
