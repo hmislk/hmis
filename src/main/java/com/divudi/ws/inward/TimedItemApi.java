@@ -480,8 +480,11 @@ public class TimedItemApi {
             String limitStr = uriInfo.getQueryParameters().getFirst("limit");
             int limit = 50;
             if (limitStr != null && !limitStr.trim().isEmpty()) {
-                try { limit = Math.min(Math.max(Integer.parseInt(limitStr.trim()), 1), 500); }
-                catch (NumberFormatException ignored) { }
+                try {
+                    limit = Math.min(Math.max(Integer.parseInt(limitStr.trim()), 1), 500);
+                } catch (NumberFormatException e) {
+                    return errorResponse("Invalid limit format", 400);
+                }
             }
             StringBuilder jpql = new StringBuilder(
                     "select c from TimedItemCategory c where c.retired = false");
@@ -566,7 +569,7 @@ public class TimedItemApi {
             cat.setCreatedAt(new Date());
             cat.setCreater(user);
             categoryFacade.create(cat);
-            return Response.status(201).entity(gson.toJson(successData(toCategoryDto(cat)))).build();
+            return successResponse(201, toCategoryDto(cat));
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);
         }
