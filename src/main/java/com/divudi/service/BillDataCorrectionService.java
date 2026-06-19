@@ -81,7 +81,7 @@ public class BillDataCorrectionService {
 
         switch (normalizedType) {
             case "BILL":
-                parentBill = updateBill(targetId, fields, previousValues, newValues);
+                parentBill = updateBill(targetId, fields, previousValues, newValues, apiUser);
                 break;
             case "BILL_ITEM":
                 parentBill = updateBillItem(targetId, fields, previousValues, newValues);
@@ -123,7 +123,7 @@ public class BillDataCorrectionService {
         return result;
     }
 
-    private Bill updateBill(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues) {
+    private Bill updateBill(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues, WebUser apiUser) {
         Bill entity = billFacade.find(id);
         if (entity == null) {
             throw new IllegalArgumentException("Bill not found for id " + id);
@@ -158,12 +158,18 @@ public class BillDataCorrectionService {
             if (requestedRetire) {
                 guardEmptyBillForRetire(entity, originalNetTotal, originalTotal);
                 previousValues.put("retired", entity.isRetired());
+                previousValues.put("retiredAt", entity.getRetiredAt());
+                previousValues.put("retireComments", entity.getRetireComments());
                 String retireComments = fields.containsKey("retireComments")
                         ? toStringValue(fields.get("retireComments")) : null;
+                Date retiredAt = new Date();
                 entity.setRetired(true);
-                entity.setRetiredAt(new Date());
+                entity.setRetiredAt(retiredAt);
                 entity.setRetireComments(retireComments);
+                entity.setRetirer(apiUser);
                 newValues.put("retired", true);
+                newValues.put("retiredAt", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(retiredAt));
+                newValues.put("retireComments", retireComments);
             }
         }
 
