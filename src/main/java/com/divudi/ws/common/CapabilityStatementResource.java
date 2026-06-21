@@ -292,12 +292,27 @@ public class CapabilityStatementResource {
                         + "Also exposes /api/logins/last-per-user for the most recent login per unique user in a department.",
                         "API Key",
                         "GET"))
+                .add(resource("Staff", "/api/staff",
+                        "Staff CRUD. GET lists active staff (supports ?query=&departmentId=&size=). "
+                        + "GET /{id} returns a single staff record including personId, code, designation, and department. "
+                        + "POST creates a new staff member (required: name; optional: code, designation (string label), departmentId, institutionId). "
+                        + "Creates a linked Person automatically. "
+                        + "PUT /{id} updates name, code, designation, departmentId, or institutionId (partial update — only supplied fields change). "
+                        + "DELETE /{id}?retireComments=reason soft-retires a staff record. "
+                        + "Link an existing Staff to a WebUser via PUT /api/users/{id}/staff with body {staffId}. "
+                        + "POST /api/users supports optional staffId field to pre-link staff at user creation. "
+                        + "POST /api/users/{id}/privileges/all with optional body {departmentIds:[...]} assigns every privilege across specified (or all loggable) departments; "
+                        + "returns {privilegesAdded, privilegesSkipped, departments:[{departmentId, added, skipped}]}.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Users", "/api/users",
                         "User CRUD, password reset/change, loggable department assignment, "
                         + "and per-user privilege assignment with department scope. "
-                        + "Create/update accepts optional loginPage. "
+                        + "Create/update accepts optional loginPage and optional staffId. "
                         + "POST /{id}/privileges requires departmentId. "
                         + "POST /{id}/departments/{departmentId}/privileges/category assigns all privileges from named categories. "
+                        + "POST /{id}/privileges/all with optional body {departmentIds:[...]} assigns every privilege across specified or all loggable departments. "
+                        + "PUT /{id}/staff with body {staffId} links a Staff record to the user. "
                         + "Supports filtering by departmentId and query string. "
                         + "DELETE /{id}/departments/{assignmentId} revokes one loggable department. "
                         + "DELETE /{id}/departments/{departmentId}/privileges bulk-revokes all privileges for a department. "
