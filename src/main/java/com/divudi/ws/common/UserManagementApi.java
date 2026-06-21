@@ -299,7 +299,7 @@ public class UserManagementApi {
         for (WebUserPrivilege p : ps) {
             Map<String, Object> m = new HashMap<>();
             m.put("id", p.getId());
-            m.put("privilege", p.getPrivilege() != null ? p.getPrivilege().name() : null);
+            m.put("privilege", p.getPrivilege() != null ? canonicalPrivilegeName(p.getPrivilege()) : null);
             m.put("departmentId", p.getDepartment() != null ? p.getDepartment().getId() : null);
             out.add(m);
         }
@@ -746,9 +746,17 @@ public class UserManagementApi {
     public Response listAvailablePrivileges() {
         WebUser apiUser = validateApiUser();
         if (apiUser == null) return errorResponse("Not a valid key", 401);
+        // Deduplicate by lowercase name; first occurrence wins so the canonical name
+        // matches whatever MySQL has already stored (case-insensitive collation means
+        // PharmacySaleWithoutStock and PharmacySaleWithOutStock occupy the same row).
+        Map<String, String> canonicals = buildCanonicalPrivilegeMap();
+        Set<String> seenLower = new LinkedHashSet<>();
         List<String> out = new ArrayList<>();
         for (Privileges p : Privileges.values()) {
-            out.add(p.name());
+            String lower = p.name().toLowerCase();
+            if (seenLower.add(lower)) {
+                out.add(canonicals.get(lower));
+            }
         }
         return successResponse(out);
     }
@@ -972,5 +980,19 @@ public class UserManagementApi {
         response.put("code", 200);
         response.put("data", data);
         return Response.status(200).entity(gson.toJson(response)).build();
+    }
+
+    /** Build a lowercase→first-occurrence-name map so case-insensitive duplicates resolve consistently. */
+    private static Map<String, String> buildCanonicalPrivilegeMap() {
+        Map<String, String> map = new LinkedHashMap<>();
+        for (Privileges p : Privileges.values()) {
+            map.putIfAbsent(p.name().toLowerCase(), p.name());
+        }
+        return map;
+    }
+
+    /** Return the canonical API name for a privilege, normalising case-insensitive duplicates. */
+    private String canonicalPrivilegeName(Privileges p) {
+        return buildCanonicalPrivilegeMap().getOrDefault(p.name().toLowerCase(), p.name());
     }
 }
