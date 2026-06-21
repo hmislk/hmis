@@ -86,8 +86,35 @@
 
                                     </p:dataTable>
                                 </p:panel>
+
+                                <p:panel class="mt-2">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-comment-dots"></h:outputText>
+                                        <h:outputLabel value="Bill Comment" class="mx-2"></h:outputLabel>
+                                    </f:facet>
+
+                                    <div class="d-flex gap-2 justify-content-between">
+                                        <p:inputText 
+                                            id="billComment"
+                                            class="w-100"
+                                            value="#{inwardSearch.bill.comments}">
+                                        </p:inputText>
+                                        
+                                        <p:commandButton 
+                                            id="saveBillComment"
+                                            value="Save Comment"
+                                            icon="fas fa-save"
+                                            class="ui-button-success"
+                                            style="width: 200px;"
+                                            action="#{inwardSearch.updateBillComments()}"
+                                            update="billComment gpBillPreview">
+                                        </p:commandButton>
+                                    </div>
+                                </p:panel>
+                                
                             </div>
                         </div>
+
                         <p:panel >
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between">
@@ -118,10 +145,10 @@
                                     <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill POS Paper', true)}" style="align-items: center;">
                                         <bill:posPaperPaymentBill bill="#{inwardSearch.bill}"/> 
                                     </h:panelGroup>
-                                    
-                                     <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Custom 3 Paper', false)}" >
-                                         <prints:five_five_custom_3_inward_payments bill="#{inwardSearch.bill}" duplicate="true" />
-                                </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Inward Payment Bill Five Five Custom 3 Paper', false)}" >
+                                        <prints:five_five_custom_3_inward_payments bill="#{inwardSearch.bill}" duplicate="true" />
+                                    </h:panelGroup>
 
                                 </h:panelGroup>
                             </div>
@@ -129,53 +156,53 @@
                     </p:panel>
                 </h:form>
 
-        <p:dialog id="inwardPaymentConfigDialog"
-                  header="Inward Payment Bill Printer Configuration"
-                  widgetVar="inwardPaymentConfigDialog"
-                  modal="true"
-                  width="560"
-                  resizable="false"
-                  closeOnEscape="true">
-            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="inwardPaymentConfigForm"/>
-            <h:form id="inwardPaymentConfigForm">
-                <div class="card config-section">
-                    <div class="card-header">
-                        <i class="fas fa-file-alt me-2"/>
-                        <h:outputText value="Paper Format Settings"/>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <h:selectBooleanCheckbox id="inwardPaymentPOS" value="#{pharmacyConfigController.inwardPaymentPosPaper}"/>
-                            <h:outputLabel for="inwardPaymentPOS" value="POS Paper" class="ms-2"/>
+                <p:dialog id="inwardPaymentConfigDialog"
+                          header="Inward Payment Bill Printer Configuration"
+                          widgetVar="inwardPaymentConfigDialog"
+                          modal="true"
+                          width="560"
+                          resizable="false"
+                          closeOnEscape="true">
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="inwardPaymentConfigForm"/>
+                    <h:form id="inwardPaymentConfigForm">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <i class="fas fa-file-alt me-2"/>
+                                <h:outputText value="Paper Format Settings"/>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentPOS" value="#{pharmacyConfigController.inwardPaymentPosPaper}"/>
+                                    <h:outputLabel for="inwardPaymentPOS" value="POS Paper" class="ms-2"/>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentFiveFive" value="#{pharmacyConfigController.inwardPaymentFiveFivePaper}"/>
+                                    <h:outputLabel for="inwardPaymentFiveFive" value="5×5 Paper" class="ms-2"/>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentFiveFiveCustom3" value="#{pharmacyConfigController.inwardPaymentFiveFiveCustom3Paper}"/>
+                                    <h:outputLabel for="inwardPaymentFiveFiveCustom3" value="5×5 Custom 3 Paper" class="ms-2"/>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="inwardPaymentA4" value="#{pharmacyConfigController.inwardPaymentA4Paper}"/>
+                                    <h:outputLabel for="inwardPaymentA4" value="A4 Paper" class="ms-2"/>
+                                </div>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <h:selectBooleanCheckbox id="inwardPaymentFiveFive" value="#{pharmacyConfigController.inwardPaymentFiveFivePaper}"/>
-                            <h:outputLabel for="inwardPaymentFiveFive" value="5×5 Paper" class="ms-2"/>
+                        <div class="d-flex gap-2 mt-3">
+                            <p:commandButton value="Apply &amp; Close"
+                                             icon="fas fa-save"
+                                             class="ui-button-success"
+                                             ajax="false"
+                                             action="#{pharmacyConfigController.saveInwardPaymentConfig}"/>
+                            <p:commandButton value="Cancel"
+                                             icon="fas fa-times"
+                                             class="ui-button-secondary"
+                                             type="button"
+                                             onclick="PF('inwardPaymentConfigDialog').hide(); return false;"/>
                         </div>
-                        <div class="mb-3">
-                            <h:selectBooleanCheckbox id="inwardPaymentFiveFiveCustom3" value="#{pharmacyConfigController.inwardPaymentFiveFiveCustom3Paper}"/>
-                            <h:outputLabel for="inwardPaymentFiveFiveCustom3" value="5×5 Custom 3 Paper" class="ms-2"/>
-                        </div>
-                        <div class="mb-3">
-                            <h:selectBooleanCheckbox id="inwardPaymentA4" value="#{pharmacyConfigController.inwardPaymentA4Paper}"/>
-                            <h:outputLabel for="inwardPaymentA4" value="A4 Paper" class="ms-2"/>
-                        </div>
-                    </div>
-                </div>
-                <div class="d-flex gap-2 mt-3">
-                    <p:commandButton value="Apply &amp; Close"
-                                     icon="fas fa-save"
-                                     class="ui-button-success"
-                                     ajax="false"
-                                     action="#{pharmacyConfigController.saveInwardPaymentConfig}"/>
-                    <p:commandButton value="Cancel"
-                                     icon="fas fa-times"
-                                     class="ui-button-secondary"
-                                     type="button"
-                                     onclick="PF('inwardPaymentConfigDialog').hide(); return false;"/>
-                </div>
-            </h:form>
-        </p:dialog>
+                    </h:form>
+                </p:dialog>
             </ui:define>
         </ui:composition>
     </h:body>

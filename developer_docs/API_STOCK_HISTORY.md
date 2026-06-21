@@ -32,6 +32,7 @@ Finance: <your-api-key>
 | toDate | String | No | End timestamp (`yyyy-MM-dd HH:mm:ss`) |
 | historyType | String | No | Filter by `HistoryType` enum value |
 | limit | Integer | No | Max rows (default: 100) |
+| includeArchived | Boolean | No | When `true`, also search the `STOCKHISTORYARCHIVE` table and merge results (default: `false`) |
 
 **Example Request:**
 ```bash
@@ -92,3 +93,4 @@ curl -X GET \
 - `limit` defaults to 100 if omitted or invalid (<= 0). Maximum allowed value is 1000.
 - Date parsing requires exact format: `yyyy-MM-dd HH:mm:ss`.
 - `historyType` must match an enum value in `HistoryType`.
+- `includeArchived=true` queries the live `STOCKHISTORY` and the `STOCKHISTORYARCHIVE` tables separately (JPA has no UNION), merges them, re-orders by `id DESC`, and caps the combined result at `limit`. Archived rows keep their original id, so ordering stays consistent across both tables. Use it to retrieve history older than the archival retention window.

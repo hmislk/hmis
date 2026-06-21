@@ -202,7 +202,10 @@ public class BillItem implements Serializable, RetirableEntity {
     @OneToMany(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBillItem", fetch = FetchType.LAZY)
-    @OrderBy("feeAdjusted")
+    // orderNo holds the manual (drag-and-drop) display order set at settle time;
+    // feeAdjusted is the secondary key so historical bills (orderNo all 0) keep
+    // their original adjusted-fee ordering.
+    @OrderBy("orderNo, feeAdjusted")
     private List<BillFee> proFees = new ArrayList<>();
     @OneToMany(mappedBy = "parentBillItem")
     private List<BillItem> chiledBillItems;

@@ -880,7 +880,7 @@
                             action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                             actionListener="#{pharmacySaleBhtController.resetAll()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="direct_issue_to_BHTs.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Direct Issue to BHTs" />
                         </p:commandLink>
                     </h:form>
@@ -896,7 +896,7 @@
                             action="/inward/pharmacy_bill_issue_bht_native?faces-redirect=true"
                             actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="direct_issue_to_BHTs_native.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Direct Issue to BHTs (Native SQL)" />
                         </p:commandLink>
                     </h:form>
@@ -913,7 +913,7 @@
                             actionListener="#{pharmacySaleBhtController.resetAll()}"
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="direct_issue_to_theatre.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Direct Issue to Theatre Cases" />
                         </p:commandLink>
                     </h:form>
@@ -930,7 +930,7 @@
                             actionListener="#{pharmacySaleBhtController.resetAll()}"
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="BHT_issue_requests.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="BHT Issue Requests" />
                         </p:commandLink>
                     </h:form>
@@ -946,7 +946,7 @@
                             actionListener="#{searchController.makeListNull}"
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="search_inpatint_direct_issue_by_bill.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Inpatient Direct Issues by Bill" />
                         </p:commandLink>
                     </h:form>
@@ -962,7 +962,7 @@
                             actionListener="#{searchController.makeListNull}"   
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="search_inpatint_direct_issue_by_item.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Inpatient Direct Issues by Item" />
                         </p:commandLink>
                     </h:form>
@@ -978,7 +978,7 @@
                             actionListener="#{searchController.makeListNull}" 
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="search_inpatint_direct_issue_returns_by_bill.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Inpatient Direct Issue Returns by Bill" />
                         </p:commandLink>
                     </h:form>
@@ -995,7 +995,7 @@
                             actionListener="#{searchController.makeListNull}" 
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="search_inpatint_direct_issue_returns_by_item.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;"  value="Search Inpatient Direct Issue Returns by Item"  />
                         </p:commandLink>
                     </h:form>
@@ -1710,7 +1710,7 @@
                     <h:form>
                         <p:tooltip for="Admit" value="Admit Patient" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Admit" ajax="false" action="#{patientController.navigatePatientAdmit()}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/hospital.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Admit.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Admit Patient"/>
                         </p:commandLink>
                     </h:form>
@@ -1721,9 +1721,7 @@
                         <p:commandLink id="Inpatient_Appointments" ajax="false"
                                        action="#{appointmentController.navigateToInwardAppointmentFromMenu()}"
                                        styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images"
-                                            name="home/appointments.svg"
-                                            style="cursor:pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Inpatient_Appointments.svg" style="cursor:pointer;" width="80" height="80"/>
                             <h:outputText style="display:none;" value="Appointments"/>
                         </p:commandLink>
                     </h:form>
@@ -1734,7 +1732,7 @@
                     <h:form>
                         <p:tooltip for="Search_Admissions" value="Search Admissions" showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink id="Search_Admissions" ajax="false" action="#{admissionController.navigateToListAdmissions}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/admissions-search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Search_Admissions.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Admissions" />
                         </p:commandLink>
                     </h:form>
@@ -1745,7 +1743,7 @@
                     <h:form>
                         <p:tooltip for="Investigation_Trace" value="Trace Investigations" showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink id="Investigation_Trace" ajax="false" action="/inward/investigation_search_for_reporting_bht?faces-redirect=true" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/investigation-trace.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Investigation_Trace.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Trace Investigations" />
                         </p:commandLink>
                     </h:form>
@@ -1832,7 +1830,7 @@
                     <h:form>
                         <p:tooltip for="Edit_Admission_Details" value="Edit Admission Details" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Edit_Admission_Details" ajax="false" action="#{admissionController.navigateToEditAdmission()}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/edit-admission.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Edit_Admission_Details.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Edit Admission Details"/>
                         </p:commandLink>
                     </h:form>
@@ -1843,7 +1841,7 @@
                     <h:form>
                         <p:tooltip for="Change_Patient_for_Admission" value="Change Patient for Admission" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Change_Patient_for_Admission" ajax="false" action="#{admissionPatientChangeController.navigateToChangeAdmissionPatient()}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/change-patient-admission.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Change_Patient_for_Admission.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Change Patient for Admission"/>
                         </p:commandLink>
                     </h:form>
@@ -1854,7 +1852,7 @@
                     <h:form>
                         <p:tooltip for="Appointment_Admission" value="Appointment Admission" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Appointment_Admission" ajax="false" action="#{appointmentController.navigateToAppointmentAdminFromMenu()}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/appointment-admission.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Appointment_Admission.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Appointment Admission"/>
                         </p:commandLink>
                     </h:form>
@@ -1865,7 +1863,7 @@
                     <h:form>
                         <p:tooltip for="Manage_Appointment" value="Manage Appointment" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Manage_Appointment" ajax="false" action="#{appointmentController.navigateToSearchAppointmentsListFromMenu()}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/manage-appointment.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Manage_Appointment.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Manage Appointment"/>
                         </p:commandLink>
                     </h:form>
@@ -1876,7 +1874,7 @@
                     <h:form>
                         <p:tooltip for="Room_Reservations" value="Room Reservations" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Room_Reservations" ajax="false" action="#{inwardReservationController.navigateToReservationCalendarFromMenu()}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/room-reservations.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Room_Reservations.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Room Reservations"/>
                         </p:commandLink>
                     </h:form>
@@ -1887,8 +1885,19 @@
                     <h:form>
                         <p:tooltip for="Room_Occupancy" value="Room Occupancy" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Room_Occupancy" ajax="false" action="#{admissionController.navigateToRoomOccupancy()}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/room-occupancy.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Room_Occupancy.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Room Occupancy"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Bed Board -->
+                <h:panelGroup rendered="#{ui.icon eq 'Bed_Board' and webUserController.hasPrivilege('InwardRoomRoomOccupency')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Bed_Board" value="Bed Board" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Bed_Board" ajax="false" action="#{admissionController.navigateToBedBoard()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Bed_Board.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Bed Board"/>
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
@@ -1898,7 +1907,7 @@
                     <h:form>
                         <p:tooltip for="Room_Vacancy" value="Room Vacancy" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Room_Vacancy" ajax="false" action="#{admissionController.navigateToRoomVacancy()}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/room-vacancy.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Room_Vacancy.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Room Vacancy"/>
                         </p:commandLink>
                     </h:form>
@@ -1909,7 +1918,7 @@
                     <h:form>
                         <p:tooltip for="Admit_Room" value="Admit Room" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Admit_Room" ajax="false" action="#{roomChangeController.navigateToAdmitRoomFromMenu()}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/admit-room.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Admit_Room.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Admit Room"/>
                         </p:commandLink>
                     </h:form>
@@ -1920,7 +1929,7 @@
                     <h:form>
                         <p:tooltip for="Room_Change" value="Room Change" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Room_Change" ajax="false" action="#{admissionController.navigateToRoomChange()}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/room-change.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Room_Change.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Room Change"/>
                         </p:commandLink>
                     </h:form>
@@ -1931,7 +1940,7 @@
                     <h:form>
                         <p:tooltip for="Guardian_Room_Change" value="Guardian Room Change" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Guardian_Room_Change" ajax="false" action="#{admissionController.navigateToGuardianRoomChange()}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/guardian-room-change.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Guardian_Room_Change.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Guardian Room Change"/>
                         </p:commandLink>
                     </h:form>
@@ -1942,7 +1951,7 @@
                     <h:form>
                         <p:tooltip for="Add_Services_Investigations" value="Add Services and Investigations" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Add_Services_Investigations" ajax="false" action="#{billBhtController.navigateToAddServicesFromMenu}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/add-services.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Add_Services_Investigations.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Add Services and Investigations"/>
                         </p:commandLink>
                     </h:form>
@@ -1953,7 +1962,7 @@
                     <h:form>
                         <p:tooltip for="Add_Services_With_Payments" value="Add Services and Investigations with Payments" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Add_Services_With_Payments" ajax="false" action="#{opdBillController.navigateToNewInwardServiceBill}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/add-services-payments.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Add_Services_With_Payments.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Add Services and Investigations with Payments"/>
                         </p:commandLink>
                     </h:form>
@@ -1964,7 +1973,7 @@
                     <h:form>
                         <p:tooltip for="Add_Outside_Charges" value="Add Outside Charges" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Add_Outside_Charges" ajax="false" action="#{inwardAdditionalChargeController.navigateToAddOutsideChargeFromMenu()}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/add-outside-charges.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Add_Outside_Charges.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Add Outside Charges"/>
                         </p:commandLink>
                     </h:form>
@@ -1975,7 +1984,7 @@
                     <h:form>
                         <p:tooltip for="Add_Professional_Fee" value="Add Professional Fee" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Add_Professional_Fee" ajax="false" action="#{inwardProfessionalBillController.navigateToAddProfessionalFeesFromMenu()}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/add-professional-fee.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Add_Professional_Fee.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Add Professional Fee"/>
                         </p:commandLink>
                     </h:form>
@@ -1986,7 +1995,7 @@
                     <h:form>
                         <p:tooltip for="Add_Estimated_Professional_Fee" value="Add Estimated Professional Fee" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Add_Estimated_Professional_Fee" ajax="false" action="#{inwardProfessionalBillController.navigateToAddEstimatedProfessionalFeeFromMenu()}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/add-estimated-professional-fee.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Add_Estimated_Professional_Fee.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Add Estimated Professional Fee"/>
                         </p:commandLink>
                     </h:form>
@@ -1997,7 +2006,7 @@
                     <h:form>
                         <p:tooltip for="Add_Timed_Services" value="Add Timed Services" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Add_Timed_Services" ajax="false" action="#{inwardTimedItemController.navigateToAddInwardTimedServicesFromMenu}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/add-timed-services.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Add_Timed_Services.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Add Timed Services"/>
                         </p:commandLink>
                     </h:form>
@@ -2008,7 +2017,7 @@
                     <h:form>
                         <p:tooltip for="Interim_Bill" value="Interim Bill" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Interim_Bill" ajax="false" action="#{bhtSummeryController.navigateToIntrimBill()}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/interim-bill.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Interim_Bill.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Interim Bill"/>
                         </p:commandLink>
                     </h:form>
@@ -2019,7 +2028,7 @@
                     <h:form>
                         <p:tooltip for="Interim_Bill_Estimated" value="Interim Bill - Estimated Professional Fees" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Interim_Bill_Estimated" ajax="false" action="#{bhtSummeryController.navigateToIntrimBillEstimate}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/interim-bill-estimated.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Interim_Bill_Estimated.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Interim Bill - Estimated Professional Fees"/>
                         </p:commandLink>
                     </h:form>
@@ -2030,7 +2039,7 @@
                     <h:form>
                         <p:tooltip for="Interim_Bill_Search" value="Interim Bill Search" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Interim_Bill_Search" ajax="false" action="/inward/inward_search_intrim?faces-redirect=true" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/interim-bill-search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Interim_Bill_Search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Interim Bill Search"/>
                         </p:commandLink>
                     </h:form>
@@ -2041,7 +2050,7 @@
                     <h:form>
                         <p:tooltip for="Search_Service_Bill" value="Search Service Bill" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Search_Service_Bill" ajax="false" action="/inward/inward_search_service?faces-redirect=true" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search-service-bill.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Search_Service_Bill.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Service Bill"/>
                         </p:commandLink>
                     </h:form>
@@ -2052,7 +2061,7 @@
                     <h:form>
                         <p:tooltip for="Search_Professional_Bill" value="Search Professional Bill" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Search_Professional_Bill" ajax="false" action="/inward/inward_search_professional?faces-redirect=true" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search-professional-bill.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Search_Professional_Bill.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Professional Bill"/>
                         </p:commandLink>
                     </h:form>
@@ -2063,7 +2072,7 @@
                     <h:form>
                         <p:tooltip for="Search_Estimated_Professional_Bill" value="Search Estimated Professional Bill" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Search_Estimated_Professional_Bill" ajax="false" action="/inward/inward_search_professional_estimate?faces-redirect=true" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search-estimated-professional-bill.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Search_Estimated_Professional_Bill.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Estimated Professional Bill"/>
                         </p:commandLink>
                     </h:form>
@@ -2074,7 +2083,7 @@
                     <h:form>
                         <p:tooltip for="Search_Provisional_Bill" value="Search Provisional Bill" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Search_Provisional_Bill" ajax="false" action="/inward/inward_search_provisional?faces-redirect=true" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search-provisional-bill.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Search_Provisional_Bill.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Provisional Bill"/>
                         </p:commandLink>
                     </h:form>
@@ -2085,7 +2094,7 @@
                     <h:form>
                         <p:tooltip for="Search_Final_Bill" value="Search Final Bill" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Search_Final_Bill" ajax="false" action="/inward/inward_search_final?faces-redirect=true" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search-final-bill.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Search_Final_Bill.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Final Bill"/>
                         </p:commandLink>
                     </h:form>
@@ -2096,7 +2105,7 @@
                     <h:form>
                         <p:tooltip for="Search_Final_Bill_By_Discharge_Date" value="Search Final Bill by Discharge Date" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Search_Final_Bill_By_Discharge_Date" ajax="false" action="/inward/inward_search_final_check?faces-redirect=true" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search-final-bill-discharge.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Search_Final_Bill_By_Discharge_Date.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Final Bill by Discharge Date"/>
                         </p:commandLink>
                     </h:form>
@@ -2107,7 +2116,7 @@
                     <h:form>
                         <p:tooltip for="Request_Medicines_From_Pharmacy" value="Request Medicines from Pharmacy" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Request_Medicines_From_Pharmacy" ajax="false" action="#{admissionController.navigateToPharmacyBhtRequestFromMenu}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/request-medicines.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Request_Medicines_From_Pharmacy.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Request Medicines from Pharmacy"/>
                         </p:commandLink>
                     </h:form>
@@ -2118,7 +2127,7 @@
                     <h:form>
                         <p:tooltip for="View_Pharmacy_Requests" value="View Pharmacy Requests" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="View_Pharmacy_Requests" ajax="false" action="#{admissionController.navigateToSearchInwardBills}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/view-pharmacy-requests.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="View_Pharmacy_Requests.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="View Pharmacy Requests"/>
                         </p:commandLink>
                     </h:form>
@@ -2129,8 +2138,63 @@
                     <h:form>
                         <p:tooltip for="Inward_Analytics" value="Inward Analytics" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Inward_Analytics" ajax="false" action="/inward/inward_reports?faces-redirect=true" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/inward-analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Inward_Analytics.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Inward Analytics"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Patient Lookup & Registration -->
+                <h:panelGroup rendered="#{ui.icon eq 'Patient_Lookup_Registration' and webUserController.hasPrivilege('OpdPreBilling')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Patient_Lookup_Registration" value="Patient Lookup &amp; Registration" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Patient_Lookup_Registration" ajax="false" action="#{opdBillController.navigateToSearchPatients()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Patient_Lookup_Registration.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Patient Lookup &amp; Registration"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Initiate Transfer -->
+                <h:panelGroup rendered="#{ui.icon eq 'Initiate_Transfer' and webUserController.hasPrivilege('InwardRoomTransferInitiate')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Initiate_Transfer" value="Initiate Transfer" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Initiate_Transfer" ajax="false" action="#{patientTransferController.navigateToInitiateTransfer()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Initiate_Transfer.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Initiate Transfer"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Accept Patients -->
+                <h:panelGroup rendered="#{ui.icon eq 'Accept_Patients' and webUserController.hasPrivilege('InwardRoomPatientAccept')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Accept_Patients" value="Accept Patients" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Accept_Patients" ajax="false" action="#{patientTransferController.navigateToPatientAccept()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Accept_Patients.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Accept Patients"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Accept Returns from Ward -->
+                <h:panelGroup rendered="#{ui.icon eq 'Accept_Returns_from_Ward' and webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Accept_Returns_from_Ward" value="Accept Returns from Ward" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Accept_Returns_from_Ward" ajax="false" action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Accept_Returns_from_Ward.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Accept Returns from Ward"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Nursing WorkBench -->
+                <h:panelGroup rendered="#{ui.icon eq 'Nursing_Work_Bench' and webUserController.hasPrivilege('NursingWorkBench')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="Nursing_Work_Bench" value="Nursing WorkBench" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="Nursing_Work_Bench" ajax="false" action="#{nursingWorkBenchController.navigatetoNursingWorkBench()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="Nursing_Work_Bench.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Nursing WorkBench"/>
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>

@@ -644,6 +644,29 @@
                                         class="w-100 ui-button-success">
                                     </p:commandButton>
                                 </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnSendToTheatre"
+                                        rendered="#{webUserController.hasPrivilege('TheatreSendPatient')}"
+                                        value="Send to Theatre"
+                                        ajax="false"
+                                        disabled="#{admissionController.current.discharged eq true}"
+                                        action="#{patientTransferController.navigateToSendToTheatre(admissionController.current)}"
+                                        icon="fa fa-procedures"
+                                        class="w-100 ui-button-warning">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnTheatreAccept"
+                                        rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')}"
+                                        value="Theatre Patients"
+                                        ajax="false"
+                                        action="#{patientTransferController.navigateToTheatreAccept()}"
+                                        icon="fa fa-hospital"
+                                        class="w-100 ui-button-info">
+                                    </p:commandButton>
+                                </div>
                             </div>
                         </p:panel>
                     </div>
@@ -791,6 +814,30 @@
                                         title="Navigate to Clinical Discharge"
                                         rendered="#{webUserController.hasPrivilege('InpatientClinicalDischarge')}"
                                         styleClass="w-100 #{admissionController.current.clinicallyDischarged ? 'ui-button-success' : 'ui-button-warning'}">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-12">
+                                    <p:commandButton
+                                        id="btnNursingDischarge"
+                                        value="Nursing Discharge"
+                                        ajax="false"
+                                        action="#{nursingDischargeController.navigateToNursingDischarge(admissionController.current)}"
+                                        icon="fa fa-user-nurse"
+                                        title="Navigate to Nursing Discharge"
+                                        rendered="#{webUserController.hasPrivilege('InwardNursingDischarge')}"
+                                        styleClass="w-100 #{admissionController.current.nursingDischarged ? 'ui-button-success' : 'ui-button-warning'}">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-12">
+                                    <p:commandButton
+                                        id="btnPhysicalDischarge"
+                                        value="Physical Discharge"
+                                        ajax="false"
+                                        action="#{nursingDischargeController.navigateToPhysicalDischarge(admissionController.current)}"
+                                        icon="fa fa-walking"
+                                        title="Navigate to Physical Discharge"
+                                        rendered="#{webUserController.hasPrivilege('InwardPhysicalDischarge')}"
+                                        styleClass="w-100 #{admissionController.current.physicalDischarged ? 'ui-button-success' : 'ui-button-warning'}">
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -1034,7 +1081,7 @@
                                 <div class="col-6">
                                     <p:commandButton
                                         id="btnServiceBills"
-                                        value="Inward Service Bills"
+                                        value="All Inward Service Bills"
                                         action="#{inwardReportControllerBht.navigateToInpatientServiceBillListDto()}"
                                         icon="fa fa-file-invoice"
                                         ajax="false"

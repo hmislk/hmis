@@ -1866,6 +1866,15 @@ public class InwardSearch implements Serializable {
         JsfUtil.addErrorMessage("Successfully Cheked");
     }
 
+    public void updateBillComments() {
+        if (bill == null || bill.getId() == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return;
+        }
+        getBillFacade().edit(bill);
+        JsfUtil.addSuccessMessage("Comment Updated");
+    }
+
     public void selectBillItem(BillItem billItem) {
         makeNull();
         BillItem tmp = billItemFacede.find(billItem.getId());

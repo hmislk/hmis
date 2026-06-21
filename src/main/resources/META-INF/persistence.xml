@@ -45,9 +45,10 @@
 
             <!-- Skip re-reading LOB columns (description, filters, columns,   -->
             <!-- rows, totals on ReportTemplate etc.) when the object is        -->
-            <!-- already in the L2 cache. Avoids fetching large blobs on        -->
+            <!-- already in the L2 cache. Avoids fetching large blobs on       -->
             <!-- every cache hit.                                               -->
             <property name="eclipselink.jdbc.result-set-access-optimization" value="true"/>
+
         </properties>
     </persistence-unit>
     <persistence-unit name="hmisAuditPU" transaction-type="JTA">

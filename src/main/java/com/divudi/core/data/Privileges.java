@@ -87,6 +87,7 @@ public enum Privileges {
     InwardServicesAndItemsAddOutSideCharges("Inward Add Outside Charges"),
     InwardServicesAndItemsAddProfessionalFee("Inward Add Professional Fee"),
     InwardServicesAndItemsAddTimedServices("Inward Add Timed Services"),
+    InwardAddChargesAfterNursingDischarge("Inward Add Charges After Nursing Discharge"),
     InwardBilling("Inward Billing"),
     InwardBillingInterimBill("Inward Interim Bill"),
     InwardBillingInterimBillSearch("Inward Interim Bill Search"),
@@ -118,10 +119,13 @@ public enum Privileges {
     InwardPharmacyIssueRequest("Inward Pharmacy Issue Request"),
     InwardPharmacyIssueRequestCancel("Inward Pharmacy Issue Request Cancel"),
     InwardPharmacyIssueRequestSearch("Inward Pharmacy Issue Request Search"),
+    InwardPharmacyReturnCancel("Inward Pharmacy Return Cancel"),
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
     TheaterIssueBHT("Theater Issue BHT"),
     InpatientClinicalAssessment("Inpatient Clinical Assessment"),
     InpatientClinicalDischarge("Inpatient Clinical Discharge"),
+    InwardNursingDischarge("Inward Nursing Discharge"),
+    InwardPhysicalDischarge("Inward Physical Discharge"),
     InwardDocumentUpload("Inward Document Upload"),
     InpatientLetter("Inpatient Letter"),
     //</editor-fold>
@@ -278,6 +282,10 @@ public enum Privileges {
     Theatre("Theater"),
     TheatreAddSurgery("Theater Add Surgery"),
     TheatreBilling("Theater Billing"),
+    TheatreSendPatient("Theatre Send Patient"),
+    TheatreAcceptPatient("Theatre Accept Patient"),
+    TheatreReturnPatient("Theatre Return Patient"),
+    WardAcceptTheatreReturn("Ward Accept Theatre Return"),
     TheaterTransfer("Theater Transfer"),
     TheaterTransferRequest("Theater Transfer Request"),
     TheaterTransferIssue("Theater Transfer Issue"),
@@ -516,6 +524,8 @@ public enum Privileges {
     PharmacyDischargeMedicineIssue("Pharmacy Discharge Medicine Issue"),
     PharmacyDirectIssueToTheaterCases("Pharmacy Direct Issue to Theater Cases"),
     PharmacyBhtIssueRequest("Pharmacy BHT Issue Request"),
+    PharmacyBhtRequestForceComplete("Pharmacy BHT Request Force Complete"),
+    PharmacyReturnFromWardForceComplete("Pharmacy Return From Ward Force Complete"),
     PharmacySearchInpatientDirectIssuesbyBill("Pharmacy Search Inpatient Direct Issues by Bill"),
     PharmacySearchInpatientDirectIssuesbyItem("Pharmacy Search Inpatient Direct Issues by Item"),
     PharmacySearchInpatientDirectIssueReturnsbyBill("Pharmacy Search Inpatient Direct Issue Returns by Bill"),
@@ -718,6 +728,7 @@ public enum Privileges {
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Approval">
+    RequestManager("Request Manager"),
     BillCancelRequestApproval("Bill Cancel Request Approval"),
     ItemRefundRequestApproval("Item Refund Request Approval"),
     DrawerAdjustmentRequestApproval("Drawer Adjustment Request Approval"),
@@ -911,6 +922,9 @@ public enum Privileges {
             case PharmacyDischargeMedicineIssue:
             case PharmacyDirectIssueToTheaterCases:
             case PharmacyBhtIssueRequest:
+            case PharmacyBhtRequestForceComplete:
+            case PharmacyReturnFromWardForceComplete:
+            case InwardPharmacyReturnCancel:
             case PharmacySearchInpatientDirectIssuesbyBill:
             case PharmacySearchInpatientDirectIssuesbyItem:
             case PharmacySearchInpatientDirectIssueReturnsbyBill:
@@ -1025,6 +1039,41 @@ public enum Privileges {
 
                 return "Pharmacy";
 
+            case Store:
+            case StoreIssue:
+            case StoreIssueInwardBilling:
+            case StoreIssueSearchBill:
+            case StoreIssueBillItems:
+            case StorePurchase:
+            case StorePurchaseOrder:
+            case StorePurchaseOrderApprove:
+            case StorePurchaseOrderApproveSearch:
+            case StorePurchaseGRNRecive:
+            case StorePurchaseGRNReturn:
+            case StorePurchasePurchase:
+            case StoreTransfer:
+            case StoreTransferRequest:
+            case StoreTransferIssue:
+            case StoreTransferRecive:
+            case StoreTransferReport:
+            case StoreAdjustment:
+            case StoreAdjustmentDepartmentStock:
+            case StoreAdjustmentStaffStock:
+            case StoreAdjustmentPurchaseRate:
+            case StoreAdjustmentSaleRate:
+            case StoreDealorPayment:
+            case StoreDealorPaymentDueSearch:
+            case StoreDealorPaymentDueByAge:
+            case StoreDealorPaymentPayment:
+            case StoreDealorPaymentPaymentGRN:
+            case StoreDealorPaymentPaymentGRNSelect:
+            case StoreDealorPaymentGRNDoneSearch:
+            case StoreSearch:
+            case StoreReports:
+            case StoreSummery:
+            case StoreAdministration:
+                return "Store";
+
             case Clinic:
             case ClinicCalendar:
             case ClinicDisplay:
@@ -1051,6 +1100,7 @@ public enum Privileges {
                 return "Collecting Centre";
             
             // Approval Privileges
+            case RequestManager:
             case BillCancelRequestApproval:
             case ItemRefundRequestApproval:
             case DrawerAdjustmentRequestApproval:
@@ -1086,10 +1136,17 @@ public enum Privileges {
             case InwardAppointmentCancel:
             case InpatientClinicalAssessment:
             case InpatientClinicalDischarge:
+            case InwardNursingDischarge:
+            case InwardPhysicalDischarge:
+            case InwardAddChargesAfterNursingDischarge:
             case InwardDocumentUpload:
             case InpatientLetter:
             case InwardFormTemplateAdmin:
             case InwardFormFill:
+            case TheatreSendPatient:
+            case TheatreAcceptPatient:
+            case TheatreReturnPatient:
+            case WardAcceptTheatreReturn:
                 return "Inward";
 
             case AdminInactivePatients:

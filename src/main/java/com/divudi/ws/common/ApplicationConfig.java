@@ -45,6 +45,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.common.CapabilityStatementResource.class);
         resources.add(com.divudi.ws.common.ConfigResource.class);
         resources.add(com.divudi.ws.common.LoginHistoryApi.class);
+        resources.add(com.divudi.ws.common.StaffApi.class);
         resources.add(com.divudi.ws.common.SubscriptionApi.class);
         resources.add(com.divudi.ws.common.UserManagementApi.class);
         resources.add(com.divudi.ws.common.UserRoleApi.class);
@@ -65,6 +66,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.inward.InwardDiscountMatrixApi.class);
         resources.add(com.divudi.ws.inward.InwardDocumentTemplateApi.class);
         resources.add(com.divudi.ws.inward.InwardPriceAdjustmentApi.class);
+        resources.add(com.divudi.ws.inward.PriceMatrixInwardApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomCategoryApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomFacilityChargeApi.class);
@@ -76,6 +78,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.lims.PatientSampleApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmaceuticalConfigApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmaceuticalItemApi.class);
+        resources.add(com.divudi.ws.pharmacy.PharmacyItemApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacyAdjustmentApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacyBatchApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacyBfdBackfillApi.class);
@@ -87,6 +90,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.sap.SapBillingApi.class);
         resources.add(com.divudi.ws.sap.SapInventoryApi.class);
         resources.add(com.divudi.ws.service.ServiceApi.class);
+        resources.add(com.divudi.ws.inward.TimedItemApi.class);
     }
     
 }

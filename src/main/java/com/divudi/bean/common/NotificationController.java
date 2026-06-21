@@ -153,6 +153,12 @@ public class NotificationController implements Serializable {
             case "FinalDischarge":
                 createInwardFinalDischargeNotifications(pe);
                 break;
+            case "NursingDischarge":
+                createInwardNursingDischargeNotifications(pe);
+                break;
+            case "PhysicalDischarge":
+                createInwardPhysicalDischargeNotifications(pe);
+                break;
             default:
                 throw new AssertionError();
         }
@@ -255,6 +261,36 @@ public class NotificationController implements Serializable {
             nn.setCreater(sessionController.getLoggedUser());
             nn.setMessage(createDischargeMessage("Message Template for Inward Final Discharge Notification",
                     "Patient discharged from the hospital", pe));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createInwardNursingDischargeNotifications(PatientEncounter pe) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_NURSING_DISCHARGED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientEncounter(pe);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createDischargeMessage("Message Template for Inward Nursing Discharge Notification",
+                    "Patient nursing discharge confirmed", pe));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createInwardPhysicalDischargeNotifications(PatientEncounter pe) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_PHYSICAL_DISCHARGED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientEncounter(pe);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createDischargeMessage("Message Template for Inward Physical Discharge Notification",
+                    "Patient has physically left the hospital", pe));
             getFacade().create(nn);
             userNotificationController.createUserNotifications(nn);
         }

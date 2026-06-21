@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad5a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E7490;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#155E75;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad5" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#F0FDFA"/>
+  <g filter="url(#shad5)">
+    <!-- Person 1 (left) -->
+    <circle cx="58" cy="72" r="18" fill="url(#grad5a)"/>
+    <path d="M38 98 Q58 88 78 98 L80 130 Q80 135 75 135 L41 135 Q36 135 36 130 Z" fill="url(#grad5a)"/>
+    <!-- Person 2 (right) -->
+    <circle cx="142" cy="72" r="18" fill="url(#grad5a)"/>
+    <path d="M122 98 Q142 88 162 98 L164 130 Q164 135 159 135 L125 135 Q120 135 120 130 Z" fill="url(#grad5a)"/>
+    <!-- Swap arrows -->
+    <path d="M85 108 Q100 95 115 108" fill="none" stroke="#22D3EE" stroke-width="5" stroke-linecap="round"/>
+    <polygon points="110,100 118,108 108,112" fill="#22D3EE"/>
+    <path d="M115 118 Q100 131 85 118" fill="none" stroke="#22D3EE" stroke-width="5" stroke-linecap="round"/>
+    <polygon points="90,126 82,118 92,114" fill="#22D3EE"/>
+    <!-- White highlights on heads -->
+    <circle cx="51" cy="66" r="5" fill="white" opacity="0.25"/>
+    <circle cx="135" cy="66" r="5" fill="white" opacity="0.25"/>
+  </g>
+</svg>

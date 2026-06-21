@@ -262,6 +262,40 @@ DELETE /api/inward/room-facility-charges/{id}?retireComments=reason
 
 ---
 
+## Bed-board SVG (issue #21592)
+
+A room is a **leaf** in the bed-board hierarchy (Site → Building → Floor → Unit →
+Room), so it stores only one drawing:
+
+- **`svgChildView`** — the small shape showing how the room looks as a tile
+  *inside its parent's* canvas, on the shared `viewBox="0 0 1000 600"` grid.
+  (Rooms have no `svgParentView` — you do not navigate *into* a room.)
+
+`svgChildView` is accepted on the normal room `POST`/`PUT` bodies and returned by
+the room `GET`. SVG is stored **verbatim** (create/update → read back identical);
+it is sanitised at render time on the bed board. See the wiki page
+[Inpatient — Bed Board](https://github.com/hmislk/hmis/wiki/Inpatient-Bed-Board)
+for authoring guidance and copy-paste examples.
+
+### GET `/api/inward/rooms/{id}/svg` — Read just the drawing
+
+```json
+{ "status": "success", "code": 200,
+  "data": { "id": 10, "name": "Room 101", "svgChildView": "<svg ...>" } }
+```
+
+### PUT `/api/inward/rooms/{id}/svg` — Set just the drawing
+
+Only `svgChildView` is changed when present; pass an empty string to clear it.
+
+```bash
+curl -s -H "Finance: $KEY" -H "Content-Type: application/json" \
+  -X PUT "$BASE/api/inward/rooms/10/svg" \
+  -d '{"svgChildView":"<svg viewBox=\"0 0 1000 600\"><rect x=\"100\" y=\"100\" width=\"200\" height=\"150\"/></svg>"}'
+```
+
+---
+
 ## Typical Workflow
 
 ```bash

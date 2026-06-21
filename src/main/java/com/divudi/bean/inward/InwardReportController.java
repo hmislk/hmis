@@ -64,10 +64,7 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.common.EnumController;
-import com.divudi.core.data.dto.RoomBedOccupancyDTO;
-import com.divudi.core.data.dto.RoomCategoryOccupancyDTO;
-import com.divudi.core.data.dto.RoomOccupancyRowDTO;
-import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.data.dto.AdmissionDischargeDTO;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -191,8 +188,6 @@ public class InwardReportController implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     BillFeeFacade billFeeFacade;
-    @EJB
-    PatientRoomFacade patientRoomFacade;
 
     @Inject
     SessionController sessionController;
@@ -204,8 +199,6 @@ public class InwardReportController implements Serializable {
     InwardBeanController inwardBeanController;
     @Inject
     EnumController enumController;
-    @Inject
-    RoomCategoryController roomCategoryController;
 
     PaymentMethod paymentMethod;
     AdmissionType admissionType;
@@ -292,6 +285,7 @@ public class InwardReportController implements Serializable {
     private Staff consultant;
     private List<IpUnsettledInvoiceDTO> unsettledInvoicesList;
     private List<AdmissionCategoryWiseAdmissionDTO> admissionCategoryWiseAdmissionList;
+    private List<AdmissionDischargeDTO> admissionDischargesList;
     private Item surgeryItem;
 
     // for specialty/doctor wise income
@@ -332,708 +326,6 @@ public class InwardReportController implements Serializable {
     }
     double netTotal;
     double netPaid;
-
-    private Map<Long, Long> categoryAvailableRoomsCache;
-    private List<RoomOccupancyRowDTO> roomOccupancyList;
-    private RoomOccupancyRowDTO roomOccupancyGrandTotal;
-    private String roomOccupancyRatioMode = RoomCategoryOccupancyDTO.RATIO_MODE_AGGREGATED_ROOM_UTILIZATION;
-    private List<RoomCategory> allRoomCategories;
-    private List<RoomCategory> selectedRoomCategories;
-
-    public void processRoomOccupancyReport() {
-        if (fromDate == null || toDate == null) {
-            JsfUtil.addErrorMessage("Please select From and To dates.");
-            return;
-        }
-
-        allRoomCategories = new ArrayList<>(getRoomOccupancyCategoriesForReport());
-
-        roomOccupancyList = new ArrayList<>();
-        Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid = new TreeMap<>();
-
-        loadAdmissionsIntoGrid(grid);
-        loadRoomCategoryMetricsIntoGrid(grid);
-
-        roomOccupancyGrandTotal = new RoomOccupancyRowDTO(null, null);
-        roomOccupancyGrandTotal.setGrandTotal(true);
-
-        for (Map.Entry<Integer, Map<Integer, RoomOccupancyRowDTO>> yearEntry : grid.entrySet()) {
-            for (Map.Entry<Integer, RoomOccupancyRowDTO> monthEntry : yearEntry.getValue().entrySet()) {
-                RoomOccupancyRowDTO row = monthEntry.getValue();
-
-                row.ensureCategories(allRoomCategories);
-                applyAvailableCounts(row);
-
-                int daysInMonth = java.time.YearMonth.of(
-                        yearEntry.getKey(), monthEntry.getKey()).lengthOfMonth();
-                calculateRowDerived(row, daysInMonth);
-
-                roomOccupancyList.add(row);
-                roomOccupancyGrandTotal.merge(row);
-            }
-        }
-
-        roomOccupancyGrandTotal.ensureCategories(allRoomCategories);
-        applyAvailableCounts(roomOccupancyGrandTotal);
-        long totalDays = java.time.temporal.ChronoUnit.DAYS.between(
-                fromDate.toInstant(), toDate.toInstant()) + 1;
-        calculateRowDerived(roomOccupancyGrandTotal, totalDays);
-    }
-
-    public void downloadRoomOccupancyExcel() {
-        if (fromDate == null || toDate == null) {
-            JsfUtil.addErrorMessage("Please select From and To dates.");
-            return;
-        }
-
-        if (roomOccupancyList == null || roomOccupancyList.isEmpty()) {
-            processRoomOccupancyReport();
-        }
-
-        if (roomOccupancyList == null || roomOccupancyList.isEmpty()) {
-            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
-            return;
-        }
-
-        try (XSSFWorkbook workbook = new XSSFWorkbook();
-                ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            XSSFSheet sheet = workbook.createSheet("Room Occupancy");
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-            SimpleDateFormat fileDateFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
-
-            List<RoomCategory> exportCategories = allRoomCategories != null
-                    ? allRoomCategories : new ArrayList<>();
-            int lastColumn = 2 + (exportCategories.size() * 4);
-
-            XSSFCellStyle titleStyle = workbook.createCellStyle();
-            XSSFFont titleFont = workbook.createFont();
-            titleFont.setBold(true);
-            titleFont.setFontHeightInPoints((short) 14);
-            titleStyle.setFont(titleFont);
-            titleStyle.setAlignment(HorizontalAlignment.CENTER);
-
-            XSSFCellStyle infoLabelStyle = workbook.createCellStyle();
-            XSSFFont infoLabelFont = workbook.createFont();
-            infoLabelFont.setBold(true);
-            infoLabelStyle.setFont(infoLabelFont);
-
-            XSSFCellStyle headerStyle = createRoomOccupancyHeaderStyle(workbook);
-            XSSFCellStyle subHeaderStyle = createRoomOccupancySubHeaderStyle(workbook);
-            XSSFCellStyle textStyle = createRoomOccupancyTextStyle(workbook);
-            XSSFCellStyle integerStyle = createRoomOccupancyNumberStyle(workbook, "#,##0");
-            XSSFCellStyle decimalStyle = createRoomOccupancyNumberStyle(workbook, "0.00");
-            XSSFCellStyle totalTextStyle = createRoomOccupancyTotalStyle(workbook, false, null);
-            XSSFCellStyle totalIntegerStyle = createRoomOccupancyTotalStyle(workbook, true, "#,##0");
-            XSSFCellStyle totalDecimalStyle = createRoomOccupancyTotalStyle(workbook, true, "0.00");
-
-            int rowIndex = 0;
-            Row titleRow = sheet.createRow(rowIndex++);
-            titleRow.setHeightInPoints(24);
-            Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("Room Occupancy Report");
-            titleCell.setCellStyle(titleStyle);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, lastColumn));
-
-            String[][] infoRows = {
-                {"From Date:", sdf.format(fromDate)},
-                {"To Date:", sdf.format(toDate)},
-                {"Institution:", institution != null ? institution.getName() : "All"},
-                {"Site:", site != null ? site.getName() : "All"},
-                {"Department:", department != null ? department.getName() : "All"},
-                {"Ratio Mode:", formatRoomOccupancyRatioMode()},
-                {"Generated:", sdf.format(new Date())}
-            };
-            for (String[] info : infoRows) {
-                Row infoRow = sheet.createRow(rowIndex++);
-                Cell labelCell = infoRow.createCell(0);
-                labelCell.setCellValue(info[0]);
-                labelCell.setCellStyle(infoLabelStyle);
-                infoRow.createCell(1).setCellValue(info[1]);
-            }
-
-            rowIndex++;
-
-            int headerStartRow = rowIndex;
-            Row groupHeaderRow = sheet.createRow(rowIndex++);
-            Row categoryHeaderRow = sheet.createRow(rowIndex++);
-            Row metricHeaderRow = sheet.createRow(rowIndex++);
-
-            createMergedHeaderCell(sheet, groupHeaderRow, headerStartRow, headerStartRow + 2, 0, 0, "Year", headerStyle);
-            createMergedHeaderCell(sheet, groupHeaderRow, headerStartRow, headerStartRow + 2, 1, 1, "Month", headerStyle);
-            createMergedHeaderCell(sheet, groupHeaderRow, headerStartRow, headerStartRow + 2, 2, 2, "No of Admission", headerStyle);
-
-            if (!exportCategories.isEmpty()) {
-                createMergedHeaderCell(sheet, groupHeaderRow, headerStartRow, headerStartRow, 3, lastColumn, "Rooms", headerStyle);
-            }
-
-            int column = 3;
-            for (RoomCategory category : exportCategories) {
-                createMergedHeaderCell(sheet, categoryHeaderRow, headerStartRow + 1, headerStartRow + 1,
-                        column, column + 3, category != null ? category.getName() : "", subHeaderStyle);
-                String[] metricHeaders = {"Rooms", "Days", "Ratio", "Avg"};
-                for (String metricHeader : metricHeaders) {
-                    Cell cell = metricHeaderRow.createCell(column++);
-                    cell.setCellValue(metricHeader);
-                    cell.setCellStyle(subHeaderStyle);
-                }
-            }
-
-            for (RoomOccupancyRowDTO rowDto : roomOccupancyList) {
-                Row dataRow = sheet.createRow(rowIndex++);
-                writeRoomOccupancyRow(dataRow, rowDto, exportCategories, textStyle, integerStyle, decimalStyle);
-            }
-
-            if (roomOccupancyGrandTotal != null) {
-                Row totalRow = sheet.createRow(rowIndex++);
-                writeRoomOccupancyRow(totalRow, roomOccupancyGrandTotal, exportCategories,
-                        totalTextStyle, totalIntegerStyle, totalDecimalStyle);
-            }
-
-            sheet.createFreezePane(3, headerStartRow + 3);
-            sheet.setAutoFilter(new CellRangeAddress(headerStartRow + 2, rowIndex - 1, 0, lastColumn));
-            sheet.setColumnWidth(0, 2500);
-            sheet.setColumnWidth(1, 2500);
-            sheet.setColumnWidth(2, 4200);
-            for (int i = 3; i <= lastColumn; i++) {
-                sheet.setColumnWidth(i, 3000);
-            }
-
-            workbook.write(baos);
-            byte[] excelBytes = baos.toByteArray();
-
-            FacesContext facesContext = FacesContext.getCurrentInstance();
-            ExternalContext externalContext = facesContext.getExternalContext();
-            externalContext.responseReset();
-            externalContext.setResponseContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            externalContext.setResponseContentLength(excelBytes.length);
-            externalContext.setResponseHeader("Content-Disposition",
-                    "attachment; filename=\"Room_Occupancy_" + fileDateFormat.format(new Date()) + ".xlsx\"");
-
-            OutputStream out = externalContext.getResponseOutputStream();
-            out.write(excelBytes);
-            out.flush();
-            facesContext.responseComplete();
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage("Error generating Excel: " + e.getMessage());
-        }
-    }
-
-    private void writeRoomOccupancyRow(Row dataRow, RoomOccupancyRowDTO rowDto, List<RoomCategory> categories,
-            CellStyle textStyle, CellStyle integerStyle, CellStyle decimalStyle) {
-        boolean grandTotalRow = rowDto != null && rowDto.isGrandTotal();
-        Cell yearCell = dataRow.createCell(0);
-        if (grandTotalRow) {
-            yearCell.setCellValue("Grand Total");
-        } else if (rowDto != null && rowDto.getYear() != null) {
-            yearCell.setCellValue(rowDto.getYear());
-        } else {
-            yearCell.setCellValue("");
-        }
-        yearCell.setCellStyle(textStyle);
-
-        Cell monthCell = dataRow.createCell(1);
-        monthCell.setCellValue(grandTotalRow || rowDto == null ? "" : rowDto.getMonthName());
-        monthCell.setCellStyle(textStyle);
-
-        Cell admissionsCell = dataRow.createCell(2);
-        admissionsCell.setCellValue(rowDto != null && rowDto.getNumberOfAdmissions() != null
-                ? rowDto.getNumberOfAdmissions() : 0L);
-        admissionsCell.setCellStyle(integerStyle);
-
-        int column = 3;
-        for (RoomCategory category : categories) {
-            RoomCategoryOccupancyDTO metric = rowDto != null ? rowDto.metricFor(category) : new RoomCategoryOccupancyDTO();
-            createLongCell(dataRow, column++, metric.getNumberOfRooms(), integerStyle);
-            createLongCell(dataRow, column++, metric.getNumberOfDays(), integerStyle);
-            createDoubleCell(dataRow, column++, metric.getRatio(), decimalStyle);
-            createDoubleCell(dataRow, column++, metric.getAvg(), decimalStyle);
-        }
-    }
-
-    private void createLongCell(Row row, int column, Long value, CellStyle style) {
-        Cell cell = row.createCell(column);
-        cell.setCellValue(value != null ? value : 0L);
-        cell.setCellStyle(style);
-    }
-
-    private void createDoubleCell(Row row, int column, Double value, CellStyle style) {
-        Cell cell = row.createCell(column);
-        cell.setCellValue(value != null ? value : 0.0);
-        cell.setCellStyle(style);
-    }
-
-    private void createMergedHeaderCell(Sheet sheet, Row row, int firstRow, int lastRow,
-            int firstColumn, int lastColumn, String value, CellStyle style) {
-        Cell cell = row.createCell(firstColumn);
-        cell.setCellValue(value);
-        cell.setCellStyle(style);
-        if (firstRow != lastRow || firstColumn != lastColumn) {
-            sheet.addMergedRegion(new CellRangeAddress(firstRow, lastRow, firstColumn, lastColumn));
-        }
-        for (int column = firstColumn + 1; column <= lastColumn; column++) {
-            row.createCell(column).setCellStyle(style);
-        }
-    }
-
-    private XSSFCellStyle createRoomOccupancyHeaderStyle(XSSFWorkbook workbook) {
-        XSSFCellStyle style = workbook.createCellStyle();
-        XSSFFont font = workbook.createFont();
-        font.setBold(true);
-        font.setColor(IndexedColors.WHITE.getIndex());
-        style.setFont(font);
-        style.setAlignment(HorizontalAlignment.CENTER);
-        style.setVerticalAlignment(VerticalAlignment.CENTER);
-        style.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
-        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        applyRoomOccupancyBorders(style);
-        return style;
-    }
-
-    private XSSFCellStyle createRoomOccupancySubHeaderStyle(XSSFWorkbook workbook) {
-        XSSFCellStyle style = workbook.createCellStyle();
-        XSSFFont font = workbook.createFont();
-        font.setBold(true);
-        style.setFont(font);
-        style.setAlignment(HorizontalAlignment.CENTER);
-        style.setVerticalAlignment(VerticalAlignment.CENTER);
-        style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
-        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        applyRoomOccupancyBorders(style);
-        return style;
-    }
-
-    private XSSFCellStyle createRoomOccupancyTextStyle(XSSFWorkbook workbook) {
-        XSSFCellStyle style = workbook.createCellStyle();
-        style.setAlignment(HorizontalAlignment.LEFT);
-        applyRoomOccupancyBorders(style);
-        return style;
-    }
-
-    private XSSFCellStyle createRoomOccupancyNumberStyle(XSSFWorkbook workbook, String format) {
-        XSSFCellStyle style = workbook.createCellStyle();
-        style.setAlignment(HorizontalAlignment.RIGHT);
-        style.setDataFormat(workbook.createDataFormat().getFormat(format));
-        applyRoomOccupancyBorders(style);
-        return style;
-    }
-
-    private XSSFCellStyle createRoomOccupancyTotalStyle(XSSFWorkbook workbook, boolean numeric, String format) {
-        XSSFCellStyle style = workbook.createCellStyle();
-        XSSFFont font = workbook.createFont();
-        font.setBold(true);
-        style.setFont(font);
-        style.setAlignment(numeric ? HorizontalAlignment.RIGHT : HorizontalAlignment.LEFT);
-        style.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
-        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        if (format != null) {
-            style.setDataFormat(workbook.createDataFormat().getFormat(format));
-        }
-        applyRoomOccupancyBorders(style);
-        return style;
-    }
-
-    private void applyRoomOccupancyBorders(CellStyle style) {
-        style.setBorderBottom(BorderStyle.THIN);
-        style.setBorderTop(BorderStyle.THIN);
-        style.setBorderLeft(BorderStyle.THIN);
-        style.setBorderRight(BorderStyle.THIN);
-    }
-
-    private String formatRoomOccupancyRatioMode() {
-        if (RoomCategoryOccupancyDTO.RATIO_MODE_PATIENT_CATEGORY_DURATION.equals(roomOccupancyRatioMode)) {
-            return "Patient Category Duration";
-        }
-        return "Aggregated Room Utilization";
-    }
-
-    private List<RoomCategory> getRoomOccupancyCategoriesForReport() {
-        if (selectedRoomCategories != null && !selectedRoomCategories.isEmpty()) {
-            return selectedRoomCategories;
-        }
-        List<RoomCategory> categories = roomCategoryController != null ? roomCategoryController.getItems() : null;
-        return categories != null ? categories : new ArrayList<>();
-    }
-
-    public void downloadRoomOccupancyPdf() {
-        if (fromDate == null || toDate == null) {
-            JsfUtil.addErrorMessage("Please select From and To dates.");
-            return;
-        }
-
-        if (roomOccupancyList == null || roomOccupancyList.isEmpty()) {
-            processRoomOccupancyReport();
-        }
-
-        if (roomOccupancyList == null || roomOccupancyList.isEmpty()) {
-            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
-            return;
-        }
-
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        ExternalContext externalContext = facesContext.getExternalContext();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        SimpleDateFormat fileDateFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
-
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            Document document = new Document(com.lowagie.text.PageSize.A3.rotate(), 18, 18, 24, 18);
-            com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
-            document.open();
-
-            List<RoomCategory> exportCategories = getRoomOccupancyCategoriesForReport();
-
-            com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
-            com.lowagie.text.Font infoLabelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
-            com.lowagie.text.Font infoValueFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
-            int totalColumns = 3 + (exportCategories.size() * 4);
-            float tableFontSize = totalColumns > 35 ? 5f : totalColumns > 25 ? 6f : 7f;
-            com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, tableFontSize,
-                    com.lowagie.text.Font.NORMAL, java.awt.Color.WHITE);
-            com.lowagie.text.Font subHeaderFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, tableFontSize);
-            com.lowagie.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, tableFontSize);
-            com.lowagie.text.Font totalFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, tableFontSize);
-
-            Paragraph title = new Paragraph("Room Occupancy Report", titleFont);
-            title.setAlignment(Element.ALIGN_CENTER);
-            title.setSpacingAfter(8);
-            document.add(title);
-
-            PdfPTable infoTable = new PdfPTable(2);
-            infoTable.setWidthPercentage(45);
-            infoTable.setHorizontalAlignment(Element.ALIGN_LEFT);
-            infoTable.setWidths(new float[]{1.4f, 3f});
-            infoTable.setSpacingAfter(10);
-
-            addRoomOccupancyPdfInfoRow(infoTable, "From Date:", sdf.format(fromDate), infoLabelFont, infoValueFont);
-            addRoomOccupancyPdfInfoRow(infoTable, "To Date:", sdf.format(toDate), infoLabelFont, infoValueFont);
-            addRoomOccupancyPdfInfoRow(infoTable, "Institution:", institution != null ? institution.getName() : "All", infoLabelFont, infoValueFont);
-            addRoomOccupancyPdfInfoRow(infoTable, "Site:", site != null ? site.getName() : "All", infoLabelFont, infoValueFont);
-            addRoomOccupancyPdfInfoRow(infoTable, "Department:", department != null ? department.getName() : "All", infoLabelFont, infoValueFont);
-            addRoomOccupancyPdfInfoRow(infoTable, "Ratio Mode:", formatRoomOccupancyRatioMode(), infoLabelFont, infoValueFont);
-            addRoomOccupancyPdfInfoRow(infoTable, "Generated:", sdf.format(new Date()), infoLabelFont, infoValueFont);
-            document.add(infoTable);
-
-            PdfPTable table = new PdfPTable(totalColumns);
-            table.setWidthPercentage(100);
-            table.setWidths(buildRoomOccupancyPdfColumnWidths(exportCategories.size()));
-            table.setHeaderRows(3);
-            table.setSpacingBefore(5);
-
-            java.awt.Color headerBg = new java.awt.Color(41, 128, 185);
-            java.awt.Color subHeaderBg = new java.awt.Color(224, 224, 224);
-            java.awt.Color totalBg = new java.awt.Color(255, 242, 204);
-            java.awt.Color oddRowBg = new java.awt.Color(248, 249, 250);
-
-            addRoomOccupancyPdfHeaderCell(table, "Year", headerFont, headerBg, 3, 1);
-            addRoomOccupancyPdfHeaderCell(table, "Month", headerFont, headerBg, 3, 1);
-            addRoomOccupancyPdfHeaderCell(table, "No of Admission", headerFont, headerBg, 3, 1);
-            if (!exportCategories.isEmpty()) {
-                addRoomOccupancyPdfHeaderCell(table, "Rooms", headerFont, headerBg, 1, exportCategories.size() * 4);
-            }
-
-            for (RoomCategory category : exportCategories) {
-                addRoomOccupancyPdfHeaderCell(table, category != null ? category.getName() : "",
-                        subHeaderFont, subHeaderBg, 1, 4);
-            }
-
-            for (int i = 0; i < exportCategories.size(); i++) {
-                addRoomOccupancyPdfHeaderCell(table, "Rooms", subHeaderFont, subHeaderBg, 1, 1);
-                addRoomOccupancyPdfHeaderCell(table, "Days", subHeaderFont, subHeaderBg, 1, 1);
-                addRoomOccupancyPdfHeaderCell(table, "Ratio", subHeaderFont, subHeaderBg, 1, 1);
-                addRoomOccupancyPdfHeaderCell(table, "Avg", subHeaderFont, subHeaderBg, 1, 1);
-            }
-
-            int rowIndex = 0;
-            for (RoomOccupancyRowDTO row : roomOccupancyList) {
-                java.awt.Color rowBg = rowIndex % 2 == 0 ? null : oddRowBg;
-                addRoomOccupancyPdfRow(table, row, exportCategories, normalFont, rowBg);
-                rowIndex++;
-            }
-
-            if (roomOccupancyGrandTotal != null) {
-                addRoomOccupancyPdfRow(table, roomOccupancyGrandTotal, exportCategories, totalFont, totalBg);
-            }
-
-            document.add(table);
-            document.close();
-
-            byte[] pdfBytes = baos.toByteArray();
-            externalContext.responseReset();
-            externalContext.setResponseContentType("application/pdf");
-            externalContext.setResponseContentLength(pdfBytes.length);
-            externalContext.setResponseHeader("Content-Disposition",
-                    "attachment; filename=\"Room_Occupancy_" + fileDateFormat.format(new Date()) + ".pdf\"");
-
-            OutputStream out = externalContext.getResponseOutputStream();
-            out.write(pdfBytes);
-            out.flush();
-            facesContext.responseComplete();
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
-        }
-    }
-
-    private void addRoomOccupancyPdfInfoRow(PdfPTable table, String label, String value,
-            com.lowagie.text.Font labelFont, com.lowagie.text.Font valueFont) {
-        PdfPCell labelCell = new PdfPCell(new Phrase(label, labelFont));
-        labelCell.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
-        labelCell.setPadding(2);
-        table.addCell(labelCell);
-
-        PdfPCell valueCell = new PdfPCell(new Phrase(value != null ? value : "", valueFont));
-        valueCell.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
-        valueCell.setPadding(2);
-        table.addCell(valueCell);
-    }
-
-    private float[] buildRoomOccupancyPdfColumnWidths(int categoryCount) {
-        float[] widths = new float[3 + (categoryCount * 4)];
-        widths[0] = 1.0f;
-        widths[1] = 1.0f;
-        widths[2] = 1.6f;
-        int index = 3;
-        for (int i = 0; i < categoryCount; i++) {
-            widths[index++] = 1.0f;
-            widths[index++] = 1.0f;
-            widths[index++] = 1.0f;
-            widths[index++] = 1.0f;
-        }
-        return widths;
-    }
-
-    private void addRoomOccupancyPdfHeaderCell(PdfPTable table, String value, com.lowagie.text.Font font,
-            java.awt.Color backgroundColor, int rowspan, int colspan) {
-        PdfPCell cell = new PdfPCell(new Phrase(value != null ? value : "", font));
-        cell.setBackgroundColor(backgroundColor);
-        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        cell.setPadding(3);
-        cell.setRowspan(rowspan);
-        cell.setColspan(colspan);
-        table.addCell(cell);
-    }
-
-    private void addRoomOccupancyPdfRow(PdfPTable table, RoomOccupancyRowDTO row,
-            List<RoomCategory> categories, com.lowagie.text.Font font, java.awt.Color backgroundColor) {
-        boolean grandTotalRow = row != null && row.isGrandTotal();
-        addRoomOccupancyPdfCell(table, grandTotalRow ? "Grand Total" : row != null && row.getYear() != null ? row.getYear().toString() : "",
-                font, backgroundColor, Element.ALIGN_LEFT);
-        addRoomOccupancyPdfCell(table, grandTotalRow || row == null ? "" : row.getMonthName(),
-                font, backgroundColor, Element.ALIGN_LEFT);
-        addRoomOccupancyPdfCell(table, formatRoomOccupancyLong(row != null ? row.getNumberOfAdmissions() : null),
-                font, backgroundColor, Element.ALIGN_RIGHT);
-
-        for (RoomCategory category : categories) {
-            RoomCategoryOccupancyDTO metric = row != null ? row.metricFor(category) : new RoomCategoryOccupancyDTO();
-            addRoomOccupancyPdfCell(table, formatRoomOccupancyLong(metric.getNumberOfRooms()), font, backgroundColor, Element.ALIGN_RIGHT);
-            addRoomOccupancyPdfCell(table, formatRoomOccupancyLong(metric.getNumberOfDays()), font, backgroundColor, Element.ALIGN_RIGHT);
-            addRoomOccupancyPdfCell(table, formatRoomOccupancyDouble(metric.getRatio()), font, backgroundColor, Element.ALIGN_RIGHT);
-            addRoomOccupancyPdfCell(table, formatRoomOccupancyDouble(metric.getAvg()), font, backgroundColor, Element.ALIGN_RIGHT);
-        }
-    }
-
-    private void addRoomOccupancyPdfCell(PdfPTable table, String value, com.lowagie.text.Font font,
-            java.awt.Color backgroundColor, int alignment) {
-        PdfPCell cell = new PdfPCell(new Phrase(value != null ? value : "", font));
-        if (backgroundColor != null) {
-            cell.setBackgroundColor(backgroundColor);
-        }
-        cell.setHorizontalAlignment(alignment);
-        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        cell.setPadding(2);
-        table.addCell(cell);
-    }
-
-    private String formatRoomOccupancyLong(Long value) {
-        return String.format("%,d", value != null ? value : 0L);
-    }
-
-    private String formatRoomOccupancyDouble(Double value) {
-        return String.format("%.2f", value != null ? value : 0.0);
-    }
-
-// LOAD: admissions per year/month
-    private void loadAdmissionsIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
-        Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder();
-        jpql.append("SELECT FUNCTION('YEAR', pe.dateOfAdmission), ")
-                .append("FUNCTION('MONTH', pe.dateOfAdmission), ")
-                .append("COUNT(pe.id) ")
-                .append("FROM PatientEncounter pe ")
-                .append("WHERE pe.retired = false ")
-                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ");
-
-        params.put("fd", fromDate);
-        params.put("td", toDate);
-
-        if (institution != null) {
-            jpql.append(" and pe.institution = :ins ");
-            params.put("ins", institution);
-        }
-        if (site != null) {
-            jpql.append(" and pe.department.site = :site ");
-            params.put("site", site);
-        }
-        if (department != null) {
-            jpql.append(" and pe.department = :dep ");
-            params.put("dep", department);
-        }
-        if (selectedRoomCategories != null && !selectedRoomCategories.isEmpty()) {
-            jpql.append("AND pe.currentPatientRoom.roomFacilityCharge.roomCategory IN :cat ");
-            params.put("cat", selectedRoomCategories);
-        }
-
-        jpql.append("GROUP BY FUNCTION('YEAR', pe.dateOfAdmission), FUNCTION('MONTH', pe.dateOfAdmission) ")
-                .append("ORDER BY 1, 2");
-
-        List<Object[]> rows = peFacade.findObjectsArrayByJpql(
-                jpql.toString(), params, TemporalType.TIMESTAMP);
-        for (Object[] r : rows) {
-            RoomOccupancyRowDTO row = getOrCreateRow(grid, toInteger(r[0]), toInteger(r[1]));
-            row.addAdmissions(toLong(r[2]));
-        }
-    }
-
-    private void loadRoomCategoryMetricsIntoGrid(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid) {
-        categoryAvailableRoomsCache = new HashMap<>();
-
-        List<RoomCategory> reportCategories = allRoomCategories != null
-                ? allRoomCategories : getRoomOccupancyCategoriesForReport();
-        if (reportCategories.isEmpty()) {
-            return;
-        }
-
-        Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder();
-        jpql.append("SELECT FUNCTION('YEAR', pr.admittedAt), ")
-                .append("FUNCTION('MONTH', pr.admittedAt), ")
-                .append("rfc.roomCategory, ")
-                .append("pr.patientEncounter.id, ")
-                .append("COUNT(DISTINCT pr.id), ")
-                .append("SUM(FUNCTION('DATEDIFF', COALESCE(pr.dischargedAt, CURRENT_TIMESTAMP), pr.admittedAt) + 1), ")
-                .append("MAX(FUNCTION('DATEDIFF', COALESCE(pr.patientEncounter.dateOfDischarge, CURRENT_TIMESTAMP), pr.patientEncounter.dateOfAdmission) + 1), ")
-                .append("(SELECT COUNT(DISTINCT availableRfc.id) ")
-                .append("FROM RoomFacilityCharge availableRfc ")
-                .append("WHERE availableRfc.retired = false ")
-                .append("AND availableRfc.roomCategory = rfc.roomCategory) ")
-                .append("FROM PatientRoom pr ")
-                .append("JOIN pr.roomFacilityCharge rfc ")
-                .append("WHERE pr.retired = false ")
-                .append("AND pr.admittedAt BETWEEN :fd AND :td ");
-        params.put("fd", fromDate);
-        params.put("td", toDate);
-
-        if (institution != null) {
-            jpql.append(" and rfc.company = :ins ");
-            params.put("ins", institution);
-        }
-        if (site != null) {
-            jpql.append(" and rfc.department.site = :site ");
-            params.put("site", site);
-        }
-        if (department != null) {
-            jpql.append(" and rfc.department = :dep ");
-            params.put("dep", department);
-        }
-        jpql.append(" AND rfc.roomCategory IN :cat ");
-        params.put("cat", reportCategories);
-        jpql.append("GROUP BY FUNCTION('YEAR', pr.admittedAt), FUNCTION('MONTH', pr.admittedAt), ")
-                .append("rfc.roomCategory, pr.patientEncounter.id ")
-                .append("ORDER BY 1, 2, 3");
-
-        List<Object[]> rows = patientRoomFacade.findObjectsArrayByJpql(
-                jpql.toString(), params, TemporalType.TIMESTAMP);
-        for (Object[] r : rows) {
-            Integer year = toInteger(r[0]);
-            Integer month = toInteger(r[1]);
-            RoomCategory category = (RoomCategory) r[2];
-            Long roomCount = toLong(r[4]);
-            Long categoryDays = toLong(r[5]);
-            Long totalLengthOfStayDays = toLong(r[6]);
-            Long availableRooms = toLong(r[7]);
-
-            if (category != null && category.getId() != null) {
-                categoryAvailableRoomsCache.put(category.getId(), availableRooms);
-            }
-
-            RoomOccupancyRowDTO row = getOrCreateRow(grid, year, month);
-            row.addCategoryDays(category, roomCount, categoryDays);
-            row.addCategoryPatientRatioDays(category, categoryDays, totalLengthOfStayDays);
-        }
-    }
-
-    private Long toLong(Object value) {
-        if (value == null) {
-            return 0L;
-        }
-        if (value instanceof Number) {
-            return ((Number) value).longValue();
-        }
-        return Long.valueOf(value.toString());
-    }
-
-    private Integer toInteger(Object value) {
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof Number) {
-            return ((Number) value).intValue();
-        }
-        return Integer.valueOf(value.toString());
-    }
-
-    private RoomOccupancyRowDTO getOrCreateRow(Map<Integer, Map<Integer, RoomOccupancyRowDTO>> grid,
-            Integer year, Integer month) {
-        return grid.computeIfAbsent(year, y -> new TreeMap<>())
-                .computeIfAbsent(month, m -> new RoomOccupancyRowDTO(year, month));
-    }
-
-    /**
-     * Sets totalAvailable on each category slot using the id-keyed cache.
-     */
-    private void applyAvailableCounts(RoomOccupancyRowDTO row) {
-        for (Map.Entry<RoomCategory, RoomCategoryOccupancyDTO> e : row.getCategoryMetrics().entrySet()) {
-            Long available = categoryAvailableRoomsCache.getOrDefault(e.getKey().getId(), 0L);
-            e.getValue().setTotalAvailable(available);
-        }
-    }
-
-    private void calculateRowDerived(RoomOccupancyRowDTO row, long daysInPeriod) {
-        for (RoomCategoryOccupancyDTO cat : row.getCategoryMetrics().values()) {
-            cat.calculateDerived(daysInPeriod, roomOccupancyRatioMode);
-        }
-        row.getIcuOccupancy().calculateDerived(daysInPeriod);
-        row.getWardBedOldOccupancy().calculateDerived(daysInPeriod);
-        row.getWardBedNewOccupancy().calculateDerived(daysInPeriod);
-        row.calculateDerivedMetrics();
-    }
-
-    public List<RoomOccupancyRowDTO> getRoomOccupancyList() {
-        return roomOccupancyList;
-    }
-
-    public void setRoomOccupancyList(List<RoomOccupancyRowDTO> v) {
-        roomOccupancyList = v;
-    }
-
-    public RoomOccupancyRowDTO getRoomOccupancyGrandTotal() {
-        return roomOccupancyGrandTotal;
-    }
-
-    public String getRoomOccupancyRatioMode() {
-        return roomOccupancyRatioMode;
-    }
-
-    public void setRoomOccupancyRatioMode(String roomOccupancyRatioMode) {
-        this.roomOccupancyRatioMode = roomOccupancyRatioMode;
-    }
-
-    public String getRoomOccupancyRatioModeAggregatedRoomUtilization() {
-        return RoomCategoryOccupancyDTO.RATIO_MODE_AGGREGATED_ROOM_UTILIZATION;
-    }
-
-    public String getRoomOccupancyRatioModePatientCategoryDuration() {
-        return RoomCategoryOccupancyDTO.RATIO_MODE_PATIENT_CATEGORY_DURATION;
-    }
 
     public void fillAdmissionBook() {
         Date startTime = new Date();
@@ -1101,15 +393,16 @@ public class InwardReportController implements Serializable {
             JsfUtil.addErrorMessage("Please select a report type");
             return;
         }
+        if (visitType == null || visitType.trim().isEmpty() || visitType.equals("Any")) {
+            JsfUtil.addErrorMessage("Please select a visit type");
+            return;
+        }
         bundle = generateIpIncomeCategoryWiseReport();
     }
 
     public ReportTemplateRowBundle generateIpIncomeCategoryWiseReport() {
         ReportTemplateRowBundle rtrb = new ReportTemplateRowBundle();
 
-        if (visitType == null || visitType.trim().isEmpty()) {
-            visitType = "Any";
-        }
         if (paymentType == null || paymentType.trim().isEmpty()) {
             paymentType = "Any";
         }
@@ -1193,19 +486,29 @@ public class InwardReportController implements Serializable {
         List<PaymentMethod> nonCreditPaymentMethods = enumController.getPaymentTypeOfPaymentMethods(PaymentType.NON_CREDIT);
 
         StringBuilder jpql = new StringBuilder();
-        jpql.append("select new com.divudi.core.data.dto.IpIncomeCategoryWiseRowDTO("
-                + " b.id, b.billClassType, b.billType, b.discount, b.deptId,"
-                + " bi.grossValue, bi.hospitalFee, bi.discount, bi.staffFee, bi.netValue,"
-                + " i.id, i.name, c.id, c.name,"
-                + " pe.paymentMethod, b.paymentMethod"
-                + ")"
-                + " from BillItem bi"
-                + " join bi.bill b"
-                + " left join bi.item i"
-                + " left join i.category c"
-                + " left join b.patientEncounter pe"
-                + " where b.retired = :br"
-                + " and b.createdAt between :fd and :td ");
+            jpql = new StringBuilder();
+            jpql.append("select new com.divudi.core.data.dto.IpIncomeCategoryWiseRowDTO("
+                    + " b.id, b.billClassType, b.billType, b.discount, b.deptId,"
+                    + " bi.grossValue, bi.hospitalFee, bi.discount, bi.staffFee, bi.netValue,"
+                    + " COALESCE(i.id, refI.id, refRefI.id),"
+                    + " COALESCE(i.name, refI.name, refRefI.name),"
+                    + " COALESCE(c.id, refC.id, refRefC.id),"
+                    + " COALESCE(c.name, refC.name, refRefC.name),"
+                    + " pe.paymentMethod, b.paymentMethod"
+                    + ")"
+                    + " from BillItem bi"
+                    + " join bi.bill b"
+                    + " left join bi.item i"
+                    + " left join i.category c"
+                    + " left join b.patientEncounter pe"
+                    + " left join bi.referanceBillItem refBi"
+                    + " left join refBi.item refI"
+                    + " left join refI.category refC"
+                    + " left join refBi.referanceBillItem refRefBi"
+                    + " left join refRefBi.item refRefI"
+                    + " left join refRefI.category refRefC"
+                    + " where b.retired = :br"
+                    + " and b.createdAt between :fd and :td ");
 
         Map<String, Object> m = new HashMap<>();
         m.put("br", false);
@@ -1230,6 +533,7 @@ public class InwardReportController implements Serializable {
                     m.put("pmIp", "Credit".equals(paymentType) ? creditPaymentMethods : nonCreditPaymentMethods);
                 }
                 break;
+                
             case "OP":
                 jpql.append(" and bi.bill.billTypeAtomic in :btas ");
                 m.put("btas", btasOP);
@@ -1241,28 +545,19 @@ public class InwardReportController implements Serializable {
                             : nonCreditPaymentMethods);
                 }
                 break;
-            case "Any":
-                jpql.append(" and bi.bill.billTypeAtomic in :btas ");
-                List<BillTypeAtomic> all = new ArrayList<>();
-                all.addAll(btasIP);
-                all.addAll(btasOP);
-                m.put("btas", all);
-
-                if (roomCategories != null && !roomCategories.isEmpty()) {
-                    jpql.append(" AND bi.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.roomCategory IN :cat ");
-                    m.put("cat", roomCategories);
-                }
-                if (admissionTypes != null && !admissionTypes.isEmpty()) {
-                    jpql.append(" AND bi.bill.patientEncounter.admissionType IN :admTypes ");
-                    m.put("admTypes", admissionTypes);
-                }
-                if (paymentType != null && !paymentType.isEmpty() && !"Any".equalsIgnoreCase(paymentType)) {
-                    jpql.append(" and bi.bill.patientEncounter.paymentMethod in :pmIp ");
-                    m.put("pmIp", "Credit".equals(paymentType) ? creditPaymentMethods : nonCreditPaymentMethods);
-                }
-                break;
 
             default:
+                List<BillTypeAtomic> allBtas = new ArrayList<>();
+                allBtas.addAll(btasIP);
+                allBtas.addAll(btasOP);
+                if (!allBtas.isEmpty()) {
+                    jpql.append(" and bi.bill.billTypeAtomic in :btas ");
+                    m.put("btas", allBtas);
+                }
+                if (paymentType != null && !paymentType.isEmpty() && !"Any".equalsIgnoreCase(paymentType)) {
+                    jpql.append(" and bi.bill.patientEncounter.paymentMethod in :pmAny ");
+                    m.put("pmAny", "Credit".equals(paymentType) ? creditPaymentMethods : nonCreditPaymentMethods);
+                }
                 break;
         }
 
@@ -1279,7 +574,11 @@ public class InwardReportController implements Serializable {
             m.put("site", site);
         }
         if (category != null) {
-            jpql.append(" and bi.item.category = :cat ");
+            if (withProfessionalFee) {
+                jpql.append(" and (i.category = :cat OR refI.category = :cat) ");
+            } else {
+                jpql.append(" and bi.item.category = :cat ");
+            }
             m.put("cat", category);
         }
 
@@ -3190,6 +2489,134 @@ public class InwardReportController implements Serializable {
 
             dto.setNetTotal(total);
             dto.setCreditPaidAmount(collected);
+        }
+    }
+
+    public void processAdmissionDischargeReport() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append("SELECT new com.divudi.core.data.dto.AdmissionDischargeDTO(")
+                .append("pe.patient.phn, ")
+                .append("pe.patient.person.name, ")
+                .append("pe.patient.person.mobile, ")
+                .append("pe.bhtNo, ")
+                .append("pe.patient.person.address, ")
+                .append("pe.comments, ")
+                .append("pe.admissionType.name, ")
+                .append("pe.patient.person.dob, ")
+                .append("pe.patient.person.sex, ")
+                .append("pe.department.name, ")
+                .append("pe.dateOfAdmission, ")
+                .append("pe.dateOfDischarge, ")
+                .append("dc.name, ")
+                .append("rfc.name, ")
+                .append("rcp.name, ")
+                .append("cc.name, ")
+                .append("pe.totalCompanyPaidAtFinalProcessing, ")
+                .append("pe.totalPatientPaidAtFinalProcessing, ")
+                .append("pe.discount, ")
+                .append("pe.netTotal, ")
+                .append("pe.amountDueAtFinalProcessing, ")
+                .append("cd.name, ")
+                .append("pe.clinicalDischargeDateTime, ")
+                .append("fb.creater.name, ")
+                .append("fb.createdAt) ")
+                .append("FROM PatientEncounter pe ")
+                .append("LEFT JOIN pe.dischargeCondition d ")
+                .append("LEFT JOIN d.category dc ")
+                .append("LEFT JOIN pe.currentPatientRoom room ")
+                .append("LEFT JOIN room.roomFacilityCharge rfc ")
+                .append("LEFT JOIN pe.referringConsultant rc ")
+                .append("LEFT JOIN rc.person rcp ")
+                .append("LEFT JOIN pe.creditCompany cc ")
+                .append("LEFT JOIN pe.clinicalDischargedBy cd ")
+                .append("LEFT JOIN pe.finalBill fb ");
+
+        jpql.append("WHERE pe.retired = :ret ")
+                .append("AND pe.dateOfAdmission BETWEEN :fd AND :td ");
+        params.put("ret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+
+        if (dischargeFromDate != null && dischargeToDate != null) {
+            jpql.append("AND pe.dateOfDischarge BETWEEN :dfd AND :dtd ");
+            params.put("dfd", dischargeFromDate);
+            params.put("dtd", dischargeToDate);
+        }
+        if (invoiceApprovedFromDate != null && invoiceApprovedToDate != null) {
+            jpql.append("AND pe.finalBill IS NOT NULL ")
+                    .append("AND pe.finalBill.createdAt BETWEEN :iafd AND :iatd ");
+            params.put("iafd", invoiceApprovedFromDate);
+            params.put("iatd", invoiceApprovedToDate);
+        }
+        if (institution != null) {
+            jpql.append("AND pe.institution = :inst ");
+            params.put("inst", institution);
+        }
+        if (site != null) {
+            jpql.append("AND pe.department.site = :site ");
+            params.put("site", site);
+        }
+        if (department != null) {
+            jpql.append("AND pe.department = :dept ");
+            params.put("dept", department);
+        }
+        if (consultant != null) {
+            jpql.append("AND pe.referringConsultant = :cons ");
+            params.put("cons", consultant);
+        }
+        if (serviceCenter != null) {
+            jpql.append("AND pe.department = :sc ");
+            params.put("sc", serviceCenter);
+        }
+        if (sponsor != null) {
+            jpql.append("AND pe.creditCompany = :sponsor ");
+            params.put("sponsor", sponsor);
+        }
+        if (admissionType != null) {
+            jpql.append("AND pe.admissionType = :at ");
+            params.put("at", admissionType);
+        }
+        if (paymentMethod != null) {
+            jpql.append("AND pe.paymentMethod = :pm ");
+            params.put("pm", paymentMethod);
+        }
+        if (roomCategory != null) {
+            jpql.append("AND rfc.roomCategory = :rc ");
+            params.put("rc", roomCategory);
+        }
+        if (admissionStatus != null) {
+            switch (admissionStatus) {
+                case ADMITTED_BUT_NOT_DISCHARGED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
+                    params.put("dis", false);
+                    break;
+                case DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = FALSE ");
+                    params.put("dis", true);
+                    break;
+                case DISCHARGED_AND_FINAL_BILL_COMPLETED:
+                    jpql.append("AND pe.discharged = :dis AND pe.paymentFinalized = TRUE ");
+                    params.put("dis", true);
+                    break;
+                case ANY_STATUS:
+                default:
+                    break;
+            }
+        }
+
+        jpql.append("ORDER BY pe.dateOfAdmission ");
+
+        try {
+            admissionDischargesList = (List<AdmissionDischargeDTO>) peFacade.findLightsByJpql(
+                    jpql.toString(),
+                    params,
+                    TemporalType.TIMESTAMP
+            );
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error loading admissions & discharges: " + e.getMessage());
+            admissionDischargesList = new ArrayList<>();
         }
     }
 
@@ -7044,20 +6471,12 @@ public class InwardReportController implements Serializable {
         this.ipIncomeTotalBillDiscount = ipIncomeTotalBillDiscount;
     }
 
-    public List<RoomCategory> getAllRoomCategories() {
-        return allRoomCategories;
+    public List<AdmissionDischargeDTO> getAdmissionDischargesList() {
+        return admissionDischargesList;
     }
 
-    public void setAllRoomCategories(List<RoomCategory> allRoomCategories) {
-        this.allRoomCategories = allRoomCategories;
-    }
-
-    public List<RoomCategory> getSelectedRoomCategories() {
-        return selectedRoomCategories;
-    }
-
-    public void setSelectedRoomCategories(List<RoomCategory> selectedRoomCategories) {
-        this.selectedRoomCategories = selectedRoomCategories;
+    public void setAdmissionDischargesList(List<AdmissionDischargeDTO> admissionDischargesList) {
+        this.admissionDischargesList = admissionDischargesList;
     }
 
     public class IncomeByCategoryRecord {
