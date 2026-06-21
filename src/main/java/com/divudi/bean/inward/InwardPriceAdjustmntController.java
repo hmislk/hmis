@@ -20,6 +20,7 @@ import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.ServiceCategory;
 import com.divudi.core.entity.ServiceSubCategory;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.InwardPriceAdjustment;
 import com.divudi.core.entity.lab.InvestigationCategory;
 import com.divudi.core.entity.pharmacy.ConsumableCategory;
@@ -71,12 +72,14 @@ public class InwardPriceAdjustmntController implements Serializable {
     double margin;
     private Category roomLocation;
     private Institution creditCompany;
+    private AdmissionType admissionType;
 
     private void recreateModel() {
         fromPrice = toPrice + 1;
         toPrice = 0.0;
         margin = 0;
         creditCompany = null;
+        admissionType = null;
         items = null;
     }
 
@@ -85,6 +88,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         toPrice = 0.0;
         margin = 0;
         creditCompany = null;
+        admissionType = null;
         items = null;
     }
 
@@ -152,6 +156,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         a.setPaymentMethod(paymentMethod);
         a.setMargin(margin);
         a.setCreditCompany(creditCompany);
+        a.setAdmissionType(admissionType);
         a.setCreatedAt(new Date());
         a.setCreater(getSessionController().getLoggedUser());
         if (a.getId() == null) {
@@ -189,6 +194,7 @@ public class InwardPriceAdjustmntController implements Serializable {
             a.setPaymentMethod(paymentMethod);
             a.setMargin(margin);
             a.setCreditCompany(creditCompany);
+            a.setAdmissionType(admissionType);
             a.setCreatedAt(new Date());
             a.setCreater(getSessionController().getLoggedUser());
             if (a.getId() == null) {
@@ -454,6 +460,14 @@ public class InwardPriceAdjustmntController implements Serializable {
 
     public void setCreditCompany(Institution creditCompany) {
         this.creditCompany = creditCompany;
+    }
+
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
     }
 
     /**

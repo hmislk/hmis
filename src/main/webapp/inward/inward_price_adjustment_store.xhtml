@@ -87,8 +87,24 @@
                                             class="w-100"
                                             id="cmbPs" 
                                             value="#{inwardPriceAdjustmntController.paymentMethod}"  >
-                                            <f:selectItem itemLabel="Select" />                           
+                                            <f:selectItem itemLabel="Select" />
                                             <f:selectItems value="#{enumController.paymentMethodForAdmission}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2">
+                                        <h:outputLabel value="Admission Type" class="mt-2"/>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:selectOneMenu
+                                            class="w-100"
+                                            id="cmbAdmissionType"
+                                            value="#{inwardPriceAdjustmntController.admissionType}">
+                                            <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" />
+                                            <f:selectItems value="#{admissionTypeController.items}" var="at"
+                                                           itemValue="#{at}" itemLabel="#{at.name}" />
                                         </p:selectOneMenu>
                                     </div>
                                 </div>
@@ -255,6 +271,14 @@
                                     <h:inputText autocomplete="off" value="#{a.margin}" style="width: 5em;">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:inputText>
+                                </p:column>
+
+                                <p:column
+                                    headerText="Admission Type"
+                                    filterBy="#{empty a.admissionType ? '' : a.admissionType.name}"
+                                    filterMatchMode="contains"
+                                    exportValue="#{empty a.admissionType ? 'All Admission Types' : a.admissionType.name}">
+                                    <h:outputText value="#{empty a.admissionType ? 'All Admission Types' : a.admissionType.name}"/>
                                 </p:column>
 
                                 <p:column headerText="Action" width="11%">

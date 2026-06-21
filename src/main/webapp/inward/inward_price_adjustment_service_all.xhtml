@@ -59,6 +59,12 @@
                                 <p:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.toPrice}" />
                                 <h:outputLabel value="Margin" ></h:outputLabel>
                                 <p:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.margin}" />
+                                <h:outputLabel value="Admission Type" ></h:outputLabel>
+                                <p:selectOneMenu id="cmbAdmissionType" value="#{inwardPriceAdjustmntController.admissionType}">
+                                    <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" />
+                                    <f:selectItems value="#{admissionTypeController.items}" var="at"
+                                                   itemValue="#{at}" itemLabel="#{at.name}" />
+                                </p:selectOneMenu>
                                 <h:outputLabel value="" ></h:outputLabel>
                                 <p:commandButton id="btnAdd" value="Add" ajax="false"
                                                 action="#{inwardPriceAdjustmntController.saveSelected}"  >
@@ -135,6 +141,9 @@
                                     <h:inputText autocomplete="off" id="mg" value="#{a.margin}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:inputText>
+                                </p:column>
+                                <p:column headerText="Admission Type">
+                                    <h:outputText value="#{empty a.admissionType ? 'All Admission Types' : a.admissionType.name}"/>
                                 </p:column>
                                 <p:column>
                                     <p:commandButton ajax="false" value="Update" action="#{inwardPriceAdjustmntController.onEdit(a)}"  />
