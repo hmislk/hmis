@@ -701,6 +701,152 @@
                                             </h:form>
 
                                         </p:tab>
+                                        <p:tab id="tabJourney" title="Journey">
+                                            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                                            <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+                                            <h:form id="formJourney">
+                                                <div class="container-fluid p-2">
+                                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                                        <span class="fw-bold">Patient Journey Timeline</span>
+                                                        <p:commandButton id="btnGenerateJourney"
+                                                            value="Generate"
+                                                            action="#{patientEncounterController.generatePatientJourneyTimeline()}"
+                                                            ajax="true"
+                                                            update="journeyChartContainer"
+                                                            icon="pi pi-chart-bar"
+                                                            styleClass="ui-button-info ui-button-sm"
+                                                            title="Generate Patient Journey Timeline"/>
+                                                    </div>
+                                                    <h:panelGroup id="journeyChartContainer" layout="block">
+                                                        <h:panelGroup layout="block"
+                                                            rendered="#{patientEncounterController.patientRegistrationDate ne null}">
+                                                            <div style="width:100%; height:350px;">
+                                                                <canvas id="journeyCanvas"></canvas>
+                                                            </div>
+                                                            <script type="text/javascript">
+                                                                setTimeout(function() {
+                                                                    if (typeof Chart === 'undefined') { return; }
+                                                                    var existingChart = Chart.getChart('journeyCanvas');
+                                                                    if (existingChart) { existingChart.destroy(); }
+                                                                    var ctx = document.getElementById('journeyCanvas');
+                                                                    if (!ctx) { return; }
+                                                                    var categoryLabels = ['Registration', 'OPD Visit', 'Admission', 'Discharge', 'Lab', 'Surgery'];
+                                                                    new Chart(ctx, {
+                                                                        type: 'scatter',
+                                                                        data: {
+                                                                            datasets: [
+                                                                                {
+                                                                                    label: 'Registration',
+                                                                                    data: [{x: #{patientEncounterController.patientRegistrationDate.time}, y: 0}],
+                                                                                    backgroundColor: 'rgba(40,167,69,0.9)',
+                                                                                    pointRadius: 10,
+                                                                                    pointHoverRadius: 14
+                                                                                },
+                                                                                {
+                                                                                    label: 'OPD Visit',
+                                                                                    data: [
+                                                                                        <ui:repeat value="#{patientEncounterController.opdVisitEvents}" var="ev" varStatus="s">
+                                                                                            {x: #{ev[0].time}, y: 1}#{!s.last ? ',' : ''}
+                                                                                        </ui:repeat>
+                                                                                    ],
+                                                                                    backgroundColor: 'rgba(0,123,255,0.85)',
+                                                                                    pointRadius: 10,
+                                                                                    pointHoverRadius: 14
+                                                                                },
+                                                                                {
+                                                                                    label: 'Admission',
+                                                                                    data: [
+                                                                                        <ui:repeat value="#{patientEncounterController.admissionStartEvents}" var="ev" varStatus="s">
+                                                                                            {x: #{ev[0].time}, y: 2}#{!s.last ? ',' : ''}
+                                                                                        </ui:repeat>
+                                                                                    ],
+                                                                                    backgroundColor: 'rgba(255,140,0,0.9)',
+                                                                                    pointRadius: 10,
+                                                                                    pointHoverRadius: 14
+                                                                                },
+                                                                                {
+                                                                                    label: 'Discharge',
+                                                                                    data: [
+                                                                                        <ui:repeat value="#{patientEncounterController.admissionEndEvents}" var="ev" varStatus="s">
+                                                                                            {x: #{ev[0].time}, y: 3}#{!s.last ? ',' : ''}
+                                                                                        </ui:repeat>
+                                                                                    ],
+                                                                                    backgroundColor: 'rgba(108,99,255,0.9)',
+                                                                                    pointRadius: 10,
+                                                                                    pointHoverRadius: 14
+                                                                                },
+                                                                                {
+                                                                                    label: 'Lab',
+                                                                                    data: [
+                                                                                        <ui:repeat value="#{patientEncounterController.labEvents}" var="ev" varStatus="s">
+                                                                                            {x: #{ev[0].time}, y: 4}#{!s.last ? ',' : ''}
+                                                                                        </ui:repeat>
+                                                                                    ],
+                                                                                    backgroundColor: 'rgba(23,162,184,0.9)',
+                                                                                    pointRadius: 10,
+                                                                                    pointHoverRadius: 14
+                                                                                },
+                                                                                {
+                                                                                    label: 'Surgery',
+                                                                                    data: [
+                                                                                        <ui:repeat value="#{patientEncounterController.surgeryEvents}" var="ev" varStatus="s">
+                                                                                            {x: #{ev[0].time}, y: 5}#{!s.last ? ',' : ''}
+                                                                                        </ui:repeat>
+                                                                                    ],
+                                                                                    backgroundColor: 'rgba(220,53,69,0.9)',
+                                                                                    pointRadius: 10,
+                                                                                    pointHoverRadius: 14
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        options: {
+                                                                            responsive: true,
+                                                                            maintainAspectRatio: false,
+                                                                            plugins: {
+                                                                                legend: { display: true, position: 'top' },
+                                                                                title: { display: true, text: 'Patient Journey Timeline' },
+                                                                                tooltip: {
+                                                                                    callbacks: {
+                                                                                        label: function(context) {
+                                                                                            var d = new Date(context.parsed.x);
+                                                                                            var label = d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+                                                                                            return context.dataset.label + ': ' + label;
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            },
+                                                                            scales: {
+                                                                                x: {
+                                                                                    type: 'time',
+                                                                                    time: { unit: 'month', displayFormats: { month: 'MMM yyyy' } },
+                                                                                    title: { display: true, text: 'Date' }
+                                                                                },
+                                                                                y: {
+                                                                                    min: -0.5,
+                                                                                    max: 5.5,
+                                                                                    title: { display: true, text: 'Event Type' },
+                                                                                    ticks: {
+                                                                                        stepSize: 1,
+                                                                                        callback: function(value) {
+                                                                                            var labels = ['Registration', 'OPD Visit', 'Admission', 'Discharge', 'Lab', 'Surgery'];
+                                                                                            return labels[value] || '';
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    });
+                                                                }, 500);
+                                                            </script>
+                                                        </h:panelGroup>
+                                                        <h:outputText
+                                                            value="Click 'Generate' to view the patient journey timeline."
+                                                            rendered="#{patientEncounterController.patientRegistrationDate eq null}"
+                                                            styleClass="text-muted d-block text-center mt-3"/>
+                                                    </h:panelGroup>
+                                                </div>
+                                            </h:form>
+                                        </p:tab>
                                     </p:tabView>
                                 </div>
                             </div>

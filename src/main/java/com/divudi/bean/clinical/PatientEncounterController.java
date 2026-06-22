@@ -19,6 +19,7 @@ import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.data.clinical.DocumentTemplateType;
 import com.divudi.core.data.clinical.PrescriptionTemplateType;
+import com.divudi.core.data.EncounterType;
 import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.core.data.lab.InvestigationResultForGraph;
 import com.divudi.core.entity.Bill;
@@ -4556,6 +4557,119 @@ public class PatientEncounterController implements Serializable {
 
     public void setSelectedInvestigationItem(InvestigationItem selectedInvestigationItem) {
         this.selectedInvestigationItem = selectedInvestigationItem;
+    }
+
+    // Patient Journey Timeline data
+    private Date patientRegistrationDate;
+    private List<Object[]> opdVisitEvents = new ArrayList<>();
+    private List<Object[]> admissionStartEvents = new ArrayList<>();
+    private List<Object[]> admissionEndEvents = new ArrayList<>();
+    private List<Object[]> labEvents = new ArrayList<>();
+    private List<Object[]> surgeryEvents = new ArrayList<>();
+
+    public void generatePatientJourneyTimeline() {
+        patientRegistrationDate = null;
+        opdVisitEvents = new ArrayList<>();
+        admissionStartEvents = new ArrayList<>();
+        admissionEndEvents = new ArrayList<>();
+        labEvents = new ArrayList<>();
+        surgeryEvents = new ArrayList<>();
+
+        if (patient == null) {
+            return;
+        }
+
+        patientRegistrationDate = patient.getCreatedAt();
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("patient", patient);
+
+        params.put("encounterType", EncounterType.Opd);
+        String opdJpql = "SELECT e.encounterDate, e.id FROM PatientEncounter e "
+                + "WHERE e.patient = :patient AND e.encounterType = :encounterType "
+                + "AND e.retired = false ORDER BY e.encounterDate ASC";
+        List<Object[]> opd = ejbFacade.findObjectArrayByJpql(opdJpql, params, null);
+        if (opd != null) {
+            opdVisitEvents = opd;
+        }
+        if (patientRegistrationDate == null && !opdVisitEvents.isEmpty() && opdVisitEvents.get(0)[0] != null) {
+            patientRegistrationDate = (Date) opdVisitEvents.get(0)[0];
+        }
+
+        params.put("encounterType", EncounterType.Admission);
+        String admJpql = "SELECT e.dateOfAdmission, e.timeOfAdmission, e.fromTime, "
+                + "e.dateOfDischarge, e.timeOfDischarge, e.toTime, e.bhtNo "
+                + "FROM PatientEncounter e "
+                + "WHERE e.patient = :patient AND e.encounterType = :encounterType "
+                + "AND e.retired = false ORDER BY coalesce(e.dateOfAdmission, e.timeOfAdmission, e.fromTime) ASC";
+        List<Object[]> admissions = ejbFacade.findObjectArrayByJpql(admJpql, params, null);
+        if (admissions != null) {
+            for (Object[] row : admissions) {
+                Date startDate = firstNonNullDate((Date) row[0], (Date) row[1], (Date) row[2]);
+                Date endDate   = firstNonNullDate((Date) row[3], (Date) row[4], (Date) row[5]);
+                String bhtNo   = (String) row[6];
+                if (startDate != null) {
+                    admissionStartEvents.add(new Object[]{startDate, bhtNo});
+                }
+                if (endDate != null) {
+                    admissionEndEvents.add(new Object[]{endDate, bhtNo});
+                }
+            }
+        }
+
+        params.put("encounterType", EncounterType.Lab);
+        String labJpql = "SELECT e.encounterDate, e.id FROM PatientEncounter e "
+                + "WHERE e.patient = :patient AND e.encounterType = :encounterType "
+                + "AND e.retired = false ORDER BY e.encounterDate ASC";
+        List<Object[]> labs = ejbFacade.findObjectArrayByJpql(labJpql, params, null);
+        if (labs != null) {
+            labEvents = labs;
+        }
+
+        params.put("encounterType", EncounterType.SurgicalProcedure);
+        String surgJpql = "SELECT e.encounterDate, e.id FROM PatientEncounter e "
+                + "WHERE e.patient = :patient AND e.encounterType = :encounterType "
+                + "AND e.retired = false ORDER BY e.encounterDate ASC";
+        List<Object[]> surgs = ejbFacade.findObjectArrayByJpql(surgJpql, params, null);
+        if (surgs != null) {
+            surgeryEvents = surgs;
+        }
+    }
+
+    private static Date firstNonNullDate(Date... dates) {
+        if (dates == null) {
+            return null;
+        }
+        for (Date d : dates) {
+            if (d != null) {
+                return d;
+            }
+        }
+        return null;
+    }
+
+    public Date getPatientRegistrationDate() {
+        return patientRegistrationDate;
+    }
+
+    public List<Object[]> getOpdVisitEvents() {
+        return opdVisitEvents;
+    }
+
+    public List<Object[]> getAdmissionStartEvents() {
+        return admissionStartEvents;
+    }
+
+    public List<Object[]> getAdmissionEndEvents() {
+        return admissionEndEvents;
+    }
+
+    public List<Object[]> getLabEvents() {
+        return labEvents;
+    }
+
+    public List<Object[]> getSurgeryEvents() {
+        return surgeryEvents;
     }
 
     // Autocomplete for all InvestigationItems (not patient-specific)
