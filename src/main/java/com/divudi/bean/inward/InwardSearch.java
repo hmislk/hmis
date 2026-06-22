@@ -1592,6 +1592,7 @@ public class InwardSearch implements Serializable {
         cb.copy(getBill());
         cb.invertAndAssignValuesFromOtherBill(getBill());
         cb.setBilledBill(getBill());
+        cb.setPatient(getBill().getPatient());
 
         ////////////
         cb.setBillDate(new Date());
