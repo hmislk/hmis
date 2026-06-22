@@ -59,6 +59,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.ws.rs.PATCH;
 
 /**
  *
@@ -152,15 +153,126 @@ public class InwardSearch implements Serializable {
     Sex[] sex;
     private Admission admission;
     private PaymentMethodData paymentMethodData;
+    private PaymentMethodData originalBillPaymentMethodData;
     boolean showOrginalBill;
 
     private boolean withProfessionalFee = false;
     private boolean showZeroInwardChargeCategoryTypes = false;
     private boolean changed = false;
 
+    public PaymentMethodData loadCurrentBillPaymentMethodData(Bill bill) {
+        System.out.println("loadCurrentBillPaymentMethodData");
+        System.out.println("bill = " + bill);
+        PaymentMethodData newPmd = new PaymentMethodData();
+        if (bill == null || bill.getId() == null) {
+            System.out.println("bill is null or not persisted, returning empty PaymentMethodData");
+            return newPmd;
+        }
+
+        List<Payment> originalPayments = getBillBean().fetchBillPayments(bill);
+        System.out.println("originalPayments = " + originalPayments);
+        if (originalPayments == null || originalPayments.isEmpty()) {
+            System.out.println("no original payments found, returning empty PaymentMethodData");
+            return newPmd;
+        }
+
+        PaymentMethod firstMethod = null;
+        boolean mixedMethods = false;
+
+        for (Payment p : originalPayments) {
+            PaymentMethod pm = p.getPaymentMethod();
+            System.out.println("processing payment p = " + p);
+            System.out.println("payment method pm = " + pm);
+            if (pm == null) {
+                continue;
+            }
+            if (firstMethod == null) {
+                firstMethod = pm;
+            } else if (firstMethod != pm) {
+                mixedMethods = true;
+            }
+            populateComponentDetailFromPayment(newPmd, p, bill);
+        }
+
+        System.out.println("firstMethod = " + firstMethod);
+        System.out.println("mixedMethods = " + mixedMethods);
+        newPmd.setPaymentMethod(mixedMethods ? PaymentMethod.MultiplePaymentMethods : firstMethod);
+        System.out.println("resolved paymentMethod = " + newPmd.getPaymentMethod());
+        return newPmd;
+    }
+
+    private void populateComponentDetailFromPayment(PaymentMethodData pmd, Payment p, Bill bill) {
+        PaymentMethod pm = p.getPaymentMethod();
+        if (pm == null) {
+            return;
+        }
+        double amount = Math.abs(p.getPaidValue());
+        switch (pm) {
+            case Cash:
+                pmd.getCash().setTotalValue(pmd.getCash().getTotalValue() + amount);
+                break;
+            case Card:
+                pmd.getCreditCard().setTotalValue(pmd.getCreditCard().getTotalValue() + amount);
+                pmd.getCreditCard().setNo(p.getCreditCardRefNo());
+                pmd.getCreditCard().setInstitution(p.getBank());
+                pmd.getCreditCard().setComment(p.getComments());
+                break;
+            case Cheque:
+                pmd.getCheque().setTotalValue(pmd.getCheque().getTotalValue() + amount);
+                pmd.getCheque().setNo(p.getChequeRefNo());
+                pmd.getCheque().setDate(p.getChequeDate());
+                pmd.getCheque().setInstitution(p.getBank());
+                pmd.getCheque().setComment(p.getComments());
+                break;
+            case Slip:
+                pmd.getSlip().setTotalValue(pmd.getSlip().getTotalValue() + amount);
+                pmd.getSlip().setReferenceNo(p.getReferenceNo());
+                pmd.getSlip().setDate(p.getPaymentDate());
+                pmd.getSlip().setInstitution(p.getBank());
+                pmd.getSlip().setComment(p.getComments());
+                break;
+            case ewallet:
+                pmd.getEwallet().setTotalValue(pmd.getEwallet().getTotalValue() + amount);
+                pmd.getEwallet().setNo(p.getReferenceNo());
+                pmd.getEwallet().setInstitution(p.getBank());
+                pmd.getEwallet().setComment(p.getComments());
+                break;
+            case PatientDeposit:
+                pmd.getPatient_deposit().setTotalValue(pmd.getPatient_deposit().getTotalValue() + amount);
+                if (bill.getPatientEncounter() != null) {
+                    pmd.getPatient_deposit().setPatient(bill.getPatientEncounter().getPatient());
+                    PatientDeposit pd = patientDepositController.checkDepositOfThePatient(
+                            bill.getPatientEncounter().getPatient(), sessionController.getDepartment());
+                    if (pd != null && pd.getId() != null) {
+                        pmd.getPatient_deposit().setPatientDepost(pd);
+                    }
+                }
+                break;
+            case OnlineSettlement:
+                pmd.getOnlineSettlement().setTotalValue(pmd.getOnlineSettlement().getTotalValue() + amount);
+                pmd.getOnlineSettlement().setComment(p.getComments());
+                break;
+            default:
+                break;
+        }
+    }
+    
+    private List<PaymentMethod> inwardDepositCancelationPaymentMethods;
+    
     public String navigateToPaymentBillCancellation() {
         switch (bill.getBillTypeAtomic()) {
             case INWARD_DEPOSIT:
+                inwardDepositCancelationPaymentMethods = new ArrayList<>();
+                getInwardDepositCancelationPaymentMethods().add(PaymentMethod.Cash);
+                
+                if(bill.getPaymentMethod() != PaymentMethod.Cash){
+                    inwardDepositCancelationPaymentMethods.add(bill.getPaymentMethod());
+                }
+                originalBillPaymentMethodData = new PaymentMethodData();
+                originalBillPaymentMethodData = loadCurrentBillPaymentMethodData(bill);
+                
+                paymentMethodData = new PaymentMethodData();
+                
                 return "inward_deposit_cancel_bill_payment?faces-redirect=true";
             case INWARD_DEPOSIT_REFUND:
                 return "inward_deposit_refund_cancel_bill_payment?faces-redirect=true";
@@ -1084,8 +1196,13 @@ public class InwardSearch implements Serializable {
 
             getBillBean().updateInwardDipositList(getBill().getPatientEncounter(), cb);
 
-            List<Payment> payments = paymentService.createPayment(cb, paymentMethodData);
-            paymentService.updateBalances(payments);
+            paymentService.createPayment(
+                cb,
+                cb.getPaymentMethod(), 
+                paymentMethodData, 
+                sessionController.getInstitution(), 
+                sessionController.getDepartment(),
+                sessionController.getLoggedUser());
 
             if (getBill().getPatientEncounter().isPaymentFinalized()) {
                 getInwardBean().updateFinalFill(getBill().getPatientEncounter());
@@ -2244,6 +2361,25 @@ public class InwardSearch implements Serializable {
 
     public void setCurrentRequest(Request currentRequest) {
         this.currentRequest = currentRequest;
+    }
+
+    public List<PaymentMethod> getInwardDepositCancelationPaymentMethods() {
+        if(inwardDepositCancelationPaymentMethods == null){
+            inwardDepositCancelationPaymentMethods = new ArrayList<>();
+        }
+        return inwardDepositCancelationPaymentMethods;
+    }
+
+    public void setInwardDepositCancelationPaymentMethods(List<PaymentMethod> inwardDepositCancelationPaymentMethods) {
+        this.inwardDepositCancelationPaymentMethods = inwardDepositCancelationPaymentMethods;
+    }
+
+    public PaymentMethodData getOriginalBillPaymentMethodData() {
+        return originalBillPaymentMethodData;
+    }
+
+    public void setOriginalBillPaymentMethodData(PaymentMethodData originalBillPaymentMethodData) {
+        this.originalBillPaymentMethodData = originalBillPaymentMethodData;
     }
 
 }
