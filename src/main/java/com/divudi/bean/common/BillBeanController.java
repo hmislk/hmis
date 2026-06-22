@@ -1754,14 +1754,24 @@ public class BillBeanController implements Serializable {
     public List<Object[]> fetchDepartmentSale(Date fromDate, Date toDate, Institution institution, BillType billType) {
         PaymentMethod[] pms = new PaymentMethod[]{PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Cheque, PaymentMethod.Slip};
 
+        // Sum from the child Payment rows (p.paidValue) instead of filtering whole bills by the
+        // bill-level paymentMethod. A bill settled with more than one method has
+        // bill.paymentMethod = MultiplePaymentMethods; filtering on the bill-level method dropped
+        // such bills entirely, even though their actual payments were Cash/Card/Cheque/Slip. The
+        // Daily Return report sums child payments and therefore counts them, which caused the QB
+        // Import figure to fall short. Filtering on p.paymentMethod captures the individual
+        // components of split-payment bills while still excluding credit/deposit portions.
+        // See hmislk/hmis#21639.
         String sql = "Select b.referenceBill.department,"
-                + " sum(b.netTotal) "
-                + " from Bill b "
+                + " sum(p.paidValue) "
+                + " from Payment p "
+                + " join p.bill b "
                 + " where b.retired=false"
+                + " and p.retired=false"
                 + " and  b.billType=:bType"
                 + " and b.referenceBill.department.institution=:ins "
                 + " and b.createdAt between :fromDate and :toDate "
-                + " and b.paymentMethod in :pm"
+                + " and p.paymentMethod in :pm"
                 + " and type(b)!=:cl "
                 + " group by b.referenceBill.department"
                 + " order by b.referenceBill.department.name";
