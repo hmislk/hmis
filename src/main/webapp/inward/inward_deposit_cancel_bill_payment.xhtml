@@ -62,7 +62,7 @@
 
                                     
 
-                                    <h:panelGroup id="paymentDetails" layout="block" class="d-flex flex-wrap gap-2 align-items-center ms-2">
+                                    <h:panelGroup id="paymentDetails" layout="block" class="d-flex gap-2 align-items-center ms-2">
                                         
                                         <p:commandButton
                                             id="updateData"
@@ -76,27 +76,27 @@
                                         </p:commandButton>
 
                                         <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'Card'}">
-                                            <pa:creditCard paymentMethodData="#{inwardSearch.paymentMethodData}"/>
+                                            <pa:creditCard paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="false" />
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'Cheque'}">
-                                            <pa:cheque paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="true"/>
+                                            <pa:cheque paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="false"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'Slip'}">
-                                            <pa:slip paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="true"/>
+                                            <pa:slip paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="false"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'ewallet'}">
-                                            <pa:ewallet paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="true"/>
+                                            <pa:ewallet paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="false"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'PatientDeposit'}">
-                                            <pa:patient_deposit paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="true"/>
+                                            <pa:patient_deposit paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="false"/>
                                         </h:panelGroup>
 
                                         <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'OnlineSettlement'}">
-                                            <pa:online_settlement paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="true"/>
+                                            <pa:online_settlement paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="false"/>
                                         </h:panelGroup>
 
                                     </h:panelGroup>
