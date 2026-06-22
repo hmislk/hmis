@@ -76,7 +76,7 @@
                                         <h:outputLabel value="#{i+1}" ></h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Bill No" width="8em;" style="padding: 12px;">
+                                    <p:column headerText="Bill No" width="10em;" style="padding: 12px;">
                                         <p:commandLink
                                             value="#{bb.deptId}"
                                             ajax="false"
@@ -95,7 +95,7 @@
                                         </h:panelGroup>
                                     </p:column>
 
-                                    <p:column headerText="BHT No" width="6em;" style="padding: 12px;">
+                                    <p:column headerText="BHT No" width="10em;" style="padding: 12px;">
                                         <h:outputLabel value="#{bb.patientEncounter.bhtNo}" ></h:outputLabel>
                                     </p:column>
 
@@ -123,17 +123,17 @@
 
                                     <p:column headerText="Patient" style="padding: 12px;">
                                         <h:outputLabel value="#{bb.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
-                                    </p:column>  
+                                    </p:column>
                                     
-                                    <p:column headerText="Payment Method" width="10em;" style="padding: 12px;">                            
+                                    <p:column headerText="Payment Method" width="12em;" style="padding: 12px;">                            
                                         <h:outputLabel value="#{bb.paymentMethod}" ></h:outputLabel>                                   
                                     </p:column>
                                     
-                                    <p:column headerText="Value" width="8em;" style="padding: 12px;">                              
-                                        <h:outputLabel value="#{bb.netTotal}" >
+                                    <p:column headerText="Value" width="8em;" style="padding: 12px;" class="text-end">                              
+                                        <h:outputLabel value="#{bb.netTotal}" class="text-end" >
                                             <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>                                  
-                                    </p:column>  
+                                        </h:outputLabel>
+                                    </p:column>
                                     
                                     <p:column headerText="Comments" width="16em;" style="padding: 12px;">
                                         <h:outputLabel rendered="#{bb.refundedBill ne null}" value="#{bb.refundedBill.comments}" >
