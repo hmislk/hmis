@@ -21,33 +21,50 @@
                             <div class=" d-flex justify-content-between ">
                                 <div><h:outputLabel value="Payment Reprint" class="mt-2"></h:outputLabel></div>
                                 <div class="d-flex gap-2">
-                                    <p:commandButton ajax="false" value="To Cancel"
-                                                     class="ui-button-danger"
-                                                     icon="fa fa-ban"
-                                                     action="#{inwardSearch.navigateToPaymentBillCancellation()}"
-                                                     disabled="#{inwardSearch.bill.cancelled}"  >                           
+                                    
+                                    <p:commandButton 
+                                        ajax="false" value="To Cancel"
+                                        class="ui-button-danger"
+                                        icon="fa fa-ban"
+                                        action="#{inwardSearch.navigateToPaymentBillCancellation()}"
+                                        disabled="#{inwardSearch.bill.cancelled}"  >                           
                                     </p:commandButton>
 
-                                    <p:commandButton value="Print" ajax="false" action="#" class="ui-button-info"
-                                                     icon="fas fa-print">
+                                    <p:commandButton 
+                                        value="Print" 
+                                        ajax="false" 
+                                        action="#" 
+                                        class="ui-button-info"
+                                        icon="fas fa-print">
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
-                                    <p:commandButton ajax="false" value="Mark As Checked"
-                                                     icon="fa fa-check-square"
-                                                     class="ui-button-success"
-                                                     action="#{inwardSearch.markAsChecked()}"
-                                                     rendered="#{webUserController.hasPrivilege('InwardCheck')}"  />
-                                    <p:commandButton ajax="false" value="Mark As Un Check"
-                                                     icon="fa fa-square"
-                                                     class="ui-button-warning"
-                                                     action="#{inwardSearch.markAsUnChecked()}"
-                                                     rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  />
+                                    
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Mark As Checked"
+                                        icon="fa fa-check-square"
+                                        class="ui-button-success"
+                                        action="#{inwardSearch.markAsChecked()}"
+                                        rendered="#{webUserController.hasPrivilege('InwardCheck')}"  >
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Mark As Un Check"
+                                        icon="fa fa-square"
+                                        class="ui-button-warning"
+                                        action="#{inwardSearch.markAsUnChecked()}"
+                                        rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  >
+                                    </p:commandButton>
 
-                                    <p:commandButton ajax="false" value="Back To Interim"
-                                                     icon="fa fa-backward"
-                                                     action="/inward/inward_bill_intrim" 
-                                                     actionListener="#{bhtSummeryController.createTables()}"
-                                                     />
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back To Interim"
+                                        icon="fa fa-backward"
+                                        action="/inward/inward_bill_intrim" 
+                                        actionListener="#{bhtSummeryController.createTables()}"
+                                        >
+                                    </p:commandButton>
                                 </div>
                             </div>
                         </f:facet>
@@ -99,7 +116,7 @@
                                             class="w-100"
                                             value="#{inwardSearch.bill.comments}">
                                         </p:inputText>
-                                        
+
                                         <p:commandButton 
                                             id="saveBillComment"
                                             value="Save Comment"
@@ -111,7 +128,7 @@
                                         </p:commandButton>
                                     </div>
                                 </p:panel>
-                                
+
                             </div>
                         </div>
 
