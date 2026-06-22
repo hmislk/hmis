@@ -54,13 +54,26 @@
                                         <f:selectItems value="#{inwardSearch.inwardDepositCancelationPaymentMethods}"/>
                                         <p:ajax 
                                             process="cmbPs" 
-                                            update="paymentDetails @all" 
+                                            update="paymentDetails @all :#{p:resolveFirstComponentWithId('updateData',view).clientId}" 
                                             event="change"
                                             listener="#{inwardSearch.listnerForPaymentMethodChange(inwardSearch.bill)}">
                                         </p:ajax>
                                     </p:selectOneMenu>
 
+                                    
+
                                     <h:panelGroup id="paymentDetails" layout="block" class="d-flex flex-wrap gap-2 align-items-center ms-2">
+                                        
+                                        <p:commandButton
+                                            id="updateData"
+                                            class="ui-button-warning "
+                                            rendered="#{inwardSearch.paymentMethod ne 'Cash'}"
+                                            process="@this"
+                                            update="paymentDetails"
+                                            icon="fas fa-gear"
+                                            title="Re-Fill Payment Details"
+                                            action="#{inwardSearch.refillPaymentDetail()}">
+                                        </p:commandButton>
 
                                         <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'Card'}">
                                             <pa:creditCard paymentMethodData="#{inwardSearch.paymentMethodData}"/>
@@ -214,19 +227,34 @@
                         <p:panel>
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <h:outputText value="Cancel Bill"/>
-                                    <p:commandButton
-                                        id="btnBackToBillList"
-                                        value="Back to Bill List"
-                                        action="/inward/inward_search_payment?faces-redirect=true"
-                                        ajax="false"
-                                        styleClass="ui-button-warning"
-                                        icon="fa fa-arrow-left"
-                                        title="Return to the payment bill list">
-                                    </p:commandButton>
+                                    <h:outputText value="Cancellation Bill"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            id="btnPrintCancelBill"
+                                            value="Print"
+                                            styleClass="ui-button-info"
+                                            icon="fas fa-print"
+                                            title="Print cancellation bill">
+                                            <p:printer target="gpCancelBillPreview"/>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            id="btnBackToBillList"
+                                            value="Back to Bill List"
+                                            action="/inward/inward_search_payment?faces-redirect=true"
+                                            ajax="false"
+                                            styleClass="ui-button-warning"
+                                            icon="fa fa-arrow-left"
+                                            title="Return to the payment bill list">
+                                        </p:commandButton>
+                                    </div>
                                 </div>
                             </f:facet>
 
+                            <div class="d-flex justify-content-center align-items-center">
+                                <h:panelGroup id="gpCancelBillPreview">
+                                    <bill:posPaperCancellationBill bill="#{inwardSearch.bill.cancelledBill}" duplicate="false"/>
+                                </h:panelGroup>
+                            </div>
                         </p:panel>
                     </h:panelGroup>
 
