@@ -77,12 +77,22 @@
                                     </p:column>
 
                                     <p:column headerText="Bill No" width="8em;" style="padding: 12px;">
-                                        <p:commandLink 
+                                        <p:commandLink
                                             value="#{bb.deptId}"
-                                            ajax="false" 
+                                            ajax="false"
                                             action="inward_reprint_bill_payment?faces-redirect=true">
                                             <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
                                         </p:commandLink>
+                                        <h:panelGroup rendered="#{bb.cancelled and bb.cancelledBill ne null}" layout="block" class="mt-1">
+                                            <h:outputLabel style="color: red;" value="Cancel Bill : "/>
+                                            <p:commandLink
+                                                style="color: red;"
+                                                value="#{bb.cancelledBill.deptId}"
+                                                ajax="false"
+                                                title="View cancellation bill preview"
+                                                action="#{inwardSearch.navigateToViewInwardDepositCancellationBill(bb)}">
+                                            </p:commandLink>
+                                        </h:panelGroup>
                                     </p:column>
 
                                     <p:column headerText="BHT No" width="6em;" style="padding: 12px;">
