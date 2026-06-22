@@ -256,7 +256,42 @@ public class InwardSearch implements Serializable {
                 break;
         }
     }
-    
+
+    public void refillPaymentDetail() {
+        if (originalBillPaymentMethodData == null) {
+            return;
+        }
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        paymentMethodData.setPaymentMethod(originalBillPaymentMethodData.getPaymentMethod());
+        
+        copyComponentDetail(originalBillPaymentMethodData.getCash(), paymentMethodData.getCash());
+        copyComponentDetail(originalBillPaymentMethodData.getCreditCard(), paymentMethodData.getCreditCard());
+        copyComponentDetail(originalBillPaymentMethodData.getCheque(), paymentMethodData.getCheque());
+        copyComponentDetail(originalBillPaymentMethodData.getSlip(), paymentMethodData.getSlip());
+        copyComponentDetail(originalBillPaymentMethodData.getEwallet(), paymentMethodData.getEwallet());
+        copyComponentDetail(originalBillPaymentMethodData.getPatient_deposit(), paymentMethodData.getPatient_deposit());
+        copyComponentDetail(originalBillPaymentMethodData.getOnlineSettlement(), paymentMethodData.getOnlineSettlement());
+    }
+
+    private void copyComponentDetail(ComponentDetail from, ComponentDetail to) {
+        if (from == null || to == null) {
+            return;
+        }
+        to.setTotalValue(from.getTotalValue());
+        to.setNo(from.getNo());
+        to.setReferenceNo(from.getReferenceNo());
+        to.setReferralNo(from.getReferralNo());
+        to.setComment(from.getComment());
+        to.setDate(from.getDate());
+        to.setInstitution(from.getInstitution());
+        to.setPatient(from.getPatient());
+        to.setPatientDepost(from.getPatientDepost());
+        to.setToStaff(from.getToStaff());
+        to.setCreditDuration(from.getCreditDuration());
+    }
+
     private List<PaymentMethod> inwardDepositCancelationPaymentMethods;
     
     public String navigateToPaymentBillCancellation() {
@@ -279,6 +314,16 @@ public class InwardSearch implements Serializable {
             default:
                 return "inward_cancel_bill_payment?faces-redirect=true";
         }
+    }
+
+    public String navigateToViewInwardDepositCancellationBill(Bill b) {
+        if (b == null || b.getCancelledBill() == null) {
+            JsfUtil.addErrorMessage("No cancellation bill found");
+            return "";
+        }
+        bill = b;
+        printPreview = true;
+        return "/inward/inward_deposit_cancel_bill_payment?faces-redirect=true";
     }
 
     public void editBillDetails() {
