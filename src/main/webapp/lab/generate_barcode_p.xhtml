@@ -439,55 +439,60 @@
 
                                     <hr/>
 
-                                    <p:inputText 
-                                        class="w-100"
-                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                        placeholder="Sample Reject Reason"
-                                        value="#{patientInvestigationController.sampleRejectionComment}" >
-                                    </p:inputText>
+                                    <h:panelGrid columns="1" class="w-100" rendered="#{webUserController.hasPrivilege('LabSampleRejecting')}">
 
-                                    <h:panelGrid columns="3" class="my-2">
-                                        <p:toggleSwitch 
-                                            value="#{patientInvestigationController.requestReCollected}" 
-                                            onIcon="pi pi-check" 
-                                            offIcon="pi pi-times" 
-                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}">
-                                        </p:toggleSwitch>
-                                        <p:spacer width="20"/>
-                                        <h:outputLabel value="Request Re-Collect Sample"/>
+                                        <p:inputText 
+                                            class="w-100"
+                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                            placeholder="Sample Reject Reason"
+                                            value="#{patientInvestigationController.sampleRejectionComment}" >
+                                        </p:inputText>
+
+                                        <h:panelGrid columns="3" class="my-2">
+                                            <p:toggleSwitch 
+                                                value="#{patientInvestigationController.requestReCollected}" 
+                                                onIcon="pi pi-check" 
+                                                offIcon="pi pi-times" 
+                                                disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}">
+                                            </p:toggleSwitch>
+                                            <p:spacer width="20"/>
+                                            <h:outputLabel value="Request Re-Collect Sample"/>
+                                        </h:panelGrid>
+
+                                        <p:commandButton 
+                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                            id="btnRejectSamples"
+                                            value="Reject Samples"
+                                            ajax="false"
+                                            action="#{patientInvestigationController.rejectSamples()}"
+                                            title="Reject Samples"
+                                            icon="pi pi-times-circle"
+                                            styleClass="w-100 ui-button-danger" >
+                                        </p:commandButton>
+
+                                        <hr/>
+
                                     </h:panelGrid>
 
-                                    <p:commandButton 
-                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                        id="btnRejectSamples"
-                                        value="Reject Samples"
-                                        ajax="false"
-                                        action="#{patientInvestigationController.rejectSamples()}"
-                                        title="Reject Samples"
-                                        icon="pi pi-times-circle"
-                                        styleClass="w-100 ui-button-danger" >
-                                    </p:commandButton>
+                                    <h:panelGrid columns="1" class="w-100" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <p:commandButton 
+                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                            id="btnGenerateTestCodes"
+                                            value="Check Analyzer Test Codes"
+                                            ajax="false"
+                                            action="#{patientInvestigationController.generateSampleCodesSamples()}"
+                                            title="Reject Samples"
+                                            icon="pi pi-times-circle"
+                                            styleClass="w-100 ui-button-danger" >
+                                        </p:commandButton>
 
-                                    <hr/>
+                                        <p:inputTextarea 
+                                            class="w-100"
+                                            value="#{patientInvestigationController.testDetails}" >
+                                        </p:inputTextarea>
 
-                                    <p:commandButton 
-                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                        id="btnGenerateTestCodes"
-                                        value="Check Analyzer Test Codes"
-                                        ajax="false"
-                                        action="#{patientInvestigationController.generateSampleCodesSamples()}"
-                                        title="Reject Samples"
-                                        icon="pi pi-times-circle"
-                                        styleClass="w-100 ui-button-danger" >
-                                    </p:commandButton>
-
-                                    <p:inputTextarea 
-                                        class="w-100"
-                                        value="#{patientInvestigationController.testDetails}" >
-                                    </p:inputTextarea>
-
-                                    <hr/>
-
+                                        <hr/>
+                                    </h:panelGrid>
                                 </h:panelGrid>
                             </div>
 
