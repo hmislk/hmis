@@ -13,46 +13,72 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form>
+                <h:form id="cancelDepositPaymentForm">
                     <h:panelGroup rendered="#{!inwardSearch.printPreview}" styleClass="alignTop">
                         <p:panel>
                             <f:facet name="header">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <p:outputLabel value="Inward Deposit Payment Cancellation" class="mt-2"/>
-                                    </div>
-                                    <div class="d-flex gap-3">
-                                        <p:inputText 
-                                            value="#{inwardSearch.comment}" 
-                                            style="width: 450px;"
-                                            placeholder="Enter a comment" >
-                                        </p:inputText>
-                                        <p:commandButton 
-                                            value="Cancel Payment Bill" 
-                                            class="ui-button-danger" 
-                                            ajax="false" 
-                                            icon="fas fa-ban"
-                                            action="#{inwardSearch.cancelDepositBillPayment()}">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <h:outputText value="Inward Deposit Payment Cancellation" styleClass="fw-bold"/>
+                                    <div class="d-flex align-items-center flex-wrap gap-2">
+                                        <p:commandButton
+                                            id="btnBackToReprintBillPayment"
+                                            value="Back to Reprint Payment"
+                                            action="/inward/inward_reprint_bill_payment?faces-redirect=true"
+                                            ajax="false"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            icon="fa fa-arrow-left"
+                                            title="Go to Reprint Bill Payment">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            id="btnBackToSearchPayment"
+                                            value="Back to Bill List"
+                                            action="/inward/inward_search_payment?faces-redirect=true"
+                                            ajax="false"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            icon="fa fa-arrow-left"
+                                            title="Go to Payment Bill Search">
                                         </p:commandButton>
                                     </div>
                                 </div>
                             </f:facet>
 
-                            <div class="align-items-center justify-content-between" style="display: flex">
-                                <div>
-                                    <p:selectOneMenu id="cmbPs" value="#{inwardSearch.paymentMethod}" required="true">
+                            <div class="d-flex justify-content-between my-3">
+                                <div class="d-flex gap-2 W-100">
+                                    <p:outputLabel for="cmbPs" value="Payment Method" style="width: 250px;" styleClass="mt-2 fw-bold"/>
+                                    <p:selectOneMenu 
+                                        id="cmbPs" value="#{inwardSearch.paymentMethod}" 
+                                        required="true"
+                                        styleClass="w-100">
                                         <f:selectItem itemLabel="Select Payment Method"/>
                                         <f:selectItems value="#{inwardPaymentController.paymentMethods}"/>
                                         <p:ajax process="cmbPs" update="paymentDetails @all" event="change"
                                                 listener="#{inwardSearch.listnerForPaymentMethodChange(inwardSearch.bill)}"/>
                                     </p:selectOneMenu>
                                 </div>
-
+                                <div class="d-flex gap-2">
+                                    <p:inputText
+                                        id="txtCancellationComment"
+                                        value="#{inwardSearch.comment}"
+                                        style="width: 750px;"
+                                        title="Reason for cancelling this payment bill"
+                                        placeholder="Enter a cancellation reason">
+                                    </p:inputText>
+                                    <p:commandButton
+                                        id="btnCancelPaymentBill"
+                                        value="Cancel Payment Bill"
+                                        styleClass="ui-button-danger"
+                                        ajax="false"
+                                        icon="fas fa-ban"
+                                        title="Cancel this deposit payment bill"
+                                        onclick="return confirm('Are you sure you want to cancel this payment bill? This action cannot be undone.');"
+                                        action="#{inwardSearch.cancelDepositBillPayment()}">
+                                    </p:commandButton>
+                                </div>
                             </div>
 
                             <div class="row mt-2">
                                 <div class="col-md-2"></div>
-                                <div class="col-md-8">
+                                <div class="col-12 col-md-8">
                                     <h:panelGroup id="paymentDetails">
                                         <h:panelGroup id="creditCard"
                                                       rendered="#{inwardSearch.paymentMethod eq 'Card'}">
@@ -79,60 +105,54 @@
                             </div>
 
                             <div class="row mt-2">
-                                <div class="col-md-4">
-                                    <p:panel header="Patient Details">
-                                        <p:panelGrid columns="2">
-                                            <h:outputLabel value="Patient ​Name:"></h:outputLabel>
-                                            <h:outputLabel
-                                                value="#{inwardSearch.bill.patient.person.nameWithTitle}"></h:outputLabel>
-                                            <h:outputLabel value="Bht No:"></h:outputLabel>
-                                            <h:outputLabel value="#{inwardSearch.bill.patientEncounter.bhtNo}"></h:outputLabel>
-                                            <h:outputLabel value="Age"/>
-                                            <h:outputLabel value="#{inwardSearch.bill.patient.age}"/>
-                                            <h:outputLabel value="Sex">
-                                            </h:outputLabel>
-                                            <h:outputLabel value="#{inwardSearch.bill.patient.person.sex}">
-                                            </h:outputLabel>
-                                            <h:outputLabel value="Phone">
-                                            </h:outputLabel>
-                                            <h:outputLabel value="#{inwardSearch.bill.patient.person.phone}">
-                                            </h:outputLabel>
+                                <div class="col-12 col-md-4 mb-2">
+                                    <p:panel header="Patient Details" styleClass="h-100">
+                                        <p:panelGrid columns="2" layout="tabular" styleClass="w-100">
+                                            <h:outputLabel value="Patient Name:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.patientEncounter.patient.person.nameWithTitle}"/>
+                                            <h:outputLabel value="Bht No:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.patientEncounter.bhtNo}"/>
+                                            <h:outputLabel value="Age:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.patientEncounter.patient.age}"/>
+                                            <h:outputLabel value="Sex:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.patientEncounter.patient.person.sex}"/>
+                                            <h:outputLabel value="Phone:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.patientEncounter.patient.person.phone}"/>
                                         </p:panelGrid>
                                     </p:panel>
                                 </div>
-                                <div class="col-md-4">
-                                    <p:panel header="Bill Details">
-                                        <p:panelGrid columns="2">
-                                            <h:outputLabel value="Bill No :"></h:outputLabel>
-                                            <h:outputLabel value="#{inwardSearch.bill.deptId}"></h:outputLabel>
-                                            <h:outputLabel value="Total :"></h:outputLabel>
-                                            <h:outputLabel value="#{inwardSearch.bill.total}">
+                                <div class="col-12 col-md-4 mb-2">
+                                    <p:panel header="Bill Details" styleClass="h-100">
+                                        <p:panelGrid columns="2" layout="tabular" styleClass="w-100">
+                                            <h:outputLabel value="Bill No:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.deptId}"/>
+                                            <h:outputLabel value="Total:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.total}" styleClass="text-end d-block">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
-                                            <h:outputLabel value="Discount :"></h:outputLabel>
-                                            <h:outputLabel value="#{inwardSearch.bill.discount}">
+                                            <h:outputLabel value="Discount:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.discount}" styleClass="text-end d-block">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
-                                            <h:outputLabel value="Net Total :"></h:outputLabel>
-                                            <h:outputLabel value="#{inwardSearch.bill.netTotal}">
+                                            <h:outputLabel value="Net Total:" styleClass="fw-bold"/>
+                                            <h:outputLabel value="#{inwardSearch.bill.netTotal}" styleClass="text-end d-block">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </p:panelGrid>
                                     </p:panel>
                                 </div>
-                                <div class="col-md-4">
-                                    <p:panel header="Payment Data">
-                                        <p:dataTable rowIndexVar="rowIndex" value="#{billSearch.fetchBillPayments(inwardSearch.bill)}" var="bip">
-                                            <p:column>
-                                                <f:facet name="header">No</f:facet>
+                                <div class="col-12 col-md-4 mb-2">
+                                    <p:panel header="Payment Data" styleClass="h-100">
+                                        <p:dataTable rowIndexVar="rowIndex"
+                                                     value="#{billSearch.fetchBillPayments(inwardSearch.bill)}" var="bip"
+                                                     styleClass="w-100">
+                                            <p:column headerText="No" styleClass="text-center" style="width: 3rem;">
                                                 <h:outputLabel value="#{rowIndex+1}"/>
                                             </p:column>
-                                            <p:column>
-                                                <f:facet name="header">Item</f:facet>
+                                            <p:column headerText="Item">
                                                 <h:outputLabel value="#{bip.paymentMethod}"/>
                                             </p:column>
-                                            <p:column>
-                                                <f:facet name="header">Fee</f:facet>
+                                            <p:column headerText="Fee" styleClass="text-end">
                                                 <h:outputLabel value="#{bip.paidValue}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
@@ -143,49 +163,47 @@
                             </div>
 
                             <div class="row mt-2">
-                                <p:panel>
-                                    <f:facet name="header">
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div>
-                                                <h:outputText value=" Payment Bill"/>
-                                            </div>
-                                            <div>
-                                                <p:commandButton 
-                                                    class="ui-button-info"
-                                                    icon="fas fa-print" 
+                                <div class="col-12">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <h:outputText value="Payment Bill"/>
+                                                <p:commandButton
+                                                    id="btnPrintPaymentBill"
+                                                    styleClass="ui-button-info"
+                                                    icon="fas fa-print"
+                                                    title="Print payment bill"
                                                     value="Print">
                                                     <p:printer target="gpBillPreview"/>
                                                 </p:commandButton>
                                             </div>
+                                        </f:facet>
+                                        <div class="d-flex justify-content-center align-items-center">
+                                            <h:panelGroup id="gpBillPreview">
+                                                <bill:FiveFivePaymentBill bill="#{inwardSearch.bill}" duplicate="true"/>
+                                            </h:panelGroup>
                                         </div>
-                                    </f:facet>
-                                    <div class="d-flex justify-content-center align-items-center">
-                                        <h:panelGroup id="gpBillPreview">
-                                            <bill:FiveFivePaymentBill bill="#{inwardSearch.bill}" duplicate="true"/>
-                                        </h:panelGroup>
-                                    </div>
-                                </p:panel>
+                                    </p:panel>
+                                </div>
                             </div>
                         </p:panel>
 
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{inwardSearch.printPreview}" >
-                        <p:panel >
+                    <h:panelGroup rendered="#{inwardSearch.printPreview}">
+                        <p:panel>
                             <f:facet name="header">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <p:outputLabel value="Cancel Bill" class="mt-2"/>
-                                    </div>
-                                    <div>
-                                        <p:commandButton 
-                                            value="Back to Bill List" 
-                                            action="/inward/inward_search_payment?faces-redirect=true" 
-                                            ajax="false"
-                                            class="ui-button-warning"
-                                            icon="fa fa-arrow-left">
-                                        </p:commandButton>
-                                    </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h:outputText value="Cancel Bill"/>
+                                    <p:commandButton
+                                        id="btnBackToBillList"
+                                        value="Back to Bill List"
+                                        action="/inward/inward_search_payment?faces-redirect=true"
+                                        ajax="false"
+                                        styleClass="ui-button-warning"
+                                        icon="fa fa-arrow-left"
+                                        title="Return to the payment bill list">
+                                    </p:commandButton>
                                 </div>
                             </f:facet>
 
