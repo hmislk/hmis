@@ -115,22 +115,53 @@
                                     </p:panel>
                                 </div>
                                 <div class="col-12 col-md-4 mb-2">
-                                    <p:panel header="Payment Data" styleClass="h-100">
-                                        <p:dataTable rowIndexVar="rowIndex"
-                                                     value="#{billSearch.fetchBillPayments(inwardSearch.bill)}" var="bip"
-                                                     styleClass="w-100">
-                                            <p:column headerText="No" styleClass="text-center" style="width: 3rem;">
-                                                <h:outputLabel value="#{rowIndex+1}"/>
-                                            </p:column>
-                                            <p:column headerText="Item">
+                                    <p:panel header="Original Payment Details" styleClass="h-100">
+                                        <p:dataList value="#{billSearch.fetchBillPayments(inwardSearch.bill)}" var="bip"
+                                                    type="none" emptyMessage="No payments found for this bill"
+                                                    styleClass="w-100">
+                                            <p:panelGrid columns="2" layout="tabular" styleClass="w-100 mb-2">
+                                                <h:outputLabel value="Payment Method:" styleClass="fw-bold"/>
                                                 <h:outputLabel value="#{bip.paymentMethod}"/>
-                                            </p:column>
-                                            <p:column headerText="Fee" styleClass="text-end">
-                                                <h:outputLabel value="#{bip.paidValue}">
+
+                                                <h:outputLabel value="Amount:" styleClass="fw-bold"/>
+                                                <h:outputLabel value="#{bip.paidValue}" styleClass="text-end d-block">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
-                                            </p:column>
-                                        </p:dataTable>
+
+                                                <h:outputLabel value="Card No:" styleClass="fw-bold"
+                                                               rendered="#{not empty bip.creditCardRefNo}"/>
+                                                <h:outputLabel value="#{bip.creditCardRefNo}"
+                                                               rendered="#{not empty bip.creditCardRefNo}"/>
+
+                                                <h:outputLabel value="Cheque No:" styleClass="fw-bold"
+                                                               rendered="#{not empty bip.chequeRefNo}"/>
+                                                <h:outputLabel value="#{bip.chequeRefNo}"
+                                                               rendered="#{not empty bip.chequeRefNo}"/>
+
+                                                <h:outputLabel value="Cheque Date:" styleClass="fw-bold"
+                                                               rendered="#{not empty bip.chequeDate}"/>
+                                                <h:outputLabel value="#{bip.chequeDate}"
+                                                               rendered="#{not empty bip.chequeDate}">
+                                                    <f:convertDateTime pattern="dd MMM yyyy"/>
+                                                </h:outputLabel>
+
+                                                <h:outputLabel value="Bank:" styleClass="fw-bold"
+                                                               rendered="#{not empty bip.bank}"/>
+                                                <h:outputLabel value="#{bip.bank.name}"
+                                                               rendered="#{not empty bip.bank}"/>
+
+                                                <h:outputLabel value="Reference No:" styleClass="fw-bold"
+                                                               rendered="#{not empty bip.referenceNo}"/>
+                                                <h:outputLabel value="#{bip.referenceNo}"
+                                                               rendered="#{not empty bip.referenceNo}"/>
+
+                                                <h:outputLabel value="Comment:" styleClass="fw-bold"
+                                                               rendered="#{not empty bip.comments}"/>
+                                                <h:outputLabel value="#{bip.comments}"
+                                                               rendered="#{not empty bip.comments}"/>
+                                            </p:panelGrid>
+                                            <p:separator/>
+                                        </p:dataList>
                                     </p:panel>
                                 </div>
                             </div>
