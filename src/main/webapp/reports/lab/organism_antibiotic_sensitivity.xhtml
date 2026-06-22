@@ -29,7 +29,7 @@
                                                   monthNavigator="true"           
                                                   yearNavigator="true"                              
                                                   timeInput="true" 
-                                                  title="Filter by to date"
+                                                  title="Filter by from date"
                                                   hideOnDateTimeSelect="true"
                                                   pattern="dd/MM/yyyy HH:mm:ss"/>
                                 </div>
@@ -60,7 +60,7 @@
                                     <p:selectOneMenu id="cmdInstitution"
                                                      value="#{reportController.institution}"
                                                      style="width:100%"
-                                                     title="Filter by patient age">
+                                                     title="Filter by institution">
                                         filter="true">
                                         <f:selectItem itemLabel="Select Institution to filter"/>
                                         <f:selectItems 
@@ -74,11 +74,11 @@
                                 </div>
                                 <div class="col-md-2 text-right font-weight-bold">
                                     <i class="fa fa-map-marker-alt me-2"/>
-                                    <p:outputLabel value="Site" for="cmdInstitution"/>
+                                    <p:outputLabel value="Site" for="cmdSite"/>
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu
-                                        id="cmdInstitution1"
+                                        id="cmdSite"
                                         value="#{reportController.site}"
                                         style="width:100%"
                                         title="Filter by institution or branch"
@@ -227,6 +227,7 @@
                                 <div class="col-md-12 d-flex justify-content-start" style="gap:8px">
 
                                     <p:commandButton
+                                        id="btnProcess"
                                         class="ui-button-warning my-4 mx-2"
                                         style="width: 100px"
                                         action="#{reportsController.organismAntibioticSensitivityReport}"
@@ -235,6 +236,7 @@
                                         icon="fas fa-cogs"/>
 
                                     <p:commandButton
+                                        id="btnPrint"
                                         class="ui-button-info my-4 mx-2"
                                         style="width: 100px"
                                         icon="fas fa-print"
@@ -259,6 +261,7 @@
                                     </h:outputScript>
 
                                     <p:commandButton
+                                        id="btnExcel"
                                         class="ui-button-success my-4 mx-2"
                                         style="width: 100px"
                                         icon="fas fa-file-excel"
@@ -270,6 +273,7 @@
                                          fileName="organism_antibioti_sensitivity.xlsx"/>-->
 
                                     <p:commandButton
+                                        id="btnPdf"
                                         class="ui-button-danger my-4 mx-2"
                                         style="width: 100px"
                                         icon="fas fa-file-pdf"
@@ -331,8 +335,9 @@
                         </h:panelGrid>
 
 
-                        <p:dataTable 
-                            value="null" 
+                        <p:dataTable
+                            id="tblExport1"
+                            value="" 
                             var="c"
                             rowIndexVar="n"
                             paginator="true"
