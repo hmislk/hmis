@@ -250,6 +250,9 @@ public class InwardSearch implements Serializable {
                 break;
             case OnlineSettlement:
                 pmd.getOnlineSettlement().setTotalValue(pmd.getOnlineSettlement().getTotalValue() + amount);
+                pmd.getOnlineSettlement().setReferenceNo(p.getReferenceNo());
+                pmd.getOnlineSettlement().setDate(p.getPaymentDate());
+                pmd.getOnlineSettlement().setInstitution(p.getBank());
                 pmd.getOnlineSettlement().setComment(p.getComments());
                 break;
             default:
