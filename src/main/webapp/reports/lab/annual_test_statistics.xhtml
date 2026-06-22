@@ -10,83 +10,242 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
 
-                <h:form >
-                    <p:panel header="Annual Test Statistics" >
-                        <h:panelGrid columns="5" >
-                            <p:outputLabel value="Financial Year"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.financialYear}">
-                                <f:selectItem itemLabel="Financial Year"/>
+                <!-- ============================================================ -->
+                <!-- FILTER PANEL                                                  -->
+                <!-- ============================================================ -->
+                <p:panel header="Annual Test Statistics">
+                    <h:form>
+
+                        <h:panelGrid columns="4" class="w-100">
+
+                            <!-- Financial Year -->
+                            <h:panelGroup>
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <h:outputLabel class="mx-3" value="Financial Year"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100">
+                                <f:selectItem itemLabel="FY 20-21" itemValue="FY 20-21"/>
+                                <f:selectItem itemLabel="FY 21-22" itemValue="FY 21-22"/>
+                                <f:selectItem itemLabel="FY 22-23" itemValue="FY 22-23"/>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20"></p:spacer>
+                            <!-- Institution -->
+                            <h:panelGroup class="mx-2">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
+                                <h:outputLabel class="mx-3" value="Institution"/>
+                            </h:panelGroup>
 
-                            <p:outputLabel value="Branch" >
-                            </p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.institution}">
-                                <f:selectItem itemLabel="Branch"/>
+                            <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100">
+                                <f:selectItem itemLabel="All Institutions" itemValue="" />
+                                <f:selectItem itemLabel="Institution 1" itemValue="INS1"/>
+                            </p:selectOneMenu>
+
+                            <!-- Site -->
+                            <h:panelGroup>
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" />
+                                <h:outputLabel class="mx-3" value="Site"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100">
+                                <f:selectItem itemLabel="All Sites" itemValue="" />
+                                <f:selectItem itemLabel="Site 1" itemValue="ST1"/>
+                            </p:selectOneMenu>
+
+                            <!-- Department -->
+                            <h:panelGroup class="mx-2">
+                                <h:outputText value="&#xf0f7;" styleClass="fa mr-2" />
+                                <h:outputLabel class="mx-3" value="Department"/>
+                            </h:panelGroup>
+
+                            <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100">
+                                <f:selectItem itemLabel="All Departments" itemValue="" />
+                                <f:selectItem itemLabel="Department 1" itemValue="DEP1"/>
                             </p:selectOneMenu>
 
                         </h:panelGrid>
 
-                        
-                        <p:outputLabel value="Financial Year : " class="my-2"></p:outputLabel>
-                        <br></br>
-                        <p:outputLabel value="Branch : "></p:outputLabel>
-                        <br></br>
-                        <p:commandButton ajax="false" value="Process" action="null" class="my-2"></p:commandButton>
+                        <div class="my-3">
+                            <p:commandButton
+                                ajax="false"
+                                action="null"
+                                value="Process"
+                                style="width: 150px"
+                                icon="fas fa-cogs"
+                                class="mx-2 ui-button-warning"
+                                />
 
-                        <p:dataTable value="#{reportController.reportLabTestCounts}" var="c">
-                            <p:column headerText="Description" style="width:100px" >
-                                <h:outputText value="" ></h:outputText>
-                                <f:facet name="footer" >
-                                    <p:outputLabel value="Total" />
-                                </f:facet>
-                            </p:column>
-                            <p:column headerText="20-Apr" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="20-May" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="20-Jun" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="20-MJul" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="20-Aug" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="20-Sep" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="20-Oct" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="20-Nov" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="20-Dec" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="20-Jan" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="20-Feb" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="20-Mar" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="YTD" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            
+                            <p:commandButton
+                                icon="fa-solid fa-print"
+                                class="mx-2 ui-button-info"
+                                style="width: 150px"
+                                ajax="false"
+                                value="Print">
+                                <p:printer target="tbl" />
+                            </p:commandButton>
 
-                            
-                        </p:dataTable>
+                            <p:commandButton
+                                ajax="false"
+                                value="Excel"
+                                style="width: 150px"
+                                icon="fas fa-file-excel"
+                                class="ui-button-success mx-2"
+                                >
+                                <p:dataExporter fileName="annual_test_statistics" target="tbl" type="xlsx" ></p:dataExporter>
+                            </p:commandButton>
 
-                    </p:panel>
+                            <p:commandButton
+                                class="mx-2 ui-button-danger"
+                                style="width: 150px"
+                                icon="fa-solid fa-file-pdf"
+                                ajax="false"
+                                value="PDF">
+                                <p:dataExporter type="pdf" target="tbl" fileName="annual_test_statistics" ></p:dataExporter>
+                            </p:commandButton>
+
+                        </div>
+                    </h:form>
+                </p:panel>
+
+                <!-- SPACING BETWEEN PANELS -->
+                <div class="my-3"></div>
+
+                <!-- ============================================================ -->
+                <!-- FILTER RESULTS SUMMARY                                        -->
+                <!-- ============================================================ -->
+
+                <p:panel header="Report Results">
+                    <h:panelGrid columns="2"
+                                 styleClass="table table-bordered table-sm table-striped w-50"
+                                 columnClasses="font-weight-bold w-25,w-75">
+                        <h:outputText value="Financial Year" />
+                        <h:outputText value="FY 20-21" />
+
+                        <h:outputText value="Institution" />
+                        <h:outputText value="Institution 1" />
+
+                        <h:outputText value="Site" />
+                        <h:outputText value="Site 1" />
+
+                        <h:outputText value="Department" />
+                        <h:outputText value="Department 1" />
+
+                    </h:panelGrid>
+                </p:panel>
+
+                <!-- ============================================================ -->
+                <!-- RESULT TABLE (static wireframe, no backend data)              -->
+                <!-- ============================================================ -->
+                <h:form prependId="false">
+
+                    <p:dataTable
+                        scrollWidth="100%"
+                        style="width:200em;"
+                        id="tbl"
+                        scrollable="true"
+                        paginator="false">
+
+                        <!-- Description Column (frozen) -->
+                        <p:column headerText="Description" frozen="true">
+                            <h:outputText value="" />
+                            <f:facet name="footer">
+                                <p:outputLabel value="Total" />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="20-Apr">
+                            <h:outputText value="" />
+                            <f:facet name="footer">
+                                <h:outputText value="" />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="20-May">
+                            <h:outputText value="" />
+                            <f:facet name="footer">
+                                <h:outputText value="" />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="20-Jun">
+                            <h:outputText value="" />
+                            <f:facet name="footer">
+                                <h:outputText value="" />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="20-Jul">
+                            <h:outputText value="" />
+                            <f:facet name="footer">
+                                <h:outputText value="" />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="20-Aug">
+                            <h:outputText value="" />
+                            <f:facet name="footer">
+                                <h:outputText value="" />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="20-Sep">
+                            <h:outputText value="" />
+                            <f:facet name="footer">
+                                <h:outputText value="" />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="20-Oct">
+                            <h:outputText value="" />
+                            <f:facet name="footer">
+                                <h:outputText value="" />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="20-Nov">
+                            <h:outputText value="" />
+                            <f:facet name="footer">
+                                <h:outputText value="" />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="20-Dec">
+                            <h:outputText value="" />
+                            <f:facet name="footer">
+                                <h:outputText value="" />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="21-Jan">
+                            <h:outputText value="" />
+                            <f:facet name="footer">
+                                <h:outputText value="" />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="21-Feb">
+                            <h:outputText value="" />
+                            <f:facet name="footer">
+                                <h:outputText value="" />
+                            </f:facet>
+                        </p:column>
+
+                        <p:column headerText="21-Mar">
+                            <h:outputText value="" />
+                            <f:facet name="footer">
+                                <h:outputText value="" />
+                            </f:facet>
+                        </p:column>
+
+                        <!-- YTD Column -->
+                        <p:column headerText="YTD">
+                            <h:outputText value="" />
+                            <f:facet name="footer">
+                                <h:outputText value="" />
+                            </f:facet>
+                        </p:column>
+
+                    </p:dataTable>
 
                 </h:form>
 
