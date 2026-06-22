@@ -65,18 +65,14 @@
                                         disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded }"  
                                         class="m-2 ui-button-danger">                           
                                     </p:commandButton>
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        value="Return" 
+                                    <p:commandButton
+                                        id="btnReturn"
+                                        ajax="false"
+                                        value="Return"
                                         icon="fa fa-undo"
-                                        actionListener="#{billSearch.recreateModel()}"
-                                        action="inward_bill_service_refund?faces-redirect=true"
-                                        disabled="#{inwardSearch.bill.cancelled}"
-                                        class="m-2 "
-                                        >    
-                                        <f:setPropertyActionListener  
-                                            value="#{inwardSearch.bill}" 
-                                            target="#{billSearch.bill}"  />
+                                        action="#{inwardServiceRefundController.navigateToRefundInwardServiceBill(inwardSearch.bill)}"
+                                        disabled="#{inwardSearch.bill.cancelled or inwardServiceRefundController.fullyReturned}"
+                                        class="m-2 ">
                                     </p:commandButton>
 
                                     <p:commandButton 

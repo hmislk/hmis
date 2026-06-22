@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad38a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E7490;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#155E75;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad38" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#F0FDFA"/>
+  <g filter="url(#shad38)">
+    <!-- Magnifying glass -->
+    <circle cx="82" cy="82" r="50" fill="none" stroke="url(#grad38a)" stroke-width="13"/>
+    <circle cx="82" cy="82" r="37" fill="#F0FDFA"/>
+    <!-- Stethoscope inside magnifier -->
+    <circle cx="72" cy="82" r="14" fill="url(#grad38a)"/>
+    <circle cx="72" cy="82" r="9" fill="#F0FDFA"/>
+    <circle cx="72" cy="82" r="4" fill="url(#grad38a)" opacity="0.5"/>
+    <path d="M82 82 Q96 82 96 70 Q96 58 105 56" fill="none" stroke="url(#grad38a)" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="101" cy="54" r="5" fill="url(#grad38a)"/>
+    <circle cx="109" cy="54" r="5" fill="url(#grad38a)"/>
+    <line x1="101" y1="54" x2="109" y2="54" stroke="url(#grad38a)" stroke-width="4"/>
+    <!-- Handle -->
+    <line x1="120" y1="120" x2="148" y2="148" stroke="url(#grad38a)" stroke-width="13" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -2,10 +2,14 @@ package com.divudi.service;
 
 import java.io.Serializable;
 import javax.enterprise.context.ApplicationScoped;
-import javax.faces.push.Push;
-import javax.faces.push.PushContext;
+import org.omnifaces.cdi.Push;
+import org.omnifaces.cdi.PushContext;
+import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 /**
  * Application-scoped service that pushes a lightweight signal via JSF WebSocket
@@ -24,10 +28,32 @@ public class NotificationPushService implements Serializable {
     @Push
     private PushContext notifications;
 
+    @Resource
+    private TransactionSynchronizationRegistry transactionSynchronizationRegistry;
+
     public void pushToUser(Long userId) {
         if (userId == null) {
             return;
         }
+        if (transactionSynchronizationRegistry.getTransactionKey() == null) {
+            sendNow(userId);
+            return;
+        }
+        transactionSynchronizationRegistry.registerInterposedSynchronization(new Synchronization() {
+            @Override
+            public void beforeCompletion() {
+            }
+
+            @Override
+            public void afterCompletion(int status) {
+                if (status == Status.STATUS_COMMITTED) {
+                    sendNow(userId);
+                }
+            }
+        });
+    }
+
+    private void sendNow(Long userId) {
         notifications.send("new_notification", userId);
     }
 }

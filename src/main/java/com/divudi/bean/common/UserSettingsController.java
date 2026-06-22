@@ -12,6 +12,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -32,6 +34,7 @@ import org.json.JSONObject;
 public class UserSettingsController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(UserSettingsController.class.getName());
 
     @EJB
     private ConfigOptionFacade configOptionFacade;
@@ -197,7 +200,7 @@ public class UserSettingsController implements Serializable {
             settingsCache.put(key, option);
 
         } catch (Exception e) {
-            JsfUtil.addErrorMessage("Failed to save your settings.");
+            LOGGER.log(Level.WARNING, "Failed to save user setting: " + key, e);
         }
     }
 
@@ -229,7 +232,7 @@ public class UserSettingsController implements Serializable {
             String jsonString = serializeToJson(value);
             saveUserSetting(key, jsonString, OptionValueType.LONG_TEXT);
         } catch (Exception e) {
-            JsfUtil.addErrorMessage("Failed to save your settings.");
+            LOGGER.log(Level.WARNING, "Failed to save user JSON setting: " + key, e);
         }
     }
 
@@ -530,6 +533,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setPharmacyGrnReturnRequestSupplierVisible(boolean visible) {
+        if (visible == isPharmacyGrnReturnRequestSupplierVisible()) return;
         ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_return_request");
         settings.setColumnVisible("supplier", visible);
         saveColumnVisibility("pharmacy_grn_return_request", settings);
@@ -540,6 +544,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setPharmacyGrnReturnRequestPoNoVisible(boolean visible) {
+        if (visible == isPharmacyGrnReturnRequestPoNoVisible()) return;
         ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_return_request");
         settings.setColumnVisible("poNo", visible);
         saveColumnVisibility("pharmacy_grn_return_request", settings);
@@ -550,6 +555,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setPharmacyGrnReturnRequestGrnNoVisible(boolean visible) {
+        if (visible == isPharmacyGrnReturnRequestGrnNoVisible()) return;
         ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_return_request");
         settings.setColumnVisible("grnNo", visible);
         saveColumnVisibility("pharmacy_grn_return_request", settings);
@@ -560,6 +566,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setPharmacyGrnReturnRequestInvoiceNoVisible(boolean visible) {
+        if (visible == isPharmacyGrnReturnRequestInvoiceNoVisible()) return;
         ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_return_request");
         settings.setColumnVisible("invoiceNo", visible);
         saveColumnVisibility("pharmacy_grn_return_request", settings);
@@ -570,6 +577,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setPharmacyGrnReturnRequestPoDetailsVisible(boolean visible) {
+        if (visible == isPharmacyGrnReturnRequestPoDetailsVisible()) return;
         ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_return_request");
         settings.setColumnVisible("poDetails", visible);
         saveColumnVisibility("pharmacy_grn_return_request", settings);
@@ -580,6 +588,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setPharmacyGrnReturnRequestGrnDetailsVisible(boolean visible) {
+        if (visible == isPharmacyGrnReturnRequestGrnDetailsVisible()) return;
         ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_return_request");
         settings.setColumnVisible("grnDetails", visible);
         saveColumnVisibility("pharmacy_grn_return_request", settings);
@@ -590,6 +599,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setPharmacyGrnReturnRequestPoValueVisible(boolean visible) {
+        if (visible == isPharmacyGrnReturnRequestPoValueVisible()) return;
         ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_return_request");
         settings.setColumnVisible("poValue", visible);
         saveColumnVisibility("pharmacy_grn_return_request", settings);
@@ -600,6 +610,7 @@ public class UserSettingsController implements Serializable {
     }
 
     public void setPharmacyGrnReturnRequestGrnValueVisible(boolean visible) {
+        if (visible == isPharmacyGrnReturnRequestGrnValueVisible()) return;
         ColumnVisibilitySettings settings = getColumnVisibility("pharmacy_grn_return_request");
         settings.setColumnVisible("grnValue", visible);
         saveColumnVisibility("pharmacy_grn_return_request", settings);

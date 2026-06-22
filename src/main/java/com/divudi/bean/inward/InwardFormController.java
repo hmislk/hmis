@@ -50,6 +50,10 @@ public class InwardFormController implements Serializable {
     private DesignComponentFacade designComponentFacade;
     @EJB
     private DesignComponentChoiceFacade designComponentChoiceFacade;
+    @EJB
+    private com.divudi.core.facade.EmailFacade emailFacade;
+    @EJB
+    private com.divudi.ejb.EmailManagerEjb emailManagerEjb;
 
     @Inject
     private SessionController sessionController;
@@ -61,6 +65,7 @@ public class InwardFormController implements Serializable {
     private List<DesignComponent> availableTemplates;
     private DesignComponent selectedTemplate;
     private boolean viewMode = false;
+    private String emailRecipient;
 
     public String navigateToInwardFormsFromAdmissionProfile(PatientEncounter pe) {
         if (pe == null) {
@@ -241,6 +246,104 @@ public class InwardFormController implements Serializable {
         }
         JsfUtil.addSuccessMessage("Form Deleted");
         loadFormEntries();
+    }
+
+    public void prepareFormEmailDialog(PatientFormEntry entry) {
+        if (entry == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+        editForm(entry);
+        emailRecipient = resolveDefaultEmailRecipient();
+    }
+
+    private String resolveDefaultEmailRecipient() {
+        if (patientEncounter != null && patientEncounter.getPatient() != null
+                && patientEncounter.getPatient().getPerson() != null
+                && patientEncounter.getPatient().getPerson().getEmail() != null
+                && !patientEncounter.getPatient().getPerson().getEmail().trim().isEmpty()) {
+            return patientEncounter.getPatient().getPerson().getEmail().trim();
+        }
+        if (patientEncounter != null && patientEncounter.getGuardian() != null
+                && patientEncounter.getGuardian().getEmail() != null
+                && !patientEncounter.getGuardian().getEmail().trim().isEmpty()) {
+            return patientEncounter.getGuardian().getEmail().trim();
+        }
+        return "";
+    }
+
+    public void sendFormEmail() {
+        if (currentEntry == null || currentCaptureComponents == null) {
+            JsfUtil.addErrorMessage("No form selected");
+            return;
+        }
+        if (emailRecipient == null || emailRecipient.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter recipient email");
+            return;
+        }
+        String recipient = emailRecipient.trim();
+        if (!com.divudi.core.util.CommonFunctions.isValidEmail(recipient)) {
+            JsfUtil.addErrorMessage("Please enter a valid email address");
+            return;
+        }
+
+        String formName = currentEntry.getDesignComponent() != null
+                ? currentEntry.getDesignComponent().getName() : "Inpatient Form";
+        String body = buildFormEmailHtml(formName);
+
+        com.divudi.core.entity.AppEmail email = new com.divudi.core.entity.AppEmail();
+        email.setCreatedAt(new Date());
+        email.setCreater(sessionController.getLoggedUser());
+        email.setReceipientEmail(recipient);
+        email.setMessageSubject(formName);
+        email.setMessageBody(body);
+        email.setDepartment(sessionController.getLoggedUser().getDepartment());
+        email.setInstitution(sessionController.getLoggedUser().getInstitution());
+        email.setPatientEncounter(patientEncounter);
+        email.setMessageType(com.divudi.core.data.MessageType.InpatientFilledForm);
+        email.setSentSuccessfully(false);
+        email.setPending(true);
+        emailFacade.create(email);
+
+        try {
+            boolean success = emailManagerEjb.sendEmail(
+                    java.util.Collections.singletonList(recipient),
+                    body,
+                    formName,
+                    true
+            );
+            email.setSentSuccessfully(success);
+            email.setPending(!success);
+            if (success) {
+                email.setSentAt(new Date());
+                JsfUtil.addSuccessMessage("Email Sent Successfully");
+            } else {
+                JsfUtil.addErrorMessage("Sending Email Failed");
+            }
+            emailFacade.edit(email);
+        } catch (Exception ex) {
+            JsfUtil.addErrorMessage("Sending Email Failed");
+        }
+    }
+
+    private String buildFormEmailHtml(String formName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><body>");
+        sb.append("<h3>").append(escapeHtml(formName)).append("</h3>");
+        sb.append("<div class=\"row\">");
+        for (CaptureComponent cc : currentCaptureComponents) {
+            sb.append(resolveViewWrapper(cc));
+        }
+        sb.append("</div></body></html>");
+        return sb.toString();
+    }
+
+    public String getEmailRecipient() {
+        return emailRecipient;
+    }
+
+    public void setEmailRecipient(String emailRecipient) {
+        this.emailRecipient = emailRecipient;
     }
 
     public void cancelForm() {

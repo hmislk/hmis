@@ -453,6 +453,10 @@ public class InwardSearch implements Serializable {
         PatientEncounter pe = inwardPaymentController.getCurrent().getPatientEncounter();
         inwardPaymentController.makeNull();
         inwardPaymentController.getCurrent().setPatientEncounter(pe);
+        inwardPaymentController.setPatient(pe.getPatient());
+        
+        inwardPaymentController.paymentListener();
+        
         if (sessionController.getPaymentManagementAfterShiftStart()) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
@@ -1860,6 +1864,15 @@ public class InwardSearch implements Serializable {
         getBillFacade().edit(bill);
 
         JsfUtil.addErrorMessage("Successfully Cheked");
+    }
+
+    public void updateBillComments() {
+        if (bill == null || bill.getId() == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return;
+        }
+        getBillFacade().edit(bill);
+        JsfUtil.addSuccessMessage("Comment Updated");
     }
 
     public void selectBillItem(BillItem billItem) {

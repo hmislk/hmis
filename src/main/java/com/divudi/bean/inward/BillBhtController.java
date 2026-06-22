@@ -19,6 +19,7 @@ import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemMappingController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.inward.BhtSummeryController;
 
 import com.divudi.core.data.BillClassType;
@@ -94,6 +95,8 @@ public class BillBhtController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     BhtSummeryController bhtSummeryController;
     @Inject
@@ -492,7 +495,7 @@ public class BillBhtController implements Serializable {
             billItem.setSearialNo(list.size());
 
             for (BillFee bf : billItem.getBillFees()) {
-                PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeUnitGrossValue() != null ? bf.getFeeUnitGrossValue() : bf.getFeeGrossValue(), matrixDepartment, paymentMethod);
+                PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeUnitGrossValue() != null ? bf.getFeeUnitGrossValue() : bf.getFeeGrossValue(), matrixDepartment, paymentMethod, bill.getPatientEncounter() != null ? bill.getPatientEncounter().getAdmissionType() : null);
                 getInwardBean().setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix, bill.getPatientEncounter());
                 getBillFeeFacade().edit(bf);
 
@@ -607,6 +610,12 @@ public class BillBhtController implements Serializable {
         }
 
         if (getBatchBill().getFromDepartment() == null) {
+            return;
+        }
+
+        if (getBatchBill().getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
             return;
         }
 
@@ -748,6 +757,12 @@ public class BillBhtController implements Serializable {
             if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
                 return true;
             }
+        }
+
+        if (getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
+            return true;
         }
 
         if (getPatientEncounter().isDischarged()) {
@@ -937,7 +952,7 @@ public class BillBhtController implements Serializable {
         for (Fee i : itemFee) {
             BillFee billFee = getBillBean().createBillFee(billItem, i, patientEncounter);
 
-            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment, paymentMethod);
+            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment, paymentMethod, patientEncounter != null ? patientEncounter.getAdmissionType() : null);
 
             getInwardBean().setBillFeeMargin(billFee, billItem.getItem(), priceMatrix, patientEncounter);
 
@@ -1047,7 +1062,7 @@ public class BillBhtController implements Serializable {
                 ? bf.getBillItem().getQty() : 1.0;
         bf.setFeeUnitGrossValue(bf.getFeeGrossValue() / qty);
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod(), getPatientEncounter().getAdmissionType());
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), priceMatrix);
 
@@ -1070,7 +1085,7 @@ public class BillBhtController implements Serializable {
         lstBillItems = null;
         getLstBillItems();
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeGrossValue(), getBatchBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeGrossValue(), getBatchBill().getFromDepartment(), getPatientEncounter().getPaymentMethod(), getPatientEncounter().getAdmissionType());
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getBatchBill().getFromDepartment(), priceMatrix);
 

@@ -4,11 +4,25 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:o="http://omnifaces.org/ui">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
+                    <!-- Real-time push: refreshes the notification list when new notifications arrive -->
+                    <o:socket channel="notifications"
+                              user="#{sessionController.loggedUser.id}"
+                              onmessage="onNotificationListPush"
+                              rendered="#{sessionController.loggedUser != null}" />
+                    <p:remoteCommand name="refreshNotificationList"
+                                     update="reNot"
+                                     action="#{userNotificationController.filterNotificationsByCriteria}" />
+                    <script type="text/javascript">
+                        function onNotificationListPush(message, channel, event) {
+                            refreshNotificationList();
+                        }
+                    </script>
 
                     <!-- Single remove-confirmation dialog shared across all rows -->
                     <p:dialog header="Remove Notification" widgetVar="dlgRemove" modal="true" width="350">
@@ -23,12 +37,15 @@
                     <!-- Bulk-clear confirmation dialog -->
                     <p:dialog minHeight="100" width="400" header="Confirm Clear"
                               widgetVar="confirmationDialog" modal="true">
-                        <p class="my-2">Are you sure you want to clear the selected notifications?</p>
+                        <p class="my-2">This will remove ALL notifications currently listed below.
+                            To clear only some, filter the list first. Continue?</p>
                         <div class="d-flex mt-2 justify-content-end">
-                            <p:commandButton class="mx-2 ui-button-warning" ajax="false" value="Yes"
+                            <p:commandButton id="btnClearYes" class="mx-2 ui-button-danger" ajax="false"
+                                             value="Yes, Clear Listed"
                                              action="#{userNotificationController.clearNotificationsByCriteria()}"
                                              onclick="PF('confirmationDialog').hide();" />
-                            <p:commandButton value="No" onclick="PF('confirmationDialog').hide();" />
+                            <p:commandButton id="btnClearNo" value="No" type="button"
+                                             onclick="PF('confirmationDialog').hide();" />
                         </div>
                     </p:dialog>
 
@@ -37,11 +54,33 @@
                         <!-- Filter / action bar -->
                         <div class="d-flex justify-content-end align-items-center my-2">
                             <h:panelGroup id="criteria">
-                                Today :<p:selectBooleanCheckbox class="mx-2" value="#{userNotificationController.todayNotification}" />
-                                Seen :<p:selectBooleanCheckbox class="mx-2" value="#{userNotificationController.seenedNotifiaction}" />
-                                Completed :<p:selectBooleanCheckbox class="mx-2" value="#{userNotificationController.completedNotification}" />
-                                Not Completed :<p:selectBooleanCheckbox class="mx-2" value="#{userNotificationController.notCompeletedNotifiaction}" />
-                                Canceled :<p:selectBooleanCheckbox class="mx-2" value="#{userNotificationController.canceldRequests}" />
+                                <p:outputLabel for="cbToday" value="Today Only" styleClass="mx-1" />
+                                <p:selectBooleanCheckbox id="cbToday" styleClass="mx-2"
+                                                         value="#{userNotificationController.todayNotification}" />
+
+                                <p:outputLabel for="cmbSeen" value="Seen" styleClass="mx-1" />
+                                <p:selectOneMenu id="cmbSeen" styleClass="mx-2"
+                                                 value="#{userNotificationController.seenFilter}">
+                                    <f:selectItem itemLabel="All" itemValue="ALL" />
+                                    <f:selectItem itemLabel="Unseen" itemValue="UNSEEN" />
+                                    <f:selectItem itemLabel="Seen" itemValue="SEEN" />
+                                </p:selectOneMenu>
+
+                                <p:outputLabel for="cmbCompletion" value="Status" styleClass="mx-1" />
+                                <p:selectOneMenu id="cmbCompletion" styleClass="mx-2"
+                                                 value="#{userNotificationController.completionFilter}">
+                                    <f:selectItem itemLabel="All" itemValue="ALL" />
+                                    <f:selectItem itemLabel="Pending" itemValue="PENDING" />
+                                    <f:selectItem itemLabel="Completed" itemValue="COMPLETED" />
+                                </p:selectOneMenu>
+
+                                <p:outputLabel for="cbCancelled" value="Cancelled Bills Only" styleClass="mx-1" />
+                                <p:selectBooleanCheckbox id="cbCancelled" styleClass="mx-2"
+                                                         value="#{userNotificationController.canceldRequests}" />
+
+                                <p:outputLabel for="cbShowCleared" value="Show Cleared" styleClass="mx-1" />
+                                <p:selectBooleanCheckbox id="cbShowCleared" styleClass="mx-2"
+                                                         value="#{userNotificationController.showCleared}" />
                             </h:panelGroup>
 
                             <p:commandButton id="btnFilter" class="m-2 ui-button-success"
@@ -49,13 +88,14 @@
                                              icon="fa-solid fa-filter" value="Filter"
                                              action="#{userNotificationController.filterNotificationsByCriteria()}" />
 
-                            <p:commandButton class="m-2 ui-button-danger" icon="fas fa-trash" value="Clear"
+                            <p:commandButton id="btnClear" class="m-2 ui-button-danger" type="button"
+                                             icon="fas fa-trash" value="Clear Listed"
                                              onclick="PF('confirmationDialog').show();" />
                         </div>
 
                         <!-- Notification list -->
                         <h:panelGroup id="reNot">
-                            <p:repeat value="#{userNotificationController.items}" var="un">
+                            <ui:repeat value="#{userNotificationController.items}" var="un">
                                 <div class="row mt-2 shadow-lg"
                                      style="#{un.notification.bill != null and un.notification.bill.cancelled ? 'background-color: #e35656;' : ''}">
 
@@ -108,6 +148,27 @@
                                         </h:panelGroup>
                                     </h:panelGroup>
 
+                                    <!-- Type badge for discharge (PatientRoom-based) notifications -->
+                                    <h:panelGroup rendered="#{un.notification.patientRoom != null}">
+                                        <div class="col-4 p-2" style="background: linear-gradient(90deg, rgba(25,118,210,1) 0%, rgba(25,60,120,1) 100%);">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <h:outputText styleClass="fa-solid fa-bed mx-4 text-white" />
+                                                <h5 class="text-white">Room Discharge</h5>
+                                                <h6 style="border:1px solid white;padding:10px;color:white;font-weight:bold;margin-right:10px">#{un.notification.patientRoom.roomFacilityCharge.name}</h6>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+                                    <!-- Type badge for PatientEncounter-based notifications -->
+                                    <h:panelGroup rendered="#{un.notification.patientRoom == null and un.notification.patientEncounter != null}">
+                                        <div class="col-4 p-2" style="background: linear-gradient(90deg, rgba(46,125,50,1) 0%, rgba(27,94,32,1) 100%);">
+                                            <div class="d-flex align-items-center justify-content-between">
+                                                <h:outputText styleClass="fa-solid fa-hospital-user mx-4 text-white" />
+                                                <h5 class="text-white">Patient Discharge</h5>
+                                                <h6 style="border:1px solid white;padding:10px;color:white;font-weight:bold;margin-right:10px">#{un.notification.patientEncounter.bhtNo}</h6>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
                                     <!-- Detail columns -->
                                     <div class="col-8 text-black">
                                         <div class="row text-left">
@@ -122,7 +183,7 @@
                                                  style="border-left:1px solid black;border-right:1px solid black;">
                                                 <p:outputLabel class="mx-4" style="font-weight:bolder"
                                                                value="#{un.notification.createdAt}">
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}  HH:mm a" />
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}  HH:mm a" timeZone="Asia/Colombo" />
                                                 </p:outputLabel>
                                             </div>
                                             <div class="col-3 d-flex align-items-center">
@@ -135,16 +196,23 @@
                                                     <!-- Sets current via AJAX, then opens the shared dialog -->
                                                     <p:commandButton id="btnRemove" class="ui-button-danger mx-2"
                                                                      icon="fas fa-trash" process="@this"
+                                                                     rendered="#{not un.retired}"
                                                                      oncomplete="PF('dlgRemove').show();">
                                                         <f:setPropertyActionListener value="#{un}" target="#{userNotificationController.current}" />
                                                     </p:commandButton>
+                                                    <!-- Shown when listing cleared notifications -->
+                                                    <p:commandButton id="btnRestore" class="ui-button-success mx-2"
+                                                                     icon="fas fa-rotate-left" value="Restore"
+                                                                     process="@this" update="reNot"
+                                                                     rendered="#{un.retired}"
+                                                                     action="#{userNotificationController.restoreUserNotification(un)}" />
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
                                 </div>
-                            </p:repeat>
+                            </ui:repeat>
                         </h:panelGroup>
 
                     </h:panelGroup>
