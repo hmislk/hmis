@@ -46,11 +46,12 @@
                                 <div class="d-flex gap-2 W-100">
                                     <p:outputLabel for="cmbPs" value="Payment Method" style="width: 250px;" styleClass="mt-2 fw-bold"/>
                                     <p:selectOneMenu 
-                                        id="cmbPs" value="#{inwardSearch.paymentMethod}" 
+                                        id="cmbPs" 
+                                        value="#{inwardSearch.paymentMethod}" 
                                         required="true"
                                         styleClass="w-100">
                                         <f:selectItem itemLabel="Select Payment Method"/>
-                                        <f:selectItems value="#{inwardPaymentController.paymentMethods}"/>
+                                        <f:selectItems value="#{enumController.paymentMethodsForIwardDeposit}"/>
                                         <p:ajax process="cmbPs" update="paymentDetails @all" event="change"
                                                 listener="#{inwardSearch.listnerForPaymentMethodChange(inwardSearch.bill)}"/>
                                     </p:selectOneMenu>
