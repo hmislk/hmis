@@ -22,34 +22,38 @@
                                 <div><h:outputLabel value="Payment Reprint" class="mt-2"></h:outputLabel></div>
                                 <div class="d-flex gap-2">
                                     
-                                    <p:commandButton 
+                                    <p:commandButton
+                                        id="btnToCancel"
                                         ajax="false" value="To Cancel"
                                         class="ui-button-danger"
                                         icon="fa fa-ban"
                                         action="#{inwardSearch.navigateToPaymentBillCancellation()}"
-                                        disabled="#{inwardSearch.bill.cancelled}"  >                           
+                                        disabled="#{inwardSearch.bill.cancelled}"  >
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        value="Print" 
-                                        ajax="false" 
-                                        action="#" 
+                                    <p:commandButton
+                                        id="btnPrintBill"
+                                        value="Print"
+                                        ajax="false"
+                                        action="#"
                                         class="ui-button-info"
                                         icon="fas fa-print">
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
-                                    
-                                    <p:commandButton 
-                                        ajax="false" 
+
+                                    <p:commandButton
+                                        id="btnMarkAsChecked"
+                                        ajax="false"
                                         value="Mark As Checked"
                                         icon="fa fa-check-square"
                                         class="ui-button-success"
                                         action="#{inwardSearch.markAsChecked()}"
                                         rendered="#{webUserController.hasPrivilege('InwardCheck')}"  >
                                     </p:commandButton>
-                                    
-                                    <p:commandButton 
-                                        ajax="false" 
+
+                                    <p:commandButton
+                                        id="btnMarkAsUnChecked"
+                                        ajax="false"
                                         value="Mark As Un Check"
                                         icon="fa fa-square"
                                         class="ui-button-warning"
@@ -57,11 +61,12 @@
                                         rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  >
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        ajax="false" 
+                                    <p:commandButton
+                                        id="btnBackToInterim"
+                                        ajax="false"
                                         value="Back To Interim"
                                         icon="fa fa-backward"
-                                        action="/inward/inward_bill_intrim" 
+                                        action="/inward/inward_bill_intrim?faces-redirect=true"
                                         actionListener="#{bhtSummeryController.createTables()}"
                                         >
                                     </p:commandButton>
