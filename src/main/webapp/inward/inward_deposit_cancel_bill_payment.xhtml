@@ -78,34 +78,6 @@
                             </div>
 
                             <div class="row mt-2">
-                                <div class="col-md-2"></div>
-                                <div class="col-12 col-md-8">
-                                    <h:panelGroup id="paymentDetails">
-                                        <h:panelGroup id="creditCard"
-                                                      rendered="#{inwardSearch.paymentMethod eq 'Card'}">
-                                            <pa:creditCard paymentMethodData="#{inwardSearch.paymentMethodData}"/>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup id="cheque" rendered="#{inwardSearch.paymentMethod eq 'Cheque'}">
-                                            <pa:cheque paymentMethodData="#{inwardSearch.paymentMethodData}"
-                                                       valueRequired="false"/>
-                                        </h:panelGroup>
-
-                                        <h:panelGroup id="slip" rendered="#{inwardSearch.paymentMethod eq 'Slip'}">
-                                            <pa:slip paymentMethodData="#{inwardSearch.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                        <h:panelGroup
-                                            class="row my-1"
-                                            layout="block"
-                                            id="patientDeposit"
-                                            rendered="#{inwardSearch.paymentMethod eq 'PatientDeposit'}">
-                                            <pa:patient_deposit paymentMethodData="#{inwardSearch.paymentMethodData}"/>
-                                        </h:panelGroup>
-                                    </h:panelGroup>
-                                </div>
-                            </div>
-
-                            <div class="row mt-2">
                                 <div class="col-12 col-md-4 mb-2">
                                     <p:panel header="Patient Details" styleClass="h-100">
                                         <p:panelGrid columns="2" layout="tabular" styleClass="w-100">
