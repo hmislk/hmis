@@ -42,19 +42,51 @@
                                 </div>
                             </f:facet>
 
-                            <div class="d-flex justify-content-between my-3">
-                                <div class="d-flex gap-2 W-100">
-                                    <p:outputLabel for="cmbPs" value="Payment Method" style="width: 250px;" styleClass="mt-2 fw-bold"/>
-                                    <p:selectOneMenu 
-                                        id="cmbPs" 
-                                        value="#{inwardSearch.paymentMethod}" 
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 my-3">
+                                <div class="d-flex gap-2 align-items-center flex-wrap">
+                                    <p:outputLabel for="cmbPs" value="Payment Method" styleClass="fw-bold"/>
+                                    <p:selectOneMenu
+                                        id="cmbPs"
+                                        value="#{inwardSearch.paymentMethod}"
                                         required="true"
-                                        styleClass="w-100">
+                                        style="width: 320px;">
                                         <f:selectItem itemLabel="Select Payment Method"/>
-                                        <f:selectItems value="#{enumController.paymentMethodsForIwardDeposit}"/>
-                                        <p:ajax process="cmbPs" update="paymentDetails @all" event="change"
-                                                listener="#{inwardSearch.listnerForPaymentMethodChange(inwardSearch.bill)}"/>
+                                        <f:selectItems value="#{inwardSearch.inwardDepositCancelationPaymentMethods}"/>
+                                        <p:ajax 
+                                            process="cmbPs" 
+                                            update="paymentDetails @all" 
+                                            event="change"
+                                            listener="#{inwardSearch.listnerForPaymentMethodChange(inwardSearch.bill)}">
+                                        </p:ajax>
                                     </p:selectOneMenu>
+
+                                    <h:panelGroup id="paymentDetails" layout="block" class="d-flex flex-wrap gap-2 align-items-center ms-2">
+
+                                        <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'Card'}">
+                                            <pa:creditCard paymentMethodData="#{inwardSearch.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'Cheque'}">
+                                            <pa:cheque paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="true"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'Slip'}">
+                                            <pa:slip paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="true"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'ewallet'}">
+                                            <pa:ewallet paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="true"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'PatientDeposit'}">
+                                            <pa:patient_deposit paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="true"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{inwardSearch.paymentMethod eq 'OnlineSettlement'}">
+                                            <pa:online_settlement paymentMethodData="#{inwardSearch.paymentMethodData}" valueRequired="true"/>
+                                        </h:panelGroup>
+
+                                    </h:panelGroup>
                                 </div>
                                 <div class="d-flex gap-2">
                                     <p:inputText
@@ -116,52 +148,36 @@
                                 </div>
                                 <div class="col-12 col-md-4 mb-2">
                                     <p:panel header="Original Payment Details" styleClass="h-100">
-                                        <p:dataList value="#{billSearch.fetchBillPayments(inwardSearch.bill)}" var="bip"
-                                                    type="none" emptyMessage="No payments found for this bill"
-                                                    styleClass="w-100">
-                                            <p:panelGrid columns="2" layout="tabular" styleClass="w-100 mb-2">
-                                                <h:outputLabel value="Payment Method:" styleClass="fw-bold"/>
-                                                <h:outputLabel value="#{bip.paymentMethod}"/>
+                                        <div class="d-flex align-items-center justify-content-between gap-2 mb-3 px-3 py-2 rounded-3 bg-light text-dark border shadow-sm">
+                                            <span class="d-flex align-items-center gap-2">
+                                                <i class="fas fa-money-check-alt fs-5 text-primary"/>
+                                                <h:outputText value="Payment Method" styleClass="text-uppercase small fw-semibold text-muted"/>
+                                            </span>
+                                            <h:outputText value="#{inwardSearch.bill.paymentMethod}"
+                                                          styleClass="fs-5 fw-bold"/>
+                                        </div>
 
-                                                <h:outputLabel value="Amount:" styleClass="fw-bold"/>
-                                                <h:outputLabel value="#{bip.paidValue}" styleClass="text-end d-block">
-                                                    <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
-
-                                                <h:outputLabel value="Card No:" styleClass="fw-bold"
-                                                               rendered="#{not empty bip.creditCardRefNo}"/>
-                                                <h:outputLabel value="#{bip.creditCardRefNo}"
-                                                               rendered="#{not empty bip.creditCardRefNo}"/>
-
-                                                <h:outputLabel value="Cheque No:" styleClass="fw-bold"
-                                                               rendered="#{not empty bip.chequeRefNo}"/>
-                                                <h:outputLabel value="#{bip.chequeRefNo}"
-                                                               rendered="#{not empty bip.chequeRefNo}"/>
-
-                                                <h:outputLabel value="Cheque Date:" styleClass="fw-bold"
-                                                               rendered="#{not empty bip.chequeDate}"/>
-                                                <h:outputLabel value="#{bip.chequeDate}"
-                                                               rendered="#{not empty bip.chequeDate}">
-                                                    <f:convertDateTime pattern="dd MMM yyyy"/>
-                                                </h:outputLabel>
-
-                                                <h:outputLabel value="Bank:" styleClass="fw-bold"
-                                                               rendered="#{not empty bip.bank}"/>
-                                                <h:outputLabel value="#{bip.bank.name}"
-                                                               rendered="#{not empty bip.bank}"/>
-
-                                                <h:outputLabel value="Reference No:" styleClass="fw-bold"
-                                                               rendered="#{not empty bip.referenceNo}"/>
-                                                <h:outputLabel value="#{bip.referenceNo}"
-                                                               rendered="#{not empty bip.referenceNo}"/>
-
-                                                <h:outputLabel value="Comment:" styleClass="fw-bold"
-                                                               rendered="#{not empty bip.comments}"/>
-                                                <h:outputLabel value="#{bip.comments}"
-                                                               rendered="#{not empty bip.comments}"/>
-                                            </p:panelGrid>
-                                            <p:separator/>
-                                        </p:dataList>
+                                        <h:panelGroup rendered="#{inwardSearch.bill.paymentMethod eq 'Cash'}">
+                                            <pa:cash_view paymentMethodData="#{inwardSearch.originalBillPaymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{inwardSearch.bill.paymentMethod eq 'Card'}">
+                                            <pa:creditCard_view paymentMethodData="#{inwardSearch.originalBillPaymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{inwardSearch.bill.paymentMethod eq 'Cheque'}">
+                                            <pa:cheque_view paymentMethodData="#{inwardSearch.originalBillPaymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{inwardSearch.bill.paymentMethod eq 'Slip'}">
+                                            <pa:slip_view paymentMethodData="#{inwardSearch.originalBillPaymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{inwardSearch.bill.paymentMethod eq 'ewallet'}">
+                                            <pa:ewallet_view paymentMethodData="#{inwardSearch.originalBillPaymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{inwardSearch.bill.paymentMethod eq 'PatientDeposit'}">
+                                            <pa:patient_deposit_view paymentMethodData="#{inwardSearch.originalBillPaymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{inwardSearch.bill.paymentMethod eq 'OnlineSettlement'}">
+                                            <pa:online_settlement_view paymentMethodData="#{inwardSearch.originalBillPaymentMethodData}"/>
+                                        </h:panelGroup>
                                     </p:panel>
                                 </div>
                             </div>
