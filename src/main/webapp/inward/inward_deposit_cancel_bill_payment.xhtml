@@ -54,7 +54,7 @@
                                         <f:selectItems value="#{inwardSearch.inwardDepositCancelationPaymentMethods}"/>
                                         <p:ajax 
                                             process="cmbPs" 
-                                            update="paymentDetails @all :#{p:resolveFirstComponentWithId('updateData',view).clientId}" 
+                                            update="paymentDetails :#{p:resolveFirstComponentWithId('updateData',view).clientId}"
                                             event="change"
                                             listener="#{inwardSearch.listnerForPaymentMethodChange(inwardSearch.bill)}">
                                         </p:ajax>
