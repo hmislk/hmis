@@ -2012,6 +2012,18 @@ public class StoreBillSearch implements Serializable {
         return bill;
     }
 
+    public String navigateToCancelStoreDirectIssueToInpatients() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        if (bill.getCheckeAt() != null) {
+            JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
+            return null;
+        }
+        return "/store/store_cancel_bill_retail_bht?faces-redirect=true";
+    }
+
     public void setBill(Bill bill) {
         recreateModel();
         this.bill = bill;
