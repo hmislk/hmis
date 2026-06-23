@@ -57,6 +57,8 @@ public class UserManagementApi {
     private InstitutionFacade institutionFacade;
     @EJB
     private PersonFacade personFacade;
+    @EJB
+    private StaffFacade staffFacade;
 
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 
@@ -154,6 +156,11 @@ public class UserManagementApi {
             if (!webUserFacade.findByJpql("select w from WebUser w where w.retired=false and lower(w.name)=:n", Collections.singletonMap("n", normalizedName.toLowerCase())).isEmpty()) {
                 return errorResponse("User name already exists", 400);
             }
+            Staff linkedStaff = null;
+            if (req.getStaffId() != null) {
+                linkedStaff = staffFacade.find(req.getStaffId());
+                if (linkedStaff == null || linkedStaff.isRetired()) return errorResponse("Staff not found: " + req.getStaffId(), 404);
+            }
             WebUser u = new WebUser();
             Person p = new Person();
             p.setName(req.getPersonName() != null ? req.getPersonName() : normalizedName);
@@ -162,6 +169,9 @@ public class UserManagementApi {
             p.setCreater(apiUser);
             personFacade.create(p);
             u.setWebUserPerson(p);
+            if (linkedStaff != null) {
+                u.setStaff(linkedStaff);
+            }
             applyUserChanges(u, req, apiUser, true);
             webUserFacade.create(u);
             return successResponse(toUserMap(u));
@@ -289,7 +299,7 @@ public class UserManagementApi {
         for (WebUserPrivilege p : ps) {
             Map<String, Object> m = new HashMap<>();
             m.put("id", p.getId());
-            m.put("privilege", p.getPrivilege() != null ? p.getPrivilege().name() : null);
+            m.put("privilege", p.getPrivilege() != null ? canonicalPrivilegeName(p.getPrivilege()) : null);
             m.put("departmentId", p.getDepartment() != null ? p.getDepartment().getId() : null);
             out.add(m);
         }
@@ -578,15 +588,175 @@ public class UserManagementApi {
         return successResponse(result);
     }
 
+    /**
+     * POST /api/users/{id}/privileges/all
+     * Body: {"departmentIds": [481, 485]}  — optional; if omitted, uses all loggable departments.
+     * Assigns every Privileges enum value across the specified (or all loggable) departments.
+     * Returns {privilegesAdded, privilegesSkipped, departments: [{departmentId, added, skipped}]}.
+     */
+    @POST
+    @Path("/{id}/privileges/all")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response assignAllPrivilegesMultiDept(@PathParam("id") Long id, String body) {
+        try {
+            WebUser apiUser = validateApiUser();
+            if (apiUser == null) return errorResponse("Not a valid key", 401);
+            if (!isAdmin(apiUser)) return errorResponse("Insufficient privileges", 403);
+            WebUser u = webUserFacade.find(id);
+            if (u == null || u.isRetired()) return errorResponse("User not found", 404);
+
+            // Parse optional departmentIds from body
+            List<Long> requestedDeptIds = new ArrayList<>();
+            if (body != null && !body.trim().isEmpty()) {
+                try {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> req = gson.fromJson(body, Map.class);
+                    if (req != null && req.containsKey("departmentIds")) {
+                        Object deptIdsObj = req.get("departmentIds");
+                        if (deptIdsObj instanceof List) {
+                            List<?> rawList = (List<?>) deptIdsObj;
+                            for (Object item : rawList) {
+                                if (item instanceof Number) {
+                                    requestedDeptIds.add(((Number) item).longValue());
+                                } else {
+                                    return errorResponse("departmentIds must be an array of integers, got: " + item, 400);
+                                }
+                            }
+                        }
+                    }
+                } catch (JsonSyntaxException e) {
+                    return errorResponse("Invalid JSON format", 400);
+                }
+            }
+
+            // Determine target departments
+            List<Department> targetDepts = new ArrayList<>();
+            if (!requestedDeptIds.isEmpty()) {
+                for (Long deptId : requestedDeptIds) {
+                    Department dept = departmentFacade.find(deptId);
+                    if (dept == null) return errorResponse("Department not found: " + deptId, 404);
+                    targetDepts.add(dept);
+                }
+            } else {
+                List<WebUserDepartment> userDepts = webUserDepartmentFacade.findByJpql(
+                        "select d from WebUserDepartment d where d.retired=false and d.webUser=:u",
+                        Collections.singletonMap("u", u));
+                for (WebUserDepartment wud : userDepts) {
+                    if (wud.getDepartment() != null) targetDepts.add(wud.getDepartment());
+                }
+            }
+
+            int totalAdded = 0;
+            int totalSkipped = 0;
+            List<Map<String, Object>> deptResults = new ArrayList<>();
+
+            for (Department dept : targetDepts) {
+                Map<String, Object> existingParams = new HashMap<>();
+                existingParams.put("u", u);
+                existingParams.put("d", dept);
+                List<WebUserPrivilege> currentPrivileges = webUserPrivilegeFacade.findByJpql(
+                        "select wp from WebUserPrivilege wp where wp.retired=false and wp.webUser=:u and wp.department=:d",
+                        existingParams);
+                Set<Privileges> alreadyAssigned = new HashSet<>();
+                for (WebUserPrivilege wp : currentPrivileges) {
+                    if (wp.getPrivilege() != null) alreadyAssigned.add(wp.getPrivilege());
+                }
+                int deptAdded = 0;
+                int deptSkipped = 0;
+                for (Privileges p : Privileges.values()) {
+                    if (alreadyAssigned.contains(p)) {
+                        deptSkipped++;
+                        continue;
+                    }
+                    WebUserPrivilege wp = new WebUserPrivilege();
+                    wp.setWebUser(u);
+                    wp.setPrivilege(p);
+                    wp.setDepartment(dept);
+                    wp.setCreater(apiUser);
+                    wp.setCreatedAt(new Date());
+                    webUserPrivilegeFacade.create(wp);
+                    deptAdded++;
+                }
+                totalAdded += deptAdded;
+                totalSkipped += deptSkipped;
+                Map<String, Object> deptResult = new LinkedHashMap<>();
+                deptResult.put("departmentId", dept.getId());
+                deptResult.put("departmentName", dept.getName());
+                deptResult.put("added", deptAdded);
+                deptResult.put("skipped", deptSkipped);
+                deptResults.add(deptResult);
+            }
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("userId", u.getId());
+            result.put("privilegesAdded", totalAdded);
+            result.put("privilegesSkipped", totalSkipped);
+            result.put("departments", deptResults);
+            return successResponse(result);
+        } catch (Exception e) {
+            return errorResponse("Internal server error", 500);
+        }
+    }
+
+    /**
+     * PUT /api/users/{id}/staff
+     * Body: {"staffId": 12345}
+     * Links an existing (non-retired) Staff to a WebUser.
+     */
+    @PUT
+    @Path("/{id}/staff")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response linkStaffToUser(@PathParam("id") Long id, String body) {
+        try {
+            WebUser apiUser = validateApiUser();
+            if (apiUser == null) return errorResponse("Not a valid key", 401);
+            if (!isAdmin(apiUser)) return errorResponse("Insufficient privileges", 403);
+            WebUser u = webUserFacade.find(id);
+            if (u == null || u.isRetired()) return errorResponse("User not found", 404);
+            if (body == null || body.trim().isEmpty()) return errorResponse("Request body is required", 400);
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> req = gson.fromJson(body, Map.class);
+            if (req == null || !req.containsKey("staffId")) return errorResponse("staffId is required", 400);
+            Object staffIdObj = req.get("staffId");
+            Long staffId;
+            try {
+                staffId = ((Number) staffIdObj).longValue();
+            } catch (Exception e) {
+                return errorResponse("staffId must be a numeric ID", 400);
+            }
+            Staff staff = staffFacade.find(staffId);
+            if (staff == null || staff.isRetired()) return errorResponse("Staff not found: " + staffId, 404);
+
+            u.setStaff(staff);
+            webUserFacade.edit(u);
+            return successResponse(toUserMap(u));
+        } catch (JsonSyntaxException e) {
+            return errorResponse("Invalid JSON format", 400);
+        } catch (Exception e) {
+            return errorResponse("Internal server error", 500);
+        }
+    }
+
     @GET
     @Path("/privileges/available")
     @Produces(MediaType.APPLICATION_JSON)
     public Response listAvailablePrivileges() {
         WebUser apiUser = validateApiUser();
         if (apiUser == null) return errorResponse("Not a valid key", 401);
+        // Deduplicate by lowercase name; first occurrence wins so the canonical name
+        // matches whatever MySQL has already stored (case-insensitive collation means
+        // PharmacySaleWithoutStock and PharmacySaleWithOutStock occupy the same row).
+        Map<String, String> canonicals = buildCanonicalPrivilegeMap();
+        Set<String> seenLower = new LinkedHashSet<>();
         List<String> out = new ArrayList<>();
         for (Privileges p : Privileges.values()) {
-            out.add(p.name());
+            String lower = p.name().toLowerCase();
+            if (seenLower.add(lower)) {
+                out.add(canonicals.get(lower));
+            }
         }
         return successResponse(out);
     }
@@ -810,5 +980,19 @@ public class UserManagementApi {
         response.put("code", 200);
         response.put("data", data);
         return Response.status(200).entity(gson.toJson(response)).build();
+    }
+
+    /** Build a lowercase→first-occurrence-name map so case-insensitive duplicates resolve consistently. */
+    private static Map<String, String> buildCanonicalPrivilegeMap() {
+        Map<String, String> map = new LinkedHashMap<>();
+        for (Privileges p : Privileges.values()) {
+            map.putIfAbsent(p.name().toLowerCase(), p.name());
+        }
+        return map;
+    }
+
+    /** Return the canonical API name for a privilege, normalising case-insensitive duplicates. */
+    private String canonicalPrivilegeName(Privileges p) {
+        return buildCanonicalPrivilegeMap().getOrDefault(p.name().toLowerCase(), p.name());
     }
 }
