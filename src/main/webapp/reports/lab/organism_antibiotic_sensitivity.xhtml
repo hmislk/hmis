@@ -31,7 +31,7 @@
                                                   timeInput="true" 
                                                   title="Filter by from date"
                                                   hideOnDateTimeSelect="true"
-                                                  pattern="dd/MM/yyyy HH:mm:ss"/>
+                                                  pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </div>
                                 <div class="col-md-2 text-right font-weight-bold">
                                     <i class="fas fa-calendar-alt me-2"/>
@@ -457,8 +457,7 @@
                                         <span class="font-weight-bold mr-1">Generated On : </span>
                                         <h:outputText value="#{reportController.toDate}">
                                             <f:convertDateTime
-                                                pattern="dd/MM/yyyy HH:mm:ss"
-                                                timeZone="Asia/Colombo" />
+                                                pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                         </h:outputText>
                                     </div>
                                 </div>
