@@ -14,13 +14,10 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="d-flex flex-wrap align-items-center gap-3">
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel value="Amount:" styleClass="form-label mb-0" style="min-width: 80px;"/>
-                <h:outputText
-                    value="#{cc.attrs.paymentMethodData.cash.totalValue}"
-                    styleClass="form-control-plaintext fw-bold"
-                    style="width: 150px;">
+        <div class="d-flex flex-wrap align-items-stretch gap-3 py-1">
+            <div class="d-flex flex-column border rounded-3 bg-light px-3 py-2">
+                <p:outputLabel value="Amount" styleClass="text-muted text-uppercase small mb-1"/>
+                <h:outputText value="#{cc.attrs.paymentMethodData.cash.totalValue}" styleClass="fs-5 fw-bold text-primary">
                     <f:convertNumber pattern="#,##0.00" />
                 </h:outputText>
             </div>
