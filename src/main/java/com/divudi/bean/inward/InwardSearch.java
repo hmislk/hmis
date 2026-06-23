@@ -362,6 +362,11 @@ public class InwardSearch implements Serializable {
             return "";
         }
 
+        if (bill.getCheckeAt() != null) {
+            JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
+            return "";
+        }
+
         DepartmentType toBillDepartmentType = DepartmentType.Other;
 
         if (bill.getToDepartment() != null && bill.getToDepartment().getDepartmentType() != null) {
