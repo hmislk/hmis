@@ -2732,7 +2732,21 @@ public class PharmacySaleBhtController implements Serializable {
             return "";
         }
         setCompleted(false);
-        generateIssueBillComponentsForBhtRequest(bhtRequestBill);
+        // The search-list render already initialized patientEncounter (and its
+        // nested patient/person/room associations) on the session-stored entity.
+        // Preserve it here because loadBillWithItemsFresh() does not join-fetch
+        // patientEncounter, so the returned detached bill has an uninitialized proxy.
+        PatientEncounter preservedEncounter = bhtRequestBill.getPatientEncounter();
+        // Eager-fetch the bill with items, item details, and stock in one JOIN FETCH
+        // query to avoid lazy-loading on the session-stored (detached) entity.
+        Bill freshBill = getBillItemFacade().loadBillWithItemsFresh(bhtRequestBill.getId());
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("Request bill not found.");
+            return "";
+        }
+        freshBill.setPatientEncounter(preservedEncounter);
+        bhtRequestBill = freshBill;
+        generateIssueBillComponentsForBhtRequest(freshBill);
         return "/ward/ward_pharmacy_bht_issue?faces-redirect=true";
     }
 

@@ -104,9 +104,16 @@
 
                                     <div class="d-flex align-items-center my-1">
                                         <i class="fa-solid fa-user me-2 text-primary"></i>
-                                        <h:outputLabel for="acPt2_input" style="font-weight: bold" value="Patient Name or BHT or PHN No"/>
+                                        <h:outputLabel style="font-weight: bold" value="Patient Name or BHT or PHN No"/>
                                     </div>
-                                    
+
+                                    <h:panelGroup rendered="#{pharmacyRequestForBhtController.department eq null}">
+                                        <p:inputText disabled="true"
+                                                     class="col-md-12 my-1"
+                                                     inputStyleClass="form-control"
+                                                     placeholder="Select a pharmacy department first" />
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{pharmacyRequestForBhtController.department ne null}">
                                     <p:autoComplete
                                         widgetVar="aPt2"
                                         id="acPt2"
@@ -114,7 +121,6 @@
                                         value="#{pharmacyRequestForBhtController.patientEncounter}"
                                         completeMethod="#{admissionController.completePatient}"
                                         var="apt2"
-                                        disabled="#{pharmacyRequestForBhtController.department eq null}"
                                         itemLabel="#{apt2.bhtNo}"
                                         itemValue="#{apt2}"
                                         size="30"
@@ -142,6 +148,7 @@
                                         </p:column>
                                         <p:ajax event="itemSelect" process="acPt2" update="@form" />
                                     </p:autoComplete>
+                                    </h:panelGroup>
                                 </div>
 
 

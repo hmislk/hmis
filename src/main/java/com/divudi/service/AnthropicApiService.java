@@ -1046,17 +1046,52 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject manageStaffTool = Json.createObjectBuilder()
+                .add("name", "manage_staff")
+                .add("description",
+                        "CRUD for HMIS Staff records.\n\n"
+                        + "method: LIST | GET | POST | PUT | DELETE | LINK_TO_USER\n\n"
+                        + "LIST: search staff (query, departmentId, size).\n"
+                        + "GET: get a single staff record by id.\n"
+                        + "POST: create staff — required: name; optional: code, designation (string label), departmentId, institutionId. Creates linked Person automatically.\n"
+                        + "PUT: partial update (name, code, designation, departmentId, institutionId — only supplied fields change).\n"
+                        + "DELETE: soft-retire. Supply retireComments.\n"
+                        + "LINK_TO_USER: link an existing Staff to a WebUser — requires id (userId) and staffId.\n\n"
+                        + "Always confirm with the user before POST, PUT, DELETE, or LINK_TO_USER.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder().add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("LIST").add("GET").add("POST").add("PUT").add("DELETE").add("LINK_TO_USER")))
+                                .add("id", Json.createObjectBuilder().add("type", "string").add("description", "Staff ID (or User ID for LINK_TO_USER)"))
+                                .add("staffId", Json.createObjectBuilder().add("type", "string").add("description", "Staff ID to link to a user (LINK_TO_USER only)"))
+                                .add("query", Json.createObjectBuilder().add("type", "string").add("description", "Name or code search term"))
+                                .add("departmentId", Json.createObjectBuilder().add("type", "string"))
+                                .add("institutionId", Json.createObjectBuilder().add("type", "string"))
+                                .add("size", Json.createObjectBuilder().add("type", "string"))
+                                .add("name", Json.createObjectBuilder().add("type", "string").add("description", "Person name for the staff member"))
+                                .add("code", Json.createObjectBuilder().add("type", "string"))
+                                .add("designation", Json.createObjectBuilder().add("type", "string").add("description", "Free-text designation label"))
+                                .add("retireComments", Json.createObjectBuilder().add("type", "string")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         JsonObject manageUsersTool = Json.createObjectBuilder()
                 .add("name", "manage_users")
                 .add("description",
                         "Manage HMIS users, passwords, loggable departments, and department-scoped privileges.\n\n"
                         + "method: LIST | GET | POST | PUT | DELETE | RESET_PASSWORD | CHANGE_PASSWORD | "
                         + "LIST_PRIVILEGES | ASSIGN_PRIVILEGES | REVOKE_PRIVILEGE | LIST_DEPARTMENTS | ASSIGN_DEPARTMENTS | "
-                        + "LIST_AVAILABLE_PRIVILEGES | BULK_ASSIGN_PRIVILEGES | ASSIGN_PRIVILEGE_CATEGORIES\n\n"
+                        + "LIST_AVAILABLE_PRIVILEGES | BULK_ASSIGN_PRIVILEGES | ASSIGN_PRIVILEGE_CATEGORIES | "
+                        + "ASSIGN_ALL_PRIVILEGES_MULTI_DEPT\n\n"
                         + "Privilege assignment requires departmentId; category assignment uses /users/{id}/departments/{departmentId}/privileges/category. "
+                        + "ASSIGN_ALL_PRIVILEGES_MULTI_DEPT grants every privilege across supplied departmentIds (or all user's loggable depts if omitted). "
+                        + "POST supports optional staffId to pre-link a Staff record at creation. "
                         + "Use LIST_AVAILABLE_PRIVILEGES before assigning explicit privilege names. "
                         + "Always confirm with the user before POST, PUT, DELETE, RESET_PASSWORD, CHANGE_PASSWORD, "
-                        + "ASSIGN_PRIVILEGES, REVOKE_PRIVILEGE, ASSIGN_DEPARTMENTS, BULK_ASSIGN_PRIVILEGES, or ASSIGN_PRIVILEGE_CATEGORIES.")
+                        + "ASSIGN_PRIVILEGES, REVOKE_PRIVILEGE, ASSIGN_DEPARTMENTS, BULK_ASSIGN_PRIVILEGES, "
+                        + "ASSIGN_PRIVILEGE_CATEGORIES, or ASSIGN_ALL_PRIVILEGES_MULTI_DEPT.")
                 .add("input_schema", Json.createObjectBuilder()
                         .add("type", "object")
                         .add("properties", Json.createObjectBuilder()
@@ -1067,7 +1102,8 @@ public class AnthropicApiService implements Serializable {
                                                 .add("LIST_PRIVILEGES").add("ASSIGN_PRIVILEGES").add("REVOKE_PRIVILEGE")
                                                 .add("LIST_DEPARTMENTS").add("ASSIGN_DEPARTMENTS")
                                                 .add("LIST_AVAILABLE_PRIVILEGES").add("BULK_ASSIGN_PRIVILEGES")
-                                                .add("ASSIGN_PRIVILEGE_CATEGORIES")))
+                                                .add("ASSIGN_PRIVILEGE_CATEGORIES")
+                                                .add("ASSIGN_ALL_PRIVILEGES_MULTI_DEPT")))
                                 .add("id", Json.createObjectBuilder().add("type", "string").add("description", "User ID for user-specific operations"))
                                 .add("privilegeId", Json.createObjectBuilder().add("type", "string").add("description", "Privilege assignment ID for REVOKE_PRIVILEGE"))
                                 .add("query", Json.createObjectBuilder().add("type", "string").add("description", "User list/search query"))
@@ -1091,7 +1127,8 @@ public class AnthropicApiService implements Serializable {
                                 .add("privileges", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated privilege enum names"))
                                 .add("categories", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated Privileges.getCategory() names"))
                                 .add("userIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated user IDs for BULK_ASSIGN_PRIVILEGES"))
-                                .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs for ASSIGN_DEPARTMENTS"))
+                                .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs for ASSIGN_DEPARTMENTS or ASSIGN_ALL_PRIVILEGES_MULTI_DEPT"))
+                                .add("staffId", Json.createObjectBuilder().add("type", "string").add("description", "Staff ID to link to the user on POST or via PUT /{id}/staff"))
                                 .add("retireComments", Json.createObjectBuilder().add("type", "string")))
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
@@ -1318,6 +1355,7 @@ public class AnthropicApiService implements Serializable {
                 .add(manageInvestigationFormatTool)
                 .add(manageFormsTool)
                 .add(manageSubscriptionsTool)
+                .add(manageStaffTool)
                 .add(manageUsersTool)
                 .add(managePharmacyItemsTool)
                 .add(manageChannelBookingTool)
@@ -1591,6 +1629,9 @@ public class AnthropicApiService implements Serializable {
                     String applicationWide = toolInput.containsKey("applicationWide") ? toolInput.getString("applicationWide", "") : "";
                     return callSubscriptionApi(method, id, triggerType, userId, departmentId, applicationWide,
                             hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_staff": {
+                    return callStaffApi(toolInput, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_users": {
                     return callUsersApi(toolInput, hmisBaseUrl, hmisApiKey);
@@ -3564,6 +3605,78 @@ public class AnthropicApiService implements Serializable {
         }
     }
 
+    private String callStaffApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        String method = input.getString("method", "LIST").toUpperCase();
+        String id = jsonString(input, "id");
+        try {
+            String base = hmisBaseUrl.replaceAll("/$", "") + "/api/staff";
+            String url = base;
+            String httpMethod = "GET";
+            String body = null;
+            switch (method) {
+                case "LIST":
+                    url = base + "?" + queryParam("query", jsonString(input, "query"))
+                            + "&" + queryParam("departmentId", jsonString(input, "departmentId"))
+                            + "&" + queryParam("size", defaultString(jsonString(input, "size"), "50"));
+                    break;
+                case "GET":
+                    url = base + "/" + requireText(id, "id");
+                    break;
+                case "POST": {
+                    httpMethod = "POST";
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    addString(b, "name", jsonString(input, "name"));
+                    addString(b, "code", jsonString(input, "code"));
+                    addString(b, "designation", jsonString(input, "designation"));
+                    addLong(b, "departmentId", jsonString(input, "departmentId"));
+                    addLong(b, "institutionId", jsonString(input, "institutionId"));
+                    if (jsonString(input, "name").isEmpty()) throw new IllegalArgumentException("name is required for POST");
+                    body = b.build().toString();
+                    break;
+                }
+                case "PUT": {
+                    httpMethod = "PUT";
+                    url = base + "/" + requireText(id, "id");
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    addString(b, "name", jsonString(input, "name"));
+                    addString(b, "code", jsonString(input, "code"));
+                    addString(b, "designation", jsonString(input, "designation"));
+                    addLong(b, "departmentId", jsonString(input, "departmentId"));
+                    addLong(b, "institutionId", jsonString(input, "institutionId"));
+                    body = b.build().toString();
+                    break;
+                }
+                case "DELETE":
+                    httpMethod = "DELETE";
+                    url = base + "/" + requireText(id, "id");
+                    String retireComments = jsonString(input, "retireComments");
+                    if (!retireComments.isEmpty()) url += "?" + queryParam("retireComments", retireComments);
+                    break;
+                case "LINK_TO_USER": {
+                    // PUT /api/users/{userId}/staff  with body {staffId}
+                    httpMethod = "PUT";
+                    String usersBase = hmisBaseUrl.replaceAll("/$", "") + "/api/users";
+                    url = usersBase + "/" + requireText(id, "id") + "/staff";
+                    body = Json.createObjectBuilder()
+                            .add("staffId", Long.parseLong(requireText(jsonString(input, "staffId"), "staffId")))
+                            .build().toString();
+                    break;
+                }
+                default:
+                    return "Unknown method: " + method;
+            }
+            return callHmisApi(url, httpMethod, body, hmisApiKey);
+        } catch (Exception e) {
+            return "Staff API error: " + e.getMessage();
+        }
+    }
+
     private String callUsersApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
         if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
             return "Error: HMIS base URL is not configured.";
@@ -3663,6 +3776,20 @@ public class AnthropicApiService implements Serializable {
                             .add("categories", csvArray(jsonString(input, "categories")))
                             .build().toString();
                     break;
+                case "ASSIGN_ALL_PRIVILEGES_MULTI_DEPT": {
+                    httpMethod = "POST";
+                    url = base + "/" + requireText(id, "id") + "/privileges/all";
+                    String deptIdsStr = jsonString(input, "departmentIds");
+                    if (!deptIdsStr.isEmpty()) {
+                        javax.json.JsonArrayBuilder deptArr = Json.createArrayBuilder();
+                        for (String d : deptIdsStr.split(",")) {
+                            d = d.trim();
+                            if (!d.isEmpty()) deptArr.add(Long.parseLong(d));
+                        }
+                        body = Json.createObjectBuilder().add("departmentIds", deptArr).build().toString();
+                    }
+                    break;
+                }
                 default:
                     return "Unknown method: " + method;
             }
@@ -3781,6 +3908,7 @@ public class AnthropicApiService implements Serializable {
         addBoolean(body, "activated", jsonString(input, "activated"));
         addString(body, "loginPage", jsonString(input, "loginPage"));
         addString(body, "password", jsonString(input, "password"));
+        addLong(body, "staffId", jsonString(input, "staffId"));
         if (create && jsonString(input, "password").isEmpty()) {
             throw new IllegalArgumentException("password is required for POST");
         }
@@ -4392,18 +4520,38 @@ public class AnthropicApiService implements Serializable {
                     {"POST", "/channel/cancellation",       "Cancel an existing booking"}
                 });
 
+        // ── Staff ─────────────────────────────────────────────────────────────
+        appendModule(sb, "Staff", "/staff",
+                "CRUD for HMIS Staff records. "
+                + "GET lists active staff (query, departmentId, size). "
+                + "POST creates a staff member (required: name; optional: code, designation label, departmentId, institutionId) and auto-creates a linked Person. "
+                + "PUT partial update (name, code, designation, departmentId, institutionId). "
+                + "DELETE soft-retires a staff record. "
+                + "Link staff to a user: PUT /users/{userId}/staff with body {staffId}. "
+                + "Create user with pre-linked staff: POST /users with optional staffId field.",
+                null,
+                new String[][]{
+                    {"GET",    "/staff",           "List active staff. Filters: query, departmentId, size"},
+                    {"GET",    "/staff/{id}",      "Get a single staff record by ID"},
+                    {"POST",   "/staff",           "Create staff (required: name; optional: code, designation, departmentId, institutionId)"},
+                    {"PUT",    "/staff/{id}",      "Partial update of staff (name, code, designation, departmentId, institutionId)"},
+                    {"DELETE", "/staff/{id}",      "Soft-retire a staff record"},
+                    {"PUT",    "/users/{id}/staff","Link an existing Staff to a WebUser (body: {staffId})"}
+                });
+
         // ── Users / Roles / Privileges ────────────────────────────────────────
         appendModule(sb, "User Management", "/users",
                 "Create, read, update, and retire HMIS web users. Manage passwords, loggable departments, "
-                + "and department-scoped privilege assignments. Create/update supports loginPage. "
+                + "and department-scoped privilege assignments. Create/update supports loginPage and optional staffId. "
                 + "Use /users/privileges/available to discover valid privilege names. "
                 + "DELETE /{id}/departments/{assignmentId} removes one loggable department. "
                 + "DELETE /{id}/departments/{deptId}/privileges bulk-revokes all privileges for a department. "
-                + "POST /{id}/departments/{deptId}/privileges/all grants every privilege for a department.",
+                + "POST /{id}/departments/{deptId}/privileges/all grants every privilege for a department. "
+                + "POST /{id}/privileges/all with optional body {departmentIds:[...]} grants every privilege across multiple departments at once.",
                 githubUrl(branch, "developer_docs/API_USER_MANAGEMENT.md"),
                 new String[][]{
                     {"GET",    "/users",                          "List users. Filters: query, departmentId, page, size"},
-                    {"POST",   "/users",                          "Create a new user"},
+                    {"POST",   "/users",                          "Create a new user (optional staffId links Staff at creation)"},
                     {"GET",    "/users/{id}",                     "Get user by ID"},
                     {"PUT",    "/users/{id}",                     "Update user details"},
                     {"DELETE", "/users/{id}",                     "Retire (soft-delete) a user"},
@@ -4419,7 +4567,9 @@ public class AnthropicApiService implements Serializable {
                     {"POST",   "/users/bulk-privileges",                              "Bulk-assign privileges to multiple users at once"},
                     {"DELETE", "/users/{id}/departments/{assignmentId}",             "Revoke a loggable department assignment (by WebUserDepartment id)"},
                     {"DELETE", "/users/{id}/departments/{departmentId}/privileges",  "Bulk-revoke all active privileges for a user scoped to a department"},
-                    {"POST",   "/users/{id}/departments/{departmentId}/privileges/all", "Assign every Privileges enum value to a user for a department (skips duplicates)"}
+                    {"POST",   "/users/{id}/departments/{departmentId}/privileges/all", "Assign every Privileges enum value to a user for a department (skips duplicates)"},
+                    {"PUT",    "/users/{id}/staff",               "Link an existing Staff record to the user (body: {staffId})"},
+                    {"POST",   "/users/{id}/privileges/all",      "Assign every privilege across supplied departmentIds (or all loggable depts). Returns per-dept summary"}
                 });
 
         appendModule(sb, "User Roles", "/user-roles",

@@ -14,32 +14,25 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="d-flex flex-wrap align-items-center gap-3">
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel value="Amount:" styleClass="form-label mb-0" style="min-width: 80px;"/>
-                <h:outputText
-                    value="#{cc.attrs.paymentMethodData.patient_deposit.totalValue}"
-                    styleClass="form-control-plaintext fw-bold"
-                    style="width: 150px;">
+        <div class="d-flex flex-wrap align-items-stretch gap-3 py-1">
+            <div class="d-flex flex-column border rounded-3 bg-light px-3 py-2">
+                <p:outputLabel value="Amount" styleClass="text-muted text-uppercase small mb-1"/>
+                <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.totalValue}" styleClass="fs-5 fw-bold text-primary">
                     <f:convertNumber pattern="#,##0.00" />
                 </h:outputText>
             </div>
 
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel value="Patient:" styleClass="form-label mb-0"/>
-                <h:outputText
-                    value="#{cc.attrs.paymentMethodData.patient_deposit.patient.person.nameWithTitle}"
-                    styleClass="form-control-plaintext fw-semibold"
-                    style="width: 200px;"/>
-            </div>
+            <h:panelGroup layout="block" styleClass="d-flex flex-column border rounded-3 bg-light px-3 py-2"
+                          rendered="#{not empty cc.attrs.paymentMethodData.patient_deposit.patient}">
+                <p:outputLabel value="Patient" styleClass="text-muted text-uppercase small mb-1"/>
+                <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.patient.person.nameWithTitle}" styleClass="fw-semibold"/>
+            </h:panelGroup>
 
-            <div class="d-flex align-items-center gap-2 flex-grow-1">
-                <p:outputLabel value="Comment:" styleClass="form-label mb-0"/>
-                <h:outputText
-                    value="#{cc.attrs.paymentMethodData.patient_deposit.comment}"
-                    styleClass="form-control-plaintext"
-                    style="flex-grow: 1;"/>
-            </div>
+            <h:panelGroup layout="block" styleClass="d-flex flex-column border rounded-3 bg-light px-3 py-2 flex-grow-1"
+                          rendered="#{not empty cc.attrs.paymentMethodData.patient_deposit.comment}">
+                <p:outputLabel value="Comment" styleClass="text-muted text-uppercase small mb-1"/>
+                <h:outputText value="#{cc.attrs.paymentMethodData.patient_deposit.comment}"/>
+            </h:panelGroup>
         </div>
     </cc:implementation>
 </html>

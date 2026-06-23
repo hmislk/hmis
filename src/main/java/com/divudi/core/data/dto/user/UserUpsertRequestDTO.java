@@ -40,4 +40,8 @@ public class UserUpsertRequestDTO {
     public void setPassword(String password) { this.password = password; }
     public String getLoginPage() { return loginPage; }
     public void setLoginPage(String loginPage) { this.loginPage = loginPage; }
+
+    private Long staffId;
+    public Long getStaffId() { return staffId; }
+    public void setStaffId(Long staffId) { this.staffId = staffId; }
 }

@@ -18,6 +18,7 @@ public class ItemFeeDTO {
     private double fee;
     private double ffee;
     private boolean discountAllowed;
+    private Boolean marginAllowed;
     private boolean retired;
     private Long institutionId;
     private String institutionName;
@@ -77,6 +78,14 @@ public class ItemFeeDTO {
 
     public void setDiscountAllowed(boolean discountAllowed) {
         this.discountAllowed = discountAllowed;
+    }
+
+    public Boolean getMarginAllowed() {
+        return marginAllowed;
+    }
+
+    public void setMarginAllowed(Boolean marginAllowed) {
+        this.marginAllowed = marginAllowed;
     }
 
     public boolean isRetired() {
