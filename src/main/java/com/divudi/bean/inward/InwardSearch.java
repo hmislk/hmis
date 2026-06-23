@@ -297,6 +297,14 @@ public class InwardSearch implements Serializable {
     private List<PaymentMethod> inwardDepositCancelationPaymentMethods;
     
     public String navigateToPaymentBillCancellation() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        if (bill.getCheckeAt() != null) {
+            JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
+            return "";
+        }
         switch (bill.getBillTypeAtomic()) {
             case INWARD_DEPOSIT:
                 inwardDepositCancelationPaymentMethods = new ArrayList<>();
@@ -316,6 +324,30 @@ public class InwardSearch implements Serializable {
             default:
                 return "inward_cancel_bill_payment?faces-redirect=true";
         }
+    }
+
+    public String navigateToCancelInwardServiceBillFromReprint() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        if (bill.getCheckeAt() != null) {
+            JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
+            return "";
+        }
+        return "/inward/inward_cancel_bill_service?faces-redirect=true";
+    }
+
+    public String navigateToCancelInwardProfessionalBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return "";
+        }
+        if (bill.getCheckeAt() != null) {
+            JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
+            return "";
+        }
+        return "/inward/inward_cancel_bill_professional?faces-redirect=true";
     }
 
     public String navigateToViewInwardDepositCancellationBill(Bill b) {
