@@ -25,6 +25,7 @@ import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.entity.lab.PatientReportItemValue;
 import com.divudi.core.facade.*;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
@@ -95,6 +96,8 @@ public class ReportsController implements Serializable {
     @EJB
     PatientReportFacade patientReportFacade;
     @EJB
+    PatientReportItemValueFacade patientReportItemValueFacade;
+    @EJB
     private PatientFacade patientFacade;
     @EJB
     private DrawerFacade drawerFacade;
@@ -160,6 +163,7 @@ public class ReportsController implements Serializable {
     private List<BillItem> billItems;
     private List<PatientInvestigation> patientInvestigations;
     private List<PatientReport> patientReports;
+    private List<PatientReportItemValue> organismAntibioticSensitivityData;
     private List<PatientInvestigation> patientInvestigationsSigle;
     private BillTypeAtomic billTypeAtomic;
     private BillClassType billClassType;
@@ -9481,6 +9485,30 @@ public class ReportsController implements Serializable {
         }
 
         return dueAmountNetTotal;
+    }
+
+    public void organismAntibioticSensitivityReport() {
+        String jpql = "select priv from PatientReportItemValue priv "
+                + " join priv.patientReport pr "
+                + " join pr.patientInvestigation pi "
+                + " join pi.billItem bi "
+                + " join bi.bill b "
+                + " where pr.retired = false "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and priv.investigationItem.ixItemType = com.divudi.core.data.InvestigationItemType.Antibiotic "
+                + " order by pi.id desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        organismAntibioticSensitivityData = patientReportItemValueFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public List<PatientReportItemValue> getOrganismAntibioticSensitivityData() {
+        return organismAntibioticSensitivityData;
+    }
+
+    public void setOrganismAntibioticSensitivityData(List<PatientReportItemValue> organismAntibioticSensitivityData) {
+        this.organismAntibioticSensitivityData = organismAntibioticSensitivityData;
     }
 
 }
