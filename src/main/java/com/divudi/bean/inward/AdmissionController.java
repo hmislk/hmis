@@ -211,6 +211,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Reservation latestfoundReservation;
 
     private Reservation currentReservation;
+    
+    private boolean patientForiegner;
 
     @PostConstruct
     public void init() {
@@ -1662,6 +1664,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         Person person = getPatient().getPerson();
         // DON'T set to null - keep reference throughout
+        
+        if(patientForiegner){
+            getPatient().getPerson().setForeigner(true);
+        }
 
         // Save Person first (no flush yet)
         if (person != null) {
@@ -2322,6 +2328,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
         }
         getCurrent().setPaymentScheme(paymentScheme);
+        getCurrent().setForiegner(patientForiegner);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
@@ -2435,6 +2442,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // Need to create EncounterCredit
         admittingProcessStarted = false;
         currentReservation = null;
+        patientForiegner = false;
         printPreview = true;
     }
 
@@ -3188,6 +3196,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setCurrentReservation(Reservation currentReservation) {
         this.currentReservation = currentReservation;
+    }
+
+    public boolean isPatientForiegner() {
+        return patientForiegner;
+    }
+
+    public void setPatientForiegner(boolean patientForiegner) {
+        this.patientForiegner = patientForiegner;
     }
 
     /**

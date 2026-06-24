@@ -45,6 +45,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.common.CapabilityStatementResource.class);
         resources.add(com.divudi.ws.common.ConfigResource.class);
         resources.add(com.divudi.ws.common.LoginHistoryApi.class);
+        resources.add(com.divudi.ws.common.StaffApi.class);
         resources.add(com.divudi.ws.common.SubscriptionApi.class);
         resources.add(com.divudi.ws.common.UserManagementApi.class);
         resources.add(com.divudi.ws.common.UserRoleApi.class);
@@ -82,6 +83,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.pharmacy.PharmacyBfdBackfillApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacyF15ReportApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacyGrnBifdBackfillApi.class);
+        resources.add(com.divudi.ws.pharmacy.PharmacyItemApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacySearchApi.class);
         resources.add(com.divudi.ws.pharmacy.StockHistoryApi.class);
         resources.add(com.divudi.ws.pricing.CollectingCentreFeesApi.class);
