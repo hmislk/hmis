@@ -437,6 +437,26 @@ public class InwardPriceAdjustmntController implements Serializable {
         //  createItems();
     }
 
+    /**
+     * Load the selected row into {@link #current} for editing in the edit
+     * dialog. The list itself is display-only; all changes are made in the
+     * dialog and committed via {@link #saveEdit()} (or discarded by closing it).
+     */
+    public void prepareEdit(PriceMatrix tmp) {
+        this.current = tmp;
+    }
+
+    /**
+     * Persist the row currently being edited in the edit dialog.
+     */
+    public void saveEdit() {
+        if (current == null) {
+            return;
+        }
+        getFacade().edit(current);
+        current = null;
+    }
+
     public Category getRoomLocation() {
 
         return roomLocation;
