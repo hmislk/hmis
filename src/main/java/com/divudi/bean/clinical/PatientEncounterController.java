@@ -4624,6 +4624,7 @@ public class PatientEncounterController implements Serializable {
 
         String labJpql = "SELECT pi.sampledAt, pi.orderedAt, pi.createdAt, pi.id "
                 + "FROM PatientInvestigation pi WHERE pi.patient = :patient AND pi.retired = false "
+                + "AND (pi.cancelled = false OR pi.cancelled IS NULL) "
                 + "ORDER BY coalesce(pi.sampledAt, pi.orderedAt, pi.createdAt) ASC";
         List<Object[]> labs = ejbFacade.findObjectArrayByJpql(labJpql, patientOnlyParams, null);
         if (labs != null) {
@@ -4637,13 +4638,18 @@ public class PatientEncounterController implements Serializable {
 
         Map<String, Object> surgeryParams = new HashMap<>(patientOnlyParams);
         surgeryParams.put("billType", BillType.SurgeryBill);
-        String surgJpql = "SELECT b.createdAt, b.id FROM Bill b "
+        String surgJpql = "SELECT b.createdAt, b.billDate, b.id FROM Bill b "
                 + "WHERE b.patient = :patient AND b.billType = :billType "
-                + "AND b.retired = false AND b.cancelled = false AND b.createdAt IS NOT NULL "
-                + "ORDER BY b.createdAt ASC";
+                + "AND b.retired = false AND b.cancelled = false "
+                + "ORDER BY coalesce(b.createdAt, b.billDate) ASC";
         List<Object[]> surgs = ejbFacade.findObjectArrayByJpql(surgJpql, surgeryParams, null);
         if (surgs != null) {
-            surgeryEvents = surgs;
+            for (Object[] row : surgs) {
+                Date surgeryDate = firstNonNullDate((Date) row[0], (Date) row[1]);
+                if (surgeryDate != null) {
+                    surgeryEvents.add(new Object[]{surgeryDate, row[2]});
+                }
+            }
         }
 
         // Registration must be the earliest point on the timeline: clamp to the
