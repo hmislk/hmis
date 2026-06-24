@@ -143,7 +143,11 @@
                                     </h:inputText>
                                 </p:column>
                                 <p:column headerText="Admission Type">
-                                    <h:outputText value="#{empty a.admissionType ? 'All Admission Types' : a.admissionType.name}"/>
+                                    <p:selectOneMenu value="#{a.admissionType}" class="w-100">
+                                        <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" />
+                                        <f:selectItems value="#{admissionTypeController.items}" var="at"
+                                                       itemValue="#{at}" itemLabel="#{at.name}" />
+                                    </p:selectOneMenu>
                                 </p:column>
                                 <p:column>
                                     <p:commandButton ajax="false" value="Update" action="#{inwardPriceAdjustmntController.onEdit(a)}"  />

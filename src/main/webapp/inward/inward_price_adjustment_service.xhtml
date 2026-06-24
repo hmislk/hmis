@@ -332,7 +332,11 @@
                                     filterBy="#{empty a.admissionType ? '' : a.admissionType.name}"
                                     filterMatchMode="contains"
                                     exportValue="#{empty a.admissionType ? 'All Admission Types' : a.admissionType.name}">
-                                    <h:outputText value="#{empty a.admissionType ? 'All Admission Types' : a.admissionType.name}"/>
+                                    <p:selectOneMenu value="#{a.admissionType}" class="w-100">
+                                        <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" />
+                                        <f:selectItems value="#{admissionTypeController.items}" var="at"
+                                                       itemValue="#{at}" itemLabel="#{at.name}" />
+                                    </p:selectOneMenu>
                                 </p:column>
 
                                 <p:column headerText="Action" width="12%" >
