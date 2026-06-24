@@ -211,6 +211,10 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
+        if (bill.getCheckeAt() != null) {
+            JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
+            return null;
+        }
         return "/inward/pharmacy_cancel_bill_retail_bht?faces-redirect=true";
     }
 
