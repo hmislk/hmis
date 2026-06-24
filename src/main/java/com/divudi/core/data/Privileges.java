@@ -97,6 +97,8 @@ public enum Privileges {
     InwardSearchProfessionalBill("Inward Search Professional Bill"),
     InwardSearchFinalBill("Inward Search Final Bill"),
     InwardSettleFinalBillUnrestricted("Inward Settle Final Bill Without Restricted"),
+    InwardSettleFinalBill("Inward Settle Final Bill"),
+    InwardSaveProvisionalFinalBill("Inward Save Provisional Final Bill"),
     InwardReport("Inward Report"),
     InwardFinalBillReportEdit("Inward Final Bill Report Edit"),
     InwardAdministration("Inward Administration"),
@@ -1143,6 +1145,8 @@ public enum Privileges {
             case InpatientLetter:
             case InwardFormTemplateAdmin:
             case InwardFormFill:
+            case InwardSettleFinalBill:
+            case InwardSaveProvisionalFinalBill:
             case TheatreSendPatient:
             case TheatreAcceptPatient:
             case TheatreReturnPatient:
