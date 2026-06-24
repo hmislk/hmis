@@ -19,11 +19,11 @@ import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.data.clinical.DocumentTemplateType;
 import com.divudi.core.data.clinical.PrescriptionTemplateType;
-import com.divudi.core.data.EncounterType;
 import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.core.data.lab.InvestigationResultForGraph;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -3587,6 +3587,7 @@ public class PatientEncounterController implements Serializable {
 
     public void setPatient(Patient patient) {
         this.patient = patient;
+        clearPatientJourneyTimeline();
     }
 
     public ClinicalFindingValueFacade getClinicalFindingValueFacade() {
@@ -4560,6 +4561,7 @@ public class PatientEncounterController implements Serializable {
     }
 
     // Patient Journey Timeline data
+    private Long patientJourneyTimelinePatientId;
     private Date patientRegistrationDate;
     private List<Object[]> opdVisitEvents = new ArrayList<>();
     private List<Object[]> admissionStartEvents = new ArrayList<>();
@@ -4567,42 +4569,45 @@ public class PatientEncounterController implements Serializable {
     private List<Object[]> labEvents = new ArrayList<>();
     private List<Object[]> surgeryEvents = new ArrayList<>();
 
-    public void generatePatientJourneyTimeline() {
+    private void clearPatientJourneyTimeline() {
+        patientJourneyTimelinePatientId = null;
         patientRegistrationDate = null;
         opdVisitEvents = new ArrayList<>();
         admissionStartEvents = new ArrayList<>();
         admissionEndEvents = new ArrayList<>();
         labEvents = new ArrayList<>();
         surgeryEvents = new ArrayList<>();
+    }
+
+    public void generatePatientJourneyTimeline() {
+        clearPatientJourneyTimeline();
 
         if (patient == null) {
             return;
         }
 
+        patientJourneyTimelinePatientId = patient.getId();
         patientRegistrationDate = patient.getCreatedAt();
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("patient", patient);
+        Map<String, Object> patientOnlyParams = new HashMap<>();
+        patientOnlyParams.put("patient", patient);
 
-        params.put("encounterType", EncounterType.Opd);
+        Map<String, Object> opdParams = new HashMap<>(patientOnlyParams);
+        opdParams.put("patientEncounterType", PatientEncounterType.OpdVisit);
         String opdJpql = "SELECT e.encounterDate, e.id FROM PatientEncounter e "
-                + "WHERE e.patient = :patient AND e.encounterType = :encounterType "
-                + "AND e.retired = false ORDER BY e.encounterDate ASC";
-        List<Object[]> opd = ejbFacade.findObjectArrayByJpql(opdJpql, params, null);
+                + "WHERE e.patient = :patient AND e.patientEncounterType = :patientEncounterType "
+                + "AND e.retired = false AND e.encounterDate IS NOT NULL ORDER BY e.encounterDate ASC";
+        List<Object[]> opd = ejbFacade.findObjectArrayByJpql(opdJpql, opdParams, null);
         if (opd != null) {
             opdVisitEvents = opd;
         }
-        if (patientRegistrationDate == null && !opdVisitEvents.isEmpty() && opdVisitEvents.get(0)[0] != null) {
-            patientRegistrationDate = (Date) opdVisitEvents.get(0)[0];
-        }
 
-        params.put("encounterType", EncounterType.Admission);
-        String admJpql = "SELECT e.dateOfAdmission, e.timeOfAdmission, e.fromTime, "
-                + "e.dateOfDischarge, e.timeOfDischarge, e.toTime, e.bhtNo "
-                + "FROM PatientEncounter e "
-                + "WHERE e.patient = :patient AND e.encounterType = :encounterType "
-                + "AND e.retired = false ORDER BY coalesce(e.dateOfAdmission, e.timeOfAdmission, e.fromTime) ASC";
-        List<Object[]> admissions = ejbFacade.findObjectArrayByJpql(admJpql, params, null);
+        String admJpql = "SELECT a.dateOfAdmission, a.timeOfAdmission, a.fromTime, "
+                + "a.dateOfDischarge, a.timeOfDischarge, a.toTime, a.bhtNo "
+                + "FROM Admission a "
+                + "WHERE a.patient = :patient AND a.retired = false "
+                + "ORDER BY coalesce(a.dateOfAdmission, a.timeOfAdmission, a.fromTime) ASC";
+        List<Object[]> admissions = ejbFacade.findObjectArrayByJpql(admJpql, patientOnlyParams, null);
         if (admissions != null) {
             for (Object[] row : admissions) {
                 Date startDate = firstNonNullDate((Date) row[0], (Date) row[1], (Date) row[2]);
@@ -4617,23 +4622,61 @@ public class PatientEncounterController implements Serializable {
             }
         }
 
-        params.put("encounterType", EncounterType.Lab);
-        String labJpql = "SELECT e.encounterDate, e.id FROM PatientEncounter e "
-                + "WHERE e.patient = :patient AND e.encounterType = :encounterType "
-                + "AND e.retired = false ORDER BY e.encounterDate ASC";
-        List<Object[]> labs = ejbFacade.findObjectArrayByJpql(labJpql, params, null);
+        String labJpql = "SELECT pi.sampledAt, pi.orderedAt, pi.createdAt, pi.id "
+                + "FROM PatientInvestigation pi WHERE pi.patient = :patient AND pi.retired = false "
+                + "ORDER BY coalesce(pi.sampledAt, pi.orderedAt, pi.createdAt) ASC";
+        List<Object[]> labs = ejbFacade.findObjectArrayByJpql(labJpql, patientOnlyParams, null);
         if (labs != null) {
-            labEvents = labs;
+            for (Object[] row : labs) {
+                Date labDate = firstNonNullDate((Date) row[0], (Date) row[1], (Date) row[2]);
+                if (labDate != null) {
+                    labEvents.add(new Object[]{labDate, row[3]});
+                }
+            }
         }
 
-        params.put("encounterType", EncounterType.SurgicalProcedure);
-        String surgJpql = "SELECT e.encounterDate, e.id FROM PatientEncounter e "
-                + "WHERE e.patient = :patient AND e.encounterType = :encounterType "
-                + "AND e.retired = false ORDER BY e.encounterDate ASC";
-        List<Object[]> surgs = ejbFacade.findObjectArrayByJpql(surgJpql, params, null);
+        Map<String, Object> surgeryParams = new HashMap<>(patientOnlyParams);
+        surgeryParams.put("billType", BillType.SurgeryBill);
+        String surgJpql = "SELECT b.createdAt, b.id FROM Bill b "
+                + "WHERE b.patient = :patient AND b.billType = :billType "
+                + "AND b.retired = false AND b.cancelled = false AND b.createdAt IS NOT NULL "
+                + "ORDER BY b.createdAt ASC";
+        List<Object[]> surgs = ejbFacade.findObjectArrayByJpql(surgJpql, surgeryParams, null);
         if (surgs != null) {
             surgeryEvents = surgs;
         }
+
+        // Registration must be the earliest point on the timeline: clamp to the
+        // earliest dated event across all categories when createdAt is missing/later.
+        Date earliestEvent = minDate(
+                earliestEventDate(opdVisitEvents),
+                earliestEventDate(admissionStartEvents),
+                earliestEventDate(admissionEndEvents),
+                earliestEventDate(labEvents),
+                earliestEventDate(surgeryEvents));
+        if (earliestEvent != null && (patientRegistrationDate == null || earliestEvent.before(patientRegistrationDate))) {
+            patientRegistrationDate = earliestEvent;
+        }
+    }
+
+    private static Date earliestEventDate(List<Object[]> events) {
+        if (events == null || events.isEmpty() || events.get(0)[0] == null) {
+            return null;
+        }
+        return (Date) events.get(0)[0];
+    }
+
+    private static Date minDate(Date... dates) {
+        Date min = null;
+        if (dates == null) {
+            return null;
+        }
+        for (Date d : dates) {
+            if (d != null && (min == null || d.before(min))) {
+                min = d;
+            }
+        }
+        return min;
     }
 
     private static Date firstNonNullDate(Date... dates) {
@@ -4646,6 +4689,12 @@ public class PatientEncounterController implements Serializable {
             }
         }
         return null;
+    }
+
+    public boolean isPatientJourneyTimelineReadyForCurrentPatient() {
+        return patient != null && patient.getId() != null
+                && patient.getId().equals(patientJourneyTimelinePatientId)
+                && patientRegistrationDate != null;
     }
 
     public Date getPatientRegistrationDate() {

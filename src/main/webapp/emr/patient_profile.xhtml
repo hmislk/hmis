@@ -702,8 +702,12 @@
 
                                         </p:tab>
                                         <p:tab id="tabJourney" title="Journey">
-                                            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                                            <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+                                            <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
+                                                integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4"
+                                                crossorigin="anonymous"></script>
+                                            <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"
+                                                integrity="sha384-cVMg8E3QFwTvGCDuK+ET4PD341jF3W8nO1auiXfuZNQkzbUUiBGLsIQUE+b1mxws"
+                                                crossorigin="anonymous"></script>
                                             <h:form id="formJourney">
                                                 <div class="container-fluid p-2">
                                                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -719,7 +723,7 @@
                                                     </div>
                                                     <h:panelGroup id="journeyChartContainer" layout="block">
                                                         <h:panelGroup layout="block"
-                                                            rendered="#{patientEncounterController.patientRegistrationDate ne null}">
+                                                            rendered="#{patientEncounterController.patientJourneyTimelineReadyForCurrentPatient}">
                                                             <div style="width:100%; height:350px;">
                                                                 <canvas id="journeyCanvas"></canvas>
                                                             </div>
@@ -818,6 +822,8 @@
                                                                             scales: {
                                                                                 x: {
                                                                                     type: 'time',
+                                                                                    min: #{patientEncounterController.patientRegistrationDate.time},
+                                                                                    max: Date.now(),
                                                                                     time: { unit: 'month', displayFormats: { month: 'MMM yyyy' } },
                                                                                     title: { display: true, text: 'Date' }
                                                                                 },
@@ -841,7 +847,7 @@
                                                         </h:panelGroup>
                                                         <h:outputText
                                                             value="Click 'Generate' to view the patient journey timeline."
-                                                            rendered="#{patientEncounterController.patientRegistrationDate eq null}"
+                                                            rendered="#{not patientEncounterController.patientJourneyTimelineReadyForCurrentPatient}"
                                                             styleClass="text-muted d-block text-center mt-3"/>
                                                     </h:panelGroup>
                                                 </div>
