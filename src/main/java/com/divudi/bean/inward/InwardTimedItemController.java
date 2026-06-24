@@ -260,7 +260,7 @@ public class InwardTimedItemController implements Serializable {
         }
 
         PatientItem newPatientItem = getTimedEncounterComponent().getBillFee().getPatientItem();
-        if (newPatientItem.getToTime() != null) {
+        if (newPatientItem.getToTime() != null && newPatientItem.getFromTime() != null) {
             if (newPatientItem.getToTime().before(newPatientItem.getFromTime())) {
                 JsfUtil.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
                 return;
@@ -325,7 +325,7 @@ public class InwardTimedItemController implements Serializable {
         if (generalChecking()) {
             return;
         }
-        if (bf.getPatientItem().getToTime() != null) {
+        if (bf.getPatientItem().getToTime() != null && bf.getPatientItem().getFromTime() != null) {
             if (bf.getPatientItem().getToTime().before(bf.getPatientItem().getFromTime())) {
                 JsfUtil.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
                 return;
@@ -638,7 +638,7 @@ public class InwardTimedItemController implements Serializable {
 
     public void finalizeService(PatientItem pic) {
         PatientItem temPi;
-        if (pic.getToTime() != null) {
+        if (pic.getToTime() != null && pic.getFromTime() != null) {
             if (pic.getToTime().before(pic.getFromTime())) {
                 JsfUtil.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
                 return;
