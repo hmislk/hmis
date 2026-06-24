@@ -9,7 +9,7 @@
                 xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
     <ui:define name="content">
 
-        <h:form id="form">
+        <h:form id="form" onkeypress="if (event.keyCode === 13) { event.preventDefault(); return false; }">
 
             <!-- Search panel: shown when no surgery bill is selected -->
             <h:panelGroup rendered="#{inwardTimedItemController.batchBill eq null}">
@@ -22,6 +22,7 @@
                             </div>
                             <div class="d-flex gap-2">
                                 <p:commandButton
+                                    id="btnSurgeryDashboardSearch"
                                     value="Surgery Dashboard"
                                     icon="fa fa-arrow-left"
                                     ajax="false"
@@ -31,6 +32,7 @@
                                     styleClass="ui-button-info ui-button-outlined"/>
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                     <p:commandButton
+                                        id="btnNursingWorkBenchSearch"
                                         value="Nursing WorkBench"
                                         action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                         ajax="false"
@@ -96,6 +98,7 @@
                             <!-- CENTER: navigation buttons -->
                             <div class="d-flex gap-2">
                                 <p:commandButton
+                                    id="btnSurgeryDashboard"
                                     value="Surgery Dashboard"
                                     icon="fa fa-arrow-left"
                                     ajax="false"
@@ -105,6 +108,7 @@
                                     styleClass="ui-button-info ui-button-outlined"/>
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                     <p:commandButton
+                                        id="btnPatientLookup"
                                         value="Patient Lookup"
                                         icon="fa fa-search"
                                         ajax="false"
@@ -112,6 +116,7 @@
                                         styleClass="ui-button-info ui-button-outlined"
                                         action="#{patientController.navigateToSearchPatients()}"/>
                                     <p:commandButton
+                                        id="btnInpatientDashboard"
                                         value="Inpatient Dashboard"
                                         icon="fas fa-id-card"
                                         ajax="false"
@@ -125,6 +130,7 @@
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                     <p:commandButton
+                                        id="btnNursingWorkBench"
                                         value="Nursing WorkBench"
                                         action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                         ajax="false"
@@ -275,13 +281,15 @@
                             <p:column headerText="Action">
                                 <div class="d-flex gap-2">
                                     <p:commandButton
+                                        id="btnUpdate"
                                         value="Update"
                                         class="ui-button-warning"
                                         icon="fa fa-pencil"
                                         ajax="false"
                                         action="#{inwardTimedItemController.updateTimedService(ti.billFee)}"
-                                        disabled="#{ti.billFee.id eq null or inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"/>
+                                        disabled="#{ti.billFee.id eq null or ti.billFee.retired or inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"/>
                                     <p:commandButton
+                                        id="btnRemoveFromList"
                                         icon="fa-solid fa-trash"
                                         class="ui-button-danger"
                                         ajax="false"
@@ -290,11 +298,12 @@
                                         action="#{inwardTimedItemController.removeTimedEncFromList(ti)}"
                                         disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"/>
                                     <p:commandButton
+                                        id="btnRemoveFromDbase"
                                         icon="fa-solid fa-trash"
                                         class="ui-button-danger"
                                         ajax="false"
                                         value="Remove"
-                                        rendered="#{ti.billFee.id ne null}"
+                                        rendered="#{ti.billFee.id ne null and not ti.billFee.retired}"
                                         action="#{inwardTimedItemController.removeTimedEncFromDbase(ti)}"
                                         disabled="#{inwardTimedItemController.batchBill.patientEncounter.paymentFinalized}"/>
                                 </div>

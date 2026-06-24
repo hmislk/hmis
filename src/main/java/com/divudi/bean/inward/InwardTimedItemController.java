@@ -259,6 +259,18 @@ public class InwardTimedItemController implements Serializable {
             return;
         }
 
+        PatientItem newPatientItem = getTimedEncounterComponent().getBillFee().getPatientItem();
+        if (newPatientItem.getToTime() != null) {
+            if (newPatientItem.getToTime().before(newPatientItem.getFromTime())) {
+                JsfUtil.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
+                return;
+            }
+            if (newPatientItem.getToTime().getTime() == newPatientItem.getFromTime().getTime()) {
+                JsfUtil.addErrorMessage("Service Start Time & End Time Can't Be Equal");
+                return;
+            }
+        }
+
         timedEncounterComponent.setPatientEncounter(getBatchBill().getPatientEncounter());
         timedEncounterComponent.setChildEncounter(getBatchBill().getProcedure());
         timedEncounterComponent.setOrderNo(getTimedEncounterComponents().size());

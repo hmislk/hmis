@@ -295,6 +295,7 @@ public class BillBhtController implements Serializable {
         referredBy = null;
         currentBillItemPriority = null;
         currentBillItemQty = null;
+        paymentMethod = null;
     }
 
     public InwardBeanController getInwardBean() {

@@ -27,7 +27,7 @@
                             <!-- CENTER: entity-level navigation -->
                             <div class="d-flex gap-2">
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
-                                    <p:commandButton value="Surgery WorkBench" icon="fa fa-arrow-left"
+                                    <p:commandButton id="btnSurgeryWorkBench" value="Surgery WorkBench" icon="fa fa-arrow-left"
                                                      ajax="false" immediate="true"
                                                      title="Return to surgery workbench"
                                                      action="#{surgeryBillController.navigateToAddSurgeriesFromMenu()}"
@@ -80,23 +80,23 @@
 
                             <!-- CENTER: entity-level navigation -->
                             <div class="d-flex gap-2">
-                                <p:commandButton value="Surgery WorkBench" icon="fa fa-arrow-left"
+                                <p:commandButton id="btnSurgeryWorkBench2" value="Surgery WorkBench" icon="fa fa-arrow-left"
                                                  ajax="false" immediate="true"
                                                  title="Return to surgery workbench"
                                                  action="/theater/patient_surgery?faces-redirect=true"
                                                  styleClass="ui-button-info ui-button-outlined"/>
-                                <p:commandButton value="Patient Lookup" icon="fa fa-search"
+                                <p:commandButton id="btnPatientLookup" value="Patient Lookup" icon="fa fa-search"
                                                  ajax="false" immediate="true"
                                                  title="Search for a patient"
                                                  action="#{patientController.navigateToSearchPatients()}"
                                                  styleClass="ui-button-info ui-button-outlined"/>
-                                <p:commandButton value="Patient Profile" icon="fa fa-user"
+                                <p:commandButton id="btnPatientProfile" value="Patient Profile" icon="fa fa-user"
                                                  ajax="false" immediate="true"
                                                  title="View patient profile"
                                                  action="#{patientController.navigateToOpdPatientProfile()}"
                                                  styleClass="ui-button-info ui-button-outlined"/>
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
-                                    <p:commandButton value="Inpatient Dashboard" icon="fas fa-id-card"
+                                    <p:commandButton id="btnInpatientDashboard" value="Inpatient Dashboard" icon="fas fa-id-card"
                                                      ajax="false" immediate="true"
                                                      title="Go to inpatient dashboard"
                                                      action="#{admissionController.navigateToAdmissionProfilePage}"
@@ -270,18 +270,18 @@
 
                             <!-- CENTER: entity-level navigation -->
                             <div class="d-flex gap-2">
-                                <p:commandButton value="Surgery Workbench" icon="fa fa-arrow-left"
+                                <p:commandButton id="btnSurgeryWorkBench3" value="Surgery Workbench" icon="fa fa-arrow-left"
                                                  ajax="false" immediate="true"
                                                  title="Return to surgery workbench"
                                                  action="/theater/patient_surgery?faces-redirect=true"
                                                  styleClass="ui-button-info ui-button-outlined"/>
-                                <p:commandButton value="Prof. Fee List" icon="fa fa-list"
+                                <p:commandButton id="btnProfFeeList" value="Prof. Fee List" icon="fa fa-list"
                                                  ajax="false" immediate="true"
                                                  title="View professional fee list"
                                                  action="#{inwardProfessionalBillController.navigateToSurgeryProfessionalFeesList(inwardProfessionalBillController.batchBill)}"
                                                  styleClass="ui-button-info ui-button-outlined"/>
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
-                                    <p:commandButton value="Inpatient Dashboard" icon="fas fa-id-card"
+                                    <p:commandButton id="btnInpatientDashboard2" value="Inpatient Dashboard" icon="fas fa-id-card"
                                                      ajax="false" immediate="true"
                                                      title="Go to inpatient dashboard"
                                                      action="#{admissionController.navigateToAdmissionProfilePage}"
