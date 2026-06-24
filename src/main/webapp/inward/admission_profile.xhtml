@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
@@ -644,29 +644,6 @@
                                         class="w-100 ui-button-success">
                                     </p:commandButton>
                                 </div>
-                                <div class="col-6">
-                                    <p:commandButton
-                                        id="btnSendToTheatre"
-                                        rendered="#{webUserController.hasPrivilege('TheatreSendPatient')}"
-                                        value="Send to Theatre"
-                                        ajax="false"
-                                        disabled="#{admissionController.current.discharged eq true}"
-                                        action="#{patientTransferController.navigateToSendToTheatre(admissionController.current)}"
-                                        icon="fa fa-procedures"
-                                        class="w-100 ui-button-warning">
-                                    </p:commandButton>
-                                </div>
-                                <div class="col-6">
-                                    <p:commandButton
-                                        id="btnTheatreAccept"
-                                        rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')}"
-                                        value="Theatre Patients"
-                                        ajax="false"
-                                        action="#{patientTransferController.navigateToTheatreAccept()}"
-                                        icon="fa fa-hospital"
-                                        class="w-100 ui-button-info">
-                                    </p:commandButton>
-                                </div>
                             </div>
                         </p:panel>
                     </div>
@@ -675,7 +652,7 @@
                     <div class="col-3">
                         <p:panel class="m-1">
                             <f:facet name="header">
-                                <h:outputText value="Surgeries"/>
+                                <h:outputText value="Operation Theatre"/>
                             </f:facet>
                             <div class="mb-2">
                                 <ui:repeat value="#{bhtSummeryController.surgeryBills}" var="s">
@@ -689,7 +666,7 @@
                                                 title="view Surgeries"
                                                 class="ui-button-info"
                                                 ajax="false"
-                                                action="/theater/surgery_workbench?faces-redirect=true">
+                                                action="/theater/patient_surgery?faces-redirect=true">
                                                 <f:setPropertyActionListener
                                                     value="#{s}"
                                                     target="#{surgeryBillController.surgeryBill}" />
@@ -722,6 +699,51 @@
                                         <f:setPropertyActionListener
                                             value="#{admissionController.current}"
                                             target="#{surgeryBillController.surgeryBill.patientEncounter}"/>
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnSendToTheatre"
+                                        rendered="#{webUserController.hasPrivilege('TheatreSendPatient')}"
+                                        value="Send to Theatre"
+                                        ajax="false"
+                                        disabled="#{admissionController.current.discharged eq true}"
+                                        action="#{patientTransferController.navigateToSendToTheatre(admissionController.current)}"
+                                        icon="fa fa-procedures"
+                                        class="w-100 ui-button-warning">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnTheatreAccept"
+                                        rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')}"
+                                        value="Accept Theatre Patient"
+                                        ajax="false"
+                                        action="#{patientTransferController.navigateToTheatreAccept()}"
+                                        icon="fa fa-hospital"
+                                        class="w-100 ui-button-info">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnTheatreDashboard"
+                                        rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient') or webUserController.hasPrivilege('TheatreSendPatient')}"
+                                        value="Theatre Dashboard"
+                                        ajax="false"
+                                        action="#{theatreDashboardController.navigateToTheatreDashboard()}"
+                                        icon="fa fa-columns"
+                                        class="w-100 ui-button-secondary">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnTheatreSchedule"
+                                        rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient') or webUserController.hasPrivilege('TheatreSendPatient')}"
+                                        value="Theatre Schedule"
+                                        ajax="false"
+                                        action="#{inwardReservationController.navigateToTheatreScheduleCalendar()}"
+                                        icon="fa fa-calendar-alt"
+                                        class="w-100 ui-button-info">
                                     </p:commandButton>
                                 </div>
                             </div>
