@@ -1,6 +1,8 @@
 package com.divudi.service;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.OptionValueType;
 import com.divudi.core.entity.AiMessage;
 import com.divudi.core.entity.ConfigOption;
 import com.divudi.core.facade.ConfigOptionFacade;
@@ -21,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -40,6 +43,9 @@ public class AnthropicApiService implements Serializable {
 
     @EJB
     private ConfigOptionFacade configOptionFacade;
+
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
 
     // -------------------------------------------------------------------------
     // Public API
@@ -306,6 +312,29 @@ public class AnthropicApiService implements Serializable {
                                         .add("type", "string")
                                         .add("description", "Keyword to search in config option keys (case-insensitive)")))
                         .add("required", Json.createArrayBuilder().add("keyword")))
+                .build();
+
+        JsonObject manageConfigOptionTool = Json.createObjectBuilder()
+                .add("name", "manage_config_option")
+                .add("description",
+                        "Read or update a single HMIS application configuration option by its exact key. "
+                        + "Use GET to read the current value; use PUT to update it (flushes in-memory cache immediately). "
+                        + "The option must already exist — this tool does not create new keys. "
+                        + "Sensitive values (API keys, passwords, tokens) are masked on reads. "
+                        + "Use search_config_options first if you need to discover the exact key name.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "HTTP method: GET to read, PUT to update"))
+                                .add("key", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Exact config option key (case-sensitive)"))
+                                .add("value", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "New value (required for PUT)")))
+                        .add("required", Json.createArrayBuilder().add("method").add("key")))
                 .build();
 
         JsonObject clinicalMetadataTool = Json.createObjectBuilder()
@@ -1344,6 +1373,7 @@ public class AnthropicApiService implements Serializable {
                 .add(searchCodeTool)
                 .add(fetchFileTool)
                 .add(searchConfigTool)
+                .add(manageConfigOptionTool)
                 .add(clinicalMetadataTool)
                 .add(collectingCentreFeesTool)
                 .add(inwardDiscountMatrixTool)
@@ -1392,6 +1422,12 @@ public class AnthropicApiService implements Serializable {
                 case "search_config_options": {
                     String keyword = toolInput.getString("keyword", "");
                     return searchConfigOptions(keyword);
+                }
+                case "manage_config_option": {
+                    String method = toolInput.getString("method", "GET");
+                    String key    = toolInput.containsKey("key")   ? toolInput.getString("key", "")   : "";
+                    String value  = toolInput.containsKey("value") ? toolInput.getString("value", "") : null;
+                    return manageConfigOption(method, key, value);
                 }
                 case "manage_clinical_metadata": {
                     String method = toolInput.getString("method", "GET");
@@ -1848,6 +1884,58 @@ public class AnthropicApiService implements Serializable {
         } catch (Exception e) {
             LOG.log(Level.WARNING, "Config option search failed", e);
             return "Config search error: " + e.getMessage();
+        }
+    }
+
+    private String manageConfigOption(String method, String key, String newValue) {
+        if (key == null || key.trim().isEmpty()) {
+            return "Error: key is required.";
+        }
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("scope", OptionScope.APPLICATION);
+            params.put("k", key);
+            ConfigOption option = configOptionFacade.findFirstByJpql(
+                    "SELECT o FROM ConfigOption o WHERE o.retired = false AND o.scope = :scope AND o.optionKey = :k",
+                    params);
+
+            if ("PUT".equalsIgnoreCase(method)) {
+                if (newValue == null) {
+                    return "Error: value is required for PUT.";
+                }
+                if (option == null) {
+                    return "Error: config option not found: " + key;
+                }
+                String oldValue = option.getOptionValue();
+                if (option.getValueType() == OptionValueType.LONG_TEXT) {
+                    configOptionApplicationController.setLongTextValueByKey(key, newValue);
+                } else {
+                    option.setOptionValue(newValue);
+                    configOptionFacade.edit(option);
+                    configOptionApplicationController.loadApplicationOptions();
+                }
+                LOG.log(Level.INFO, "CONFIG_UPDATED via AI tool key=[{0}] old=[{1}] new=[{2}]",
+                        new Object[]{key,
+                            maskSensitiveValue(key, oldValue),
+                            maskSensitiveValue(key, newValue)});
+                return "Config option updated.\nKey: " + key + "\nOld value: "
+                        + maskSensitiveValue(key, oldValue) + "\nNew value: "
+                        + maskSensitiveValue(key, newValue);
+            }
+
+            // GET
+            if (option == null) {
+                return "Config option not found: " + key;
+            }
+            String value = maskSensitiveValue(option.getOptionKey(), option.getOptionValue());
+            if (value != null && value.length() > 500) {
+                value = value.substring(0, 500) + "... (truncated)";
+            }
+            return "Key: " + option.getOptionKey() + "\nType: " + option.getValueType()
+                    + "\nScope: " + option.getScope() + "\nValue: " + value;
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "manage_config_option failed", e);
+            return "Error: " + e.getMessage();
         }
     }
 
