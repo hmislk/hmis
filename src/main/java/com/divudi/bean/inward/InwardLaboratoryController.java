@@ -50,7 +50,6 @@ public class InwardLaboratoryController implements Serializable {
 
     private String billNumber;
     private String bhtNumber;
-    private int activeTabIndex;
 
     /**
      * Opens the inward laboratory dashboard. Resets the underlying search state,
@@ -199,14 +198,6 @@ public class InwardLaboratoryController implements Serializable {
 
     public void setBhtNumber(String bhtNumber) {
         this.bhtNumber = bhtNumber;
-    }
-
-    public int getActiveTabIndex() {
-        return activeTabIndex;
-    }
-
-    public void setActiveTabIndex(int activeTabIndex) {
-        this.activeTabIndex = activeTabIndex;
     }
 
 }

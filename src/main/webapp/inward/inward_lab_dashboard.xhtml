@@ -1,303 +1,317 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns="http://www.w3.org/1999/xhtml"
       xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      xmlns:s="http://www.w3.org/1999/xhtml"
       xmlns:p="http://primefaces.org/ui"
       xmlns:sm="http://xmlns.jcp.org/jsf/composite/ezcomp/sample_management">
-<h:head>
-    <title>Inpatient Laboratory Dashboard</title>
-    <style>
-        #{configOptionApplicationController.getLongTextValueByKey('CSS for Sample Container Sticker')}
-
-        .ild-page { padding: .5rem .25rem; }
-        .ild-page .ild-label { display: block; font-size: .68rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #667085; margin-bottom: .18rem; }
-        .ild-page .ui-inputfield, .ild-page .ui-selectonemenu, .ild-page .ui-autocomplete, .ild-page .ui-inputtext, .ild-page .ui-datepicker-input { width: 100%; }
-        .ild-page .ui-button { border-radius: 8px; }
-        .ild-head { display: flex; align-items: center; gap: .75rem; margin-bottom: .6rem; }
-        .ild-head .ild-badge { width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center; background: var(--primary-color, #2563eb); color: #fff; flex: 0 0 auto; }
-        .ild-head .ild-title { font-size: 1.15rem; font-weight: 700; line-height: 1.15; }
-        .ild-head .ild-sub { font-size: .8rem; color: #667085; }
-        .ild-page .ui-tabs.ui-tabs-top > .ui-tabs-nav li { font-weight: 600; }
-        .ild-page .ui-tabs .ui-tabs-panel { padding: .85rem .25rem .25rem; }
-        .ild-actionbar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .65rem 1.1rem; padding: .65rem .8rem; border: 1px solid #e5e7eb; border-radius: 10px; background: #f9fafb; margin-bottom: .7rem; }
-        .ild-actionbar .ild-grp { display: flex; align-items: flex-end; gap: .4rem; }
-        .ild-actionbar .ild-grp .ui-autocomplete, .ild-actionbar .ild-grp .ui-inputtext { min-width: 200px; }
-        .ild-searchbar { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
-    </style>
-</h:head>
-<h:body>
     <ui:composition template="/resources/template/template.xhtml">
         <ui:define name="content">
+            <h:head>
+                <style>
+                    #{configOptionApplicationController.getLongTextValueByKey('CSS for Sample Container Sticker')}
+                </style>
+            </h:head>
 
             <h:panelGroup rendered="#{!webUserController.hasPrivilege('InwardLaboratory')}" >
                 <na:not_authorize />
             </h:panelGroup>
 
             <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardLaboratory')}" >
-                <div class="container-fluid ild-page" >
+                <div class="container-fluid" >
 
-                    <!-- PAGE HEADER -->
-                    <div class="ild-head">
-                        <span class="ild-badge"><i class="fa fa-vials fa-lg" /></span>
-                        <div>
-                            <h:outputText styleClass="ild-title d-block" value="Inpatient Laboratory Dashboard" />
-                            <h:outputText styleClass="ild-sub" value="Search in-patient lab bills, generate barcodes, manage samples and search reports." />
-                        </div>
-                    </div>
-
-                    <h:form id="dashboardForm">
-                        <p:tabView dynamic="true" cache="false" activeIndex="#{inwardLaboratoryController.activeTabIndex}">
-
-                            <!-- =================== BILLS & BARCODES =================== -->
-                            <p:tab rendered="#{webUserController.hasPrivilege('InwardLaboratoryBarcodeGeneration')}">
-                                <f:facet name="title"><i class="fa fa-file-invoice-dollar me-2" />Bills &amp; Barcodes</f:facet>
-
-                                <div class="row g-2">
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="bFromDate" styleClass="ild-label" value="From Date"/>
-                                        <p:datePicker id="bFromDate" inputStyleClass="w-100" showTime="true" value="#{patientInvestigationController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="bToDate" styleClass="ild-label" value="To Date"/>
-                                        <p:datePicker id="bToDate" inputStyleClass="w-100" showTime="true" value="#{patientInvestigationController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="bBht" styleClass="ild-label" value="BHT Number"/>
-                                        <p:inputText id="bBht" value="#{inwardLaboratoryController.bhtNumber}"/>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="bBillNo" styleClass="ild-label" value="Bill Number"/>
-                                        <p:inputText id="bBillNo" value="#{inwardLaboratoryController.billNumber}"/>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="bPatient" styleClass="ild-label" value="Patient Name"/>
-                                        <p:inputText id="bPatient" value="#{patientInvestigationController.patientName}"/>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="bInvestigation" styleClass="ild-label" value="Investigation"/>
-                                        <p:inputText id="bInvestigation" value="#{patientInvestigationController.investigationName}"/>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="bStatus" styleClass="ild-label" value="Status"/>
-                                        <p:selectOneMenu id="bStatus" filter="true" filterMatchMode="contains" value="#{patientInvestigationController.patientInvestigationStatus}">
-                                            <f:selectItem itemLabel="Any" />
-                                            <f:selectItems value="#{enumController.patientInvestigationStatuses}" var="pis" itemValue="#{pis}" itemLabel="#{pis.label}"/>
-                                        </p:selectOneMenu>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="bPriority" styleClass="ild-label" value="Priority"/>
-                                        <p:selectOneMenu id="bPriority" filter="true" filterMatchMode="contains" value="#{patientInvestigationController.priority}">
-                                            <f:selectItem itemLabel="Any" />
-                                            <f:selectItems value="#{enumController.priorities}" var="pr" itemLabel="#{pr.displayName}" itemValue="#{pr}"/>
-                                        </p:selectOneMenu>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="bSpecimen" styleClass="ild-label" value="Specimen"/>
-                                        <p:selectOneMenu id="bSpecimen" value="#{patientInvestigationController.specimen}" filter="true" filterMatchMode="contains">
-                                            <f:selectItem itemLabel="Any" />
-                                            <f:selectItems value="#{sampleController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}"/>
-                                        </p:selectOneMenu>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="bOrderedIns" styleClass="ild-label" value="Ordered Institution"/>
-                                        <p:autoComplete id="bOrderedIns" inputStyleClass="w-100"
-                                                        value="#{patientInvestigationController.orderedInstitution}"
-                                                        completeMethod="#{institutionController.completeIns}"
-                                                        var="oi" maxResults="15" itemLabel="#{oi.name}" itemValue="#{oi}">
-                                            <p:ajax process="bOrderedIns" update="gpOrderedDept" />
-                                        </p:autoComplete>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="bOrderedDept" styleClass="ild-label" value="Ordered Department"/>
-                                        <h:panelGroup id="gpOrderedDept" layout="block">
-                                            <p:selectOneMenu id="bOrderedDept" value="#{patientInvestigationController.orderedDepartment}" filter="true" filterMatchMode="contains" style="max-width: 100%">
-                                                <f:selectItem itemLabel="Any" />
-                                                <f:selectItems value="#{inwardLaboratoryController.inwardTypeDepartments}" var="odpt" itemLabel="#{odpt.name}" itemValue="#{odpt}"/>
-                                            </p:selectOneMenu>
-                                        </h:panelGroup>
-                                    </div>
-                                </div>
-
-                                <div class="ild-searchbar justify-content-end mt-2">
-                                    <p:commandButton id="btnSearchBills" ajax="false"
-                                                     action="#{inwardLaboratoryController.searchInwardLabBills}"
-                                                     value="Search Bills" title="Search in-patient lab bills"
-                                                     icon="fas fa-search" styleClass="ui-button-success"/>
-                                    <p:commandButton id="btnClearBills" ajax="false"
-                                                     action="#{patientInvestigationController.clearFilters}"
-                                                     value="Clear" title="Clear all filters"
-                                                     icon="fas fa-eraser" styleClass="ui-button-secondary ui-button-outlined"/>
-                                </div>
-
-                                <p:divider/>
-
-                                <!--BILLS-->
-                                <sm:sm_bills/>
-                                <!--BILL_BARCODES-->
-                                <sm:sm_barCodes/>
-                                <!--INDIVIDUAL_BARCODES-->
-                                <sm:sm_individual_barcode/>
-                            </p:tab>
-
-                            <!-- =================== SAMPLES =================== -->
-                            <p:tab rendered="#{webUserController.hasPrivilege('InwardLaboratorySampleManagement')}">
-                                <f:facet name="title"><i class="fa fa-vial me-2" />Samples</f:facet>
-
-                                <div class="row g-2">
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="sFromDate" styleClass="ild-label" value="From Date"/>
-                                        <p:datePicker id="sFromDate" inputStyleClass="w-100" showTime="true" value="#{patientInvestigationController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="sToDate" styleClass="ild-label" value="To Date"/>
-                                        <p:datePicker id="sToDate" inputStyleClass="w-100" showTime="true" value="#{patientInvestigationController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="sBht" styleClass="ild-label" value="BHT Number"/>
-                                        <p:inputText id="sBht" value="#{inwardLaboratoryController.bhtNumber}"/>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="sPatient" styleClass="ild-label" value="Patient Name"/>
-                                        <p:inputText id="sPatient" value="#{patientInvestigationController.patientName}"/>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="sSampleId" styleClass="ild-label" value="Sample Id"/>
-                                        <p:inputText id="sSampleId" value="#{patientInvestigationController.sampleId}"/>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="sSource" styleClass="ild-label" value="Sample Source"/>
-                                        <p:selectOneMenu id="sSource" value="#{patientInvestigationController.sampleSearchStrategy}">
+                    <p:panel styleClass="m-1 mb-2">
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center w-100 flex-wrap gap-2">
+                                <span><i class="fa fa-vials me-2" />Inpatient Laboratory Dashboard</span>
+                                <h:form styleClass="ms-auto" rendered="#{webUserController.hasPrivilege('InwardLaboratorySampleManagement')}">
+                                    <span class="d-flex align-items-center gap-2">
+                                        <h:outputLabel for="ddSampleSource" value="Sample Source" />
+                                        <p:selectOneMenu id="ddSampleSource" style="min-width: 220px;" value="#{patientInvestigationController.sampleSearchStrategy}">
                                             <f:selectItem itemLabel="All Samples"/>
                                             <f:selectItem itemValue="INTERNAL_ONLY" itemLabel="Internal Samples Only"/>
                                             <f:selectItem itemValue="EXTERNAL_ONLY" itemLabel="Outsource Samples Only"/>
+                                            <p:ajax process="@this" />
                                         </p:selectOneMenu>
-                                    </div>
-                                </div>
+                                    </span>
+                                </h:form>
+                            </div>
+                        </f:facet>
 
-                                <div class="ild-searchbar justify-content-end mt-2">
-                                    <p:commandButton id="btnSearchSamples" ajax="false"
-                                                     action="#{inwardLaboratoryController.searchPatientSamples}"
-                                                     value="Search Samples" title="Search patient samples"
-                                                     icon="fas fa-search" styleClass="ui-button-warning"/>
-                                    <p:commandButton id="btnClearSamples" ajax="false"
-                                                     action="#{patientInvestigationController.clearFilters}"
-                                                     value="Clear" title="Clear all filters"
-                                                     icon="fas fa-eraser" styleClass="ui-button-secondary ui-button-outlined"/>
-                                </div>
-
-                                <p:divider/>
-
-                                <!-- SAMPLE ACTION BAR -->
-                                <div class="ild-actionbar">
-                                    <div class="ild-grp">
-                                        <p:commandButton id="btnReGenerateSamples" ajax="false"
-                                                         disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         action="#{inwardLaboratoryController.reGenerateSampleForRejectSamples()}"
-                                                         value="Re-Generate" title="Re-generate samples for rejected samples"
-                                                         icon="fa fa-rotate-right" styleClass="ui-button-success"/>
-                                        <p:commandButton id="btnCollectSamples" ajax="false"
-                                                         disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         action="#{inwardLaboratoryController.collectSamples()}"
-                                                         value="Collect" title="Collect selected samples"
-                                                         icon="fa fa-check-circle" styleClass="ui-button-primary"/>
-                                    </div>
-
-                                    <div class="ild-grp">
-                                        <span>
-                                            <p:outputLabel styleClass="ild-label" value="Transporter"/>
-                                            <p:autoComplete completeMethod="#{staffController.completeStaff}"
-                                                            value="#{patientInvestigationController.sampleTransportedToLabByStaff}"
-                                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                            var="mys" maxResults="25" placeholder="Sample Transporter"
-                                                            inputStyleClass="form-control" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}">
-                                                <p:column headerText="Code" style="padding: 6px; width: 20px;">#{mys.code}</p:column>
-                                                <p:column headerText="Name" style="padding: 6px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
+                        <h:form >
+                            <div class="row my-2" >
+                                <div class="col-10" >
+                                    <h:panelGrid columns="6" class="w-100" style="font-weight: bolder">
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="From Date"/>
+                                            <p:datePicker inputStyleClass="w-100" id="fromDate" showTime="true" value="#{patientInvestigationController.fromDate}" class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="To Date"/>
+                                            <p:datePicker id="toDate" inputStyleClass="w-100" showTime="true" value="#{patientInvestigationController.toDate}" class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="BHT Number"/>
+                                            <p:inputText class="w-100" value="#{inwardLaboratoryController.bhtNumber}"/>
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="Bill Number"/>
+                                            <p:inputText class="w-100" value="#{inwardLaboratoryController.billNumber}"/>
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="Status"/>
+                                            <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" style="max-width:100%;" value="#{patientInvestigationController.patientInvestigationStatus}">
+                                                <f:selectItem itemLabel="Any" />
+                                                <f:selectItems value="#{enumController.patientInvestigationStatuses}" var="pis" itemValue="#{pis}" itemLabel="#{pis.label}"/>
+                                            </p:selectOneMenu>
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="Investigation"/>
+                                            <p:inputText class="w-100" value="#{patientInvestigationController.investigationName}"/>
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="Sample Id"/>
+                                            <p:inputText class="w-100" value="#{patientInvestigationController.sampleId}"/>
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="Patient Name"/>
+                                            <p:inputText class="w-100" value="#{patientInvestigationController.patientName}"/>
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="Specimen"/>
+                                            <p:selectOneMenu
+                                                class="w-100"
+                                                value="#{patientInvestigationController.specimen}"
+                                                filter="true"
+                                                filterMatchMode="contains">
+                                                <f:selectItem itemLabel="Any" />
+                                                <f:selectItems value="#{sampleController.items}" var="s" itemLabel="#{s.name}" itemValue="#{s}"/>
+                                            </p:selectOneMenu>
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="Priority"/>
+                                            <p:selectOneMenu
+                                                class="w-100"
+                                                filter="true"
+                                                filterMatchMode="contains"
+                                                value="#{patientInvestigationController.priority}">
+                                                <f:selectItem itemLabel="Any" />
+                                                <f:selectItems value="#{enumController.priorities}" var="p" itemLabel="#{p.displayName}" itemValue="#{p}"/>
+                                            </p:selectOneMenu>
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="Ordered Institution"/>
+                                            <p:autoComplete
+                                                class="w-100"
+                                                id="acOins"
+                                                value="#{patientInvestigationController.orderedInstitution}"
+                                                inputStyleClass="w-100"
+                                                maxResults="15"
+                                                completeMethod="#{institutionController.completeIns}"
+                                                var="oi"
+                                                itemLabel="#{oi.name}"
+                                                itemValue="#{oi}">
+                                                <p:ajax process="acOins" update="gpOdept" ></p:ajax>
                                             </p:autoComplete>
-                                        </span>
-                                        <p:commandButton id="btnSendToLab" ajax="false"
-                                                         disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         action="#{inwardLaboratoryController.sendSamplesToLab()}"
-                                                         value="Send to Lab" title="Send selected samples to lab"
-                                                         icon="fa fa-paper-plane" styleClass="ui-button-warning"/>
-                                    </div>
+                                        </h:panelGrid>
+                                        <h:panelGrid columns="1" class="w-100">
+                                            <h:outputLabel class="w-100" value="Ordered Department"/>
+                                            <h:panelGroup id="gpOdept">
+                                                <p:selectOneMenu
+                                                    value="#{patientInvestigationController.orderedDepartment}"
+                                                    filter="true"
+                                                    filterMatchMode="contains"
+                                                    class="w-100"
+                                                    style="max-width: 100%">
+                                                    <f:selectItem itemLabel="Any"></f:selectItem>
+                                                    <f:selectItems value="#{inwardLaboratoryController.inwardTypeDepartments}" var="odpt" itemLabel="#{odpt.name}" itemValue="#{odpt}"></f:selectItems>
+                                                </p:selectOneMenu>
+                                            </h:panelGroup>
+                                        </h:panelGrid>
 
-                                    <div class="ild-grp">
-                                        <span>
-                                            <p:outputLabel styleClass="ild-label" value="Reject Reason"/>
-                                            <p:inputText placeholder="Sample Reject Reason"
-                                                         disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         value="#{patientInvestigationController.sampleRejectionComment}"/>
-                                        </span>
-                                        <span class="d-flex align-items-center gap-2 mb-1">
-                                            <p:toggleSwitch value="#{patientInvestigationController.requestReCollected}"
-                                                            onIcon="pi pi-check" offIcon="pi pi-times"
-                                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"/>
-                                            <p:outputLabel value="Re-Collect" title="Request Re-Collect Sample"/>
-                                        </span>
-                                        <p:commandButton id="btnRejectSamples" ajax="false"
-                                                         disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                         action="#{inwardLaboratoryController.rejectSamples()}"
-                                                         value="Reject" title="Reject selected samples"
-                                                         icon="fa fa-times-circle" styleClass="ui-button-danger"/>
-                                    </div>
+                                    </h:panelGrid>
+                                </div>
+                                <div class="col-2">
+                                    <h:panelGrid columns="1" class="w-100">
+
+                                        <p:commandButton
+                                            ajax="false"
+                                            rendered="#{webUserController.hasPrivilege('InwardLaboratoryBarcodeGeneration')}"
+                                            action="#{inwardLaboratoryController.searchInwardLabBills}"
+                                            value="Bills"
+                                            icon="fas fa-file-invoice-dollar"
+                                            styleClass="m-1 ui-button-success w-100">
+                                        </p:commandButton>
+
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardLaboratorySampleManagement')}">
+                                            <hr/>
+
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="#{inwardLaboratoryController.searchPatientSamples}"
+                                                value="Samples"
+                                                icon="fas fa-vial"
+                                                styleClass="m-1 ui-button-warning w-100">
+                                            </p:commandButton>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardLaboratoryReportSearch')}">
+                                            <hr/>
+
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="#{inwardLaboratoryController.searchPatientReports}"
+                                                value="Reports"
+                                                icon="fas fa-file-medical"
+                                                styleClass="m-1 ui-button-danger w-100">
+                                            </p:commandButton>
+                                        </h:panelGroup>
+
+                                        <hr/>
+
+                                        <p:commandButton
+                                            ajax="false"
+                                            action="#{patientInvestigationController.clearFilters}"
+                                            value="Clear"
+                                            icon="fas fa-eraser"
+                                            styleClass="m-1 ui-button-secondary w-100">
+                                        </p:commandButton>
+
+                                    </h:panelGrid>
+                                </div>
+                            </div>
+
+                        </h:form>
+
+                        <h:form >
+                            <div class="row" >
+                                <div class="col-10 w-80" >
+
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardLaboratoryBarcodeGeneration')}">
+                                        <!--BILLS-->
+                                        <sm:sm_bills/>
+
+                                        <!--BILL_BARCODES-->
+                                        <sm:sm_barCodes/>
+
+                                        <!--INDIVIDUAL_BARCODES-->
+                                        <sm:sm_individual_barcode/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardLaboratorySampleManagement')}">
+                                        <!--PATIENT_SAMPLES-->
+                                        <sm:sm_samples/>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardLaboratoryReportSearch')}">
+                                        <!--PATIENT_REPORTS-->
+                                        <sm:sm_reports/>
+                                    </h:panelGroup>
+
                                 </div>
 
-                                <!--PATIENT_SAMPLES-->
-                                <sm:sm_samples/>
-                            </p:tab>
+                                <div class="col-2" >
+                                    <h:panelGrid columns="1" class="w-100" rendered="#{webUserController.hasPrivilege('InwardLaboratorySampleManagement')}">
 
-                            <!-- =================== REPORTS =================== -->
-                            <p:tab rendered="#{webUserController.hasPrivilege('InwardLaboratoryReportSearch')}">
-                                <f:facet name="title"><i class="fa fa-file-medical me-2" />Reports</f:facet>
+                                        <hr/>
 
-                                <div class="row g-2">
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="rFromDate" styleClass="ild-label" value="From Date"/>
-                                        <p:datePicker id="rFromDate" inputStyleClass="w-100" showTime="true" value="#{patientInvestigationController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="rToDate" styleClass="ild-label" value="To Date"/>
-                                        <p:datePicker id="rToDate" inputStyleClass="w-100" showTime="true" value="#{patientInvestigationController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="rBht" styleClass="ild-label" value="BHT Number"/>
-                                        <p:inputText id="rBht" value="#{inwardLaboratoryController.bhtNumber}"/>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="rPatient" styleClass="ild-label" value="Patient Name"/>
-                                        <p:inputText id="rPatient" value="#{patientInvestigationController.patientName}"/>
-                                    </div>
-                                    <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
-                                        <p:outputLabel for="rInvestigation" styleClass="ild-label" value="Investigation"/>
-                                        <p:inputText id="rInvestigation" value="#{patientInvestigationController.investigationName}"/>
-                                    </div>
+                                        <p:commandButton
+                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                            id="btnCreateSamples"
+                                            value="Re-Generate Samples"
+                                            ajax="false"
+                                            action="#{inwardLaboratoryController.reGenerateSampleForRejectSamples()}"
+                                            title="Re-Generate Samples"
+                                            icon="pi pi-plus-circle"
+                                            styleClass="w-100 ui-button-success" >
+                                        </p:commandButton>
+
+                                        <hr/>
+
+                                        <p:commandButton
+                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                            id="btnCollectSamples"
+                                            value="Collect Samples"
+                                            ajax="false"
+                                            action="#{inwardLaboratoryController.collectSamples()}"
+                                            title="Collect Samples"
+                                            icon="pi pi-plus-circle"
+                                            styleClass="w-100 ui-button-primary" >
+                                        </p:commandButton>
+
+                                        <hr/>
+
+                                        <p:autoComplete
+                                            completeMethod="#{staffController.completeStaff}"
+                                            value="#{patientInvestigationController.sampleTransportedToLabByStaff}"
+                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                            var="mys"
+                                            class="w-100"
+                                            maxResults="25"
+                                            placeholder="Sample Transporter"
+                                            inputStyleClass="form-control"
+                                            itemLabel="#{mys.person.nameWithTitle}"
+                                            itemValue="#{mys}">
+                                            <p:column headerText="Code" style="padding: 6px; width: 20px;">#{mys.code}</p:column>
+                                            <p:column headerText="Name" style="padding: 6px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
+                                        </p:autoComplete>
+
+                                        <p:commandButton
+                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                            id="btnSendToLab"
+                                            value="Send to Lab"
+                                            ajax="false"
+                                            action="#{inwardLaboratoryController.sendSamplesToLab()}"
+                                            title="Send to Lab"
+                                            icon="pi pi-external-link"
+                                            styleClass="w-100 ui-button-warning" >
+                                        </p:commandButton>
+
+                                        <hr/>
+
+                                        <p:inputText
+                                            class="w-100"
+                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                            placeholder="Sample Reject Reason"
+                                            value="#{patientInvestigationController.sampleRejectionComment}" >
+                                        </p:inputText>
+
+                                        <h:panelGrid columns="3" class="my-2">
+                                            <p:toggleSwitch
+                                                value="#{patientInvestigationController.requestReCollected}"
+                                                onIcon="pi pi-check"
+                                                offIcon="pi pi-times"
+                                                disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}">
+                                            </p:toggleSwitch>
+                                            <p:spacer width="20"/>
+                                            <h:outputLabel value="Request Re-Collect Sample"/>
+                                        </h:panelGrid>
+
+                                        <p:commandButton
+                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                            id="btnRejectSamples"
+                                            value="Reject Samples"
+                                            ajax="false"
+                                            action="#{inwardLaboratoryController.rejectSamples()}"
+                                            title="Reject Samples"
+                                            icon="pi pi-times-circle"
+                                            styleClass="w-100 ui-button-danger" >
+                                        </p:commandButton>
+
+                                        <hr/>
+
+                                    </h:panelGrid>
                                 </div>
 
-                                <div class="ild-searchbar justify-content-end mt-2">
-                                    <p:commandButton id="btnSearchReports" ajax="false"
-                                                     action="#{inwardLaboratoryController.searchPatientReports}"
-                                                     value="Search Reports" title="Search patient reports"
-                                                     icon="fas fa-search" styleClass="ui-button-info"/>
-                                    <p:commandButton id="btnClearReports" ajax="false"
-                                                     action="#{patientInvestigationController.clearFilters}"
-                                                     value="Clear" title="Clear all filters"
-                                                     icon="fas fa-eraser" styleClass="ui-button-secondary ui-button-outlined"/>
-                                </div>
+                            </div>
+                        </h:form>
+                    </p:panel>
 
-                                <p:divider/>
-
-                                <!--PATIENT_REPORTS-->
-                                <sm:sm_reports/>
-                            </p:tab>
-
-                        </p:tabView>
-                    </h:form>
                 </div>
             </h:panelGroup>
         </ui:define>
     </ui:composition>
-</h:body>
 </html>
