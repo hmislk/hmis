@@ -65,8 +65,8 @@
                                     <p:printer target="printTempBill" />
                                 </p:commandButton>
 
-                                <p:commandButton 
-                                    value="Save Provisional Bill" 
+                                <p:commandButton
+                                    value="Save Provisional Bill"
                                     action="#{bhtSummeryController.saveProvisionalBill()}"
                                     id="saveProvisional"
                                     ajax="false"
@@ -74,10 +74,10 @@
                                     class="ui-button-warning mx-1"
                                     icon="fa fa-save"
                                     style="width: 200px; padding: 1px; margin: auto;"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Save Provisional on Final Bill Edit',false)}">
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Save Provisional on Final Bill Edit',false) and webUserController.hasPrivilege('InwardSaveProvisionalFinalBill')}">
                                 </p:commandButton>
 
-                                <p:commandButton 
+                                <p:commandButton
                                     value="Settle"
                                     action="#{bhtSummeryController.settle}"
                                     id="settle"
@@ -85,7 +85,8 @@
                                     disabled="#{bhtSummeryController.changed}"
                                     class="ui-button-success mx-1"
                                     icon="fa fa-check"
-                                    style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                                    style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;"
+                                    rendered="#{webUserController.hasPrivilege('InwardSettleFinalBill')}">
                                 </p:commandButton>
 
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">

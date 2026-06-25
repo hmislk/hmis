@@ -191,6 +191,13 @@ public class BillBhtController implements Serializable {
         return "/inward/inward_bill_service?faces-redirect=true";
     }
 
+    public String navigateToSurgeryServices(Bill surgeryBill) {
+        resetBillData();
+        batchBill = surgeryBill;
+        patientEncounter = surgeryBill.getPatientEncounter();
+        return "/theater/inward_bill_surgery_service?faces-redirect=true";
+    }
+
     public String navigateToPrintLabelsForInvestigations() {
         String json = generateStockerPrinterString();
         stickers = convertJsonToList(json);
@@ -288,6 +295,7 @@ public class BillBhtController implements Serializable {
         referredBy = null;
         currentBillItemPriority = null;
         currentBillItemQty = null;
+        paymentMethod = null;
     }
 
     public InwardBeanController getInwardBean() {
