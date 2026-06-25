@@ -20,16 +20,16 @@
                                 <p:outputLabel value="From Date" for="fromDate" styleClass="m-3" />
                             </h:panelGroup>
 
-                            <p:datePicker
-                                id="fromDate"
-                                styleClass="w-100"
-                                inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy HH:mm:ss"   
-                                showTime="true"                                                           
-                                monthNavigator="true"           
-                                yearNavigator="true"                              
-                                timeInput="true"                
-                                />
+                            <p:datePicker id="fromDate"
+                                          styleClass="d-block w-100"
+                                          inputStyleClass="form-control"
+                                          showTime="true" 
+                                          monthNavigator="true"           
+                                          yearNavigator="true"                              
+                                          timeInput="true" 
+                                          title="Filter by from date"
+                                          hideOnDateTimeSelect="true"
+                                          pattern="#{sessionController.applicationPreference.longDateFormat}"/>
 
                             <p:spacer width="20"></p:spacer>
 
@@ -42,14 +42,15 @@
 
                             <p:datePicker
                                 id="toDate"
-                                styleClass="w-100"
-                                inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy HH:mm:ss"   
-                                showTime="true"                                                           
+                                styleClass="d-block w-100"
+                                inputStyleClass="form-control"
+                                showTime="true" 
                                 monthNavigator="true"           
                                 yearNavigator="true"                              
-                                timeInput="true"                
-                                />
+                                timeInput="true" 
+                                title="Filter by to date"
+                                hideOnDateTimeSelect="true" 
+                                pattern="#{sessionController.applicationPreference.longDateFormat}"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2"/>
@@ -61,6 +62,11 @@
                                 class="w-100"
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions"/>
+                                <f:selectItems 
+                                    value="#{institutionController.companies}" 
+                                    var="ins" 
+                                    itemLabel="#{ins.name}"
+                                    itemValue="#{ins}"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
@@ -75,6 +81,8 @@
                                 class="w-100"
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites"/>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                               itemValue="#{site}"/>
                             </p:selectOneMenu>
 
 
@@ -84,6 +92,11 @@
                             </h:panelGroup>
                             <p:selectOneMenu id="sto" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                <f:selectItems
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
@@ -94,19 +107,25 @@
                             </h:panelGroup>
                             <p:selectOneMenu id="sLab" class="w-100 " >
                                 <f:selectItem itemValue="All" itemLabel="All" ></f:selectItem>
-                                <f:selectItem itemValue="B" itemLabel="Biochemistry" />
-                                <f:selectItem itemValue="P" itemLabel="Pathelogy" />
+                                <f:selectItems 
+                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                    var="d"
+                                    itemLabel="#{d.name}"
+                                    itemValue="#{d}" />
                             </p:selectOneMenu>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf492;" styleClass="fa mr-2"/>
                                 <h:outputLabel value="Investigation" for="acInvestigationItem" class="m-3"/>
                             </h:panelGroup>
-                            <p:autoComplete id="acInvestigationItem" inputStyleClass="w-100"
-                                            styleClass="w-100" value=""
-                                            completeMethod="#" var="ix"
-                                            itemLabel=""
-                                            itemValue="" />
+                            <p:selectOneMenu id="cmdInvestigation"
+                                             value="#{reportController.investigation}"
+                                             style="width:100%"
+                                             title="Filter by investigation"
+                                             filter="true">
+                                <f:selectItem itemLabel="Select Investigation"/>
+                                <f:selectItems value="#{investigationController.investigationItems}" itemLabel="#{i.sname}" var="i" itemValue="#{i}"/>
+                            </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
 
@@ -133,7 +152,7 @@
                             <p:spacer width="20"></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-cogs mr-2" />
+                                <h:outputText styleClass="fas fa-file-medical-alt me-2" />
                                 <h:outputLabel value="Result" for="sRst" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu id="sRst" class="w-100 " >
@@ -179,32 +198,67 @@
 
                         </h:panelGrid>
 
-                        <div class="d-flex align-items-center my-4">
+                        <div class="row mb-3">
+                            <div class="col-md-12 d-flex justify-content-start" style="gap:8px">
 
-                            <p:commandButton 
-                                class="ui-button-warning mx-1"
-                                icon="fas fa-cogs"
-                                ajax="false"
-                                value="Process" />
+                                <p:commandButton
+                                    id="btnProcess"
+                                    class="ui-button-warning my-4 mx-2"
+                                    style="width: 100px"
+                                    action="#{reportsController.turnAroundTimeHourlyReport}"
+                                    ajax="false"
+                                    value="Process"
+                                    icon="fas fa-cogs"/>
 
-                            <p:commandButton 
-                                class="ui-button-primary mx-1"
-                                icon="fas fa-print"
-                                ajax="false"
-                                value="Print All" />
+                                <p:commandButton
+                                    id="btnPrint"
+                                    class="ui-button-info my-4 mx-2"
+                                    style="width: 100px"
+                                    icon="fas fa-print"
+                                    ajax="false"
+                                    value="Print"
+                                    onclick="hidePaginatorBeforePrint()"/>
 
-                            <p:commandButton 
-                                class="ui-button-success mx-1"
-                                icon="fas fa-file-excel"
-                                ajax="false"
-                                value="Download" />
+                                <h:outputScript>
+                                    function hidePaginatorBeforePrint() {
+                                    let paginators = document.querySelectorAll('.ui-paginator');
+                                    paginators.forEach(el => el.style.display = 'none');
+                                    }
 
-                            <p:commandButton 
-                                class="ui-button-danger mx-1"
-                                icon="fas fa-file-pdf"
-                                ajax="false"
-                                value="PDF" />
+                                    function restorePaginatorAfterPrint() {
+                                    let paginators = document.querySelectorAll('.ui-paginator');
+                                    paginators.forEach(el => el.style.display = '');
+                                    }
 
+                                    window.onafterprint = function () {
+                                    restorePaginatorAfterPrint();
+                                    };
+                                </h:outputScript>
+
+                                <p:commandButton
+                                    id="btnExcel"
+                                    class="ui-button-success my-4 mx-2"
+                                    style="width: 100px"
+                                    icon="fas fa-file-excel"
+                                    ajax="false"
+                                    value="Excel"/>
+                                <!-- <p:dataExporter 
+                                     type="xlsx"
+                                     target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
+                                     fileName="organism_antibioti_sensitivity.xlsx"/>-->
+
+                                <p:commandButton
+                                    id="btnPdf"
+                                    class="ui-button-danger my-4 mx-2"
+                                    style="width: 100px"
+                                    icon="fas fa-file-pdf"
+                                    ajax="false"
+                                    value="PDF"/>
+                                <!-- <p:dataExporter 
+                                     type="pdf"
+                                     target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
+                                     fileName="organism_antibiotic_sensitivity.pdf"/>-->
+                            </div>
                         </div>
 
 
@@ -222,7 +276,7 @@
                                 <h:outputText value="">
                                     <f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss"/>
                                 </h:outputText>
-                                
+
                                 <h:outputText value="Institution :" />
                                 <h:outputText value="" />
 
@@ -231,29 +285,29 @@
 
                                 <h:outputText value="Department :" />
                                 <h:outputText value="" />
-                                
+
+                                <h:outputText value="MRN :" />
+                                <h:outputText value="" />
+
                                 <h:outputText value="Laboratory :" />
                                 <h:outputText value="" />
 
                                 <h:outputText value="Investigation :" />
                                 <h:outputText value="" />
-                                
+
                                 <h:outputText value="Parameter :" />
                                 <h:outputText value="" />
-                                
-                                <h:outputText value="Age :" />
-                                <h:outputText value="" />
 
-                                <h:outputText value="Result :" />
-                                <h:outputText value="" />
-
-                                <h:outputText value="Gender :" />
-                                <h:outputText value="" />
-                                
                                 <h:outputText value="Diagnosis :" />
                                 <h:outputText value="" />
 
-                                <h:outputText value="Visit Type :" />
+                                <h:outputText value="Age :" />
+                                <h:outputText value="" />
+
+                                <h:outputText value="Sex :" />
+                                <h:outputText value="" />
+
+                                <h:outputText value="Result :" />
                                 <h:outputText value="" />
 
                             </h:panelGrid>
