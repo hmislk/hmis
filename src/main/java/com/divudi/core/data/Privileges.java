@@ -100,6 +100,10 @@ public enum Privileges {
     InwardSettleFinalBill("Inward Settle Final Bill"),
     InwardSaveProvisionalFinalBill("Inward Save Provisional Final Bill"),
     InwardReport("Inward Report"),
+    InwardLaboratory("Inward Laboratory"),
+    InwardLaboratoryBarcodeGeneration("Inward Laboratory Barcode Generation"),
+    InwardLaboratorySampleManagement("Inward Laboratory Sample Management"),
+    InwardLaboratoryReportSearch("Inward Laboratory Report Search"),
     InwardFinalBillReportEdit("Inward Final Bill Report Edit"),
     InwardAdministration("Inward Administration"),
     InwardFormTemplateAdmin("Inward Form Template Admin"),
@@ -1147,6 +1151,10 @@ public enum Privileges {
             case InwardFormFill:
             case InwardSettleFinalBill:
             case InwardSaveProvisionalFinalBill:
+            case InwardLaboratory:
+            case InwardLaboratoryBarcodeGeneration:
+            case InwardLaboratorySampleManagement:
+            case InwardLaboratoryReportSearch:
             case TheatreSendPatient:
             case TheatreAcceptPatient:
             case TheatreReturnPatient:

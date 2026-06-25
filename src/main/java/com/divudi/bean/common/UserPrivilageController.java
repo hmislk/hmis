@@ -214,6 +214,12 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReport, "Inward Reports"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdministration, "Administration"), inwardNode);
 
+        TreeNode inwardLaboratoryNode = new DefaultTreeNode(new PrivilegeHolder(null, "Laboratory"), inwardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardLaboratory, "Laboratory Dashboard Menu"), inwardLaboratoryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardLaboratoryBarcodeGeneration, "Barcode Generation"), inwardLaboratoryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardLaboratorySampleManagement, "Sample Management"), inwardLaboratoryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardLaboratoryReportSearch, "Report Search"), inwardLaboratoryNode);
+
         TreeNode inwardFormsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Forms"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFormTemplateAdmin, "Form Template Admin"), inwardFormsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFormFill, "Fill / Edit Forms"), inwardFormsNode);
