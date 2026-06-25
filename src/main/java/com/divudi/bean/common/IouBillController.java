@@ -84,6 +84,7 @@ public class IouBillController implements Serializable {
     private List<Payment> settlingIuos;
     private List<Payment> paymentsForsettlingIuos;
     private Payment currentPayment;
+    private Payment removingPayment;
     private boolean printPreview = false;
     private Person newPerson;
     private PaymentMethodData paymentMethodData;
@@ -514,6 +515,23 @@ public class IouBillController implements Serializable {
         calculateTotalsForSettlingIouBill();
         currentPayment = null;
         getCurrentPayment();
+    }
+    
+     public void removePayment() {
+        if (removingPayment == null) {
+            JsfUtil.addErrorMessage("No payment selected to remove");
+            return;
+        }
+        getPaymentsForsettlingIuos().remove(removingPayment);
+        if (!getPaymentsForsettlingIuos().isEmpty()) {
+            calculateTotalsForSettlingIouBill();
+        } else {
+            settlingIouTotal = 0.0;
+            paymentTotal = 0.0;
+            getCurrent().setTotal(0.0);
+            getCurrent().setNetTotal(0.0);
+        }
+        removingPayment = null;
     }
 
     public void settleIouSettlingBill() {
@@ -1175,6 +1193,14 @@ public class IouBillController implements Serializable {
 
     public void setCurrentPayment(Payment currentPayment) {
         this.currentPayment = currentPayment;
+    }
+    
+    public Payment getRemovingPayment() {
+        return removingPayment;
+    }
+
+    public void setRemovingPayment(Payment removingPayment) {
+        this.removingPayment = removingPayment;
     }
 
     public double getSettlingIouTotal() {
