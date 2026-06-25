@@ -3785,7 +3785,8 @@ public class BillSearch implements Serializable {
         loadBillDetails(bill);
         switch (billTypeAtomic) {
             case OPD_BILL_REFUND:
-                return navigateToViewOpdRefundBill();
+                billReturnController.setNewlyReturnedBill(bill);
+                return "/opd/bill_return_print?faces-redirect=true;";
             case OPD_BILL_CANCELLATION:
                 return navigateToManageOpdBill();
             case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
