@@ -696,11 +696,21 @@
 
                     </p:submenu>
 
-                    <p:menuitem  
-                        ajax="false"  
-                        action="/inward/investigation_search_for_reporting_bht?faces-redirect=true" 
-                        value="Investigation Trace" 
+                    <p:menuitem
+                        ajax="false"
+                        action="/inward/investigation_search_for_reporting_bht?faces-redirect=true"
+                        value="Investigation Trace"
                         icon="fa fa-search">
+                    </p:menuitem>
+
+                    <p:menuitem
+                        ajax="false"
+                        id="smInwardLaboratory"
+                        value="Laboratory Dashboard"
+                        title="Inpatient Laboratory Dashboard"
+                        icon="fa fa-fw fa-vials"
+                        rendered="#{webUserController.hasPrivilege('InwardLaboratory')}"
+                        action="#{inwardLaboratoryController.navigateToInwardLaboratoryDashboard()}">
                     </p:menuitem>
 
                     <p:menuitem
