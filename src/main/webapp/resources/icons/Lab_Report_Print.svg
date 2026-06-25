@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad1a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#4338CA;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad1" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#EEF2FF"/>
+  <g filter="url(#shad1)">
+    <!-- Conical flask/beaker body -->
+    <path d="M84 38 L84 72 L52 118 Q48 128 58 132 L142 132 Q152 128 148 118 L116 72 L116 38 Z" fill="url(#grad1a)"/>
+    <!-- Flask neck top -->
+    <rect x="80" y="34" width="40" height="10" rx="5" fill="#4338CA"/>
+    <!-- Liquid in flask -->
+    <path d="M62 122 L138 122 Q144 124 140 128 L60 128 Q56 124 62 122 Z" fill="#818CF8" opacity="0.8"/>
+    <!-- Bubbles in liquid -->
+    <circle cx="82" cy="120" r="4" fill="#EEF2FF" opacity="0.6"/>
+    <circle cx="100" cy="118" r="3" fill="#EEF2FF" opacity="0.6"/>
+    <circle cx="118" cy="121" r="4" fill="#EEF2FF" opacity="0.6"/>
+    <!-- Printer rectangle below -->
+    <rect x="42" y="140" width="116" height="34" rx="6" fill="url(#grad1a)"/>
+    <!-- Printer slot -->
+    <rect x="56" y="148" width="88" height="6" rx="2" fill="#EEF2FF" opacity="0.5"/>
+    <!-- Paper coming out -->
+    <rect x="64" y="168" width="72" height="18" rx="3" fill="#EEF2FF"/>
+    <rect x="70" y="172" width="60" height="4" rx="1" fill="#818CF8" opacity="0.6"/>
+    <rect x="70" y="178" width="44" height="4" rx="1" fill="#818CF8" opacity="0.4"/>
+  </g>
+</svg>

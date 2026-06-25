@@ -187,6 +187,16 @@ public enum Icon {
             IconGroup.INPATIENT_DIRECT_ISSUES
     );
 
+    private static final java.util.Set<IconGroup> OPD_GROUPS = java.util.EnumSet.of(
+            IconGroup.PATIENT_MANAGEMENT,
+            IconGroup.OPD_BILLING,
+            IconGroup.PAYMENTS_AND_REFUNDS,
+            IconGroup.DOCTOR_AND_CHANNEL,
+            IconGroup.LAB_AND_REPORTS,
+            IconGroup.OPD_SUMMARIES,
+            IconGroup.CASHIER
+    );
+
     private final String label;
     private final IconGroup iconGroup;
 
@@ -205,11 +215,14 @@ public enum Icon {
 
     /**
      * Returns the image filename for this icon.
-     * All inpatient-group icons use .svg; icons from Patient_Deposit_Management
-     * onwards also use .svg; all others use .png (legacy format).
+     * Inpatient-group icons use teal .svg; OPD/Cashier-group icons use indigo/amber .svg;
+     * icons from Patient_Deposit_Management onwards also use .svg; all others use .png (legacy).
      */
     public String getImage() {
         if (iconGroup != null && INPATIENT_GROUPS.contains(iconGroup)) {
+            return this.name() + ".svg";
+        }
+        if (iconGroup != null && OPD_GROUPS.contains(iconGroup)) {
             return this.name() + ".svg";
         }
         if (this.ordinal() >= Patient_Deposit_Management.ordinal()) {

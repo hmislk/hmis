@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad1a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#4338CA;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad1" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#EEF2FF"/>
+  <g filter="url(#shad1)">
+    <!-- Stethoscope earpiece -->
+    <circle cx="62" cy="48" r="11" fill="url(#grad1a)"/>
+    <circle cx="62" cy="48" r="6" fill="#EEF2FF"/>
+    <!-- Stethoscope tube -->
+    <path d="M62 59 Q62 90 88 92 Q108 94 108 118" fill="none" stroke="url(#grad1a)" stroke-width="7" stroke-linecap="round"/>
+    <!-- Chest piece small -->
+    <circle cx="108" cy="132" r="12" fill="url(#grad1a)"/>
+    <circle cx="108" cy="132" r="7" fill="#EEF2FF"/>
+    <circle cx="108" cy="132" r="3" fill="#818CF8"/>
+    <!-- Clock circle overlapping bottom-right -->
+    <circle cx="148" cy="140" r="32" fill="url(#grad1a)"/>
+    <circle cx="148" cy="140" r="24" fill="#EEF2FF"/>
+    <!-- Clock hands -->
+    <line x1="148" y1="140" x2="148" y2="122" stroke="#4F46E5" stroke-width="3" stroke-linecap="round"/>
+    <line x1="148" y1="140" x2="160" y2="148" stroke="#4F46E5" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="148" cy="140" r="3" fill="#4338CA"/>
+    <!-- Clock ticks -->
+    <line x1="148" y1="118" x2="148" y2="122" stroke="#818CF8" stroke-width="2"/>
+    <line x1="148" y1="158" x2="148" y2="162" stroke="#818CF8" stroke-width="2"/>
+    <line x1="126" y1="140" x2="122" y2="140" stroke="#818CF8" stroke-width="2"/>
+    <line x1="170" y1="140" x2="174" y2="140" stroke="#818CF8" stroke-width="2"/>
+  </g>
+</svg>
