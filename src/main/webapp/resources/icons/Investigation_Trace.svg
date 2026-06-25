@@ -1,43 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <defs>
-    <linearGradient id="grad43a" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0E7490;stop-opacity:1"/>
-      <stop offset="100%" style="stop-color:#155E75;stop-opacity:1"/>
+    <linearGradient id="grad1a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#4338CA;stop-opacity:1"/>
     </linearGradient>
-    <filter id="shad43" x="-20%" y="-20%" width="140%" height="140%">
+    <filter id="shad1" x="-20%" y="-20%" width="140%" height="140%">
       <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
       <feOffset dx="1" dy="1" result="offsetblur"/>
       <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
       <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
-  <circle cx="100" cy="100" r="95" fill="#F0FDFA"/>
-  <g filter="url(#shad43)">
-    <!-- Test tube (left, angled) -->
-    <g transform="rotate(20 65 110)">
-      <rect x="54" y="50" width="22" height="80" rx="4" fill="url(#grad43a)"/>
-      <rect x="50" y="44" width="30" height="14" rx="4" fill="#155E75"/>
-      <!-- Liquid in tube -->
-      <rect x="54" y="108" width="22" height="22" rx="0" fill="#22D3EE" opacity="0.85"/>
-      <ellipse cx="65" cy="130" rx="11" ry="4" fill="#22D3EE"/>
-      <!-- Bubble -->
-      <circle cx="60" cy="118" r="3" fill="white" opacity="0.5"/>
-    </g>
-    <!-- Microscope (center-right) -->
-    <!-- Base -->
-    <rect x="100" y="152" width="68" height="12" rx="5" fill="url(#grad43a)"/>
-    <!-- Column -->
-    <rect x="128" y="90" width="12" height="65" rx="4" fill="url(#grad43a)"/>
-    <!-- Stage arm -->
-    <rect x="100" y="110" width="40" height="10" rx="4" fill="url(#grad43a)"/>
-    <!-- Objective -->
-    <rect x="125" y="65" width="18" height="32" rx="5" fill="#155E75"/>
-    <circle cx="134" cy="98" r="8" fill="url(#grad43a)"/>
-    <!-- Eyepiece -->
-    <rect x="130" y="48" width="8" height="20" rx="4" fill="url(#grad43a)"/>
-    <!-- Magnifying glass overlay -->
-    <circle cx="110" cy="78" r="22" fill="none" stroke="#22D3EE" stroke-width="5"/>
-    <circle cx="110" cy="78" r="14" fill="#F0FDFA" opacity="0.6"/>
-    <line x1="126" y1="94" x2="134" y2="102" stroke="#22D3EE" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="100" cy="100" r="95" fill="#EEF2FF"/>
+  <g filter="url(#shad1)">
+    <!-- Microscope base -->
+    <rect x="60" y="155" width="80" height="14" rx="6" fill="url(#grad1a)"/>
+    <!-- Arm vertical post -->
+    <rect x="90" y="80" width="14" height="80" rx="5" fill="url(#grad1a)"/>
+    <!-- Stage (horizontal platform) -->
+    <rect x="68" y="120" width="64" height="10" rx="4" fill="#4338CA"/>
+    <!-- Eyepiece tube angled -->
+    <rect x="75" y="44" width="12" height="48" rx="6" fill="url(#grad1a)" transform="rotate(-15, 81, 68)"/>
+    <!-- Eyepiece top cap -->
+    <ellipse cx="72" cy="42" rx="10" ry="6" fill="#4338CA"/>
+    <!-- Objective lens -->
+    <rect x="92" y="128" width="10" height="20" rx="5" fill="#818CF8"/>
+    <!-- Sample on stage -->
+    <circle cx="97" cy="115" r="8" fill="#EEF2FF" stroke="#818CF8" stroke-width="2"/>
+    <circle cx="97" cy="115" r="3" fill="#818CF8"/>
   </g>
 </svg>

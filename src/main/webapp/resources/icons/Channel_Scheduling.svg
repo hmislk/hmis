@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad1a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#4338CA;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad1" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#EEF2FF"/>
+  <g filter="url(#shad1)">
+    <!-- 3x3 time-slot grid with alternating filled/empty -->
+    <!-- Background panel -->
+    <rect x="38" y="46" width="124" height="110" rx="8" fill="url(#grad1a)"/>
+    <!-- Header bar -->
+    <rect x="38" y="46" width="124" height="20" rx="8" fill="#4338CA"/>
+    <rect x="38" y="56" width="124" height="10" fill="#4338CA"/>
+    <!-- Row 1: filled, empty, filled -->
+    <rect x="48" y="74" width="32" height="24" rx="4" fill="#818CF8"/>
+    <rect x="86" y="74" width="32" height="24" rx="4" fill="#EEF2FF" opacity="0.4"/>
+    <rect x="124" y="74" width="32" height="24" rx="4" fill="#818CF8"/>
+    <!-- Row 2: empty, filled, empty -->
+    <rect x="48" y="104" width="32" height="24" rx="4" fill="#EEF2FF" opacity="0.4"/>
+    <rect x="86" y="104" width="32" height="24" rx="4" fill="#818CF8"/>
+    <rect x="124" y="104" width="32" height="24" rx="4" fill="#EEF2FF" opacity="0.4"/>
+    <!-- Row 3: filled, empty, filled -->
+    <rect x="48" y="134" width="32" height="14" rx="4" fill="#818CF8"/>
+    <rect x="86" y="134" width="32" height="14" rx="4" fill="#EEF2FF" opacity="0.4"/>
+    <rect x="124" y="134" width="32" height="14" rx="4" fill="#818CF8"/>
+  </g>
+</svg>
