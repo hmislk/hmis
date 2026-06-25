@@ -516,8 +516,8 @@ public class IouBillController implements Serializable {
         currentPayment = null;
         getCurrentPayment();
     }
-    
-     public void removePayment() {
+
+    public void removePayment() {
         if (removingPayment == null) {
             JsfUtil.addErrorMessage("No payment selected to remove");
             return;
@@ -527,11 +527,15 @@ public class IouBillController implements Serializable {
             calculateTotalsForSettlingIouBill();
         } else {
             settlingIouTotal = 0.0;
+            if (settlingIuos != null) {
+                for (Payment pout : settlingIuos) {
+                    settlingIouTotal += pout.getPaidValue();
+                }
+            }
             paymentTotal = 0.0;
             getCurrent().setTotal(0.0);
             getCurrent().setNetTotal(0.0);
         }
-        removingPayment = null;
     }
 
     public void settleIouSettlingBill() {
@@ -558,8 +562,8 @@ public class IouBillController implements Serializable {
         drawerController.updateDrawerForOuts(getSettlingIuos());
         drawerController.updateDrawerForIns(getPaymentsForsettlingIuos());
         JsfUtil.addSuccessMessage("IOU Settled Successfully");
-        settlingIuos=null;
-        myIousToSettle=null;
+        settlingIuos = null;
+        myIousToSettle = null;
         printPreview = true;
 
     }
@@ -612,9 +616,9 @@ public class IouBillController implements Serializable {
                 pmd);
         drawerController.updateDrawerForOuts(paymentOuts);
         drawerController.updateDrawerForIns(paymentsIn);
-        paymentsForsettlingIuos=null;
-        myIousToSettle=null;
-        settlingIuos=null;
+        paymentsForsettlingIuos = null;
+        myIousToSettle = null;
+        settlingIuos = null;
         JsfUtil.addSuccessMessage("IOU Created");
         printPreview = true;
 
@@ -988,7 +992,7 @@ public class IouBillController implements Serializable {
         params.put("pm", PaymentMethod.IOU);
         params.put("user", sessionController.getLoggedUser());
         myIousToSettle = paymentFacade.findByJpql(jpql, params);
-        paymentsForsettlingIuos=new ArrayList<>();
+        paymentsForsettlingIuos = new ArrayList<>();
         settlingIuos = new ArrayList<>();
         if (myIousToSettle == null) {
             JsfUtil.addErrorMessage("You do not have any IOUs to settle");
@@ -1194,7 +1198,7 @@ public class IouBillController implements Serializable {
     public void setCurrentPayment(Payment currentPayment) {
         this.currentPayment = currentPayment;
     }
-    
+
     public Payment getRemovingPayment() {
         return removingPayment;
     }
