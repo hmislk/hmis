@@ -2376,6 +2376,35 @@ public class InpatientClinicalDataController implements Serializable {
         }
     }
 
+    /**
+     * Returns a warning string if the given item matches any recorded patient
+     * allergy by VTM, or null if no match. Allergies are stored at VTM level;
+     * the prescribed item may be an AMP/VMP whose vtm field points to the same
+     * VTM. A direct match (item == allergy item) is also caught.
+     */
+    private String getAllergyWarning(Item prescribedItem) {
+        if (prescribedItem == null || patientAllergies == null || patientAllergies.isEmpty()) {
+            return null;
+        }
+        for (ClinicalFindingValue allergy : patientAllergies) {
+            if (allergy == null || allergy.getItemValue() == null) {
+                continue;
+            }
+            Item allergenVtm = allergy.getItemValue();
+            // Direct match
+            if (allergenVtm.getId() != null && allergenVtm.getId().equals(prescribedItem.getId())) {
+                return prescribedItem.getName() + " matches recorded allergy: " + allergenVtm.getName();
+            }
+            // VTM-level match: prescribed item's vtm equals the recorded allergen
+            if (prescribedItem.getVtm() != null
+                    && allergenVtm.getId() != null
+                    && allergenVtm.getId().equals(prescribedItem.getVtm().getId())) {
+                return prescribedItem.getName() + " matches recorded allergy: " + allergenVtm.getName();
+            }
+        }
+        return null;
+    }
+
     public void addAdmissionWardMedicine() {
         if (parentAdmission == null || parentAdmission.getId() == null) {
             JsfUtil.addErrorMessage("No admission selected.");
@@ -2384,6 +2413,10 @@ public class InpatientClinicalDataController implements Serializable {
         if (getAdmissionWardMedicine().getPrescription().getItem() == null) {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
+        }
+        String allergyWarning = getAllergyWarning(getAdmissionWardMedicine().getPrescription().getItem());
+        if (allergyWarning != null) {
+            JsfUtil.addWarningMessage("ALLERGY ALERT: " + allergyWarning);
         }
         Prescription rx = getAdmissionWardMedicine().getPrescription();
         rx.setEncounter(parentAdmission);
@@ -3124,6 +3157,10 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
         }
+        String allergyWarning = getAllergyWarning(getPatientMedicine().getPrescription().getItem());
+        if (allergyWarning != null) {
+            JsfUtil.addWarningMessage("ALLERGY ALERT: " + allergyWarning);
+        }
         getPatientMedicine().setPatient(patient);
         getPatientMedicine().setClinicalFindingValueType(ClinicalFindingValueType.PatientMedicine);
         prescriptionFacade.create(getPatientMedicine().getPrescription());
@@ -3141,6 +3178,10 @@ public class InpatientClinicalDataController implements Serializable {
         if (getEncounterMedicine().getPrescription().getItem() == null) {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
+        }
+        String allergyWarning = getAllergyWarning(getEncounterMedicine().getPrescription().getItem());
+        if (allergyWarning != null) {
+            JsfUtil.addWarningMessage("ALLERGY ALERT: " + allergyWarning);
         }
         getEncounterMedicine().setEncounter(current);
         getEncounterMedicine().setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
