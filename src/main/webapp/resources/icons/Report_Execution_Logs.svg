@@ -1,33 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <defs>
-    <linearGradient id="grad1a" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1"/>
-      <stop offset="100%" style="stop-color:#4338CA;stop-opacity:1"/>
+    <linearGradient id="grel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06B6D4;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#0891B2;stop-opacity:1"/>
     </linearGradient>
-    <filter id="shad1" x="-20%" y="-20%" width="140%" height="140%">
+    <filter id="shrel" x="-20%" y="-20%" width="140%" height="140%">
       <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
       <feOffset dx="1" dy="1" result="offsetblur"/>
       <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
       <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
-  <circle cx="100" cy="100" r="95" fill="#EEF2FF"/>
-  <g filter="url(#shad1)">
-    <!-- Document page -->
-    <rect x="38" y="38" width="118" height="140" rx="7" fill="url(#grad1a)"/>
-    <!-- Page fold top-right -->
-    <path d="M128 38 L156 38 L156 66 Z" fill="#4338CA"/>
-    <path d="M128 38 L128 66 L156 66" fill="#EEF2FF" opacity="0.2"/>
-    <!-- Text lines -->
-    <rect x="52" y="70" width="88" height="8" rx="3" fill="#EEF2FF" opacity="0.9"/>
-    <rect x="52" y="86" width="72" height="8" rx="3" fill="#EEF2FF" opacity="0.9"/>
-    <rect x="52" y="102" width="82" height="8" rx="3" fill="#EEF2FF" opacity="0.9"/>
-    <rect x="52" y="118" width="60" height="8" rx="3" fill="#EEF2FF" opacity="0.7"/>
-    <!-- Clock icon at top-right corner -->
-    <circle cx="148" cy="55" r="18" fill="#818CF8"/>
-    <circle cx="148" cy="55" r="12" fill="#EEF2FF"/>
-    <line x1="148" y1="55" x2="148" y2="46" stroke="#4F46E5" stroke-width="2" stroke-linecap="round"/>
-    <line x1="148" y1="55" x2="154" y2="59" stroke="#4F46E5" stroke-width="2" stroke-linecap="round"/>
-    <circle cx="148" cy="55" r="2" fill="#4338CA"/>
+  <circle cx="100" cy="100" r="95" fill="#ECFEFF"/>
+  <g filter="url(#shrel)">
+
+    <rect x="50" y="46" width="90" height="114" rx="8" fill="url(#grel)"/>
+    <polygon points="118,46 140,68 118,68" fill="#0891B2"/>
+    <rect x="50" y="46" width="68" height="114" rx="8" fill="url(#grel)"/>
+    <rect x="50" y="46" width="90" height="114" rx="8" fill="url(#grel)" opacity="0.88"/>
+    <rect x="65" y="65" width="70" height="6" rx="2" fill="white"/>
+    <rect x="65" y="77" width="54" height="6" rx="2" fill="white" opacity="0.8"/>
+    <rect x="65" y="89" width="62" height="6" rx="2" fill="white" opacity="0.7"/>
+    <rect x="65" y="101" width="44" height="6" rx="2" fill="white" opacity="0.6"/>
+    <circle cx="130" cy="145" r="22" fill="#ECFEFF"/>
+    <circle cx="130" cy="145" r="15" fill="none" stroke="#06B6D4" stroke-width="4"/>
+    <line x1="130" y1="145" x2="130" y2="134" stroke="#06B6D4" stroke-width="3" stroke-linecap="round"/>
+    <line x1="130" y1="145" x2="138" y2="150" stroke="#06B6D4" stroke-width="3" stroke-linecap="round"/>
+
   </g>
 </svg>

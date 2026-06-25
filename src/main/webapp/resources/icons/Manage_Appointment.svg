@@ -1,39 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <defs>
-    <linearGradient id="grad8a" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0E7490;stop-opacity:1"/>
-      <stop offset="100%" style="stop-color:#155E75;stop-opacity:1"/>
+    <linearGradient id="gmap" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1"/>
     </linearGradient>
-    <filter id="shad8" x="-20%" y="-20%" width="140%" height="140%">
+    <filter id="shmap" x="-20%" y="-20%" width="140%" height="140%">
       <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
       <feOffset dx="1" dy="1" result="offsetblur"/>
       <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
       <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
-  <circle cx="100" cy="100" r="95" fill="#F0FDFA"/>
-  <g filter="url(#shad8)">
-    <!-- Calendar body -->
-    <rect x="35" y="48" width="130" height="110" rx="8" fill="url(#grad8a)"/>
-    <rect x="35" y="48" width="130" height="30" rx="8" fill="#155E75"/>
-    <rect x="35" y="65" width="130" height="13" fill="#155E75"/>
-    <!-- Binding tabs -->
-    <rect x="60" y="38" width="10" height="20" rx="5" fill="white" opacity="0.9"/>
-    <rect x="130" y="38" width="10" height="20" rx="5" fill="white" opacity="0.9"/>
-    <!-- Calendar rows -->
-    <line x1="35" y1="98" x2="165" y2="98" stroke="white" stroke-width="0.8" opacity="0.25"/>
-    <line x1="35" y1="118" x2="165" y2="118" stroke="white" stroke-width="0.8" opacity="0.25"/>
-    <line x1="35" y1="138" x2="165" y2="138" stroke="white" stroke-width="0.8" opacity="0.25"/>
-    <!-- Day cells with checkmarks -->
-    <rect x="50" y="104" width="18" height="14" rx="3" fill="white" opacity="0.5"/>
-    <rect x="78" y="104" width="18" height="14" rx="3" fill="#22D3EE"/>
-    <rect x="106" y="104" width="18" height="14" rx="3" fill="white" opacity="0.5"/>
-    <rect x="134" y="104" width="18" height="14" rx="3" fill="white" opacity="0.5"/>
-    <!-- Checkmark on highlighted cell -->
-    <path d="M81 111 L85 115 L91 108" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- Large checkmark overlay -->
-    <circle cx="148" cy="148" r="22" fill="white"/>
-    <circle cx="148" cy="148" r="18" fill="#22D3EE"/>
-    <path d="M137 148 L145 156 L160 140" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="100" cy="100" r="95" fill="#ECFDF5"/>
+  <g filter="url(#shmap)">
+
+    <rect x="46" y="70" width="108" height="92" rx="8" fill="url(#gmap)"/>
+    <rect x="46" y="70" width="108" height="26" rx="8" fill="#059669"/>
+    <rect x="46" y="86" width="108" height="10" fill="#059669"/>
+    <rect x="68" y="61" width="12" height="22" rx="5" fill="#6EE7B7"/>
+    <rect x="120" y="61" width="12" height="22" rx="5" fill="#6EE7B7"/>
+    <circle cx="100" cy="114" r="15" fill="white"/>
+    <path d="M74 158 Q74 140 100 140 Q126 140 126 158 L126 162 L74 162 Z" fill="white"/>
+
   </g>
 </svg>

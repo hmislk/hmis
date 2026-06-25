@@ -143,7 +143,7 @@
                             action="#{pharmacyController.navigateToPharmacyAnalytics()}"
                             ajax="false" 
                             styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_analytics.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Pharmacy Analytics"/>
                         </p:commandLink>
                     </h:form>
@@ -600,7 +600,7 @@
 
                             actionListener="#{pharmacySaleController.resetAll()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/cart-shopping-solid.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_sale.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Pharmacy - Retail Sale" />
                         </p:commandLink>
                     </h:form>
@@ -617,7 +617,7 @@
                             action="#{pharmacySaleForCashierController.navigateToPharmacyBillForCashier()}" 
 
                             actionListener="#{pharmacySaleController.resetAll()}" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/cashier.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_sale_for_cashier.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Retail Sale for cashier"  />
                         </p:commandLink>
                     </h:form>
@@ -633,7 +633,7 @@
                             action="#{pharmacySaleController.navigateToPharmacySaleWithoutStocks}"
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_sale_without_stock.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Sale without Stocks" />
                         </p:commandLink>
                     </h:form>
@@ -650,7 +650,7 @@
                             actionListener="#{searchController.makeListNull}"
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_Search_sale_bill.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Sale Bill" />
                         </p:commandLink>
                     </h:form>
@@ -666,7 +666,7 @@
                             actionListener="#{searchController.makeListNull}"
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_search_sale_pre_bill.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Sale Pre Bill" />
                         </p:commandLink>
                     </h:form>
@@ -682,7 +682,7 @@
                             actionListener="#{searchController.makeListNull}" 
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_search_sale_bill_item.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Sale Bill Items" />
                         </p:commandLink>
                     </h:form>
@@ -699,7 +699,7 @@
                             actionListener="#{searchController.makeListNull}"   
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_return_items_only.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Return - Items Only" />
                         </p:commandLink>
                     </h:form>
@@ -716,7 +716,7 @@
                             actionListener="#{searchController.makeListNull}"   
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_return_items_and_payments.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Return - Items and Payments" />
                         </p:commandLink>
                     </h:form>
@@ -733,7 +733,7 @@
                             actionListener="#{searchController.makeListNull}"
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_search_return_bill.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Return Bill (Item)" />
                         </p:commandLink>
                     </h:form>
@@ -751,7 +751,7 @@
 
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_add_to_stock.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Add To Stock" />
                         </p:commandLink>
                     </h:form>
@@ -1280,7 +1280,7 @@
                             action="/pharmacy/pharmacy_issue?faces-redirect=true"  
                             actionListener="#{pharmacyIssueController.resetAll()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_issue.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Issue" />
                         </p:commandLink>
                     </h:form>
@@ -1296,7 +1296,7 @@
                             action="/pharmacy/pharmacy_issue?faces-redirect=true"
                             actionListener="#{pharmacyIssueController.resetAll()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-disposal-issue.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_disposal_issue.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Pharmacy Disposal - Direct Issue" />
                         </p:commandLink>
                     </h:form>
@@ -1312,7 +1312,7 @@
                             actionListener="#{searchController.makeListNull}"
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_search_issue_bill.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Issue Bill" />
                         </p:commandLink>
                     </h:form>
@@ -1329,7 +1329,7 @@
                             actionListener="#{searchController.makeListNull}"   
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_search_issue_bill_items.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Issue Bill Items" />
                         </p:commandLink>
                     </h:form>
@@ -1346,7 +1346,7 @@
                             actionListener="#{searchController.makeListNull}" 
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_search_issue_return_bill.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Issue Return Bill" />
                         </p:commandLink>
                     </h:form>
@@ -1361,7 +1361,7 @@
                             ajax="false" 
                             action="/store/issue_rate_margin_manager?faces-redirect=true" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_uint_issue_margin.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Unit Issue Margin" />
                         </p:commandLink>
                     </h:form>
@@ -1378,7 +1378,7 @@
                             actionListener="#{searchController.makeListNull()}" 
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_request.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Request" />
                         </p:commandLink>
                     </h:form>
@@ -1395,7 +1395,7 @@
                             actionListener="#{searchController.makeListNull()}" 
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_issue_for_request.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Issue for Requests" />
                         </p:commandLink>
                     </h:form>
@@ -1412,7 +1412,7 @@
                             actionListener="#{transferIssueDirectController.makeNull()}" 
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_direct_issue.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Direct Issue" />
                         </p:commandLink>
                     </h:form>
@@ -1429,7 +1429,7 @@
                             actionListener="#{searchController.makeListNull()}" 
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_receive.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Receive" />
                         </p:commandLink>
                     </h:form>
@@ -1446,7 +1446,7 @@
                             actionListener="#{searchController.makeListNull()}" 
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_disbursement_reports.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Reports" />
                         </p:commandLink>
                     </h:form>
@@ -1712,7 +1712,7 @@
                             actionListener="#{billSearch.recreateModel}" 
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_item_search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Item Search" />
                         </p:commandLink>
                     </h:form>
@@ -1728,7 +1728,7 @@
                             action="/pharmacy/pharmacy_search?faces-redirect=true"
                             actionListener="#{billSearch.recreateModel}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-bill-search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_bill_search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Pharmacy Bill Search" />
                         </p:commandLink>
                     </h:form>
@@ -1744,7 +1744,7 @@
                             action="#{searchController.navigateToPharmacyBillSearch}"
                             actionListener="#{billSearch.recreateModel}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-bill-search-new.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_bill_search_new.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Pharmacy Bill Search (New)" />
                         </p:commandLink>
                     </h:form>
@@ -1760,7 +1760,7 @@
                             action="/pharmacy/pharmacy_reports_index?faces-redirect=true"
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/reports.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_generate_report.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Generate Reports" />
                         </p:commandLink>
                     </h:form>
@@ -1819,7 +1819,7 @@
                             action="/pharmacy/pharmacy_summery_index?faces-redirect=true"
 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/summary-report.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="pharmacy_summary_views.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Summary Views" />
                         </p:commandLink>
                     </h:form>
