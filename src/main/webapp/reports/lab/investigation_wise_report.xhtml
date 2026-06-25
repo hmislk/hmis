@@ -215,9 +215,9 @@
                                     class="ui-button-info my-4 mx-2"
                                     style="width: 100px"
                                     icon="fas fa-print"
-                                    ajax="false"
+                                    type="button"
                                     value="Print"
-                                    onclick="hidePaginatorBeforePrint()"/>
+                                    onclick="hidePaginatorBeforePrint(); window.print(); return false;"/>
 
                                 <h:outputScript>
                                     function hidePaginatorBeforePrint() {
@@ -230,9 +230,7 @@
                                     paginators.forEach(el => el.style.display = '');
                                     }
 
-                                    window.onafterprint = function () {
-                                    restorePaginatorAfterPrint();
-                                    };
+                                    window.addEventListener('afterprint', restorePaginatorAfterPrint);
                                 </h:outputScript>
 
                                 <p:commandButton
