@@ -1,8 +1,12 @@
 package com.divudi.service;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.OptionValueType;
 import com.divudi.core.entity.AiMessage;
+import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.ConfigOption;
+import com.divudi.core.facade.ApiKeyFacade;
 import com.divudi.core.facade.ConfigOptionFacade;
 import java.io.Serializable;
 import java.io.StringReader;
@@ -21,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -40,6 +45,12 @@ public class AnthropicApiService implements Serializable {
 
     @EJB
     private ConfigOptionFacade configOptionFacade;
+
+    @EJB
+    private ApiKeyFacade apiKeyFacade;
+
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
 
     // -------------------------------------------------------------------------
     // Public API
@@ -306,6 +317,30 @@ public class AnthropicApiService implements Serializable {
                                         .add("type", "string")
                                         .add("description", "Keyword to search in config option keys (case-insensitive)")))
                         .add("required", Json.createArrayBuilder().add("keyword")))
+                .build();
+
+        JsonObject manageConfigOptionTool = Json.createObjectBuilder()
+                .add("name", "manage_config_option")
+                .add("description",
+                        "Read or update a single HMIS application configuration option by its exact key. "
+                        + "Use GET to read the current value; use PUT to update it (flushes in-memory cache immediately). "
+                        + "The option must already exist — this tool does not create new keys. "
+                        + "Sensitive values (API keys, passwords, tokens) are masked on reads. "
+                        + "Use search_config_options first if you need to discover the exact key name.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("GET").add("PUT"))
+                                        .add("description", "HTTP method: GET to read, PUT to update"))
+                                .add("key", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Exact config option key (case-sensitive)"))
+                                .add("value", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "New value (required for PUT)")))
+                        .add("required", Json.createArrayBuilder().add("method").add("key")))
                 .build();
 
         JsonObject clinicalMetadataTool = Json.createObjectBuilder()
@@ -1344,6 +1379,7 @@ public class AnthropicApiService implements Serializable {
                 .add(searchCodeTool)
                 .add(fetchFileTool)
                 .add(searchConfigTool)
+                .add(manageConfigOptionTool)
                 .add(clinicalMetadataTool)
                 .add(collectingCentreFeesTool)
                 .add(inwardDiscountMatrixTool)
@@ -1392,6 +1428,12 @@ public class AnthropicApiService implements Serializable {
                 case "search_config_options": {
                     String keyword = toolInput.getString("keyword", "");
                     return searchConfigOptions(keyword);
+                }
+                case "manage_config_option": {
+                    String method = toolInput.getString("method", "GET");
+                    String key    = toolInput.containsKey("key")   ? toolInput.getString("key", "")   : "";
+                    String value  = toolInput.containsKey("value") ? toolInput.getString("value", "") : null;
+                    return manageConfigOption(method, key, value, hmisApiKey);
                 }
                 case "manage_clinical_metadata": {
                     String method = toolInput.getString("method", "GET");
@@ -1849,6 +1891,136 @@ public class AnthropicApiService implements Serializable {
             LOG.log(Level.WARNING, "Config option search failed", e);
             return "Config search error: " + e.getMessage();
         }
+    }
+
+    private String manageConfigOption(String method, String key, String newValue, String hmisApiKey) {
+        if (key == null || key.trim().isEmpty()) {
+            return "Error: key is required.";
+        }
+        String normalizedMethod = method == null ? "GET" : method.trim().toUpperCase();
+        if (!"GET".equals(normalizedMethod) && !"PUT".equals(normalizedMethod)) {
+            return "Error: Unknown method '" + method + "'. Supported: GET, PUT";
+        }
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("scope", OptionScope.APPLICATION);
+            params.put("k", key);
+            ConfigOption option = configOptionFacade.findFirstByJpql(
+                    "SELECT o FROM ConfigOption o WHERE o.retired = false AND o.scope = :scope AND o.optionKey = :k",
+                    params);
+
+            if ("PUT".equals(normalizedMethod)) {
+                if (newValue == null) {
+                    return "Error: value is required for PUT.";
+                }
+                if (option == null) {
+                    return "Error: config option not found: " + key;
+                }
+                String oldValue = option.getOptionValue();
+                OptionValueType vt = option.getValueType();
+                String validationError = validateTypedValue(vt, newValue);
+                if (validationError != null) {
+                    return validationError;
+                }
+                applyTypedUpdate(key, newValue, option, vt);
+
+                String callerName = resolveCallerName(hmisApiKey);
+                LOG.log(Level.INFO,
+                        "CONFIG_UPDATED via AI Chat tool key=[{0}] old=[{1}] new=[{2}] by=[{3}] at=[{4}]",
+                        new Object[]{key,
+                            maskSensitiveValue(key, oldValue),
+                            maskSensitiveValue(key, newValue),
+                            callerName,
+                            new java.util.Date()});
+                return "Config option updated.\nKey: " + key
+                        + "\nOld value: " + maskSensitiveValue(key, oldValue)
+                        + "\nNew value: " + maskSensitiveValue(key, newValue)
+                        + "\nUpdated by: " + callerName;
+            }
+
+            // GET
+            if (option == null) {
+                return "Config option not found: " + key;
+            }
+            String value = maskSensitiveValue(option.getOptionKey(), option.getOptionValue());
+            if (value != null && value.length() > 500) {
+                value = value.substring(0, 500) + "... (truncated)";
+            }
+            return "Key: " + option.getOptionKey() + "\nType: " + option.getValueType()
+                    + "\nScope: " + option.getScope() + "\nValue: " + value;
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "manage_config_option failed", e);
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    private String validateTypedValue(OptionValueType vt, String newValue) {
+        if (vt == null) {
+            return null;
+        }
+        switch (vt) {
+            case BOOLEAN:
+                if (!"true".equalsIgnoreCase(newValue.trim()) && !"false".equalsIgnoreCase(newValue.trim())) {
+                    return "Error: Value '" + newValue + "' is not a valid boolean (must be true or false).";
+                }
+                break;
+            case INTEGER:
+                try {
+                    Integer.parseInt(newValue.trim());
+                } catch (NumberFormatException e) {
+                    return "Error: Value '" + newValue + "' is not a valid integer.";
+                }
+                break;
+            case LONG:
+                try {
+                    Long.parseLong(newValue.trim());
+                } catch (NumberFormatException e) {
+                    return "Error: Value '" + newValue + "' is not a valid long integer.";
+                }
+                break;
+            case DOUBLE:
+                try {
+                    Double.parseDouble(newValue.trim());
+                } catch (NumberFormatException e) {
+                    return "Error: Value '" + newValue + "' is not a valid number.";
+                }
+                break;
+            default:
+                break;
+        }
+        return null;
+    }
+
+    private void applyTypedUpdate(String key, String newValue, ConfigOption option, OptionValueType vt) {
+        if (vt == OptionValueType.LONG_TEXT) {
+            configOptionApplicationController.setLongTextValueByKey(key, newValue);
+        } else if (vt == OptionValueType.BOOLEAN) {
+            configOptionApplicationController.setBooleanValueByKey(key, Boolean.parseBoolean(newValue.trim()));
+        } else if (vt == OptionValueType.INTEGER) {
+            configOptionApplicationController.setIntegerValueByKey(key, Integer.parseInt(newValue.trim()));
+        } else {
+            option.setOptionValue(newValue);
+            configOptionFacade.edit(option);
+            configOptionApplicationController.loadApplicationOptions();
+        }
+    }
+
+    private String resolveCallerName(String hmisApiKey) {
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "AI Chat (user unknown)";
+        }
+        try {
+            Map<String, Object> p = new HashMap<>();
+            p.put("k", hmisApiKey);
+            ApiKey ak = apiKeyFacade.findFirstByJpql(
+                    "SELECT a FROM ApiKey a WHERE a.keyValue = :k AND a.retired = false", p);
+            if (ak != null && ak.getWebUser() != null) {
+                return ak.getWebUser().getName() + " (AI Chat)";
+            }
+        } catch (Exception e) {
+            LOG.log(Level.FINE, "Could not resolve caller name from hmisApiKey", e);
+        }
+        return "AI Chat (user unknown)";
     }
 
     private String maskSensitiveValue(String key, String value) {
