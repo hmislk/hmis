@@ -119,6 +119,7 @@ public class SmsManagerEjb {
         minCreatedAt.add(Calendar.HOUR_OF_DAY, -24);
 
         String jpql = "Select e from Sms e where e.pending=true and e.retired=false "
+                + "and (e.sentSuccessfully is null or e.sentSuccessfully = false) "
                 + "and e.smsType = :smsType and e.createdAt between :from and :to";
         Map<String, Object> params = new HashMap<>();
         params.put("from", minCreatedAt.getTime());
@@ -158,7 +159,7 @@ public class SmsManagerEjb {
 
     // Schedule sendSmsToDoctorsBeforeSession to run every 30 minutes
     @SuppressWarnings("unused")
-    @Schedule(second = "*", minute = "*/1", hour = "*", persistent = false)
+    @Schedule(second = "0", minute = "*/1", hour = "*", persistent = false)
     public void sendSmsToDoctorsBeforeSessionTimer() {
         if (doNotSendAnySms) {
             return;
