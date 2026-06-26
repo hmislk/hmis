@@ -36,6 +36,8 @@ import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.clinical.Prescription;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.facade.ItemBatchFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientFacade;
@@ -111,6 +113,8 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
     private PharmacyService pharmacyService;
     @EJB
     private RetailSaleNativeSqlService nativeSqlService;
+    @EJB
+    private com.divudi.service.pharmacy.PharmacySubstituteService pharmacySubstituteService;
     @EJB
     private DiscountSchemeValidationService discountSchemeValidationService;
     @EJB
@@ -908,6 +912,121 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
     public void listnerForPaymentMethodChange() {
         recalculateDiscountsForAll();
         calTotal();
+    }
+
+    // ===================================================================
+    // On-demand substitute (alternative) medicines (issue #21697)
+    // ===================================================================
+    private BillItemData itemDataForSubstitution;
+    private com.divudi.core.data.dto.StockDTO selectedSubstituteStock;
+    private List<com.divudi.core.data.dto.StockDTO> substituteStocks;
+
+    public void prepareSubstitute(BillItemData bid) {
+        itemDataForSubstitution = bid;
+        selectedSubstituteStock = null;
+        substituteStocks = new ArrayList<>();
+        if (bid == null || bid.getItemId() == null) {
+            return;
+        }
+        Item item = itemFacade.find(bid.getItemId());
+        if (item == null) {
+            return;
+        }
+        double requiredQty = Math.abs(bid.getQty());
+        substituteStocks = pharmacySubstituteService.findSubstituteStocks(item, sessionController.getDepartment(), requiredQty);
+    }
+
+    public void replaceSelectedSubstitute() {
+        if (itemDataForSubstitution == null || selectedSubstituteStock == null
+                || selectedSubstituteStock.getStockId() == null) {
+            JsfUtil.addErrorMessage("Please select a substitute stock.");
+            return;
+        }
+
+        com.divudi.core.data.dto.StockDTO sub = selectedSubstituteStock;
+        BillItemData bid = itemDataForSubstitution;
+
+        // Same quantity as the line being substituted. All rate/batch fields come
+        // from the single native lookup already on the DTO - no extra queries.
+        double qty = Math.abs(bid.getQty());
+
+        double batchRetailRate = sub.getRetailRate() != null ? sub.getRetailRate() : 0.0;
+        double batchPurchaseRate = sub.getPurchaseRate() != null ? sub.getPurchaseRate() : 0.0;
+        double batchWholesaleRate = sub.getWholesaleRate() != null ? sub.getWholesaleRate() : 0.0;
+        Double batchCostRate = (sub.getCostRate() != null && sub.getCostRate() > 0) ? sub.getCostRate() : null;
+
+        long ampItemId = resolveAmpItemId(sub.getItemId());
+
+        bid.setItemId(sub.getItemId());
+        bid.setItemName(sub.getItemName());
+        bid.setAmpItemId(ampItemId);
+        bid.setStockId(sub.getStockId());
+        bid.setItemBatchId(sub.getItemBatchId());
+        bid.setPbiQty(-Math.abs(qty));
+        bid.setRetailRate(batchRetailRate);
+        bid.setPurchaseRate(batchPurchaseRate);
+        bid.setWholesaleRate(batchWholesaleRate);
+        bid.setCostRate(batchCostRate != null ? batchCostRate : batchPurchaseRate);
+        bid.setBatchRetailRate(batchRetailRate);
+        bid.setBatchPurchaseRate(batchPurchaseRate);
+        bid.setBatchWholesaleRate(batchWholesaleRate);
+        bid.setBatchCostRate(batchCostRate);
+        bid.setDoe(sub.getDateOfExpire());
+        bid.setDescription(sub.getItemName());
+
+        double lineRetailRate = batchRetailRate;
+        double grossValue = lineRetailRate * qty;
+        double discountPct = 0.0;
+        double discountValue = 0.0;
+        try {
+            Item substituteItem = itemFacade.find(sub.getItemId());
+            if (substituteItem != null && Boolean.TRUE.equals(substituteItem.isDiscountAllowed())) {
+                Double pct = priceMatrixController.getPaymentSchemeDiscountPercent(
+                        paymentMethod, paymentScheme, sessionController.getDepartment(), substituteItem);
+                discountPct = pct != null ? pct : 0.0;
+                discountValue = (discountPct / 100.0) * grossValue;
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Discount lookup failed for substitute item {0}: {1}",
+                    new Object[]{sub.getItemId(), e.getMessage()});
+        }
+        double netValue = grossValue - discountValue;
+        double netRate = qty > 0 ? netValue / qty : lineRetailRate;
+
+        bid.setRate(lineRetailRate);
+        bid.setNetRate(netRate);
+        bid.setDiscountPercent(discountPct);
+        bid.setDiscountValue(discountValue);
+        bid.setMarginValue(0.0);
+        bid.setNetValue(-netValue);
+        bid.setGrossValue(-grossValue);
+
+        calTotal();
+        JsfUtil.addSuccessMessage("Stock replaced successfully.");
+    }
+
+    public BillItemData getItemDataForSubstitution() {
+        return itemDataForSubstitution;
+    }
+
+    public void setItemDataForSubstitution(BillItemData itemDataForSubstitution) {
+        this.itemDataForSubstitution = itemDataForSubstitution;
+    }
+
+    public com.divudi.core.data.dto.StockDTO getSelectedSubstituteStock() {
+        return selectedSubstituteStock;
+    }
+
+    public void setSelectedSubstituteStock(com.divudi.core.data.dto.StockDTO selectedSubstituteStock) {
+        this.selectedSubstituteStock = selectedSubstituteStock;
+    }
+
+    public List<com.divudi.core.data.dto.StockDTO> getSubstituteStocks() {
+        return substituteStocks;
+    }
+
+    public void setSubstituteStocks(List<com.divudi.core.data.dto.StockDTO> substituteStocks) {
+        this.substituteStocks = substituteStocks;
     }
 
     public void recalculateDiscountsForAll() {
