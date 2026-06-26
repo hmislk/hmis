@@ -487,70 +487,37 @@
                 <h:panelGroup  rendered="#{pharmacySaleBhtController.billPreview}" >
                     <p:panel>
                         <f:facet name="header">
-                            <div class="d-flex justify-content-between">
+                            <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h:outputText styleClass=" fa-solid fa-screwdriver-wrench fa-lg" />
+                                    <h:outputText styleClass="fa-solid fa-screwdriver-wrench fa-lg" />
                                     <p:outputLabel value="BHT Issue" class="mx-1"/>
                                 </div>
-                                <div class="d-flex gap-2">
-                                    <p:commandButton 
-                                        id="nullButton3"
-                                        icon="fa-solid fa-print"
-                                        class="ui-button-info" 
-                                        value="Print Bill" 
-                                        ajax="false"
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
-                                        action="#">
-                                        <p:printer target="gpBillPreviewFiveFiveCustom3"></p:printer>
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        id="btnPrint" 
-                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}" 
-                                        icon="fa-solid fa-print" 
-                                        class="ui-button-info" 
-                                        value="Print" 
-                                        ajax="false" 
-                                        >
-                                        <p:printer target="gpBillPreview" ></p:printer>
-                                    </p:commandButton>
-
-                                    <p:commandButton 
-                                        value="New Bill" 
-                                        ajax="false"
-                                        class="ui-button-warning"
-                                        icon ="fa-solid fa-plus"
-                                        action="pharmacy_bill_issue_bht?faces-redirect=true"
-                                        actionListener="#{pharmacySaleBhtController.resetAll}"  >
-                                    </p:commandButton>
-
+                                <div class="d-flex gap-2 align-items-center">
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                         <div class="d-flex gap-2">
                                             <p:commandButton
                                                 ajax="false"
                                                 value="Patient Lookup"
                                                 icon="fa fa-search"
-                                                class="ui-button-warning"
+                                                class="ui-button-info ui-button-outlined"
                                                 action="#{patientController.navigateToSearchPatients()}">
                                             </p:commandButton>
-
                                             <p:commandButton
                                                 ajax="false"
                                                 icon="fa fa-user"
                                                 value="Patient Profile"
-                                                class="ui-button-success"
+                                                class="ui-button-info ui-button-outlined"
                                                 action="#{patientController.navigateToOpdPatientProfile()}">
                                                 <f:setPropertyActionListener
                                                     value="#{pharmacySaleBhtController.patientEncounter.patient}"
                                                     target="#{patientController.current}" >
                                                 </f:setPropertyActionListener>
                                             </p:commandButton>
-
                                             <p:commandButton
                                                 ajax="false"
                                                 value="Inpatient Dashboard"
                                                 icon="fa fa-id-card"
-                                                class="ui-button-secondary"
+                                                class="ui-button-info ui-button-outlined"
                                                 action="#{admissionController.navigateToAdmissionProfilePage}">
                                                 <f:setPropertyActionListener
                                                     value="#{pharmacySaleBhtController.printBill.patientEncounter}"
@@ -559,16 +526,44 @@
                                             </p:commandButton>
                                         </div>
                                     </h:panelGroup>
-
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
-                                        <p:commandButton 
-                                            value="Nursing WorkBench" 
-                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                        <p:commandButton
+                                            value="Nursing WorkBench"
+                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                             ajax="false"
-                                            class="ui-button-operating-theatre"
+                                            class="ui-button-info ui-button-outlined"
                                             icon="fa fa-arrow-left">
                                         </p:commandButton>
                                     </h:panelGroup>
+                                </div>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <p:commandButton
+                                        value="New Direct Issue Bill"
+                                        ajax="false"
+                                        class="ui-button-warning"
+                                        icon="fa-solid fa-plus"
+                                        action="pharmacy_bill_issue_bht?faces-redirect=true"
+                                        actionListener="#{pharmacySaleBhtController.resetAll}" >
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        id="nullButton3"
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-success"
+                                        value="Print Bill"
+                                        ajax="false"
+                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
+                                        action="#">
+                                        <p:printer target="gpBillPreviewFiveFiveCustom3"></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        id="btnPrint"
+                                        rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-success"
+                                        value="Print"
+                                        ajax="false" >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
                                 </div>
                             </div>
                         </f:facet>
