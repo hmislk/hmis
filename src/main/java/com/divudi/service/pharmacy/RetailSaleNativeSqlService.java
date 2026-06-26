@@ -465,6 +465,12 @@ public class RetailSaleNativeSqlService {
                     break;
             }
 
+            // Skip components with no entered value — the controller has already
+            // validated that the selected components cover the net total, so a
+            // zero here is an unfilled row that should not create a Payment.
+            if (p.getPaidValue() <= 0.0) {
+                continue;
+            }
             em.persist(p);
             result.add(p);
         }
