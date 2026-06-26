@@ -180,13 +180,16 @@
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdInvestigation"
                                                      style="width:100%"
-                                                     title="Filter by investigation"
-                                                     filter="true">
-                                        <f:selectItem itemLabel="Select Investigation" itemValue=""/>
-                                        <f:selectItems value="#{investigationController.investigationItems}"
-                                                       var="inv"
-                                                       itemLabel="#{inv.sname}"
-                                                       itemValue="#{inv}"/>
+                                                     filter="true"
+                                                     title="Filter by investigation">
+                                        <!--dummy values-->
+                                        <f:selectItem itemLabel="Select Investigation" itemValue="" />
+                                        <f:selectItem itemLabel="Blood Test" itemValue="1" />
+                                        <f:selectItem itemLabel="Urine Analysis" itemValue="2" />
+                                        <f:selectItem itemLabel="X-Ray" itemValue="3" />
+                                        <f:selectItem itemLabel="MRI Scan" itemValue="4" />
+                                        <f:selectItem itemLabel="CT Scan" itemValue="5" />
+
                                     </p:selectOneMenu>
                                 </div>
                                 <div class="col-md-2 text-right font-weight-bold">
@@ -261,7 +264,6 @@
                                 <div class="col-md-12 d-flex justify-content-start" style="gap:8px">
                                     <p:commandButton ajax="false"
                                                      value="Process"
-                                                     action="#{reportsController.turnAroundTimeDetailsReport}"
                                                      icon="fas fa-cog"
                                                      styleClass="ui-button-warning"/>
                                     <p:commandButton ajax="false"
