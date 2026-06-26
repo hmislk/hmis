@@ -155,6 +155,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     FinancialTransactionController financialTransactionController;
     @Inject
     SessionController sessionController;
+    @javax.ejb.EJB
+    private com.divudi.service.pharmacy.PharmacySubstituteService pharmacySubstituteService;
     @Inject
     SearchController searchController;
     @Inject
@@ -953,6 +955,58 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 //            calculateBillItemForEditing(tbi);
         }
         calculateTotals();
+    }
+
+    // ===================================================================
+    // On-demand substitute (alternative) medicines (issue #21697)
+    // ===================================================================
+    private BillItem itemForSubstitution;
+    private Stock selectedSubstituteStock;
+    private List<Stock> substituteStocks;
+
+    public void prepareSubstitute(BillItem bi) {
+        itemForSubstitution = bi;
+        selectedSubstituteStock = null;
+        substituteStocks = new ArrayList<>();
+        if (bi == null || bi.getItem() == null) {
+            return;
+        }
+        substituteStocks = pharmacySubstituteService.findSubstituteStocks(bi.getItem(), sessionController.getDepartment());
+    }
+
+    public void replaceSelectedSubstitute() {
+        if (itemForSubstitution == null || selectedSubstituteStock == null) {
+            JsfUtil.addErrorMessage("Please select a substitute stock.");
+            return;
+        }
+        if (pharmacySubstituteService.swapStockIntoBillItem(itemForSubstitution, selectedSubstituteStock)) {
+            calculateAllRates();
+            JsfUtil.addSuccessMessage("Stock replaced successfully.");
+        }
+    }
+
+    public BillItem getItemForSubstitution() {
+        return itemForSubstitution;
+    }
+
+    public void setItemForSubstitution(BillItem itemForSubstitution) {
+        this.itemForSubstitution = itemForSubstitution;
+    }
+
+    public Stock getSelectedSubstituteStock() {
+        return selectedSubstituteStock;
+    }
+
+    public void setSelectedSubstituteStock(Stock selectedSubstituteStock) {
+        this.selectedSubstituteStock = selectedSubstituteStock;
+    }
+
+    public List<Stock> getSubstituteStocks() {
+        return substituteStocks;
+    }
+
+    public void setSubstituteStocks(List<Stock> substituteStocks) {
+        this.substituteStocks = substituteStocks;
     }
 
     public void calculateRates(BillItem bi) {

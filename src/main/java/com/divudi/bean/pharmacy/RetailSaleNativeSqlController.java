@@ -36,6 +36,8 @@ import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.clinical.Prescription;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.facade.ItemBatchFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientFacade;
@@ -111,6 +113,8 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
     private PharmacyService pharmacyService;
     @EJB
     private RetailSaleNativeSqlService nativeSqlService;
+    @EJB
+    private com.divudi.service.pharmacy.PharmacySubstituteService pharmacySubstituteService;
     @EJB
     private DiscountSchemeValidationService discountSchemeValidationService;
     @EJB
@@ -908,6 +912,121 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
     public void listnerForPaymentMethodChange() {
         recalculateDiscountsForAll();
         calTotal();
+    }
+
+    // ===================================================================
+    // On-demand substitute (alternative) medicines (issue #21697)
+    // ===================================================================
+    private BillItemData itemDataForSubstitution;
+    private Stock selectedSubstituteStock;
+    private List<Stock> substituteStocks;
+
+    public void prepareSubstitute(BillItemData bid) {
+        itemDataForSubstitution = bid;
+        selectedSubstituteStock = null;
+        substituteStocks = new ArrayList<>();
+        if (bid == null || bid.getItemId() == null) {
+            return;
+        }
+        Item item = itemFacade.find(bid.getItemId());
+        if (item == null) {
+            return;
+        }
+        substituteStocks = pharmacySubstituteService.findSubstituteStocks(item, sessionController.getDepartment());
+    }
+
+    public void replaceSelectedSubstitute() {
+        if (itemDataForSubstitution == null || selectedSubstituteStock == null
+                || selectedSubstituteStock.getItemBatch() == null) {
+            JsfUtil.addErrorMessage("Please select a substitute stock.");
+            return;
+        }
+
+        Stock stock = selectedSubstituteStock;
+        ItemBatch itemBatch = stock.getItemBatch();
+        Item substituteItem = itemBatch.getItem();
+        BillItemData bid = itemDataForSubstitution;
+
+        // Same quantity as the line being substituted.
+        double qty = Math.abs(bid.getQty());
+
+        double[] batchRates = fetchBatchRates(itemBatch.getId());
+        double batchRetailRate = batchRates[0];
+        double batchPurchaseRate = batchRates[1];
+        double batchWholesaleRate = batchRates[2];
+        Double batchCostRate = batchRates[3] > 0 ? batchRates[3] : null;
+
+        long ampItemId = resolveAmpItemId(substituteItem.getId());
+
+        bid.setItemId(substituteItem.getId());
+        bid.setItemName(substituteItem.getName());
+        bid.setAmpItemId(ampItemId);
+        bid.setStockId(stock.getId());
+        bid.setItemBatchId(itemBatch.getId());
+        bid.setPbiQty(-Math.abs(qty));
+        bid.setRetailRate(itemBatch.getRetailsaleRate());
+        bid.setPurchaseRate(batchPurchaseRate);
+        bid.setWholesaleRate(batchWholesaleRate);
+        bid.setCostRate(batchCostRate != null ? batchCostRate : batchPurchaseRate);
+        bid.setBatchRetailRate(batchRetailRate);
+        bid.setBatchPurchaseRate(batchPurchaseRate);
+        bid.setBatchWholesaleRate(batchWholesaleRate);
+        bid.setBatchCostRate(batchCostRate);
+        bid.setDoe(itemBatch.getDateOfExpire());
+        bid.setDescription(substituteItem.getName());
+
+        double lineRetailRate = itemBatch.getRetailsaleRate();
+        double grossValue = lineRetailRate * qty;
+        double discountPct = 0.0;
+        double discountValue = 0.0;
+        try {
+            if (Boolean.TRUE.equals(substituteItem.isDiscountAllowed())) {
+                Double pct = priceMatrixController.getPaymentSchemeDiscountPercent(
+                        paymentMethod, paymentScheme, sessionController.getDepartment(), substituteItem);
+                discountPct = pct != null ? pct : 0.0;
+                discountValue = (discountPct / 100.0) * grossValue;
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Discount lookup failed for substitute item {0}: {1}",
+                    new Object[]{substituteItem.getId(), e.getMessage()});
+        }
+        double netValue = grossValue - discountValue;
+        double netRate = qty > 0 ? netValue / qty : lineRetailRate;
+
+        bid.setRate(lineRetailRate);
+        bid.setNetRate(netRate);
+        bid.setDiscountPercent(discountPct);
+        bid.setDiscountValue(discountValue);
+        bid.setMarginValue(0.0);
+        bid.setNetValue(-netValue);
+        bid.setGrossValue(-grossValue);
+
+        calTotal();
+        JsfUtil.addSuccessMessage("Stock replaced successfully.");
+    }
+
+    public BillItemData getItemDataForSubstitution() {
+        return itemDataForSubstitution;
+    }
+
+    public void setItemDataForSubstitution(BillItemData itemDataForSubstitution) {
+        this.itemDataForSubstitution = itemDataForSubstitution;
+    }
+
+    public Stock getSelectedSubstituteStock() {
+        return selectedSubstituteStock;
+    }
+
+    public void setSelectedSubstituteStock(Stock selectedSubstituteStock) {
+        this.selectedSubstituteStock = selectedSubstituteStock;
+    }
+
+    public List<Stock> getSubstituteStocks() {
+        return substituteStocks;
+    }
+
+    public void setSubstituteStocks(List<Stock> substituteStocks) {
+        this.substituteStocks = substituteStocks;
     }
 
     public void recalculateDiscountsForAll() {
