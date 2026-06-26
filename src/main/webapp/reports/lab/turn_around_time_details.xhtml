@@ -60,7 +60,7 @@
                                                        var="i"
                                                        itemLabel="#{i.name}"
                                                        itemValue="#{i}"/>
-                                        <p:ajax process="@this" update="cmdDepartment"/>
+                                        <p:ajax process="@this" update="cmdSite cmdDepartment"/>
                                     </p:selectOneMenu>
                                 </div>
                                 <div class="col-md-2 text-right font-weight-bold">
@@ -74,7 +74,7 @@
                                                      title="Filter by site"
                                                      filter="true">
                                         <f:selectItem itemLabel="All Sites" itemValue=""/>
-                                        <f:selectItems value="#{institutionController.items}"
+                                        <f:selectItems value="#{institutionController.sites}"
                                                        var="s"
                                                        itemLabel="#{s.name}"
                                                        itemValue="#{s}"/>
@@ -179,7 +179,6 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdInvestigation"
-                                                     value="#{reportController.investigation}"
                                                      style="width:100%"
                                                      title="Filter by investigation"
                                                      filter="true">
@@ -262,26 +261,23 @@
                                 <div class="col-md-12 d-flex justify-content-start" style="gap:8px">
                                     <p:commandButton ajax="false"
                                                      value="Process"
-                                                     action="null"
+                                                     action="#{reportsController.turnAroundTimeDetailsReport}"
                                                      icon="fas fa-cog"
                                                      styleClass="ui-button-warning"/>
                                     <p:commandButton ajax="false"
                                                      value="Print"
-                                                     action="null"
                                                      icon="fas fa-print"
                                                      styleClass="ui-button-info">
                                         <p:printer target="tbl"/>
                                     </p:commandButton>
                                     <p:commandButton ajax="false"
                                                      value="Export Excel"
-                                                     action="null"
                                                      icon="fas fa-file-excel"
                                                      styleClass="ui-button-success">
                                         <p:dataExporter fileName="turn_around_time_details" target="tbl" type="xlsx"/>
                                     </p:commandButton>
                                     <p:commandButton ajax="false"
                                                      value="Export PDF"
-                                                     action="null"
                                                      icon="fas fa-file-pdf"
                                                      styleClass="ui-button-danger">
                                         <p:dataExporter type="pdf" target="tbl" fileName="turn_around_time_details"/>
@@ -331,7 +327,7 @@
                             <h:outputText value="#{reportController.phn}"/>
 
                             <h:outputText value="Investigation"/>
-                            <h:outputText value="#{reportController.investigation.name}"/>
+                            <h:outputText value="Investigation 1"/>
                             <h:outputText value="Lab Department"/>
                             <h:outputText value=""/>
 
@@ -353,15 +349,16 @@
                         <div class="row mt-3 mb-3">
 
                             <div class="col-md-5">
-                                <p class="font-weight-bold mb-1">Terminologies</p>
+                                <h:outputText value="Terminologies"
+                                              styleClass="font-weight-bold d-block mb-1"/>
                                 <ul class="list-unstyled" style="font-size:12px;">
-                                    <li><strong>T1</strong> - Order/Invoice and Sample Collection</li>
-                                    <li><strong>T2</strong> - Sample Collection and Laboratory Acceptance</li>
-                                    <li><strong>T3</strong> - Laboratory Acceptance and Result Entered or Interfaced</li>
-                                    <li><strong>T4</strong> - Result Entered or Interfaced and Laboratory Reporting</li>
-                                    <li><strong>T5</strong> - Laboratory Reporting and Report Printing</li>
-                                    <li><strong>TAT</strong> - Laboratory Acceptance and Sample Certification</li>
-                                    <li><strong>Total</strong> - Order/Invoice and Laboratory Reporting</li>
+                                    <li><h:outputText value="T1 - Order/Invoice and Sample Collection"/></li>
+                                    <li><h:outputText value="T2 - Sample Collection and Laboratory Acceptance"/></li>
+                                    <li><h:outputText value="T3 - Laboratory Acceptance and Result Entered or Interfaced"/></li>
+                                    <li><h:outputText value="T4 - Result Entered or Interfaced and Laboratory Reporting"/></li>
+                                    <li><h:outputText value="T5 - Laboratory Reporting and Report Printing"/></li>
+                                    <li><h:outputText value="TAT - Laboratory Acceptance and Sample Certification"/></li>
+                                    <li><h:outputText value="Total - Order/Invoice and Laboratory Reporting"/></li>
                                 </ul>
                             </div>
 
@@ -381,7 +378,9 @@
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td class="font-weight-bold">Average Durations</td>
+                                            <td class="font-weight-bold">
+                                                <h:outputText value="Average Durations"/>
+                                            </td>
                                             <td class="text-center"></td>
                                             <td class="text-center"></td>
                                             <td class="text-center"></td>
@@ -391,7 +390,9 @@
                                             <td class="text-center"></td>
                                         </tr>
                                         <tr>
-                                            <td class="font-weight-bold">Minimum Durations</td>
+                                            <td class="font-weight-bold">
+                                                <h:outputText value="Minimum Durations"/>
+                                            </td>
                                             <td class="text-center"></td>
                                             <td class="text-center"></td>
                                             <td class="text-center"></td>
@@ -401,7 +402,9 @@
                                             <td class="text-center"></td>
                                         </tr>
                                         <tr>
-                                            <td class="font-weight-bold">Maximum Durations</td>
+                                            <td class="font-weight-bold">
+                                                <h:outputText value="Maximum Durations"/>
+                                            </td>
                                             <td class="text-center"></td>
                                             <td class="text-center"></td>
                                             <td class="text-center"></td>
@@ -430,7 +433,7 @@
                                 <p:column headerText="Institution">
                                     <h:outputText value=""/>
                                     <f:facet name="footer">
-                                        <span class="font-weight-bold">Grand Total</span>
+                                        <h:outputText value="Grand Total" styleClass="font-weight-bold"/>
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Lab Department">
@@ -512,12 +515,12 @@
                         <!-- Generated By / Generated On -->
                         <div class="d-flex justify-content-between align-items-center mt-2 px-2">
                             <div>
-                                <span class="font-weight-bold mr-1">Generated By:</span>
+                                <h:outputText value="Generated By: " styleClass="font-weight-bold mr-1"/>
                                 <h:outputText value="#{sessionController.loggedUser.name}"/>
                             </div>
                             <div>
-                                <span class="font-weight-bold mr-1">Generated On:</span>
-                                <h:outputText value="#{reportController.toDate}">
+                                <h:outputText value="Generated On: " styleClass="font-weight-bold mr-1"/>
+                                <h:outputText value="#{sessionController.currentDate}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                             </div>
