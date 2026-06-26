@@ -203,11 +203,15 @@ public class PharmacySubstituteService {
         }
         ItemBatch itemBatch = substituteStock.getItemBatch();
 
-        // ItemBatch#getCostRate() is nullable in this codebase (null cost rate
-        // with purcahseRate == 0). Coalesce to 0.0 so unboxing into the
-        // primitive setters / BigDecimal.valueOf below never NPEs. Mirrors the
-        // native lookup, which already maps null cost rates to 0.0.
-        double costRate = itemBatch.getCostRate() == null ? 0d : itemBatch.getCostRate();
+        // Use the raw cost rate carried by the DTO from the native lookup
+        // (ib.costRate read directly, already coalesced to 0.0 when null).
+        // Do NOT call itemBatch.getCostRate() here: that getter derives and
+        // ASSIGNS costRate = purcahseRate when costRate is null, which dirties
+        // the managed ItemBatch (writes back to the entity / triggers an UPDATE)
+        // and returns purchaseRate rather than 0.0. Reading the DTO keeps this
+        // swap non-mutating on the batch row.
+        Double rawCost = selected.getCostRate();
+        double costRate = rawCost == null ? 0d : rawCost;
 
         billItem.setItem(itemBatch.getItem());
 
@@ -238,7 +242,16 @@ public class PharmacySubstituteService {
             financeDetails.setLineCostRate(BigDecimal.valueOf(costRate));
             financeDetails.setRetailSaleRate(saleRate);
 
-            BigDecimal qty = financeDetails.getQuantity() != null ? financeDetails.getQuantity() : BigDecimal.ONE;
+            // getBillItemFinanceDetails() lazily creates a fresh details object
+            // with a null quantity, so fall back to the bill-item quantity (not
+            // 1) to value multi-quantity substitute lines correctly.
+            BigDecimal qty = financeDetails.getQuantity();
+            if (qty == null) {
+                double billQty = billItem.getQty() == null ? 0d : Math.abs(billItem.getQty());
+                qty = BigDecimal.valueOf(billQty);
+                financeDetails.setQuantity(qty);
+                financeDetails.setTotalQuantity(qty);
+            }
             financeDetails.setValueAtCostRate(BigDecimal.valueOf(costRate).multiply(qty));
             financeDetails.setValueAtPurchaseRate(BigDecimal.valueOf(itemBatch.getPurcahseRate()).multiply(qty));
             financeDetails.setValueAtRetailRate(saleRate.multiply(qty));
