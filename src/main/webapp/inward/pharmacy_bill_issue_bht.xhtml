@@ -157,36 +157,26 @@
             <h:panelGroup  rendered="#{pharmacySaleBhtController.patientEncounter ne null}">
                 <p:panel rendered="#{!pharmacySaleBhtController.billPreview}">
                     <f:facet name="header">
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h:outputText styleClass="fa-solid fa-pills fa-lg" />
                                 <p:outputLabel value="Direct Issue of Medicines to Inpatients" class="mx-4" />
                             </div>
-                            <div class="d-flex gap-2">
-
-                                <p:commandButton
-                                    value="New Bill"
-                                    ajax="false"
-                                    class="ui-button-warning"
-                                    icon ="fa-solid fa-plus"
-                                    action="pharmacy_bill_issue_bht"
-                                    actionListener="#{pharmacySaleBhtController.resetAll}" >
-                                </p:commandButton>
-
+                            <div class="d-flex gap-2 align-items-center">
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                     <div class="d-flex gap-2">
                                         <p:commandButton
                                             ajax="false"
                                             value="Patient Lookup"
                                             icon="fa fa-search"
-                                            class="ui-button-warning"
+                                            class="ui-button-info ui-button-outlined"
                                             action="#{patientController.navigateToSearchPatients()}" >
                                         </p:commandButton>
                                         <p:commandButton
                                             ajax="false"
                                             icon="fa fa-user"
                                             value="Patient Profile"
-                                            class="ui-button-success"
+                                            class="ui-button-info ui-button-outlined"
                                             action="#{patientController.navigateToOpdPatientProfile()}" >
                                             <f:setPropertyActionListener
                                                 value="#{pharmacySaleBhtController.patientEncounter.patient}"
@@ -197,7 +187,7 @@
                                             ajax="false"
                                             icon="fa fa-id-card"
                                             value="Inpatient Dashboard"
-                                            class="ui-button-secondary"
+                                            class="ui-button-info ui-button-outlined"
                                             action="#{admissionController.navigateToAdmissionProfilePage}" >
                                             <f:setPropertyActionListener
                                                 value="#{pharmacySaleBhtController.patientEncounter}"
@@ -206,37 +196,40 @@
                                         </p:commandButton>
                                     </div>
                                 </h:panelGroup>
-
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
-                                    <p:commandButton 
-                                        value="Nursing WorkBench" 
-                                        action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                    <p:commandButton
+                                        value="Nursing WorkBench"
+                                        action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                         ajax="false"
-                                        class="ui-button-operating-theatre"
+                                        class="ui-button-info ui-button-outlined"
                                         icon="fa fa-arrow-left">
                                     </p:commandButton>
                                 </h:panelGroup>
                             </div>
+                            <div class="d-flex gap-2 align-items-center">
+                                <p:commandButton
+                                    value="New Direct Issue Bill"
+                                    ajax="false"
+                                    class="ui-button-warning"
+                                    icon="fa-solid fa-plus"
+                                    action="pharmacy_bill_issue_bht"
+                                    actionListener="#{pharmacySaleBhtController.resetAll}" >
+                                </p:commandButton>
+                                <p:commandButton
+                                    id="btnSettleInpatientDirectIssue"
+                                    value="Settle"
+                                    ajax="true"
+                                    onclick="if(!confirm('Are you sure you want to settle this pharmacy bill issue?')){return false;} var o=document.getElementById('settlingOverlay'); o.style.display='flex'; o.style.pointerEvents='all';"
+                                    oncomplete="document.getElementById('settlingOverlay').style.display='none';"
+                                    ondblclick="return false;"
+                                    action="#{pharmacySaleBhtController.settlePharmacyBhtIssue()}"
+                                    update="@form"
+                                    class="ui-button-success"
+                                    icon="fa-solid fa-check">
+                                </p:commandButton>
+                            </div>
                         </div>
-
                     </f:facet>
-
-                    <div class="row mb-3">
-                        <div class="d-flex justify-content-end align-items-center">
-                            <p:commandButton
-                                id="btnSettleInpatientDirectIssue"
-                                value="Settle"
-                                ajax="true"
-                                onclick="if(!confirm('Are you sure you want to settle this pharmacy bill issue?')){return false;} var o=document.getElementById('settlingOverlay'); o.style.display='flex'; o.style.pointerEvents='all';"
-                                oncomplete="document.getElementById('settlingOverlay').style.display='none';"
-                                ondblclick="return false;"
-                                action="#{pharmacySaleBhtController.settlePharmacyBhtIssue()}"
-                                update="@form"
-                                class="ui-button-success mx-2"
-                                icon="fa-solid fa-check">
-                            </p:commandButton>
-                        </div>
-                    </div>
 
                     <div class="row">
 
