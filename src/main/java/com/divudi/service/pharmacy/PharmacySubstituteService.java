@@ -167,7 +167,7 @@ public class PharmacySubstituteService {
             dto.setCode(row[4] == null ? "" : row[4].toString());
             dto.setRetailRate(toDouble(row[5]));
             dto.setStockQty(toDouble(row[6]));
-            dto.setDateOfExpire(row[7] instanceof Date ? (Date) row[7] : null);
+            dto.setDateOfExpire(toDate(row[7]));
             dto.setBatchNo(row[8] == null ? "" : row[8].toString());
             dto.setPurchaseRate(toDouble(row[9]));
             dto.setCostRate(toDouble(row[10]));
@@ -299,5 +299,41 @@ public class PharmacySubstituteService {
 
     private static Double toDouble(Object o) {
         return o == null ? 0.0 : ((Number) o).doubleValue();
+    }
+
+    /**
+     * Converts a raw JDBC date/time object to {@link java.util.Date}.
+     *
+     * <p>MySQL Connector/J 8.x (with {@code useLegacyDatetimeCode=false}, the
+     * default) returns {@code datetime} columns as {@link java.time.LocalDateTime}
+     * — which is NOT a {@code java.util.Date}. A bare {@code instanceof Date}
+     * cast therefore silently yields {@code null}, leaving the substitute
+     * panel's Expiry column (and the swapped bill line's expiry) blank. Handle
+     * {@code Timestamp}, {@code java.sql.Date}, {@code java.util.Date} and the
+     * Java-8 time types, mirroring the other native-SQL services
+     * (e.g. {@code TransferReceiveNativeSqlService.toDate}).
+     */
+    private static Date toDate(Object o) {
+        if (o == null) {
+            return null;
+        }
+        if (o instanceof java.sql.Timestamp) {
+            return new Date(((java.sql.Timestamp) o).getTime());
+        }
+        if (o instanceof java.sql.Date) {
+            return new Date(((java.sql.Date) o).getTime());
+        }
+        if (o instanceof Date) {
+            return (Date) o;
+        }
+        if (o instanceof java.time.LocalDateTime) {
+            return Date.from(((java.time.LocalDateTime) o)
+                    .atZone(java.time.ZoneId.systemDefault()).toInstant());
+        }
+        if (o instanceof java.time.LocalDate) {
+            return Date.from(((java.time.LocalDate) o)
+                    .atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
+        }
+        return null;
     }
 }

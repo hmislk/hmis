@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.bean.common.PatientDepositController;
@@ -17,8 +18,10 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BooleanMessage;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dto.BillItemData;
+import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.data.dto.PrintBillData;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.Bill;
@@ -82,7 +85,7 @@ import org.primefaces.event.SelectEvent;
  */
 @Named
 @SessionScoped
-public class RetailSaleNativeSqlController implements Serializable, ControllerWithPatient {
+public class RetailSaleNativeSqlController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
     private static final Logger LOGGER = Logger.getLogger(RetailSaleNativeSqlController.class.getName());
 
@@ -393,8 +396,8 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         }
 
         try {
-            Payment payment = nativeSqlService.settle(preBillEntity, saleBillEntity, billItemDataList, paymentMethod, getPaymentMethodData(), paymentScheme);
-            drawerController.updateDrawerForIns(payment);
+            List<Payment> payments = nativeSqlService.settle(preBillEntity, saleBillEntity, billItemDataList, paymentMethod, getPaymentMethodData(), paymentScheme);
+            drawerController.updateDrawerForIns(payments);
 
             buildPrintBill(saleBillEntity);
             clearBill();
@@ -1255,6 +1258,139 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
 
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
+    }
+
+    @Override
+    public double calculatRemainForMultiplePaymentTotal() {
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            double multiplePaymentMethodTotalValue = 0.0;
+            for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                if (cd == null) {
+                    continue;
+                }
+                if (cd.getPaymentMethodData() != null && cd.getPaymentMethod() != null) {
+                    // Only add the value from the selected payment method for this ComponentDetail
+                    switch (cd.getPaymentMethod()) {
+                        case Cash:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                            break;
+                        case Card:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                            break;
+                        case Cheque:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                            break;
+                        case ewallet:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                            break;
+                        case PatientDeposit:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                            break;
+                        case Slip:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                            break;
+                        case Staff:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                            break;
+                        case Staff_Welfare:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                            break;
+                        case Credit:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCredit().getTotalValue();
+                            break;
+                        case OnlineSettlement:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                            break;
+                        case IOU:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getIou().getTotalValue();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            return getPreBill().getNetTotal() - multiplePaymentMethodTotalValue;
+        }
+        return getPreBill().getTotal();
+    }
+
+    @Override
+    public void recieveRemainAmountAutomatically() {
+        double remainAmount = calculatRemainForMultiplePaymentTotal();
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            int arrSize = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            if (arrSize == 0) {
+                return; // No payment methods added yet
+            }
+            ComponentDetail pm = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            if (pm.getPaymentMethodData() == null) {
+                return; // Payment method data not initialized
+            }
+            if (pm.getPaymentMethod() == PaymentMethod.Cash) {
+                // Only set value automatically if not already set by user
+                if (pm.getPaymentMethodData().getCash().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
+                if (pm.getPaymentMethodData().getCreditCard().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.Cheque) {
+                if (pm.getPaymentMethodData().getCheque().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.Slip) {
+                if (pm.getPaymentMethodData().getSlip().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
+                if (pm.getPaymentMethodData().getEwallet().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                if (patient == null || patient.getId() == null) {
+                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
+                    return; // Patient not selected yet, ignore
+                }
+                // Initialize patient deposit data for UI component
+                pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
+                PatientDeposit pd = patientDepositController.getDepositOfThePatient(patient, sessionController.getDepartment());
+                if (pd != null && pd.getId() != null) {
+                    pm.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                    pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                    // Set total value to remain amount only if there's sufficient balance, otherwise set to available balance
+                    double availableBalance = pd.getBalance();
+                    if (availableBalance >= remainAmount) {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                    } else {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(availableBalance);
+                    }
+                } else {
+                    pm.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(false);
+                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
+                if (pm.getPaymentMethodData().getCredit().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
+                if (pm.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                if (pm.getPaymentMethodData().getStaffWelfare().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getStaffWelfare().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.OnlineSettlement) {
+                if (pm.getPaymentMethodData().getOnlineSettlement().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.IOU) {
+                if (pm.getPaymentMethodData().getIou().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getIou().setTotalValue(remainAmount);
+                }
+            }
+        }
     }
 
     public PaymentMethodData getPaymentMethodData() {

@@ -6,6 +6,7 @@
 package com.divudi.service.pharmacy;
 
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dto.BillItemData;
 import com.divudi.core.data.dto.PrintBillData;
@@ -72,7 +73,7 @@ public class RetailSaleNativeSqlService {
     // -----------------------------------------------------------------------
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public Payment settle(PreBill preBill, BilledBill saleBill, List<BillItemData> items,
+    public List<Payment> settle(PreBill preBill, BilledBill saleBill, List<BillItemData> items,
                           PaymentMethod paymentMethod, PaymentMethodData paymentMethodData,
                           PaymentScheme paymentScheme) {
         if (items == null || items.isEmpty()) {
@@ -255,22 +256,31 @@ public class RetailSaleNativeSqlService {
                 .setParameter(5, billId)
                 .executeUpdate();
 
-        // Step 6: Insert Payment record against BilledBill
-        Payment payment = insertPayment(saleBill, billId, billTotals[1], paymentMethod, paymentMethodData, paymentScheme);
+        // Step 6: Insert Payment record(s) against BilledBill. A single payment
+        // for ordinary methods; one Payment per component for MultiplePaymentMethods.
+        List<Payment> payments = insertPayment(saleBill, billId, billTotals[1], paymentMethod, paymentMethodData, paymentScheme);
 
         LOGGER.log(Level.INFO, "[RetailNativeSettle] DONE items={0} ms={1}",
                 new Object[]{items.size(), System.currentTimeMillis() - t0});
 
-        return payment;
+        return payments;
     }
 
     // -----------------------------------------------------------------------
     // Payment
     // -----------------------------------------------------------------------
 
-    private Payment insertPayment(Bill bill, long billId, double netTotal,
+    private List<Payment> insertPayment(Bill bill, long billId, double netTotal,
                                    PaymentMethod paymentMethod, PaymentMethodData pmd,
                                    PaymentScheme paymentScheme) {
+        // MultiplePaymentMethods: persist one Payment per component (Cash, Card,
+        // Cheque, ...), each carrying its own entered value and reference fields.
+        // Mirrors PharmacySaleController.createMultiplePayments for parity with
+        // the legacy retail sale page.
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            return insertMultiplePayments(bill, billId, pmd);
+        }
+
         Payment p = new Payment();
         p.setBill(em.getReference(Bill.class, billId));
         p.setInstitution(bill.getInstitution());
@@ -342,7 +352,124 @@ public class RetailSaleNativeSqlService {
 
         em.persist(p);
         em.flush();
-        return p;
+        List<Payment> result = new ArrayList<>();
+        result.add(p);
+        return result;
+    }
+
+    /**
+     * Persists one {@link Payment} per selected component of a
+     * MultiplePaymentMethods bill. Each component's own entered value and
+     * method-specific reference fields are copied onto its Payment, mirroring
+     * {@code PharmacySaleController.createMultiplePayments}. Components with no
+     * payment method or no data are skipped.
+     */
+    private List<Payment> insertMultiplePayments(Bill bill, long billId, PaymentMethodData pmd) {
+        List<Payment> result = new ArrayList<>();
+        if (pmd == null
+                || pmd.getPaymentMethodMultiple() == null
+                || pmd.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
+            return result;
+        }
+        for (ComponentDetail cd : pmd.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            if (cd == null || cd.getPaymentMethod() == null || cd.getPaymentMethodData() == null) {
+                continue;
+            }
+            Payment p = new Payment();
+            p.setBill(em.getReference(Bill.class, billId));
+            p.setInstitution(bill.getInstitution());
+            p.setDepartment(bill.getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(bill.getCreater());
+            p.setPaymentMethod(cd.getPaymentMethod());
+
+            PaymentMethodData cpmd = cd.getPaymentMethodData();
+            switch (cd.getPaymentMethod()) {
+                case Card:
+                    p.setBank(cpmd.getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(cpmd.getCreditCard().getNo());
+                    p.setPaidValue(cpmd.getCreditCard().getTotalValue());
+                    p.setComments(cpmd.getCreditCard().getComment());
+                    break;
+                case Cheque:
+                    p.setChequeDate(cpmd.getCheque().getDate());
+                    p.setChequeRefNo(cpmd.getCheque().getNo());
+                    p.setBank(cpmd.getCheque().getInstitution());
+                    p.setPaidValue(cpmd.getCheque().getTotalValue());
+                    p.setComments(cpmd.getCheque().getComment());
+                    break;
+                case Cash:
+                    p.setPaidValue(cpmd.getCash().getTotalValue());
+                    break;
+                case ewallet:
+                    p.setPaidValue(cpmd.getEwallet().getTotalValue());
+                    p.setPolicyNo(cpmd.getEwallet().getReferralNo());
+                    p.setComments(cpmd.getEwallet().getComment());
+                    p.setReferenceNo(cpmd.getEwallet().getReferenceNo());
+                    p.setBank(cpmd.getEwallet().getInstitution());
+                    break;
+                case Agent:
+                case PatientDeposit:
+                    p.setPaidValue(cpmd.getPatient_deposit().getTotalValue());
+                    break;
+                case Credit:
+                    p.setPolicyNo(cpmd.getCredit().getReferralNo());
+                    p.setReferenceNo(cpmd.getCredit().getReferenceNo());
+                    p.setCreditCompany(cpmd.getCredit().getInstitution());
+                    p.setPaidValue(cpmd.getCredit().getTotalValue());
+                    p.setComments(cpmd.getCredit().getComment());
+                    break;
+                case Slip:
+                    p.setPaidValue(cpmd.getSlip().getTotalValue());
+                    p.setBank(cpmd.getSlip().getInstitution());
+                    p.setRealizedAt(cpmd.getSlip().getDate());
+                    p.setPaymentDate(cpmd.getSlip().getDate());
+                    p.setComments(cpmd.getSlip().getComment());
+                    p.setReferenceNo(cpmd.getSlip().getReferenceNo());
+                    break;
+                case OnlineSettlement:
+                    p.setPaidValue(cpmd.getOnlineSettlement().getTotalValue());
+                    p.setBank(cpmd.getOnlineSettlement().getInstitution());
+                    p.setRealizedAt(cpmd.getOnlineSettlement().getDate());
+                    p.setPaymentDate(cpmd.getOnlineSettlement().getDate());
+                    p.setReferenceNo(cpmd.getOnlineSettlement().getReferenceNo());
+                    p.setComments(cpmd.getOnlineSettlement().getComment());
+                    break;
+                case IOU:
+                    p.setPaidValue(cpmd.getIou().getTotalValue());
+                    p.setBank(cpmd.getIou().getInstitution());
+                    p.setRealizedAt(cpmd.getIou().getDate());
+                    p.setPaymentDate(cpmd.getIou().getDate());
+                    p.setReferenceNo(cpmd.getIou().getReferenceNo());
+                    p.setComments(cpmd.getIou().getComment());
+                    break;
+                case Staff:
+                    p.setPaidValue(cpmd.getStaffCredit().getTotalValue());
+                    if (cpmd.getStaffCredit().getToStaff() != null) {
+                        p.setToStaff(cpmd.getStaffCredit().getToStaff());
+                        if (bill.getToStaff() == null) {
+                            bill.setToStaff(cpmd.getStaffCredit().getToStaff());
+                        }
+                    }
+                    break;
+                case Staff_Welfare:
+                    p.setPaidValue(cpmd.getStaffWelfare().getTotalValue());
+                    if (cpmd.getStaffWelfare().getToStaff() != null) {
+                        p.setToStaff(cpmd.getStaffWelfare().getToStaff());
+                        if (bill.getToStaff() == null) {
+                            bill.setToStaff(cpmd.getStaffWelfare().getToStaff());
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            em.persist(p);
+            result.add(p);
+        }
+        em.flush();
+        return result;
     }
 
     // -----------------------------------------------------------------------
