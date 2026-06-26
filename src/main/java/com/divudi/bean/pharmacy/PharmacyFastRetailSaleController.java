@@ -961,8 +961,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     // On-demand substitute (alternative) medicines (issue #21697)
     // ===================================================================
     private BillItem itemForSubstitution;
-    private Stock selectedSubstituteStock;
-    private List<Stock> substituteStocks;
+    private com.divudi.core.data.dto.StockDTO selectedSubstituteStock;
+    private List<com.divudi.core.data.dto.StockDTO> substituteStocks;
 
     public void prepareSubstitute(BillItem bi) {
         itemForSubstitution = bi;
@@ -993,19 +993,19 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         this.itemForSubstitution = itemForSubstitution;
     }
 
-    public Stock getSelectedSubstituteStock() {
+    public com.divudi.core.data.dto.StockDTO getSelectedSubstituteStock() {
         return selectedSubstituteStock;
     }
 
-    public void setSelectedSubstituteStock(Stock selectedSubstituteStock) {
+    public void setSelectedSubstituteStock(com.divudi.core.data.dto.StockDTO selectedSubstituteStock) {
         this.selectedSubstituteStock = selectedSubstituteStock;
     }
 
-    public List<Stock> getSubstituteStocks() {
+    public List<com.divudi.core.data.dto.StockDTO> getSubstituteStocks() {
         return substituteStocks;
     }
 
-    public void setSubstituteStocks(List<Stock> substituteStocks) {
+    public void setSubstituteStocks(List<com.divudi.core.data.dto.StockDTO> substituteStocks) {
         this.substituteStocks = substituteStocks;
     }
 

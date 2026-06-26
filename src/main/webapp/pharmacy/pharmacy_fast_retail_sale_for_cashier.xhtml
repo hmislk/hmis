@@ -436,7 +436,7 @@
 
                                             <ui:include src="fragments/substitute_dialog.xhtml">
                                                 <ui:param name="ctrl" value="#{pharmacyFastRetailSaleForCashierController}"/>
-                                                <ui:param name="updateTarget" value="tblBillItem :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelPayment',view).clientId}"/>
+                                                <ui:param name="updateTarget" value=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelPayment',view).clientId}"/>
                                             </ui:include>
                                         </p:panel>
 

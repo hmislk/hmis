@@ -5,6 +5,7 @@
  */
 package com.divudi.service.pharmacy;
 
+import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.Department;
@@ -13,10 +14,12 @@ import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.ItemBatchFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.ejb.PharmacyBean;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
@@ -58,20 +61,30 @@ public class PharmacySubstituteService {
     @EJB
     private StockFacade stockFacade;
 
+    @EJB
+    private ItemBatchFacade itemBatchFacade;
+
     private String tStock;
     private String tItemBatch;
+    private String tItem;
 
     /**
      * Resolve in-stock, non-expired substitute stocks for the given item in the
      * given department, FEFO-ordered (earliest expiry first).
      *
+     * <p>Performance: the lookup is a <b>single</b> native-SQL round-trip that
+     * selects every display + swap field (item name/code, rates, batch, expiry,
+     * stock) directly into {@link StockDTO}. This avoids the previous N+1 of one
+     * {@code findWithItemBatch} per result row, keeping the on-demand click fast
+     * even when an AMP has many sibling brands across many batches.
+     *
      * @param item       the bill item's current item to find alternatives for
      * @param department the current department whose stock should be considered
-     * @return list of {@link Stock} (loaded with item batch), never null
+     * @return list of {@link StockDTO}, FEFO-ordered, never null
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public List<Stock> findSubstituteStocks(Item item, Department department) {
-        List<Stock> result = new ArrayList<>();
+    public List<StockDTO> findSubstituteStocks(Item item, Department department) {
+        List<StockDTO> result = new ArrayList<>();
         if (item == null || department == null || department.getId() == null) {
             return result;
         }
@@ -93,10 +106,14 @@ public class PharmacySubstituteService {
 
         // Native SQL: in-stock (> 0), non-expired (expiry strictly in the
         // future), current department, item in resolved AMPs; FEFO ordered.
+        // All display + swap fields are returned in one round-trip.
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT s.ID ")
+        sql.append("SELECT s.ID, s.itemBatch_ID, ib.item_ID, i.name, i.code, ")
+                .append("ib.retailsaleRate, s.stock, ib.dateOfExpire, ib.batchNo, ")
+                .append("ib.purcahseRate, ib.costRate, ib.wholesaleRate ")
                 .append("FROM ").append(stockTable()).append(" s ")
                 .append("JOIN ").append(itemBatchTable()).append(" ib ON s.itemBatch_ID = ib.ID ")
+                .append("JOIN ").append(itemTable()).append(" i ON ib.item_ID = i.ID ")
                 .append("WHERE s.department_ID = ?1 ")
                 .append("AND s.stock > 0 ")
                 .append("AND ib.dateOfExpire > NOW() ")
@@ -116,33 +133,52 @@ public class PharmacySubstituteService {
         }
 
         @SuppressWarnings("unchecked")
-        List<Object> stockIdRows = q.getResultList();
-        for (Object row : stockIdRows) {
+        List<Object[]> rows = q.getResultList();
+        for (Object[] row : rows) {
             if (row == null) {
                 continue;
             }
-            Long stockId = ((Number) row).longValue();
-            Stock loaded = stockFacade.findWithItemBatch(stockId);
-            if (loaded != null) {
-                result.add(loaded);
-            }
+            StockDTO dto = new StockDTO();
+            dto.setId(toLong(row[0]));
+            dto.setStockId(toLong(row[0]));
+            dto.setItemBatchId(toLong(row[1]));
+            dto.setItemId(toLong(row[2]));
+            dto.setItemName(row[3] == null ? "" : row[3].toString());
+            dto.setCode(row[4] == null ? "" : row[4].toString());
+            dto.setRetailRate(toDouble(row[5]));
+            dto.setStockQty(toDouble(row[6]));
+            dto.setDateOfExpire(row[7] instanceof Date ? (Date) row[7] : null);
+            dto.setBatchNo(row[8] == null ? "" : row[8].toString());
+            dto.setPurchaseRate(toDouble(row[9]));
+            dto.setCostRate(toDouble(row[10]));
+            dto.setWholesaleRate(toDouble(row[11]));
+            result.add(dto);
         }
         return result;
     }
 
     /**
-     * Swap the selected substitute stock into the bill item: updates item,
-     * batch, stock and all rate + finance-detail fields. Bill totals must be
-     * recalculated by the caller using that controller's own rate-recalc method
-     * (each sale controller derives line values from
-     * {@code pharmaceuticalBillItem.stock.itemBatch}).
+     * Swap the selected substitute stock (chosen from the FEFO alternatives
+     * list) into the bill item: updates item, batch, stock and all rate +
+     * finance-detail fields. Bill totals must be recalculated by the caller
+     * using that controller's own rate-recalc method (each sale controller
+     * derives line values from {@code pharmaceuticalBillItem.stock.itemBatch}).
      *
-     * @param billItem        the bill item to update
-     * @param substituteStock the chosen substitute stock
+     * <p>One entity load happens here (the chosen {@link Stock} with its batch)
+     * — acceptable, as this is a single deliberate user action, not the hot
+     * lookup path.
+     *
+     * @param billItem the bill item to update
+     * @param selected the chosen substitute stock DTO
      * @return true if the swap succeeded
      */
-    public boolean swapStockIntoBillItem(BillItem billItem, Stock substituteStock) {
-        if (billItem == null || substituteStock == null || substituteStock.getItemBatch() == null) {
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public boolean swapStockIntoBillItem(BillItem billItem, StockDTO selected) {
+        if (billItem == null || selected == null || selected.getStockId() == null) {
+            return false;
+        }
+        Stock substituteStock = stockFacade.findWithItemBatch(selected.getStockId());
+        if (substituteStock == null || substituteStock.getItemBatch() == null) {
             return false;
         }
         ItemBatch itemBatch = substituteStock.getItemBatch();
@@ -209,5 +245,20 @@ public class PharmacySubstituteService {
             tItemBatch = resolveTable("ITEMBATCH");
         }
         return tItemBatch;
+    }
+
+    private String itemTable() {
+        if (tItem == null) {
+            tItem = resolveTable("ITEM");
+        }
+        return tItem;
+    }
+
+    private static Long toLong(Object o) {
+        return o == null ? null : ((Number) o).longValue();
+    }
+
+    private static Double toDouble(Object o) {
+        return o == null ? 0.0 : ((Number) o).doubleValue();
     }
 }

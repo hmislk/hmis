@@ -1294,9 +1294,7 @@ public class PharmacyBean {
         }
 
         if (item instanceof Amp) {
-            List<Amp> list = new ArrayList<>();
-            list.add((Amp) item);
-            return list;
+            return resolveAmpWithVmpSiblings((Amp) item);
         }
 
         if (item instanceof Ampp) {
@@ -1304,9 +1302,7 @@ public class PharmacyBean {
             if (amp == null) {
                 return new ArrayList<>();
             }
-            List<Amp> list = new ArrayList<>();
-            list.add(amp);
-            return list;
+            return resolveAmpWithVmpSiblings(amp);
         }
 
         if (item instanceof Vmp) {
@@ -1333,6 +1329,33 @@ public class PharmacyBean {
         }
 
         return new ArrayList<>();
+    }
+
+    /**
+     * Resolve an AMP to itself plus its sibling AMPs that share the same VMP
+     * (true alternative brands of the same virtual product). The original AMP
+     * is always included even if its VMP is null or has no siblings.
+     */
+    private List<Amp> resolveAmpWithVmpSiblings(Amp amp) {
+        List<Amp> list = new ArrayList<>();
+        if (amp == null) {
+            return list;
+        }
+        list.add(amp);
+        Vmp vmp = amp.getVmp();
+        if (vmp == null) {
+            return list;
+        }
+        List<Amp> siblings = findAmpsForVmp(vmp);
+        if (siblings != null) {
+            for (Amp sibling : siblings) {
+                if (sibling != null && sibling.getId() != null
+                        && !sibling.getId().equals(amp.getId())) {
+                    list.add(sibling);
+                }
+            }
+        }
+        return list;
     }
 
     public List<Amp> findAmpsForVtm(Vtm vtm) {

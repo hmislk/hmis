@@ -918,8 +918,8 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
     // On-demand substitute (alternative) medicines (issue #21697)
     // ===================================================================
     private BillItemData itemDataForSubstitution;
-    private Stock selectedSubstituteStock;
-    private List<Stock> substituteStocks;
+    private com.divudi.core.data.dto.StockDTO selectedSubstituteStock;
+    private List<com.divudi.core.data.dto.StockDTO> substituteStocks;
 
     public void prepareSubstitute(BillItemData bid) {
         itemDataForSubstitution = bid;
@@ -937,34 +937,32 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
 
     public void replaceSelectedSubstitute() {
         if (itemDataForSubstitution == null || selectedSubstituteStock == null
-                || selectedSubstituteStock.getItemBatch() == null) {
+                || selectedSubstituteStock.getStockId() == null) {
             JsfUtil.addErrorMessage("Please select a substitute stock.");
             return;
         }
 
-        Stock stock = selectedSubstituteStock;
-        ItemBatch itemBatch = stock.getItemBatch();
-        Item substituteItem = itemBatch.getItem();
+        com.divudi.core.data.dto.StockDTO sub = selectedSubstituteStock;
         BillItemData bid = itemDataForSubstitution;
 
-        // Same quantity as the line being substituted.
+        // Same quantity as the line being substituted. All rate/batch fields come
+        // from the single native lookup already on the DTO - no extra queries.
         double qty = Math.abs(bid.getQty());
 
-        double[] batchRates = fetchBatchRates(itemBatch.getId());
-        double batchRetailRate = batchRates[0];
-        double batchPurchaseRate = batchRates[1];
-        double batchWholesaleRate = batchRates[2];
-        Double batchCostRate = batchRates[3] > 0 ? batchRates[3] : null;
+        double batchRetailRate = sub.getRetailRate() != null ? sub.getRetailRate() : 0.0;
+        double batchPurchaseRate = sub.getPurchaseRate() != null ? sub.getPurchaseRate() : 0.0;
+        double batchWholesaleRate = sub.getWholesaleRate() != null ? sub.getWholesaleRate() : 0.0;
+        Double batchCostRate = (sub.getCostRate() != null && sub.getCostRate() > 0) ? sub.getCostRate() : null;
 
-        long ampItemId = resolveAmpItemId(substituteItem.getId());
+        long ampItemId = resolveAmpItemId(sub.getItemId());
 
-        bid.setItemId(substituteItem.getId());
-        bid.setItemName(substituteItem.getName());
+        bid.setItemId(sub.getItemId());
+        bid.setItemName(sub.getItemName());
         bid.setAmpItemId(ampItemId);
-        bid.setStockId(stock.getId());
-        bid.setItemBatchId(itemBatch.getId());
+        bid.setStockId(sub.getStockId());
+        bid.setItemBatchId(sub.getItemBatchId());
         bid.setPbiQty(-Math.abs(qty));
-        bid.setRetailRate(itemBatch.getRetailsaleRate());
+        bid.setRetailRate(batchRetailRate);
         bid.setPurchaseRate(batchPurchaseRate);
         bid.setWholesaleRate(batchWholesaleRate);
         bid.setCostRate(batchCostRate != null ? batchCostRate : batchPurchaseRate);
@@ -972,15 +970,16 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         bid.setBatchPurchaseRate(batchPurchaseRate);
         bid.setBatchWholesaleRate(batchWholesaleRate);
         bid.setBatchCostRate(batchCostRate);
-        bid.setDoe(itemBatch.getDateOfExpire());
-        bid.setDescription(substituteItem.getName());
+        bid.setDoe(sub.getDateOfExpire());
+        bid.setDescription(sub.getItemName());
 
-        double lineRetailRate = itemBatch.getRetailsaleRate();
+        double lineRetailRate = batchRetailRate;
         double grossValue = lineRetailRate * qty;
         double discountPct = 0.0;
         double discountValue = 0.0;
         try {
-            if (Boolean.TRUE.equals(substituteItem.isDiscountAllowed())) {
+            Item substituteItem = itemFacade.find(sub.getItemId());
+            if (substituteItem != null && Boolean.TRUE.equals(substituteItem.isDiscountAllowed())) {
                 Double pct = priceMatrixController.getPaymentSchemeDiscountPercent(
                         paymentMethod, paymentScheme, sessionController.getDepartment(), substituteItem);
                 discountPct = pct != null ? pct : 0.0;
@@ -988,7 +987,7 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Discount lookup failed for substitute item {0}: {1}",
-                    new Object[]{substituteItem.getId(), e.getMessage()});
+                    new Object[]{sub.getItemId(), e.getMessage()});
         }
         double netValue = grossValue - discountValue;
         double netRate = qty > 0 ? netValue / qty : lineRetailRate;
@@ -1013,19 +1012,19 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         this.itemDataForSubstitution = itemDataForSubstitution;
     }
 
-    public Stock getSelectedSubstituteStock() {
+    public com.divudi.core.data.dto.StockDTO getSelectedSubstituteStock() {
         return selectedSubstituteStock;
     }
 
-    public void setSelectedSubstituteStock(Stock selectedSubstituteStock) {
+    public void setSelectedSubstituteStock(com.divudi.core.data.dto.StockDTO selectedSubstituteStock) {
         this.selectedSubstituteStock = selectedSubstituteStock;
     }
 
-    public List<Stock> getSubstituteStocks() {
+    public List<com.divudi.core.data.dto.StockDTO> getSubstituteStocks() {
         return substituteStocks;
     }
 
-    public void setSubstituteStocks(List<Stock> substituteStocks) {
+    public void setSubstituteStocks(List<com.divudi.core.data.dto.StockDTO> substituteStocks) {
         this.substituteStocks = substituteStocks;
     }
 

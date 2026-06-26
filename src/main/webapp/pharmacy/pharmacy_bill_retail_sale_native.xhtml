@@ -297,30 +297,30 @@
                                                 id="substituteTable"
                                                 value="#{retailSaleNativeSqlController.substituteStocks}"
                                                 var="sStock"
-                                                rowKey="#{sStock.id}"
+                                                rowKey="#{sStock.stockId}"
                                                 paginator="true"
                                                 rows="10"
                                                 paginatorPosition="bottom"
                                                 emptyMessage="No substitute stocks found"
                                                 styleClass="table-striped">
                                                 <p:column headerText="Item">
-                                                    <h:outputText value="#{sStock.itemBatch.item.name}"/>
+                                                    <h:outputText value="#{sStock.itemName}"/>
                                                 </p:column>
                                                 <p:column headerText="Code">
-                                                    <h:outputText value="#{sStock.itemBatch.item.code}"/>
+                                                    <h:outputText value="#{sStock.code}"/>
                                                 </p:column>
                                                 <p:column headerText="Rate" style="text-align: right;">
-                                                    <h:outputText value="#{sStock.itemBatch.retailsaleRate}">
+                                                    <h:outputText value="#{sStock.retailRate}">
                                                         <f:convertNumber pattern="#,##0.00"/>
                                                     </h:outputText>
                                                 </p:column>
                                                 <p:column headerText="Stock" style="text-align: right;">
-                                                    <h:outputText value="#{sStock.stock}">
+                                                    <h:outputText value="#{sStock.stockQty}">
                                                         <f:convertNumber pattern="#,###.#"/>
                                                     </h:outputText>
                                                 </p:column>
                                                 <p:column headerText="Expiry">
-                                                    <h:outputText value="#{sStock.itemBatch.dateOfExpire}">
+                                                    <h:outputText value="#{sStock.dateOfExpire}">
                                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                     </h:outputText>
                                                 </p:column>
@@ -329,7 +329,7 @@
                                                         id="btnReplace"
                                                         value="Replace"
                                                         action="#{retailSaleNativeSqlController.replaceSelectedSubstitute}"
-                                                        update="tblBillItem :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}"
+                                                        update=":#{p:resolveFirstComponentWithId('tblBillItem', view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}"
                                                         oncomplete="PF('substituteDialog').hide();"
                                                         process="@this">
                                                         <f:setPropertyActionListener value="#{sStock}" target="#{retailSaleNativeSqlController.selectedSubstituteStock}" />
