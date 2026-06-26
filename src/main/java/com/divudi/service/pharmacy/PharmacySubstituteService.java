@@ -36,8 +36,11 @@ import javax.persistence.PersistenceContext;
  * ({@code PharmacyFastRetailSaleController}) and Sale for Cashier
  * ({@code PharmacyFastRetailSaleForCashierController}).
  *
- * <p>Alternative AMP resolution reuses {@link PharmacyBean#resolveAmps(Item)}
- * (exact AMP &rarr; same-strength sibling AMPs &rarr; VMP/VTM siblings); the
+ * <p>Alternative AMP resolution uses
+ * {@link PharmacyBean#resolveSubstituteAmps(Item)} (exact AMP &rarr;
+ * same-VMP sibling brands; VMP/VMPP/VTM/ATM &rarr; every AMP under the node).
+ * This is intentionally distinct from {@code PharmacyBean.resolveAmps}, which
+ * stays brand-exact for prescription / dispensing flows. The
  * in-stock, non-expired stock lookup is done with <b>native SQL</b> (FEFO
  * ordered) per issue #21697 requirement 2, consistent with the native retail
  * sale performance path ({@code RetailSaleNativeSqlService}). EclipseLink
@@ -78,21 +81,31 @@ public class PharmacySubstituteService {
      * {@code findWithItemBatch} per result row, keeping the on-demand click fast
      * even when an AMP has many sibling brands across many batches.
      *
-     * @param item       the bill item's current item to find alternatives for
-     * @param department the current department whose stock should be considered
+     * @param item        the bill item's current item to find alternatives for
+     * @param department  the current department whose stock should be considered
+     * @param requiredQty the bill-item quantity that must be covered; batches
+     *                    with less stock than this are excluded so the cashier
+     *                    can never pick an under-stocked substitute. Values
+     *                    {@code <= 0} fall back to requiring any positive stock.
      * @return list of {@link StockDTO}, FEFO-ordered, never null
      */
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public List<StockDTO> findSubstituteStocks(Item item, Department department) {
+    public List<StockDTO> findSubstituteStocks(Item item, Department department, double requiredQty) {
         List<StockDTO> result = new ArrayList<>();
         if (item == null || department == null || department.getId() == null) {
             return result;
         }
 
-        List<Amp> amps = pharmacyBean.resolveAmps(item);
+        List<Amp> amps = pharmacyBean.resolveSubstituteAmps(item);
         if (amps == null || amps.isEmpty()) {
             return result;
         }
+
+        // Never offer a batch that cannot cover the existing line quantity. The
+        // normal add/edit paths already guard qty > stock; mirror that here so a
+        // selected substitute is always valid for the current line. Default to
+        // any positive stock when the caller has no meaningful quantity.
+        double minStock = requiredQty > 0 ? requiredQty : 0d;
 
         List<Long> ampIds = new ArrayList<>();
         for (Amp amp : amps) {
@@ -104,9 +117,12 @@ public class PharmacySubstituteService {
             return result;
         }
 
-        // Native SQL: in-stock (> 0), non-expired (expiry strictly in the
-        // future), current department, item in resolved AMPs; FEFO ordered.
+        // Native SQL: stock covering the line qty, non-expired (expiry strictly
+        // in the future), current department, item in resolved AMPs, and not
+        // retired (Stock, ItemBatch or Item) — retired rows are admin
+        // soft-deletes and must never be offered as substitutes. FEFO ordered.
         // All display + swap fields are returned in one round-trip.
+        // Params: ?1 = department, ?2 = min stock, ?3.. = AMP ids.
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT s.ID, s.itemBatch_ID, ib.item_ID, i.name, i.code, ")
                 .append("ib.retailsaleRate, s.stock, ib.dateOfExpire, ib.batchNo, ")
@@ -115,11 +131,14 @@ public class PharmacySubstituteService {
                 .append("JOIN ").append(itemBatchTable()).append(" ib ON s.itemBatch_ID = ib.ID ")
                 .append("JOIN ").append(itemTable()).append(" i ON ib.item_ID = i.ID ")
                 .append("WHERE s.department_ID = ?1 ")
-                .append("AND s.stock > 0 ")
+                .append("AND s.stock >= ?2 AND s.stock > 0 ")
                 .append("AND ib.dateOfExpire > NOW() ")
+                .append("AND (s.retired = 0 OR s.retired IS NULL) ")
+                .append("AND (ib.retired = 0 OR ib.retired IS NULL) ")
+                .append("AND (i.retired = 0 OR i.retired IS NULL) ")
                 .append("AND ib.item_ID IN (");
         for (int i = 0; i < ampIds.size(); i++) {
-            sql.append("?").append(i + 2);
+            sql.append("?").append(i + 3);
             if (i < ampIds.size() - 1) {
                 sql.append(",");
             }
@@ -128,8 +147,9 @@ public class PharmacySubstituteService {
 
         javax.persistence.Query q = em.createNativeQuery(sql.toString());
         q.setParameter(1, department.getId());
+        q.setParameter(2, minStock);
         for (int i = 0; i < ampIds.size(); i++) {
-            q.setParameter(i + 2, ampIds.get(i));
+            q.setParameter(i + 3, ampIds.get(i));
         }
 
         @SuppressWarnings("unchecked")
@@ -183,6 +203,12 @@ public class PharmacySubstituteService {
         }
         ItemBatch itemBatch = substituteStock.getItemBatch();
 
+        // ItemBatch#getCostRate() is nullable in this codebase (null cost rate
+        // with purcahseRate == 0). Coalesce to 0.0 so unboxing into the
+        // primitive setters / BigDecimal.valueOf below never NPEs. Mirrors the
+        // native lookup, which already maps null cost rates to 0.0.
+        double costRate = itemBatch.getCostRate() == null ? 0d : itemBatch.getCostRate();
+
         billItem.setItem(itemBatch.getItem());
 
         PharmaceuticalBillItem phItem = billItem.getPharmaceuticalBillItem();
@@ -200,8 +226,8 @@ public class PharmacySubstituteService {
         phItem.setRetailRateInUnit(itemBatch.getRetailsaleRate());
         phItem.setPurchaseRatePack(itemBatch.getPurcahseRate());
         phItem.setRetailRatePack(itemBatch.getRetailsaleRate());
-        phItem.setCostRate(itemBatch.getCostRate());
-        phItem.setCostRatePack(itemBatch.getCostRate());
+        phItem.setCostRate(costRate);
+        phItem.setCostRatePack(costRate);
 
         BillItemFinanceDetails financeDetails = billItem.getBillItemFinanceDetails();
         if (financeDetails != null) {
@@ -209,11 +235,11 @@ public class PharmacySubstituteService {
             BigDecimal saleRate = BigDecimal.valueOf(itemBatch.getRetailsaleRate());
             financeDetails.setLineGrossRate(saleRate);
             financeDetails.setLineNetRate(saleRate);
-            financeDetails.setLineCostRate(BigDecimal.valueOf(itemBatch.getCostRate()));
+            financeDetails.setLineCostRate(BigDecimal.valueOf(costRate));
             financeDetails.setRetailSaleRate(saleRate);
 
             BigDecimal qty = financeDetails.getQuantity() != null ? financeDetails.getQuantity() : BigDecimal.ONE;
-            financeDetails.setValueAtCostRate(BigDecimal.valueOf(itemBatch.getCostRate()).multiply(qty));
+            financeDetails.setValueAtCostRate(BigDecimal.valueOf(costRate).multiply(qty));
             financeDetails.setValueAtPurchaseRate(BigDecimal.valueOf(itemBatch.getPurcahseRate()).multiply(qty));
             financeDetails.setValueAtRetailRate(saleRate.multiply(qty));
         }

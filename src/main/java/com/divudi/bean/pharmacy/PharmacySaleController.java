@@ -1752,7 +1752,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (bi == null || bi.getItem() == null) {
             return;
         }
-        substituteStocks = pharmacySubstituteService.findSubstituteStocks(bi.getItem(), sessionController.getDepartment());
+        double requiredQty = bi.getQty() == null ? 0d : bi.getQty();
+        substituteStocks = pharmacySubstituteService.findSubstituteStocks(bi.getItem(), sessionController.getDepartment(), requiredQty);
     }
 
     public void replaceSelectedSubstitute() {
@@ -1763,6 +1764,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (pharmacySubstituteService.swapStockIntoBillItem(itemForSubstitution, selectedSubstituteStock)) {
             calculateBillItemsAndBillTotalsOfPreBill();
             JsfUtil.addSuccessMessage("Stock replaced successfully.");
+        } else {
+            JsfUtil.addErrorMessage("Could not replace the stock — the selected substitute may no longer be available. Please try again.");
         }
     }
 

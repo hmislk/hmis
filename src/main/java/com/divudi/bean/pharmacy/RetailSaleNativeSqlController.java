@@ -932,7 +932,8 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         if (item == null) {
             return;
         }
-        substituteStocks = pharmacySubstituteService.findSubstituteStocks(item, sessionController.getDepartment());
+        double requiredQty = Math.abs(bid.getQty());
+        substituteStocks = pharmacySubstituteService.findSubstituteStocks(item, sessionController.getDepartment(), requiredQty);
     }
 
     public void replaceSelectedSubstitute() {

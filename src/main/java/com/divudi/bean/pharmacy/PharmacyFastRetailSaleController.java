@@ -971,7 +971,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         if (bi == null || bi.getItem() == null) {
             return;
         }
-        substituteStocks = pharmacySubstituteService.findSubstituteStocks(bi.getItem(), sessionController.getDepartment());
+        double requiredQty = bi.getQty() == null ? 0d : bi.getQty();
+        substituteStocks = pharmacySubstituteService.findSubstituteStocks(bi.getItem(), sessionController.getDepartment(), requiredQty);
     }
 
     public void replaceSelectedSubstitute() {
@@ -982,6 +983,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         if (pharmacySubstituteService.swapStockIntoBillItem(itemForSubstitution, selectedSubstituteStock)) {
             calculateAllRates();
             JsfUtil.addSuccessMessage("Stock replaced successfully.");
+        } else {
+            JsfUtil.addErrorMessage("Could not replace the stock — the selected substitute may no longer be available. Please try again.");
         }
     }
 
