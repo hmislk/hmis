@@ -1237,6 +1237,7 @@ public class PharmacyIssueController implements Serializable {
         }
 
         setPrintBill(getBillFacade().find(billId));
+        getPrintBill().setBillItems(items);
         billPreview = true;
         if (anyDeductionFailed) {
             JsfUtil.addErrorMessage("Warning: Insufficient stock for one or more items. Those items were recorded with zero quantity.");
