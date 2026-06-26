@@ -430,7 +430,37 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Value"  width="8em"  class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                    <p:column headerText="Gross Value"  width="8em"  class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                        <h:outputText value="#{bi.grossValue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{pharmacySaleBhtController.preBill.total}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Discount"  width="8em"  class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                        <h:outputText value="#{bi.discount}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{pharmacySaleBhtController.preBill.discount}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Margin"  width="8em"  class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                        <h:outputText value="#{bi.marginValue}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <f:facet name="footer" >
+                                            <h:outputText value="#{pharmacySaleBhtController.preBill.margin}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column headerText="Net Value"  width="8em"  class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
                                         <h:outputText value="#{bi.netValue}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
