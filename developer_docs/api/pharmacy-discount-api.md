@@ -51,8 +51,9 @@ Supply `paymentSchemeId` or `paymentSchemeName` to identify the scheme.
 **Primary use case.** Idempotent bulk upsert: sets the same `discountPercent` across **all**
 non-retired `PharmaceuticalItemCategory` rows for the given payment scheme.
 
-- If a matching non-retired row already exists for `(category, paymentScheme, billType, paymentMethod)`,
-  its `discountPercent` is updated.
+- If a matching non-retired row already exists for `(category, paymentScheme, paymentMethod)`,
+  its `discountPercent` is updated. (`billType` is stored on the row but the runtime billing lookup
+  does not filter by it, so the uniqueness key used here matches the effective key at billing time.)
 - If no matching row exists, a new one is created.
 - Re-running with the same parameters is safe — produces `created=0, updated=N`.
 

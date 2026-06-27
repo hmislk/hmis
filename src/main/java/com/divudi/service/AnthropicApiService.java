@@ -1386,7 +1386,7 @@ public class AnthropicApiService implements Serializable {
                         + "BULK: upsert across ALL pharmacy item categories; required: discountPercent + paymentMethod + (paymentSchemeId or paymentSchemeName); optional: billType.\n"
                         + "PUT: update a row; required: id + discountPercent.\n"
                         + "DELETE: soft-retire a row; required: id.\n\n"
-                        + "Default billType is PharmacySale when omitted. Always confirm with the user before BULK, PUT, or DELETE.")
+                        + "Default billType is PharmacySale when omitted. Always confirm with the user before POST, BULK, PUT, or DELETE.")
                 .add("input_schema", Json.createObjectBuilder()
                         .add("type", "object")
                         .add("properties", Json.createObjectBuilder()
@@ -1408,7 +1408,7 @@ public class AnthropicApiService implements Serializable {
                                         .add("description", "Category id — optional for POST (single row)"))
                                 .add("paymentMethod", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "PaymentMethod enum value, e.g. Cash, Credit, MultiplePaymentMethods — optional"))
+                                        .add("description", "PaymentMethod enum value, e.g. Cash, Credit, MultiplePaymentMethods — required for POST and BULK; optional for LIST"))
                                 .add("billType", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "BillType enum value, e.g. PharmacySale — defaults to PharmacySale when omitted"))
@@ -4711,11 +4711,11 @@ public class AnthropicApiService implements Serializable {
         appendModule(sb, "Pharmacy Discounts", "/pharmacy/discounts",
                 "Manage PaymentSchemeDiscount rows that control per-category discount percentages applied during pharmacy billing for a given payment scheme. "
                 + "Use BULK to set the same discount % across all pharmacy item categories at once (idempotent — re-running updates existing rows, never duplicates). "
-                + "Default billType is PharmacySale. Always confirm with the user before BULK, PUT, or DELETE.",
-                null,
+                + "Default billType is PharmacySale. Always confirm with the user before POST, BULK, PUT, or DELETE.",
+                githubUrl(branch, "developer_docs/api/pharmacy-discount-api.md"),
                 new String[][]{
                     {"GET",    "/pharmacy/discounts",       "List non-retired discount rows. Filters: paymentSchemeId, paymentSchemeName, billType, limit"},
-                    {"POST",   "/pharmacy/discounts",       "Create a single discount row. Body: discountPercent (required), categoryId, paymentSchemeId, paymentSchemeName, paymentMethod, billType"},
+                    {"POST",   "/pharmacy/discounts",       "Create a single discount row. Body: discountPercent + paymentMethod (required), categoryId, paymentSchemeId, paymentSchemeName, billType"},
                     {"POST",   "/pharmacy/discounts/bulk",  "Bulk upsert: set discountPercent for ALL pharmacy item categories under a payment scheme. Body: discountPercent, paymentMethod (required), paymentSchemeId or paymentSchemeName, optional billType"},
                     {"PUT",    "/pharmacy/discounts/{id}",  "Update a discount row (discountPercent)"},
                     {"DELETE", "/pharmacy/discounts/{id}",  "Soft-retire a discount row"}
