@@ -789,7 +789,7 @@ public class PharmacyIssueController implements Serializable {
             return true;
         }
         if (preBill.getInvoiceNumber() == null || preBill.getInvoiceNumber().trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please Fill Invoice Number");
+            JsfUtil.addErrorMessage("Please Fill Request Number");
             return true;
         }
         return false;
@@ -1502,9 +1502,9 @@ public class PharmacyIssueController implements Serializable {
                 return 0.0;
             }
         }
-        if (getQty() == null) {
-            errorMessage = "Please enter a quentity";
-            JsfUtil.addErrorMessage("Please enter a quentity");
+        if (getQty() == null || getQty() <= 0) {
+            errorMessage = "Please enter a quantity greater than zero";
+            JsfUtil.addErrorMessage("Please enter a quantity greater than zero");
             return 0.0;
         }
 
@@ -1622,14 +1622,9 @@ public class PharmacyIssueController implements Serializable {
             }
         }
 
-        if (getQty() == null) {
-            errorMessage = "Please enter a quentity";
-            JsfUtil.addErrorMessage("Please enter a quentity");
-            return;
-        }
-        if (getQty() == 0.0) {
-            errorMessage = "Please enter a quentity";
-            JsfUtil.addErrorMessage("Quentity Zero?");
+        if (getQty() == null || getQty() <= 0) {
+            errorMessage = "Please enter a quantity greater than zero";
+            JsfUtil.addErrorMessage("Please enter a quantity greater than zero");
             return;
         }
 
