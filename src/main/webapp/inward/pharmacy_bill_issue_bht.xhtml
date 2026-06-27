@@ -398,14 +398,14 @@
                                     <p:column headerText="Item" width="2em">
                                         <h:outputText value="#{s+1}" ></h:outputText>
                                     </p:column>
-                                    <p:column headerText="Item" style="min-width: 20em;" >
+                                    <p:column headerText="Item" width="15em">
                                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.transDisplayItemName}" >
                                             &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > bi.pharmaceuticalBillItem.doe ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.doe ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > bi.pharmaceuticalBillItem.doe ?'Expired ':
                                                                      commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.doe ?'Expired Soon':''}"
                                                          severity="#{commonFunctionsProxy.currentDateTime > bi.pharmaceuticalBillItem.doe ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > bi.pharmaceuticalBillItem.doe ?'warning':''}" />
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Quantity"  width="8em"  class="text-end">
+                                    <p:column headerText="Quantity" width="6em" class="text-end">
                                         <p:inputText
                                             autocomplete="off"
                                             id="ipTblQty"
@@ -419,12 +419,12 @@
                                                 update=":bill:pBis panelErrorMsg" />
                                         </p:inputText>
                                     </p:column>
-                                    <p:column headerText="Rate"  width="8em"  class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                    <p:column headerText="Rate" width="6em" class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
                                         <h:outputText value="#{bi.netRate}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="Gross Value"  width="8em"  class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                    <p:column headerText="Gross Value" width="6em" class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
                                         <h:outputText value="#{bi.grossValue}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
@@ -434,7 +434,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="Discount"  width="8em"  class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                    <p:column headerText="Discount" width="6em" class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
                                         <h:outputText value="#{bi.discount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
@@ -444,7 +444,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="Margin"  width="8em"  class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                    <p:column headerText="Margin" width="6em" class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
                                         <h:outputText value="#{bi.marginValue}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
@@ -454,7 +454,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="Net Value"  width="8em"  class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                    <p:column headerText="Net Value" width="6em" class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
                                         <h:outputText value="#{bi.netValue}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
@@ -464,7 +464,7 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column headerText="Expiry" width="8em" class="text-end">
+                                    <p:column headerText="Expiry" width="6em" class="text-end">
                                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.doe}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
                                         </h:outputLabel>
