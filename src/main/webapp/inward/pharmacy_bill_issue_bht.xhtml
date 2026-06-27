@@ -160,12 +160,13 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <h:outputText styleClass="fa-solid fa-pills fa-lg" />
-                                <p:outputLabel value="Direct Issue of Medicines to Inpatients" class="mx-4" />
+                                <h:outputText value="Direct Issue of Medicines to Inpatients" styleClass="mx-4" />
                             </div>
                             <div class="d-flex gap-2 align-items-center">
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                     <div class="d-flex gap-2">
                                         <p:commandButton
+                                            id="btnPatientLookup"
                                             ajax="false"
                                             value="Patient Lookup"
                                             icon="fa fa-search"
@@ -173,6 +174,7 @@
                                             action="#{patientController.navigateToSearchPatients()}" >
                                         </p:commandButton>
                                         <p:commandButton
+                                            id="btnPatientProfile"
                                             ajax="false"
                                             icon="fa fa-user"
                                             value="Patient Profile"
@@ -184,6 +186,7 @@
                                             </f:setPropertyActionListener>
                                         </p:commandButton>
                                         <p:commandButton
+                                            id="btnInpatientDashboard"
                                             ajax="false"
                                             icon="fa fa-id-card"
                                             value="Inpatient Dashboard"
@@ -198,6 +201,7 @@
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                     <p:commandButton
+                                        id="btnNursingWorkBench"
                                         value="Nursing WorkBench"
                                         action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                         ajax="false"
@@ -208,6 +212,7 @@
                             </div>
                             <div class="d-flex gap-2 align-items-center">
                                 <p:commandButton
+                                    id="btnNewDirectIssueBill"
                                     value="New Direct Issue Bill"
                                     ajax="false"
                                     class="ui-button-warning"
@@ -511,8 +516,9 @@
                             <div class="d-flex justify-content-between align-items-center">
                                 <div class="d-flex gap-2 align-items-center">
                                     <h:outputText styleClass="fa-solid fa-screwdriver-wrench fa-lg" />
-                                    <p:outputLabel value="BHT Issue" class="mx-1"/>
+                                    <h:outputText value="BHT Issue" styleClass="mx-1"/>
                                     <p:commandButton
+                                        id="btnBhtIssueSettings"
                                         rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                                         value="Settings"
                                         icon="fas fa-cog"
@@ -524,6 +530,7 @@
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                         <div class="d-flex gap-2">
                                             <p:commandButton
+                                                id="btnPreviewPatientLookup"
                                                 ajax="false"
                                                 value="Patient Lookup"
                                                 icon="fa fa-search"
@@ -531,6 +538,7 @@
                                                 action="#{patientController.navigateToSearchPatients()}">
                                             </p:commandButton>
                                             <p:commandButton
+                                                id="btnPreviewPatientProfile"
                                                 ajax="false"
                                                 icon="fa fa-user"
                                                 value="Patient Profile"
@@ -542,6 +550,7 @@
                                                 </f:setPropertyActionListener>
                                             </p:commandButton>
                                             <p:commandButton
+                                                id="btnPreviewInpatientDashboard"
                                                 ajax="false"
                                                 value="Inpatient Dashboard"
                                                 icon="fa fa-id-card"
@@ -556,6 +565,7 @@
                                     </h:panelGroup>
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                         <p:commandButton
+                                            id="btnPreviewNursingWorkBench"
                                             value="Nursing WorkBench"
                                             action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                             ajax="false"
@@ -566,6 +576,7 @@
                                 </div>
                                 <div class="d-flex gap-2 align-items-center">
                                     <p:commandButton
+                                        id="btnPreviewNewDirectIssueBill"
                                         value="New Direct Issue Bill"
                                         ajax="false"
                                         class="ui-button-warning"
