@@ -587,6 +587,9 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
 
         // Payment
         pbd.setPaymentMethodLabel(paymentMethod != null ? paymentMethod.getLabel() : "");
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            pbd.setPayments(buildPrintPaymentLines());
+        }
         if (paymentScheme != null) {
             pbd.setPaymentSchemePrintingName(
                     paymentScheme.getPrintingName() != null ? paymentScheme.getPrintingName() : paymentScheme.getName());
@@ -615,8 +618,27 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         pbd.setDiscount(discTot);
         pbd.setNetTotal(netTot);
         pbd.setDiscountPercentPharmacy(grossTot > 0 ? (discTot / grossTot) * 100.0 : 0.0);
-        pbd.setCashPaid(cashPaid);
-        pbd.setBalance(cashPaid - netTot);
+        // For Multiple Payment Methods the Tendered field is not used; the amount
+        // paid is the sum of the entered components. Show that (and a zero
+        // balance) instead of the unused single cashPaid (which is 0.0).
+        double tendered = cashPaid;
+        double printedBalance = tendered - netTot;
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            tendered = 0.0;
+            for (PrintBillData.PaymentLine line : pbd.getPayments()) {
+                tendered += line.getValue();
+            }
+            // settle accepts the split when it is within 1.0 of the net total
+            // (validateMultiplePaymentsFailed); clamp the printed balance to zero
+            // within the same tolerance so an already-settled bill never shows a
+            // residual balance.
+            printedBalance = tendered - netTot;
+            if (Math.abs(printedBalance) <= 1.0) {
+                printedBalance = 0.0;
+            }
+        }
+        pbd.setCashPaid(tendered);
+        pbd.setBalance(printedBalance);
 
         printBill = pbd;
 
@@ -634,6 +656,79 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
             printCopy.add(p);
         }
         printBillItems = printCopy;
+    }
+
+    /**
+     * Builds one {@link PrintBillData.PaymentLine} per entered component of a
+     * Multiple Payment Methods bill, so the printout itemises each payment
+     * (e.g. "Cash 50.00", "Credit Card 145.90") instead of showing the bundled
+     * "Multiple Payment Methods" label with a single value. Components with no
+     * value are skipped (matching the settle path).
+     */
+    private List<PrintBillData.PaymentLine> buildPrintPaymentLines() {
+        List<PrintBillData.PaymentLine> lines = new ArrayList<>();
+        if (getPaymentMethodData().getPaymentMethodMultiple() == null
+                || getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
+            return lines;
+        }
+        for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            if (cd == null || cd.getPaymentMethod() == null || cd.getPaymentMethodData() == null) {
+                continue;
+            }
+            PaymentMethodData cpmd = cd.getPaymentMethodData();
+            double value = 0.0;
+            String reference = "";
+            switch (cd.getPaymentMethod()) {
+                case Cash:
+                    value = cpmd.getCash().getTotalValue();
+                    break;
+                case Card:
+                    value = cpmd.getCreditCard().getTotalValue();
+                    reference = cpmd.getCreditCard().getNo();
+                    break;
+                case Cheque:
+                    value = cpmd.getCheque().getTotalValue();
+                    reference = cpmd.getCheque().getNo();
+                    break;
+                case ewallet:
+                    value = cpmd.getEwallet().getTotalValue();
+                    reference = cpmd.getEwallet().getReferenceNo();
+                    break;
+                case Slip:
+                    value = cpmd.getSlip().getTotalValue();
+                    reference = cpmd.getSlip().getReferenceNo();
+                    break;
+                case OnlineSettlement:
+                    value = cpmd.getOnlineSettlement().getTotalValue();
+                    reference = cpmd.getOnlineSettlement().getReferenceNo();
+                    break;
+                case IOU:
+                    value = cpmd.getIou().getTotalValue();
+                    reference = cpmd.getIou().getReferenceNo();
+                    break;
+                case Credit:
+                    value = cpmd.getCredit().getTotalValue();
+                    reference = cpmd.getCredit().getReferenceNo();
+                    break;
+                case PatientDeposit:
+                    value = cpmd.getPatient_deposit().getTotalValue();
+                    break;
+                case Staff:
+                    value = cpmd.getStaffCredit().getTotalValue();
+                    break;
+                case Staff_Welfare:
+                    value = cpmd.getStaffWelfare().getTotalValue();
+                    break;
+                default:
+                    break;
+            }
+            if (value <= 0.0) {
+                continue;
+            }
+            lines.add(new PrintBillData.PaymentLine(
+                    cd.getPaymentMethod().getLabel(), value, reference == null ? "" : reference));
+        }
+        return lines;
     }
 
     // -----------------------------------------------------------------------

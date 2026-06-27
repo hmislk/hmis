@@ -902,8 +902,30 @@ public class RetailSaleNativeSqlService {
         pbd.setTotal(gross);
         pbd.setDiscount(disc);
         pbd.setDiscountPercentPharmacy(gross > 0 ? (disc / gross) * 100.0 : 0.0);
-        pbd.setCashPaid(bill.getCashPaid());
-        pbd.setBalance(bill.getCashPaid() - net);
+
+        // For Multiple Payment Methods, bill.cashPaid stays 0 and the methods are
+        // recorded as individual Payment rows. Rebuild the itemised payment lines
+        // (and derive the amount paid from their sum) so reprinted/reopened bills
+        // match what the settle-time printout shows.
+        double cashPaid = bill.getCashPaid();
+        double balance = cashPaid - net;
+        if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            List<PrintBillData.PaymentLine> lines = buildPrintPaymentLinesFromPersisted(bill);
+            pbd.setPayments(lines);
+            cashPaid = 0.0;
+            for (PrintBillData.PaymentLine line : lines) {
+                cashPaid += line.getValue();
+            }
+            // The split is accepted at settle when within 1.0 of the net total;
+            // clamp the reprinted balance to zero within the same tolerance so a
+            // settled bill never shows a residual balance.
+            balance = cashPaid - net;
+            if (Math.abs(balance) <= 1.0) {
+                balance = 0.0;
+            }
+        }
+        pbd.setCashPaid(cashPaid);
+        pbd.setBalance(balance);
 
         // Items are on the BilledBill. For legacy plain-Bill records (pre two-bill structure)
         // or PreBill IDs passed in, fall back to referenceBill if the bill has no items.
@@ -939,5 +961,47 @@ public class RetailSaleNativeSqlService {
         }
 
         return new Object[]{pbd, itemList};
+    }
+
+    /**
+     * Rebuilds the itemised payment lines for a reprinted/reopened Multiple
+     * Payment Methods bill from the persisted {@link Payment} rows. Each line
+     * carries the method label, paid value and a method-specific reference
+     * (card/cheque/slip/ewallet/online/credit reference) when available.
+     */
+    private List<PrintBillData.PaymentLine> buildPrintPaymentLinesFromPersisted(Bill bill) {
+        List<PrintBillData.PaymentLine> lines = new ArrayList<>();
+        List<Payment> payments = em.createQuery(
+                "select p from Payment p where p.bill = :bill"
+                + " and p.retired = false"
+                + " order by p.id", Payment.class)
+                .setParameter("bill", bill)
+                .getResultList();
+        for (Payment p : payments) {
+            if (p.getPaymentMethod() == null || p.getPaidValue() <= 0.0) {
+                continue;
+            }
+            String reference = "";
+            switch (p.getPaymentMethod()) {
+                case Card:
+                    reference = safeStr(p.getCreditCardRefNo());
+                    break;
+                case Cheque:
+                    reference = safeStr(p.getChequeRefNo());
+                    break;
+                case ewallet:
+                case Slip:
+                case OnlineSettlement:
+                case IOU:
+                case Credit:
+                    reference = safeStr(p.getReferenceNo());
+                    break;
+                default:
+                    break;
+            }
+            lines.add(new PrintBillData.PaymentLine(
+                    p.getPaymentMethod().getLabel(), p.getPaidValue(), reference));
+        }
+        return lines;
     }
 }
