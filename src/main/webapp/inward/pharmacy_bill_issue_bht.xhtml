@@ -509,9 +509,16 @@
                     <p:panel>
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">
-                                <div>
+                                <div class="d-flex gap-2 align-items-center">
                                     <h:outputText styleClass="fa-solid fa-screwdriver-wrench fa-lg" />
                                     <p:outputLabel value="BHT Issue" class="mx-1"/>
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        class="ui-button-secondary"
+                                        type="button"
+                                        onclick="PF('bhtIssueConfigDialog').show();" />
                                 </div>
                                 <div class="d-flex gap-2 align-items-center">
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
@@ -585,13 +592,6 @@
                                         ajax="false" >
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
-                                    <p:commandButton
-                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
-                                        value="Settings"
-                                        icon="fas fa-cog"
-                                        class="ui-button-secondary"
-                                        type="button"
-                                        onclick="PF('bhtIssueConfigDialog').show();" />
                                 </div>
                             </div>
                         </f:facet>
