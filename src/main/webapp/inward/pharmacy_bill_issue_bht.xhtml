@@ -428,41 +428,21 @@
                                         <h:outputText value="#{bi.grossValue}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <f:facet name="footer" >
-                                            <h:outputText value="#{pharmacySaleBhtController.preBill.total}" >
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </h:outputText>
-                                        </f:facet>
                                     </p:column>
                                     <p:column headerText="Discount" width="6em" class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
                                         <h:outputText value="#{bi.discount}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <f:facet name="footer" >
-                                            <h:outputText value="#{pharmacySaleBhtController.preBill.discount}" >
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </h:outputText>
-                                        </f:facet>
                                     </p:column>
                                     <p:column headerText="Margin" width="6em" class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
                                         <h:outputText value="#{bi.marginValue}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <f:facet name="footer" >
-                                            <h:outputText value="#{pharmacySaleBhtController.preBill.margin}" >
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </h:outputText>
-                                        </f:facet>
                                     </p:column>
                                     <p:column headerText="Net Value" width="6em" class="text-end" rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
                                         <h:outputText value="#{bi.netValue}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <f:facet name="footer" >
-                                            <h:outputText value="#{pharmacySaleBhtController.preBill.netTotal}" >
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </h:outputText>
-                                        </f:facet>
                                     </p:column>
                                     <p:column headerText="Expiry" width="6em" class="text-end">
                                         <h:outputLabel value="#{bi.pharmaceuticalBillItem.doe}" >
@@ -480,6 +460,46 @@
                                     </p:column>
 
                                 </p:dataTable>
+
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowDrugCharges')}">
+                                    <div class="d-flex justify-content-end mt-2 me-1">
+                                        <table class="table table-sm table-borderless w-auto text-end" style="min-width:22em;">
+                                            <tr>
+                                                <td class="text-muted pe-4">Gross Total</td>
+                                                <td class="fw-semibold">
+                                                    <h:outputText value="#{pharmacySaleBhtController.preBill.total}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted pe-4">Discount</td>
+                                                <td class="fw-semibold">
+                                                    <h:outputText value="#{pharmacySaleBhtController.preBill.discount}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted pe-4">Margin</td>
+                                                <td class="fw-semibold">
+                                                    <h:outputText value="#{pharmacySaleBhtController.preBill.margin}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                            <tr class="border-top">
+                                                <td class="text-muted pe-4 pt-1"><strong>Net Total</strong></td>
+                                                <td class="fw-bold pt-1" style="font-size:1.1em;">
+                                                    <h:outputText value="#{pharmacySaleBhtController.preBill.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00"/>
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </h:panelGroup>
+
                             </p:panel>
                         </div>
                     </div>
