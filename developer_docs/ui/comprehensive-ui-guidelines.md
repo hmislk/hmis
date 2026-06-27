@@ -263,6 +263,30 @@ Rules:
 - Avoid placing decorative icons in every cell; reserve icons for headers or action columns.
 - Use neutral currency labels (e.g., `Requested Value`, `Net Amount`) and neutral icons such as `pi pi-money-bill` (or `fas fa-coins` when no PrimeFaces option exists) so pages stay multi-currency friendly.
 
+### DataTable Compact Size (required for data-entry and multi-column tables)
+
+Always add `styleClass="p-datatable-sm"` to `p:dataTable` components on data-entry and transaction pages. This is the PrimeFaces 14 standard for compact row padding and keeps more rows visible without scrolling.
+
+```xhtml
+<p:dataTable id="tbl"
+             value="#{bean.items}"
+             var="item"
+             styleClass="p-datatable-sm">
+```
+
+**Column width rules** — always use the `width` attribute on `p:column`, never `style="min-width:…"` (PrimeFaces ignores CSS min-width in its column width allocation algorithm):
+
+| Column type | Recommended width |
+|---|---|
+| Row index (`#`) | `2em` |
+| Item / description name | `15em` |
+| Quantity / short number | `6em` |
+| Currency value | `6em` |
+| Date | `6em` |
+| Actions | `8em`–`10em` |
+
+If the sum of all column widths exceeds the table container, add `scrollable="true"` to enable horizontal scroll rather than letting columns collapse to zero.
+
 ### Badge Usage for Status Indicators
 - **ALWAYS use PrimeFaces `p:badge`** instead of HTML/Bootstrap badge classes (`badge`, `badge-*`)
 - PrimeFaces badges provide better visibility and theming support
