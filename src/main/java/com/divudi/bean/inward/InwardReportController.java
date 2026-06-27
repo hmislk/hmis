@@ -65,6 +65,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.common.EnumController;
 import com.divudi.core.data.dto.AdmissionDischargeDTO;
+import com.divudi.core.data.dto.PatientEncounterDto;
 import com.divudi.core.data.dto.RoomCategoryOccupancyDTO;
 import com.divudi.core.data.dto.RoomOccupancyRowDTO;
 import com.divudi.core.facade.PatientRoomFacade;
@@ -281,7 +282,7 @@ public class InwardReportController implements Serializable {
 
     // Surgery Cost Estimation Report
     private List<SurgeryCostEstimationDTO> surgeryCostEstimationList;
-    private Patient selectedPatient;
+    private PatientEncounterDto selectedPatient;
     private Staff selectedAdmitDoctor;
     private Staff selectedSurgeon;
     private Staff selectedAssistantSurgeon;
@@ -364,11 +365,11 @@ public class InwardReportController implements Serializable {
         this.surgeryCostEstimationList = surgeryCostEstimationList;
     }
 
-    public Patient getSelectedPatient() {
+    public PatientEncounterDto getSelectedPatient() {
         return selectedPatient;
     }
 
-    public void setSelectedPatient(Patient selectedPatient) {
+    public void setSelectedPatient(PatientEncounterDto selectedPatient) {
         this.selectedPatient = selectedPatient;
     }
 
@@ -7771,9 +7772,24 @@ public class InwardReportController implements Serializable {
             jpql.append(" AND item = :surgeryItem ");
             params.put("surgeryItem", surgeryItem);
         }
+//        if (selectedPatient != null) {
+//            jpql.append(" AND admission.patient.person.name = :selectedPatient ");
+//            params.put("selectedPatient", selectedPatient.getPatientName());
+//        }
         if (selectedPatient != null) {
-            jpql.append(" AND admission.patient = :selectedPatient ");
-            params.put("selectedPatient", selectedPatient);
+            String searchTerm = null;
+            if (selectedPatient.getPatientName() != null
+                    && !selectedPatient.getPatientName().trim().isEmpty()) {
+                searchTerm = selectedPatient.getPatientName().trim().toLowerCase();
+            } else if (selectedPatient.getPhn() != null
+                    && !selectedPatient.getPhn().trim().isEmpty()) {
+                searchTerm = selectedPatient.getPhn().trim().toLowerCase();
+            }
+            if (searchTerm != null) {
+                jpql.append("AND (LOWER(admission.patient.person.name) LIKE :pn ")
+                        .append("OR LOWER(admission.patient.phn) LIKE :pn) ");
+                params.put("pn", "%" + searchTerm + "%");
+            }
         }
         if (selectedAdmitDoctor != null) {
             jpql.append(" AND admission.referringDoctor = :selectedAdmitDoctor ");

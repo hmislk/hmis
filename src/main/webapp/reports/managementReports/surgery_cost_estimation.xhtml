@@ -135,6 +135,7 @@
                             </h:panelGroup>
                             <p:autoComplete id="acPatientMRN"
                                             value="#{inwardReportController.selectedPatient}"
+                                            converter="#{patientEncounterDtoConverter}"
                                             styleClass="w-100"
                                             inputStyleClass="w-100 form-control"
                                             placeholder="Patient Name/MRN"
