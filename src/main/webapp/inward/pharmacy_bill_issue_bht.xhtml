@@ -13,7 +13,7 @@
     <ui:define name="content">
         <h:form id="bill" >
 
-            <p:defaultCommand target="btnAdd" />
+            <p:defaultCommand target="btnAdd" rendered="#{pharmacySaleBhtController.patientEncounter ne null and !pharmacySaleBhtController.billPreview}" />
             <p:growl id="panelErrorMsg" showDetail="true" life="4000" />
 
             <div id="settlingOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:99999;align-items:center;justify-content:center;">
