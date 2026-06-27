@@ -61,15 +61,21 @@ non-retired `PharmaceuticalItemCategory` rows for the given payment scheme.
 ```json
 {
   "paymentSchemeName": "Multiple",
+  "paymentMethod": "Cash",
   "discountPercent": 5.0
 }
 ```
 
-Or by id:
+`paymentMethod` is **required** — the runtime lookup always filters by the sale's payment method, so
+rows with `null` paymentMethod are never matched. Valid values: `Cash`, `Card`, `Credit`,
+`MultiplePaymentMethods`, `Staff`, etc.
+
+Or by scheme id:
 
 ```json
 {
   "paymentSchemeId": 12,
+  "paymentMethod": "Credit",
   "discountPercent": 5.0,
   "billType": "PharmacySale"
 }

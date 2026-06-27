@@ -1382,8 +1382,8 @@ public class AnthropicApiService implements Serializable {
                         + "Use BULK to set the same discount % across all pharmacy item categories for a payment scheme in one call (idempotent: re-running updates, never duplicates). "
                         + "method: LIST | POST | BULK | PUT | DELETE.\n\n"
                         + "LIST: returns non-retired discount rows; optional filters: paymentSchemeId, paymentSchemeName, billType, limit.\n"
-                        + "POST: create a single row; required: discountPercent; optional: categoryId, paymentSchemeId, paymentSchemeName, paymentMethod, billType.\n"
-                        + "BULK: upsert across ALL pharmacy item categories; required: discountPercent + (paymentSchemeId or paymentSchemeName); optional: paymentMethod, billType.\n"
+                        + "POST: create a single row; required: discountPercent + paymentMethod; optional: categoryId, paymentSchemeId, paymentSchemeName, billType.\n"
+                        + "BULK: upsert across ALL pharmacy item categories; required: discountPercent + paymentMethod + (paymentSchemeId or paymentSchemeName); optional: billType.\n"
                         + "PUT: update a row; required: id + discountPercent.\n"
                         + "DELETE: soft-retire a row; required: id.\n\n"
                         + "Default billType is PharmacySale when omitted. Always confirm with the user before BULK, PUT, or DELETE.")
@@ -4716,7 +4716,7 @@ public class AnthropicApiService implements Serializable {
                 new String[][]{
                     {"GET",    "/pharmacy/discounts",       "List non-retired discount rows. Filters: paymentSchemeId, paymentSchemeName, billType, limit"},
                     {"POST",   "/pharmacy/discounts",       "Create a single discount row. Body: discountPercent (required), categoryId, paymentSchemeId, paymentSchemeName, paymentMethod, billType"},
-                    {"POST",   "/pharmacy/discounts/bulk",  "Bulk upsert: set discountPercent for ALL pharmacy item categories under a payment scheme. Body: discountPercent, paymentSchemeId or paymentSchemeName, optional paymentMethod and billType"},
+                    {"POST",   "/pharmacy/discounts/bulk",  "Bulk upsert: set discountPercent for ALL pharmacy item categories under a payment scheme. Body: discountPercent, paymentMethod (required), paymentSchemeId or paymentSchemeName, optional billType"},
                     {"PUT",    "/pharmacy/discounts/{id}",  "Update a discount row (discountPercent)"},
                     {"DELETE", "/pharmacy/discounts/{id}",  "Soft-retire a discount row"}
                 });

@@ -91,7 +91,13 @@ public class PharmacyDiscountApiService {
         BillType billType = request.getBillType() != null ? parseBillType(request.getBillType()) : BillType.PharmacySale;
         if (billType == null) { billType = BillType.PharmacySale; }
 
-        PaymentMethod pm = request.getPaymentMethod() != null ? parsePaymentMethod(request.getPaymentMethod()) : null;
+        if (request.getPaymentMethod() == null || request.getPaymentMethod().trim().isEmpty()) {
+            throw new Exception("paymentMethod is required — e.g. Cash, Card, Credit, MultiplePaymentMethods");
+        }
+        PaymentMethod pm = parsePaymentMethod(request.getPaymentMethod());
+        if (pm == null) {
+            throw new Exception("Unknown paymentMethod: " + request.getPaymentMethod());
+        }
 
         PaymentSchemeDiscount d = new PaymentSchemeDiscount();
         d.setPaymentScheme(scheme);
@@ -120,7 +126,13 @@ public class PharmacyDiscountApiService {
         BillType billType = request.getBillType() != null ? parseBillType(request.getBillType()) : BillType.PharmacySale;
         if (billType == null) { billType = BillType.PharmacySale; }
 
-        PaymentMethod pm = request.getPaymentMethod() != null ? parsePaymentMethod(request.getPaymentMethod()) : null;
+        if (request.getPaymentMethod() == null || request.getPaymentMethod().trim().isEmpty()) {
+            throw new Exception("paymentMethod is required — e.g. Cash, Card, Credit, MultiplePaymentMethods");
+        }
+        PaymentMethod pm = parsePaymentMethod(request.getPaymentMethod());
+        if (pm == null) {
+            throw new Exception("Unknown paymentMethod: " + request.getPaymentMethod());
+        }
 
         Map<String, Object> catParams = new HashMap<>();
         catParams.put("t", PharmaceuticalItemCategory.class);
@@ -133,7 +145,7 @@ public class PharmacyDiscountApiService {
 
         if (categories != null) {
             for (Category cat : categories) {
-                PaymentSchemeDiscount existing = findExisting(scheme, cat, billType, pm);
+                PaymentSchemeDiscount existing = findExisting(scheme, cat, pm);
                 if (existing != null) {
                     existing.setDiscountPercent(request.getDiscountPercent());
                     discountFacade.edit(existing);
@@ -192,12 +204,10 @@ public class PharmacyDiscountApiService {
         discountFacade.edit(d);
     }
 
-    private PaymentSchemeDiscount findExisting(PaymentScheme scheme, Category cat,
-                                                BillType bt, PaymentMethod pm) {
+    private PaymentSchemeDiscount findExisting(PaymentScheme scheme, Category cat, PaymentMethod pm) {
         Map<String, Object> p = new HashMap<>();
         p.put("ps", scheme);
         p.put("cat", cat);
-        p.put("bt", bt);
 
         String jpql;
         if (pm != null) {
@@ -205,7 +215,6 @@ public class PharmacyDiscountApiService {
                     + " where d.retired = false"
                     + " and d.paymentScheme = :ps"
                     + " and d.category = :cat"
-                    + " and d.billType = :bt"
                     + " and d.paymentMethod = :pm";
             p.put("pm", pm);
         } else {
@@ -213,7 +222,6 @@ public class PharmacyDiscountApiService {
                     + " where d.retired = false"
                     + " and d.paymentScheme = :ps"
                     + " and d.category = :cat"
-                    + " and d.billType = :bt"
                     + " and d.paymentMethod is null";
         }
         return (PaymentSchemeDiscount) discountFacade.findFirstByJpql(jpql, p);
