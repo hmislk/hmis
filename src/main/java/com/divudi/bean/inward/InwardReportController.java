@@ -7772,10 +7772,7 @@ public class InwardReportController implements Serializable {
             jpql.append(" AND item = :surgeryItem ");
             params.put("surgeryItem", surgeryItem);
         }
-//        if (selectedPatient != null) {
-//            jpql.append(" AND admission.patient.person.name = :selectedPatient ");
-//            params.put("selectedPatient", selectedPatient.getPatientName());
-//        }
+
         if (selectedPatient != null) {
             String searchTerm = null;
             if (selectedPatient.getPatientName() != null
