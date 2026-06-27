@@ -80,6 +80,7 @@ import javax.inject.Named;
 import com.divudi.core.util.CommonFunctions;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
+import com.divudi.service.BillService;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import java.math.RoundingMode;
 import javax.faces.component.UIComponent;
@@ -327,6 +328,8 @@ public class PharmacyIssueController implements Serializable {
     private CashTransactionBean cashTransactionBean;
     @EJB
     private DepartmentFacade departmentFacade;
+    @EJB
+    private BillService billService;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -1012,43 +1015,20 @@ public class PharmacyIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please select a Department");
             return null;
         }
-        boolean canIssueToSameDept = configOptionApplicationController
-                .getBooleanValueByKey("Disposal Issue can be done for the same department", false);
-        if (!canIssueToSameDept) {
-            if (Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
-                JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
-                return null;
-            }
-        }
-        if (getPreBill().getDepartmentType() != null && !getPreBill().getBillItems().isEmpty()) {
-            for (BillItem bi : getPreBill().getBillItems()) {
-                if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
-                    if (!bi.getItem().getDepartmentType().equals(getPreBill().getDepartmentType())) {
-                        JsfUtil.addErrorMessage("Inconsistent department types detected. All items must belong to the same department type.");
-                        return null;
-                    }
-                }
-            }
-        }
-        if (checkAllBillItem()) {
-            return null;
-        }
-        if (errorCheckForSaleBill()) {
-            return null;
-        }
 
-        getPreBill().setDepartment(sessionController.getLoggedUser().getDepartment());
-        getPreBill().setInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
-        getPreBill().setCreatedAt(new Date());
-        getPreBill().setCreater(sessionController.getLoggedUser());
+        if (getPreBill().getId() == null) {
+            getPreBill().setDepartment(sessionController.getLoggedUser().getDepartment());
+            getPreBill().setInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
+            getPreBill().setCreatedAt(new Date());
+            getPreBill().setCreater(sessionController.getLoggedUser());
+            getPreBill().setBillDate(new Date());
+            getPreBill().setBillTime(new Date());
+        }
         getPreBill().setToDepartment(toDepartment);
         getPreBill().setFromDepartment(sessionController.getLoggedUser().getDepartment());
         getPreBill().setFromInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
         getPreBill().setBillType(BillType.PharmacyDisposalIssue);
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_PRE);
-        getPreBill().setBillDate(new Date());
-        getPreBill().setBillTime(new Date());
-        // completed/checkedBy intentionally left null — set at finalize/approve steps
 
         List<BillItem> tmpBillItems = getPreBill().getBillItems();
         getPreBill().setBillItems(null);
@@ -1072,12 +1052,152 @@ public class PharmacyIssueController implements Serializable {
             }
         }
 
+        getPreBill().setBillItems(tmpBillItems);
         JsfUtil.addSuccessMessage("Disposal Issue Draft Saved Successfully");
-        userStockController.retiredAllUserStockContainer(sessionController.getLoggedUser());
+        billPreview = false;
+        return null;
+    }
+
+    public String finalizeCurrentDraft() {
+        if (toDepartment == null) {
+            JsfUtil.addErrorMessage("Please select a Department first.");
+            return null;
+        }
+        boolean canIssueToSameDept = configOptionApplicationController
+                .getBooleanValueByKey("Disposal Issue can be done for the same department", false);
+        if (!canIssueToSameDept
+                && Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
+            JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
+            return null;
+        }
+        if (getPreBill().getBillItems() == null || getPreBill().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add at least one item before finalizing.");
+            return null;
+        }
+        if (checkAllBillItem()) {
+            return null;
+        }
+        if (errorCheckForSaleBill()) {
+            return null;
+        }
+        saveDisposalIssueDraft();
+        if (getPreBill().getId() == null) {
+            JsfUtil.addErrorMessage("Could not save draft. Cannot finalize.");
+            return null;
+        }
+        return finalizeDisposalIssue(getPreBill().getId());
+    }
+
+    public String loadDraftForEdit(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No draft selected.");
+            return null;
+        }
+        Bill draft = getBillFacade().find(billId);
+        if (draft == null || draft.isRetired()) {
+            JsfUtil.addErrorMessage("Draft not found.");
+            return null;
+        }
+        if (!BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_PRE.equals(draft.getBillTypeAtomic())) {
+            JsfUtil.addErrorMessage("Invalid bill type.");
+            return null;
+        }
+        if (!sessionController.getDepartment().equals(draft.getDepartment())) {
+            JsfUtil.addErrorMessage("This draft does not belong to your department.");
+            return null;
+        }
+        if (draft.getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("This draft has already been finalized. Use View to Approve instead.");
+            return null;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", billId);
+        List<BillItem> draftItems = getBillItemFacade().findByJpql(
+                "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId ORDER BY bi.inwardChargeType, bi.searialNo", params);
+
         clearBill();
         clearBillItem();
         billPreview = false;
-        return "/pharmacy/pharmacy_disposal_issue_list_to_finalize?faces-redirect=true";
+
+        if (draft instanceof PreBill) {
+            preBill = (PreBill) draft;
+        } else {
+            preBill = new PreBill();
+            preBill.setId(draft.getId());
+            preBill.setCheckedBy(draft.getCheckedBy());
+            preBill.setCompleted(draft.isCompleted());
+            preBill.setComments(draft.getComments());
+            preBill.setInvoiceNumber(draft.getInvoiceNumber());
+            preBill.setDepartmentType(draft.getDepartmentType());
+            preBill.setBillTypeAtomic(draft.getBillTypeAtomic());
+            preBill.setBillType(draft.getBillType());
+            preBill.setCreatedAt(draft.getCreatedAt());
+            preBill.setCreater(draft.getCreater());
+            preBill.setDepartment(draft.getDepartment());
+            preBill.setToDepartment(draft.getToDepartment());
+            preBill.setFromDepartment(draft.getFromDepartment());
+        }
+        preBill.setBillItems(draftItems);
+        toDepartment = draft.getToDepartment();
+        return "/pharmacy/pharmacy_issue?faces-redirect=true";
+    }
+
+    public String loadFinalizedForApprove(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No bill selected.");
+            return null;
+        }
+        Bill bill = getBillFacade().find(billId);
+        if (bill == null || bill.isRetired()) {
+            JsfUtil.addErrorMessage("Bill not found.");
+            return null;
+        }
+        if (!BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_PRE.equals(bill.getBillTypeAtomic())) {
+            JsfUtil.addErrorMessage("Invalid bill type for approval.");
+            return null;
+        }
+        if (!sessionController.getDepartment().equals(bill.getDepartment())) {
+            JsfUtil.addErrorMessage("This disposal issue does not belong to your department.");
+            return null;
+        }
+        if (bill.getCheckedBy() == null) {
+            JsfUtil.addErrorMessage("This bill has not been finalized yet.");
+            return null;
+        }
+        if (bill.isCompleted()) {
+            JsfUtil.addErrorMessage("This bill has already been approved.");
+            return null;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", billId);
+        List<BillItem> items = getBillItemFacade().findByJpql(
+                "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId ORDER BY bi.inwardChargeType, bi.searialNo", params);
+
+        clearBill();
+        clearBillItem();
+        billPreview = false;
+
+        if (bill instanceof PreBill) {
+            preBill = (PreBill) bill;
+        } else {
+            preBill = new PreBill();
+            preBill.setId(bill.getId());
+            preBill.setCheckedBy(bill.getCheckedBy());
+            preBill.setCompleted(bill.isCompleted());
+            preBill.setComments(bill.getComments());
+            preBill.setInvoiceNumber(bill.getInvoiceNumber());
+            preBill.setDepartmentType(bill.getDepartmentType());
+            preBill.setBillTypeAtomic(bill.getBillTypeAtomic());
+            preBill.setBillType(bill.getBillType());
+            preBill.setCreatedAt(bill.getCreatedAt());
+            preBill.setCreater(bill.getCreater());
+            preBill.setDepartment(bill.getDepartment());
+            preBill.setToDepartment(bill.getToDepartment());
+            preBill.setFromDepartment(bill.getFromDepartment());
+        }
+        preBill.setBillItems(items);
+        toDepartment = bill.getToDepartment();
+        return "/pharmacy/pharmacy_issue?faces-redirect=true";
     }
 
     public String finalizeDisposalIssue(Long billId) {
@@ -1107,8 +1227,20 @@ public class PharmacyIssueController implements Serializable {
         draft.setEditor(sessionController.getLoggedUser());
         draft.setEditedAt(new Date());
         getBillFacade().edit(draft);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", billId);
+        List<BillItem> items = getBillItemFacade().findByJpql(
+                "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId ORDER BY bi.inwardChargeType, bi.searialNo", params);
+        if (preBill != null && preBill.getId() != null && preBill.getId().equals(billId)) {
+            preBill.setCheckedBy(draft.getCheckedBy());
+            preBill.setBillItems(items);
+        }
+        setPrintBill(draft);
+        getPrintBill().setBillItems(items);
+        billPreview = true;
         JsfUtil.addSuccessMessage("Disposal Issue Finalized Successfully");
-        return "/pharmacy/pharmacy_disposal_issue_list_to_approve?faces-redirect=true";
+        return null;
     }
 
     public String approveDisposalIssue(Long billId) {
@@ -1213,7 +1345,7 @@ public class PharmacyIssueController implements Serializable {
         getBillFacade().edit(draft);
 
         // Deduct stock for each saved item
-        String jpql = "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId";
+        String jpql = "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId ORDER BY bi.inwardChargeType, bi.searialNo";
         Map<String, Object> params = new HashMap<>();
         params.put("billId", billId);
         List<BillItem> items = getBillItemFacade().findByJpql(jpql, params);
@@ -1237,12 +1369,15 @@ public class PharmacyIssueController implements Serializable {
         }
 
         setPrintBill(getBillFacade().find(billId));
+        getPrintBill().setBillItems(items);
+        preBill = null;
+        toDepartment = null;
         billPreview = true;
         if (anyDeductionFailed) {
             JsfUtil.addErrorMessage("Warning: Insufficient stock for one or more items. Those items were recorded with zero quantity.");
         }
         JsfUtil.addSuccessMessage("Disposal Issue Approved Successfully");
-        return "/pharmacy/pharmacy_issue?faces-redirect=true";
+        return null;
     }
 
     public String cancelPendingDisposalIssue(Long billId) {
