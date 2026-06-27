@@ -68,7 +68,17 @@ import com.divudi.core.data.dto.AdmissionDischargeDTO;
 import com.divudi.core.data.dto.RoomCategoryOccupancyDTO;
 import com.divudi.core.data.dto.RoomOccupancyRowDTO;
 import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.data.dto.SurgeryCostEstimationDTO;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
+import com.divudi.core.entity.inward.EncounterComponent;
+import com.divudi.core.entity.inward.PatientTransferRequest;
+import com.divudi.core.data.inward.TheatreOccupancyStatus;
+import com.divudi.core.data.inward.PatientEncounterComponentType;
+import com.divudi.core.facade.EncounterComponentFacade;
+import com.divudi.core.facade.PatientTransferRequestFacade;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -193,6 +203,10 @@ public class InwardReportController implements Serializable {
     BillFeeFacade billFeeFacade;
     @EJB
     PatientRoomFacade patientRoomFacade;
+    @EJB
+    EncounterComponentFacade encounterComponentFacade;
+    @EJB
+    PatientTransferRequestFacade patientTransferRequestFacade;
 
     @Inject
     SessionController sessionController;
@@ -265,6 +279,16 @@ public class InwardReportController implements Serializable {
     boolean withoutCancelBHT = true;
     private Speciality currentSpeciality;
 
+    // Surgery Cost Estimation Report
+    private List<SurgeryCostEstimationDTO> surgeryCostEstimationList;
+    private Patient selectedPatient;
+    private Staff selectedAdmitDoctor;
+    private Staff selectedSurgeon;
+    private Staff selectedAssistantSurgeon;
+    private RoomFacilityCharge selectedOtRoom;
+    private TheatreOccupancyStatus selectedSurgeryStatus;
+    private String surgeryCostEstimationReportType;
+
     // Surgery Survey Report
     private String reportType;
     private String visitType;
@@ -330,6 +354,70 @@ public class InwardReportController implements Serializable {
 
     public void setPatientEncounters(List<PatientEncounter> patientEncounters) {
         this.patientEncounters = patientEncounters;
+    }
+
+    public List<SurgeryCostEstimationDTO> getSurgeryCostEstimationList() {
+        return surgeryCostEstimationList;
+    }
+
+    public void setSurgeryCostEstimationList(List<SurgeryCostEstimationDTO> surgeryCostEstimationList) {
+        this.surgeryCostEstimationList = surgeryCostEstimationList;
+    }
+
+    public Patient getSelectedPatient() {
+        return selectedPatient;
+    }
+
+    public void setSelectedPatient(Patient selectedPatient) {
+        this.selectedPatient = selectedPatient;
+    }
+
+    public Staff getSelectedAdmitDoctor() {
+        return selectedAdmitDoctor;
+    }
+
+    public void setSelectedAdmitDoctor(Staff selectedAdmitDoctor) {
+        this.selectedAdmitDoctor = selectedAdmitDoctor;
+    }
+
+    public Staff getSelectedSurgeon() {
+        return selectedSurgeon;
+    }
+
+    public void setSelectedSurgeon(Staff selectedSurgeon) {
+        this.selectedSurgeon = selectedSurgeon;
+    }
+
+    public Staff getSelectedAssistantSurgeon() {
+        return selectedAssistantSurgeon;
+    }
+
+    public void setSelectedAssistantSurgeon(Staff selectedAssistantSurgeon) {
+        this.selectedAssistantSurgeon = selectedAssistantSurgeon;
+    }
+
+    public RoomFacilityCharge getSelectedOtRoom() {
+        return selectedOtRoom;
+    }
+
+    public void setSelectedOtRoom(RoomFacilityCharge selectedOtRoom) {
+        this.selectedOtRoom = selectedOtRoom;
+    }
+
+    public TheatreOccupancyStatus getSelectedSurgeryStatus() {
+        return selectedSurgeryStatus;
+    }
+
+    public void setSelectedSurgeryStatus(TheatreOccupancyStatus selectedSurgeryStatus) {
+        this.selectedSurgeryStatus = selectedSurgeryStatus;
+    }
+
+    public String getSurgeryCostEstimationReportType() {
+        return surgeryCostEstimationReportType;
+    }
+
+    public void setSurgeryCostEstimationReportType(String surgeryCostEstimationReportType) {
+        this.surgeryCostEstimationReportType = surgeryCostEstimationReportType;
     }
     double netTotal;
     double netPaid;
@@ -7603,12 +7691,647 @@ public class InwardReportController implements Serializable {
         this.totalVatCalculatedValue = totalVatCalculatedValue;
     }
 
-    public String getVatRegNo() {
-        return vatRegNo;
-    }
-
     public void setVatRegNo(String vatRegNo) {
         this.vatRegNo = vatRegNo;
+    }
+
+    public String getTheatreOccupancyStatusLabel(TheatreOccupancyStatus status) {
+        if (status == null) {
+            return "";
+        }
+        switch (status) {
+            case SCHEDULED: return "Scheduled";
+            case SENT_TO_THEATRE: return "Sent to Theatre";
+            case RECEIVED_IN_THEATRE: return "Received in Theatre";
+            case IN_THEATRE: return "In Theatre";
+            case PROCEDURE_COMPLETED: return "Procedure Completed";
+            case IN_RECOVERY: return "In Recovery";
+            case RETURNED_TO_WARD: return "Returned to Ward";
+            case CANCELLED: return "Cancelled";
+            default: return status.name();
+        }
+    }
+
+    public void processSurgeryCostEstimationReport() {
+        surgeryCostEstimationList = new ArrayList<>();
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select both From and To dates.");
+            return;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append("SELECT new com.divudi.core.data.dto.SurgeryCostEstimationDTO(")
+            .append("  sb.id, proc.id, ")
+            .append("  admission.patient.phn, admission.patient.person.name, ")
+            .append("  admission.bhtNo, admission.dateOfAdmission, ")
+            .append("  room.name, ")
+            .append("  item.name, cat.name ")
+            .append(") ")
+            .append("FROM BilledBill sb ")
+            .append("JOIN sb.procedure proc ")
+            .append("JOIN proc.item item ")
+            .append("LEFT JOIN item.category cat ")
+            .append("JOIN sb.patientEncounter admission ")
+            .append("LEFT JOIN admission.currentPatientRoom room ")
+            .append("WHERE sb.retired = false ")
+            .append("  AND sb.cancelled = false ")
+            .append("  AND sb.billType = :surgeryBillType ")
+            .append("  AND admission.discharged = true ")
+            .append("  AND admission.dateOfDischarge BETWEEN :fromDate AND :toDate ");
+
+        params.put("surgeryBillType", BillType.SurgeryBill);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        jpql.append("  AND NOT EXISTS ( ")
+            .append("      SELECT cb.id FROM CancelledBill cb ")
+            .append("      WHERE cb.retired = false ")
+            .append("        AND cb.billedBill = sb ")
+            .append("  ) ");
+
+        if (institution != null) {
+            jpql.append(" AND sb.institution = :institution ");
+            params.put("institution", institution);
+        }
+        if (site != null) {
+            jpql.append(" AND sb.department.site = :site ");
+            params.put("site", site);
+        }
+        if (department != null) {
+            jpql.append(" AND sb.department = :department ");
+            params.put("department", department);
+        }
+        if (surgeryType != null) {
+            jpql.append(" AND item.category = :surgeryType ");
+            params.put("surgeryType", surgeryType);
+        }
+        if (surgeryItem != null) {
+            jpql.append(" AND item = :surgeryItem ");
+            params.put("surgeryItem", surgeryItem);
+        }
+        if (selectedPatient != null) {
+            jpql.append(" AND admission.patient = :selectedPatient ");
+            params.put("selectedPatient", selectedPatient);
+        }
+        if (selectedAdmitDoctor != null) {
+            jpql.append(" AND admission.referringDoctor = :selectedAdmitDoctor ");
+            params.put("selectedAdmitDoctor", selectedAdmitDoctor);
+        }
+        if (selectedSurgeon != null) {
+            jpql.append(" AND EXISTS (SELECT ec.id FROM EncounterComponent ec ")
+                .append("   WHERE ec.patientEncounter = proc AND ec.retired = false ")
+                .append("     AND ec.patientEncounterComponentType = com.divudi.core.data.inward.PatientEncounterComponentType.Performed_By ")
+                .append("     AND ec.staff = :selectedSurgeon) ");
+            params.put("selectedSurgeon", selectedSurgeon);
+        }
+        if (selectedAssistantSurgeon != null) {
+            jpql.append(" AND EXISTS (SELECT ec.id FROM EncounterComponent ec ")
+                .append("   WHERE ec.patientEncounter = proc AND ec.retired = false ")
+                .append("     AND ec.patientEncounterComponentType = com.divudi.core.data.inward.PatientEncounterComponentType.Assisted_by ")
+                .append("     AND ec.staff = :selectedAssistantSurgeon) ");
+            params.put("selectedAssistantSurgeon", selectedAssistantSurgeon);
+        }
+        if (selectedOtRoom != null) {
+            jpql.append(" AND EXISTS (SELECT ptr.id FROM PatientTransferRequest ptr ")
+                .append("   WHERE ptr.surgeryBill = sb AND ptr.retired = false ")
+                .append("     AND ptr.toRoomFacilityCharge = :selectedOtRoom) ");
+            params.put("selectedOtRoom", selectedOtRoom);
+        }
+        if (selectedSurgeryStatus != null) {
+            jpql.append(" AND EXISTS (SELECT ptr.id FROM PatientTransferRequest ptr ")
+                .append("   WHERE ptr.surgeryBill = sb AND ptr.retired = false ")
+                .append("     AND ptr.theatreOccupancyStatus = :selectedSurgeryStatus) ");
+            params.put("selectedSurgeryStatus", selectedSurgeryStatus);
+        }
+
+        jpql.append(" ORDER BY admission.dateOfDischarge ASC ");
+
+        List<SurgeryCostEstimationDTO> list = (List<SurgeryCostEstimationDTO>) billFacade.findDTOsByJpql(
+                jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        if (list == null || list.isEmpty()) {
+            JsfUtil.addErrorMessage("No records found.");
+            return;
+        }
+
+        List<Long> billIds = new ArrayList<>();
+        List<Long> procIds = new ArrayList<>();
+        Map<Long, SurgeryCostEstimationDTO> dtoByBillId = new HashMap<>();
+        Map<Long, List<SurgeryCostEstimationDTO>> dtosByProcId = new HashMap<>();
+
+        for (SurgeryCostEstimationDTO dto : list) {
+            billIds.add(dto.getSurgeryBillId());
+            procIds.add(dto.getProcedureId());
+            dtoByBillId.put(dto.getSurgeryBillId(), dto);
+            
+            if (!dtosByProcId.containsKey(dto.getProcedureId())) {
+                dtosByProcId.put(dto.getProcedureId(), new ArrayList<SurgeryCostEstimationDTO>());
+            }
+            dtosByProcId.get(dto.getProcedureId()).add(dto);
+
+            dto.setTotalHospitalCharge(0.0);
+            dto.setProfessionalCharge(0.0);
+            dto.setTotalAmount(0.0);
+            dto.setBillDiscount(0.0);
+            dto.setNetAmount(0.0);
+        }
+
+        // 1. Enrich Surgeons & Assistants
+        if (!procIds.isEmpty()) {
+            String ecJpql = "SELECT ec FROM EncounterComponent ec "
+                    + "WHERE ec.retired = false AND ec.patientEncounter.id IN :procIds "
+                    + "AND ec.patientEncounterComponentType IN (:perfType, :asstType)";
+            Map<String, Object> ecParams = new HashMap<>();
+            ecParams.put("procIds", procIds);
+            ecParams.put("perfType", PatientEncounterComponentType.Performed_By);
+            ecParams.put("asstType", PatientEncounterComponentType.Assisted_by);
+            List<EncounterComponent> ecList = encounterComponentFacade.findByJpql(ecJpql, ecParams);
+
+            if (ecList != null) {
+                for (EncounterComponent ec : ecList) {
+                    Long procId = ec.getPatientEncounter().getId();
+                    List<SurgeryCostEstimationDTO> targetDtos = dtosByProcId.get(procId);
+                    if (targetDtos != null) {
+                        String staffName = "";
+                        if (ec.getStaff() != null) {
+                            if (ec.getStaff().getPerson() != null) {
+                                staffName = ec.getStaff().getPerson().getNameWithTitle();
+                            } else {
+                                staffName = ec.getStaff().getName();
+                            }
+                        }
+                        for (SurgeryCostEstimationDTO dto : targetDtos) {
+                            if (ec.getPatientEncounterComponentType() == PatientEncounterComponentType.Performed_By) {
+                                dto.setSurgeonName(staffName);
+                            } else if (ec.getPatientEncounterComponentType() == PatientEncounterComponentType.Assisted_by) {
+                                dto.setAssistantSurgeonName(staffName);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2. Enrich OT Room & Surgery Status
+        if (!billIds.isEmpty()) {
+            String ptrJpql = "SELECT ptr FROM PatientTransferRequest ptr "
+                    + "WHERE ptr.retired = false AND ptr.surgeryBill.id IN :billIds "
+                    + "ORDER BY ptr.id ASC";
+            Map<String, Object> ptrParams = new HashMap<>();
+            ptrParams.put("billIds", billIds);
+            List<PatientTransferRequest> ptrList = patientTransferRequestFacade.findByJpql(ptrJpql, ptrParams);
+
+            if (ptrList != null) {
+                Map<Long, PatientTransferRequest> latestPtrMap = new HashMap<>();
+                for (PatientTransferRequest ptr : ptrList) {
+                    if (ptr.getSurgeryBill() != null) {
+                        latestPtrMap.put(ptr.getSurgeryBill().getId(), ptr);
+                    }
+                }
+
+                for (Map.Entry<Long, PatientTransferRequest> entry : latestPtrMap.entrySet()) {
+                    SurgeryCostEstimationDTO dto = dtoByBillId.get(entry.getKey());
+                    if (dto != null) {
+                        PatientTransferRequest ptr = entry.getValue();
+                        if (ptr.getToRoomFacilityCharge() != null) {
+                            dto.setOtRoomName(ptr.getToRoomFacilityCharge().getName());
+                        }
+                        if (ptr.getTheatreOccupancyStatus() != null) {
+                            dto.setSurgeryStatusLabel(getTheatreOccupancyStatusLabel(ptr.getTheatreOccupancyStatus()));
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. Aggregate Child Bills (Charges)
+        if (!billIds.isEmpty()) {
+            String childJpql = "SELECT b FROM Bill b "
+                    + "WHERE b.retired = false AND b.cancelled = false "
+                    + "AND b.forwardReferenceBill.id IN :billIds";
+            Map<String, Object> childParams = new HashMap<>();
+            childParams.put("billIds", billIds);
+            List<Bill> childBills = billFacade.findByJpql(childJpql, childParams);
+
+            if (childBills != null) {
+                for (Bill childBill : childBills) {
+                    Long parentId = childBill.getForwardReferenceBill().getId();
+                    SurgeryCostEstimationDTO dto = dtoByBillId.get(parentId);
+                    if (dto != null) {
+                        double net = childBill.getNetTotal();
+                        double discount = childBill.getDiscount();
+
+                        if (childBill.getSurgeryBillType() == com.divudi.core.data.inward.SurgeryBillType.ProfessionalFee) {
+                            dto.setProfessionalCharge(dto.getProfessionalCharge() + net);
+                        } else if (childBill.getSurgeryBillType() == com.divudi.core.data.inward.SurgeryBillType.Service
+                                || childBill.getSurgeryBillType() == com.divudi.core.data.inward.SurgeryBillType.PharmacyItem
+                                || childBill.getSurgeryBillType() == com.divudi.core.data.inward.SurgeryBillType.TimedService) {
+                            dto.setTotalHospitalCharge(dto.getTotalHospitalCharge() + net);
+                        }
+                        dto.setBillDiscount(dto.getBillDiscount() + discount);
+                    }
+                }
+            }
+        }
+
+        for (SurgeryCostEstimationDTO dto : list) {
+            double net = dto.getTotalHospitalCharge() + dto.getProfessionalCharge();
+            double total = net + dto.getBillDiscount();
+            dto.setNetAmount(net);
+            dto.setTotalAmount(total);
+        }
+
+        surgeryCostEstimationList = list;
+    }
+
+    public void downloadSurgeryCostEstimationExcel() {
+        if (surgeryCostEstimationList == null || surgeryCostEstimationList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        XSSFWorkbook workbook = null;
+        try {
+            workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet("Surgery Cost Estimation");
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+            // Styles
+            XSSFCellStyle titleStyle = workbook.createCellStyle();
+            XSSFFont titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 14);
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            XSSFCellStyle infoStyle = workbook.createCellStyle();
+            XSSFFont infoFont = workbook.createFont();
+            infoFont.setFontHeightInPoints((short) 9);
+            infoStyle.setFont(infoFont);
+
+            XSSFCellStyle headerStyle = workbook.createCellStyle();
+            XSSFFont headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setFontHeightInPoints((short) 9);
+            headerFont.setColor(new XSSFColor(new byte[]{(byte) 255, (byte) 255, (byte) 255}, null));
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(new XSSFColor(new byte[]{(byte) 41, (byte) 128, (byte) 185}, null));
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            XSSFCellStyle normalStyle = workbook.createCellStyle();
+            XSSFFont normalFont = workbook.createFont();
+            normalFont.setFontHeightInPoints((short) 8);
+            normalStyle.setFont(normalFont);
+            normalStyle.setBorderBottom(BorderStyle.THIN);
+            normalStyle.setBorderTop(BorderStyle.THIN);
+            normalStyle.setBorderLeft(BorderStyle.THIN);
+            normalStyle.setBorderRight(BorderStyle.THIN);
+
+            XSSFCellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.cloneStyleFrom(normalStyle);
+            numberStyle.setAlignment(HorizontalAlignment.RIGHT);
+            XSSFDataFormat format = workbook.createDataFormat();
+            numberStyle.setDataFormat(format.getFormat("#,##0.00"));
+
+            XSSFCellStyle totalStyle = workbook.createCellStyle();
+            XSSFFont totalFont = workbook.createFont();
+            totalFont.setBold(true);
+            totalFont.setFontHeightInPoints((short) 9);
+            totalStyle.setFont(totalFont);
+            totalStyle.setFillForegroundColor(new XSSFColor(new byte[]{(byte) 255, (byte) 200, (byte) 100}, null));
+            totalStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            totalStyle.setBorderBottom(BorderStyle.MEDIUM);
+            totalStyle.setBorderTop(BorderStyle.MEDIUM);
+            totalStyle.setBorderLeft(BorderStyle.THIN);
+            totalStyle.setBorderRight(BorderStyle.THIN);
+
+            XSSFCellStyle totalNumberStyle = workbook.createCellStyle();
+            totalNumberStyle.cloneStyleFrom(totalStyle);
+            totalNumberStyle.setAlignment(HorizontalAlignment.RIGHT);
+            totalNumberStyle.setDataFormat(format.getFormat("#,##0.00"));
+
+            int rowIdx = 0;
+
+            // Title Row
+            Row titleRow = sheet.createRow(rowIdx++);
+            titleRow.setHeightInPoints(22);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Surgery Cost Estimation Report");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 15));
+
+            rowIdx++; // Blank row
+
+            // Info rows
+            Row infoRow1 = sheet.createRow(rowIdx++);
+            infoRow1.createCell(0).setCellValue("From Date:");
+            infoRow1.createCell(1).setCellValue(fromDate != null ? sdf.format(fromDate) : "");
+            infoRow1.createCell(3).setCellValue("To Date:");
+            infoRow1.createCell(4).setCellValue(toDate != null ? sdf.format(toDate) : "");
+            for (int col = 0; col < 6; col++) {
+                Cell c = infoRow1.getCell(col);
+                if (c != null) c.setCellStyle(infoStyle);
+            }
+
+            rowIdx++; // Blank row
+
+            // Headers
+            String[] headers = {
+                "SL No", "MRN", "Patient Name", "Admission No", "Admission Date", "Bed No",
+                "Surgeon", "Surgery Type", "Service Name", "Room Charges", "Drug Charges",
+                "Total Hospital Charge", "Professional Charge", "Total Amount", "Bill Discount", "Net Amount"
+            };
+
+            Row headerRow = sheet.createRow(rowIdx++);
+            headerRow.setHeightInPoints(25);
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            double grandHospital = 0;
+            double grandProfessional = 0;
+            double grandTotalAmt = 0;
+            double grandDiscount = 0;
+            double grandNet = 0;
+
+            int slNo = 1;
+            for (SurgeryCostEstimationDTO dto : surgeryCostEstimationList) {
+                Row row = sheet.createRow(rowIdx++);
+                row.createCell(0).setCellValue(slNo++);
+                row.createCell(1).setCellValue(dto.getPhn());
+                row.createCell(2).setCellValue(dto.getPatientName());
+                row.createCell(3).setCellValue(dto.getAdmissionNo());
+                row.createCell(4).setCellValue(dto.getAdmissionDate() != null ? sdf.format(dto.getAdmissionDate()) : "");
+                row.createCell(5).setCellValue(dto.getBedNo());
+                row.createCell(6).setCellValue(dto.getSurgeonName());
+                row.createCell(7).setCellValue(dto.getSurgeryTypeName());
+                row.createCell(8).setCellValue(dto.getServiceName());
+                row.createCell(9).setCellValue("N/A");
+                row.createCell(10).setCellValue("N/A");
+
+                Cell c11 = row.createCell(11);
+                c11.setCellValue(dto.getTotalHospitalCharge() != null ? dto.getTotalHospitalCharge() : 0.0);
+                c11.setCellStyle(numberStyle);
+                grandHospital += dto.getTotalHospitalCharge() != null ? dto.getTotalHospitalCharge() : 0.0;
+
+                Cell c12 = row.createCell(12);
+                c12.setCellValue(dto.getProfessionalCharge() != null ? dto.getProfessionalCharge() : 0.0);
+                c12.setCellStyle(numberStyle);
+                grandProfessional += dto.getProfessionalCharge() != null ? dto.getProfessionalCharge() : 0.0;
+
+                Cell c13 = row.createCell(13);
+                c13.setCellValue(dto.getTotalAmount() != null ? dto.getTotalAmount() : 0.0);
+                c13.setCellStyle(numberStyle);
+                grandTotalAmt += dto.getTotalAmount() != null ? dto.getTotalAmount() : 0.0;
+
+                Cell c14 = row.createCell(14);
+                c14.setCellValue(dto.getBillDiscount() != null ? dto.getBillDiscount() : 0.0);
+                c14.setCellStyle(numberStyle);
+                grandDiscount += dto.getBillDiscount() != null ? dto.getBillDiscount() : 0.0;
+
+                Cell c15 = row.createCell(15);
+                c15.setCellValue(dto.getNetAmount() != null ? dto.getNetAmount() : 0.0);
+                c15.setCellStyle(numberStyle);
+                grandNet += dto.getNetAmount() != null ? dto.getNetAmount() : 0.0;
+
+                for (int col = 0; col < 11; col++) {
+                    row.getCell(col).setCellStyle(normalStyle);
+                }
+            }
+
+            // Grand Total Row
+            Row totalRow = sheet.createRow(rowIdx++);
+            totalRow.setHeightInPoints(20);
+            Cell lblCell = totalRow.createCell(0);
+            lblCell.setCellValue("Grand Total");
+            lblCell.setCellStyle(totalStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIdx - 1, rowIdx - 1, 0, 10));
+
+            for (int col = 1; col <= 10; col++) {
+                totalRow.createCell(col).setCellStyle(totalStyle);
+            }
+
+            Cell tc11 = totalRow.createCell(11);
+            tc11.setCellValue(grandHospital);
+            tc11.setCellStyle(totalNumberStyle);
+
+            Cell tc12 = totalRow.createCell(12);
+            tc12.setCellValue(grandProfessional);
+            tc12.setCellStyle(totalNumberStyle);
+
+            Cell tc13 = totalRow.createCell(13);
+            tc13.setCellValue(grandTotalAmt);
+            tc13.setCellStyle(totalNumberStyle);
+
+            Cell tc14 = totalRow.createCell(14);
+            tc14.setCellValue(grandDiscount);
+            tc14.setCellStyle(totalNumberStyle);
+
+            Cell tc15 = totalRow.createCell(15);
+            tc15.setCellValue(grandNet);
+            tc15.setCellStyle(totalNumberStyle);
+
+            // Auto fit column widths
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            workbook.write(baos);
+            byte[] excelBytes = baos.toByteArray();
+
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            externalContext.setResponseContentLength(excelBytes.length);
+            String fileName = "Surgery_Cost_Estimation_Report_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".xlsx";
+            externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            out.write(excelBytes);
+            out.flush();
+
+            facesContext.responseComplete();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating Excel: " + e.getMessage());
+        } finally {
+            if (workbook != null) {
+                try {
+                    workbook.close();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+    }
+
+    public void downloadSurgeryCostEstimationPdf() {
+        if (surgeryCostEstimationList == null || surgeryCostEstimationList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        com.lowagie.text.Document document = null;
+        try {
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+
+            String fileName = "Surgery_Cost_Estimation_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+            externalContext.setResponseHeader("Content-Disposition",
+                    "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+
+            document = new com.lowagie.text.Document(
+                    com.lowagie.text.PageSize.A3.rotate(), 15, 15, 30, 20);
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            com.lowagie.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            com.lowagie.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy HH:mm");
+
+            Paragraph titlePara = new Paragraph("Surgery Cost Estimation Report", titleFont);
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            titlePara.setSpacingAfter(10);
+            document.add(titlePara);
+
+            PdfPTable info = new PdfPTable(2);
+            info.setWidthPercentage(40);
+            info.setWidths(new float[]{1.5f, 3.5f});
+            info.setSpacingAfter(15);
+            info.setHorizontalAlignment(Element.ALIGN_LEFT);
+
+            addInfoRow(info, "From Date:", fromDate != null ? sdf.format(fromDate) : "");
+            addInfoRow(info, "To Date:", toDate != null ? sdf.format(toDate) : "");
+            document.add(info);
+
+            String[] headers = {
+                "SL No", "MRN", "Patient Name", "Admission No", "Admission Date", "Bed No",
+                "Surgeon", "Surgery Type", "Service Name", "Room Charges", "Drug Charges",
+                "Total Hospital Charge", "Professional Charge", "Total Amount", "Bill Discount", "Net Amount"
+            };
+
+            PdfPTable table = new PdfPTable(headers.length);
+            table.setWidthPercentage(100);
+            float[] widths = {2f, 4f, 8f, 5f, 7f, 4f, 7f, 6f, 8f, 4f, 4f, 6f, 6f, 6f, 5f, 6f};
+            table.setWidths(widths);
+
+            for (String h : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            double grandHospital = 0;
+            double grandProfessional = 0;
+            double grandTotalAmt = 0;
+            double grandDiscount = 0;
+            double grandNet = 0;
+
+            int slNo = 1;
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+
+            for (SurgeryCostEstimationDTO dto : surgeryCostEstimationList) {
+                table.addCell(new Phrase(String.valueOf(slNo++), normalFont));
+                table.addCell(new Phrase(dto.getPhn(), normalFont));
+                table.addCell(new Phrase(dto.getPatientName(), normalFont));
+                table.addCell(new Phrase(dto.getAdmissionNo(), normalFont));
+                table.addCell(new Phrase(dto.getAdmissionDate() != null ? sdf.format(dto.getAdmissionDate()) : "", normalFont));
+                table.addCell(new Phrase(dto.getBedNo(), normalFont));
+                table.addCell(new Phrase(dto.getSurgeonName(), normalFont));
+                table.addCell(new Phrase(dto.getSurgeryTypeName(), normalFont));
+                table.addCell(new Phrase(dto.getServiceName(), normalFont));
+                table.addCell(new Phrase("N/A", normalFont));
+                table.addCell(new Phrase("N/A", normalFont));
+
+                double hosp = dto.getTotalHospitalCharge() != null ? dto.getTotalHospitalCharge() : 0.0;
+                double prof = dto.getProfessionalCharge() != null ? dto.getProfessionalCharge() : 0.0;
+                double tot = dto.getTotalAmount() != null ? dto.getTotalAmount() : 0.0;
+                double disc = dto.getBillDiscount() != null ? dto.getBillDiscount() : 0.0;
+                double net = dto.getNetAmount() != null ? dto.getNetAmount() : 0.0;
+
+                grandHospital += hosp;
+                grandProfessional += prof;
+                grandTotalAmt += tot;
+                grandDiscount += disc;
+                grandNet += net;
+
+                PdfPCell cHosp = new PdfPCell(new Phrase(df.format(hosp), normalFont));
+                cHosp.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cHosp);
+
+                PdfPCell cProf = new PdfPCell(new Phrase(df.format(prof), normalFont));
+                cProf.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cProf);
+
+                PdfPCell cTot = new PdfPCell(new Phrase(df.format(tot), normalFont));
+                cTot.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cTot);
+
+                PdfPCell cDisc = new PdfPCell(new Phrase(df.format(disc), normalFont));
+                cDisc.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cDisc);
+
+                PdfPCell cNet = new PdfPCell(new Phrase(df.format(net), normalFont));
+                cNet.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cNet);
+            }
+
+            PdfPCell totalLblCell = new PdfPCell(new Phrase("Grand Total", boldFont));
+            totalLblCell.setColspan(11);
+            totalLblCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            table.addCell(totalLblCell);
+
+            PdfPCell tgHosp = new PdfPCell(new Phrase(df.format(grandHospital), boldFont));
+            tgHosp.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(tgHosp);
+
+            PdfPCell tgProf = new PdfPCell(new Phrase(df.format(grandProfessional), boldFont));
+            tgProf.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(tgProf);
+
+            PdfPCell tgTot = new PdfPCell(new Phrase(df.format(grandTotalAmt), boldFont));
+            tgTot.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(tgTot);
+
+            PdfPCell tgDisc = new PdfPCell(new Phrase(df.format(grandDiscount), boldFont));
+            tgDisc.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(tgDisc);
+
+            PdfPCell tgNet = new PdfPCell(new Phrase(df.format(grandNet), boldFont));
+            tgNet.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(tgNet);
+
+            document.add(table);
+            facesContext.responseComplete();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to generate PDF: " + e.getMessage());
+        } finally {
+            if (document != null) {
+                document.close();
+            }
+        }
     }
 
 }

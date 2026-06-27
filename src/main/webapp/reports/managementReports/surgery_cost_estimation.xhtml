@@ -22,6 +22,7 @@
 
                              <p:datePicker
                                 id="fromDate"
+                                value="#{inwardReportController.fromDate}"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 pattern="dd/MM/yyyy HH:mm:ss"   
@@ -41,6 +42,7 @@
                             
                              <p:datePicker
                                 id="toDate"
+                                value="#{inwardReportController.toDate}"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 pattern="dd/MM/yyyy HH:mm:ss"   
@@ -208,7 +210,7 @@
                                 icon="fas fa-cogs"
                                 ajax="false"
                                 value="Process"
-                                action="#"/>
+                                action="#{inwardReportController.processSurgeryCostEstimationReport()}"/>
                         <p:commandButton class="ui-button-primary mx-1"
                                          icon="fas fa-print"
                                          ajax="false"
@@ -240,7 +242,7 @@
                     <h:panelGroup id="printPanel">
                         <p:panel header="Surgery Cost Estimation Report" styleClass="m-3">
                             <p:dataTable id="detailWise"
-                                         value="#"
+                                         value="#{inwardReportController.surgeryCostEstimationList}"
                                          var="var"
                                          rowIndexVar="n"
                                          paginator="true"
@@ -254,63 +256,63 @@
                                 </p:column>
 
                                 <p:column headerText="MRN">
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{var.phn}"/>
                                 </p:column>
 
                                 <p:column headerText="Patient Name">
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{var.patientName}"/>
                                 </p:column>
 
                                 <p:column headerText="Admission No">
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{var.admissionNo}"/>
                                 </p:column>
                                 
                                 <p:column headerText="Admission Date">
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{var.admissionDate}"/>
                                 </p:column>
                                 
                                 <p:column headerText="Bed No">
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{var.bedNo}"/>
                                 </p:column>
                                 
                                 <p:column headerText="Surgeon">
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{var.surgeonName}"/>
                                 </p:column>
                                 
                                 <p:column headerText="Surgery Type">
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{var.surgeryTypeName}"/>
                                 </p:column>
 
                                 <p:column headerText="Service Name">
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{var.serviceName}"/>
                                 </p:column>
 
                                 <p:column headerText="Room Charges">
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{var.roomCharges}"/>
                                 </p:column>
 
                                 <p:column headerText="Drug Charges">
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{var.drugCharges}"/>
                                 </p:column>
 
                                 <p:column headerText="Total Hospital Charge">
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{var.totalHospitalCharge}"/>
                                 </p:column>
 
                                 <p:column headerText="Professional Charge">
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{var.professionalCharge}"/>
                                 </p:column>
                                 
                                 <p:column headerText="Total Amount">
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{var.totalAmount}"/>
                                 </p:column>
                                 
                                 <p:column headerText="Bill Discount">
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{var.billDiscount}"/>
                                 </p:column>
                                 
                                 <p:column headerText="Net Amount">
-                                    <h:outputText value=""/>
+                                    <h:outputText value="#{var.netAmount}"/>
                                 </p:column>
 
                             </p:dataTable>
