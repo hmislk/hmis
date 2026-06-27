@@ -1102,7 +1102,7 @@ public class PharmacyIssueController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("billId", billId);
         List<BillItem> draftItems = getBillItemFacade().findByJpql(
-                "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId", params);
+                "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId ORDER BY bi.inwardChargeType, bi.searialNo", params);
 
         clearBill();
         clearBillItem();
@@ -1160,7 +1160,7 @@ public class PharmacyIssueController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("billId", billId);
         List<BillItem> items = getBillItemFacade().findByJpql(
-                "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId", params);
+                "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId ORDER BY bi.inwardChargeType, bi.searialNo", params);
 
         clearBill();
         clearBillItem();
@@ -1220,7 +1220,7 @@ public class PharmacyIssueController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("billId", billId);
         List<BillItem> items = getBillItemFacade().findByJpql(
-                "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId", params);
+                "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId ORDER BY bi.inwardChargeType, bi.searialNo", params);
         if (preBill != null && preBill.getId() != null && preBill.getId().equals(billId)) {
             preBill.setCheckedBy(draft.getCheckedBy());
             preBill.setBillItems(items);
@@ -1334,7 +1334,7 @@ public class PharmacyIssueController implements Serializable {
         getBillFacade().edit(draft);
 
         // Deduct stock for each saved item
-        String jpql = "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId";
+        String jpql = "SELECT bi FROM BillItem bi WHERE bi.retired = false AND bi.bill.id = :billId ORDER BY bi.inwardChargeType, bi.searialNo";
         Map<String, Object> params = new HashMap<>();
         params.put("billId", billId);
         List<BillItem> items = getBillItemFacade().findByJpql(jpql, params);
