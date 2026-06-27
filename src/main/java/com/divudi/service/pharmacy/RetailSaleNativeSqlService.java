@@ -908,6 +908,7 @@ public class RetailSaleNativeSqlService {
         // (and derive the amount paid from their sum) so reprinted/reopened bills
         // match what the settle-time printout shows.
         double cashPaid = bill.getCashPaid();
+        double balance = cashPaid - net;
         if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             List<PrintBillData.PaymentLine> lines = buildPrintPaymentLinesFromPersisted(bill);
             pbd.setPayments(lines);
@@ -915,9 +916,16 @@ public class RetailSaleNativeSqlService {
             for (PrintBillData.PaymentLine line : lines) {
                 cashPaid += line.getValue();
             }
+            // The split is accepted at settle when within 1.0 of the net total;
+            // clamp the reprinted balance to zero within the same tolerance so a
+            // settled bill never shows a residual balance.
+            balance = cashPaid - net;
+            if (Math.abs(balance) <= 1.0) {
+                balance = 0.0;
+            }
         }
         pbd.setCashPaid(cashPaid);
-        pbd.setBalance(cashPaid - net);
+        pbd.setBalance(balance);
 
         // Items are on the BilledBill. For legacy plain-Bill records (pre two-bill structure)
         // or PreBill IDs passed in, fall back to referenceBill if the bill has no items.

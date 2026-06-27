@@ -78,7 +78,7 @@
                         </td>
                         <td>:</td>
                         <td style="width: 30%;">
-                            <h:outputLabel value="#{cc.attrs.bill.paymentMethodLabel}" class="billDetails"/>
+                            <h:outputLabel value="#{empty cc.attrs.bill.payments ? cc.attrs.bill.paymentMethodLabel : 'Multiple'}" class="billDetails"/>
                         </td>
                         <td style="width: 10%;"/>
                         <td style="width: 15%;"/>

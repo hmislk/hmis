@@ -622,14 +622,23 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         // paid is the sum of the entered components. Show that (and a zero
         // balance) instead of the unused single cashPaid (which is 0.0).
         double tendered = cashPaid;
+        double printedBalance = tendered - netTot;
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             tendered = 0.0;
             for (PrintBillData.PaymentLine line : pbd.getPayments()) {
                 tendered += line.getValue();
             }
+            // settle accepts the split when it is within 1.0 of the net total
+            // (validateMultiplePaymentsFailed); clamp the printed balance to zero
+            // within the same tolerance so an already-settled bill never shows a
+            // residual balance.
+            printedBalance = tendered - netTot;
+            if (Math.abs(printedBalance) <= 1.0) {
+                printedBalance = 0.0;
+            }
         }
         pbd.setCashPaid(tendered);
-        pbd.setBalance(tendered - netTot);
+        pbd.setBalance(printedBalance);
 
         printBill = pbd;
 
