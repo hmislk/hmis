@@ -94,12 +94,11 @@
                                         <p:commandButton
                                             id="btnApprove"
                                             class="ui-button-success"
-                                            icon="fas fa-check"
-                                            value="Approve"
-                                            title="Approve Disposal Issue #{g.id}"
+                                            icon="fas fa-eye"
+                                            value="View / Approve"
+                                            title="View and Approve Disposal Issue #{g.id}"
                                             ajax="false"
-                                            onclick="if(!confirm('Approve this disposal issue? Stock will be deducted.')) return false;"
-                                            action="#{pharmacyIssueController.approveDisposalIssue(g.id)}"
+                                            action="#{pharmacyIssueController.loadFinalizedForApprove(g.id)}"
                                             style="min-width: 80px;"/>
                                         <p:commandButton
                                             id="btnCancel"

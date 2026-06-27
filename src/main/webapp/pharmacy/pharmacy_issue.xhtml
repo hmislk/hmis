@@ -72,13 +72,13 @@
                         </h:panelGroup>
 
                         <p:panel rendered="#{pharmacyIssueController.toDepartment ne null and pharmacyIssueController.toDepartment ne sessionController.loggedUser.department}">
-                            <f:facet name="header" >
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <i class="fas fa-building mt-2" />
-                                        <h:outputLabel class="mx-2 mt-2" value="Department Disposal - Issue to #{pharmacyIssueController.toDepartment.name}" />
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center w-100">
 
-                                        <!-- Config Button (Admin Only) -->
+                                    <!-- LEFT: title + config -->
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="fas fa-building"/>
+                                        <h:outputText value="Department Disposal — Issue to #{pharmacyIssueController.toDepartment.name}"/>
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                             <p:commandButton
                                                 value="Config"
@@ -86,40 +86,80 @@
                                                 title="Page Configuration Management"
                                                 action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_issue')}"
                                                 ajax="false"
-                                                styleClass="ui-button-secondary mx-1">
-                                            </p:commandButton>
+                                                styleClass="ui-button-secondary ui-button-outlined"/>
                                         </h:panelGroup>
-
-
-
                                     </div>
-                                    <div class="float-end" >
+
+                                    <!-- CENTER: navigation -->
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            value="Disposal Issues to Finalize"
+                                            icon="fas fa-tasks"
+                                            ajax="false"
+                                            action="/pharmacy/pharmacy_disposal_issue_list_to_finalize?faces-redirect=true"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}"
+                                            title="View disposal issues waiting to be finalized"/>
+                                        <p:commandButton
+                                            value="Disposal Issues to Approve"
+                                            icon="fas fa-check-circle"
+                                            ajax="false"
+                                            action="/pharmacy/pharmacy_disposal_issue_list_to_approve?faces-redirect=true"
+                                            styleClass="ui-button-info ui-button-outlined"
+                                            rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssueApprove')}"
+                                            title="View disposal issues waiting for approval"/>
+                                    </div>
+
+                                    <!-- RIGHT: actions (left=least important → right=primary) -->
+                                    <div class="d-flex gap-2">
                                         <p:commandButton
                                             accesskey="n"
                                             value="New Disposal Issue Bill"
                                             icon="pi pi-plus"
-                                            class="ui-button-warning m-1"
+                                            styleClass="ui-button-warning"
                                             ajax="false"
                                             action="/pharmacy/pharmacy_issue"
-                                            actionListener="#{pharmacyIssueController.resetAll()}">
-                                        </p:commandButton>
+                                            actionListener="#{pharmacyIssueController.resetAll()}"/>
                                         <p:commandButton
-                                            id="btnIssue"
+                                            id="btnSave"
                                             accesskey="s"
                                             value="Save"
                                             icon="fas fa-floppy-disk"
-                                            class="ui-button-success m-1"
+                                            styleClass="ui-button-success"
                                             ajax="false"
                                             action="#{pharmacyIssueController.saveDisposalIssueDraft()}"
                                             onclick="return confirm('Save this disposal issue draft?');"
-                                            rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssue')}" />
+                                            rendered="#{pharmacyIssueController.preBill.checkedBy eq null and webUserController.hasPrivilege('PharmacyDisposalIssue')}"
+                                            style="min-width:100px"/>
+                                        <p:commandButton
+                                            id="btnFinalize"
+                                            accesskey="f"
+                                            value="Finalize"
+                                            icon="fas fa-check-circle"
+                                            styleClass="ui-button-success"
+                                            ajax="false"
+                                            action="#{pharmacyIssueController.finalizeCurrentDraft()}"
+                                            onclick="return confirm('Finalize this disposal issue? It will be queued for approval.');"
+                                            rendered="#{pharmacyIssueController.preBill.checkedBy eq null and webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}"
+                                            style="min-width:120px"/>
+                                        <p:commandButton
+                                            id="btnApprove"
+                                            accesskey="a"
+                                            value="Approve"
+                                            icon="fas fa-check-double"
+                                            styleClass="ui-button-success"
+                                            ajax="false"
+                                            action="#{pharmacyIssueController.approveDisposalIssue(pharmacyIssueController.preBill.id)}"
+                                            onclick="return confirm('Approve this disposal issue? Stock will be deducted.');"
+                                            rendered="#{pharmacyIssueController.preBill.checkedBy ne null and !pharmacyIssueController.preBill.completed and webUserController.hasPrivilege('PharmacyDisposalIssueApprove')}"
+                                            style="min-width:120px"/>
                                     </div>
                                 </div>
                             </f:facet>
 
                             <div class="row">
                                 <div class="col-8">
-                                    <p:panel id="panelAddBillItem">
+                                    <p:panel id="panelAddBillItem" rendered="#{pharmacyIssueController.preBill.checkedBy eq null}">
                                         <f:facet name="header">
                                             <h:outputText styleClass="fa-solid fa-circle-plus" />
                                             <h:outputText class="mx-4" value="Add Items"/>
@@ -157,7 +197,7 @@
                                                     </p:column>
                                                     <p:column
                                                         style="padding: 3px"
-                                                        headerText="Purchase Rate"
+                                                        headerText="Pur. Rate"
                                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}"
                                                         styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
                                                         <h:outputLabel value="#{i.purchaseRate}" >
@@ -257,7 +297,7 @@
                                                 </p:inputText>
                                             </div>
                                             <div class="col-1 d-grid" rendered="#{configOptionApplicationController.getBooleanValueByKey('Consumption - Show Rate and Value', false) and webUserController.hasPrivilege('ConsumptionViewRates')}">
-                                                <p:outputLabel value="Purchase Rate" for="txtPurchaseRate" />
+                                                <p:outputLabel value="Pur Rate" for="txtPurchaseRate" />
                                                 <p:inputText
                                                     id="txtPurchaseRate"
                                                     readonly="true"
@@ -437,7 +477,7 @@
                                                 </h:outputLabel>
                                             </p:column>
 
-                                            <p:column headerText="Remove" style="padding: 6px; width: 59px;">
+                                            <p:column headerText="Remove" style="padding: 6px; width: 59px;" rendered="#{pharmacyIssueController.preBill.checkedBy eq null}">
                                                 <p:commandButton icon="fas fa-trash" class="ui-button-danger" action="#{pharmacyIssueController.removeBillItem(bi)}" ajax="false" >
                                                 </p:commandButton>
                                             </p:column>
@@ -464,6 +504,7 @@
                                                     title="Change Department"
                                                     class="ui-button-primary ui-button-sm"
                                                     ajax="false"
+                                                    rendered="#{pharmacyIssueController.preBill.checkedBy eq null}"
                                                     action="#{pharmacyIssueController.changeDepartment()}" />
                                             </h:panelGroup>
 
@@ -473,7 +514,7 @@
                                                 id="selDepartmentType"
                                                 value="#{pharmacyIssueController.preBill.departmentType}"
                                                 class="w-100"
-                                                disabled="#{not empty pharmacyIssueController.preBill.billItems and pharmacyIssueController.preBill.billItems.size() > 0}">
+                                                disabled="#{pharmacyIssueController.preBill.checkedBy ne null or (not empty pharmacyIssueController.preBill.billItems and pharmacyIssueController.preBill.billItems.size() > 0)}">
                                                 <f:selectItem itemLabel="Select Department Type" itemValue="#{null}"/>
                                                 <f:selectItems value="#{sessionController.availableDepartmentTypesForPharmacyTransactions}"
                                                                var="dt"
@@ -483,10 +524,12 @@
                                             </p:selectOneMenu>
 
                                             <h:outputLabel value="Request Number"/>
-                                            <p:inputText class="w-100" value="#{pharmacyIssueController.preBill.invoiceNumber}" id="req"/>
+                                            <p:inputText class="w-100" value="#{pharmacyIssueController.preBill.invoiceNumber}" id="req"
+                                                         readonly="#{pharmacyIssueController.preBill.checkedBy ne null}"/>
 
                                             <h:outputLabel value="Comment"/>
-                                            <p:inputTextarea class="w-100" value="#{pharmacyIssueController.preBill.comments}" id="comment"/>
+                                            <p:inputTextarea class="w-100" value="#{pharmacyIssueController.preBill.comments}" id="comment"
+                                                             readonly="#{pharmacyIssueController.preBill.checkedBy ne null}"/>
 
                                         </h:panelGrid>
 
@@ -560,34 +603,69 @@
                         </p:panel>
                     </p:panel>
 
-                    <p:panel rendered="#{pharmacyIssueController.billPreview}" >
+                    <p:panel rendered="#{pharmacyIssueController.billPreview}">
                         <f:facet name="header">
-                            <div class="float-end">
-                                <p:commandButton
-                                    accesskey="n"
-                                    value="New Disposal Issue Bill"
-                                    icon="pi pi-plus"
-                                    class="ui-button-warning m-1"
-                                    ajax="false"
-                                    action="/pharmacy/pharmacy_issue?faces-redirect=true"
-                                    actionListener="#{pharmacyIssueController.resetAll()}" >
-                                </p:commandButton>
-                                <p:commandButton
-                                    accesskey="p"
-                                    id="btnPrint"
-                                    icon="pi pi-print"
-                                    class="ui-button-primary m-1"
-                                    value="Print"
-                                    ajax="false" >
-                                    <p:printer target="gpBillPreview" ></p:printer>
-                                </p:commandButton>
-                                <p:commandButton
-                                    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
-                                    value="Settings"
-                                    icon="fas fa-cog"
-                                    class="ui-button-secondary m-1"
-                                    type="button"
-                                    onclick="PF('disposalIssueConfigDialog').show();" />
+                            <div class="d-flex justify-content-between align-items-center w-100">
+
+                                <!-- LEFT: Print + Settings + status badge -->
+                                <div class="d-flex align-items-center gap-2">
+                                    <p:commandButton
+                                        id="btnPrint"
+                                        accesskey="p"
+                                        value="Print"
+                                        icon="fas fa-print"
+                                        styleClass="ui-button-info"
+                                        style="min-width:100px"
+                                        ajax="false">
+                                        <p:printer target="gpBillPreview"/>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        value="Settings"
+                                        icon="fas fa-cog"
+                                        styleClass="ui-button-secondary ui-button-outlined"
+                                        type="button"
+                                        onclick="PF('disposalIssueConfigDialog').show();"/>
+                                    <h:panelGroup rendered="#{pharmacyIssueController.printBill ne null and pharmacyIssueController.printBill.checkedBy ne null and !pharmacyIssueController.printBill.completed}">
+                                        <p:badge value="Finalized — Awaiting Approval" severity="warning"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{pharmacyIssueController.printBill ne null and pharmacyIssueController.printBill.completed}">
+                                        <p:badge value="Approved" severity="success"/>
+                                    </h:panelGroup>
+                                </div>
+
+                                <!-- CENTER: Navigation -->
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Disposal Issues to Finalize"
+                                        icon="fas fa-tasks"
+                                        ajax="false"
+                                        action="/pharmacy/pharmacy_disposal_issue_list_to_finalize?faces-redirect=true"
+                                        styleClass="ui-button-info ui-button-outlined"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}"
+                                        title="View disposal issues waiting to be finalized"/>
+                                    <p:commandButton
+                                        value="Disposal Issues to Approve"
+                                        icon="fas fa-check-circle"
+                                        ajax="false"
+                                        action="/pharmacy/pharmacy_disposal_issue_list_to_approve?faces-redirect=true"
+                                        styleClass="ui-button-info ui-button-outlined"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssueApprove')}"
+                                        title="View disposal issues waiting for approval"/>
+                                </div>
+
+                                <!-- RIGHT: New bill -->
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        accesskey="n"
+                                        value="New Disposal Issue Bill"
+                                        icon="pi pi-plus"
+                                        styleClass="ui-button-warning"
+                                        ajax="false"
+                                        action="/pharmacy/pharmacy_issue"
+                                        actionListener="#{pharmacyIssueController.resetAll()}"/>
+                                </div>
+
                             </div>
                         </f:facet>
 

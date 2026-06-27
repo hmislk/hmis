@@ -93,12 +93,11 @@
                                 <p:commandButton
                                     id="btnFinalize"
                                     styleClass="ui-button ui-button-warning ui-button-sm"
-                                    icon="fas fa-check-circle"
-                                    value="Finalize"
-                                    title="Finalize Disposal Issue #{g.id}"
+                                    icon="fas fa-eye"
+                                    value="View / Finalize"
+                                    title="View and Finalize Disposal Issue #{g.id}"
                                     ajax="false"
-                                    onclick="if(!confirm('Finalize this disposal issue? It will be queued for approval.')) return false;"
-                                    action="#{pharmacyIssueController.finalizeDisposalIssue(g.id)}"
+                                    action="#{pharmacyIssueController.loadDraftForEdit(g.id)}"
                                     style="font-size: 0.85em; padding: 0.375rem 0.75rem;"/>
                                 <p:commandButton
                                     id="btnCancel"
