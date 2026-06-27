@@ -134,8 +134,7 @@
                                 <p:outputLabel value="Patient MRN" for="acPatientMRN" class="m-3"/>
                             </h:panelGroup>
                             <p:autoComplete id="acPatientMRN"
-                                            value="#{reportController.patientEncounterDto}"
-                                            converter="#{patientEncounterDtoConverter}"
+                                            value="#{inwardReportController.selectedPatient}"
                                             styleClass="w-100"
                                             inputStyleClass="w-100 form-control"
                                             placeholder="Patient Name/MRN"
@@ -164,7 +163,7 @@
                                 id="wdbdSelect"
                                 maxResults="15"
                                 placeholder="Doctor"
-                                value="#{admissionController.current.opdDoctor}" 
+                                value="#{inwardReportController.selectedAdmitDoctor}" 
                                 completeMethod="#{doctorController.completeDoctor}"
                                 var="mys" 
                                 itemLabel="#{mys.person.nameWithTitle}" 
@@ -184,7 +183,7 @@
                                 <p:outputLabel value="Surgen" for="surge" class="m-3"/>
                             </h:panelGroup>
                             <p:autoComplete
-                                value="#{admissionController.current.referringConsultant}"
+                                value="#{inwardReportController.selectedSurgeon}"
                                 id="surge"
                                 completeMethod="#{consultantController.completeConsultant}"
                                 var="mysp"
@@ -209,7 +208,7 @@
                                 id="asurge"
                                 maxResults="15"
                                 placeholder="Doctor"
-                                value="#{admissionController.current.opdDoctor}" 
+                                value="#{inwardReportController.selectedAssistantSurgeon}" 
                                 completeMethod="#{doctorController.completeDoctor}"
                                 var="mys" 
                                 itemLabel="#{mys.person.nameWithTitle}" 
