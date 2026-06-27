@@ -198,7 +198,16 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
             JsfUtil.addSuccessMessage("Bill settled successfully.");
         } catch (RuntimeException e) {
             LOGGER.log(Level.SEVERE, "Native settle failed", e);
-            JsfUtil.addErrorMessage("Failed to settle bill: " + e.getMessage());
+            // EJBException wraps the service RuntimeException — extract root cause for the user message
+            Throwable cause = e;
+            while (cause.getCause() != null && cause.getCause() != cause) {
+                cause = cause.getCause();
+            }
+            String msg = cause.getMessage();
+            if (msg == null || msg.isBlank()) {
+                msg = "Settle failed. Please check stock availability and try again.";
+            }
+            JsfUtil.addErrorMessage(msg);
         }
     }
 

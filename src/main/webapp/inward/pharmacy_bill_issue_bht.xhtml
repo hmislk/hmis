@@ -13,6 +13,8 @@
         <h:form id="bill">
 
             <p:growl id="panelErrorMsg" showDetail="true" life="4000" />
+            <p:messages id="globalMessages" showSummary="true" showDetail="false" autoUpdate="true"
+                        style="margin-bottom:0.5rem;" />
 
             <!-- Blocking overlay shown during settle -->
             <div id="settlingOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:99999;align-items:center;justify-content:center;">
@@ -24,14 +26,16 @@
             </div>
 
             <!-- QA ONLY: temporary link back to the old entity-based page for side-by-side comparison -->
-            <div class="row mb-2">
-                <div class="col-12">
-                    <p class="text-muted small mb-0">
-                        <i class="fa-solid fa-flask me-1"></i>
-                        QA: <h:link value="Old entity-based page" outcome="/inward/pharmacy_bill_issue_bht_old" />
-                    </p>
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('SystemAdmin')}">
+                <div class="row mb-2">
+                    <div class="col-12">
+                        <p class="text-muted small mb-0">
+                            <i class="fa-solid fa-flask me-1"></i>
+                            QA: <h:link value="Old entity-based page" outcome="/inward/pharmacy_bill_issue_bht_old" />
+                        </p>
+                    </div>
                 </div>
-            </div>
+            </h:panelGroup>
 
             <!-- ===================== PATIENT SELECTION ===================== -->
             <h:panelGroup rendered="#{inpatientDirectIssueNativeSqlController.patientEncounter eq null}" class="row">
@@ -87,6 +91,7 @@
                                                     itemValue="#{apt}"
                                                     placeholder="Type patient name, BHT number, or PHN..."
                                                     minQueryLength="2"
+                                                    maxResults="20"
                                                     style="width: 100%;"
                                                     inputStyleClass="form-control form-control-lg">
                                                     <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
@@ -368,15 +373,11 @@
                                         return;
                                     }
 
-                                    // Any other input/textarea → Settle
+                                    // Any other input/textarea → suppress Enter to prevent accidental form submit
                                     var tag = e.target.tagName;
                                     if (tag === 'BUTTON' || tag === 'A') return;
-                                    var settleBtn = document.getElementById(SETTLE_ID);
-                                    if (settleBtn) {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        settleBtn.click();
-                                    }
+                                    e.preventDefault();
+                                    e.stopPropagation();
                                 }
 
                                 // After Add AJAX completes, clear &amp; refocus the autocomplete

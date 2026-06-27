@@ -163,10 +163,11 @@ public class InpatientDirectIssueNativeSqlService {
 
         // Step 5: Update bill-level totals (gross and net tracked separately)
         em.createNativeQuery(
-                "UPDATE " + billTable() + " SET total=?, netTotal=? WHERE ID=?")
+                "UPDATE " + billTable() + " SET total=?, netTotal=?, grantTotal=? WHERE ID=?")
                 .setParameter(1, billTotals[0])   // grossTotal
                 .setParameter(2, billTotals[1])   // netTotal
-                .setParameter(3, billId)
+                .setParameter(3, billTotals[0])   // grantTotal = grossTotal (intentional naming per Bill entity)
+                .setParameter(4, billId)
                 .executeUpdate();
 
         // Evict all natively-written entity classes from the EclipseLink L2 cache.
@@ -201,7 +202,7 @@ public class InpatientDirectIssueNativeSqlService {
 
         em.createNativeQuery(
             "INSERT INTO " + billTable()
-            + " (DTYPE, billType, billTypeAtomic,"
+            + " (DTYPE, billClassType, billType, billTypeAtomic,"
             + " deptId, insId,"
             + " department_ID, institution_ID, patient_ID, patientEncounter_ID,"
             + " fromDepartment_ID, fromInstitution_ID,"
@@ -211,7 +212,7 @@ public class InpatientDirectIssueNativeSqlService {
             + " status,"
             + " retired, completed, cancelled, refunded, reactivated, consignment,"
             + " priority, smsed)"
-            + " VALUES ('PreBill',?,?,?,?,?,?,?,?,?,?,?,?,?,?,0.0,0.0,0.0,0,0,0,0,0,0,0,?,0)")
+            + " VALUES ('PreBill','PreBill',?,?,?,?,?,?,?,?,?,?,?,?,?,?,0.0,0.0,0.0,0,0,0,0,0,0,0,?,0)")
             .setParameter(1, billTypeName)
             .setParameter(2, billTypeAtomicName)
             .setParameter(3, bill.getDeptId())
@@ -544,7 +545,10 @@ public class InpatientDirectIssueNativeSqlService {
                     new Object[]{i, bifdId, System.currentTimeMillis() - fdT0});
         }
 
-        // Native INSERT BillFinanceDetails — one row per bill
+        // Native INSERT BillFinanceDetails — one row per bill.
+        // totalCostValue/totalPurchaseValue/totalRetailSaleValue/totalWholesaleValue/totalQuantity/totalFreeQuantity
+        // are stored as NEGATIVE values to reflect the outflow sign convention used by the old entity path
+        // (BFD aggregate fields are negative for issues; netTotal/grossTotal remain positive).
         em.createNativeQuery(
             "INSERT INTO " + billFdTable()
             + " (createdAt, netTotal, grossTotal,"
@@ -553,12 +557,12 @@ public class InpatientDirectIssueNativeSqlService {
             + " VALUES (NOW(),?,?,?,?,?,?,?,?)")
             .setParameter(1, billNetTotal)
             .setParameter(2, billGrossTotal)
-            .setParameter(3, totalCostValue)
-            .setParameter(4, totalPurchaseValue)
-            .setParameter(5, totalRetailSaleValue)
-            .setParameter(6, totalWholesaleValue)
-            .setParameter(7, totalQuantity)
-            .setParameter(8, totalFreeQuantity)
+            .setParameter(3, totalCostValue.negate())
+            .setParameter(4, totalPurchaseValue.negate())
+            .setParameter(5, totalRetailSaleValue.negate())
+            .setParameter(6, totalWholesaleValue.negate())
+            .setParameter(7, totalQuantity.negate())
+            .setParameter(8, totalFreeQuantity.negate())
             .executeUpdate();
 
         long bfdId = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
