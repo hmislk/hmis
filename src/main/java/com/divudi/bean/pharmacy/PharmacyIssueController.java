@@ -1063,16 +1063,27 @@ public class PharmacyIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please select a Department first.");
             return null;
         }
+        boolean canIssueToSameDept = configOptionApplicationController
+                .getBooleanValueByKey("Disposal Issue can be done for the same department", false);
+        if (!canIssueToSameDept
+                && Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
+            JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
+            return null;
+        }
         if (getPreBill().getBillItems() == null || getPreBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Please add at least one item before finalizing.");
             return null;
         }
+        if (checkAllBillItem()) {
+            return null;
+        }
+        if (errorCheckForSaleBill()) {
+            return null;
+        }
+        saveDisposalIssueDraft();
         if (getPreBill().getId() == null) {
-            saveDisposalIssueDraft();
-            if (getPreBill().getId() == null) {
-                JsfUtil.addErrorMessage("Could not save draft. Cannot finalize.");
-                return null;
-            }
+            JsfUtil.addErrorMessage("Could not save draft. Cannot finalize.");
+            return null;
         }
         return finalizeDisposalIssue(getPreBill().getId());
     }

@@ -81,6 +81,7 @@
                                         <h:outputText value="Department Disposal — Issue to #{pharmacyIssueController.toDepartment.name}"/>
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                             <p:commandButton
+                                                id="btnConfig"
                                                 value="Config"
                                                 icon="fa fa-cog"
                                                 title="Page Configuration Management"
@@ -93,6 +94,7 @@
                                     <!-- CENTER: navigation -->
                                     <div class="d-flex gap-2">
                                         <p:commandButton
+                                            id="btnNavFinalize"
                                             value="Disposal Issues to Finalize"
                                             icon="fas fa-tasks"
                                             ajax="false"
@@ -101,6 +103,7 @@
                                             rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}"
                                             title="View disposal issues waiting to be finalized"/>
                                         <p:commandButton
+                                            id="btnNavApprove"
                                             value="Disposal Issues to Approve"
                                             icon="fas fa-check-circle"
                                             ajax="false"
@@ -113,6 +116,7 @@
                                     <!-- RIGHT: actions (left=least important → right=primary) -->
                                     <div class="d-flex gap-2">
                                         <p:commandButton
+                                            id="btnNew"
                                             accesskey="n"
                                             value="New Disposal Issue Bill"
                                             icon="pi pi-plus"
@@ -620,6 +624,7 @@
                                         <p:printer target="gpBillPreview"/>
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnPrintSettings"
                                         rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                                         value="Settings"
                                         icon="fas fa-cog"
@@ -637,6 +642,7 @@
                                 <!-- CENTER: Navigation -->
                                 <div class="d-flex gap-2">
                                     <p:commandButton
+                                        id="btnPrintNavFinalize"
                                         value="Disposal Issues to Finalize"
                                         icon="fas fa-tasks"
                                         ajax="false"
@@ -645,6 +651,7 @@
                                         rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}"
                                         title="View disposal issues waiting to be finalized"/>
                                     <p:commandButton
+                                        id="btnPrintNavApprove"
                                         value="Disposal Issues to Approve"
                                         icon="fas fa-check-circle"
                                         ajax="false"
@@ -657,6 +664,7 @@
                                 <!-- RIGHT: New bill -->
                                 <div class="d-flex gap-2">
                                     <p:commandButton
+                                        id="btnPrintNew"
                                         accesskey="n"
                                         value="New Disposal Issue Bill"
                                         icon="pi pi-plus"
