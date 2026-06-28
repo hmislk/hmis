@@ -466,12 +466,14 @@ public class InwardReportControllerBht implements Serializable {
     public List<BillItem> fetchLabBillItems(PatientEncounter pt, List<BillTypeAtomic> billTypesAtomics) {
         String jpql = "select bi "
                 + "from BillItem bi "
-                + "where bi.bill.retired = :ret "
+                + "where bi.bill.retired = false "
+                + "and bi.bill.cancelled = false "
+                + "and bi.retired = false "
+                + "and bi.refunded = false "
                 + "and bi.bill.billTypeAtomic in :billTypesAtomics "
                 + "and bi.bill.patientEncounter = :pe ";
 
         HashMap<String, Object> params = new HashMap<>();
-        params.put("ret", false);
         params.put("pe", pt);
         params.put("billTypesAtomics", billTypesAtomics);
 
