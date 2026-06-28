@@ -70,9 +70,9 @@
                                     sortMode="multiple"
                                     resizableColumns="true"
                                     reflow="true">
-                                    <p:column headerText="Created" width="8em">
+                                    <p:column headerText="Created" width="10em">
                                         <h:outputLabel value="#{g.createdAt}">
-                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                         </h:outputLabel>
                                     </p:column>
                                     <p:column headerText="From Dept" width="8em">

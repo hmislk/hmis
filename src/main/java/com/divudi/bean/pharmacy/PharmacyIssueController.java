@@ -495,8 +495,12 @@ public class PharmacyIssueController implements Serializable {
     }
 
     public void setQty(Double qty) {
-        if (qty != null && qty <= 0) {
-            JsfUtil.addErrorMessage("Can not enter a minus value");
+        if (qty != null && qty == 0) {
+            JsfUtil.addErrorMessage("Quantity must be greater than 0");
+            return;
+        }
+        if (qty != null && qty < 0) {
+            JsfUtil.addErrorMessage("Cannot enter a negative quantity");
             return;
         }
         this.qty = qty;
@@ -789,7 +793,7 @@ public class PharmacyIssueController implements Serializable {
             return true;
         }
         if (preBill.getInvoiceNumber() == null || preBill.getInvoiceNumber().trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please Fill Invoice Number");
+            JsfUtil.addErrorMessage("Please Fill Request Number");
             return true;
         }
         return false;
@@ -1030,29 +1034,52 @@ public class PharmacyIssueController implements Serializable {
         getPreBill().setBillType(BillType.PharmacyDisposalIssue);
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_PRE);
 
-        List<BillItem> tmpBillItems = getPreBill().getBillItems();
-        getPreBill().setBillItems(null);
-
         if (getPreBill().getId() == null) {
+            // First save — no persisted BillItems yet; safe to null the collection before create
+            List<BillItem> tmpBillItems = getPreBill().getBillItems();
+            getPreBill().setBillItems(null);
             getBillFacade().createAndFlush(getPreBill());
-        } else {
-            getBillFacade().editAndFlush(getPreBill());
-        }
-
-        // Persist items — NO stock deduction at this stage
-        for (BillItem tbi : tmpBillItems) {
-            tbi.setInwardChargeType(InwardChargeType.Medicine);
-            tbi.setBill(getPreBill());
-            if (tbi.getId() == null) {
+            for (BillItem tbi : tmpBillItems) {
+                tbi.setInwardChargeType(InwardChargeType.Medicine);
+                tbi.setBill(getPreBill());
                 tbi.setCreatedAt(new Date());
                 tbi.setCreater(sessionController.getLoggedUser());
                 getBillItemFacade().createAndFlush(tbi);
-            } else {
-                getBillItemFacade().editAndFlush(tbi);
+            }
+            getPreBill().setBillItems(tmpBillItems);
+        } else {
+            // Subsequent save — reload from DB before editing.
+            // Setting billItems(null) on a session-scoped entity and then calling
+            // editAndFlush triggers EclipseLink orphan-removal, which issues
+            // DELETE FROM BILLITEM and fails with FK violation on PHARMACEUTICALBILLITEM.
+            Bill freshBill = getBillFacade().find(getPreBill().getId());
+            if (freshBill == null) {
+                JsfUtil.addErrorMessage("Draft no longer exists.");
+                return null;
+            }
+            freshBill.setToDepartment(toDepartment);
+            freshBill.setFromDepartment(sessionController.getLoggedUser().getDepartment());
+            freshBill.setFromInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
+            freshBill.setComments(getPreBill().getComments());
+            freshBill.setInvoiceNumber(getPreBill().getInvoiceNumber());
+            freshBill.setReferenceNumber(getPreBill().getReferenceNumber());
+            freshBill.setDepartmentType(getPreBill().getDepartmentType());
+            getBillFacade().editAndFlush(freshBill);
+
+            // Persist new/updated BillItems individually — never touch freshBill.billItems
+            for (BillItem tbi : getActiveBillItems()) {
+                tbi.setInwardChargeType(InwardChargeType.Medicine);
+                tbi.setBill(getPreBill());
+                if (tbi.getId() == null) {
+                    tbi.setCreatedAt(new Date());
+                    tbi.setCreater(sessionController.getLoggedUser());
+                    getBillItemFacade().createAndFlush(tbi);
+                } else {
+                    getBillItemFacade().editAndFlush(tbi);
+                }
             }
         }
 
-        getPreBill().setBillItems(tmpBillItems);
         JsfUtil.addSuccessMessage("Disposal Issue Draft Saved Successfully");
         billPreview = false;
         return null;
@@ -1531,11 +1558,15 @@ public class PharmacyIssueController implements Serializable {
             return 0.0;
         }
 
-//        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
-//            errorMessage = "This batch is Expire With in 31 Days.";
-//            JsfUtil.addErrorMessage("This batch is Expire With in 31 Days.");
-//            return 0.0;
-//        }
+        Date expiryDate = getStock().getItemBatch().getDateOfExpire();
+        if (expiryDate != null) {
+            Calendar expiryEnd = Calendar.getInstance();
+            expiryEnd.setTime(CommonFunctions.getEndOfDay(expiryDate));
+            if (expiryEnd.before(Calendar.getInstance())) {
+                JsfUtil.addErrorMessage("Cannot issue an expired item batch (expired: " + expiryDate + ")");
+                return 0.0;
+            }
+        }
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setQty(0 - Math.abs(qty));
 
@@ -1738,7 +1769,7 @@ public class PharmacyIssueController implements Serializable {
         // that were causing double-counting. Now using totalCost, totalPurchase, totalRetail, totalWholesale directly.
 
         for (BillItem bi : billItems) {
-            if (bi == null) {
+            if (bi == null || bi.isRetired()) {
                 continue;
             }
 
@@ -1865,14 +1896,35 @@ public class PharmacyIssueController implements Serializable {
 
     public void removeBillItem(BillItem b) {
         userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
-        getPreBill().getBillItems().remove(b.getSearialNo());
 
-        // Clear department type if all items are removed
-        if (getPreBill().getBillItems().isEmpty()) {
+        // Soft-retire instead of hard-delete: removing from the list with orphanRemoval=true
+        // on Bill.billItems would trigger a cascade DELETE that violates the FK from
+        // PHARMACEUTICALBILLITEM.BILLITEM_ID. Mark retired and keep in the list.
+        b.setRetired(true);
+        b.setRetiredAt(new Date());
+        if (b.getId() != null) {
+            getBillItemFacade().edit(b);
+        }
+
+        // Clear department type if no active items remain
+        if (getActiveBillItems().isEmpty()) {
             getPreBill().setDepartmentType(null);
         }
 
         calTotal();
+    }
+
+    public List<BillItem> getActiveBillItems() {
+        if (getPreBill() == null || getPreBill().getBillItems() == null) {
+            return new ArrayList<>();
+        }
+        List<BillItem> active = new ArrayList<>();
+        for (BillItem bi : getPreBill().getBillItems()) {
+            if (bi != null && !bi.isRetired()) {
+                active.add(bi);
+            }
+        }
+        return active;
     }
 
     private BigDecimal determineIssueRate(ItemBatch itemBatch) {
