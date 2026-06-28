@@ -6,7 +6,6 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -17,9 +16,7 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.Department;
-import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
-import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.ItemBatchFacade;
 import com.divudi.core.facade.ItemFacade;
@@ -28,6 +25,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyService;
 import com.divudi.service.pharmacy.InpatientDirectIssueNativeSqlService;
+import com.divudi.service.pharmacy.PriceMatrixNativeSqlService;
 import com.divudi.core.util.CommonFunctions;
 
 import java.io.Serializable;
@@ -71,8 +69,6 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
     private SessionController sessionController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
-    @Inject
-    private PriceMatrixController priceMatrixController;
 
     @EJB
     private StockFacade stockFacade;
@@ -86,6 +82,8 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
     private PharmacyService pharmacyService;
     @EJB
     private InpatientDirectIssueNativeSqlService nativeSqlService;
+    @EJB
+    private PriceMatrixNativeSqlService priceMatrixNativeSqlService;
 
     // ---- Working state ----
     private PatientEncounter patientEncounter;
@@ -200,7 +198,16 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
             JsfUtil.addSuccessMessage("Bill settled successfully.");
         } catch (RuntimeException e) {
             LOGGER.log(Level.SEVERE, "Native settle failed", e);
-            JsfUtil.addErrorMessage("Failed to settle bill: " + e.getMessage());
+            // EJBException wraps the service RuntimeException — extract root cause for the user message
+            Throwable cause = e;
+            while (cause.getCause() != null && cause.getCause() != cause) {
+                cause = cause.getCause();
+            }
+            String msg = cause.getMessage();
+            if (msg == null || msg.isBlank()) {
+                msg = "Settle failed. Please check stock availability and try again.";
+            }
+            JsfUtil.addErrorMessage(msg);
         }
     }
 
@@ -302,6 +309,14 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
             JsfUtil.addErrorMessage("No sufficient stock available.");
             return;
         }
+        if (billItemDataList != null) {
+            for (BillItemData existing : billItemDataList) {
+                if (selectedStockId.equals(existing.getStockId())) {
+                    JsfUtil.addErrorMessage("This batch is already in the bill. Edit the quantity instead.");
+                    return;
+                }
+            }
+        }
 
         LOGGER.log(Level.INFO, "[addBillItem] selectedStockDto: id={0} itemBatchId={1} itemId={2} itemName={3} retailRate={4} stockQty={5}",
                 new Object[]{selectedStockDto.getId(), selectedStockDto.getItemBatchId(),
@@ -355,21 +370,20 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         double discountPct = 0.0;
         double discountValue = 0.0;
         try {
-            Item itemRef = itemFacade.find(selectedStockDto.getItemId());
+            long itemId = selectedStockDto.getItemId();
             Department matrixDept = determineMatrixDepartment();
             if (matrixDept == null) matrixDept = sessionController.getDepartment();
-            PriceMatrix pm = priceMatrixController.fetchInwardMargin(itemRef, grossValue, matrixDept);
-            if (pm != null) {
-                marginRate = (pm.getMargin() / 100.0) * lineRetailRate;
+            long matrixDeptId = matrixDept.getId();
+            double marginPct = priceMatrixNativeSqlService.getInwardMarginPct(itemId, matrixDeptId, grossValue);
+            if (marginPct != 0.0) {
+                marginRate = (marginPct / 100.0) * lineRetailRate;
                 marginValue = marginRate * absQty;
             }
-            if (Boolean.TRUE.equals(itemRef.isDiscountAllowed())) {
-                discountPct = priceMatrixController.getInwardDiscountPercent(
-                        patientEncounter.getPaymentMethod(),
-                        patientEncounter.getPaymentScheme(),
-                        patientEncounter.getAdmissionType(),
-                        matrixDept,
-                        itemRef);
+            if (priceMatrixNativeSqlService.isDiscountAllowed(itemId)) {
+                Long schemeId = patientEncounter.getPaymentScheme() != null ? patientEncounter.getPaymentScheme().getId() : null;
+                Long admTypeId = patientEncounter.getAdmissionType() != null ? patientEncounter.getAdmissionType().getId() : null;
+                String pmName = patientEncounter.getPaymentMethod() != null ? patientEncounter.getPaymentMethod().name() : null;
+                discountPct = priceMatrixNativeSqlService.getInwardDiscountPct(itemId, pmName, schemeId, admTypeId, matrixDeptId);
                 discountValue = (discountPct / 100.0) * grossValue;
             }
         } catch (Exception e) {
@@ -536,7 +550,7 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         printBill = (PrintBillData) result[1];
         printBillItems = (List<BillItemData>) result[2];
         billPreview = true;
-        return "/inward/pharmacy_bill_issue_bht_native?faces-redirect=true";
+        return "/inward/pharmacy_bill_issue_bht?faces-redirect=true";
     }
 
     // -----------------------------------------------------------------------
