@@ -3983,7 +3983,7 @@ public class ReportsController implements Serializable {
     }
 
     public ReportTemplateRowBundle generateDebtorBalanceReportBills(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods,
-                                                                    boolean onlyDueBills) {
+            boolean onlyDueBills) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(bill) "
                 + "FROM Bill bill "
@@ -8739,11 +8739,27 @@ public class ReportsController implements Serializable {
             Map<String, Object> filters = getFiltersForRouteAnalysisReport();
             int rowIndex = pharmacyController.addMetaDataToExcelSheet(workbook, sheet, 0, reportTitle, filters);
 
-            rowIndex = addRouteAnalysisChartImage(workbook, sheet, rowIndex, "Sample Count Over Months",
-                    getRouteAnalysisSampleCountChartData(detailReport), "Month", "Sample Count");
-            rowIndex = addRouteAnalysisChartImage(workbook, sheet, rowIndex, "Service Amount Over Months",
-                    getRouteAnalysisServiceAmountChartData(detailReport), "Month", "Service Amount");
-            rowIndex++;
+            if (showChart) {
+                rowIndex = addRouteAnalysisChartImage(
+                        workbook,
+                        sheet,
+                        rowIndex,
+                        "Sample Count Over Months",
+                        getRouteAnalysisSampleCountChartData(detailReport),
+                        "Month",
+                        "Sample Count");
+
+                rowIndex = addRouteAnalysisChartImage(
+                        workbook,
+                        sheet,
+                        rowIndex,
+                        "Service Amount Over Months",
+                        getRouteAnalysisServiceAmountChartData(detailReport),
+                        "Month",
+                        "Service Amount");
+
+                rowIndex++;
+            }
 
             writeRouteAnalysisExcelTable(workbook, sheet, rowIndex, detailReport);
 
@@ -8957,21 +8973,32 @@ public class ReportsController implements Serializable {
                 document.add(infoTable);
             }
             
-            document.add(new Paragraph("Sample Count Over Months", titleFont));
-            Image countChartImage = Image.getInstance(generateChartAsBytes("Sample Count Over Months",
-                    getSampleCountChartData(), "Month", "Sample Count"));
-            countChartImage.scaleToFit(500, 300);
-            countChartImage.setAlignment(Element.ALIGN_CENTER);
-            document.add(countChartImage);
+           if (showChart) {
 
-            document.add(new Paragraph("\n\nService Amount Over Months", titleFont));
-            Image amountChartImage = Image.getInstance(generateChartAsBytes("Service Amount Over Months",
-                    getServiceAmountChartData(), "Month", "Service Amount"));
-            amountChartImage.scaleToFit(500, 300);
-            amountChartImage.setAlignment(Element.ALIGN_CENTER);
-            document.add(amountChartImage);
+                document.add(new Paragraph("Sample Count Over Months", titleFont));
+                Image countChartImage = Image.getInstance(
+                        generateChartAsBytes(
+                                "Sample Count Over Months",
+                                getSampleCountChartData(),
+                                "Month",
+                                "Sample Count"));
+                countChartImage.scaleToFit(500, 300);
+                countChartImage.setAlignment(Element.ALIGN_CENTER);
+                document.add(countChartImage);
 
-            document.newPage();
+                document.add(new Paragraph("\n\nService Amount Over Months", titleFont));
+                Image serviceChartImage = Image.getInstance(
+                        generateChartAsBytes(
+                                "Service Amount Over Months",
+                                getServiceAmountChartData(),
+                                "Month",
+                                "Service Amount"));
+                serviceChartImage.scaleToFit(500, 300);
+                serviceChartImage.setAlignment(Element.ALIGN_CENTER);
+                document.add(serviceChartImage);
+
+                document.newPage();
+            }
 
             PdfPTable table = new PdfPTable(3 + getYearMonths().size() * 2);
             table.setWidthPercentage(100);
@@ -9053,19 +9080,32 @@ public class ReportsController implements Serializable {
                 document.add(infoTable);
             }
 
-            document.add(new Paragraph("Sample Count Over Months", titleFont));
-            Image countChartImage = Image.getInstance(generateChartAsBytes("Sample Count Over Months", getSampleCountChartData(), "Month", "Sample Count"));
-            countChartImage.scaleToFit(500, 300);
-            countChartImage.setAlignment(Element.ALIGN_CENTER);
-            document.add(countChartImage);
+            if (showChart) {
 
-            document.add(new Paragraph("\n\nService Amount Over Months", titleFont));
-            Image serviceChartImage = Image.getInstance(generateChartAsBytes("Service Amount Over Months", getServiceAmountChartData(), "Month", "Service Amount"));
-            serviceChartImage.scaleToFit(500, 300);
-            serviceChartImage.setAlignment(Element.ALIGN_CENTER);
-            document.add(serviceChartImage);
+                document.add(new Paragraph("Sample Count Over Months", titleFont));
+                Image countChartImage = Image.getInstance(
+                        generateChartAsBytes(
+                                "Sample Count Over Months",
+                                getSampleCountChartData(),
+                                "Month",
+                                "Sample Count"));
+                countChartImage.scaleToFit(500, 300);
+                countChartImage.setAlignment(Element.ALIGN_CENTER);
+                document.add(countChartImage);
 
-            document.newPage();
+                document.add(new Paragraph("\n\nService Amount Over Months", titleFont));
+                Image serviceChartImage = Image.getInstance(
+                        generateChartAsBytes(
+                                "Service Amount Over Months",
+                                getServiceAmountChartData(),
+                                "Month",
+                                "Service Amount"));
+                serviceChartImage.scaleToFit(500, 300);
+                serviceChartImage.setAlignment(Element.ALIGN_CENTER);
+                document.add(serviceChartImage);
+
+                document.newPage();
+            }
 
             PdfPTable table = new PdfPTable(3 + getYearMonths().size() * 2);
             table.setWidthPercentage(100);
