@@ -1375,6 +1375,52 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("billNumber")))
                 .build();
 
+        JsonObject managePharmacyDiscountsTool = Json.createObjectBuilder()
+                .add("name", "manage_pharmacy_discounts")
+                .add("description",
+                        "Create, list, update, or retire pharmacy payment-scheme discount rows (PaymentSchemeDiscount). "
+                        + "Use BULK to set the same discount % across all pharmacy item categories for a payment scheme in one call (idempotent: re-running updates, never duplicates). "
+                        + "method: LIST | POST | BULK | PUT | DELETE.\n\n"
+                        + "LIST: returns non-retired discount rows; optional filters: paymentSchemeId, paymentSchemeName, billType, limit.\n"
+                        + "POST: create a single row; required: discountPercent + paymentMethod; optional: categoryId, paymentSchemeId, paymentSchemeName, billType.\n"
+                        + "BULK: upsert across ALL pharmacy item categories; required: discountPercent + paymentMethod + (paymentSchemeId or paymentSchemeName); optional: billType.\n"
+                        + "PUT: update a row; required: id + discountPercent.\n"
+                        + "DELETE: soft-retire a row; required: id.\n\n"
+                        + "Default billType is PharmacySale when omitted. Always confirm with the user before POST, BULK, PUT, or DELETE.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("LIST").add("POST").add("BULK").add("PUT").add("DELETE")))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Discount row id — required for PUT and DELETE"))
+                                .add("paymentSchemeId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PaymentScheme id — use with POST, BULK, LIST"))
+                                .add("paymentSchemeName", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PaymentScheme name (partial match for LIST, exact-then-partial for BULK/POST) — alternative to paymentSchemeId"))
+                                .add("categoryId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Category id — optional for POST (single row)"))
+                                .add("paymentMethod", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PaymentMethod enum value, e.g. Cash, Credit, MultiplePaymentMethods — required for POST and BULK; optional for LIST"))
+                                .add("billType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "BillType enum value, e.g. PharmacySale — defaults to PharmacySale when omitted"))
+                                .add("discountPercent", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Discount percentage, e.g. '5.0'"))
+                                .add("limit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max rows for LIST (default 200)")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         return Json.createArrayBuilder()
                 .add(searchCodeTool)
                 .add(fetchFileTool)
@@ -1394,6 +1440,7 @@ public class AnthropicApiService implements Serializable {
                 .add(manageStaffTool)
                 .add(manageUsersTool)
                 .add(managePharmacyItemsTool)
+                .add(managePharmacyDiscountsTool)
                 .add(manageChannelBookingTool)
                 .add(manageInpatientTemplates)
                 .add(manageTimedItemsTool)
@@ -1680,6 +1727,9 @@ public class AnthropicApiService implements Serializable {
                 }
                 case "manage_pharmacy_items": {
                     return callPharmacyItemsApi(toolInput, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_pharmacy_discounts": {
+                    return callPharmacyDiscountsApi(toolInput, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_channel_booking": {
                     return callChannelBookingApi(toolInput, hmisBaseUrl, hmisApiKey);
@@ -4087,6 +4137,73 @@ public class AnthropicApiService implements Serializable {
         return body.build().toString();
     }
 
+    private String callPharmacyDiscountsApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        String method = input.getString("method", "LIST").toUpperCase();
+        String id = jsonString(input, "id");
+        String base = hmisBaseUrl.replaceAll("/$", "") + "/api/pharmacy/discounts";
+        try {
+            String url = base;
+            String httpMethod;
+            String body = null;
+            switch (method) {
+                case "LIST":
+                    httpMethod = "GET";
+                    url = base + "?" + queryParam("paymentSchemeId", jsonString(input, "paymentSchemeId"))
+                            + "&" + queryParam("paymentSchemeName", jsonString(input, "paymentSchemeName"))
+                            + "&" + queryParam("billType", jsonString(input, "billType"))
+                            + "&" + queryParam("limit", defaultString(jsonString(input, "limit"), "200"));
+                    break;
+                case "POST": {
+                    httpMethod = "POST";
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    addLong(b, "categoryId", jsonString(input, "categoryId"));
+                    addLong(b, "paymentSchemeId", jsonString(input, "paymentSchemeId"));
+                    addString(b, "paymentSchemeName", jsonString(input, "paymentSchemeName"));
+                    addString(b, "paymentMethod", jsonString(input, "paymentMethod"));
+                    addString(b, "billType", jsonString(input, "billType"));
+                    addDouble(b, "discountPercent", jsonString(input, "discountPercent"));
+                    body = b.build().toString();
+                    break;
+                }
+                case "BULK": {
+                    httpMethod = "POST";
+                    url = base + "/bulk";
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    addLong(b, "paymentSchemeId", jsonString(input, "paymentSchemeId"));
+                    addString(b, "paymentSchemeName", jsonString(input, "paymentSchemeName"));
+                    addString(b, "paymentMethod", jsonString(input, "paymentMethod"));
+                    addString(b, "billType", jsonString(input, "billType"));
+                    addDouble(b, "discountPercent", jsonString(input, "discountPercent"));
+                    body = b.build().toString();
+                    break;
+                }
+                case "PUT": {
+                    httpMethod = "PUT";
+                    url = base + "/" + requireText(id, "id");
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    addDouble(b, "discountPercent", jsonString(input, "discountPercent"));
+                    body = b.build().toString();
+                    break;
+                }
+                case "DELETE":
+                    httpMethod = "DELETE";
+                    url = base + "/" + requireText(id, "id");
+                    break;
+                default:
+                    return "Unknown method: " + method + ". Use LIST, POST, BULK, PUT, or DELETE.";
+            }
+            return callHmisApi(url, httpMethod, body, hmisApiKey);
+        } catch (Exception e) {
+            return "Pharmacy discounts API error: " + e.getMessage();
+        }
+    }
+
     private String pharmacyItemBody(JsonObject input, boolean create) {
         javax.json.JsonObjectBuilder body = Json.createObjectBuilder();
         addString(body, "name", jsonString(input, "name"));
@@ -4589,6 +4706,19 @@ public class AnthropicApiService implements Serializable {
                     {"POST",   "/pharmaceutical_items/{type}/{id}/restore",        "Restore a retired pharmaceutical item"},
                     {"PATCH",  "/pharmaceutical_items/{type}/{id}/activate",       "Activate a pharmaceutical item"},
                     {"PATCH",  "/pharmaceutical_items/{type}/{id}/deactivate",     "Deactivate a pharmaceutical item"}
+                });
+
+        appendModule(sb, "Pharmacy Discounts", "/pharmacy/discounts",
+                "Manage PaymentSchemeDiscount rows that control per-category discount percentages applied during pharmacy billing for a given payment scheme. "
+                + "Use BULK to set the same discount % across all pharmacy item categories at once (idempotent — re-running updates existing rows, never duplicates). "
+                + "Default billType is PharmacySale. Always confirm with the user before POST, BULK, PUT, or DELETE.",
+                githubUrl(branch, "developer_docs/api/pharmacy-discount-api.md"),
+                new String[][]{
+                    {"GET",    "/pharmacy/discounts",       "List non-retired discount rows. Filters: paymentSchemeId, paymentSchemeName, billType, limit"},
+                    {"POST",   "/pharmacy/discounts",       "Create a single discount row. Body: discountPercent + paymentMethod (required), categoryId, paymentSchemeId, paymentSchemeName, billType"},
+                    {"POST",   "/pharmacy/discounts/bulk",  "Bulk upsert: set discountPercent for ALL pharmacy item categories under a payment scheme. Body: discountPercent, paymentMethod (required), paymentSchemeId or paymentSchemeName, optional billType"},
+                    {"PUT",    "/pharmacy/discounts/{id}",  "Update a discount row (discountPercent)"},
+                    {"DELETE", "/pharmacy/discounts/{id}",  "Soft-retire a discount row"}
                 });
 
         appendModule(sb, "Pharmacy Items", "/pharmacy/items",
