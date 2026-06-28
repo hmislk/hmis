@@ -1563,8 +1563,14 @@ public class PharmacyIssueController implements Serializable {
             Calendar expiryEnd = Calendar.getInstance();
             expiryEnd.setTime(CommonFunctions.getEndOfDay(expiryDate));
             if (expiryEnd.before(Calendar.getInstance())) {
-                JsfUtil.addErrorMessage("Cannot issue an expired item batch (expired: " + expiryDate + ")");
-                return 0.0;
+                boolean allowExpired = configOptionApplicationController.getBooleanValueByKey(
+                        "Disposal Issue - Allow Issuing Expired Item Batches", false);
+                if (allowExpired) {
+                    JsfUtil.addWarningMessage("Warning: issuing an expired item batch (expired: " + expiryDate + ")");
+                } else {
+                    JsfUtil.addErrorMessage("Cannot issue an expired item batch (expired: " + expiryDate + ")");
+                    return 0.0;
+                }
             }
         }
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
