@@ -40,7 +40,8 @@
             <p:remoteCommand name="refreshNotifications"
                              update="notCount notificationGrowl"
                              action="#{userNotificationController.onPushRefreshNotifications}" />
-            <p:growl id="notificationGrowl" life="6000" showDetail="true" />
+            <p:growl id="notificationGrowl" life="6000" showDetail="true"
+                     rendered="#{facesContext.partialViewContext.ajaxRequest}" />
             <div id="notifFloatBar">
                 <h:panelGroup id="notCount">
                     <p:badge id="bdgeNotiCount"
