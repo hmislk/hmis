@@ -1505,20 +1505,23 @@ public class PharmacyIssueController implements Serializable {
             return 0.0;
         }
 
-        // Auto-set department type from the first item added; leave null if item has none
+        // Items with no departmentType are legacy pharmacy items; treat as Pharmacy
         if (getPreBill().getDepartmentType() == null) {
             Item selectedItem = getStock().getItemBatch().getItem();
-            if (selectedItem.getDepartmentType() != null) {
-                getPreBill().setDepartmentType(selectedItem.getDepartmentType());
-            }
+            DepartmentType effectiveType = selectedItem.getDepartmentType() != null
+                    ? selectedItem.getDepartmentType()
+                    : DepartmentType.Pharmacy;
+            getPreBill().setDepartmentType(effectiveType);
         }
 
         // Validate item's department type matches bill's department type
-        if (getPreBill().getDepartmentType() != null) {
+        {
             Item selectedItem = getStock().getItemBatch().getItem();
-            DepartmentType itemDepartmentType = selectedItem.getDepartmentType();
+            DepartmentType itemDepartmentType = selectedItem.getDepartmentType() != null
+                    ? selectedItem.getDepartmentType()
+                    : DepartmentType.Pharmacy;
 
-            if (itemDepartmentType != null && !itemDepartmentType.equals(getPreBill().getDepartmentType())) {
+            if (!itemDepartmentType.equals(getPreBill().getDepartmentType())) {
                 JsfUtil.addErrorMessage("Cannot add items from different department types. "
                         + "Bill is set for " + getPreBill().getDepartmentType().getLabel()
                         + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
@@ -1631,20 +1634,23 @@ public class PharmacyIssueController implements Serializable {
             return;
         }
 
-        // Auto-set department type from the first item added; leave null if item has none
+        // Items with no departmentType are legacy pharmacy items; treat as Pharmacy
         if (getPreBill().getDepartmentType() == null) {
             Item selectedItem = getStock().getItemBatch().getItem();
-            if (selectedItem.getDepartmentType() != null) {
-                getPreBill().setDepartmentType(selectedItem.getDepartmentType());
-            }
+            DepartmentType effectiveType = selectedItem.getDepartmentType() != null
+                    ? selectedItem.getDepartmentType()
+                    : DepartmentType.Pharmacy;
+            getPreBill().setDepartmentType(effectiveType);
         }
 
         // Validate item's department type matches bill's department type
-        if (getPreBill().getDepartmentType() != null) {
+        {
             Item selectedItem = getStock().getItemBatch().getItem();
-            DepartmentType itemDepartmentType = selectedItem.getDepartmentType();
+            DepartmentType itemDepartmentType = selectedItem.getDepartmentType() != null
+                    ? selectedItem.getDepartmentType()
+                    : DepartmentType.Pharmacy;
 
-            if (itemDepartmentType != null && !itemDepartmentType.equals(getPreBill().getDepartmentType())) {
+            if (!itemDepartmentType.equals(getPreBill().getDepartmentType())) {
                 JsfUtil.addErrorMessage("Cannot add items from different department types. "
                         + "Bill is set for " + getPreBill().getDepartmentType().getLabel()
                         + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");

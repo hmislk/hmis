@@ -288,6 +288,7 @@ Rules:
 Reference implementation: `src/main/webapp/pharmacy/disposal_index.xhtml` — canonical example of the correct `d-grid` layout and stage-class buttons (Create = `ui-button-stage-save`, Finalize = `ui-button-stage-finalize`, Approve = `ui-button-stage-approve`).
 
 ### Primary data actions (row-level)
+
 | Action | Style class | Icon suggestion | Notes |
 |--------|-------------|-----------------|-------|
 | Edit / Continue | `ui-button-warning` | `fas fa-edit` | Switch to view mode when finalized. |
