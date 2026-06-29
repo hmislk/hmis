@@ -386,7 +386,7 @@
                                         </f:facet>
                                         <p:dataTable
                                             id="tblBillItem"
-                                            value="#{pharmacyIssueController.preBill.billItems}"
+                                            value="#{pharmacyIssueController.activeBillItems}"
                                             var="bi"
                                             rowIndexVar="s"
                                             editable="true"
@@ -518,7 +518,7 @@
                                                 id="selDepartmentType"
                                                 value="#{pharmacyIssueController.preBill.departmentType}"
                                                 class="w-100"
-                                                disabled="#{pharmacyIssueController.preBill.checkedBy ne null or (not empty pharmacyIssueController.preBill.billItems and pharmacyIssueController.preBill.billItems.size() > 0)}">
+                                                disabled="#{pharmacyIssueController.preBill.checkedBy ne null or not empty pharmacyIssueController.activeBillItems}">
                                                 <f:selectItem itemLabel="Select Department Type" itemValue="#{null}"/>
                                                 <f:selectItems value="#{sessionController.availableDepartmentTypesForPharmacyTransactions}"
                                                                var="dt"
@@ -534,6 +534,10 @@
                                             <h:outputLabel value="Comment"/>
                                             <p:inputTextarea class="w-100" value="#{pharmacyIssueController.preBill.comments}" id="comment"
                                                              readonly="#{pharmacyIssueController.preBill.checkedBy ne null}"/>
+
+                                            <h:outputLabel value="Discard Category"/>
+                                            <p:inputText class="w-100" value="#{pharmacyIssueController.preBill.referenceNumber}" id="discardCategory"
+                                                         readonly="#{pharmacyIssueController.preBill.checkedBy ne null}"/>
 
                                         </h:panelGrid>
 

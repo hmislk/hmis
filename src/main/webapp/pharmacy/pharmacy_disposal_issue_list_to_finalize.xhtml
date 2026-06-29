@@ -72,9 +72,9 @@
                             reflow="true"
                             size="small"
                             style="font-size: 0.9em;">
-                            <p:column headerText="Created" width="80px" sortBy="#{g.createdAt}" styleClass="text-center">
+                            <p:column headerText="Created" width="110px" sortBy="#{g.createdAt}" styleClass="text-center">
                                 <h:outputLabel value="#{g.createdAt}" styleClass="text-muted small">
-                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="dd/MM/yy"/>
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputLabel>
                             </p:column>
                             <p:column headerText="From Dept" width="110px" sortBy="#{g.fromDepartment.name}">
