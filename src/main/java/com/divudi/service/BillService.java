@@ -1392,9 +1392,14 @@ public class BillService {
                 + " b.discount, "
                 + " b.margin, "
                 + " b.serviceCharge, "
-                + " coalesce(bfd.totalCostValue, 0.0), "
-                + " coalesce(bfd.totalPurchaseValue, 0.0), "
-                + " coalesce(bfd.totalRetailSaleValue, 0.0), "
+                // NOTE: select the BigDecimal columns directly (no coalesce). coalesce(bfd.totalCostValue, 0.0)
+                // promotes the result to Double because of the 0.0 literal, which then fails to bind to the
+                // BillLight constructor's BigDecimal parameters with "argument type mismatch". findByJpql
+                // swallows that exception and returns an empty list, so F15 adjustment rows silently showed 0.00
+                // (issues #18774 / #17598 / #18767). The constructor and PharmacyBundle already null-guard these.
+                + " bfd.totalCostValue, "
+                + " bfd.totalPurchaseValue, "
+                + " bfd.totalRetailSaleValue, "
                 + " b.paymentMethod, "
                 + " b.patientEncounter, "
                 + " bfd.grossTotal, "

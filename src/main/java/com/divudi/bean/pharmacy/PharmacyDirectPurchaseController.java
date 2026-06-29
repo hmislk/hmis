@@ -83,6 +83,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
     private BillItem editingBillItem;
     private boolean printPreview;
     private boolean showAllBillFormats = false;
+    // Issue #21635 / #13103: allow a retail rate below the purchase rate only when the user
+    // explicitly opts in (clearance / loss-leader pricing). Default false so addItem() blocks
+    // accidental below-cost pricing.
+    private boolean allowRetailRateBelowPurchaseRate;
     private BillItem currentExpense;
     private List<BillItem> billExpenses;
     private String warningMessage;
@@ -141,6 +145,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         billExpenses = null;
         currentExpense = null;
         warningMessage = null;
+        allowRetailRateBelowPurchaseRate = false;
     }
 
     /**
@@ -244,6 +249,17 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         if (BigDecimalUtil.isNullOrZero(f.getRetailSaleRatePerUnit()) || BigDecimalUtil.isNegative(f.getRetailSaleRatePerUnit())) {
             JsfUtil.addErrorMessage("Please enter the sale rate");
+            return;
+        }
+
+        // Issue #21635: block a retail rate below the purchase rate (selling at a loss),
+        // unless the user explicitly ticks "Allow rate below purchase rate" (issue #13103,
+        // for clearance / loss-leader pricing). Compare per-unit purchase rate (line gross
+        // rate) against the per-unit retail sale rate.
+        if (!allowRetailRateBelowPurchaseRate
+                && BigDecimalUtil.valueOrZero(f.getLineGrossRate())
+                        .compareTo(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit())) > 0) {
+            JsfUtil.addErrorMessage("Retail rate is below the purchase rate. Tick 'Allow rate below purchase rate' to proceed.");
             return;
         }
 
@@ -2320,6 +2336,14 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
+    }
+
+    public boolean isAllowRetailRateBelowPurchaseRate() {
+        return allowRetailRateBelowPurchaseRate;
+    }
+
+    public void setAllowRetailRateBelowPurchaseRate(boolean allowRetailRateBelowPurchaseRate) {
+        this.allowRetailRateBelowPurchaseRate = allowRetailRateBelowPurchaseRate;
     }
 
     public BillItem getCurrentBillItem() {
