@@ -280,6 +280,16 @@ public class CapabilityStatementResource {
                         + "POST creates a single row. PUT /{id} updates discountPercent. DELETE /{id} soft-retires.",
                         "API Key (Finance header)",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Payment Schemes", "/api/payment-scheme",
+                        "List and update PaymentScheme records. "
+                        + "GET lists all active schemes (optional ?query=name-filter&limit=). "
+                        + "Response includes all billing-scope flags: validForInpatientBills, validForPharmacy, "
+                        + "validForBilledBills, validForChanneling, and eligibility flags "
+                        + "(staffMemberRequired, membershipRequired, staffRequired, staffOrFamilyRequired, "
+                        + "memberRequired, memberOrFamilyRequired, seniorCitizenRequired, pregnantMotherRequired). "
+                        + "PUT /{id} performs a partial update — only fields present in the request body are changed.",
+                        "API Key (Finance header)",
+                        "GET", "PUT"))
                 .add(resource("Pharmacy Search", "/api/pharmacy_adjustments/search",
                         "Pharmacy stock search",
                         "API Key",
