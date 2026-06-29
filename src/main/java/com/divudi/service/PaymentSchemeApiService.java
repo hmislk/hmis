@@ -46,7 +46,10 @@ public class PaymentSchemeApiService {
             throw new Exception("PaymentScheme not found or retired: " + id);
         }
 
-        if (req.getName() != null) s.setName(req.getName());
+        if (req.getName() != null) {
+            if (req.getName().trim().isEmpty()) throw new Exception("name must not be blank");
+            s.setName(req.getName());
+        }
         if (req.getPrintingName() != null) s.setPrintingName(req.getPrintingName());
         if (req.getValidForPharmacy() != null) s.setValidForPharmacy(req.getValidForPharmacy());
         if (req.getValidForBilledBills() != null) s.setValidForBilledBills(req.getValidForBilledBills());

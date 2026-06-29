@@ -1467,7 +1467,34 @@ public class AnthropicApiService implements Serializable {
                                         .add("description", "true or false (UPDATE)"))
                                 .add("validForChanneling", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "true or false (UPDATE)")))
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("staffMemberRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("membershipRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("staffRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("staffOrFamilyRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("memberRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("memberOrFamilyRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("seniorCitizenRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("pregnantMotherRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("orderNo", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Integer sort order (UPDATE)")))
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
@@ -4288,6 +4315,15 @@ public class AnthropicApiService implements Serializable {
                     addBoolean(b, "validForPharmacy", jsonString(input, "validForPharmacy"));
                     addBoolean(b, "validForBilledBills", jsonString(input, "validForBilledBills"));
                     addBoolean(b, "validForChanneling", jsonString(input, "validForChanneling"));
+                    addBoolean(b, "staffMemberRequired", jsonString(input, "staffMemberRequired"));
+                    addBoolean(b, "membershipRequired", jsonString(input, "membershipRequired"));
+                    addBoolean(b, "staffRequired", jsonString(input, "staffRequired"));
+                    addBoolean(b, "staffOrFamilyRequired", jsonString(input, "staffOrFamilyRequired"));
+                    addBoolean(b, "memberRequired", jsonString(input, "memberRequired"));
+                    addBoolean(b, "memberOrFamilyRequired", jsonString(input, "memberOrFamilyRequired"));
+                    addBoolean(b, "seniorCitizenRequired", jsonString(input, "seniorCitizenRequired"));
+                    addBoolean(b, "pregnantMotherRequired", jsonString(input, "pregnantMotherRequired"));
+                    addLong(b, "orderNo", jsonString(input, "orderNo"));
                     body = b.build().toString();
                     break;
                 }
