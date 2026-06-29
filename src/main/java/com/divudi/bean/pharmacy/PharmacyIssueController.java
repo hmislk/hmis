@@ -1505,14 +1505,11 @@ public class PharmacyIssueController implements Serializable {
             return 0.0;
         }
 
-        // Auto-set department type if not already set
+        // Auto-set department type from the first item added; leave null if item has none
         if (getPreBill().getDepartmentType() == null) {
             Item selectedItem = getStock().getItemBatch().getItem();
             if (selectedItem.getDepartmentType() != null) {
                 getPreBill().setDepartmentType(selectedItem.getDepartmentType());
-            } else {
-                // Fallback to Pharmacy if item has no department type
-                getPreBill().setDepartmentType(DepartmentType.Pharmacy);
             }
         }
 
@@ -1634,14 +1631,11 @@ public class PharmacyIssueController implements Serializable {
             return;
         }
 
-        // Auto-set department type if not already set
+        // Auto-set department type from the first item added; leave null if item has none
         if (getPreBill().getDepartmentType() == null) {
             Item selectedItem = getStock().getItemBatch().getItem();
             if (selectedItem.getDepartmentType() != null) {
                 getPreBill().setDepartmentType(selectedItem.getDepartmentType());
-            } else {
-                // Fallback to Pharmacy if item has no department type
-                getPreBill().setDepartmentType(DepartmentType.Pharmacy);
             }
         }
 
