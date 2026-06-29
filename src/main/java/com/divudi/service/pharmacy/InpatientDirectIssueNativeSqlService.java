@@ -168,10 +168,11 @@ public class InpatientDirectIssueNativeSqlService {
         LOGGER.log(Level.INFO, "[NativeSettle] Starting finance details ms={0}", System.currentTimeMillis() - t0);
         double[] billTotals = insertFinanceDetails(billId, biIds, pbIds, items);
 
-        // Step 5: Update bill-level totals on DB and on the JPA entity.
-        // The native UPDATE keeps the DB row correct.
-        // Setting values on the managed bill object ensures the L2 cache gets the correct
-        // totals when EclipseLink merges L1 state into L2 at transaction commit (#20435).
+        // Step 5: Update bill-level totals natively, then refresh the managed entity.
+        // em.refresh(bill) reloads both the updated totals and the natively-written
+        // BILLFINANCEDETAILS_ID FK (set by insertFinanceDetails) into L1. Without the
+        // refresh, L1 retains billFinanceDetails=null and that stale null FK would be
+        // merged into L2 at commit, causing subsequent EAGER loads to return null. (#20435)
         em.createNativeQuery(
                 "UPDATE " + billTable() + " SET total=?, netTotal=?, grantTotal=? WHERE ID=?")
                 .setParameter(1, billTotals[0])   // grossTotal
@@ -179,13 +180,11 @@ public class InpatientDirectIssueNativeSqlService {
                 .setParameter(3, billTotals[0])   // grantTotal = grossTotal (intentional naming per Bill entity)
                 .setParameter(4, billId)
                 .executeUpdate();
-        bill.setTotal(billTotals[0]);
-        bill.setNetTotal(billTotals[1]);
-        bill.setGrantTotal(billTotals[0]);
+        em.refresh(bill);
 
         // Evict natively-written entity classes from the EclipseLink L2 cache.
-        // Bill is intentionally NOT evicted — the JPA entity above has correct totals,
-        // and the commit will merge the correct L1 state into L2 (#20435).
+        // Bill is intentionally NOT evicted — em.refresh(bill) loaded the correct full
+        // state (totals + BILLFINANCEDETAILS_ID FK) and the commit merges it into L2.
         javax.persistence.Cache cache = em.getEntityManagerFactory().getCache();
         cache.evict(StockHistory.class);
         cache.evict(Stock.class);
