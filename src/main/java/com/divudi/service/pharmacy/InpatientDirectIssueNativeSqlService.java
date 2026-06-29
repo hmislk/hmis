@@ -168,7 +168,10 @@ public class InpatientDirectIssueNativeSqlService {
         LOGGER.log(Level.INFO, "[NativeSettle] Starting finance details ms={0}", System.currentTimeMillis() - t0);
         double[] billTotals = insertFinanceDetails(billId, biIds, pbIds, items);
 
-        // Step 5: Update bill-level totals (gross and net tracked separately)
+        // Step 5: Update bill-level totals on DB and on the JPA entity.
+        // The native UPDATE keeps the DB row correct.
+        // Setting values on the managed bill object ensures the L2 cache gets the correct
+        // totals when EclipseLink merges L1 state into L2 at transaction commit (#20435).
         em.createNativeQuery(
                 "UPDATE " + billTable() + " SET total=?, netTotal=?, grantTotal=? WHERE ID=?")
                 .setParameter(1, billTotals[0])   // grossTotal
@@ -176,13 +179,14 @@ public class InpatientDirectIssueNativeSqlService {
                 .setParameter(3, billTotals[0])   // grantTotal = grossTotal (intentional naming per Bill entity)
                 .setParameter(4, billId)
                 .executeUpdate();
+        bill.setTotal(billTotals[0]);
+        bill.setNetTotal(billTotals[1]);
+        bill.setGrantTotal(billTotals[0]);
 
         // Evict natively-written entity classes from the EclipseLink L2 cache.
-        // Evict only this specific bill by ID — the JPA persist put it in L2 cache with
-        // total=0.0, but the native UPDATE above wrote the real totals to DB.
-        // Evicting by ID forces a fresh DB load while leaving other bills cached (#20435).
+        // Bill is intentionally NOT evicted — the JPA entity above has correct totals,
+        // and the commit will merge the correct L1 state into L2 (#20435).
         javax.persistence.Cache cache = em.getEntityManagerFactory().getCache();
-        cache.evict(Bill.class, billId);
         cache.evict(StockHistory.class);
         cache.evict(Stock.class);
         cache.evict(BillItem.class);
