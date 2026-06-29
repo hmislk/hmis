@@ -245,34 +245,61 @@ Module landing pages (e.g. `pharmacy/disbursement_index.xhtml`, `opd/analytics/i
         <p:commandButton value="Create Request"
                          ajax="false"
                          style="text-align: left"
-                         icon="fas fa-hand-holding-medical"
-                         class="ui-button-success w-100"
+                         icon="fas fa-plus-circle"
+                         styleClass="ui-button-stage-save w-100"
                          action="#{...}"
                          rendered="#{webUserController.hasPrivilege('...')}"/>
-        <!-- more buttons -->
+        <p:commandButton value="Finalize Requests"
+                         ajax="false"
+                         style="text-align: left"
+                         icon="fas fa-lock"
+                         styleClass="ui-button-stage-finalize w-100"
+                         action="#{...}"
+                         rendered="#{webUserController.hasPrivilege('...')}"/>
+        <p:commandButton value="Approve Requests"
+                         ajax="false"
+                         style="text-align: left"
+                         icon="fas fa-check-double"
+                         styleClass="ui-button-stage-approve w-100"
+                         action="#{...}"
+                         rendered="#{webUserController.hasPrivilege('...')}"/>
+        <p:commandButton value="Completed Requests"
+                         ajax="false"
+                         style="text-align: left"
+                         icon="fas fa-check-double"
+                         styleClass="ui-button-secondary w-100"
+                         action="#{...}"
+                         rendered="#{webUserController.hasPrivilege('...')}"/>
     </div>
 </p:tab>
 ```
 
 Rules:
-- Each button: `class="... w-100"`, `style="text-align: left"` (vertical menus read better left-aligned), and a leading `icon` reflecting the workflow stage (create / pending / approve / completed — same icon vocabulary as the navigation block above).
-- Keep semantic colour classes (`ui-button-success` create, `ui-button-warning` finalize, `ui-button-info` approve, `ui-button-secondary` completed) consistent across tabs.
+- Each button: `styleClass="... w-100"`, `style="text-align: left"` (vertical menus read better left-aligned), and a leading `icon` reflecting the workflow stage.
+- **Always use `styleClass` (not `class`) for stage-class buttons** so PrimeFaces applies them correctly.
+- **Workflow stage colour convention for all sidebar menus:**
+  - Create / New / Save → `styleClass="ui-button-stage-save w-100"` (blue/primary) + action-appropriate icon (e.g. `fas fa-plus-circle`, `fas fa-trash`, `fas fa-recycle`)
+  - Finalize → `styleClass="ui-button-stage-finalize w-100"` (amber) + `icon="fas fa-lock"`
+  - Approve → `styleClass="ui-button-stage-approve w-100"` (green) + `icon="fas fa-check-double"`
+  - View completed / search / informational → `styleClass="ui-button-secondary w-100"` or `ui-button-info w-100`
 - Wrap the whole accordion in a single `<h:form>` and use `activeIndex` for tab persistence (see § Forms & State).
 - Favour a narrow menu column (`col-2`) over a wide one so the data area gets the space; only widen to `col-md-3` when button labels genuinely need it.
 
-Reference implementations: `src/main/webapp/pharmacy/disbursement_index.xhtml`, `src/main/webapp/opd/analytics/index.xhtml`.
+Reference implementation: `src/main/webapp/pharmacy/disposal_index.xhtml` — canonical example of the correct `d-grid` layout and stage-class buttons (Create = `ui-button-stage-save`, Finalize = `ui-button-stage-finalize`, Approve = `ui-button-stage-approve`).
 
 ### Primary data actions (row-level)
+
 | Action | Style class | Icon suggestion | Notes |
 |--------|-------------|-----------------|-------|
 | Edit / Continue | `ui-button-warning` | `fas fa-edit` | Switch to view mode when finalized. |
-| Finalize | `ui-button-success` | `fas fa-check-circle` | Disable or swap label when already finalized. |
-| Approve / Complete | `ui-button-success` | `fas fa-check-circle` or `fas fa-check-double` | Reuse icon across the module. |
+| Finalize | `ui-button-stage-finalize` | `fas fa-lock` | Use `styleClass`. Disable or swap label when already finalized. |
+| Approve / Complete | `ui-button-stage-approve` | `fas fa-check-double` | Use `styleClass`. Reuse icon across the module. |
 | Print / View | `ui-button-info` | `fas fa-print` / `fas fa-eye` | Keep `min-width: 90px` for consistency. |
 | Cancel / Close | `ui-button-danger ui-button-outlined` | `fas fa-times` | Always add confirmation. |
 
 Supporting rules:
 - Use `p:growl` for feedback after actions.
+- For any Save / Finalize / Approve button, always use the `ui-button-stage-*` classes — see § Three-Stage Transaction Workflow below.
 
 ### 🚨 Three-Stage Transaction Workflow (Save → Finalize → Approve) — MANDATORY STANDARD
 
@@ -280,7 +307,8 @@ Many transaction workflows in the system (pharmacy transfer request/issue/receiv
 
 | Stage | Meaning | Style class (colour) | Icon | Confirm? |
 |-------|---------|----------------------|------|----------|
-| **Save / Save Draft** | Editable draft, nothing committed yet | `ui-button-stage-save` (blue) | `fas fa-floppy-disk` | No |
+| **Create / New** | Navigate to a new transaction form | `ui-button-stage-save` (blue) | Action-specific (e.g. `fas fa-plus-circle`, `fas fa-trash`) | No |
+| **Save / Save Draft** | Save an editable draft in-form, nothing committed yet | `ui-button-stage-save` (blue) | `fas fa-floppy-disk` | No |
 | **Finalize** | Locks the draft; sends it forward for approval | `ui-button-stage-finalize` (amber) | `fas fa-lock` | Yes — `onclick="return confirm('…?')"` |
 | **Approve** | Final sign-off, completes the transaction | `ui-button-stage-approve` (green) | `fas fa-check-double` | Yes — `onclick="return confirm('…?')"` |
 
@@ -300,7 +328,10 @@ Rules:
 - This overrides the generic row-level "Finalize / Approve" rows in the table above for any button that is part of a three-stage transaction workflow.
 
 CSS source: `src/main/webapp/resources/css/ohmis.css` (search "Three-Stage Transaction Workflow buttons").
-Reference implementation: `src/main/webapp/pharmacy/pharmacy_transfer_request.xhtml` (Save + Finalize), `src/main/webapp/pharmacy/pharmacy_transfer_request_approval.xhtml` (Approve).
+
+**Reference implementations:**
+- **Action page** (the transaction form itself): `src/main/webapp/pharmacy/pharmacy_issue.xhtml` — canonical example of a three-zone panel header containing Save (`ui-button-stage-save`), Finalize (`ui-button-stage-finalize`), and Approve (`ui-button-stage-approve`) in the right zone, with outlined navigation links in the center zone (`ui-button-info ui-button-outlined` — **always use `ui-button-info ui-button-outlined` for center nav, never stage classes there**, because the `!important` background in stage classes prevents the outlined modifier from rendering correctly).
+- **Index / landing page** (sidebar accordion menu): `src/main/webapp/pharmacy/disposal_index.xhtml` — canonical example of `d-grid` layout with stage-class buttons (Create = `ui-button-stage-save`, Finalize = `ui-button-stage-finalize`, Approve = `ui-button-stage-approve`).
 
 ### Confirmation Dialogs
 
