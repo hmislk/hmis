@@ -518,7 +518,7 @@
                                                 id="selDepartmentType"
                                                 value="#{pharmacyIssueController.preBill.departmentType}"
                                                 class="w-100"
-                                                disabled="#{pharmacyIssueController.preBill.checkedBy ne null or (not empty pharmacyIssueController.preBill.billItems and pharmacyIssueController.preBill.billItems.size() > 0)}">
+                                                disabled="#{pharmacyIssueController.preBill.checkedBy ne null or not empty pharmacyIssueController.activeBillItems}">
                                                 <f:selectItem itemLabel="Select Department Type" itemValue="#{null}"/>
                                                 <f:selectItems value="#{sessionController.availableDepartmentTypesForPharmacyTransactions}"
                                                                var="dt"

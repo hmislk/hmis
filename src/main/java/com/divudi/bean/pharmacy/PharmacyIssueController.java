@@ -265,6 +265,13 @@ public class PharmacyIssueController implements Serializable {
             OptionScope.APPLICATION
         ));
 
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Disposal Issue - Allow Issuing Expired Item Batches",
+            "When enabled, expired item batches can be added to a disposal issue with a warning instead of being blocked. Useful for hospitals that use disposal issue to physically discard expired stock.",
+            "pharmacy/pharmacy_issue",
+            OptionScope.APPLICATION
+        ));
+
         // Privileges
         metadata.addPrivilege(new PrivilegeInfo(
             "Admin",
@@ -496,10 +503,12 @@ public class PharmacyIssueController implements Serializable {
 
     public void setQty(Double qty) {
         if (qty != null && qty == 0) {
+            this.qty = null;
             JsfUtil.addErrorMessage("Quantity must be greater than 0");
             return;
         }
         if (qty != null && qty < 0) {
+            this.qty = null;
             JsfUtil.addErrorMessage("Cannot enter a negative quantity");
             return;
         }
@@ -914,19 +923,16 @@ public class PharmacyIssueController implements Serializable {
     }
 
     private boolean checkAllBillItem() {
-        if (getPreBill().getBillItems().isEmpty()) {
+        if (getActiveBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Please add items");
             return true;
         }
-        for (BillItem b : getPreBill().getBillItems()) {
-
+        for (BillItem b : getActiveBillItems()) {
             if (onEdit(b)) {
                 return true;
             }
         }
-
         return false;
-
     }
 
 //    public void settlePreBill() {
@@ -971,8 +977,8 @@ public class PharmacyIssueController implements Serializable {
         }
 
         // Validate department type consistency
-        if (getPreBill().getDepartmentType() != null && !getPreBill().getBillItems().isEmpty()) {
-            for (BillItem bi : getPreBill().getBillItems()) {
+        if (getPreBill().getDepartmentType() != null && !getActiveBillItems().isEmpty()) {
+            for (BillItem bi : getActiveBillItems()) {
                 if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
                     if (!bi.getItem().getDepartmentType().equals(getPreBill().getDepartmentType())) {
                         JsfUtil.addErrorMessage("Inconsistent department types detected. All items must belong to the same department type.");
@@ -1036,7 +1042,7 @@ public class PharmacyIssueController implements Serializable {
 
         if (getPreBill().getId() == null) {
             // First save — no persisted BillItems yet; safe to null the collection before create
-            List<BillItem> tmpBillItems = getPreBill().getBillItems();
+            List<BillItem> tmpBillItems = getActiveBillItems();
             getPreBill().setBillItems(null);
             getBillFacade().createAndFlush(getPreBill());
             for (BillItem tbi : tmpBillItems) {
@@ -1097,7 +1103,7 @@ public class PharmacyIssueController implements Serializable {
             JsfUtil.addErrorMessage("Cannot Issue to the Same Department");
             return null;
         }
-        if (getPreBill().getBillItems() == null || getPreBill().getBillItems().isEmpty()) {
+        if (getActiveBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Please add at least one item before finalizing.");
             return null;
         }
@@ -1447,7 +1453,7 @@ public class PharmacyIssueController implements Serializable {
             return false;
         }
 
-        for (BillItem bItem : getPreBill().getBillItems()) {
+        for (BillItem bItem : getActiveBillItems()) {
             if (bItem == null || bItem.getPharmaceuticalBillItem() == null ||
                 bItem.getPharmaceuticalBillItem().getStock() == null) {
                 continue;
@@ -1903,16 +1909,18 @@ public class PharmacyIssueController implements Serializable {
     public void removeBillItem(BillItem b) {
         userStockController.removeUserStock(b.getTransUserStock(), getSessionController().getLoggedUser());
 
-        // Soft-retire instead of hard-delete: removing from the list with orphanRemoval=true
-        // on Bill.billItems would trigger a cascade DELETE that violates the FK from
-        // PHARMACEUTICALBILLITEM.BILLITEM_ID. Mark retired and keep in the list.
-        b.setRetired(true);
-        b.setRetiredAt(new Date());
-        if (b.getId() != null) {
+        if (b.getId() == null) {
+            // Transient row — not yet persisted, safe to remove from the list entirely.
+            // Keeping it would let checkItemBatch() block re-adding the same batch.
+            getPreBill().getBillItems().remove(b);
+        } else {
+            // Persisted row — must soft-retire in place; removing from an orphanRemoval
+            // collection triggers cascade DELETE which violates the PHARMACEUTICALBILLITEM FK.
+            b.setRetired(true);
+            b.setRetiredAt(new Date());
             getBillItemFacade().edit(b);
         }
 
-        // Clear department type if no active items remain
         if (getActiveBillItems().isEmpty()) {
             getPreBill().setDepartmentType(null);
         }
