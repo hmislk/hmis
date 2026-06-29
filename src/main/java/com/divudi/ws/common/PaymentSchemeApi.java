@@ -51,6 +51,7 @@ public class PaymentSchemeApi {
             if (limitStr != null && !limitStr.trim().isEmpty()) {
                 try { limit = Integer.parseInt(limitStr.trim()); } catch (NumberFormatException ignored) {}
             }
+            limit = Math.max(1, Math.min(limit, 1000));
 
             return successResponse(paymentSchemeApiService.list(query, limit));
         } catch (Exception e) {
@@ -76,6 +77,8 @@ public class PaymentSchemeApi {
             if (request == null) return errorResponse("Request body is required", 400);
 
             return successResponse(paymentSchemeApiService.update(id, request));
+        } catch (RuntimeException e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
         } catch (Exception e) {
             return errorResponse(e.getMessage(), 400);
         }
