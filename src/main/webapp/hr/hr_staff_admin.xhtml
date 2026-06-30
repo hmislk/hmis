@@ -181,14 +181,7 @@
                                             </p:tab>
                                             <p:tab title="Details" rendered="#{staffController.current.id ne null}" >
 
-                                                <p:commandButton 
-                                                    ajax="false"
-                                                    value="Print"
-                                                    class="ui-button-info w-25" >
-                                                    <p:printer target="gpStaffForm" ></p:printer>
-                                                </p:commandButton>
-
-                                                <p:selectOneMenu class="w-100 mx-2" id="mnuCat" value="#{staffController.formCategory}" >
+                                                <p:selectOneMenu class="w-100 mx-2" id="mnuCat" value="#{staffController.formCategory}" styleClass="mb-2 w-100">
                                                     <f:selectItem itemLabel="Select Form" ></f:selectItem>
                                                     <f:selectItems value="#{formFormatController.items}" var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" />
                                                     <f:ajax event="change" execute="mnuCat" render="gpStaffForm" listener="#{staffController.listFormItems()}" />
