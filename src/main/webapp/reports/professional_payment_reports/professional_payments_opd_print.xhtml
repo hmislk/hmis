@@ -17,6 +17,7 @@
                                 <h:outputText value="OPD Professional Payments Print" class="mt-2"/>
                                 <div class="d-flex gap-2">
                                     <p:commandButton
+                                        id="btnPrint"
                                         icon="fa-solid fa-print"
                                         class="ui-button-info"
                                         style="width: 150px"
@@ -25,6 +26,7 @@
                                         <p:printer target="reportView" />
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnBack"
                                         ajax="false"
                                         value="Back to Report"
                                         style="width: 200px"
@@ -122,6 +124,8 @@
                                 font-weight: 700;
                             }
                             /* ===================== Print report table ===================== */
+                            /* All table/th/td rules below are scoped under .paper so they
+                               only affect this report's table, not other tables on the page. */
                             @media screen{
                                 .paper{
                                     position: static !important;
@@ -133,14 +137,14 @@
                                     box-shadow: 0 0 8px rgba(0,0,0,0.08);
                                 }
 
-                                table {
+                                .paper table {
                                     border-collapse: collapse;
                                     width: 100%;
                                     font-size: 10.5px!important;
                                     margin-top: 3mm!important;
                                 }
 
-                                th {
+                                .paper th {
                                     background-color: #eef1f5;
                                     border: 1px solid #ccc;
                                     padding: 4px 4px!important;
@@ -150,14 +154,14 @@
                                     color: #2b3a55;
                                 }
 
-                                td {
+                                .paper td {
                                     border: 1px solid #ddd;
                                     padding: 4px 4px!important;
                                     text-align: left;
                                     font-size: 10px!important;
                                 }
 
-                                tbody tr:nth-child(odd) td {
+                                .paper tbody tr:nth-child(odd) td {
                                     background-color: #fafafa;
                                 }
 
@@ -165,7 +169,7 @@
                                     font-size: 12px!important;
                                 }
 
-                                tfoot td{
+                                .paper tfoot td{
                                     font-weight: 700!important;
                                     font-size: 10.5px!important;
                                     background-color: #eef1f5;
@@ -175,6 +179,7 @@
 
                             @media print {
                                 @page {
+                                    size: A4 landscape;
                                     @bottom-right {
                                         content: "Page " counter(page) " of " counter(pages);
                                         font-family: Arial, sans-serif;
@@ -189,7 +194,6 @@
                                 .paper{
                                     position: static !important;
                                     width: 297mm!important;
-                                    size: A4 landscape!important;
                                     box-shadow: none;
                                 }
 
@@ -199,26 +203,26 @@
                                     font-size: 11px!important;
                                 }
 
-                                table {
+                                .paper table {
                                     border-collapse: collapse;
                                     width: 99.9%;
                                     font-size: 9px!important;
                                     margin-top: 2mm!important;
                                 }
-                                th {
+                                .paper th {
                                     border: 1px solid #000;
                                     padding: 2px 3px!important;
                                     text-align: left;
                                     font-size: 9px!important;
                                     font-weight: 700;
                                 }
-                                td {
+                                .paper td {
                                     border: 1px solid #000;
                                     padding: 2px 3px!important;
                                     text-align: left;
                                     font-size: 8.5px!important;
                                 }
-                                tfoot td{
+                                .paper tfoot td{
                                     font-weight: 700!important;
                                     font-size: 9px!important;
                                 }
@@ -307,6 +311,8 @@
                                                     <td style="width: 30mm; text-align: left;">
                                                         <h:outputText value="#{row.bill.creater.webUserPerson.name}"/>
                                                     </td>
+                                                    <!-- TODO: confirm correct field for tender/payment method,
+                                                         this currently duplicates the "Type" column above -->
                                                     <td style="width: 30mm; text-align: left;">
                                                         <h:outputText value="#{row.bill.billTypeAtomic.label}"/>
                                                     </td>
@@ -316,6 +322,9 @@
                                                     <td style="width: 30mm; text-align: left;">
                                                         <h:outputText value="#{row.bill.toStaff.person.name}"/>
                                                     </td>
+                                                    <!-- TODO: confirm row should bind to per-fee values
+                                                         (e.g. row.billFee.feeValue) to reconcile with the
+                                                         footer total, instead of repeating bill-level totals -->
                                                     <td style="width: 20mm; text-align: right;">
                                                         <h:outputText value="#{row.bill.total}">
                                                             <f:convertNumber pattern="#,##0.00" />
