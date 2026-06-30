@@ -301,7 +301,7 @@
                                                        var="dt"
                                                        itemLabel="#{dt.label}"
                                                        itemValue="#{dt}"/>
-                                        <p:ajax process="@this acSupplier cmbPs creditDuration comments consignment" update="po exDItem exItem" event="change"/>
+                                        <p:ajax process="po" update="po exDItem exItem" event="change"/>
                                     </p:selectOneMenu>
 
                                     <p:outputLabel 
