@@ -275,7 +275,7 @@
                                     <h:panelGroup
                                         class="my-4"
                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
-                                        <p:selectBooleanCheckbox value="#{purchaseOrderRequestController.currentBill.consignment}" itemLabel="Consignment"/>
+                                        <p:selectBooleanCheckbox id="consignment" value="#{purchaseOrderRequestController.currentBill.consignment}" itemLabel="Consignment"/>
                                     </h:panelGroup>
 
                                     <p:outputLabel 
@@ -301,7 +301,7 @@
                                                        var="dt"
                                                        itemLabel="#{dt.label}"
                                                        itemValue="#{dt}"/>
-                                        <p:ajax process="@this acSupplier cmbPs creditDuration comments" update="po exDItem exItem" event="change"/>
+                                        <p:ajax process="@this acSupplier cmbPs creditDuration comments consignment" update="po exDItem exItem" event="change"/>
                                     </p:selectOneMenu>
 
                                     <p:outputLabel 
