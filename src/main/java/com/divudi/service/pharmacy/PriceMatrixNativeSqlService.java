@@ -33,8 +33,7 @@ public class PriceMatrixNativeSqlService {
 
     private volatile String tItem = null;
     private volatile String tCategory = null;
-    private volatile String tInwardPriceAdj = null;
-    private volatile String tInwardDiscountMatrix = null;
+    private volatile String tPriceMatrix = null;
 
     // -----------------------------------------------------------------------
     // Public API
@@ -50,6 +49,7 @@ public class PriceMatrixNativeSqlService {
                     "SELECT discountAllowed FROM " + itemTable() + " WHERE ID=?")
                     .setParameter(1, itemId)
                     .getSingleResult();
+            if (result instanceof Boolean) return (Boolean) result;
             return result != null && ((Number) result).intValue() != 0;
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "[PriceMatrixNative] isDiscountAllowed failed for itemId={0}: {1}",
@@ -175,8 +175,8 @@ public class PriceMatrixNativeSqlService {
     private Double queryMargin(long catId, long deptId, double grossValue) {
         @SuppressWarnings("unchecked")
         List<Object> rs = em.createNativeQuery(
-                "SELECT margin FROM " + inwardPriceAdjTable()
-                + " WHERE retired=0"
+                "SELECT margin FROM " + priceMatrixTable()
+                + " WHERE DTYPE='InwardPriceAdjustment' AND retired=0"
                 + " AND category_ID=? AND department_ID=?"
                 + " AND fromPrice < ? AND toPrice > ?"
                 + " AND creditCompany_ID IS NULL"
@@ -202,8 +202,8 @@ public class PriceMatrixNativeSqlService {
             Long deptId, Long catId, Long itemId, Long creditCompanyId) {
 
         StringBuilder sql = new StringBuilder(
-                "SELECT discountPercent FROM " + inwardDiscountMatrixTable()
-                + " WHERE retired=0 AND inwardChargeType IS NULL");
+                "SELECT discountPercent FROM " + priceMatrixTable()
+                + " WHERE DTYPE='InwardDiscountMatrix' AND retired=0 AND inwardChargeType IS NULL");
 
         // NULL paymentMethod in matrix = all BHT types
         sql.append(" AND (paymentMethod=? OR paymentMethod IS NULL)");
@@ -288,13 +288,10 @@ public class PriceMatrixNativeSqlService {
         return tCategory;
     }
 
-    private String inwardPriceAdjTable() {
-        if (tInwardPriceAdj == null) tInwardPriceAdj = resolveTable("INWARDPRICEADJUSTMENT");
-        return tInwardPriceAdj;
-    }
-
-    private String inwardDiscountMatrixTable() {
-        if (tInwardDiscountMatrix == null) tInwardDiscountMatrix = resolveTable("INWARDDISCOUNTMATRIX");
-        return tInwardDiscountMatrix;
+    // InwardPriceAdjustment and InwardDiscountMatrix both use SINGLE_TABLE inheritance
+    // stored in the pricematrix table with a DTYPE discriminator — no separate tables exist.
+    private String priceMatrixTable() {
+        if (tPriceMatrix == null) tPriceMatrix = resolveTable("PRICEMATRIX");
+        return tPriceMatrix;
     }
 }

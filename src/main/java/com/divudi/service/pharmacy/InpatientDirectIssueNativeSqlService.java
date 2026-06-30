@@ -73,10 +73,17 @@ public class InpatientDirectIssueNativeSqlService {
 
         long t0 = System.currentTimeMillis();
 
-        // Step 1: Native INSERT bill header — zero JPA descriptor warmup.
-        long billId = insertBillNative(bill);
+        // Step 1: Persist the bill header via JPA so EclipseLink tracks the entity.
+        // Native-only inserts bypass the L2 cache, causing JPQL in fetchIssueTable()
+        // to silently swallow the load exception and return an empty list (#20435).
+        if (bill.getCreatedAt() == null) {
+            bill.setCreatedAt(new java.util.Date());
+        }
+        em.persist(bill);
+        em.flush(); // ensures IDENTITY-generated ID is assigned
+        long billId = bill.getId();
 
-        LOGGER.log(Level.INFO, "[NativeSettle] Bill header inserted (native) id={0} ms={1}",
+        LOGGER.log(Level.INFO, "[NativeSettle] Bill header persisted id={0} ms={1}",
                 new Object[]{billId, System.currentTimeMillis() - t0});
 
         // Step 2: Native INSERT BillItem + PharmaceuticalBillItem one-at-a-time.
@@ -161,7 +168,11 @@ public class InpatientDirectIssueNativeSqlService {
         LOGGER.log(Level.INFO, "[NativeSettle] Starting finance details ms={0}", System.currentTimeMillis() - t0);
         double[] billTotals = insertFinanceDetails(billId, biIds, pbIds, items);
 
-        // Step 5: Update bill-level totals (gross and net tracked separately)
+        // Step 5: Update bill-level totals natively, then refresh the managed entity.
+        // em.refresh(bill) reloads both the updated totals and the natively-written
+        // BILLFINANCEDETAILS_ID FK (set by insertFinanceDetails) into L1. Without the
+        // refresh, L1 retains billFinanceDetails=null and that stale null FK would be
+        // merged into L2 at commit, causing subsequent EAGER loads to return null. (#20435)
         em.createNativeQuery(
                 "UPDATE " + billTable() + " SET total=?, netTotal=?, grantTotal=? WHERE ID=?")
                 .setParameter(1, billTotals[0])   // grossTotal
@@ -169,68 +180,20 @@ public class InpatientDirectIssueNativeSqlService {
                 .setParameter(3, billTotals[0])   // grantTotal = grossTotal (intentional naming per Bill entity)
                 .setParameter(4, billId)
                 .executeUpdate();
+        em.refresh(bill);
 
-        // Evict all natively-written entity classes from the EclipseLink L2 cache.
+        // Evict natively-written entity classes from the EclipseLink L2 cache.
+        // Bill is intentionally NOT evicted — em.refresh(bill) loaded the correct full
+        // state (totals + BILLFINANCEDETAILS_ID FK) and the commit merges it into L2.
         javax.persistence.Cache cache = em.getEntityManagerFactory().getCache();
         cache.evict(StockHistory.class);
         cache.evict(Stock.class);
         cache.evict(BillItem.class);
-        cache.evict(Bill.class);
         cache.evict(BillFinanceDetails.class);
         cache.evict(BillItemFinanceDetails.class);
 
         LOGGER.log(Level.INFO, "[NativeSettle] DONE items={0} ms={1}",
                 new Object[]{items.size(), System.currentTimeMillis() - t0});
-    }
-
-    // -----------------------------------------------------------------------
-    // Native Bill INSERT
-    // -----------------------------------------------------------------------
-
-    /**
-     * Inserts the bill header row using native SQL, bypassing JPA descriptor
-     * initialisation for Bill and its four EAGER-cascade associations
-     * (PharmacyBill, StockBill, BillFinanceDetails, Request).
-     */
-    private long insertBillNative(Bill bill) {
-        String billTypeName = bill.getBillType() != null ? bill.getBillType().name() : null;
-        String billTypeAtomicName = bill.getBillTypeAtomic() != null ? bill.getBillTypeAtomic().name() : null;
-        String priorityName = bill.getPriority() != null ? bill.getPriority().name() : "NORMAL";
-        java.util.Date bd = bill.getBillDate() != null ? bill.getBillDate() : new java.util.Date();
-        java.util.Date bt = bill.getBillTime() != null ? bill.getBillTime() : new java.util.Date();
-        java.util.Date ca = bill.getCreatedAt() != null ? bill.getCreatedAt() : new java.util.Date();
-
-        em.createNativeQuery(
-            "INSERT INTO " + billTable()
-            + " (DTYPE, billClassType, billType, billTypeAtomic,"
-            + " deptId, insId,"
-            + " department_ID, institution_ID, patient_ID, patientEncounter_ID,"
-            + " fromDepartment_ID, fromInstitution_ID,"
-            + " creater_ID,"
-            + " billDate, billTime, createdAt,"
-            + " total, netTotal, grantTotal,"
-            + " status,"
-            + " retired, completed, cancelled, refunded, reactivated, consignment,"
-            + " priority, smsed)"
-            + " VALUES ('PreBill','PreBill',?,?,?,?,?,?,?,?,?,?,?,?,?,?,0.0,0.0,0.0,0,0,0,0,0,0,0,?,0)")
-            .setParameter(1, billTypeName)
-            .setParameter(2, billTypeAtomicName)
-            .setParameter(3, bill.getDeptId())
-            .setParameter(4, bill.getInsId())
-            .setParameter(5, bill.getDepartment() != null ? bill.getDepartment().getId() : null)
-            .setParameter(6, bill.getInstitution() != null ? bill.getInstitution().getId() : null)
-            .setParameter(7, bill.getPatient() != null ? bill.getPatient().getId() : null)
-            .setParameter(8, bill.getPatientEncounter() != null ? bill.getPatientEncounter().getId() : null)
-            .setParameter(9, bill.getFromDepartment() != null ? bill.getFromDepartment().getId() : null)
-            .setParameter(10, bill.getFromInstitution() != null ? bill.getFromInstitution().getId() : null)
-            .setParameter(11, bill.getCreater() != null ? bill.getCreater().getId() : null)
-            .setParameter(12, new Date(bd.getTime()))
-            .setParameter(13, new Timestamp(bt.getTime()))
-            .setParameter(14, new Timestamp(ca.getTime()))
-            .setParameter(15, priorityName)
-            .executeUpdate();
-
-        return ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
     }
 
     // -----------------------------------------------------------------------
