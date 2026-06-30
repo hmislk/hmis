@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="gpgr" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9333EA;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#7E22CE;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shpgr" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#FAF5FF"/>
+  <g filter="url(#shpgr)">
+
+    <rect x="50" y="74" width="78" height="94" rx="7" fill="url(#gpgr)"/>
+    <rect x="62" y="89" width="54" height="6" rx="2" fill="white"/>
+    <rect x="62" y="101" width="40" height="6" rx="2" fill="white" opacity="0.8"/>
+    <rect x="62" y="113" width="48" height="6" rx="2" fill="white" opacity="0.7"/>
+    <rect x="62" y="125" width="34" height="6" rx="2" fill="white" opacity="0.6"/>
+    <circle cx="148" cy="66" r="30" fill="url(#gpgr)"/>
+    <circle cx="148" cy="66" r="15" fill="#FAF5FF"/>
+    <circle cx="148" cy="66" r="8" fill="url(#gpgr)"/>
+    <rect x="144" y="33" width="8" height="13" rx="3" fill="url(#gpgr)"/>
+    <rect x="144" y="86" width="8" height="13" rx="3" fill="url(#gpgr)"/>
+    <rect x="111" y="62" width="13" height="8" rx="3" fill="url(#gpgr)"/>
+    <rect x="172" y="62" width="13" height="8" rx="3" fill="url(#gpgr)"/>
+    <rect x="120" y="43" width="13" height="8" rx="3" fill="url(#gpgr)" transform="rotate(45 126 47)"/>
+    <rect x="161" y="80" width="13" height="8" rx="3" fill="url(#gpgr)" transform="rotate(45 167 84)"/>
+    <rect x="120" y="79" width="13" height="8" rx="3" fill="url(#gpgr)" transform="rotate(-45 126 83)"/>
+    <rect x="161" y="43" width="13" height="8" rx="3" fill="url(#gpgr)" transform="rotate(-45 167 47)"/>
+
+  </g>
+</svg>

@@ -1,8 +1,12 @@
 package com.divudi.service;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.OptionValueType;
 import com.divudi.core.entity.AiMessage;
+import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.ConfigOption;
+import com.divudi.core.facade.ApiKeyFacade;
 import com.divudi.core.facade.ConfigOptionFacade;
 import java.io.Serializable;
 import java.io.StringReader;
@@ -21,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -40,6 +45,12 @@ public class AnthropicApiService implements Serializable {
 
     @EJB
     private ConfigOptionFacade configOptionFacade;
+
+    @EJB
+    private ApiKeyFacade apiKeyFacade;
+
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
 
     // -------------------------------------------------------------------------
     // Public API
@@ -306,6 +317,30 @@ public class AnthropicApiService implements Serializable {
                                         .add("type", "string")
                                         .add("description", "Keyword to search in config option keys (case-insensitive)")))
                         .add("required", Json.createArrayBuilder().add("keyword")))
+                .build();
+
+        JsonObject manageConfigOptionTool = Json.createObjectBuilder()
+                .add("name", "manage_config_option")
+                .add("description",
+                        "Read or update a single HMIS application configuration option by its exact key. "
+                        + "Use GET to read the current value; use PUT to update it (flushes in-memory cache immediately). "
+                        + "The option must already exist — this tool does not create new keys. "
+                        + "Sensitive values (API keys, passwords, tokens) are masked on reads. "
+                        + "Use search_config_options first if you need to discover the exact key name.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("GET").add("PUT"))
+                                        .add("description", "HTTP method: GET to read, PUT to update"))
+                                .add("key", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Exact config option key (case-sensitive)"))
+                                .add("value", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "New value (required for PUT)")))
+                        .add("required", Json.createArrayBuilder().add("method").add("key")))
                 .build();
 
         JsonObject clinicalMetadataTool = Json.createObjectBuilder()
@@ -1340,10 +1375,134 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("billNumber")))
                 .build();
 
+        JsonObject managePharmacyDiscountsTool = Json.createObjectBuilder()
+                .add("name", "manage_pharmacy_discounts")
+                .add("description",
+                        "Create, list, update, or retire pharmacy payment-scheme discount rows (PaymentSchemeDiscount). "
+                        + "Use BULK to set the same discount % across all pharmacy item categories for a payment scheme in one call (idempotent: re-running updates, never duplicates). "
+                        + "method: LIST | POST | BULK | PUT | DELETE.\n\n"
+                        + "LIST: returns non-retired discount rows; optional filters: paymentSchemeId, paymentSchemeName, billType, limit.\n"
+                        + "POST: create a single row; required: discountPercent + paymentMethod; optional: categoryId, paymentSchemeId, paymentSchemeName, billType.\n"
+                        + "BULK: upsert across ALL pharmacy item categories; required: discountPercent + paymentMethod + (paymentSchemeId or paymentSchemeName); optional: billType.\n"
+                        + "PUT: update a row; required: id + discountPercent.\n"
+                        + "DELETE: soft-retire a row; required: id.\n\n"
+                        + "Default billType is PharmacySale when omitted. Always confirm with the user before POST, BULK, PUT, or DELETE.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("LIST").add("POST").add("BULK").add("PUT").add("DELETE")))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Discount row id — required for PUT and DELETE"))
+                                .add("paymentSchemeId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PaymentScheme id — use with POST, BULK, LIST"))
+                                .add("paymentSchemeName", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PaymentScheme name (partial match for LIST, exact-then-partial for BULK/POST) — alternative to paymentSchemeId"))
+                                .add("categoryId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Category id — optional for POST (single row)"))
+                                .add("paymentMethod", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PaymentMethod enum value, e.g. Cash, Credit, MultiplePaymentMethods — required for POST and BULK; optional for LIST"))
+                                .add("billType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "BillType enum value, e.g. PharmacySale — defaults to PharmacySale when omitted"))
+                                .add("discountPercent", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Discount percentage, e.g. '5.0'"))
+                                .add("limit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max rows for LIST (default 200)")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
+        JsonObject managePaymentSchemesTool = Json.createObjectBuilder()
+                .add("name", "manage_payment_schemes")
+                .add("description",
+                        "List or update PaymentScheme records. "
+                        + "method: LIST | UPDATE.\n\n"
+                        + "LIST: returns all non-retired payment schemes with all billing-scope flags "
+                        + "(validForInpatientBills, validForPharmacy, validForBilledBills, validForChanneling) "
+                        + "and eligibility flags. Optional filter: query (name substring).\n"
+                        + "UPDATE: partial update of a payment scheme; required: id. "
+                        + "Supply only the fields to change (name, printingName, validForInpatientBills, "
+                        + "validForPharmacy, validForBilledBills, validForChanneling, staffMemberRequired, "
+                        + "membershipRequired, staffRequired, staffOrFamilyRequired, memberRequired, "
+                        + "memberOrFamilyRequired, seniorCitizenRequired, pregnantMotherRequired, orderNo). "
+                        + "Always confirm with the user before UPDATE.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("LIST").add("UPDATE")))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PaymentScheme id — required for UPDATE"))
+                                .add("query", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Name substring filter for LIST"))
+                                .add("limit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max rows for LIST (default 500)"))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Scheme name (UPDATE)"))
+                                .add("printingName", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Printing name (UPDATE)"))
+                                .add("validForInpatientBills", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("validForPharmacy", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("validForBilledBills", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("validForChanneling", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("staffMemberRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("membershipRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("staffRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("staffOrFamilyRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("memberRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("memberOrFamilyRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("seniorCitizenRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("pregnantMotherRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("orderNo", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Integer sort order (UPDATE)")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         return Json.createArrayBuilder()
                 .add(searchCodeTool)
                 .add(fetchFileTool)
                 .add(searchConfigTool)
+                .add(manageConfigOptionTool)
                 .add(clinicalMetadataTool)
                 .add(collectingCentreFeesTool)
                 .add(inwardDiscountMatrixTool)
@@ -1358,6 +1517,8 @@ public class AnthropicApiService implements Serializable {
                 .add(manageStaffTool)
                 .add(manageUsersTool)
                 .add(managePharmacyItemsTool)
+                .add(managePharmacyDiscountsTool)
+                .add(managePaymentSchemesTool)
                 .add(manageChannelBookingTool)
                 .add(manageInpatientTemplates)
                 .add(manageTimedItemsTool)
@@ -1392,6 +1553,12 @@ public class AnthropicApiService implements Serializable {
                 case "search_config_options": {
                     String keyword = toolInput.getString("keyword", "");
                     return searchConfigOptions(keyword);
+                }
+                case "manage_config_option": {
+                    String method = toolInput.getString("method", "GET");
+                    String key    = toolInput.containsKey("key")   ? toolInput.getString("key", "")   : "";
+                    String value  = toolInput.containsKey("value") ? toolInput.getString("value", "") : null;
+                    return manageConfigOption(method, key, value, hmisApiKey);
                 }
                 case "manage_clinical_metadata": {
                     String method = toolInput.getString("method", "GET");
@@ -1639,6 +1806,12 @@ public class AnthropicApiService implements Serializable {
                 case "manage_pharmacy_items": {
                     return callPharmacyItemsApi(toolInput, hmisBaseUrl, hmisApiKey);
                 }
+                case "manage_pharmacy_discounts": {
+                    return callPharmacyDiscountsApi(toolInput, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_payment_schemes": {
+                    return callPaymentSchemeApi(toolInput, hmisBaseUrl, hmisApiKey);
+                }
                 case "manage_channel_booking": {
                     return callChannelBookingApi(toolInput, hmisBaseUrl, hmisApiKey);
                 }
@@ -1849,6 +2022,136 @@ public class AnthropicApiService implements Serializable {
             LOG.log(Level.WARNING, "Config option search failed", e);
             return "Config search error: " + e.getMessage();
         }
+    }
+
+    private String manageConfigOption(String method, String key, String newValue, String hmisApiKey) {
+        if (key == null || key.trim().isEmpty()) {
+            return "Error: key is required.";
+        }
+        String normalizedMethod = method == null ? "GET" : method.trim().toUpperCase();
+        if (!"GET".equals(normalizedMethod) && !"PUT".equals(normalizedMethod)) {
+            return "Error: Unknown method '" + method + "'. Supported: GET, PUT";
+        }
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("scope", OptionScope.APPLICATION);
+            params.put("k", key);
+            ConfigOption option = configOptionFacade.findFirstByJpql(
+                    "SELECT o FROM ConfigOption o WHERE o.retired = false AND o.scope = :scope AND o.optionKey = :k",
+                    params);
+
+            if ("PUT".equals(normalizedMethod)) {
+                if (newValue == null) {
+                    return "Error: value is required for PUT.";
+                }
+                if (option == null) {
+                    return "Error: config option not found: " + key;
+                }
+                String oldValue = option.getOptionValue();
+                OptionValueType vt = option.getValueType();
+                String validationError = validateTypedValue(vt, newValue);
+                if (validationError != null) {
+                    return validationError;
+                }
+                applyTypedUpdate(key, newValue, option, vt);
+
+                String callerName = resolveCallerName(hmisApiKey);
+                LOG.log(Level.INFO,
+                        "CONFIG_UPDATED via AI Chat tool key=[{0}] old=[{1}] new=[{2}] by=[{3}] at=[{4}]",
+                        new Object[]{key,
+                            maskSensitiveValue(key, oldValue),
+                            maskSensitiveValue(key, newValue),
+                            callerName,
+                            new java.util.Date()});
+                return "Config option updated.\nKey: " + key
+                        + "\nOld value: " + maskSensitiveValue(key, oldValue)
+                        + "\nNew value: " + maskSensitiveValue(key, newValue)
+                        + "\nUpdated by: " + callerName;
+            }
+
+            // GET
+            if (option == null) {
+                return "Config option not found: " + key;
+            }
+            String value = maskSensitiveValue(option.getOptionKey(), option.getOptionValue());
+            if (value != null && value.length() > 500) {
+                value = value.substring(0, 500) + "... (truncated)";
+            }
+            return "Key: " + option.getOptionKey() + "\nType: " + option.getValueType()
+                    + "\nScope: " + option.getScope() + "\nValue: " + value;
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "manage_config_option failed", e);
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    private String validateTypedValue(OptionValueType vt, String newValue) {
+        if (vt == null) {
+            return null;
+        }
+        switch (vt) {
+            case BOOLEAN:
+                if (!"true".equalsIgnoreCase(newValue.trim()) && !"false".equalsIgnoreCase(newValue.trim())) {
+                    return "Error: Value '" + newValue + "' is not a valid boolean (must be true or false).";
+                }
+                break;
+            case INTEGER:
+                try {
+                    Integer.parseInt(newValue.trim());
+                } catch (NumberFormatException e) {
+                    return "Error: Value '" + newValue + "' is not a valid integer.";
+                }
+                break;
+            case LONG:
+                try {
+                    Long.parseLong(newValue.trim());
+                } catch (NumberFormatException e) {
+                    return "Error: Value '" + newValue + "' is not a valid long integer.";
+                }
+                break;
+            case DOUBLE:
+                try {
+                    Double.parseDouble(newValue.trim());
+                } catch (NumberFormatException e) {
+                    return "Error: Value '" + newValue + "' is not a valid number.";
+                }
+                break;
+            default:
+                break;
+        }
+        return null;
+    }
+
+    private void applyTypedUpdate(String key, String newValue, ConfigOption option, OptionValueType vt) {
+        if (vt == OptionValueType.LONG_TEXT) {
+            configOptionApplicationController.setLongTextValueByKey(key, newValue);
+        } else if (vt == OptionValueType.BOOLEAN) {
+            configOptionApplicationController.setBooleanValueByKey(key, Boolean.parseBoolean(newValue.trim()));
+        } else if (vt == OptionValueType.INTEGER) {
+            configOptionApplicationController.setIntegerValueByKey(key, Integer.parseInt(newValue.trim()));
+        } else {
+            option.setOptionValue(newValue);
+            configOptionFacade.edit(option);
+            configOptionApplicationController.loadApplicationOptions();
+        }
+    }
+
+    private String resolveCallerName(String hmisApiKey) {
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "AI Chat (user unknown)";
+        }
+        try {
+            Map<String, Object> p = new HashMap<>();
+            p.put("k", hmisApiKey);
+            ApiKey ak = apiKeyFacade.findFirstByJpql(
+                    "SELECT a FROM ApiKey a WHERE a.keyValue = :k AND a.retired = false", p);
+            if (ak != null && ak.getWebUser() != null) {
+                return ak.getWebUser().getName() + " (AI Chat)";
+            }
+        } catch (Exception e) {
+            LOG.log(Level.FINE, "Could not resolve caller name from hmisApiKey", e);
+        }
+        return "AI Chat (user unknown)";
     }
 
     private String maskSensitiveValue(String key, String value) {
@@ -3915,6 +4218,124 @@ public class AnthropicApiService implements Serializable {
         return body.build().toString();
     }
 
+    private String callPharmacyDiscountsApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        String method = input.getString("method", "LIST").toUpperCase();
+        String id = jsonString(input, "id");
+        String base = hmisBaseUrl.replaceAll("/$", "") + "/api/pharmacy/discounts";
+        try {
+            String url = base;
+            String httpMethod;
+            String body = null;
+            switch (method) {
+                case "LIST":
+                    httpMethod = "GET";
+                    url = base + "?" + queryParam("paymentSchemeId", jsonString(input, "paymentSchemeId"))
+                            + "&" + queryParam("paymentSchemeName", jsonString(input, "paymentSchemeName"))
+                            + "&" + queryParam("billType", jsonString(input, "billType"))
+                            + "&" + queryParam("limit", defaultString(jsonString(input, "limit"), "200"));
+                    break;
+                case "POST": {
+                    httpMethod = "POST";
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    addLong(b, "categoryId", jsonString(input, "categoryId"));
+                    addLong(b, "paymentSchemeId", jsonString(input, "paymentSchemeId"));
+                    addString(b, "paymentSchemeName", jsonString(input, "paymentSchemeName"));
+                    addString(b, "paymentMethod", jsonString(input, "paymentMethod"));
+                    addString(b, "billType", jsonString(input, "billType"));
+                    addDouble(b, "discountPercent", jsonString(input, "discountPercent"));
+                    body = b.build().toString();
+                    break;
+                }
+                case "BULK": {
+                    httpMethod = "POST";
+                    url = base + "/bulk";
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    addLong(b, "paymentSchemeId", jsonString(input, "paymentSchemeId"));
+                    addString(b, "paymentSchemeName", jsonString(input, "paymentSchemeName"));
+                    addString(b, "paymentMethod", jsonString(input, "paymentMethod"));
+                    addString(b, "billType", jsonString(input, "billType"));
+                    addDouble(b, "discountPercent", jsonString(input, "discountPercent"));
+                    body = b.build().toString();
+                    break;
+                }
+                case "PUT": {
+                    httpMethod = "PUT";
+                    url = base + "/" + requireText(id, "id");
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    addDouble(b, "discountPercent", jsonString(input, "discountPercent"));
+                    body = b.build().toString();
+                    break;
+                }
+                case "DELETE":
+                    httpMethod = "DELETE";
+                    url = base + "/" + requireText(id, "id");
+                    break;
+                default:
+                    return "Unknown method: " + method + ". Use LIST, POST, BULK, PUT, or DELETE.";
+            }
+            return callHmisApi(url, httpMethod, body, hmisApiKey);
+        } catch (Exception e) {
+            return "Pharmacy discounts API error: " + e.getMessage();
+        }
+    }
+
+    private String callPaymentSchemeApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        String method = input.getString("method", "LIST").toUpperCase();
+        String id = jsonString(input, "id");
+        String base = hmisBaseUrl.replaceAll("/$", "") + "/api/payment-scheme";
+        try {
+            String url;
+            String httpMethod;
+            String body = null;
+            switch (method) {
+                case "LIST":
+                    httpMethod = "GET";
+                    url = base + "?" + queryParam("query", jsonString(input, "query"))
+                            + "&" + queryParam("limit", defaultString(jsonString(input, "limit"), "500"));
+                    break;
+                case "UPDATE": {
+                    httpMethod = "PUT";
+                    url = base + "/" + requireText(id, "id");
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    addString(b, "name", jsonString(input, "name"));
+                    addString(b, "printingName", jsonString(input, "printingName"));
+                    addBoolean(b, "validForInpatientBills", jsonString(input, "validForInpatientBills"));
+                    addBoolean(b, "validForPharmacy", jsonString(input, "validForPharmacy"));
+                    addBoolean(b, "validForBilledBills", jsonString(input, "validForBilledBills"));
+                    addBoolean(b, "validForChanneling", jsonString(input, "validForChanneling"));
+                    addBoolean(b, "staffMemberRequired", jsonString(input, "staffMemberRequired"));
+                    addBoolean(b, "membershipRequired", jsonString(input, "membershipRequired"));
+                    addBoolean(b, "staffRequired", jsonString(input, "staffRequired"));
+                    addBoolean(b, "staffOrFamilyRequired", jsonString(input, "staffOrFamilyRequired"));
+                    addBoolean(b, "memberRequired", jsonString(input, "memberRequired"));
+                    addBoolean(b, "memberOrFamilyRequired", jsonString(input, "memberOrFamilyRequired"));
+                    addBoolean(b, "seniorCitizenRequired", jsonString(input, "seniorCitizenRequired"));
+                    addBoolean(b, "pregnantMotherRequired", jsonString(input, "pregnantMotherRequired"));
+                    addLong(b, "orderNo", jsonString(input, "orderNo"));
+                    body = b.build().toString();
+                    break;
+                }
+                default:
+                    return "Unknown method: " + method + ". Use LIST or UPDATE.";
+            }
+            return callHmisApi(url, httpMethod, body, hmisApiKey);
+        } catch (Exception e) {
+            return "Payment scheme API error: " + e.getMessage();
+        }
+    }
+
     private String pharmacyItemBody(JsonObject input, boolean create) {
         javax.json.JsonObjectBuilder body = Json.createObjectBuilder();
         addString(body, "name", jsonString(input, "name"));
@@ -4351,6 +4772,11 @@ public class AnthropicApiService implements Serializable {
           .append("({name} {age} {sex} {bht} {doa} {dod} {dx} {past-dx} {allergies} {rx} {drx} {ix} {procedures} {routine-medicines} vitals). ")
           .append("If an admission has multiple credit companies, the user picks one on the inward_letters page before generating. ")
           .append("Always confirm with the user before POST, PUT, or DELETE — these templates appear on the inpatient dashboard Documents page.\n\n");
+        sb.append("### manage_payment_schemes\n");
+        sb.append("List or update PaymentScheme records (billing-scope flags: validForInpatientBills, validForPharmacy, validForBilledBills, validForChanneling). ")
+          .append("Use method=LIST to retrieve all active schemes. Optionally filter by query (name substring). ")
+          .append("Use method=UPDATE (with id) for a partial update — only include the fields you want to change. ")
+          .append("Always confirm with the user before UPDATE — changes affect live inward and billing flows.\n\n");
 
         sb.append("## How to Use the Tools\n");
         sb.append("- When a user describes a problem or asks why something behaves a certain way, search the source code first.\n");
@@ -4417,6 +4843,32 @@ public class AnthropicApiService implements Serializable {
                     {"POST",   "/pharmaceutical_items/{type}/{id}/restore",        "Restore a retired pharmaceutical item"},
                     {"PATCH",  "/pharmaceutical_items/{type}/{id}/activate",       "Activate a pharmaceutical item"},
                     {"PATCH",  "/pharmaceutical_items/{type}/{id}/deactivate",     "Deactivate a pharmaceutical item"}
+                });
+
+        appendModule(sb, "Pharmacy Discounts", "/pharmacy/discounts",
+                "Manage PaymentSchemeDiscount rows that control per-category discount percentages applied during pharmacy billing for a given payment scheme. "
+                + "Use BULK to set the same discount % across all pharmacy item categories at once (idempotent — re-running updates existing rows, never duplicates). "
+                + "Default billType is PharmacySale. Always confirm with the user before POST, BULK, PUT, or DELETE.",
+                githubUrl(branch, "developer_docs/api/pharmacy-discount-api.md"),
+                new String[][]{
+                    {"GET",    "/pharmacy/discounts",       "List non-retired discount rows. Filters: paymentSchemeId, paymentSchemeName, billType, limit"},
+                    {"POST",   "/pharmacy/discounts",       "Create a single discount row. Body: discountPercent + paymentMethod (required), categoryId, paymentSchemeId, paymentSchemeName, billType"},
+                    {"POST",   "/pharmacy/discounts/bulk",  "Bulk upsert: set discountPercent for ALL pharmacy item categories under a payment scheme. Body: discountPercent, paymentMethod (required), paymentSchemeId or paymentSchemeName, optional billType"},
+                    {"PUT",    "/pharmacy/discounts/{id}",  "Update a discount row (discountPercent)"},
+                    {"DELETE", "/pharmacy/discounts/{id}",  "Soft-retire a discount row"}
+                });
+
+        appendModule(sb, "Payment Schemes", "/payment-scheme",
+                "List and update PaymentScheme records. "
+                + "Use LIST to retrieve all active payment schemes with their billing-scope flags "
+                + "(validForInpatientBills, validForPharmacy, validForBilledBills, validForChanneling) "
+                + "and eligibility flags (staffMemberRequired, membershipRequired, etc.). "
+                + "Use UPDATE (method=UPDATE, id required) for a partial update — only fields supplied in the body are changed. "
+                + "Always confirm with the user before UPDATE — changes affect live inward and billing flows.",
+                null,
+                new String[][]{
+                    {"GET", "/payment-scheme",      "List all active payment schemes. Optional: query (name filter), limit"},
+                    {"PUT", "/payment-scheme/{id}", "Partial update: supply only fields to change (e.g. validForInpatientBills, name)"}
                 });
 
         appendModule(sb, "Pharmacy Items", "/pharmacy/items",

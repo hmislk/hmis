@@ -34,8 +34,9 @@
                                     value="Approve"
                                     action="#{transferRequestController.approveTransferRequestBill}"
                                     ajax="false"
-                                    icon="fas fa-check"
-                                    class="mx-1 ui-button-success">
+                                    icon="fas fa-check-double"
+                                    styleClass="mx-1 ui-button-stage-approve"
+                                    onclick="return confirm('Are you sure you want to approve this transfer request?');">
                                 </p:commandButton>
                             </div>
                         </div>
