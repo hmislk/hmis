@@ -938,7 +938,7 @@
                             id="direct_issue_to_BHTs"
                             ajax="false"
                             action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
-                            actionListener="#{pharmacySaleBhtController.resetAll()}"
+                            actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="direct_issue_to_BHTs.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Direct Issue to BHTs" />
@@ -953,7 +953,7 @@
                         <p:commandLink
                             id="direct_issue_to_BHTs_native"
                             ajax="false"
-                            action="/inward/pharmacy_bill_issue_bht_native?faces-redirect=true"
+                            action="/inward/pharmacy_bill_issue_bht?faces-redirect=true"
                             actionListener="#{inpatientDirectIssueNativeSqlController.resetAll()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="icons" name="direct_issue_to_BHTs_native.svg" style="cursor: pointer;" width="80" height="80"/>
