@@ -505,6 +505,9 @@ public class IssueReturnController implements Serializable {
             getReturnBill().setToDepartment(originalBill.getToDepartment()); // Same consumption department
             getReturnBill().setFromDepartment(originalBill.getFromDepartment()); // Same pharmacy department
             getReturnBill().setDepartment(sessionController.getDepartment());
+            if (sessionController.getDepartment() != null) {
+                getReturnBill().setDepartmentType(sessionController.getDepartment().getDepartmentType());
+            }
             getReturnBill().setInstitution(sessionController.getInstitution());
             getReturnBill().setSite(sessionController.getLoggedSite());
             getReturnBill().setCreatedAt(new Date());

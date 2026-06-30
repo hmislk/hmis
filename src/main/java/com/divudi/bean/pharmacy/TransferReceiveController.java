@@ -1124,6 +1124,9 @@ public class TransferReceiveController implements Serializable {
         getReceivedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE);
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
         getReceivedBill().setFromStaff(getIssuedBill().getToStaff());
+        if (sessionController.getDepartment() != null) {
+            getReceivedBill().setDepartmentType(sessionController.getDepartment().getDepartmentType());
+        }
         if (getReceivedBill().getId() == null) {
             getReceivedBill().setCreatedAt(new Date());
             getReceivedBill().setCreater(sessionController.getLoggedUser());
