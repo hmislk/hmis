@@ -716,8 +716,13 @@ public class LaborataryReportController implements Serializable {
             bundle.getRows().add(billIncomeRow);
             boolean checkInInvestigationBillItem = false;
             billService.reloadBill(bill);
+            BillTypeAtomic bta = bill.getBillTypeAtomic();
+            boolean isRefundBill = bta == BillTypeAtomic.OPD_BILL_REFUND
+                    || bta == BillTypeAtomic.INWARD_SERVICE_BILL_REFUND
+                    || bta == BillTypeAtomic.CC_BILL_REFUND
+                    || bta == BillTypeAtomic.PACKAGE_OPD_BILL_REFUND;
             for (BillItem billItem : bill.getBillItems()) {
-                if (billItem.isRefunded()) {
+                if (billItem.isRefunded() || isRefundBill) {
                     continue;
                 }
                 if (billItem.getItem() instanceof Investigation) {
