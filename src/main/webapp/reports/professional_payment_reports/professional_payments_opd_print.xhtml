@@ -1,0 +1,373 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form>
+                    <p:panel header="OPD Professional Payments Print" styleClass="w-100">
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="OPD Professional Payments Print" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false"
+                                        value="Print">
+                                        <p:printer target="reportView" />
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Back to Report"
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="professional_payments_opd?faces-redirect=true">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <!-- ============================================================ -->
+                        <!-- REPORT RESULTS (FILTER SUMMARY)                               -->
+                        <!-- ============================================================ -->
+                        <p:panel header="Report Results" styleClass="mt-3 report-results-panel">
+                            <h:panelGrid columns="4"
+                                         styleClass="table table-bordered table-sm table-striped w-100 report-results-grid"
+                                         columnClasses="report-col-label,report-col-value,report-col-label,report-col-value">
+
+                                <h:outputLabel value="From"/>
+                                <h:panelGroup>
+                                    <h:outputLabel value="#{searchController.fromDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat} #{sessionController.applicationPreference.shortTimeFormat}"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+
+                                <h:outputLabel value="To"/>
+                                <h:panelGroup>
+                                    <h:outputLabel value="#{searchController.toDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat} #{sessionController.applicationPreference.shortTimeFormat}"/>
+                                    </h:outputLabel>
+                                </h:panelGroup>
+
+                                <h:outputLabel value="Institution"/>
+                                <h:outputLabel value="#{searchController.institution.name}"/>
+
+                                <h:outputLabel value="Site"/>
+                                <h:outputLabel value="#{searchController.site.name}"/>
+
+                                <h:outputLabel value="Department"/>
+                                <h:outputLabel value="#{searchController.department.name}"/>
+
+                                <h:outputLabel value="Category"/>
+                                <h:outputLabel value="#{searchController.category.name}"/>
+
+                                <h:outputLabel value="Item"/>
+                                <h:outputLabel value="#{searchController.item.name}"/>
+
+                                <h:outputLabel value="Speciality"/>
+                                <h:outputLabel value="#{searchController.speciality.name}"/>
+
+                                <h:outputLabel value="Doctor"/>
+                                <h:outputLabel value="#{searchController.staff.person.nameWithTitle}"/>
+
+                            </h:panelGrid>
+                        </p:panel>
+
+                        <style>
+                            /* ===================== Report Results panel ===================== */
+                            .report-results-panel .ui-panel-title {
+                                font-size: 18px !important;
+                                font-weight: bold;
+                            }
+
+                            .report-results-grid {
+                                font-size: 16px !important;
+                                table-layout: fixed !important;
+                                max-width: 1000px;
+                            }
+
+                            .report-results-grid td {
+                                padding: 8px 12px !important;
+                                vertical-align: middle;
+                                word-break: break-word;
+                            }
+
+                            .report-results-grid .report-col-label {
+                                width: 15% !important;
+                            }
+
+                            .report-results-grid .report-col-value {
+                                width: 35% !important;
+                            }
+
+                            .report-results-grid .ui-outputlabel,
+                            .report-results-grid label,
+                            .report-results-grid span {
+                                font-size: 15px !important;
+                                font-weight: 500;
+                            }
+
+                            .report-results-grid .report-col-label .ui-outputlabel,
+                            .report-results-grid .report-col-label label,
+                            .report-results-grid .report-col-label span {
+                                font-weight: 700;
+                            }
+                            /* ===================== Print report table ===================== */
+                            @media screen{
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    zoom: 1.5;
+                                    background: #fff;
+                                    padding: 8mm 6mm;
+                                    border-radius: 8px;
+                                    box-shadow: 0 0 8px rgba(0,0,0,0.08);
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 100%;
+                                    font-size: 10.5px!important;
+                                    margin-top: 3mm!important;
+                                }
+
+                                th {
+                                    background-color: #eef1f5;
+                                    border: 1px solid #ccc;
+                                    padding: 4px 4px!important;
+                                    text-align: left;
+                                    font-size: 10.5px!important;
+                                    font-weight: 700;
+                                    color: #2b3a55;
+                                }
+
+                                td {
+                                    border: 1px solid #ddd;
+                                    padding: 4px 4px!important;
+                                    text-align: left;
+                                    font-size: 10px!important;
+                                }
+
+                                tbody tr:nth-child(odd) td {
+                                    background-color: #fafafa;
+                                }
+
+                                .header{
+                                    font-size: 12px!important;
+                                }
+
+                                tfoot td{
+                                    font-weight: 700!important;
+                                    font-size: 10.5px!important;
+                                    background-color: #eef1f5;
+                                    padding: 5px 4px!important;
+                                }
+                            }
+
+                            @media print {
+                                @page {
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 8pt;
+                                    }
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    size: A4 landscape!important;
+                                    box-shadow: none;
+                                }
+
+                                .header{
+                                    line-height: 1.15;
+                                    margin: 0mm!important;
+                                    font-size: 11px!important;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 99.9%;
+                                    font-size: 9px!important;
+                                    margin-top: 2mm!important;
+                                }
+                                th {
+                                    border: 1px solid #000;
+                                    padding: 2px 3px!important;
+                                    text-align: left;
+                                    font-size: 9px!important;
+                                    font-weight: 700;
+                                }
+                                td {
+                                    border: 1px solid #000;
+                                    padding: 2px 3px!important;
+                                    text-align: left;
+                                    font-size: 8.5px!important;
+                                }
+                                tfoot td{
+                                    font-weight: 700!important;
+                                    font-size: 9px!important;
+                                }
+                            }
+                        </style>
+
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header">
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 14px;">
+                                        <h:outputText value="OPD Professional Payments Report"/>
+                                    </div>
+
+                                </div>
+
+                                <div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 7mm;">
+                                                    <h:outputText value="No"/>
+                                                </th>
+                                                <th style="width: 25mm;">
+                                                    <h:outputText value="ID"/>
+                                                </th>
+                                                <th style="width: 30mm; text-align: left;">
+                                                    <h:outputText value="Type"/>
+                                                </th>
+                                                <th style="width: 20mm; text-align: left;">
+                                                    <h:outputText value="Date"/>
+                                                </th>
+                                                <th style="width: 17mm; text-align: left;">
+                                                    <h:outputText value="Time"/>
+                                                </th>
+                                                <th style="width: 30mm; text-align: left;">
+                                                    <h:outputText value="Receipt No"/>
+                                                </th>
+                                                <th style="width: 30mm; text-align: left;">
+                                                    <h:outputText value="Cashier"/>
+                                                </th>
+                                                <th style="width: 30mm; text-align: left;">
+                                                    <h:outputText value="Payment Type"/>
+                                                </th>
+                                                <th style="width: 30mm; text-align: left;">
+                                                    <h:outputText value="Speciality"/>
+                                                </th>
+                                                <th style="width: 30mm; text-align: left;">
+                                                    <h:outputText value="Staff"/>
+                                                </th>
+                                                <th style="width: 20mm; text-align: right;">
+                                                    <h:outputText value="Gross"/>
+                                                </th>
+                                                <th style="width: 20mm; text-align: right;">
+                                                    <h:outputText value="WHT"/>
+                                                </th>
+                                                <th style="width: 20mm; text-align: right;">
+                                                    <h:outputText value="Value"/>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat value="#{searchController.bundle.reportTemplateRows}" var="row" varStatus="i">
+                                                <tr>
+                                                    <td style="width: 7mm;">
+                                                        <h:outputText value="#{i.index +1}"/>
+                                                    </td>
+                                                    <td style="width: 25mm; text-align: left;">
+                                                        <h:outputText value="#{row.bill.id}"/>
+                                                    </td>
+                                                    <td style="width: 30mm; text-align: left;">
+                                                        <h:outputText value="#{row.bill.billTypeAtomic}"/>
+                                                    </td>
+                                                    <td style="width: 20mm; text-align: left;">
+                                                        <h:outputText value="#{row.bill.billDate}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 17mm; text-align: left;">
+                                                        <h:outputText value="#{row.bill.billTime}">
+                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 30mm; text-align: left;">
+                                                        <h:outputText value="#{row.bill.deptId}"/>
+                                                    </td>
+                                                    <td style="width: 30mm; text-align: left;">
+                                                        <h:outputText value="#{row.bill.creater.webUserPerson.name}"/>
+                                                    </td>
+                                                    <td style="width: 30mm; text-align: left;">
+                                                        <h:outputText value="#{row.bill.billTypeAtomic.label}"/>
+                                                    </td>
+                                                    <td style="width: 30mm; text-align: left;">
+                                                        <h:outputText value="#{row.bill.toStaff.speciality.name}"/>
+                                                    </td>
+                                                    <td style="width: 30mm; text-align: left;">
+                                                        <h:outputText value="#{row.bill.toStaff.person.name}"/>
+                                                    </td>
+                                                    <td style="width: 20mm; text-align: right;">
+                                                        <h:outputText value="#{row.bill.total}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 20mm; text-align: right;">
+                                                        <h:outputText value="#{row.bill.tax}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="width: 20mm; text-align: right;">
+                                                        <h:outputText value="#{row.bill.netTotal}">
+                                                            <f:convertNumber pattern="#,##0.00" />
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td style="width: 7mm;"></td>
+                                                <td style="width: 25mm; text-align: left;"></td>
+                                                <td style="width: 30mm; text-align: left;"></td>
+                                                <td style="width: 20mm; text-align: left;"></td>
+                                                <td style="width: 17mm; text-align: left;"></td>
+                                                <td style="width: 30mm; text-align: left;"></td>
+                                                <td style="width: 30mm; text-align: left;"></td>
+                                                <td style="width: 30mm; text-align: left;"></td>
+                                                <td style="width: 30mm; text-align: left;"></td>
+                                                <td style="width: 30mm; text-align: left;">
+                                                    <h:outputText value="Total"/>
+                                                </td>
+                                                <td style="width: 20mm; text-align: right;"></td>
+                                                <td style="width: 20mm; text-align: right;"></td>
+                                                <td style="width: 20mm; text-align: right;">
+                                                    <h:outputText value="#{searchController.bundle.total}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+
+                                </div>
+
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
