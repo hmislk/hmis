@@ -717,6 +717,9 @@ public class LaborataryReportController implements Serializable {
             boolean checkInInvestigationBillItem = false;
             billService.reloadBill(bill);
             for (BillItem billItem : bill.getBillItems()) {
+                if (billItem.isRefunded()) {
+                    continue;
+                }
                 if (billItem.getItem() instanceof Investigation) {
                     IncomeRow billItemIncomeRow = new IncomeRow(billItem);
                     bundle.getRows().add(billItemIncomeRow);
