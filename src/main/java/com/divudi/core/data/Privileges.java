@@ -725,7 +725,6 @@ public enum Privileges {
     InwardFormTemplateAdmin("Inward Form Template Admin"),
     InwardFormFill("Inward Form Fill"),
     InwardDocumentUpload("Inward Document Upload"),
-    InpatientClinicalDischarge("Inpatient Clinical Discharge"),
     // Pharmacy workflow
     PharmacyDischargeMedicineIssue("Pharmacy Discharge Medicine Issue"),
     PharmacyIssueForRequestSave("Pharmacy Issue For Request Save"),
@@ -742,7 +741,6 @@ public enum Privileges {
     ArchiveOldItemBatch("Archive Old ItemBatch Records"),
     // Cashier / petty cash
     PettyCashEditFinancialYear("Petty Cash Edit Financial Year"),
-    PettyCashCancellationApproval("Petty-Cash Cancellation Approval"),
     CashierHandoverStatusReport("Cashier Handover Status Report"),
     SettleHandoverProofMissing("Settle Handover Proof Missing"),
     SettleNonCashPayments("Settle Non-Cash Payments"),
@@ -753,16 +751,7 @@ public enum Privileges {
     // Admin
     AdminPatientRelationships("Manage Patient Relationships"),
     AdminInactivePatients("Manage Inactive Patients"),
-    MergePatients("Merge Patients"),
-    // Fund transfer
-    RequestFundTransfer("Request Float Transfer"),
-    IssueFundTransfer("Issue Float Transfer"),
-    ReceiveFundTransfer("Receive Float Transfer"),
-    DeclineFundTransfer("Decline Float Transfer"),
-    ProcessFundTransferRequest("Process Float Transfer Request"),
-    CancelOwnFundTransfer("Cancel Own Float Transfer"),
-    CancelOthersFundTransfer("Cancel Others Float Transfer"),
-    ViewFundTransferReports("View Float Transfer Reports")
+    MergePatients("Merge Patients")
     ;
 
     private final String label;
