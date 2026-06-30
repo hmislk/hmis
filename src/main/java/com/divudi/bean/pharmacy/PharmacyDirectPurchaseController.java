@@ -254,11 +254,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         // Issue #21635: block a retail rate below the purchase rate (selling at a loss),
         // unless the user explicitly ticks "Allow rate below purchase rate" (issue #13103,
-        // for clearance / loss-leader pricing). Compare per-unit purchase rate (line gross
-        // rate) against the per-unit retail sale rate.
-        if (!allowRetailRateBelowPurchaseRate
-                && BigDecimalUtil.valueOrZero(f.getLineGrossRate())
-                        .compareTo(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit())) > 0) {
+        // for clearance / loss-leader pricing). Normalize AMPP pack rates to per-unit before comparing.
+        if (!allowRetailRateBelowPurchaseRate && isRetailRateBelowPurchaseRate(item, f)) {
             JsfUtil.addErrorMessage("Retail rate is below the purchase rate. Tick 'Allow rate below purchase rate' to proceed.");
             return;
         }
@@ -1167,6 +1164,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 }
             }
 
+            if (!allowRetailRateBelowPurchaseRate && isRetailRateBelowPurchaseRate(item, f)) {
+                JsfUtil.addErrorMessage("Retail rate is below the purchase rate. Tick 'Allow rate below purchase rate' to proceed.");
+                return;
+            }
+
             // Sync billItem.qty (pack-level quantity) - mirrors addItem() line 333
             editingBillItem.setQty(BigDecimalUtil.valueOrZero(f.getQuantity()).doubleValue());
 
@@ -1190,6 +1192,19 @@ public class PharmacyDirectPurchaseController implements Serializable {
         distributeProportionalBillValuesToItems();
         recalculateProfitMarginsForAllItems();
         editingBillItem = null;
+    }
+
+    private boolean isRetailRateBelowPurchaseRate(Item item, BillItemFinanceDetails f) {
+        BigDecimal purchaseRatePerUnit = BigDecimalUtil.valueOrZero(f.getLineGrossRate());
+        if (item instanceof Ampp) {
+            BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(f.getUnitsPerPack());
+            if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
+                double dblVal = item.getDblValue();
+                unitsPerPack = BigDecimal.valueOf(dblVal > 0 ? dblVal : 1);
+            }
+            purchaseRatePerUnit = purchaseRatePerUnit.divide(unitsPerPack, 6, RoundingMode.HALF_UP);
+        }
+        return purchaseRatePerUnit.compareTo(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit())) > 0;
     }
 
     /**

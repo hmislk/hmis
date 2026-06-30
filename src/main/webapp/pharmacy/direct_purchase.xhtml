@@ -323,7 +323,7 @@
                                             class="ui-button-success w-100"
                                             icon="fas fa-plus"
                                             action="#{pharmacyDirectPurchaseController.addItem}"
-                                            process="@this chkAllowRateBelowPurchase :#{p:resolveFirstComponentWithId('selDepartmentType',view).clientId}"
+                                            process="@this itemselectgrid chkAllowRateBelowPurchase :#{p:resolveFirstComponentWithId('selDepartmentType',view).clientId}"
                                             update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('lblGrossTotal',view).clientId} :#{p:resolveFirstComponentWithId('saleValue',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('selDepartmentType',view).clientId} msg"/>
                                     </div>
 

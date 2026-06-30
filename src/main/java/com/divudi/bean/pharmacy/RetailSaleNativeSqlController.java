@@ -55,6 +55,7 @@ import com.divudi.service.pharmacy.RetailSaleNativeSqlService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -765,15 +766,17 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         }
 
         // Allergy check is per item, not per batch — do it once up front.
+        boolean shouldCheckAllergies = configOptionApplicationController.getBooleanValueByKey(
+                "Check for Allergies during Dispensing", false)
+                && patient != null && patient.getId() != null;
         try {
-            if (configOptionApplicationController.getBooleanValueByKey("Check for Allergies during Dispensing", false)
-                    && patient != null && patient.getId() != null) {
+            if (shouldCheckAllergies) {
                 Item itemRef = itemFacade.find(stockDto.getItemId());
                 if (allergyListOfPatient == null) {
                     allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
                 }
                 String allergyMsg = pharmacyService.getAllergyMessageForItem(patient, itemRef, allergyListOfPatient);
-                if (!allergyMsg.isEmpty()) {
+                if (allergyMsg != null && !allergyMsg.isEmpty()) {
                     JsfUtil.addErrorMessage(allergyMsg);
                     return;
                 }
@@ -781,6 +784,10 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Allergy check failed for item {0}: {1}",
                     new Object[]{stockDto.getItemId(), e.getMessage()});
+            if (shouldCheckAllergies) {
+                JsfUtil.addErrorMessage("Could not complete allergy check. Please try again.");
+                return;
+            }
         }
 
         double requestedQty = intQty.doubleValue();
@@ -798,37 +805,33 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
             return;
         }
 
-        // Multi-batch FEFO fill. Start with the user-selected batch (unless already on the bill),
-        // then spill into the next available batches by expiry.
+        // Multi-batch FEFO fill: merge the user-selected batch with additional batches and
+        // sort all candidates by expiry before allocating, so earlier-expiring stock is always
+        // dispensed first regardless of which batch the user picked.
         double addedQty = 0.0;
 
-        if (!isStockAlreadyOnBill(selectedStockId)) {
-            double available = stockDto.getStockQty() != null ? stockDto.getStockQty() : 0.0;
-            double take = Math.min(remainingQty, available);
-            if (take > 0) {
-                addBillItemLineForStock(stockDto, take);
-                addedQty += take;
-                remainingQty -= take;
-            }
-        }
+        List<StockDTO> candidates = new ArrayList<>();
+        candidates.add(stockDto);
+        candidates.addAll(findNextAvailableStockDtos(stockDto.getItemId(), selectedStockId));
+        candidates.sort(Comparator.comparing(
+                StockDTO::getDateOfExpire,
+                Comparator.nullsLast(Date::compareTo)));
 
-        if (remainingQty > 0) {
-            for (StockDTO next : findNextAvailableStockDtos(stockDto.getItemId(), selectedStockId)) {
-                if (remainingQty <= 0) {
-                    break;
-                }
-                if (isStockAlreadyOnBill(next.getId())) {
-                    continue;
-                }
-                double available = next.getStockQty() != null ? next.getStockQty() : 0.0;
-                double take = Math.min(remainingQty, available);
-                if (take <= 0) {
-                    continue;
-                }
-                addBillItemLineForStock(next, take);
-                addedQty += take;
-                remainingQty -= take;
+        for (StockDTO next : candidates) {
+            if (remainingQty <= 0) {
+                break;
             }
+            if (isStockAlreadyOnBill(next.getId())) {
+                continue;
+            }
+            double available = next.getStockQty() != null ? next.getStockQty() : 0.0;
+            double take = Math.min(remainingQty, available);
+            if (take <= 0) {
+                continue;
+            }
+            addBillItemLineForStock(next, take);
+            addedQty += take;
+            remainingQty -= take;
         }
 
         if (addedQty <= 0) {
