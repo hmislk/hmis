@@ -259,6 +259,7 @@
                                         <div class="d-flex" >
                                             <div class="ui-inputgroup mx-1 my-1">
                                                 <p:inputText  
+                                                    id="creditDuration"
                                                     onfocus="this.select();"  
                                                     value="#{purchaseOrderRequestController.currentBill.creditDuration}"
                                                     style="width: 10em;">
@@ -281,9 +282,11 @@
                                         value="Comments"
                                         class="form-label w-100">
                                     </p:outputLabel>
-                                    <p:inputTextarea 
+                                    <p:inputTextarea
+                                        id="comments"
                                         value="#{purchaseOrderRequestController.currentBill.comments}" 
-                                        class="form-control w-100" ></p:inputTextarea>
+                                        class="form-control w-100" >
+                                    </p:inputTextarea>
 
                                     <p:outputLabel value="Department Type"
                                                    class="form-label"
@@ -298,7 +301,7 @@
                                                        var="dt"
                                                        itemLabel="#{dt.label}"
                                                        itemValue="#{dt}"/>
-                                        <p:ajax process="@form" update="po exDItem exItem" event="change"/>
+                                        <p:ajax process="@this acSupplier cmbPs creditDuration comments" update="po exDItem exItem" event="change"/>
                                     </p:selectOneMenu>
 
                                     <p:outputLabel 
