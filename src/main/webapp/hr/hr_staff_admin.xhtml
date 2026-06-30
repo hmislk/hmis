@@ -116,7 +116,7 @@
                                                     <p:inputTextarea class="w-100 mx-2"  value="#{staffController.current.person.address}"  />
 
                                                     <p:outputLabel value="Birthday "/>
-                                                    <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{staffController.current.person.dob}" pattern="#{sessionController.applicationPreference.shortDateFormat}" navigator="true" yearRange="1900:+10" >
+                                                    <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{staffController.current.person.dob}" pattern="#{sessionController.applicationPreference.shortDateFormat}" navigator="true" yearRange="c-100:c" >
                                                     </p:calendar>
 
                                                     <p:outputLabel  value="Gender" ></p:outputLabel>
