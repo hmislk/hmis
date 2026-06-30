@@ -1107,6 +1107,184 @@ public class InwardReportController implements Serializable {
         bundle = generateIpIncomeCategoryWiseReport();
     }
 
+    public StreamedContent getIpIncomeCategoryWiseExcel() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("No data available to export. Please process the report first.");
+            return null;
+        }
+        try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            XSSFSheet sheet = wb.createSheet("IP Income Category Wise");
+            String[] headers = {
+                "Group Name", "Quantity", "Base Price", "Discount",
+                "Sponsor Discount", "Hospital Fee", "Sponsor Payable",
+                "Patient Pay", "Professional Fee", "Total"
+            };
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < headers.length; i++) {
+                headerRow.createCell(i).setCellValue(headers[i]);
+            }
+            CreationHelper helper = wb.getCreationHelper();
+            CellStyle moneyStyle = wb.createCellStyle();
+            moneyStyle.setDataFormat(helper.createDataFormat().getFormat("#,##0.00"));
+            int rowNum = 1;
+            for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+                Row r = sheet.createRow(rowNum++);
+                String groupName = row.getItem() != null ? row.getItem().getName()
+                        : (row.getCategory() != null ? row.getCategory().getName() : "");
+                r.createCell(0).setCellValue(groupName);
+                r.createCell(1).setCellValue(row.getItemCount() != null ? row.getItemCount() : 0L);
+                for (int col = 2; col <= 9; col++) {
+                    r.createCell(col).setCellStyle(moneyStyle);
+                }
+                r.getCell(2).setCellValue(row.getItemTotal() != null ? row.getItemTotal() : 0.0);
+                r.getCell(3).setCellValue(row.getItemDiscountAmount() != null ? row.getItemDiscountAmount() : 0.0);
+                r.getCell(4).setCellValue(row.getItemDiscount() != null ? row.getItemDiscount() : 0.0);
+                r.getCell(5).setCellValue(row.getItemHospitalFee() != null ? row.getItemHospitalFee() : 0.0);
+                r.getCell(6).setCellValue(row.getRowValueIn() != null ? row.getRowValueIn() : 0.0);
+                r.getCell(7).setCellValue(row.getRowValueOut() != null ? row.getRowValueOut() : 0.0);
+                r.getCell(8).setCellValue(row.getItemProfessionalFee() != null ? row.getItemProfessionalFee() : 0.0);
+                r.getCell(9).setCellValue(row.getItemNetTotal() != null ? row.getItemNetTotal() : 0.0);
+            }
+            Row totalsRow = sheet.createRow(rowNum);
+            totalsRow.createCell(0).setCellValue("Total");
+            totalsRow.createCell(1).setCellValue(bundle.getCount() != null ? bundle.getCount() : 0L);
+            for (int col = 2; col <= 9; col++) {
+                totalsRow.createCell(col).setCellStyle(moneyStyle);
+            }
+            totalsRow.getCell(2).setCellValue(bundle.getGrossTotal() != null ? bundle.getGrossTotal() : 0.0);
+            totalsRow.getCell(3).setCellValue(bundle.getDiscount() != null ? bundle.getDiscount() : 0.0);
+            totalsRow.getCell(4).setCellValue(0.0);
+            totalsRow.getCell(5).setCellValue(bundle.getHospitalTotal() != null ? bundle.getHospitalTotal() : 0.0);
+            totalsRow.getCell(6).setCellValue(ipIncomeTotalSponsorPay);
+            totalsRow.getCell(7).setCellValue(ipIncomeTotalPatientPay);
+            totalsRow.getCell(8).setCellValue(bundle.getStaffTotal() != null ? bundle.getStaffTotal() : 0.0);
+            totalsRow.getCell(9).setCellValue(bundle.getTotal() != null ? bundle.getTotal() : 0.0);
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+            wb.write(out);
+            byte[] bytes = out.toByteArray();
+            return DefaultStreamedContent.builder()
+                    .name("IP_Income_Category_Wise_Report.xlsx")
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> new ByteArrayInputStream(bytes))
+                    .build();
+        } catch (IOException e) {
+            java.util.logging.Logger.getLogger(InwardReportController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Excel generation failed", e);
+            JsfUtil.addErrorMessage("Failed to generate Excel: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public void downloadIpIncomeCategoryWisePdf() {
+        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
+            JsfUtil.addErrorMessage("No data available to export. Please process the report first.");
+            return;
+        }
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+        SimpleDateFormat sdt = new SimpleDateFormat("dd MMM yyyy HH:mm");
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            Document document = new Document(com.lowagie.text.PageSize.A4.rotate());
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
+            document.open();
+            String institutionName = sessionController.getInstitution() != null
+                    ? sessionController.getInstitution().getName() : "All Institutions";
+            document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new Paragraph("IP Income Category Wise Report",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14)));
+            document.add(new Paragraph("Generated: " + sdf.format(new java.util.Date()),
+                    FontFactory.getFont(FontFactory.HELVETICA, 10)));
+            document.add(new Paragraph(" "));
+            PdfPTable info = new PdfPTable(2);
+            info.setWidthPercentage(60);
+            info.setSpacingBefore(5);
+            info.setWidths(new float[]{1f, 2f});
+            addInfoCell(info, "Institution:", institution != null ? institution.getName() : "All");
+            addInfoCell(info, "From Date:", fromDate != null ? sdt.format(fromDate) : "-");
+            addInfoCell(info, "To Date:", toDate != null ? sdt.format(toDate) : "-");
+            document.add(info);
+            document.add(new Paragraph(" "));
+            PdfPTable table = new PdfPTable(10);
+            table.setWidthPercentage(100);
+            table.setSpacingBefore(10);
+            table.setWidths(new float[]{3f, 1.2f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f});
+            String[] headers = {
+                "Group Name", "Qty", "Base Price", "Discount",
+                "Sponsor Disc.", "Hospital Fee", "Sponsor Pay",
+                "Patient Pay", "Prof. Fee", "Total"
+            };
+            for (String h : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(h, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+                cell.setBackgroundColor(new java.awt.Color(220, 220, 220));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setPadding(3);
+                table.addCell(cell);
+            }
+            java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0.00");
+            for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+                String groupName = row.getItem() != null ? row.getItem().getName()
+                        : (row.getCategory() != null ? row.getCategory().getName() : "");
+                table.addCell(new Phrase(groupName, FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                table.addCell(new Phrase(String.valueOf(row.getItemCount() != null ? row.getItemCount() : 0),
+                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                table.addCell(new Phrase(df.format(row.getItemTotal() != null ? row.getItemTotal() : 0.0),
+                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                table.addCell(new Phrase(df.format(row.getItemDiscountAmount() != null ? row.getItemDiscountAmount() : 0.0),
+                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                table.addCell(new Phrase(df.format(row.getItemDiscount() != null ? row.getItemDiscount() : 0.0),
+                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                table.addCell(new Phrase(df.format(row.getItemHospitalFee() != null ? row.getItemHospitalFee() : 0.0),
+                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                table.addCell(new Phrase(df.format(row.getRowValueIn() != null ? row.getRowValueIn() : 0.0),
+                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                table.addCell(new Phrase(df.format(row.getRowValueOut() != null ? row.getRowValueOut() : 0.0),
+                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                table.addCell(new Phrase(df.format(row.getItemProfessionalFee() != null ? row.getItemProfessionalFee() : 0.0),
+                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
+                table.addCell(new Phrase(df.format(row.getItemNetTotal() != null ? row.getItemNetTotal() : 0.0),
+                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
+            }
+            PdfPCell totalLabel = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+            totalLabel.setPadding(3);
+            table.addCell(totalLabel);
+            String[] footerVals = {
+                String.valueOf(bundle.getCount() != null ? bundle.getCount() : 0),
+                df.format(bundle.getGrossTotal() != null ? bundle.getGrossTotal() : 0.0),
+                df.format(bundle.getDiscount() != null ? bundle.getDiscount() : 0.0),
+                "0.00",
+                df.format(bundle.getHospitalTotal() != null ? bundle.getHospitalTotal() : 0.0),
+                df.format(ipIncomeTotalSponsorPay),
+                df.format(ipIncomeTotalPatientPay),
+                df.format(bundle.getStaffTotal() != null ? bundle.getStaffTotal() : 0.0),
+                df.format(bundle.getTotal() != null ? bundle.getTotal() : 0.0)
+            };
+            for (String v : footerVals) {
+                PdfPCell fc = new PdfPCell(new Phrase(v, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
+                fc.setPadding(3);
+                table.addCell(fc);
+            }
+            document.add(table);
+            document.close();
+            byte[] bytes = baos.toByteArray();
+            response.reset();
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=IP_Income_Category_Wise_Report.pdf");
+            response.setContentLength(bytes.length);
+            try (OutputStream os = response.getOutputStream()) {
+                os.write(bytes);
+                os.flush();
+            }
+            context.responseComplete();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+        }
+    }
+
     public ReportTemplateRowBundle generateIpIncomeCategoryWiseReport() {
         ReportTemplateRowBundle rtrb = new ReportTemplateRowBundle();
 
