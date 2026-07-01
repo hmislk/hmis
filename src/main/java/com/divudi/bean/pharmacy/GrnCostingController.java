@@ -4325,9 +4325,11 @@ public class GrnCostingController implements Serializable {
                 return null;
             }
 
-            BigDecimal prGiven = inputBillItem.getBillItemFinanceDetails().getLineNetRate();
+            BigDecimal prGiven = BigDecimalUtil.valueOrZero(
+                    inputBillItem.getBillItemFinanceDetails().getLineNetRate());
 
-            BigDecimal unitsPerPack = inputBillItem.getBillItemFinanceDetails().getUnitsPerPack();
+            BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(
+                    inputBillItem.getBillItemFinanceDetails().getUnitsPerPack());
             if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
                 unitsPerPack = BigDecimal.ONE;
             }
@@ -4339,8 +4341,10 @@ public class GrnCostingController implements Serializable {
             );
 
             purchaseRatePerUnit = prPerUnit.doubleValue();
-            retailRatePerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
-            costRatePerUnit = inputBillItem.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
+            retailRatePerUnit = BigDecimalUtil.valueOrZero(
+                    inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit()).doubleValue();
+            costRatePerUnit = BigDecimalUtil.valueOrZero(
+                    inputBillItem.getBillItemFinanceDetails().getTotalCostRate()).doubleValue();
 
             itemBatch = fetchItemBatchWithCosting(amp, purchaseRatePerUnit, retailRatePerUnit, costRatePerUnit, expiryDate);
         } else {
