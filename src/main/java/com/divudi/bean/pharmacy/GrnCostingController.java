@@ -3248,6 +3248,27 @@ public class GrnCostingController implements Serializable {
         getCurrentGrnBillPre().setNetTotal(-Math.abs(getCurrentGrnBillPre().getNetTotal()));
         getBillFacade().edit(getCurrentGrnBillPre());
 
+        // Retire any surviving orphan PREs for the same PO that were left behind
+        // by previous interrupted sessions. The current bill is already PHARMACY_GRN
+        // so the type filter excludes it, but the id guard adds extra safety. (#21579)
+        if (getCurrentGrnBillPre().getReferenceBill() != null
+                && getCurrentGrnBillPre().getId() != null) {
+            Map<String, Object> orphanParams = new HashMap<>();
+            orphanParams.put("po", getCurrentGrnBillPre().getReferenceBill());
+            orphanParams.put("type", BillTypeAtomic.PHARMACY_GRN_PRE);
+            orphanParams.put("currentId", getCurrentGrnBillPre().getId());
+            List<Bill> orphanPres = getBillFacade().findByJpql(
+                    "SELECT b FROM Bill b WHERE b.referenceBill = :po "
+                    + "AND b.billTypeAtomic = :type AND b.retired = false "
+                    + "AND b.id != :currentId",
+                    orphanParams, TemporalType.TIMESTAMP);
+            for (Bill orphan : orphanPres) {
+                orphan.setRetired(true);
+                orphan.setRetiredAt(new Date());
+                getBillFacade().edit(orphan);
+            }
+        }
+
         JsfUtil.addSuccessMessage("GRN Finalized");
         printPreview = true;
     }
