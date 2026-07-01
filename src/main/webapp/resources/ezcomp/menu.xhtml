@@ -1173,6 +1173,13 @@
                                      value="BHT Issue Requests" icon="fas fa-clipboard-list"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
                                      rendered="#{webUserController.hasPrivilege('PharmacyBhtIssueRequest')}" />
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"
+                            value="Accept Returns from Ward"
+                            icon="fa fa-truck-ramp-box"
+                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
+                        </p:menuitem>
                         <p:menuitem  ajax="false" action="#{inwardReportControllerBht.navigateToInpatientPharmacyRequestedAndIssuedOverviewInPharmacy()}"  value="Pharmacy Requested &amp; Issued Drug Overview" icon="fas fa-list" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
 
                         <p:menuitem  ajax="false" action="#{searchController.navigateToInpatientDirectIssuesByBill()}"
