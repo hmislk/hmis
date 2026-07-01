@@ -4341,8 +4341,13 @@ public class GrnCostingController implements Serializable {
             );
 
             purchaseRatePerUnit = prPerUnit.doubleValue();
-            retailRatePerUnit = BigDecimalUtil.valueOrZero(
-                    inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit()).doubleValue();
+            BigDecimal rawRetailPerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit();
+            if (rawRetailPerUnit == null || rawRetailPerUnit.compareTo(BigDecimal.ZERO) == 0) {
+                BigDecimal packRetail = BigDecimalUtil.valueOrZero(
+                        inputBillItem.getBillItemFinanceDetails().getRetailSaleRate());
+                rawRetailPerUnit = packRetail.divide(unitsPerPack, PRICE_SCALE, RoundingMode.HALF_EVEN);
+            }
+            retailRatePerUnit = rawRetailPerUnit.doubleValue();
             costRatePerUnit = BigDecimalUtil.valueOrZero(
                     inputBillItem.getBillItemFinanceDetails().getTotalCostRate()).doubleValue();
 
