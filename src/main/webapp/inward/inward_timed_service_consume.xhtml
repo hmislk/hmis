@@ -245,7 +245,7 @@
                                             class="mx-2 ui-button-success"
                                             value="Add Service"
                                             ajax="false"
-                                            onclick="this.disabled=true;"
+                                            onclick="if(this.alreadyClicked) return false; this.alreadyClicked=true; var btn=this; setTimeout(function(){ btn.alreadyClicked=false; }, 5000);"
                                             action="#{inwardTimedItemController.save}">
                                         </p:commandButton>
                                     </div>
