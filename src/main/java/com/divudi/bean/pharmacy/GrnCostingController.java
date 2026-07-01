@@ -159,17 +159,20 @@ public class GrnCostingController implements Serializable {
     }
 
     public String navigateToResiveCosting() {
-        // Check if there are existing unapproved GRNs for this purchase order
-        if (getApproveBill() != null && getApproveBill().getListOfBill() != null) {
-            for (Bill existingGrn : getApproveBill().getListOfBill()) {
-                if (existingGrn != null
-                        && existingGrn.getBillTypeAtomic() != null
-                        && existingGrn.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_PRE
-                        && !existingGrn.isRetired()
-                        && !existingGrn.isCancelled()) {
-                    JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or delete the existing GRN before creating a new one.");
-                    return "";
-                }
+        // Guard against orphan PRE bills. The @Transient getListOfBill() is empty
+        // whenever the session was cleared or the user navigated directly, so a
+        // direct DB count is the only reliable check. (Issue #21579)
+        if (getApproveBill() != null && getApproveBill().getId() != null) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("po", getApproveBill());
+            params.put("type", BillTypeAtomic.PHARMACY_GRN_PRE);
+            long orphanCount = getBillFacade().findLongByJpql(
+                    "SELECT COUNT(b) FROM Bill b WHERE b.referenceBill = :po "
+                    + "AND b.billTypeAtomic = :type AND b.retired = false AND b.cancelled = false",
+                    params, TemporalType.TIMESTAMP);
+            if (orphanCount > 0) {
+                JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or cancel the existing GRN before creating a new one.");
+                return "";
             }
         }
 
@@ -2633,17 +2636,20 @@ public class GrnCostingController implements Serializable {
             }
         }
 
-        // Check if there are existing unapproved GRNs for this purchase order
-        if (getApproveBill() != null && getApproveBill().getListOfBill() != null) {
-            for (Bill existingGrn : getApproveBill().getListOfBill()) {
-                if (existingGrn != null
-                        && existingGrn.getBillTypeAtomic() != null
-                        && existingGrn.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_PRE
-                        && !existingGrn.isRetired()
-                        && !existingGrn.isCancelled()) {
-                    JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or delete the existing GRN before creating a new one.");
-                    return "";
-                }
+        // Guard against orphan PRE bills. The @Transient getListOfBill() is empty
+        // whenever the session was cleared or the user navigated directly, so a
+        // direct DB count is the only reliable check. (Issue #21579)
+        if (getApproveBill() != null && getApproveBill().getId() != null) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("po", getApproveBill());
+            params.put("type", BillTypeAtomic.PHARMACY_GRN_PRE);
+            long orphanCount = getBillFacade().findLongByJpql(
+                    "SELECT COUNT(b) FROM Bill b WHERE b.referenceBill = :po "
+                    + "AND b.billTypeAtomic = :type AND b.retired = false AND b.cancelled = false",
+                    params, TemporalType.TIMESTAMP);
+            if (orphanCount > 0) {
+                JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or cancel the existing GRN before creating a new one.");
+                return "";
             }
         }
 
