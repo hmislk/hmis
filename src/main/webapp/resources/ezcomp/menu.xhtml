@@ -40,7 +40,10 @@
             <p:remoteCommand name="refreshNotifications"
                              update="notCount notificationGrowl"
                              action="#{userNotificationController.onPushRefreshNotifications}" />
-            <p:growl id="notificationGrowl" life="6000" showDetail="true" />
+            <h:panelGroup id="notificationGrowl">
+                <p:growl life="6000" showDetail="true"
+                         rendered="#{facesContext.partialViewContext.ajaxRequest}" />
+            </h:panelGroup>
             <div id="notifFloatBar">
                 <h:panelGroup id="notCount">
                     <p:badge id="bdgeNotiCount"
@@ -449,11 +452,18 @@
                     </p:submenu>
 
                     <p:submenu label="Room" icon="fa fa-door-open" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
-                        <p:menuitem 
-                            ajax="false" 
-                            action="#{admissionController.navigateToRoomOccupancy()}" 
-                            value="Room Occupancy" 
-                            icon="fa fa-bed" 
+                        <p:menuitem
+                            ajax="false"
+                            action="#{admissionController.navigateToRoomOccupancy()}"
+                            value="Room Occupancy"
+                            icon="fa fa-bed"
+                            rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" >
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{admissionController.navigateToBedBoard()}"
+                            value="Bed Board"
+                            icon="fa fa-th"
                             rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" >
                         </p:menuitem>
                         <p:menuitem 
@@ -626,12 +636,20 @@
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" >
                         </p:menuitem>
 
-                        <p:menuitem  
-                            ajax="false"  
+                        <p:menuitem
+                            ajax="false"
                             action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true"
                             value="BHT Issue Requests"
                             icon="fa fa-notes-medical"
                             actionListener="#{pharmacySaleBhtController.resetAll()}"
+                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
+                        </p:menuitem>
+
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"
+                            value="Accept Returns from Ward"
+                            icon="fa fa-truck-ramp-box"
                             rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
                         </p:menuitem>
 
@@ -1372,12 +1390,19 @@
                                 actionListener="#{searchController.makeListNull}"
                                 rendered="#{webUserController.hasPrivilege('TheatreBilling')}"/>
 
-                    <p:menuitem 
-                        ajax="false" 
-                        action="/pharmacy/pharmacy_analytics?faces-redirect=true"  
-                        value="Theatre Analytics" 
-                        icon="pi pi-chart-bar" 
+                    <p:menuitem
+                        ajax="false"
+                        action="/pharmacy/pharmacy_analytics?faces-redirect=true"
+                        value="Theatre Analytics"
+                        icon="pi pi-chart-bar"
                         rendered="#{webUserController.hasPrivilege('TheaterReports')}" ></p:menuitem>
+
+                    <p:menuitem
+                        ajax="false"
+                        action="#{inwardReservationController.navigateToTheatreScheduleCalendar()}"
+                        value="Theatre Schedule"
+                        icon="fa fa-calendar-alt"
+                        rendered="#{webUserController.hasPrivilege('Theatre')}"/>
                 </p:submenu>
 
                 <!--            Store Section-->
@@ -1808,6 +1833,7 @@
                 <p:menuitem
                     ajax="false"
                     title="Request Manager"
+                    rendered="#{webUserController.hasPrivilege('RequestManager')}"
                     action="#{requestController.navigateToSearchRequest()}"
                     actionListener="#{requestController.makeNull()}"
                     icon="fa-solid fa-envelope">
@@ -2025,7 +2051,7 @@
                         action="/store/store_admin?faces-redirect=true"  
                         value="Manage Store" 
                         icon="fa fa-fw fa-store"
-                        rendered="#{webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
+                        rendered="#{webUserController.hasPrivilege('Store') and webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
                     <p:menuitem  
                         ajax="false"  
                         action="#{feeController.navigateToAdminFee()}" 

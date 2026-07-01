@@ -25,8 +25,8 @@
                             <p:commandButton ajax="false" value="Cancel" 
                                              icon="fa fa-ban"
                                              class="m-2 ui-button-danger"
-                                             action="/store/store_cancel_bill_retail_bht"
-                                             disabled="#{storeBillSearch.bill.cancelled}"  >                           
+                                             action="#{storeBillSearch.navigateToCancelStoreDirectIssueToInpatients()}"
+                                             disabled="#{storeBillSearch.bill.cancelled}"  >                         
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Return Item" 
                                              action="/store/store_bill_return_bht_issue"   

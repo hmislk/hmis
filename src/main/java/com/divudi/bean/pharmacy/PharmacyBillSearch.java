@@ -211,6 +211,10 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
+        if (bill.getCheckeAt() != null) {
+            JsfUtil.addErrorMessage("This bill is already checked. A checked bill cannot be cancelled.");
+            return null;
+        }
         return "/inward/pharmacy_cancel_bill_retail_bht?faces-redirect=true";
     }
 
@@ -640,12 +644,34 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("Provide Comment To Cancel !");
             return "";
         }
+        if (hasNonCancelledIssuingAgainstRequest(bill)) {
+            JsfUtil.addErrorMessage("This request has already been issued from pharmacy and can no longer be cancelled.");
+            return "";
+        }
         CancelledBill cb = pharmacyCreateCancelBill();
         cb.setBillItems(getBill().getBillItems());
         bill.setCancelled(true);
         bill.setCancelledBill(cb);
         billFacade.edit(bill);
         return "/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true";
+    }
+
+    /**
+     * Checks whether any non-cancelled, non-refunded {@code PharmacyBhtPre} bill
+     * still references this BHT issue request - i.e. issuing has started and is
+     * still in effect (#21516).
+     */
+    private boolean hasNonCancelledIssuingAgainstRequest(Bill requestBill) {
+        String jpql = "SELECT COUNT(b) FROM Bill b WHERE b.retired = false "
+                + "AND b.billType = :btp "
+                + "AND b.referenceBill = :ref "
+                + "AND b.cancelled = false "
+                + "AND b.refunded = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillType.PharmacyBhtPre);
+        params.put("ref", requestBill);
+        Long count = getBillFacade().findLongByJpql(jpql, params);
+        return count != null && count > 0;
     }
 
     public String navigateToDirectPurchaseBillFromId(Long id) {
@@ -667,23 +693,6 @@ public class PharmacyBillSearch implements Serializable {
             return "/pharmacy/pharmacy_reprint_purchase?faces-redirect=true";
         }
 
-    }
-
-    public String cancelInwardPharmacyRequestBillFromInward() {
-        if (bill == null) {
-            JsfUtil.addErrorMessage("Not Bill Found !");
-            return "";
-        }
-        if (comment == null) {
-            JsfUtil.addErrorMessage("Provide Comment To Cancel !");
-            return "";
-        }
-        CancelledBill cb = pharmacyCreateCancelBill();
-        cb.setBillItems(getBill().getBillItems());
-        bill.setCancelled(true);
-        bill.setCancelledBill(cb);
-        billFacade.edit(bill);
-        return "/ward/ward_pharmacy_bht_issue_request_bill_search?faces-redirect=true";
     }
 
     public String cancelPharmacyTransferRequestBill() {
@@ -4804,7 +4813,8 @@ public class PharmacyBillSearch implements Serializable {
                 + "b.paymentMethod, "
                 + "COALESCE(ps.name, ''), "
                 + "b.total, b.discount, b.netTotal, "
-                + "b.refunded, b.cancelled) "
+                + "b.refunded, b.cancelled, "
+                + "COALESCE(b.comments, '')) "
                 + "FROM Bill b "
                 + "LEFT JOIN b.creater creater "
                 + "LEFT JOIN creater.webUserPerson creatorPerson "

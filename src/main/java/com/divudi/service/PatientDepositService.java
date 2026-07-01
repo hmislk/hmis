@@ -142,7 +142,11 @@ public class PatientDepositService {
             case INWARD_DEPOSIT:
                 handleOutPayment(p, pd);
                 break;
-
+                
+            case INWARD_DEPOSIT_CANCELLATION:
+                handleInPayment(p, pd);
+                break;
+                
             default:
                 throw new AssertionError();
         }

@@ -16,70 +16,84 @@
                         <!-- Filter Fields -->
                         <div class="container-fluid px-0">
 
-                            <div class="row align-items-center mb-2">
+                            <div class="row align-items-center mb-3">
                                 <div class="col-md-2 text-right font-weight-bold">
-                                    <i class="fas fa-calendar-alt mr-2"/>
+                                    <i class="fas fa-calendar-alt me-2" />
                                     <p:outputLabel value="From (Billed) Date" for="dpFrom"/>
                                 </div>
                                 <div class="col-md-4">
                                     <p:datePicker id="dpFrom"
-                                                  value="#{reportController.fromDate}"
                                                   styleClass="d-block w-100"
                                                   inputStyleClass="form-control"
+                                                  showTime="true" 
+                                                  monthNavigator="true"           
+                                                  yearNavigator="true"                              
+                                                  timeInput="true" 
                                                   title="Filter by from date"
+                                                  hideOnDateTimeSelect="true"
                                                   pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </div>
                                 <div class="col-md-2 text-right font-weight-bold">
-                                    <i class="fas fa-calendar-alt mr-2"/>
+                                    <i class="fas fa-calendar-alt me-2"/>
                                     <p:outputLabel value="To (Billed) Date" for="dpTo"/>
                                 </div>
                                 <div class="col-md-4">
                                     <p:datePicker id="dpTo"
-                                                  value="#{reportController.toDate}"
                                                   styleClass="d-block w-100"
                                                   inputStyleClass="form-control"
+                                                  showTime="true" 
+                                                  monthNavigator="true"           
+                                                  yearNavigator="true"                              
+                                                  timeInput="true" 
                                                   title="Filter by to date"
+                                                  hideOnDateTimeSelect="true"
                                                   pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                 </div>
                             </div>
 
-                            <div class="row align-items-center mb-2">
+                            <div class="row align-items-center mb-3">
                                 <div class="col-md-2 text-right font-weight-bold">
-                                    <i class="fas fa-user mr-2"/>
-                                    <p:outputLabel value="Age" for="cmdAge"/>
+                                    <i class="fa fa-university me-2"/>
+                                    <p:outputLabel value="Institution" for="cmdInstitution"/>
                                 </div>
                                 <div class="col-md-4">
-                                    <p:selectOneMenu id="cmdAge"
-                                                     value="#{reportController.patient.age}"
+                                    <p:selectOneMenu id="cmdInstitution"
+                                                     value="#{reportController.institution}"
                                                      style="width:100%"
-                                                     title="Filter by patient age">
-                                        <f:selectItem itemLabel="Select Age to filter"/>
+                                                     title="Filter by institution">
+                                        filter="true">
+                                        <f:selectItem itemLabel="Select Institution to filter"/>
+                                        <f:selectItems 
+                                            value="#{institutionController.companies}" 
+                                            var="ins" 
+                                            itemLabel="#{ins.name}"
+                                            itemValue="#{ins}"/>
+
                                     </p:selectOneMenu>
+
                                 </div>
                                 <div class="col-md-2 text-right font-weight-bold">
-                                    <i class="fas fa-hospital mr-2"/>
-                                    <p:outputLabel value="Branch" for="cmdInstitution"/>
+                                    <i class="fa fa-map-marker-alt me-2"/>
+                                    <p:outputLabel value="Site" for="cmdSite"/>
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu
-                                        id="cmdInstitution"
-                                        value="#{reportController.institution}"
+                                        id="cmdSite"
+                                        value="#{reportController.site}"
                                         style="width:100%"
                                         title="Filter by institution or branch"
                                         filter="true">
-                                        <f:selectItem itemLabel="All"></f:selectItem>
-                                        <f:selectItems value="#{institutionController.items}"
-                                                       var="i"
-                                                       itemLabel="#{i.name}"
-                                                       itemValue="#{i}"></f:selectItems>
+                                        <f:selectItem itemLabel="Select the Site"></f:selectItem>
+                                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                                       itemValue="#{site}"/>
                                         <p:ajax process="@this" update="cmdDepartment"></p:ajax>
                                     </p:selectOneMenu>
                                 </div>
                             </div>
 
-                            <div class="row align-items-center mb-2">
+                            <div class="row align-items-center mb-3">
                                 <div class="col-md-2 text-right font-weight-bold">
-                                    <i class="fas fa-sitemap mr-2"/>
+                                    <i class="fas fa-sitemap me-2"/>
                                     <p:outputLabel value="Department" for="cmdDepartment"/>
                                 </div>
                                 <div class="col-md-4">
@@ -89,15 +103,16 @@
                                         style="width:100%"
                                         title="Filter by department"
                                         filter="true">
-                                        <f:selectItem itemLabel="All"></f:selectItem>
-                                        <f:selectItems value="#{departmentController.getInsDepartments(reportController.institution)}"
-                                                       var="d"
-                                                       itemLabel="#{d.name}"
-                                                       itemValue="#{d}"></f:selectItems>
+                                        <f:selectItem itemLabel="Select the Department"></f:selectItem>
+                                        <f:selectItems
+                                            value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                            var="d"
+                                            itemLabel="#{d.name}"
+                                            itemValue="#{d}"/>
                                     </p:selectOneMenu>
                                 </div>
                                 <div class="col-md-2 text-right font-weight-bold">
-                                    <i class="fas fa-id-card mr-2"/>
+                                    <i class="fas fa-id-card me-2"/>
                                     <p:outputLabel value="Patient MRN" for="txtMrn"/>
                                 </div>
                                 <div class="col-md-4">
@@ -108,9 +123,9 @@
                                 </div>
                             </div>
 
-                            <div class="row align-items-center mb-2">
+                            <div class="row align-items-center mb-3">
                                 <div class="col-md-2 text-right font-weight-bold">
-                                    <i class="fas fa-flask mr-2"/>
+                                    <i class="fas fa-flask me-2"/>
                                     <p:outputLabel value="Investigation" for="cmdInvestigation"/>
                                 </div>
                                 <div class="col-md-4">
@@ -123,8 +138,8 @@
                                     </p:selectOneMenu>
                                 </div>
                                 <div class="col-md-2 text-right font-weight-bold">
-                                    <i class="fas fa-user-md mr-2"/>
-                                    <p:outputLabel value="Referring Doctor Name" for="cmdReferingDoctor"/>
+                                    <i class="fas fa-user-md me-2"/>
+                                    <p:outputLabel value="Doctor Name" for="cmdReferingDoctor"/>
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdReferingDoctor"
@@ -137,9 +152,9 @@
                                 </div>
                             </div>
 
-                            <div class="row align-items-center mb-2">
+                            <div class="row align-items-center mb-3">
                                 <div class="col-md-2 text-right font-weight-bold">
-                                    <i class="fas fa-stethoscope mr-2"/>
+                                    <i class="fas fa-stethoscope me-2"/>
                                     <p:outputLabel value="Visiting Type" for="cmdVisitingType"/>
                                 </div>
                                 <div class="col-md-4">
@@ -147,11 +162,16 @@
                                                      value=""
                                                      style="width:100%"
                                                      title="Filter by visit type">
-                                        <f:selectItem itemLabel="All visits"/>
+                                        <f:selectItem itemLabel="Select Visiting Type"/>
+                                        <f:selectItem itemValue="All" itemLabel="All"/>
+                                        <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
+                                        <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
+                                        <f:selectItem itemValue="CC" itemLabel="Collecting Centre (CC)"/>
+
                                     </p:selectOneMenu>
                                 </div>
                                 <div class="col-md-2 text-right font-weight-bold">
-                                    <i class="fas fa-bug mr-2"/>
+                                    <i class="fas fa-bug me-2"/>
                                     <p:outputLabel value="Organism" for="cmdOrganism"/>
                                 </div>
                                 <div class="col-md-4">
@@ -167,9 +187,9 @@
                                 </div>
                             </div>
 
-                            <div class="row align-items-center mb-2">
+                            <div class="row align-items-center mb-3">
                                 <div class="col-md-2 text-right font-weight-bold">
-                                    <i class="fas fa-pills mr-2"/>
+                                    <i class="fas fa-pills me-2"/>
                                     <p:outputLabel value="Antibiotics" for="cmdAntibiotics"/>
                                 </div>
                                 <div class="col-md-4">
@@ -183,7 +203,7 @@
                                     </p:selectOneMenu>
                                 </div>
                                 <div class="col-md-2 text-right font-weight-bold">
-                                    <i class="fas fa-chart-bar mr-2"/>
+                                    <i class="fas fa-chart-bar me-2"/>
                                     <p:outputLabel value="Sensitivity" for="cmdSensitivity"/>
                                 </div>
                                 <div class="col-md-4">
@@ -194,6 +214,10 @@
                                         title="Filter by sensitivity result"
                                         filter="true">
                                         <f:selectItem itemLabel="Select Sensitivity"/>
+                                        <f:selectItem itemValue="I" itemLabel="I"/>
+                                        <f:selectItem itemValue="R" itemLabel="R"/>
+                                        <f:selectItem itemValue="S" itemLabel="S"/>
+
                                         <f:selectItems value="" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                                     </p:selectOneMenu>
                                 </div>
@@ -201,18 +225,64 @@
 
                             <div class="row mb-3">
                                 <div class="col-md-12 d-flex justify-content-start" style="gap:8px">
-                                    <p:commandButton ajax="false" value="Process" action="null"
-                                                     icon="fas fa-cog"
-                                                     styleClass="ui-button-warning"/>
-                                    <p:commandButton ajax="false" value="Print" action="null"
-                                                     icon="fas fa-print"
-                                                     styleClass="ui-button-info"/>
-                                    <p:commandButton ajax="false" value="Export PDF" action="null"
-                                                     icon="fas fa-file-pdf"
-                                                     styleClass="ui-button-danger"/>
-                                    <p:commandButton ajax="false" value="Export Excel" action="null"
-                                                     icon="fas fa-file-excel"
-                                                     styleClass="ui-button-success"/>
+
+                                    <p:commandButton
+                                        id="btnProcess"
+                                        class="ui-button-warning my-4 mx-2"
+                                        style="width: 100px"
+                                        action="#{reportsController.organismAntibioticSensitivityReport}"
+                                        ajax="false"
+                                        value="Process"
+                                        icon="fas fa-cogs"/>
+
+                                    <p:commandButton
+                                        id="btnPrint"
+                                        class="ui-button-info my-4 mx-2"
+                                        style="width: 100px"
+                                        icon="fas fa-print"
+                                        ajax="false"
+                                        value="Print"
+                                        onclick="hidePaginatorBeforePrint()"/>
+
+                                    <h:outputScript>
+                                        function hidePaginatorBeforePrint() {
+                                        let paginators = document.querySelectorAll('.ui-paginator');
+                                        paginators.forEach(el => el.style.display = 'none');
+                                        }
+
+                                        function restorePaginatorAfterPrint() {
+                                        let paginators = document.querySelectorAll('.ui-paginator');
+                                        paginators.forEach(el => el.style.display = '');
+                                        }
+
+                                        window.onafterprint = function () {
+                                        restorePaginatorAfterPrint();
+                                        };
+                                    </h:outputScript>
+
+                                    <p:commandButton
+                                        id="btnExcel"
+                                        class="ui-button-success my-4 mx-2"
+                                        style="width: 100px"
+                                        icon="fas fa-file-excel"
+                                        ajax="false"
+                                        value="Excel"/>
+                                    <!-- <p:dataExporter 
+                                         type="xlsx"
+                                         target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
+                                         fileName="organism_antibioti_sensitivity.xlsx"/>-->
+
+                                    <p:commandButton
+                                        id="btnPdf"
+                                        class="ui-button-danger my-4 mx-2"
+                                        style="width: 100px"
+                                        icon="fas fa-file-pdf"
+                                        ajax="false"
+                                        value="PDF"/>
+                                    <!-- <p:dataExporter 
+                                         type="pdf"
+                                         target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
+                                         fileName="organism_antibiotic_sensitivity.pdf"/>-->
                                 </div>
                             </div>
 
@@ -220,13 +290,19 @@
 
                     </p:panel>
 
-                    <p:panel header="Report Results" styleClass="mt-3">
+                    <p:panel header="Organism Antibiotic Sensitivity Report" styleClass="mt-3">
 
                         <h:panelGrid columns="2"
                                      styleClass="table table-bordered table-sm table-striped w-50"
                                      columnClasses="font-weight-bold w-25,w-75">
-                            <h:outputLabel value="Branch"/>
+                            <h:outputLabel value="Institution"/>
                             <h:outputLabel value="#{reportController.institution}"></h:outputLabel>
+
+                            <h:outputLabel value="Site"/>
+                            <h:outputLabel value="#{reportController.site}"></h:outputLabel>
+
+                            <h:outputLabel value="Department"/>
+                            <h:outputLabel value="#{reportController.department}"></h:outputLabel>
 
                             <h:outputLabel value="From Date"/>
                             <h:outputLabel value="#{reportController.fromDate}">
@@ -238,72 +314,150 @@
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
 
-                            <p:outputLabel value="MRN"/>
-                            <p:outputLabel value="#{reportController.patient.phn}"/>
+                            <h:outputLabel value="MRN"/>
+                            <h:outputLabel value="">
+                            </h:outputLabel>
 
-                            <p:outputLabel value="Organism"/>
-<!--                            <h:outputLabel value="#{reportController.organism}">
-                            </h:outputLabel>-->
+                            <h:outputLabel value="Organism"/>
+                            <h:outputLabel value="">
+                            </h:outputLabel>
 
-                            <p:outputLabel value="Antibiotic"/>
-                            <!--                            <p:outputLabel
-                                                            value="#{reportController.antibiotic}">
+                            <h:outputLabel value="Antibiotic"/>
+                            <h:outputLabel value="">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
 
-                                                        </p:outputLabel>-->
-                            <p:outputLabel value="Sensitivity"/>
-                            <!--                            <p:outputLabel
-                                                            value="#{reportController.sensitivity}">
-
-                                                        </p:outputLabel>-->
+                            <h:outputLabel value="Sensitivity"/>
+                            <h:outputLabel value="">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                            </h:outputLabel>
 
                         </h:panelGrid>
 
 
-                        <p:dataTable value="null" var="c" styleClass="table table-sm">
-                            <p:column headerStyle="background:#f8f9fa; color:#212529; font-weight:bold;" headerText="MRN">
+                        <p:dataTable
+                            id="tblExport1"
+                            value="#{reportsController.organismAntibioticSensitivityData}"
+                            var="c"
+                            rowIndexVar="n"
+                            paginator="true"
+                            paginatorPosition="bottom"
+                            rows="10"
+                            rendered="true"
+                            rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                            styleClass="table table-sm">
+                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="MRN"
+                                                  style="font-weight:bold;" />
+                                </f:facet>
+
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerStyle="background:#f8f9fa; color:#212529; font-weight:bold;" headerText="Sample Id">
+                           
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Sample Id"
+                                                  style="font-weight:bold;" />
+                                </f:facet>
+
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerStyle="background:#f8f9fa; color:#212529; font-weight:bold;" headerText="Investigation">
+                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Investigation"
+                                                  style="font-weight:bold;" />
+                                </f:facet>
+
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerStyle="background:#f8f9fa; color:#212529; font-weight:bold;" headerText="Specimen">
+                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Specimen"
+                                                  style="font-weight:bold;" />
+                                </f:facet>
+
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerStyle="background:#f8f9fa; color:#212529; font-weight:bold;" headerText="Visit Type">
+                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Visit Type"
+                                                  style="font-weight:bold;" />
+                                </f:facet>
+
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerStyle="background:#f8f9fa; color:#212529; font-weight:bold;" headerText="Name">
+                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Name"
+                                                  style="font-weight:bold;" />
+                                </f:facet>
+
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerStyle="background:#f8f9fa; color:#212529; font-weight:bold;" headerText="Patient Location">
+                            
+                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Patient Location"
+                                                  style="font-weight:bold;" />
+                                </f:facet>
+
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerStyle="background:#f8f9fa; color:#212529; font-weight:bold;" headerText="Organism">
+                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Organism"
+                                                  style="font-weight:bold;" />
+                                </f:facet>
+
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerStyle="background:#f8f9fa; color:#212529; font-weight:bold;" headerText="Antibiotics">
+                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Antibiotics"
+                                                  style="font-weight:bold;" />
+                                </f:facet>
+
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerStyle="background:#f8f9fa; color:#212529; font-weight:bold;" headerText="Sensitivity">
+                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Sensitivity"
+                                                  style="font-weight:bold;" />
+                                </f:facet>
+
                                 <h:outputText value="" />
                             </p:column>
-                            <p:column headerStyle="background:#f8f9fa; color:#212529; font-weight:bold;" headerText="Remarks">
+                            
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Remarks"
+                                                  style="font-weight:bold;" />
+                                </f:facet>
+
                                 <h:outputText value="" />
                             </p:column>
 
                             <f:facet name="footer">
                                 <div class="d-flex justify-content-between align-items-center mt-1">
                                     <div>
-                                        <span class="font-weight-bold mr-1">Generated By:</span>
+                                        <span class="font-weight-bold mr-1">Generated By : </span>
                                         <h:outputText value="#{sessionController.loggedUser.name}" />
                                     </div>
                                     <div>
-                                        <span class="font-weight-bold mr-1">Generated On:</span>
+                                        <span class="font-weight-bold mr-1">Generated On : </span>
                                         <h:outputText value="#{reportController.toDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            <f:convertDateTime
+                                                pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                         </h:outputText>
                                     </div>
                                 </div>

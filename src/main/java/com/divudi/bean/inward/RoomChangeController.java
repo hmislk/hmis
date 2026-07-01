@@ -66,6 +66,8 @@ public class RoomChangeController implements Serializable {
     NotificationController notificationController;
     @Inject
     private InwardBeanController inwardBean;
+    @Inject
+    private com.divudi.bean.common.AuditEventApplicationController auditEventApplicationController;
 
     @EJB
     private AdmissionFacade ejbFacade;
@@ -84,6 +86,7 @@ public class RoomChangeController implements Serializable {
 
     private List<PatientRoom> patientRoom;
     private PatientRoom currentPatientRoom;
+    private PatientRoom roomForReceipt;
     List<Admission> selectedItems;
     private Admission current;
     private List<Admission> items = null;
@@ -242,6 +245,9 @@ public class RoomChangeController implements Serializable {
         current.setRoomAdmitted(true);
         ejbFacade.edit(current);
 
+        recordRoomAuditEvent(getCurrentPatientRoom(), "Room Admitted", null);
+        notificationController.createNotification(getCurrentPatientRoom(), "Admit");
+
         JsfUtil.addSuccessMessage("Room admitted successfully");
 
     }
@@ -281,6 +287,10 @@ public class RoomChangeController implements Serializable {
             return;
         }
 
+        String beforeState = "roomFacilityCharge=" + (pR.getRoomFacilityCharge() != null ? pR.getRoomFacilityCharge().getName() : "null")
+                + ", admittedAt=" + pR.getAdmittedAt()
+                + ", discharged=" + pR.isDischarged();
+
         pR.setRetirer(getSessionController().getLoggedUser());
         pR.setRetired(true);
         pR.setRetiredAt(new Date());
@@ -294,6 +304,8 @@ public class RoomChangeController implements Serializable {
             getCurrent().setCurrentPatientRoom(pR.getPreviousRoom());
             getEjbFacade().edit(getCurrent());
         }
+
+        recordRoomAuditEvent(pR, "Room Removed", beforeState);
     }
 
     public void discharge(PatientRoom pR) {
@@ -314,6 +326,8 @@ public class RoomChangeController implements Serializable {
             encounter.setRoomDischargedBy(getSessionController().getLoggedUser());
             patientEncounterFacade.edit(encounter);
         }
+
+        recordRoomAuditEvent(pR, "Room Discharged", null);
     }
 
     public void dischargeWithCurrentTime(PatientRoom pR) {
@@ -323,7 +337,7 @@ public class RoomChangeController implements Serializable {
         List<PatientRoom> rooms = bhtSummeryController.getPatientRooms();
         if (rooms != null) {
             if (rooms.size() > 1) {
-                int currentRoomIndex = rooms.indexOf(patientRoom);
+                int currentRoomIndex = rooms.indexOf(pR);
                 if (currentRoomIndex > 0) {
                     PatientRoom previousRoom = rooms.get(currentRoomIndex - 1);
 
@@ -349,12 +363,83 @@ public class RoomChangeController implements Serializable {
             encounter.setRoomDischargedBy(getSessionController().getLoggedUser());
             patientEncounterFacade.edit(encounter);
         }
+
+        // Record audit event
+        recordRoomAuditEvent(pR, "Room Discharged", null);
+
+        JsfUtil.addSuccessMessage("Successfully Discharged from Room");
     }
 
     public void dischargeCancel(PatientRoom pR) {
+        if (pR == null) {
+            return;
+        }
+        // Capture state before cancel for audit
+        String beforeState = "discharged=true, dischargedAt=" + pR.getDischargedAt()
+                + ", dischargedBy=" + (pR.getDischargedBy() != null ? pR.getDischargedBy().getName() : "null");
+
         pR.setDischarged(false);
         pR.setDischargedBy(null);
+        pR.setDischargedAt(null);
         getPatientRoomFacade().edit(pR);
+
+        // Record audit event
+        recordRoomAuditEvent(pR, "Room Discharge Cancelled", beforeState);
+        notificationController.createNotification(pR, "CancelDischarge");
+
+        JsfUtil.addSuccessMessage("Room Discharge Cancelled");
+    }
+
+    private void recordRoomAuditEvent(PatientRoom pr, String trigger, String beforeState) {
+        try {
+            com.divudi.core.entity.AuditEvent auditEvent = new com.divudi.core.entity.AuditEvent();
+            auditEvent.setEventDataTime(new Date());
+            auditEvent.setEventTrigger(trigger);
+            auditEvent.setEntityType(pr.getClass().getSimpleName());
+            auditEvent.setObjectId(pr.getId());
+            if (pr.getPatientEncounter() != null) {
+                auditEvent.setUrl("BHT: " + pr.getPatientEncounter().getBhtNo()
+                        + " | Room: " + (pr.getRoomFacilityCharge() != null ? pr.getRoomFacilityCharge().getName() : "N/A"));
+            }
+            if (sessionController.getLoggedUser() != null) {
+                auditEvent.setWebUserId(sessionController.getLoggedUser().getId());
+            }
+            if (sessionController.getInstitution() != null) {
+                auditEvent.setInstitutionId(sessionController.getInstitution().getId());
+            }
+            if (sessionController.getDepartment() != null) {
+                auditEvent.setDepartmentId(sessionController.getDepartment().getId());
+            }
+            if (beforeState != null) {
+                auditEvent.setBeforeJson(beforeState);
+            }
+            String afterState = "discharged=" + pr.isDischarged()
+                    + ", dischargedAt=" + pr.getDischargedAt()
+                    + ", dischargedBy=" + (pr.getDischargedBy() != null ? pr.getDischargedBy().getName() : "null");
+            auditEvent.setAfterJson(afterState);
+            auditEvent.setEventStatus("Completed");
+            auditEvent.setEventDuration(new Date().getTime() - auditEvent.getEventDataTime().getTime());
+            auditEventApplicationController.logAuditEvent(auditEvent);
+        } catch (Exception e) {
+            // Silently fail â€" audit failure should not block the user action
+        }
+    }
+
+    public String navigateToRoomDischargeReceipt(PatientRoom pr) {
+        if (pr == null) {
+            JsfUtil.addErrorMessage("No room selected");
+            return "";
+        }
+        this.roomForReceipt = pr;
+        return "/inward/inward_room_discharge_receipt?faces-redirect=true";
+    }
+
+    public PatientRoom getRoomForReceipt() {
+        return roomForReceipt;
+    }
+
+    public void setRoomForReceipt(PatientRoom roomForReceipt) {
+        this.roomForReceipt = roomForReceipt;
     }
 
     public void removeRoom(PatientRoom pR) {
@@ -362,11 +447,13 @@ public class RoomChangeController implements Serializable {
             JsfUtil.addErrorMessage("No Patient Room Detected");
             return;
         }
+        String beforeState = "room=" + (pR.getRoomFacilityCharge() != null ? pR.getRoomFacilityCharge().getName() : "null");
         pR.setRetired(true);
         pR.setRetiredAt(new Date());
         pR.setRetirer(sessionController.getWebUser());
         getPatientRoomFacade().edit(pR);
         bhtSummeryController.setPatientRooms(null);
+        recordRoomAuditEvent(pR, "Room Removed", beforeState);
     }
 
     public void removeGuardianRoom(PatientRoom pR) {
@@ -376,6 +463,7 @@ public class RoomChangeController implements Serializable {
             return;
         }
 
+        String beforeState = "room=" + (pR.getRoomFacilityCharge() != null ? pR.getRoomFacilityCharge().getName() : "null");
         pR.setRetirer(getSessionController().getLoggedUser());
         pR.setRetired(true);
         pR.setRetiredAt(new Date());
@@ -388,6 +476,7 @@ public class RoomChangeController implements Serializable {
             getPatientRoomFacade().edit(pR.getPreviousRoom());
         }
 
+        recordRoomAuditEvent(pR, "Guardian Room Removed", beforeState);
     }
 
     public void recreate() {
@@ -456,6 +545,9 @@ public class RoomChangeController implements Serializable {
         // Save consultant information
         saveConsultantInfo(newPatientRoom);
 
+        recordRoomAuditEvent(newPatientRoom, "Room Changed", "previousRoom=" + (oldPatientRoom.getRoomFacilityCharge() != null ? oldPatientRoom.getRoomFacilityCharge().getName() : "null"));
+        notificationController.createNotification(newPatientRoom, "Change");
+
         if (newConsultant != null || newPrimeConsultant != null) {
             JsfUtil.addSuccessMessage("Room changed with consultant details");
         } else {
@@ -489,7 +581,10 @@ public class RoomChangeController implements Serializable {
         // Save consultant information
         saveConsultantInfo(newPatientRoom);
 
-        JsfUtil.addSuccessMessage("Successfully Room Changed");
+        recordRoomAuditEvent(newPatientRoom, "Room Added", null);
+        notificationController.createNotification(newPatientRoom, "Admit");
+
+        JsfUtil.addSuccessMessage("Successfully Room Added");
 
         newRoomFacilityCharge = null;
         changeAt = null;
@@ -535,7 +630,35 @@ public class RoomChangeController implements Serializable {
             getPatientRoomFacade().edit(oldGaurdianRoom);
         }
 
-        JsfUtil.addSuccessMessage("Successfully Room Changed");
+        recordRoomAuditEvent(newGuardianRoom, "Guardian Room Changed", oldGaurdianRoom != null ? "previousRoom=" + (oldGaurdianRoom.getRoomFacilityCharge() != null ? oldGaurdianRoom.getRoomFacilityCharge().getName() : "null") : "first guardian room");
+        notificationController.createNotification(newGuardianRoom, "Change");
+
+        JsfUtil.addSuccessMessage("Successfully Guardian Room Changed");
+        newRoomFacilityCharge = null;
+        changeAt = null;
+        createGuardianRoom();
+    }
+
+    public void addNewGuardianRoom() {
+        if (getNewRoomFacilityCharge() == null) {
+            JsfUtil.addErrorMessage("Please select a room facility");
+            return;
+        }
+
+        GuardianRoom newGuardianRoom = new GuardianRoom();
+        newGuardianRoom = (GuardianRoom) getInwardBean().savePatientRoom(
+                newGuardianRoom, getNewRoomFacilityCharge(), current, changeAt,
+                getSessionController().getLoggedUser());
+
+        if (newGuardianRoom == null) {
+            JsfUtil.addErrorMessage("Failed to add guardian room");
+            return;
+        }
+
+        recordRoomAuditEvent(newGuardianRoom, "Guardian Room Added", null);
+        notificationController.createNotification(newGuardianRoom, "Admit");
+
+        JsfUtil.addSuccessMessage("Successfully Added Guardian Room");
         newRoomFacilityCharge = null;
         changeAt = null;
         createGuardianRoom();

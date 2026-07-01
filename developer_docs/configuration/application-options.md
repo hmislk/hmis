@@ -32,6 +32,12 @@ This document lists the configuration options used in the application and their 
 | `Pharmacy Transfer Issue Bill Footer CSS`                        | String    | `''`    | CSS for the footer of the transfer issue bill.                                                            |
 | `Pharmacy Transfer Issue Bill Footer Text`                       | String    | `''`    | Text for the footer of the transfer issue bill.                                                             |
 
+## Pharmacy Retail Sale
+
+| Key                                                              | Type      | Default | Description                                                                                             |
+| ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `Show alternative medicines available during retail sale`        | Boolean   | `true`  | Gates the on-demand "Alternatives" (substitute medicines) UI on the Retail Sale, Fast Sale and Sale for Cashier pages. When `true`, each bill-item row shows a Substitute button that opens a dialog listing in-stock, non-expired substitute stocks in the current department (FEFO order) and lets the cashier swap one in. When `false`, no Substitute control appears and no alternatives query runs. See issue #21697. |
+
 ## OPD Billing
 
 | Key                                                              | Type      | Default | Description                                                                                             |

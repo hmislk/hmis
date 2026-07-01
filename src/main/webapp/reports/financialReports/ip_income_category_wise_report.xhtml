@@ -236,7 +236,10 @@
 
                         <h:panelGroup id="printPanel" >
 
-                            <p:panel header="Type : Summary" styleClass="my-3" rendered="#{inwardReportController.reportType eq 'summary'}">
+                            <p:panel styleClass="my-3 border border-2 border-primary rounded" rendered="#{inwardReportController.reportType eq 'summary'}">
+                                <f:facet name="header">
+                                    <span style="font-weight: bold; font-size: 1.1em; color: #0056b3;">Type : Summary Report</span>
+                                </f:facet>
 
                                 <table class="table table-bordered table-sm mb-3">
 
@@ -537,7 +540,10 @@
 
                             </p:panel>
 
-                            <p:panel header="Type : Detail" styleClass="my-3" rendered="#{inwardReportController.reportType eq 'detail'}">
+                            <p:panel styleClass="my-3 border border-2 border-success rounded" rendered="#{inwardReportController.reportType eq 'detail'}">
+                                <f:facet name="header">
+                                    <span style="font-weight: bold; font-size: 1.1em; color: #155724;">Type : Detail Report</span>
+                                </f:facet>
 
                                 <table class="table table-bordered table-sm mb-3">
 
@@ -608,8 +614,12 @@
                                         <f:facet name="header" >
                                             <h:outputText value="Group Name" />
                                         </f:facet>
-                                        <h:outputText value="#{var.item != null ? var.item.name : (var.category != null ? var.category.name : '')}">
-                                        </h:outputText>
+                                        <h:panelGroup rendered="#{var.category != null and var.item == null}">
+                                            <b style="color: #155724; font-size: 1.05em; display: block; padding: 8px 0; background-color: #f0f7f5;">#{var.category.name}</b>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{var.item != null}">
+                                            <span style="padding-left: 30px; display: block;">#{var.item.name}</span>
+                                        </h:panelGroup>
                                         <f:facet name="footer">
                                             <h:outputText value="Total"/>
                                         </f:facet>

@@ -836,6 +836,67 @@ th.align-right-header .ui-column-title {
     margin: 0 !important;
 }
 
+/* ============================================================
+   Three-Stage Transaction Workflow buttons (Save → Finalize → Approve)
+   Single source of truth for the COLOUR of each workflow stage. Use
+   these classes instead of repeating ui-button-info/warning/success
+   on every Save/Finalize/Approve button — change the palette here once
+   and every workflow button across the system follows.
+
+   The matching ICON stays on the markup (icon="fas fa-...") because
+   PrimeFaces renders button icons natively; see the standard in
+   developer_docs/ui/comprehensive-ui-guidelines.md:
+     Save (Draft) = ui-button-stage-save     + icon="fas fa-floppy-disk"
+     Finalize     = ui-button-stage-finalize + icon="fas fa-lock"
+     Approve      = ui-button-stage-approve  + icon="fas fa-check-double"
+   ============================================================ */
+
+/* Save (Draft) — blue */
+.ui-button.ui-button-stage-save,
+.ui-widget.ui-button-stage-save,
+.ui-state-default.ui-button-stage-save {
+    background-color: #007bff !important;
+    border-color: #0056b3 !important;
+    color: #ffffff !important;
+}
+.ui-button.ui-button-stage-save:hover,
+.ui-widget.ui-button-stage-save:hover,
+.ui-state-default.ui-button-stage-save:hover {
+    background-color: #0056b3 !important;
+    border-color: #003f7f !important;
+}
+
+/* Finalize — amber */
+.ui-button.ui-button-stage-finalize,
+.ui-widget.ui-button-stage-finalize,
+.ui-state-default.ui-button-stage-finalize {
+    background-color: #ffc107 !important;
+    border-color: #e0a800 !important;
+    color: #212529 !important;
+}
+.ui-button.ui-button-stage-finalize:hover,
+.ui-widget.ui-button-stage-finalize:hover,
+.ui-state-default.ui-button-stage-finalize:hover {
+    background-color: #e0a800 !important;
+    border-color: #c69500 !important;
+}
+
+/* Approve — green */
+.ui-button.ui-button-stage-approve,
+.ui-widget.ui-button-stage-approve,
+.ui-state-default.ui-button-stage-approve {
+    background-color: #28a745 !important;
+    border-color: #1e7e34 !important;
+    color: #ffffff !important;
+}
+.ui-button.ui-button-stage-approve:hover,
+.ui-widget.ui-button-stage-approve:hover,
+.ui-state-default.ui-button-stage-approve:hover {
+    background-color: #1e7e34 !important;
+    border-color: #155724 !important;
+}
+
+
 /* Optimised menu item — subtle green tinge */
 a.ui-menuitem-link.menu-item-optimised,
 a.ui-menuitem-link.menu-item-optimised .ui-menuitem-text,

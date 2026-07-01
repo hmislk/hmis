@@ -312,9 +312,13 @@
                                                     placeholder="Search Doctor..."
                                                     completeMethod="#{inwardProfessionalBillController.completeStaff}"
                                                     var="mys" 
+                                                    maxResults="20"
                                                     itemLabel="#{mys.person.nameWithTitle}" 
                                                     itemValue="#{mys}">
                                                     <f:ajax event="itemSelect" execute="scStaff" render="pIxAdd pBillDetails" />
+                                                    <p:column headerText="Doctor Name" style="padding: 5px;">
+                                                        <h:outputLabel value="#{mys.person.nameWithTitle}" styleClass="fw-bold" />
+                                                    </p:column>
                                                 </p:autoComplete>
                                             </div>
                                         </div>
@@ -428,6 +432,11 @@
                                             </p:column>
                                             <p:column headerText="Fee" styleClass="text-end">
                                                 <h:outputLabel value="#{bif.feeValue}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Adjusted Fee" styleClass="text-end">
+                                                <h:outputLabel value="#{bif.feeAdjusted}">
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
