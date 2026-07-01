@@ -240,10 +240,12 @@
 
                                 <div class="row">
                                     <div class="col-4">
-                                        <p:commandButton 
-                                            class="mx-2 ui-button-success" 
-                                            value="Add Service" 
+                                        <p:commandButton
+                                            id="btnAddTimedService"
+                                            class="mx-2 ui-button-success"
+                                            value="Add Service"
                                             ajax="false"
+                                            onclick="this.disabled=true;"
                                             action="#{inwardTimedItemController.save}">
                                         </p:commandButton>
                                     </div>
