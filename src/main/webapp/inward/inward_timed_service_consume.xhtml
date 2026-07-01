@@ -10,7 +10,7 @@
 
 
     <ui:define name="content">
-        <h:form>    
+        <h:form id="formTimedServiceConsume" onkeypress="if(event.keyCode == 13 &amp;&amp; event.target.type != 'textarea') { return false; }">
             <h:panelGroup class="row" rendered="#{inwardTimedItemController.current.patientEncounter eq null}"> 
                 <div class="col-12">
                     <h:panelGroup>
