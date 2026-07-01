@@ -3656,7 +3656,11 @@ public class PharmacyBillSearch implements Serializable {
 
             CancelledBill cb = pharmacyCreateCancelBill();
             cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
-
+            
+            cb.setInvoiceDate(getBill().getInvoiceDate());
+            cb.setInvoiceNumber(getBill().getInvoiceNumber());
+            cb.setFromInstitution(getBill().getFromInstitution());
+            
             // Handle Department ID generation (independent)
             String deptId;
             if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false)) {
