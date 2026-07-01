@@ -927,7 +927,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         quickSearchPhoneNumber = null;
         admissionController.setPatientAllergies(null);
         admissionController.setCurrentReservation(null);
-        
+
         admissionController.setPatientForiegner(false);
         return "/inward/inward_admission?faces-redirect=true";
 
@@ -2423,7 +2423,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
         String jpql = "Select f "
                 + "from Family f "
                 + "where f.retired=false "
-                + "and (f.phoneNo = :pn or f.membershipCardNo = :mcn) ";
+                + "and (f.phoneNo = :pn "
+                + "     or f.membershipCardNo = :mcn "
+                + "     or exists (select fm from FamilyMember fm "
+                + "                where fm.family=f and fm.retired=false "
+                + "                and (fm.patient.person.phone=:pn or fm.patient.person.mobile=:pn))) ";
+        
         Map params = new HashMap();
         Long mcn;
         try {
@@ -2498,7 +2503,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
         String jpql = "Select f "
                 + " from Family f "
                 + " where f.retired=false "
-                + " and f.chiefHouseHolder.person.nic like :nic "
+                + " and (f.chiefHouseHolder.person.nic like :nic "
+                + " or exists (select fm from FamilyMember fm "
+                + " where fm.family=f and fm.retired=false "
+                + " and fm.patient.person.nic like :nic)) "
                 + " order by f.chiefHouseHolder.person.name";
         Map params = new HashMap();
         params.put("nic", "%" + searchNic.trim().toUpperCase() + "%");
@@ -2595,7 +2603,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 + " from FamilyMember fm"
                 + " where fm.retired=false "
                 + " and fm.family.retired=false "
-                + " and (fm.family.phoneNo=:pn or fm.family.membershipCardNo=:mcn or fm.patient.person.mobile=:mobile or fm.patient.person.phone=:phone) ";
+                + " and (fm.family.phoneNo=:pn or fm.family.membershipCardNo=:mcn "
+                + "      or fm.patient.person.mobile=:mobile or fm.patient.person.phone=:phone "
+                + "      or fm.patient.person.nic=:nic) ";
+
         Map m = new HashMap();
         Long mcn;
         try {
@@ -2607,6 +2618,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         m.put("mcn", mcn);
         m.put("mobile", searchText);
         m.put("phone", searchText);
+        m.put("nic", searchText);
 
         List<FamilyMember> fs = familyMemberFacade.findByJpql(j, m);
         if (fs == null) {
@@ -3631,7 +3643,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 return nm;
         }
     }
-    
+
     public String capitalizeFirstLetter(String str) {
         if (str == null || str.isEmpty()) {
             return str;
