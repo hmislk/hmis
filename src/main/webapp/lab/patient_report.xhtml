@@ -170,7 +170,7 @@
                                                 class="ui-button-channelling"
                                                 icon="fas fa-file-pdf"
                                                 rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology' and not patientReportController.currentPatientReport.approved}"
-                                                onclick="recordUnapprovedExportHistory(); downloadPdf();"
+                                                onclick="printDraftReport();"
                                                 type="button"
                                                 ajax="false">
                                             </p:commandButton>
@@ -1076,20 +1076,29 @@
                                     // scoped @media print rule. Self-contained so it does not depend on
                                     // the PrimeFaces p:printer behaviour.
                                     function printDraftReport() {
-                                        if (typeof recordUnapprovedPrintHistory === 'function') {
-                                            recordUnapprovedPrintHistory();
-                                        }
+                                        console.log("Downloading PDF...");
+                                        recordUnapprovedPrintHistory();
+                                        console.log("Add History to Downloading PDF ...");
                                         const element = document.getElementById('pdf');
-                                        if (element) {
-                                            element.classList.remove('print-only');
-                                        }
-                                        const cleanup = function () {
-                                            document.body.classList.remove('draft-printing');
-                                            window.removeEventListener('afterprint', cleanup);
+                                        element.classList.remove('print-only');
+
+                                        const opt = {
+                                            margin: [0, 0, 0, 0], // top, left, bottom, right
+                                            filename: '#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patient.person.nameWithTitle} - #{patientReportController.currentPatientReport.patientInvestigation.investigation.name}.pdf',
+                                            image: {type: 'jpeg', quality: 1.00},
+                                            html2canvas: {
+                                                scale: 2,
+                                                useCORS: true,
+                                                allowTaint: false
+                                            },
+                                            jsPDF: {unit: 'mm', format: [210, 297], orientation: 'portrait'}
                                         };
-                                        window.addEventListener('afterprint', cleanup);
-                                        document.body.classList.add('draft-printing');
-                                        window.print();
+
+                                        html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
+                                            pdf.deletePage(2); // Remove the second page if it exists
+                                        }).save().then(() => {
+                                            element.classList.add('print-only');
+                                        });
                                     }
                                 </script>
 
