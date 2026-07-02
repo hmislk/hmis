@@ -2636,6 +2636,46 @@ public class LaboratoryManagementController implements Serializable {
         }
     }
 
+    public void addUnapprovedReportPrintHistory(Long reportID) {
+        if (reportID == null) {
+            JsfUtil.addErrorMessage("Error in Report ID");
+            return;
+        }
+
+        PatientReport currentReport = patientReportFacade.findWithoutCache(reportID);
+
+        if (currentReport == null) {
+            JsfUtil.addErrorMessage("Report not found");
+            return;
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of printing lab reports.", false)) {
+                labTestHistoryController.addUnapprovedReportPrintHistory(currentReport.getPatientInvestigation(), currentReport);
+            }
+        }
+    }
+
+    public void addUnapprovedReportExportHistory(Long reportID) {
+        if (reportID == null) {
+            JsfUtil.addErrorMessage("Error in Report ID");
+            return;
+        }
+
+        PatientReport currentReport = patientReportFacade.findWithoutCache(reportID);
+
+        if (currentReport == null) {
+            JsfUtil.addErrorMessage("Report not found");
+            return;
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of issuing lab reports.", false)) {
+                labTestHistoryController.addUnapprovedReportExportPDFHistory(currentReport.getPatientInvestigation(), currentReport);
+            }
+        }
+    }
+
     @Deprecated
     public void searchPatientReports() {
         reportTimerController.trackReportExecution(() -> {
