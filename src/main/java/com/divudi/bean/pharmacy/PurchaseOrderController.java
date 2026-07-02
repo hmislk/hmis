@@ -171,7 +171,15 @@ public class PurchaseOrderController implements Serializable {
         return "/pharmacy/pharmacy_purhcase_order_approving?faces-redirect=true";
     }
 
-    public String approve() {
+    // synchronized: a double-submit on the Approve button (slow ajax="false"
+    // postback re-clicked, or a resubmitted form) let two requests race through
+    // the same in-memory billItems list before either had persisted, so both
+    // saw BillItem.id == null and created every line twice. The "already
+    // approved" guard below only protects against a second call once the first
+    // has actually finished; synchronized serializes concurrent/racing calls
+    // on this session-scoped bean so the guard is effective (issue: GRN item
+    // duplication reported by Ruhunu, same pattern as #21417)
+    public synchronized String approve() {
         // Check if the requested bill is already approved to prevent double approving
         if (getRequestedBill() != null && getRequestedBill().getReferenceBill() != null) {
             JsfUtil.addErrorMessage("This purchase order is already approved");
