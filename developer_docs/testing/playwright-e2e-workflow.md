@@ -417,8 +417,8 @@ before clicking Search.
 ## 19. Some `confirm()`-guarded `type="submit"` buttons never reach the server — prefer existing data
 
 On `pharmacy/pharmacy_bill_retail_sale_native.xhtml` ("Pharmacy Retail Sale"), the
-**Settle** button is a plain `<button type="submit" onclick="...confirm(...)...">`
-(no `p:commandButton`/AJAX). Across several approaches — real `browser_click` +
+**Settle** button is a PrimeFaces `p:commandButton` with `ajax="false"` and a
+`confirm(...)` guard. Across several approaches — real `browser_click` +
 `browser_handle_dialog`, overriding `window.confirm` before clicking, and dispatching
 a synthetic click via `browser_evaluate` — the click always ran the `onclick` handler
 (confirm dialog appeared/was accepted each time) but the browser never actually

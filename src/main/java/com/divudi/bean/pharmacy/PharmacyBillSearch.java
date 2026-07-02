@@ -4934,7 +4934,7 @@ public class PharmacyBillSearch implements Serializable {
                 + "AND b.department = :ldep "
                 + "AND b.billType = :bType "
                 + "AND rb.billType = :rBType "
-                + "AND bi.createdAt BETWEEN :fromDate AND :toDate";
+                + "AND rb.createdAt BETWEEN :fromDate AND :toDate";
 
         if (searchController.getSearchKeyword().getPatientName() != null && !searchController.getSearchKeyword().getPatientName().trim().isEmpty()) {
             sql += " AND pp.name LIKE :patientName";
