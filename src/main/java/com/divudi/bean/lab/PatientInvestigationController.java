@@ -5287,12 +5287,8 @@ public class PatientInvestigationController implements Serializable {
         if (patientReportController == null
                 || patientReportController.getCurrentPatientReport() == null
                 || patientReportController.getCurrentPatientReport().getPatientReportItemValues() == null) {
-            if (column1AntibioticList == null) {
-                column1AntibioticList = new ArrayList<>();
-            }
-            if (column2AntibioticList == null) {
-                column2AntibioticList = new ArrayList<>();
-            }
+            column1AntibioticList = new ArrayList<>();
+            column2AntibioticList = new ArrayList<>();
             return;
         }
         findAntibioticForMicrobiologyReport(patientReportController.getCurrentPatientReport().getPatientReportItemValues());

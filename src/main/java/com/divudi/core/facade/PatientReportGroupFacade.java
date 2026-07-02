@@ -20,7 +20,7 @@ public class PatientReportGroupFacade extends AbstractFacade<PatientReportGroup>
 
     @Override
     protected EntityManager getEntityManager() {
-        if(em == null){}return em;
+        return em;
     }
 
     public PatientReportGroupFacade() {

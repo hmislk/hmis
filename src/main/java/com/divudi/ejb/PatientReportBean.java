@@ -444,9 +444,10 @@ public class PatientReportBean {
 
     /**
      * Adds only the non-antibiotic report item values (Value / DynamicLabel of
-     * Memo type) for a microbiology report. The antibiotic sensitivity list is
-     * NOT created here - antibiotic groups are added manually afterwards using
-     * {@link #addAntibioticReportItemValuesForGroup(PatientReport, PatientReportGroup)}.
+     * Memo type) and placeholder rows for ExternalImage items for a
+     * microbiology report. The antibiotic sensitivity list is NOT created
+     * here - antibiotic groups are added manually afterwards using
+     * {@link #addAntibioticGroupWithValues(PatientReport, String, WebUser)}.
      */
     public void addMicrobiologyNonAntibioticReportItemValuesForReport(PatientReport ptReport) {
         String sql;

@@ -2649,6 +2649,10 @@ public class LaboratoryManagementController implements Serializable {
             return;
         }
 
+        if (currentReport.getApproved()) {
+            return; // Not an unapproved report; nothing to record here
+        }
+
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             if (configOptionApplicationController.getBooleanValueByKey("Need to record the history of printing lab reports.", false)) {
                 labTestHistoryController.addUnapprovedReportPrintHistory(currentReport.getPatientInvestigation(), currentReport);
@@ -2667,6 +2671,10 @@ public class LaboratoryManagementController implements Serializable {
         if (currentReport == null) {
             JsfUtil.addErrorMessage("Report not found");
             return;
+        }
+
+        if (currentReport.getApproved()) {
+            return; // Not an unapproved report; nothing to record here
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
