@@ -12,7 +12,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
 
-                <h:form >
+                <h:form id="drsForm">
 
                     <p:panel header="Duration Service Report" styleClass="w-100">
 
@@ -52,7 +52,10 @@
                             <!-- LEFT COLUMN -->
                             <div>
                                 <div class="drs-filter-row">
-                                    <span class="drs-filter-label"><h:outputText value="&#xf133;" styleClass="fa"/> Discharge Date From</span>
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf133;" styleClass="fa"/>
+                                        <h:outputText value="Discharge Date From"/>
+                                    </span>
                                     <p:datePicker showTime="true"
                                                   value="#{reportController.fromDate}"
                                                   pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
@@ -60,7 +63,10 @@
                                 </div>
 
                                 <div class="drs-filter-row">
-                                    <span class="drs-filter-label"><h:outputText value="&#xf133;" styleClass="fa"/> Service Added Date From</span>
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf133;" styleClass="fa"/>
+                                        <h:outputText value="Service Added Date From"/>
+                                    </span>
                                     <p:datePicker showTime="true"
                                                   value="#{reportController.serviceAddedFromDate}"
                                                   pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
@@ -68,7 +74,10 @@
                                 </div>
 
                                 <div class="drs-filter-row">
-                                    <span class="drs-filter-label"><h:outputText value="&#xf133;" styleClass="fa"/> Invoice Date From</span>
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf133;" styleClass="fa"/>
+                                        <h:outputText value="Invoice Date From"/>
+                                    </span>
                                     <p:datePicker showTime="true"
                                                   value="#{reportController.invoiceFromDate}"
                                                   pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
@@ -76,7 +85,10 @@
                                 </div>
 
                                 <div class="drs-filter-row">
-                                    <span class="drs-filter-label"><h:outputText value="&#xf19c;" styleClass="fa"/> Service Name</span>
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf19c;" styleClass="fa"/>
+                                        <h:outputText value="Service Name"/>
+                                    </span>
                                     <p:selectOneMenu value="#{reportController.item}" styleClass="w-100 form-control">
                                         <f:selectItem itemLabel="All Services" itemValue="#{null}"/>
                                         <f:selectItems value="#{timedItemController.items}" var="s"
@@ -85,7 +97,10 @@
                                 </div>
 
                                 <div class="drs-filter-row">
-                                    <span class="drs-filter-label"><h:outputText value="&#xf084;" styleClass="fa"/> Admission Types</span>
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf084;" styleClass="fa"/>
+                                        <h:outputText value="Admission Types"/>
+                                    </span>
                                     <p:selectCheckboxMenu id="admType"
                                                           value="#{reportController.admissionTypes}"
                                                           converter="admissionTypeConverter"
@@ -98,7 +113,10 @@
                                 </div>
 
                                 <div class="drs-filter-row">
-                                    <span class="drs-filter-label"><h:outputText styleClass="fa fa-hotel"/> Billed Department</span>
+                                    <span class="drs-filter-label">
+                                        <h:outputText styleClass="fa fa-hotel"/>
+                                        <h:outputText value="Billed Department"/>
+                                    </span>
                                     <p:selectOneMenu value="#{reportController.billedDepartment}" styleClass="w-100" filter="true">
                                         <f:selectItem itemLabel="All Billed Departments" itemValue="#{null}"/>
                                         <f:selectItems value="#{departmentController.items}" var="d"
@@ -107,7 +125,10 @@
                                 </div>
 
                                 <div class="drs-filter-row">
-                                    <span class="drs-filter-label"><h:outputText styleClass="fa fa-hotel"/> Service Group</span>
+                                    <span class="drs-filter-label">
+                                        <h:outputText styleClass="fa fa-hotel"/>
+                                        <h:outputText value="Service Group"/>
+                                    </span>
                                     <p:inputText value="#{reportController.serviceGroup}" styleClass="w-100"/>
                                 </div>
                             </div>
@@ -115,7 +136,10 @@
                             <!-- RIGHT COLUMN -->
                             <div>
                                 <div class="drs-filter-row">
-                                    <span class="drs-filter-label"><h:outputText value="&#xf133;" styleClass="fa"/> Discharge Date To</span>
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf133;" styleClass="fa"/>
+                                        <h:outputText value="Discharge Date To"/>
+                                    </span>
                                     <p:datePicker showTime="true"
                                                   value="#{reportController.toDate}"
                                                   pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
@@ -123,7 +147,10 @@
                                 </div>
 
                                 <div class="drs-filter-row">
-                                    <span class="drs-filter-label"><h:outputText value="&#xf133;" styleClass="fa"/> Service Added Date To</span>
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf133;" styleClass="fa"/>
+                                        <h:outputText value="Service Added Date To"/>
+                                    </span>
                                     <p:datePicker showTime="true"
                                                   value="#{reportController.serviceAddedToDate}"
                                                   pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
@@ -131,7 +158,10 @@
                                 </div>
 
                                 <div class="drs-filter-row">
-                                    <span class="drs-filter-label"><h:outputText value="&#xf133;" styleClass="fa"/> Invoice Date To</span>
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf133;" styleClass="fa"/>
+                                        <h:outputText value="Invoice Date To"/>
+                                    </span>
                                     <p:datePicker showTime="true"
                                                   value="#{reportController.invoiceToDate}"
                                                   pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
@@ -139,7 +169,10 @@
                                 </div>
 
                                 <div class="drs-filter-row">
-                                    <span class="drs-filter-label"><h:outputText styleClass="fa fa-hotel"/> Service Department</span>
+                                    <span class="drs-filter-label">
+                                        <h:outputText styleClass="fa fa-hotel"/>
+                                        <h:outputText value="Service Department"/>
+                                    </span>
                                     <p:selectOneMenu value="#{reportController.serviceDepartment}" styleClass="w-100" filter="true">
                                         <f:selectItem itemLabel="All Service Departments" itemValue="#{null}"/>
                                         <f:selectItems value="#{departmentController.items}" var="d"
@@ -148,7 +181,10 @@
                                 </div>
 
                                 <div class="drs-filter-row">
-                                    <span class="drs-filter-label"><h:outputText value="&#xf236;" styleClass="fa"/> Room Categories</span>
+                                    <span class="drs-filter-label">
+                                        <h:outputText value="&#xf236;" styleClass="fa"/>
+                                        <h:outputText value="Room Categories"/>
+                                    </span>
                                     <p:selectCheckboxMenu id="roomCat"
                                                           value="#{reportController.roomCategories}"
                                                           converter="#{roomCategoryConverter}"
@@ -161,7 +197,10 @@
                                 </div>
 
                                 <div class="drs-filter-row">
-                                    <span class="drs-filter-label"><h:outputText styleClass="fa fa-hotel"/> Visit Type</span>
+                                    <span class="drs-filter-label">
+                                        <h:outputText styleClass="fa fa-hotel"/>
+                                        <h:outputText value="Visit Type"/>
+                                    </span>
                                     <p:selectOneMenu value="#{reportController.visitType}" styleClass="w-100">
                                         <f:selectItem itemLabel="All" itemValue="#{null}"/>
                                         <f:selectItem itemLabel="OP" itemValue="OP"/>
@@ -175,17 +214,17 @@
                         <h:panelGrid columns="5" styleClass="my-3">
                             <p:spacer width="20"/>
 
-                            <p:commandButton ajax="false" value="Process"
+                            <p:commandButton id="processBtn" ajax="false" value="Process"
                                              icon="fas fa-cogs"
                                              action="#{reportController.createDurationServiceReport}"
                                              styleClass="ui-button-warning mx-1"/>
 
-                            <p:commandButton ajax="false" value="To Print"
+                            <p:commandButton id="printBtn" ajax="false" value="To Print"
                                              icon="fas fa-print"
                                              action="duration_service_report_view?faces-redirect=true"
                                              styleClass="ui-button-info mx-1"/>
 
-                            <p:commandButton ajax="false" value="Download"
+                            <p:commandButton id="downloadBtn" ajax="false" value="Download"
                                              icon="fas fa-file-excel"
                                              styleClass="ui-button-success mx-1">
                                 <p:dataExporter fileName="Duration_Service_Report" 
@@ -194,7 +233,7 @@
                                                 postProcessor="#{reportController.postProcessDurationServiceReportExcel}" />
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="PDF"
+                            <p:commandButton id="pdfBtn" ajax="false" value="PDF"
                                              icon="fas fa-file-pdf"
                                              styleClass="ui-button-danger mx-1"
                                              action="#{reportController.exportDurationServiceReportToPDF()}">
