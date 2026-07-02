@@ -1112,11 +1112,12 @@
 
                     </p:submenu>
 
-                    <p:submenu label="Wholesale Transactions" icon="fas fa-truck-loading" rendered="#{webUserController.hasPrivilege('PharmacyWholeSaleTransactionMenue')}">
-                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_bill_retail_sale?faces-redirect=true"
-                                     value="Sale" icon="fas fa-shopping-cart" rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSale')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true"
-                                     value="Sale for cashier" icon="fas fa-cash-register" rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSaleForCashier')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>
+                    <p:submenu label="Wholesale Transactions" icon="fas fa-truck-loading" rendered="#{webUserController.hasPrivilege('PharmacyWholeSaleTransactionMenue') and configOptionApplicationController.getBooleanValueByKey('Enable Wholesale Pharmacy Transactions', false)}">
+                        <p:menuitem ajax="false"
+                                    action="/pharmacy/pharmacy_bill_wholesale_sale_native?faces-redirect=true"
+                                    actionListener="#{wholesaleSaleNativeSqlController.resetAll()}"
+                                    value="Sale" icon="fas fa-shopping-cart"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSale')}"></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_bill?faces-redirect=true"
                                      value="Search Sale Bill" icon="fas fa-search-dollar"
                                      actionListener="#{searchController.makeListNull}"

@@ -78,6 +78,30 @@ public class StockDTO implements Serializable {
         this(stockId, itemBatchId, itemId, itemName, code, genericName, (Double) retailRate, (Double) stockQty, dateOfExpire);
     }
 
+    // Constructor for optimized wholesale sale autocomplete (mirrors the retail one, populates wholesaleRate).
+    // The trailing batchNo param disambiguates this overload's erasure from the retail 9-arg constructor above.
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, Double wholesaleRate, Double stockQty, Date dateOfExpire, String batchNo) {
+        this.id = stockId;
+        this.stockId = stockId;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.wholesaleRate = wholesaleRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.batchNo = batchNo;
+    }
+
+    // Primitive double variant of the wholesale autocomplete constructor above, for strict
+    // EclipseLink type matching (ItemBatch.wholesaleRate is a primitive double on the entity).
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, double wholesaleRate, double stockQty, Date dateOfExpire, String batchNo) {
+        this(stockId, itemBatchId, itemId, itemName, code, genericName, (Double) wholesaleRate, (Double) stockQty, dateOfExpire, batchNo);
+    }
+
     // Optimized FEFO discharge-issue projection: ids + name/code/generic + retail
     // AND purchase rate (for COGS) + stock + expiry. (issue #21334)
     // ItemBatch.purcahseRate is primitive double on the entity, so EclipseLink
