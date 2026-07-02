@@ -7957,20 +7957,19 @@ public class InwardReportController implements Serializable {
                 bdh1.setCellStyle(headerStyle);
 
                 if (ipIncomeBillDiscounts != null && !ipIncomeBillDiscounts.isEmpty()) {
-                    for (Object obj : ipIncomeBillDiscounts) {
-                        if (obj instanceof Object[]) {
-                            Object[] arr = (Object[]) obj;
+                    for (Map<String, Object> discountRow : ipIncomeBillDiscounts) {
                             Row bdRow = sheet.createRow(rowNum++);
 
                             Cell inv = bdRow.createCell(0);
-                            inv.setCellValue(arr[0] != null ? arr[0].toString() : "");
+                            Object invoiceNo = discountRow.get("invoiceNo");
+                            inv.setCellValue(invoiceNo != null ? invoiceNo.toString() : "");
                             inv.setCellStyle(textStyle);
 
                             Cell dis = bdRow.createCell(1);
-                            double val = arr[1] != null ? ((Number) arr[1]).doubleValue() : 0.0;
+                             Object discount = discountRow.get("discount");
+                            double val = discount instanceof Number ? ((Number) discount).doubleValue() : 0.0;
                             dis.setCellValue(val);
                             dis.setCellStyle(numberStyle);
-                        }
                     }
                 }
 
@@ -8201,13 +8200,12 @@ public class InwardReportController implements Serializable {
                 addPdfHeaderCell(bdTable, "Bill Discount");
 
                 if (ipIncomeBillDiscounts != null && !ipIncomeBillDiscounts.isEmpty()) {
-                    for (Object obj : ipIncomeBillDiscounts) {
-                        if (obj instanceof Object[]) {
-                            Object[] arr = (Object[]) obj;
-                            addPdfCell(bdTable, arr[0] != null ? arr[0].toString() : "", cellFont, Element.ALIGN_LEFT, null);
-                            double val = arr[1] != null ? ((Number) arr[1]).doubleValue() : 0.0;
+                     for (Map<String, Object> discountRow : ipIncomeBillDiscounts) {
+                            Object invoiceNo = discountRow.get("invoiceNo");
+                            addPdfCell(bdTable, invoiceNo != null ? invoiceNo.toString() : "", cellFont, Element.ALIGN_LEFT, null);
+                            Object discount = discountRow.get("discount");
+                            double val = discount instanceof Number ? ((Number) discount).doubleValue() : 0.0;
                             addPdfCell(bdTable, String.format("%,.2f", val), cellFont, Element.ALIGN_RIGHT, null);
-                        }
                     }
                 }
 
