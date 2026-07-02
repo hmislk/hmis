@@ -255,6 +255,14 @@ public class LabTestHistoryController implements Serializable {
     public void addExportPDFReportHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
         labTestHistoryService.addExportPDFReportHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
     }
+
+    public void addUnapprovedReportPrintHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
+        labTestHistoryService.addUnapprovedReportPrintHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
+    }
+
+    public void addUnapprovedReportExportPDFHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
+        labTestHistoryService.addUnapprovedReportExportPDFHistory(patientInvestigation, patientReport, sessionController.getInstitution(), sessionController.getDepartment(), sessionController.getLoggedUser());
+    }
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Data Recive from Analyzer">

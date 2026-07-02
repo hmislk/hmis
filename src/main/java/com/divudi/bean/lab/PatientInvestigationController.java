@@ -5277,6 +5277,27 @@ public class PatientInvestigationController implements Serializable {
         return antibioticItems;
     }
 
+    /**
+     * Rebuilds the antibiotic sensitivity test columns from the currently
+     * viewed patient report. Called lazily from the column getters so the
+     * lists are always populated for the current report even on a page
+     * refresh (a GET that does not re-run the navigation action).
+     */
+    private void populateAntibioticListsFromCurrentReport() {
+        if (patientReportController == null
+                || patientReportController.getCurrentPatientReport() == null
+                || patientReportController.getCurrentPatientReport().getPatientReportItemValues() == null) {
+            if (column1AntibioticList == null) {
+                column1AntibioticList = new ArrayList<>();
+            }
+            if (column2AntibioticList == null) {
+                column2AntibioticList = new ArrayList<>();
+            }
+            return;
+        }
+        findAntibioticForMicrobiologyReport(patientReportController.getCurrentPatientReport().getPatientReportItemValues());
+    }
+
     public void markSelectedAsReceived() {
         for (PatientInvestigation pi : getSelectedToReceive()) {
             pi.setReceived(Boolean.TRUE);
@@ -6079,6 +6100,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<PatientReportItemValue> getColumn1AntibioticList() {
+        populateAntibioticListsFromCurrentReport();
         return column1AntibioticList;
     }
 
@@ -6087,6 +6109,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public List<PatientReportItemValue> getColumn2AntibioticList() {
+        populateAntibioticListsFromCurrentReport();
         return column2AntibioticList;
     }
 

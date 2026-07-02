@@ -15,7 +15,7 @@
             <ui:define name="content" rendered="#{webUserController.hasPrivilege('LabAutherizing') eq true or webUserController.hasPrivilege('LabDataentry') eq true or webUserController.hasPrivilege('LabPrinting') eq true   }" >
                 <h:form>
                     <h:outputStylesheet library="css" name="lab.css" ></h:outputStylesheet>
-                    
+
                     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js" integrity="sha512-pdCVFUWsxl1A4g0uV6fyJ3nrnTGeWnZN2Tl/56j45UvZ1OMdm9CIbctuIHj+yBIRTUUyv6I9+OivXj4i0LPEYA==" crossorigin="anonymous"></script>
                     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js" integrity="sha512-VKjwFVu/mmKGk0Z0BxgDzmn10e590qk3ou/jkmRugAkSTMSIRkd4nEnk+n7r5WBbJquusQEQjBidrBD3IQQISQ==" crossorigin="anonymous"></script>
 
@@ -101,7 +101,8 @@
                                                 rendered ="#{(webUserController.hasPrivilege('LabDeAutherizing') eq true and patientReportController.currentPatientReport.approved eq true)}"   
                                                 value="Cancel Approval"
                                                 icon="fa-solid fa-times"
-                                                onclick="if (!confirm('Are you sure you want to cancel the approval of this report?')) return false;"
+                                                onclick="if (!confirm('Are you sure you want to cancel the approval of this report?'))
+                                                            return false;"
                                                 class=" ui-button-danger"
                                                 action="#{patientReportController.reverseApprovalOfPatientReport()}" ajax="false"   >
                                             </p:commandButton>
@@ -119,13 +120,24 @@
                                                              async="true">
                                             </p:remoteCommand>
 
-                                            <p:commandButton 
-                                                value="Export PDF" 
-                                                class="ui-button-channelling" 
-                                                icon="fas fa-file-pdf" 
-                                                disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
+                                            <p:remoteCommand name="recordUnapprovedExportHistory"
+                                                             actionListener="#{patientReportController.exportUnapprovedReport()}"
+                                                             async="true">
+                                            </p:remoteCommand>
+
+                                            <p:remoteCommand name="recordUnapprovedPrintHistory"
+                                                             actionListener="#{patientReportController.printUnapprovedReport()}"
+                                                             async="true">
+                                            </p:remoteCommand>
+
+                                            <p:commandButton
+                                                value="Export PDF"
+                                                class="ui-button-channelling"
+                                                icon="fas fa-file-pdf"
+                                                rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed and not (patientReportController.currentPatientReport.item.reportType eq 'Microbiology' and not patientReportController.currentPatientReport.approved)}"
+                                                disabled="#{not patientReportController.currentPatientReport.approved}"
                                                 onclick="downloadPdf()"
-                                                type="button"  
+                                                type="button"
                                                 ajax="false">
                                             </p:commandButton>
 
@@ -133,7 +145,7 @@
                                                 type="button"
                                                 icon="fa-solid fa-print"
                                                 class="mx-1 ui-button-info"
-                                                rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}"
+                                                rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed and not (patientReportController.currentPatientReport.item.reportType eq 'Microbiology' and not patientReportController.currentPatientReport.approved)}"
                                                 value="Print"
                                                 onclick="recordPrintHistory();"
                                                 disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}">
@@ -144,19 +156,40 @@
                                                 type="button"
                                                 icon="fa-solid fa-print"
                                                 class="mx-1 ui-button-info"
-                                                rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}"
+                                                rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed and not (patientReportController.currentPatientReport.item.reportType eq 'Microbiology' and not patientReportController.currentPatientReport.approved)}"
                                                 value="Print"
                                                 onclick="recordPrintHistory();"
                                                 disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission or patientReportController.currentPtIx.billItem.bill.backwardReferenceBill.balance ne 0}">
                                                 <p:printer target="divPrint" />
                                             </p:commandButton>
+                                            <!-- Interim Export/Print for microbiology reports that are not yet
+                                                 approved. Only shown for unapproved microbiology reports; history
+                                                 is recorded via the shared remoteCommands above. -->
+                                            <p:commandButton
+                                                value="Draft Export PDF"
+                                                class="ui-button-channelling"
+                                                icon="fas fa-file-pdf"
+                                                rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology' and not patientReportController.currentPatientReport.approved}"
+                                                onclick="printDraftReport();"
+                                                type="button"
+                                                ajax="false">
+                                            </p:commandButton>
 
-                                            <p:commandButton    
-                                                value="Patient Report Search" 
+                                            <p:commandButton
+                                                type="button"
+                                                icon="fa-solid fa-print"
+                                                class="mx-1 ui-button-info"
+                                                rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology' and not patientReportController.currentPatientReport.approved}"
+                                                value="Draft Print"
+                                                onclick="printDraftReport();">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                value="Patient Report Search"
                                                 icon="fa-solid fa-search"
                                                 rendered="false"
                                                 class=" ui-button-warning"
-                                                action="/lab/patient_reports_search?faces-redirect=true" 
+                                                action="/lab/patient_reports_search?faces-redirect=true"
                                                 ajax="false" >
                                             </p:commandButton>
 
@@ -444,26 +477,40 @@
                                     header="Microbiology"    
                                     id="panelDataEntryForMicrobiology"
                                     rendered="#{patientReportController.currentPatientReport.transInvestigation.reportType eq 'Microbiology'}" >
-                                    <f:view contentType="text/html">
                                         <h:panelGroup >
                                             <table class="w-100">
-                                                <ui:repeat id="tblMicValsExceptAntibiotics" 
+                                                <ui:repeat id="tblMicValsExceptAntibiotics"
                                                            value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
                                                            var="pvm"   
                                                            >
                                                     <h:panelGroup rendered="#{pvm.investigationItem.ixItemType eq 'Value'}" >
                                                         <tr>
-                                                            <td  style="min-width: 280px!important;">
+                                                            <td  style="width: 280px!important;">
                                                                 <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
                                                             </td>
                                                             <td >
                                                                 <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
-                                                                    <p:inputTextarea 
-                                                                        rendered="true" id="txtMicMemoVal" queryDelay="0" class="w-100 mt-1"  minQueryLength="1" 
-                                                                        completeMethod="#{investigationItemValueController.completeValues}" disabled="#{patientReportController.currentPatientReport.approved}"
+                                                                    <p:textEditor
+                                                                        id="txtMicMemoVal"
+                                                                        class="w-100 mt-1"
+                                                                        secure="false"
+                                                                        allowFormatting="true"
+                                                                        disabled="#{patientReportController.currentPatientReport.approved}"
                                                                         value="#{pvm.lobValue}" >
+                                                                        <f:facet name="toolbar">
+                                                                            <span class="ql-formats">
+                                                                                <button class="ql-bold"></button>
+                                                                                <button class="ql-italic"></button>
+                                                                                <button class="ql-underline"></button>
+                                                                                <button class="ql-strike"></button>
+                                                                            </span>
+                                                                            <span class="ql-formats">
+                                                                                <select class="ql-font"></select>
+                                                                                <select class="ql-size"></select>
+                                                                            </span>
+                                                                        </f:facet>
                                                                         <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
-                                                                    </p:inputTextarea>
+                                                                    </p:textEditor>
                                                                 </h:panelGroup>
                                                             </td>
                                                         </tr>
@@ -472,8 +519,10 @@
                                             </table>
                                         </h:panelGroup>
 
-                                        <p:divider >
-                                            <b>Add Group</b>
+                                        <p:divider>
+                                            <div class="d-flex justify-content-center">
+                                                <b>Add Antibiotic Group</b>
+                                            </div>
                                         </p:divider>
                                         <div class="d-flex gap-3 justify-content-between">
                                             <p:outputLabel 
@@ -486,54 +535,18 @@
                                                 class="w-50"
                                                 value="#{patientReportController.groupName}" >
                                             </p:inputText>
-                                            <p:commandButton 
+                                            <p:commandButton
                                                 id="btnAddPatientReportGroupForMicrobiology"
                                                 value="Add Group"
                                                 icon="fa fa-plus"
-                                                ajax="false"
+                                                process="@this txtGroupName"
+                                                update=":#{p:resolveFirstComponentWithId('panelDataEntryForMicrobiology',view).clientId}"
                                                 class="ui-button-warning"
                                                 action="#{patientReportController.addPatientReportGroupForMicrobiology()}">
                                             </p:commandButton>
                                         </div>
 
                                         <p:divider />
-
-                                        <h:panelGroup rendered="#{empty patientReportController.currentPatientReport.patientReportGroups}">
-                                            <table >
-                                                <ui:repeat id="tblMicVals" 
-                                                           value="#{patientReportController.currentPatientReport.patientReportItemValues}"  
-                                                           var="pvm"   
-                                                           >
-                                                    <h:panelGroup rendered="#{pvm.investigationItem.ixItemType eq 'Value' or pvm.investigationItem.ixItemType eq 'Antibiotic' }" >
-                                                        <tr>
-                                                            <td  style="min-width: 280px!important;">
-                                                                <h:outputLabel value="#{pvm.investigationItem.name}" ></h:outputLabel>
-                                                            </td>
-                                                            <td >
-
-                                                                <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
-                                                                    <p:inputTextarea rendered="true" id="txtMicMemoVal" queryDelay="0" class="w-100 mt-1"  minQueryLength="1" 
-                                                                                     completeMethod="#{investigationItemValueController.completeValues}" disabled="#{patientReportController.currentPatientReport.approved}"
-                                                                                     value="#{pvm.lobValue}" >
-                                                                        <p:ajax process="@this" event="blur" listener="#{patientReportController.savePatientReportItemValues()}"></p:ajax>
-                                                                    </p:inputTextarea>
-                                                                </h:panelGroup>
-                                                                <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Varchar'}">
-                                                                    <p:selectOneMenu id="cmbMicStrVal" class="mt-1" value="#{pvm.strValue}" editable="true"  style="min-width: 300px!important;" disabled="#{patientReportController.currentPatientReport.approved}">
-                                                                        <f:selectItem itemLabel="SENSITIVE" itemValue="SENSITIVE" ></f:selectItem>
-                                                                        <f:selectItem itemLabel="RESISTANT" itemValue="Resistant" ></f:selectItem>
-                                                                        <f:selectItem itemLabel="INTERMEDIATE" itemValue="Intermediate" ></f:selectItem>
-                                                                        <f:ajax event="change"  execute="@this" 
-                                                                                listener="#{patientReportController.savePatientReportItemValues()}" ></f:ajax>
-                                                                    </p:selectOneMenu>
-                                                                </h:panelGroup>
-
-                                                            </td>
-                                                        </tr>
-                                                    </h:panelGroup>
-                                                </ui:repeat>
-                                            </table>
-                                        </h:panelGroup>
 
                                         <h:panelGroup rendered="#{not empty patientReportController.currentPatientReport.patientReportGroups}">
                                             <table >
@@ -603,9 +616,6 @@
                                                 </ui:repeat>
                                             </table>
                                         </h:panelGroup>
-
-
-                                    </f:view>
 
                                 </p:panel>
 
@@ -1012,6 +1022,24 @@
                                             position: static !important;
                                         }
                                         /* Repeat for other elements as needed */
+
+                                        /* Draft print: show only the report (#pdf) and hide the rest of
+                                           the page. Scoped to a body class so it only applies when the
+                                           Draft Print button triggers window.print(), never affecting the
+                                           regular p:printer button or Ctrl+P. */
+                                        body.draft-printing * {
+                                            visibility: hidden !important;
+                                        }
+                                        body.draft-printing #pdf,
+                                        body.draft-printing #pdf * {
+                                            visibility: visible !important;
+                                        }
+                                        body.draft-printing #pdf {
+                                            position: absolute;
+                                            left: 0;
+                                            top: 0;
+                                            width: 100%;
+                                        }
                                     }
 
                                 </style>
@@ -1024,17 +1052,47 @@
                                         const element = document.getElementById('pdf');
                                         element.classList.remove('print-only');
 
-                                                        const opt = {
-                                                            margin: [0, 0, 0, 0], // top, left, bottom, right
-                                                            filename: '#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patient.person.nameWithTitle} - #{patientReportController.currentPatientReport.patientInvestigation.investigation.name}.pdf',
-                                                            image: {type: 'jpeg', quality: 1.00},
-                                                            html2canvas: {
-                                                                scale: 2,
-                                                                useCORS: true,
-                                                                allowTaint: false
-                                                            },
-                                                            jsPDF: {unit: 'mm', format: [210, 297], orientation: 'portrait'}
-                                                        };
+                                        const opt = {
+                                            margin: [0, 0, 0, 0], // top, left, bottom, right
+                                            filename: '#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patient.person.nameWithTitle} - #{patientReportController.currentPatientReport.patientInvestigation.investigation.name}.pdf',
+                                            image: {type: 'jpeg', quality: 1.00},
+                                            html2canvas: {
+                                                scale: 2,
+                                                useCORS: true,
+                                                allowTaint: false
+                                            },
+                                            jsPDF: {unit: 'mm', format: [210, 297], orientation: 'portrait'}
+                                        };
+
+                                        html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
+                                            pdf.deletePage(2); // Remove the second page if it exists
+                                        }).save().then(() => {
+                                            element.classList.add('print-only');
+                                        });
+                                    }
+
+                                    // Draft print for unapproved microbiology reports: record the
+                                    // draft-print history, then print only the report (#pdf) via a
+                                    // scoped @media print rule. Self-contained so it does not depend on
+                                    // the PrimeFaces p:printer behaviour.
+                                    function printDraftReport() {
+                                        console.log("Downloading PDF...");
+                                        recordUnapprovedPrintHistory();
+                                        console.log("Add History to Downloading PDF ...");
+                                        const element = document.getElementById('pdf');
+                                        element.classList.remove('print-only');
+
+                                        const opt = {
+                                            margin: [0, 0, 0, 0], // top, left, bottom, right
+                                            filename: '#{patientReportController.currentPatientReport.patientInvestigation.billItem.bill.patient.person.nameWithTitle} - #{patientReportController.currentPatientReport.patientInvestigation.investigation.name}.pdf',
+                                            image: {type: 'jpeg', quality: 1.00},
+                                            html2canvas: {
+                                                scale: 2,
+                                                useCORS: true,
+                                                allowTaint: false
+                                            },
+                                            jsPDF: {unit: 'mm', format: [210, 297], orientation: 'portrait'}
+                                        };
 
                                         html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
                                             pdf.deletePage(2); // Remove the second page if it exists
