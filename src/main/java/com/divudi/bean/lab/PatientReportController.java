@@ -1995,47 +1995,19 @@ public class PatientReportController implements Serializable {
             return;
         }
 
-        PatientReportGroup newlyAddedGroup = addPatientReportGroup();
+        // Persist the group first (so it gets a real id), then create a fresh
+        // antibiotic sensitivity list assigned to that group.
+        PatientReportGroup newlyAddedGroup = getPrBean()
+                .addAntibioticGroupWithValues(currentPatientReport, groupName, sessionController.getLoggedUser());
 
         if (newlyAddedGroup == null) {
+            JsfUtil.addErrorMessage("Could not add the antibiotic group");
             return;
         }
 
-        int groupCount = currentPatientReport.getPatientReportGroups().size();
-
-        if (groupCount == 1) {
-            for (PatientReportItemValue pvm : currentPatientReport.getPatientReportItemValues()) {
-                if (pvm.getInvestigationItem() != null
-                        && pvm.getInvestigationItem().getIxItemType() != null
-                        && pvm.getInvestigationItem().getIxItemType() == InvestigationItemType.Antibiotic) {
-                    pvm.setPatientReportGroup(newlyAddedGroup);
-                }
-            }
-        } else {
-            PatientReportGroup firstGroup = currentPatientReport.getPatientReportGroups().get(0);
-            // Step 1: Filter the base items first
-            List<PatientReportItemValue> baseAntibioticItems = new ArrayList<>();
-            for (PatientReportItemValue basePvm : currentPatientReport.getPatientReportItemValues()) {
-                if (basePvm.getInvestigationItem() != null
-                        && basePvm.getInvestigationItem().getIxItemType() != null
-                        && basePvm.getInvestigationItem().getIxItemType() == InvestigationItemType.Antibiotic
-                        && basePvm.getPatientReportGroup().equals(firstGroup)) {
-                    baseAntibioticItems.add(basePvm);
-                }
-            }
-
-            // Step 2: Safely clone and add
-            for (PatientReportItemValue basePvm : baseAntibioticItems) {
-                PatientReportItemValue clonedPvm = basePvm.clone();
-                clonedPvm.setStrValue(null);
-                clonedPvm.setLobValue(null);
-                clonedPvm.setDisplayValue(null);
-                clonedPvm.setPatientReportGroup(newlyAddedGroup);
-                currentPatientReport.getPatientReportItemValues().add(clonedPvm);
-            }
-        }
         savePatientReport();
         setGroupName(null);
+        JsfUtil.addSuccessMessage("Antibiotic group added");
     }
 
     public PatientReportGroup addPatientReportGroup() {
@@ -2987,6 +2959,7 @@ public class PatientReportController implements Serializable {
     }
 
     public PatientReport createNewMicrobiologyReport(PatientInvestigation pi, Investigation ix) {
+        System.out.println("createNewMicrobiologyReport() = called");
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
@@ -3005,18 +2978,26 @@ public class PatientReportController implements Serializable {
                 ReportFormat nrf = reportFormatController.getValidReportFormat();
                 r.setReportFormat(nrf);
             }
+            System.out.println("r.getReportFormat() = " + r.getReportFormat());
             getFacade().create(r);
+            System.out.println("r created, r.getId() = " + r.getId());
             r.setPatientInvestigation(pi);
-            getPrBean().addMicrobiologyReportItemValuesForReport(r);
-//            getEjbFacade().edit(r);
+            // Only create the non-antibiotic values (memos, etc.) on navigation.
+            // The antibiotic sensitivity list is added manually per group via "Add Group".
+            getPrBean().addMicrobiologyNonAntibioticReportItemValuesForReport(r);
+            System.out.println("addMicrobiologyNonAntibioticReportItemValuesForReport done, itemValues size = " + (r.getPatientReportItemValues() == null ? "null" : r.getPatientReportItemValues().size()));
+
             setCurrentPatientReport(r);
             pi.getPatientReports().add(r);
-            setGroupName("Antibiotic Sensitivity Test");
-            addPatientReportGroupForMicrobiology();
+
+            // Prefill the group name field so the user can add the first antibiotic group.
+            String gName = configOptionApplicationController.getLongTextValueByKey("First Antibiotic List Group Name in Microbiology Report", "Antibiotic Sensitivity Test");
+            setGroupName(gName);
             getCommonReportItemController().setCategory(ix.getReportFormat());
         } else {
             JsfUtil.addErrorMessage("No ptIx or Ix selected to add");
         }
+        System.out.println("createNewMicrobiologyReport() returning r = " + r);
         return r;
     }
 
@@ -3077,17 +3058,22 @@ public class PatientReportController implements Serializable {
     }
 
     public String navigateToCreatedPatientReport(PatientInvestigation pi) {
+        System.out.println("navigateToCreatedPatientReport() = called");
         String link;
         if (pi == null) {
             JsfUtil.addErrorMessage("No Patient Investigation");
             return null;
         }
+        System.out.println("pi = " + pi);
+        System.out.println("pi.getInvestigation() = " + pi.getInvestigation());
+        System.out.println("isAlternativeReportAllowed = " + pi.getInvestigation().isAlternativeReportAllowed());
 
         if (pi.getInvestigation().isAlternativeReportAllowed()) {
             link = patientInvestigationController.navigateToAlternativeReportSelector(pi);
         } else {
             link = navigateToNewlyCreatedPatientReport(pi);
         }
+        System.out.println("link = " + link);
         return link;
     }
 
@@ -3170,6 +3156,7 @@ public class PatientReportController implements Serializable {
     }
 
     public String navigateToNewlyCreatedPatientReport(PatientInvestigation pi) {
+        System.out.println("navigateToNewlyCreatedPatientReport() = called");
         if (pi == null) {
             JsfUtil.addErrorMessage("No Patient Report");
             return null;
@@ -3190,15 +3177,20 @@ public class PatientReportController implements Serializable {
         if (ix.getReportedAs() != null) {
             ix = (Investigation) pi.getInvestigation().getReportedAs();
         }
+        System.out.println("ix = " + ix);
+        System.out.println("ix.getReportType() = " + ix.getReportType());
 
         currentReportInvestigation = ix;
         currentPtIx = pi;
         PatientReport newlyCreatedReport = null;
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
+            System.out.println("branch = Microbiology");
             newlyCreatedReport = createNewMicrobiologyReport(pi, ix);
         } else {
+            System.out.println("branch = Standard");
             newlyCreatedReport = createNewPatientReport(pi, ix);
         }
+        System.out.println("newlyCreatedReport = " + newlyCreatedReport);
 
         if (newlyCreatedReport == null) {
             JsfUtil.addErrorMessage("Error");
