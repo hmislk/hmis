@@ -3162,7 +3162,6 @@ public class PatientReportController implements Serializable {
     }
 
     public String navigateToNewlyCreatedPatientReport(PatientInvestigation pi) {
-        System.out.println("navigateToNewlyCreatedPatientReport() = called");
         if (pi == null) {
             JsfUtil.addErrorMessage("No Patient Report");
             return null;
@@ -3183,20 +3182,15 @@ public class PatientReportController implements Serializable {
         if (ix.getReportedAs() != null) {
             ix = (Investigation) pi.getInvestigation().getReportedAs();
         }
-        System.out.println("ix = " + ix);
-        System.out.println("ix.getReportType() = " + ix.getReportType());
 
         currentReportInvestigation = ix;
         currentPtIx = pi;
         PatientReport newlyCreatedReport = null;
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
-            System.out.println("branch = Microbiology");
             newlyCreatedReport = createNewMicrobiologyReport(pi, ix);
         } else {
-            System.out.println("branch = Standard");
             newlyCreatedReport = createNewPatientReport(pi, ix);
         }
-        System.out.println("newlyCreatedReport = " + newlyCreatedReport);
 
         if (newlyCreatedReport == null) {
             JsfUtil.addErrorMessage("Error");
