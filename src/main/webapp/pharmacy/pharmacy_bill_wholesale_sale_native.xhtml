@@ -33,6 +33,7 @@
                                         <h:outputLabel value="Pharmacy Wholesale Sale" class="mx-2" />
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                             <p:commandButton
+                                                id="btnConfig"
                                                 value="Config"
                                                 icon="fa fa-cog"
                                                 title="Page Configuration"
@@ -43,6 +44,7 @@
                                     </div>
                                     <div class="col-4 text-center">
                                         <p:commandButton
+                                            id="btnSearchSaleBills"
                                             icon="fa fa-search"
                                             value="Search Sale Bills"
                                             ajax="false"
@@ -52,6 +54,7 @@
                                     </div>
                                     <div class="col-4 text-end">
                                         <p:commandButton
+                                            id="btnSettle"
                                             ajax="false"
                                             accesskey="s"
                                             value="Settle"
@@ -60,6 +63,7 @@
                                             onclick="if (!confirm('Are you sure?')) return false"
                                             action="#{wholesaleSaleNativeSqlController.settleBillWithPay}" />
                                         <p:commandButton
+                                            id="btnNewBill"
                                             icon="fa fa-plus"
                                             value="New Bill"
                                             ajax="false"
@@ -505,6 +509,7 @@
                                                                     completeMethod="#{areaController.completeArea}"
                                                                     var="pta" itemLabel="#{pta.name}"
                                                                     itemValue="#{pta}" forceSelection="true"
+                                                                    maxResults="10"
                                                                     value="#{wholesaleSaleNativeSqlController.patient.person.area}"
                                                                     inputStyleClass="form-control"
                                                                     class="w-100" />
@@ -593,6 +598,7 @@
                                                                                             placeholder="Company"
                                                                                             itemLabel="#{ix.name}"
                                                                                             itemValue="#{ix}"
+                                                                                            maxResults="10"
                                                                                             size="10">
                                                                                             <f:ajax event="itemSelect" listener="#{wholesaleSaleNativeSqlController.calTotal()}" execute="@this" render=":#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}" />
                                                                                         </p:autoComplete>
@@ -623,6 +629,7 @@
                                                                                         inputStyleClass="form-control"
                                                                                         itemLabel="#{mys.person.name}"
                                                                                         itemValue="#{mys}"
+                                                                                        maxResults="10"
                                                                                         size="10">
                                                                                         <p:column headerText="Name" style="padding: 2px;"><h:outputText value="#{mys.person.nameWithTitle}" /></p:column>
                                                                                         <p:column headerText="EPF" style="padding: 2px;"><h:outputText value="#{mys.epfNo}" /></p:column>
@@ -651,6 +658,7 @@
                                                                                         inputStyleClass="form-control"
                                                                                         itemLabel="#{mys.person.name}"
                                                                                         itemValue="#{mys}"
+                                                                                        maxResults="10"
                                                                                         size="10">
                                                                                         <p:column headerText="Name" style="padding: 2px;"><h:outputText value="#{mys.person.nameWithTitle}" /></p:column>
                                                                                         <p:column headerText="EPF" style="padding: 2px;"><h:outputText value="#{mys.epfNo}" /></p:column>
@@ -712,6 +720,7 @@
                                                             completeMethod="#{doctorController.completeDoctor}"
                                                             var="ix" itemLabel="#{ix.person.name}"
                                                             itemValue="#{ix}" size="40"
+                                                            maxResults="10"
                                                             class="mx-4 w-100 mt-1"
                                                             inputStyleClass="form-control" />
                                                         <p:outputLabel value="Comments" />
@@ -793,7 +802,8 @@
                                     value="Search Sale Bills"
                                     icon="fa fa-search"
                                     ajax="false"
-                                    action="pharmacy_search_sale_bill"
+                                    action="/pharmacy_wholesale/pharmacy_search_sale_bill?faces-redirect=true"
+                                    actionListener="#{searchController.makeListNull}"
                                     class="ui-button-info" />
                             </div>
                             <div class="col-3">

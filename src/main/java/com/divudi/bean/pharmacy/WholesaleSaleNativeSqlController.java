@@ -524,8 +524,8 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
         sb.setTotal(pb.getTotal());
         sb.setNetTotal(pb.getNetTotal());
         sb.setGrantTotal(pb.getGrantTotal());
-        sb.setBalance(paymentMethod == PaymentMethod.Credit ? pb.getNetTotal() : 0.0);
-        sb.setPaidAmount(paymentMethod == PaymentMethod.Credit ? 0.0 : pb.getNetTotal());
+        sb.setBalance((paymentMethod == PaymentMethod.Credit || paymentMethod == PaymentMethod.Staff) ? pb.getNetTotal() : 0.0);
+        sb.setPaidAmount((paymentMethod == PaymentMethod.Credit || paymentMethod == PaymentMethod.Staff) ? 0.0 : pb.getNetTotal());
         sb.setReferredBy(pb.getReferredBy());
 
         if (paymentMethod == PaymentMethod.Credit && getPaymentMethodData().getCredit().getInstitution() != null) {
