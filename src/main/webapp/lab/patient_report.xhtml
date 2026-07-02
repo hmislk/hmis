@@ -138,7 +138,8 @@
                                                 class="mx-1 ui-button-info"
                                                 rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}"
                                                 value="Print"
-                                                onclick="recordPrintHistory();">
+                                                onclick="recordPrintHistory();"
+                                                disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}">
                                                 <p:printer target="divPrint" />
                                             </p:commandButton>
 
