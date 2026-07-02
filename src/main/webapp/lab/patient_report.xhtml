@@ -164,9 +164,7 @@
                                                 disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission or patientReportController.currentPtIx.billItem.bill.backwardReferenceBill.balance ne 0}">
                                                 <p:printer target="divPrint" />
                                             </p:commandButton>
-                                            <!-- Interim Export/Print for microbiology reports that are not yet
-                                                 approved. Only shown for unapproved microbiology reports; history
-                                                 is recorded via the shared remoteCommands above. -->
+                           
                                             <p:commandButton
                                                 value="Draft Export PDF"
                                                 class="ui-button-channelling"
