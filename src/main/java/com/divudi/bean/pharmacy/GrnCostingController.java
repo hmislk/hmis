@@ -1798,6 +1798,9 @@ public class GrnCostingController implements Serializable {
             pbi.setRetailRatePack(Optional.ofNullable(f.getRetailSaleRate()).orElse(BigDecimal.ZERO).doubleValue());
             pbi.setRetailRateInUnit(Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue());
 
+            pbi.setWholesaleRate(Optional.ofNullable(f.getWholesaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue());
+            pbi.setWholesaleRatePack(Optional.ofNullable(f.getWholesaleRate()).orElse(BigDecimal.ZERO).doubleValue());
+
             // Update BillItem quantity and rate in packs
             bi.setQty(qtyPacks.doubleValue());
             bi.setRate(pbi.getPurchaseRatePack());
@@ -1824,6 +1827,10 @@ public class GrnCostingController implements Serializable {
             pbi.setRetailRate(r);
             pbi.setRetailRatePack(r);
             pbi.setRetailRateInUnit(r);
+
+            double wr = Optional.ofNullable(f.getWholesaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue();
+            pbi.setWholesaleRate(wr);
+            pbi.setWholesaleRatePack(wr);
 
             // Update BillItem quantity and rate in units
             bi.setQty(qty.doubleValue());
@@ -1897,6 +1904,21 @@ public class GrnCostingController implements Serializable {
         recalculateFinancialsBeforeAddingBillItem(f);
 
         // Redistribute bill discount after retail rate changes (even if discount is 0 to clear previous distributions)
+        ensureBillDiscountSynchronization();
+        calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+        recalculateProfitMarginsForAllItems();
+        calDifference();
+    }
+
+    public void wholesaleRateChangedListner(BillItem tmp) {
+        BillItemFinanceDetails f = tmp.getBillItemFinanceDetails();
+        if (f == null) {
+            return;
+        }
+        recalculateFinancialsBeforeAddingBillItem(f);
+
+        // Redistribute bill discount after wholesale rate changes (even if discount is 0 to clear previous distributions)
         ensureBillDiscountSynchronization();
         calculateBillTotalsFromItems();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
@@ -3567,6 +3589,14 @@ public class GrnCostingController implements Serializable {
                 : BigDecimal.ZERO
         );
 
+        // Re-derive wholesaleRatePerUnit from a user-edited wholesaleRate, mirroring retail above
+        BigDecimal wholesaleRate = BigDecimalUtil.valueOrZero(billItemFinanceDetails.getWholesaleRate());
+        billItemFinanceDetails.setWholesaleRatePerUnit(
+                BigDecimalUtil.isPositive(unitsPerPack)
+                ? wholesaleRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO
+        );
+
         billItemFinanceDetails.setLineDiscount(lineDiscountValue);
         billItemFinanceDetails.setLineGrossTotal(lineGrossTotal);
         billItemFinanceDetails.setLineNetTotal(lineNetTotal);
@@ -4340,6 +4370,8 @@ public class GrnCostingController implements Serializable {
 
             purchaseRatePerUnit = prPerUnit.doubleValue();
             retailRatePerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
+            wholesaleRate = Optional.ofNullable(inputBillItem.getBillItemFinanceDetails().getWholesaleRatePerUnit())
+                    .orElse(BigDecimal.ZERO).doubleValue();
             costRatePerUnit = inputBillItem.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
 
             itemBatch = fetchItemBatchWithCosting(amp, purchaseRatePerUnit, retailRatePerUnit, costRatePerUnit, expiryDate);
@@ -4366,6 +4398,8 @@ public class GrnCostingController implements Serializable {
 
             getItemBatchFacade().create(itemBatch);
         } else {
+            itemBatch.setWholesaleRate(wholesaleRate);
+            getItemBatchFacade().edit(itemBatch);
         }
 
         return itemBatch;
