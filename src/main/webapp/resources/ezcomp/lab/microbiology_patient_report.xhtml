@@ -33,9 +33,20 @@
         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
 
             <div id="divReportM"  class="labReport"   >
-                <ez:common_report showBackground="#{patientReportController.showBackground or cc.attrs.showBackground}" 
+                <ez:common_report showBackground="#{patientReportController.showBackground or cc.attrs.showBackground}"
                                   commonReportFormat="#{patientReportController.currentPatientReport.reportFormat}"
                                   patientReport="#{patientReportController.currentPatientReport}"/>
+
+                <!-- Watermark for microbiology reports that are not yet approved.
+                     Text is configurable; approved reports show no watermark. -->
+                <h:panelGroup layout="block"
+                              rendered="#{not patientReportController.currentPatientReport.approved}"
+                              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 900; pointer-events: none; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                    <span style="transform: rotate(-30deg); font-size: 100px; color: rgba(200,0,0,0.15); font-weight: bold; white-space: normal; word-break: break-word; max-width: 80%; text-transform: uppercase; letter-spacing: 6px; line-height: 1.1; text-align: center; margin: 40px;">
+                        #{configOptionApplicationController.getShortTextValueByKey('Microbiology Not Approved Report Watermark Text', 'NOT APPROVED')}
+                    </span>
+                </h:panelGroup>
+                
                 <div style="position: absolute; top: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Height')}%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 14px; height: 70%; vertical-align: top;" >
                     <div id="ixName" >
                         <h:outputLabel value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}" style="font-weight: bold;font-size: 21px!important; "/>
@@ -167,19 +178,14 @@
                                                         <h:outputLabel value="#{prv.strValue}" escape="false"
                                                                        style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: uppercase;" />
                                                     </div>
-
                                                 </h:panelGroup>
-
                                             </h:panelGroup>
                                         </ui:repeat>
                                     </div>
                                 </div>
 
-
                             </ui:repeat>
                         </h:panelGroup>
-
-
 
                         <div style="vertical-align: top; text-align: left; padding-top: 3px; clear: left;">
                             <h:panelGroup rendered="#{patientReportController.currentPatientReport.patientReportItemValues.size()gt 0}">
