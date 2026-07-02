@@ -2642,6 +2642,22 @@ public class PatientReportController implements Serializable {
         laboratoryManagementController.addReportExportHistory(currentPatientReport.getId());
     }
 
+    public void printUnapprovedReport() {
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("Nothing to print");
+            return;
+        }
+        laboratoryManagementController.addUnapprovedReportPrintHistory(currentPatientReport.getId());
+    }
+
+    public void exportUnapprovedReport() {
+        if (currentPatientReport == null) {
+            JsfUtil.addErrorMessage("Nothing to export");
+            return;
+        }
+        laboratoryManagementController.addUnapprovedReportExportHistory(currentPatientReport.getId());
+    }
+
     public void printPatientLabReport() {
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("Nothing to approve");
