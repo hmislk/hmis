@@ -48,6 +48,19 @@
             .redText { color: #c0392b !important; }
             .ui-panel .ui-panel-titlebar { padding: 0.5rem 0.75rem; }
             .ui-autocomplete, .ui-autocomplete-input { width: 100% !important; }
+            
+            .ui-toolbar-group-left .ui-button,
+
+            .ui-toolbar-group-right .ui-button {
+                display: inline-flex !important;
+                width: 110px !important;
+
+            }
+            
+            .ui-toolbar-group-left,
+            .ui-toolbar-group-right {
+                gap: 0.5rem !important;
+            }
         </style>
 
         <h:form id="addFormFrm">
@@ -207,38 +220,38 @@
                                 </div>
                             </p:fieldset>
 
-                            <div style="margin-top:1rem; display:flex; justify-content:space-between; align-items:center; width:100%;">
-                                <div style="display:flex; align-items:center; gap:1.0rem;">
+                            <p:toolbar style="margin-top:1rem;">
+                                <p:toolbarGroup align="left">
                                     <p:commandButton id="btnAdd"
                                                      ajax="false"
                                                      value="Save"
                                                      icon="pi pi-save"
                                                      styleClass="ui-button-primary"
-                                                     style="width:115px;"
+                                                     style="width:115px; margin-right:1.0rem;"
                                                      disabled="#{staffAdditionalFormController.currentAdditionalForm.id ne null}"
                                                      action="#{staffAdditionalFormController.saveAdditionalFormExtra()}" />
-
-                                    <p:commandButton ajax="false"
+                                    <p:commandButton id="btnClear"
+                                                     ajax="false"
                                                      value="Clear"
                                                      icon="pi pi-eraser"
                                                      styleClass="ui-button-secondary"
-                                                     style="width:115px;"
+                                                     style="width:115px; margin-right:1.0rem;"
                                                      action="#{staffAdditionalFormController.clear}" />
-                                </div>
-                                <div style="margin-left:auto;">
-                                    <p:commandButton ajax="false"
+                                </p:toolbarGroup>
+                                <p:toolbarGroup align="right">
+                                    <p:commandButton id="btnDelete"
+                                                     ajax="false"
                                                      value="Delete"
                                                      icon="pi pi-trash"
                                                      styleClass="ui-button-danger"
-                                                     style="width:115px;"
                                                      disabled="#{staffAdditionalFormController.currentAdditionalForm.id eq null}"
                                                      action="#{staffAdditionalFormController.deleteAdditionalForm()}">
                                         <p:confirm header="Confirm Delete"
                                                    message="Delete this additional extra time form?"
                                                    icon="pi pi-exclamation-triangle" />
                                     </p:commandButton>
-                                </div>
-                            </div>
+                                </p:toolbarGroup>
+                            </p:toolbar>
                         </p:panel>
                     </div>
 
