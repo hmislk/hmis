@@ -2975,7 +2975,6 @@ public class PatientReportController implements Serializable {
     }
 
     public PatientReport createNewMicrobiologyReport(PatientInvestigation pi, Investigation ix) {
-        System.out.println("createNewMicrobiologyReport() = called");
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
@@ -2994,14 +2993,11 @@ public class PatientReportController implements Serializable {
                 ReportFormat nrf = reportFormatController.getValidReportFormat();
                 r.setReportFormat(nrf);
             }
-            System.out.println("r.getReportFormat() = " + r.getReportFormat());
             getFacade().create(r);
-            System.out.println("r created, r.getId() = " + r.getId());
             r.setPatientInvestigation(pi);
             // Only create the non-antibiotic values (memos, etc.) on navigation.
             // The antibiotic sensitivity list is added manually per group via "Add Group".
             getPrBean().addMicrobiologyNonAntibioticReportItemValuesForReport(r);
-            System.out.println("addMicrobiologyNonAntibioticReportItemValuesForReport done, itemValues size = " + (r.getPatientReportItemValues() == null ? "null" : r.getPatientReportItemValues().size()));
 
             setCurrentPatientReport(r);
             pi.getPatientReports().add(r);
@@ -3013,7 +3009,6 @@ public class PatientReportController implements Serializable {
         } else {
             JsfUtil.addErrorMessage("No ptIx or Ix selected to add");
         }
-        System.out.println("createNewMicrobiologyReport() returning r = " + r);
         return r;
     }
 
