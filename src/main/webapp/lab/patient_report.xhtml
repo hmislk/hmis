@@ -120,13 +120,24 @@
                                                              async="true">
                                             </p:remoteCommand>
 
-                                            <p:commandButton 
-                                                value="Export PDF" 
-                                                class="ui-button-channelling" 
-                                                icon="fas fa-file-pdf" 
-                                                disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
+                                            <p:remoteCommand name="recordUnapprovedExportHistory"
+                                                             actionListener="#{patientReportController.exportUnapprovedReport()}"
+                                                             async="true">
+                                            </p:remoteCommand>
+
+                                            <p:remoteCommand name="recordUnapprovedPrintHistory"
+                                                             actionListener="#{patientReportController.printUnapprovedReport()}"
+                                                             async="true">
+                                            </p:remoteCommand>
+
+                                            <p:commandButton
+                                                value="Export PDF"
+                                                class="ui-button-channelling"
+                                                icon="fas fa-file-pdf"
+                                                rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed and not (patientReportController.currentPatientReport.item.reportType eq 'Microbiology' and not patientReportController.currentPatientReport.approved)}"
+                                                disabled="#{not patientReportController.currentPatientReport.approved}"
                                                 onclick="downloadPdf()"
-                                                type="button"  
+                                                type="button"
                                                 ajax="false">
                                             </p:commandButton>
 
@@ -134,7 +145,7 @@
                                                 type="button"
                                                 icon="fa-solid fa-print"
                                                 class="mx-1 ui-button-info"
-                                                rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}"
+                                                rendered="#{!sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed and not (patientReportController.currentPatientReport.item.reportType eq 'Microbiology' and not patientReportController.currentPatientReport.approved)}"
                                                 value="Print"
                                                 onclick="recordPrintHistory();"
                                                 disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}">
@@ -145,19 +156,40 @@
                                                 type="button"
                                                 icon="fa-solid fa-print"
                                                 class="mx-1 ui-button-info"
-                                                rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed}"
+                                                rendered="#{sessionController.departmentPreference.partialPaymentOfOpdBillsAllowed and not (patientReportController.currentPatientReport.item.reportType eq 'Microbiology' and not patientReportController.currentPatientReport.approved)}"
                                                 value="Print"
                                                 onclick="recordPrintHistory();"
                                                 disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission or patientReportController.currentPtIx.billItem.bill.backwardReferenceBill.balance ne 0}">
                                                 <p:printer target="divPrint" />
                                             </p:commandButton>
+                                            <!-- Interim Export/Print for microbiology reports that are not yet
+                                                 approved. Only shown for unapproved microbiology reports; history
+                                                 is recorded via the shared remoteCommands above. -->
+                                            <p:commandButton
+                                                value="Draft Export PDF"
+                                                class="ui-button-channelling"
+                                                icon="fas fa-file-pdf"
+                                                rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology' and not patientReportController.currentPatientReport.approved}"
+                                                onclick="recordUnapprovedExportHistory(); downloadPdf();"
+                                                type="button"
+                                                ajax="false">
+                                            </p:commandButton>
 
-                                            <p:commandButton    
-                                                value="Patient Report Search" 
+                                            <p:commandButton
+                                                type="button"
+                                                icon="fa-solid fa-print"
+                                                class="mx-1 ui-button-info"
+                                                rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology' and not patientReportController.currentPatientReport.approved}"
+                                                value="Draft Print"
+                                                onclick="printDraftReport();">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                value="Patient Report Search"
                                                 icon="fa-solid fa-search"
                                                 rendered="false"
                                                 class=" ui-button-warning"
-                                                action="/lab/patient_reports_search?faces-redirect=true" 
+                                                action="/lab/patient_reports_search?faces-redirect=true"
                                                 ajax="false" >
                                             </p:commandButton>
 
@@ -990,6 +1022,24 @@
                                             position: static !important;
                                         }
                                         /* Repeat for other elements as needed */
+
+                                        /* Draft print: show only the report (#pdf) and hide the rest of
+                                           the page. Scoped to a body class so it only applies when the
+                                           Draft Print button triggers window.print(), never affecting the
+                                           regular p:printer button or Ctrl+P. */
+                                        body.draft-printing * {
+                                            visibility: hidden !important;
+                                        }
+                                        body.draft-printing #pdf,
+                                        body.draft-printing #pdf * {
+                                            visibility: visible !important;
+                                        }
+                                        body.draft-printing #pdf {
+                                            position: absolute;
+                                            left: 0;
+                                            top: 0;
+                                            width: 100%;
+                                        }
                                     }
 
                                 </style>
@@ -1019,6 +1069,27 @@
                                         }).save().then(() => {
                                             element.classList.add('print-only');
                                         });
+                                    }
+
+                                    // Draft print for unapproved microbiology reports: record the
+                                    // draft-print history, then print only the report (#pdf) via a
+                                    // scoped @media print rule. Self-contained so it does not depend on
+                                    // the PrimeFaces p:printer behaviour.
+                                    function printDraftReport() {
+                                        if (typeof recordUnapprovedPrintHistory === 'function') {
+                                            recordUnapprovedPrintHistory();
+                                        }
+                                        const element = document.getElementById('pdf');
+                                        if (element) {
+                                            element.classList.remove('print-only');
+                                        }
+                                        const cleanup = function () {
+                                            document.body.classList.remove('draft-printing');
+                                            window.removeEventListener('afterprint', cleanup);
+                                        };
+                                        window.addEventListener('afterprint', cleanup);
+                                        document.body.classList.add('draft-printing');
+                                        window.print();
                                     }
                                 </script>
 
