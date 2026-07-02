@@ -699,10 +699,18 @@
 
                     </p:submenu>
 
-                    <p:menuitem  
-                        ajax="false"  
-                        action="/inward/investigation_search_for_reporting_bht?faces-redirect=true" 
-                        value="Investigation Trace" 
+                    <p:menuitem
+                        ajax="false"
+                        action="#{itemRequestApprovalController.navigateToPendingRequests()}"
+                        value="Service/Item Requests"
+                        icon="fa fa-clipboard-check"
+                        rendered="#{webUserController.hasPrivilege('InwardServiceItemRequestApproval') or webUserController.hasPrivilege('InwardServiceItemRequestRejection')}">
+                    </p:menuitem>
+
+                    <p:menuitem
+                        ajax="false"
+                        action="/inward/investigation_search_for_reporting_bht?faces-redirect=true"
+                        value="Investigation Trace"
                         icon="fa fa-search">
                     </p:menuitem>
 
