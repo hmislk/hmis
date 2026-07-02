@@ -63,7 +63,23 @@ public enum TriggerType {
     // Inward discharge — stage 2: room/bed discharge (bed released; typically notifies billing).
     INWARD_PATIENT_ROOM_DISCHARGED("Inward Patient Room Discharge - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_ROOM_DISCHARGED),
     INWARD_PATIENT_ROOM_DISCHARGED_SMS("Inward Patient Room Discharge - SMS", NotificationMedium.SMS, TriggerTypeParent.INWARD_PATIENT_ROOM_DISCHARGED),
-    INWARD_PATIENT_ROOM_DISCHARGED_EMAIL("Inward Patient Room Discharge - Email", NotificationMedium.EMAIL, TriggerTypeParent.INWARD_PATIENT_ROOM_DISCHARGED);
+    INWARD_PATIENT_ROOM_DISCHARGED_EMAIL("Inward Patient Room Discharge - Email", NotificationMedium.EMAIL, TriggerTypeParent.INWARD_PATIENT_ROOM_DISCHARGED),
+    // Inward room — patient admitted/added to a room
+    INWARD_PATIENT_ROOM_ADDED("Inward Patient Room Added - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_ROOM_ADDED),
+    INWARD_PATIENT_ROOM_ADDED_SMS("Inward Patient Room Added - SMS", NotificationMedium.SMS, TriggerTypeParent.INWARD_PATIENT_ROOM_ADDED),
+    INWARD_PATIENT_ROOM_ADDED_EMAIL("Inward Patient Room Added - Email", NotificationMedium.EMAIL, TriggerTypeParent.INWARD_PATIENT_ROOM_ADDED),
+    // Inward room — patient changed/moved to a different room
+    INWARD_PATIENT_ROOM_CHANGED("Inward Patient Room Changed - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_ROOM_CHANGED),
+    INWARD_PATIENT_ROOM_CHANGED_SMS("Inward Patient Room Changed - SMS", NotificationMedium.SMS, TriggerTypeParent.INWARD_PATIENT_ROOM_CHANGED),
+    INWARD_PATIENT_ROOM_CHANGED_EMAIL("Inward Patient Room Changed - Email", NotificationMedium.EMAIL, TriggerTypeParent.INWARD_PATIENT_ROOM_CHANGED),
+    // Inward discharge — stage 4: nursing discharge (nurse confirms checklist complete; typically notifies billing/transport)
+    INWARD_PATIENT_NURSING_DISCHARGED("Inward Patient Nursing Discharge - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_NURSING_DISCHARGED),
+    INWARD_PATIENT_NURSING_DISCHARGED_SMS("Inward Patient Nursing Discharge - SMS", NotificationMedium.SMS, TriggerTypeParent.INWARD_PATIENT_NURSING_DISCHARGED),
+    INWARD_PATIENT_NURSING_DISCHARGED_EMAIL("Inward Patient Nursing Discharge - Email", NotificationMedium.EMAIL, TriggerTypeParent.INWARD_PATIENT_NURSING_DISCHARGED),
+    // Inward discharge — stage 5: physical discharge (patient physically leaves the hospital)
+    INWARD_PATIENT_PHYSICAL_DISCHARGED("Inward Patient Physical Discharge - System Notification", NotificationMedium.SYSTEM_NOTIFICATION, TriggerTypeParent.INWARD_PATIENT_PHYSICAL_DISCHARGED),
+    INWARD_PATIENT_PHYSICAL_DISCHARGED_SMS("Inward Patient Physical Discharge - SMS", NotificationMedium.SMS, TriggerTypeParent.INWARD_PATIENT_PHYSICAL_DISCHARGED),
+    INWARD_PATIENT_PHYSICAL_DISCHARGED_EMAIL("Inward Patient Physical Discharge - Email", NotificationMedium.EMAIL, TriggerTypeParent.INWARD_PATIENT_PHYSICAL_DISCHARGED);
 
     private final String label;
     private final NotificationMedium medium;

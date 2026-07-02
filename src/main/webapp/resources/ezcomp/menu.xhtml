@@ -4,19 +4,61 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:o="http://omnifaces.org/ui">
     <!-- INTERFACE -->
     <cc:interface>
     </cc:interface>
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:form >
-            <style>
-                .ui-menu .ui-icon, .ui-menu .fa, .ui-menu .pi {
-                    font-size: 18px !important;
-                }
-            </style>
+        <style>
+            .ui-menu .ui-icon, .ui-menu .fa, .ui-menu .pi {
+                font-size: 18px !important;
+            }
+            #notifFloatBar {
+                position: fixed;
+                top: 6px;
+                right: 60px;
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+            }
+        </style>
 
+        <h:form id="notificationPushForm">
+            <!-- o:socket evaluates user= at render time — no view-build-time null problem -->
+            <o:socket channel="notifications"
+                      user="#{sessionController.loggedUser.id}"
+                      onmessage="onNotificationPush"
+                      rendered="#{sessionController.loggedUser != null}" />
+            <script type="text/javascript">
+                function onNotificationPush(message, channel, event) {
+                    refreshNotifications();
+                }
+            </script>
+            <p:remoteCommand name="refreshNotifications"
+                             update="notCount notificationGrowl"
+                             action="#{userNotificationController.onPushRefreshNotifications}" />
+            <h:panelGroup id="notificationGrowl">
+                <p:growl life="6000" showDetail="true"
+                         rendered="#{facesContext.partialViewContext.ajaxRequest}" />
+            </h:panelGroup>
+            <div id="notifFloatBar">
+                <h:panelGroup id="notCount">
+                    <p:badge id="bdgeNotiCount"
+                             severity="danger"
+                             value="#{userNotificationController.unseenCount}">
+                        <p:commandButton id="btnNot"
+                                         ajax="false"
+                                         icon="pi pi-bell"
+                                         action="#{userNotificationController.navigateToRecivedNotification()}" />
+                    </p:badge>
+                </h:panelGroup>
+            </div>
+        </h:form>
+
+        <h:form id="menuForm">
             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Displaying the message provided to system users',false)}" style="background-color: #{configOptionApplicationController.getColorValueByKey('Message background color')}">
                 <div class="card">
                     <div class="d-flex justify-content-center shadow-4 p-2" style="background-color: #{configOptionApplicationController.getColorValueByKey('Message background color')}; font-weight: 700; font-size: 18px;">
@@ -410,11 +452,18 @@
                     </p:submenu>
 
                     <p:submenu label="Room" icon="fa fa-door-open" rendered="#{webUserController.hasPrivilege('InwardRoom')}">
-                        <p:menuitem 
-                            ajax="false" 
-                            action="#{admissionController.navigateToRoomOccupancy()}" 
-                            value="Room Occupancy" 
-                            icon="fa fa-bed" 
+                        <p:menuitem
+                            ajax="false"
+                            action="#{admissionController.navigateToRoomOccupancy()}"
+                            value="Room Occupancy"
+                            icon="fa fa-bed"
+                            rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" >
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{admissionController.navigateToBedBoard()}"
+                            value="Bed Board"
+                            icon="fa fa-th"
                             rendered="#{webUserController.hasPrivilege('InwardRoomRoomOccupency')}" >
                         </p:menuitem>
                         <p:menuitem 
@@ -587,12 +636,20 @@
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" >
                         </p:menuitem>
 
-                        <p:menuitem  
-                            ajax="false"  
+                        <p:menuitem
+                            ajax="false"
                             action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true"
                             value="BHT Issue Requests"
                             icon="fa fa-notes-medical"
                             actionListener="#{pharmacySaleBhtController.resetAll()}"
+                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
+                        </p:menuitem>
+
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"
+                            value="Accept Returns from Ward"
+                            icon="fa fa-truck-ramp-box"
                             rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
                         </p:menuitem>
 
@@ -1116,6 +1173,13 @@
                                      value="BHT Issue Requests" icon="fas fa-clipboard-list"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
                                      rendered="#{webUserController.hasPrivilege('PharmacyBhtIssueRequest')}" />
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"
+                            value="Accept Returns from Ward"
+                            icon="fa fa-truck-ramp-box"
+                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
+                        </p:menuitem>
                         <p:menuitem  ajax="false" action="#{inwardReportControllerBht.navigateToInpatientPharmacyRequestedAndIssuedOverviewInPharmacy()}"  value="Pharmacy Requested &amp; Issued Drug Overview" icon="fas fa-list" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
 
                         <p:menuitem  ajax="false" action="#{searchController.navigateToInpatientDirectIssuesByBill()}"
@@ -1333,12 +1397,19 @@
                                 actionListener="#{searchController.makeListNull}"
                                 rendered="#{webUserController.hasPrivilege('TheatreBilling')}"/>
 
-                    <p:menuitem 
-                        ajax="false" 
-                        action="/pharmacy/pharmacy_analytics?faces-redirect=true"  
-                        value="Theatre Analytics" 
-                        icon="pi pi-chart-bar" 
+                    <p:menuitem
+                        ajax="false"
+                        action="/pharmacy/pharmacy_analytics?faces-redirect=true"
+                        value="Theatre Analytics"
+                        icon="pi pi-chart-bar"
                         rendered="#{webUserController.hasPrivilege('TheaterReports')}" ></p:menuitem>
+
+                    <p:menuitem
+                        ajax="false"
+                        action="#{inwardReservationController.navigateToTheatreScheduleCalendar()}"
+                        value="Theatre Schedule"
+                        icon="fa fa-calendar-alt"
+                        rendered="#{webUserController.hasPrivilege('Theatre')}"/>
                 </p:submenu>
 
                 <!--            Store Section-->
@@ -1769,6 +1840,7 @@
                 <p:menuitem
                     ajax="false"
                     title="Request Manager"
+                    rendered="#{webUserController.hasPrivilege('RequestManager')}"
                     action="#{requestController.navigateToSearchRequest()}"
                     actionListener="#{requestController.makeNull()}"
                     icon="fa-solid fa-envelope">
@@ -1986,7 +2058,7 @@
                         action="/store/store_admin?faces-redirect=true"  
                         value="Manage Store" 
                         icon="fa fa-fw fa-store"
-                        rendered="#{webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
+                        rendered="#{webUserController.hasPrivilege('Store') and webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
                     <p:menuitem  
                         ajax="false"  
                         action="#{feeController.navigateToAdminFee()}" 
@@ -2019,33 +2091,6 @@
                                              ajax="false"
                                              action="#{financialTransactionController.refreshCashNetTotalForMenu()}" />
                         </h:panelGroup>
-                        <f:websocket channel="notifications"
-                                     user="#{sessionController.loggedUser.id}"
-                                     onmessage="onNotificationPush"
-                                     connected="#{sessionController.loggedUser != null}" />
-                        <p:remoteCommand name="refreshNotifications"
-                                         update="notCount notificationGrowl"
-                                         action="#{userNotificationController.onPushRefreshNotifications}" />
-                        <p:growl id="notificationGrowl" life="6000" showDetail="true" />
-                        <script type="text/javascript">
-                            function onNotificationPush(message) {
-                                refreshNotifications();
-                            }
-                        </script>
-                        <div class="mx-4">
-                            <h:panelGroup id="notCount">
-                                <p:badge id="bdgeNotiCount"
-                                         severity="danger"
-                                         value="#{userNotificationController.items != null ? userNotificationController.items.size() : 0}">
-                                    <p:commandButton id="btnNot"
-                                                     ajax="false"
-                                                     icon="pi pi-bell"
-                                                     action="#{userNotificationController.navigateToRecivedNotification()}" />
-                                </p:badge>
-                            </h:panelGroup>
-                        </div>
-
-
                         <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
                     </div>
 

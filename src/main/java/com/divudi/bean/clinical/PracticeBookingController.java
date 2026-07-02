@@ -366,6 +366,8 @@ public class PracticeBookingController implements Serializable {
             getPatientEncounterController().setEncounterPrescreption(firstPrescription);
             logger.log(Level.FINE, "Set encounterPrescreption from list. Prescription ID: {0}", firstPrescription.getId());
         } else {
+            // Clear any prescription left over from a previously processed encounter
+            getPatientEncounterController().setEncounterPrescreption(null);
             logger.log(Level.FINE, "No prescriptions found in list");
         }
 
@@ -374,15 +376,19 @@ public class PracticeBookingController implements Serializable {
         logger.log(Level.FINE, "Prescription text status: {0}", hasPrescriptionText ? "found" : "not found");
 
         if (hasPrescriptionText) {
-            getPharmacySaleController().setComment(prescriptionText);
+            getPharmacySaleController().setPrescriptionHtml(prescriptionText);
+            getPharmacySaleController().setComment(htmlToPlainText(prescriptionText));
             logger.log(Level.FINE, "Set prescription text as comment (length: {0} characters)", prescriptionText.length());
         } else {
+            getPharmacySaleController().setPrescriptionHtml(null);
             logger.log(Level.FINE, "No prescription text to set");
         }
 
-        getPatientEncounterController().fillEncounterMedicines(opdVisit);
-        for(ClinicalFindingValue cli :patientEncounterController.getEncounterMedicines()){
-        }
+        // Auto-load the prescribed medicines onto the retail sale bill, mirroring
+        // the inward prescription-to-dispensing conversion on the admission profile.
+        List<ClinicalFindingValue> encounterMedicines
+                = getPatientEncounterController().fillEncounterMedicines(opdVisit);
+        getPharmacySaleController().addBillItemsFromEncounterMedicines(encounterMedicines);
         return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
     }
 
@@ -413,6 +419,26 @@ public class PracticeBookingController implements Serializable {
             logger.log(Level.SEVERE, "Error extracting prescription text: {0}", e.getMessage());
             return null;
         }
+    }
+
+    /**
+     * Converts prescription HTML (Quill rich text) to readable plain text for
+     * the bill comment field, keeping line breaks for paragraphs and headings.
+     */
+    private String htmlToPlainText(String html) {
+        if (html == null) {
+            return null;
+        }
+        return html
+                .replaceAll("(?i)<br\\s*/?>", "\n")
+                .replaceAll("(?i)</(p|h[1-6]|li|div|tr)>", "\n")
+                .replaceAll("<[^>]+>", "")
+                .replace("&nbsp;", " ")
+                .replace("&amp;", "&")
+                .replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replaceAll("\n{3,}", "\n\n")
+                .trim();
     }
 
     public void opdVisitFromServiceSession() {

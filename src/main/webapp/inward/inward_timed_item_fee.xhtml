@@ -92,12 +92,30 @@
 
                                     <h:outputLabel value="Over Shoot Hour"/>
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
-                                    <p:inputText 
-                                        autocomplete="off" 
-                                        value="#{timedItemFeeController.currentFee.overShootHours}" 
+                                    <p:inputText
+                                        autocomplete="off"
+                                        value="#{timedItemFeeController.currentFee.overShootHours}"
                                         style="width: 500px;"/>
 
-                                    <p:selectBooleanCheckbox 
+                                    <h:outputLabel value="Slot Order"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; "/>
+                                    <p:inputText
+                                        id="txtSortOrder"
+                                        autocomplete="off"
+                                        value="#{timedItemFeeController.currentFee.sortOrder}"
+                                        style="width: 500px;"
+                                        title="Slot position (1 = first block, 2 = second block, etc.)"/>
+
+                                    <h:outputLabel value="Repeating"/>
+                                    <p:outputLabel value=": " style="width: 30px; text-align: center; "/>
+                                    <h:panelGroup class="mt-2">
+                                        <h:selectBooleanCheckbox
+                                            id="chkRepeating"
+                                            value="#{timedItemFeeController.currentFee.repeating}"/>
+                                        <h:outputLabel for="chkRepeating" value=" Apply this fee to all remaining blocks beyond the defined slots"/>
+                                    </h:panelGroup>
+
+                                    <p:selectBooleanCheckbox
                                         value="#{timedItemFeeController.currentFee.booleanValue}"
                                         itemLabel="Consider Each Unit"
                                         class="mt-2"
@@ -133,6 +151,12 @@
                                     </p:column>
                                     <p:column headerText="Over Shoot">
                                         <p:inputText value="#{bi.overShootHours}" autocomplete="off" />
+                                    </p:column>
+                                    <p:column headerText="Slot Order" style="width: 90px">
+                                        <p:inputText value="#{bi.sortOrder}" autocomplete="off" style="width: 60px;"/>
+                                    </p:column>
+                                    <p:column headerText="Repeating" style="width: 90px">
+                                        <h:selectBooleanCheckbox value="#{bi.repeating}" title="Repeating slot"/>
                                     </p:column>
                                     <p:column headerText="Action" style="width: 100px">
                                         <p:commandButton 

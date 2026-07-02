@@ -26,6 +26,9 @@ public class SiteUpdateRequestDTO implements Serializable {
     private String email; // Optional - update if provided
     private String fax; // Optional - update if provided
     private Boolean active; // Optional - update if provided
+    // Bed-board SVG fields (issue #21592). Optional; additive only.
+    private String svgParentView; // Optional - update if provided
+    private String svgChildView; // Optional - update if provided
 
     public SiteUpdateRequestDTO() {
     }
@@ -123,6 +126,22 @@ public class SiteUpdateRequestDTO implements Serializable {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public String getSvgParentView() {
+        return svgParentView;
+    }
+
+    public void setSvgParentView(String svgParentView) {
+        this.svgParentView = svgParentView;
+    }
+
+    public String getSvgChildView() {
+        return svgChildView;
+    }
+
+    public void setSvgChildView(String svgChildView) {
+        this.svgChildView = svgChildView;
     }
 
     @Override

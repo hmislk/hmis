@@ -2740,12 +2740,18 @@ public class BillService {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
+        // Quantity sign note: BillItem.qty is stored unsigned (magnitude only), so summing it
+        // makes a sale and its return both add instead of netting out. PharmaceuticalBillItem.qty
+        // is the correctly signed stock delta (negative = stock went out for a sale/issue,
+        // positive = stock came back on a return). For a "movement OUT" report we want the
+        // quantity that went out, so we negate the summed pbi.qty: a sale yields a positive
+        // out-quantity and a return reduces it, matching the signed value columns below.
         jpql = "select new com.divudi.core.data.dto.PharmacyMovementOutByItemDTO( "
                 + " it.id, "
                 + " coalesce(it.name, 'N/A'), "
                 + " it.code, "
                 + " coalesce(cat.name, 'N/A'), "
-                + " coalesce(sum(bi.qty), 0.0), "
+                + " (coalesce(sum(pbi.qty), 0.0) * -1.0), "
                 + " coalesce(sum(bi.grossValue), 0.0), "
                 + " coalesce(sum(bi.discount), 0.0), "
                 + " coalesce(sum(bi.marginValue), 0.0), "

@@ -153,7 +153,7 @@ public class ServiceFeeEdit implements Serializable {
 
         getBillFeeFacade().edit(billFee);
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), billItem.getBill().getFromDepartment(),billItem.getBill().getPatientEncounter().getPaymentMethod());
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), billItem.getBill().getFromDepartment(),billItem.getBill().getPatientEncounter().getPaymentMethod(), billItem.getBill().getPatientEncounter().getAdmissionType());
 
         getInwardBean().updateBillItemMargin(billItem, billFee.getFeeGrossValue(), billItem.getBill().getPatientEncounter(), billItem.getBill().getFromDepartment(), priceMatrix);
 

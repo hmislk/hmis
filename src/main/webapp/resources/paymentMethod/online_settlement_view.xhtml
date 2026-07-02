@@ -14,40 +14,31 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="d-flex flex-wrap align-items-center gap-3">
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel value="Amount:" styleClass="form-label mb-0" style="min-width: 80px;"/>
-                <h:outputText
-                    value="#{cc.attrs.paymentMethodData.onlineSettlement.totalValue}"
-                    styleClass="form-control-plaintext fw-bold"
-                    style="width: 150px;">
+        <div class="d-flex flex-wrap align-items-stretch gap-3 py-1">
+            <div class="d-flex flex-column border rounded-3 bg-light px-3 py-2">
+                <p:outputLabel value="Amount" styleClass="text-muted text-uppercase small mb-1"/>
+                <h:outputText value="#{cc.attrs.paymentMethodData.onlineSettlement.totalValue}" styleClass="fs-5 fw-bold text-primary">
                     <f:convertNumber pattern="#,##0.00" />
                 </h:outputText>
             </div>
 
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel value="Reference No:" styleClass="form-label mb-0"/>
-                <h:outputText
-                    value="#{cc.attrs.paymentMethodData.onlineSettlement.referenceNo}"
-                    styleClass="form-control-plaintext"
-                    style="width: 120px;"/>
-            </div>
+            <h:panelGroup layout="block" styleClass="d-flex flex-column border rounded-3 bg-light px-3 py-2"
+                          rendered="#{not empty cc.attrs.paymentMethodData.onlineSettlement.referenceNo}">
+                <p:outputLabel value="Reference No" styleClass="text-muted text-uppercase small mb-1"/>
+                <h:outputText value="#{cc.attrs.paymentMethodData.onlineSettlement.referenceNo}" styleClass="fw-semibold"/>
+            </h:panelGroup>
 
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel value="Institution:" styleClass="form-label mb-0"/>
-                <h:outputText
-                    value="#{cc.attrs.paymentMethodData.onlineSettlement.institution.name}"
-                    styleClass="form-control-plaintext fw-semibold"
-                    style="width: 180px;"/>
-            </div>
+            <h:panelGroup layout="block" styleClass="d-flex flex-column border rounded-3 bg-light px-3 py-2"
+                          rendered="#{not empty cc.attrs.paymentMethodData.onlineSettlement.institution}">
+                <p:outputLabel value="Institution" styleClass="text-muted text-uppercase small mb-1"/>
+                <h:outputText value="#{cc.attrs.paymentMethodData.onlineSettlement.institution.name}" styleClass="fw-semibold"/>
+            </h:panelGroup>
 
-            <div class="d-flex align-items-center gap-2 flex-grow-1">
-                <p:outputLabel value="Comment:" styleClass="form-label mb-0"/>
-                <h:outputText
-                    value="#{cc.attrs.paymentMethodData.onlineSettlement.comment}"
-                    styleClass="form-control-plaintext"
-                    style="flex-grow: 1;"/>
-            </div>
+            <h:panelGroup layout="block" styleClass="d-flex flex-column border rounded-3 bg-light px-3 py-2 flex-grow-1"
+                          rendered="#{not empty cc.attrs.paymentMethodData.onlineSettlement.comment}">
+                <p:outputLabel value="Comment" styleClass="text-muted text-uppercase small mb-1"/>
+                <h:outputText value="#{cc.attrs.paymentMethodData.onlineSettlement.comment}"/>
+            </h:panelGroup>
         </div>
     </cc:implementation>
 </html>

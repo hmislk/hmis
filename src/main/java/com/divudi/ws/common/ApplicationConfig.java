@@ -45,6 +45,8 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.common.CapabilityStatementResource.class);
         resources.add(com.divudi.ws.common.ConfigResource.class);
         resources.add(com.divudi.ws.common.LoginHistoryApi.class);
+        resources.add(com.divudi.ws.common.PaymentSchemeApi.class);
+        resources.add(com.divudi.ws.common.StaffApi.class);
         resources.add(com.divudi.ws.common.SubscriptionApi.class);
         resources.add(com.divudi.ws.common.UserManagementApi.class);
         resources.add(com.divudi.ws.common.UserRoleApi.class);
@@ -63,10 +65,13 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.investigation.InvestigationFormatApi.class);
         resources.add(com.divudi.ws.inward.ApiInward.class);
         resources.add(com.divudi.ws.inward.InwardDiscountMatrixApi.class);
+        resources.add(com.divudi.ws.inward.InwardDocumentTemplateApi.class);
         resources.add(com.divudi.ws.inward.InwardPriceAdjustmentApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomCategoryApi.class);
         resources.add(com.divudi.ws.inward.InwardRoomFacilityChargeApi.class);
+        resources.add(com.divudi.ws.inward.PriceMatrixInwardApi.class);
+        resources.add(com.divudi.ws.inward.TimedItemApi.class);
         resources.add(com.divudi.ws.lims.AnalyzerTestApi.class);
         resources.add(com.divudi.ws.lims.Lims.class);
         resources.add(com.divudi.ws.lims.LimsMiddlewareController.class);
@@ -76,10 +81,12 @@ public class ApplicationConfig extends Application {
         resources.add(com.divudi.ws.pharmacy.PharmaceuticalConfigApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmaceuticalItemApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacyAdjustmentApi.class);
-        resources.add(com.divudi.ws.pharmacy.PharmacyBatchApi.class);
+     resources.add(com.divudi.ws.pharmacy.PharmacyBatchApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacyBfdBackfillApi.class);
+        resources.add(com.divudi.ws.pharmacy.PharmacyDiscountApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacyF15ReportApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacyGrnBifdBackfillApi.class);
+        resources.add(com.divudi.ws.pharmacy.PharmacyItemApi.class);
         resources.add(com.divudi.ws.pharmacy.PharmacySearchApi.class);
         resources.add(com.divudi.ws.pharmacy.StockHistoryApi.class);
         resources.add(com.divudi.ws.pricing.CollectingCentreFeesApi.class);

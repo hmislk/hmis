@@ -1481,6 +1481,7 @@ public class SearchController implements Serializable {
         filterChannelBillsByBilledDate = true;
         settledBillType = null;
         total = 0.0;
+        pharmacyBillSearch.setSaleBillDtos(null);
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
@@ -3337,6 +3338,10 @@ public class SearchController implements Serializable {
 
     public void createPharmacyRetailBills() {
         pharmacyBillSearch.fetchSaleSearchDtosFromNativeBills(true);
+    }
+
+    public void createPharmacySaleBillItems() {
+        pharmacyBillSearch.fetchSaleBillItemSearchDtos(getMaxResult());
     }
 
     public void createPharmacyAddToStockBills() {
@@ -7735,7 +7740,9 @@ public class SearchController implements Serializable {
     private List<Bill> getBHTIssudBills(Bill b) {
         String sql = "Select b From Bill b where b.retired=false "
                 + " and b.billType=:btp "
-                + " and b.referenceBill=:ref ";
+                + " and b.referenceBill=:ref "
+                + " and b.cancelled=false "
+                + " and b.refunded=false ";
         HashMap hm = new HashMap();
         hm.put("ref", b);
         hm.put("btp", BillType.PharmacyBhtPre);

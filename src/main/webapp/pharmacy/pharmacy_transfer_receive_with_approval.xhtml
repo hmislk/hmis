@@ -33,16 +33,17 @@
                         <p:commandButton
                             value="Finalize"
                             action="#{transferReceiveController.finalizeRequest()}"
-                            class="ui-button-warning mx-1"
-                            icon="fas fa-check"
+                            styleClass="ui-button-stage-finalize mx-1"
+                            icon="fas fa-lock"
                             ajax="false"
                             disabled="#{transferReceiveController.receivedBill.checkedBy ne null}"
+                            onclick="return confirm('Are you sure you want to finalize this receive? This cannot be undone.');"
                             style="float: right;">
                         </p:commandButton>
                         <p:commandButton
                             value="Save"
                             action="#{transferReceiveController.saveRequest()}"
-                            class="ui-button-success mx-1"
+                            styleClass="ui-button-stage-save mx-1"
                             icon="fas fa-floppy-disk"
                             disabled="#{transferReceiveController.receivedBill.checkedBy ne null}"
                             ajax="false"
@@ -89,7 +90,7 @@
                             </p:column> 
 
                             <p:column headerText="Expiry Date"  style="width:25px!important;">  
-                                <h:outputText id="doe" value="#{ph.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" >  
+                                <h:outputText id="doe" value="#{ph.pharmaceuticalBillItem.itemBatch.dateOfExpire}" >  
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputText>
                             </p:column>  

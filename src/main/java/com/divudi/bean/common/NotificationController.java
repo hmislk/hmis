@@ -127,6 +127,15 @@ public class NotificationController implements Serializable {
             case "Discharge":
                 createInwardRoomDischargeNotifications(pr);
                 break;
+            case "Admit":
+                createInwardRoomAdmitNotifications(pr);
+                break;
+            case "Change":
+                createInwardRoomChangeNotifications(pr);
+                break;
+            case "CancelDischarge":
+                createInwardRoomDischargeCancelNotifications(pr);
+                break;
 
             default:
                 throw new AssertionError();
@@ -144,6 +153,12 @@ public class NotificationController implements Serializable {
             case "FinalDischarge":
                 createInwardFinalDischargeNotifications(pe);
                 break;
+            case "NursingDischarge":
+                createInwardNursingDischargeNotifications(pe);
+                break;
+            case "PhysicalDischarge":
+                createInwardPhysicalDischargeNotifications(pe);
+                break;
             default:
                 throw new AssertionError();
         }
@@ -157,7 +172,64 @@ public class NotificationController implements Serializable {
             nn.setPatientRoom(pr);
             nn.setTriggerType(tt);
             nn.setCreater(sessionController.getLoggedUser());
-            String msg = "You Have a Discharge Notification From " + pr.getRoomFacilityCharge().getName();
+            String roomName = pr.getRoomFacilityCharge() != null ? pr.getRoomFacilityCharge().getName() : "Unknown Room";
+            String msg = "You Have a Discharge Notification From " + roomName;
+            nn.setMessage(msg);
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createInwardRoomAdmitNotifications(PatientRoom pr) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_ROOM_ADDED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientRoom(pr);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            String roomName = pr.getRoomFacilityCharge() != null ? pr.getRoomFacilityCharge().getName() : "Unknown Room";
+            String patientName = "";
+            if (pr.getPatientEncounter() != null && pr.getPatientEncounter().getPatient() != null
+                    && pr.getPatientEncounter().getPatient().getPerson() != null) {
+                patientName = pr.getPatientEncounter().getPatient().getPerson().getNameWithTitle();
+            }
+            String msg = "Patient " + patientName + " admitted to " + roomName;
+            nn.setMessage(msg);
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createInwardRoomChangeNotifications(PatientRoom pr) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_ROOM_CHANGED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientRoom(pr);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            String roomName = pr.getRoomFacilityCharge() != null ? pr.getRoomFacilityCharge().getName() : "Unknown Room";
+            String msg = "Patient moved to " + roomName;
+            if (pr.getPatientEncounter() != null && pr.getPatientEncounter().getBhtNo() != null) {
+                msg = msg + " (BHT: " + pr.getPatientEncounter().getBhtNo() + ")";
+            }
+            nn.setMessage(msg);
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createInwardRoomDischargeCancelNotifications(PatientRoom pr) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_ROOM_DISCHARGED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientRoom(pr);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            String roomName = pr.getRoomFacilityCharge() != null ? pr.getRoomFacilityCharge().getName() : "Unknown Room";
+            String msg = "Room Discharge Cancelled for " + roomName;
             nn.setMessage(msg);
             getFacade().create(nn);
             userNotificationController.createUserNotifications(nn);
@@ -189,6 +261,36 @@ public class NotificationController implements Serializable {
             nn.setCreater(sessionController.getLoggedUser());
             nn.setMessage(createDischargeMessage("Message Template for Inward Final Discharge Notification",
                     "Patient discharged from the hospital", pe));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createInwardNursingDischargeNotifications(PatientEncounter pe) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_NURSING_DISCHARGED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientEncounter(pe);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createDischargeMessage("Message Template for Inward Nursing Discharge Notification",
+                    "Patient nursing discharge confirmed", pe));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createInwardPhysicalDischargeNotifications(PatientEncounter pe) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_PHYSICAL_DISCHARGED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientEncounter(pe);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createDischargeMessage("Message Template for Inward Physical Discharge Notification",
+                    "Patient has physically left the hospital", pe));
             getFacade().create(nn);
             userNotificationController.createUserNotifications(nn);
         }

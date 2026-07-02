@@ -123,12 +123,17 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             JsfUtil.addErrorMessage("Select BHT");
             return;
         }
+        
+        paymentListener();
+
+    }
+    
+    public void paymentListener(){
         due = getFinalBillDue();
         finalBillTotal = getFinalBillNetTotal();
         patient = current.getPatientEncounter().getPatient();
         paymentMethod = null;
         paymentMethodData = new PaymentMethodData();
-
     }
 
     /** Navigate to the inward patient co-payment collection page, requiring an active shift. */
@@ -609,6 +614,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             finalBillDeptId = pe.getFinalBill().getDeptId();
         }
 
+        boolean showInwardDepositComment = configOptionApplicationController.getBooleanValueByKey("Show Comment on Inward Deposit Bill", false);
+
         String output;
         output = template
                 .replace("{dept_id}", bill.getDeptId() != null ? String.valueOf(bill.getDeptId()) : "")
@@ -644,7 +651,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 .replace("{bill_date}", bill.getBillDate() != null ? formatDate(bill.getBillDate(), sessionController) : "")
                 .replace("{bill_time}", bill.getBillTime() != null ? formatTime(bill.getBillTime(), sessionController) : "")
                 .replace("{time_of_admission}", pe.getDateOfAdmission() != null ? formatDate(pe.getDateOfAdmission(), sessionController) : "")
-                .replace("{time_of_discharge}", pe.getDateOfDischarge() != null ? formatTime(pe.getDateOfDischarge(), sessionController) : "");
+                .replace("{time_of_discharge}", pe.getDateOfDischarge() != null ? formatTime(pe.getDateOfDischarge(), sessionController) : "")
+                .replace("{comment}", showInwardDepositComment && bill.getComments() != null ? bill.getComments() : "")
+                .replace("{bill_comment}", showInwardDepositComment && bill.getComments() != null ? bill.getComments() : "");
 
         return output;
     }
@@ -774,6 +783,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                     }
                     PatientDeposit pd = patientDepositService.getDepositOfThePatient(patient, sessionController.getDepartment());
                     paymentMethodData.getPatient_deposit().setPatientDepost(pd);
+                    paymentMethodData.getPatient_deposit().setTotalValue(0.0);
                 }
             }
         }
@@ -865,6 +875,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());
+        getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
 
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());

@@ -249,6 +249,43 @@ facade.findLightsByJpql(jpql, params)     // Missing TemporalType when using Dat
 6a. **`BigDecimal` constructor param for a `double`/`Double` column** → loud `IllegalArgumentException: argument type mismatch` at construction time (see § Numeric Type Mismatch)
 7. **Including cancellation details in list DTOs** → Unnecessary complexity and performance issues
 8. **Using derived/calculated properties in JPQL** → JPQL only supports persisted fields, not getter methods (see below)
+9. **Calling `Staff.getName()` to display a person's name** → returns the `Staff` entity's own (usually unset) `name` field, not the linked person's name — see below
+
+## 🚨 CRITICAL: `Staff.getName()` Does NOT Return the Person's Name
+
+`Staff` has its own `name` field (often `null`/unset) **separate** from the
+linked `Person` entity's `name`. Calling `staff.getName()` to display "who did
+this" silently renders blank or the literal string `"null"` — there is no
+exception, so this is easy to miss in code review.
+
+### ❌ WRONG
+
+```xhtml
+<h:outputText value="#{bean.selectedRecord.administeredBy.name}" />
+```
+```java
+sb.append(" by ").append(mar.getAdministeredBy().getName()); // "by null"
+```
+
+### ✅ CORRECT — go through `Person`
+
+```xhtml
+<h:outputText value="#{bean.selectedRecord.administeredBy.person.name}" />
+```
+```java
+if (mar.getAdministeredBy() != null && mar.getAdministeredBy().getPerson() != null
+        && mar.getAdministeredBy().getPerson().getName() != null) {
+    sb.append(" by ").append(mar.getAdministeredBy().getPerson().getName());
+}
+```
+
+Guard each hop (`administeredBy`, `.getPerson()`, `.getName()`) — all three can
+be `null` for incompletely-seeded `Staff` records.
+
+**Found during #21488**: the Ward Medicines Timeline's "Administered By" field
+showed "by null" until switched to `administeredBy.person.name`.
+
+---
 
 ## 🚨 CRITICAL: Type Handling in DTO Constructor Queries
 

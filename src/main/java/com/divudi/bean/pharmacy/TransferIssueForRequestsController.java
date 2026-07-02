@@ -34,6 +34,7 @@ import com.divudi.core.entity.Item;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItemFinanceDetails;
@@ -71,6 +72,8 @@ public class TransferIssueForRequestsController implements Serializable {
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private BillItemFacade billItemFacade;
+    @EJB
+    private StockFacade stockFacade;
     @EJB
     private PharmacyBean pharmacyBean;
     @Inject
@@ -784,23 +787,51 @@ public class TransferIssueForRequestsController implements Serializable {
             JsfUtil.addErrorMessage("No Bill Items are added to Transfer");
             return;
         }
+        // Live stock check: fetch current DB values for every item before committing anything.
+        // The in-memory Stock object was captured at page-load time and may be stale — a retail
+        // sale or concurrent issue after page load will not be reflected in it.
         for (BillItem bi : getBillItems()) {
-            if (bi.getPharmaceuticalBillItem().getItemBatch() != null) {
-                if (bi.getPharmaceuticalBillItem().getStock().getStock() < bi.getPharmaceuticalBillItem().getQty()) {
-                    JsfUtil.addErrorMessage("Available quantity is less than issued quantity in " + bi.getPharmaceuticalBillItem().getItemBatch().getItem().getName());
+            // Single source of truth for the issued quantity (#21266 RC6): the
+            // user-entered qty lives in BillItemFinanceDetails.quantity, but the
+            // stock movement below uses pbi.qty - which still holds the REQUESTED
+            // qty from item generation if a UI edit did not sync it. Stock then
+            // moved by the requested qty while updateBillItemRateAndValue()
+            // rewrote the persisted line to the user-entered qty AFTER the stock
+            // ops (pbi 4912145, 2026-05-20: stock moved 2, line said 1). Sync
+            // pbi/billItem qty from the user-entered value BEFORE validating or
+            // moving any stock, keeping the positive pre-settle sign convention.
+            syncStockQtyFromUserEnteredQty(bi);
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            if (pbi == null) {
+                // createEmptyBillItem() leaves pharmaceuticalBillItem unset when no stock
+                // was available at generation time - nothing to validate or settle for it.
+                continue;
+            }
+            if (pbi.getItemBatch() == null) {
+                if (pbi.getQty() > 0) {
+                    String name = bi.getItem() != null ? bi.getItem().getName() : "An item";
+                    JsfUtil.addErrorMessage(name + " is not available in the stock.");
                     return;
                 }
-            } else if (bi.getPharmaceuticalBillItem().getItemBatch() == null) {
-                if (bi.getPharmaceuticalBillItem().getQty() > 0) {
-                    JsfUtil.addErrorMessage(bi.getItem().getName() + " is not available in the stock");
-                    return;
+            } else {
+                if (pbi.getStock() != null && pbi.getStock().getId() != null) {
+                    Stock liveStock = stockFacade.find(pbi.getStock().getId());
+                    if (liveStock == null || liveStock.getStock() < pbi.getQty()) {
+                        JsfUtil.addErrorMessage("Insufficient stock for one or more items. "
+                                + "Stock levels may have changed since this page was loaded. "
+                                + "Please refresh and try again.");
+                        return;
+                    }
                 }
             }
 
             double remainingQty = getRemainingQuantityForItem(bi.getReferanceBillItem());
-            double issuingQty = bi.getBillItemFinanceDetails().getQuantity() != null ? bi.getBillItemFinanceDetails().getQuantity().doubleValue() : 0.0;
+            double issuingQty = bi.getBillItemFinanceDetails().getQuantity() != null
+                    ? bi.getBillItemFinanceDetails().getQuantity().doubleValue() : 0.0;
             if (issuingQty > remainingQty) {
-                JsfUtil.addErrorMessage("Issued quantity (" + issuingQty + ") is higher than remaining requested quantity (" + remainingQty + ") for " + bi.getItem().getName());
+                String name = bi.getItem() != null ? bi.getItem().getName() : "one of the items";
+                JsfUtil.addErrorMessage("Issued quantity (" + issuingQty + ") is higher than remaining "
+                        + "requested quantity (" + remainingQty + ") for " + name + ".");
                 return;
             }
         }
@@ -808,7 +839,7 @@ public class TransferIssueForRequestsController implements Serializable {
         //Remove Zero Qty Item
         List<BillItem> billItemList = new ArrayList<>();
         for (BillItem bi : getBillItems()) {
-            if (bi.getPharmaceuticalBillItem().getQty() != 0.0) {
+            if (bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getQty() != 0.0) {
                 billItemList.add(bi);
             }
         }
@@ -851,14 +882,6 @@ public class TransferIssueForRequestsController implements Serializable {
 
             billItemsInIssue.setPharmaceuticalBillItem(tmpPh);
             getBillItemFacade().edit(billItemsInIssue);
-
-            //Checking User Stock Entity
-            if (!userStockController.isStockAvailable(tmpPh.getStock(), tmpPh.getQty(), getSessionController().getLoggedUser())) {
-                billItemsInIssue.setTmpQty(0);
-                getBillItemFacade().edit(billItemsInIssue);
-                getIssuedBill().getBillItems().add(billItemsInIssue);
-                continue;
-            }
 
             //Remove Department Stock
             boolean returnFlag = pharmacyBean.deductFromStock(billItemsInIssue.getPharmaceuticalBillItem().getStock(),
@@ -1005,6 +1028,31 @@ public class TransferIssueForRequestsController implements Serializable {
 
     }
 
+    /**
+     * Copies the user-entered quantity (BillItemFinanceDetails.quantity, in
+     * packs) onto the fields the settle stock operations read - pbi.qty (units),
+     * pbi.qtyPacks and billItem.qty (packs) - so the quantity that moves stock
+     * is always the quantity that gets persisted (#21266 RC6). Values are set
+     * POSITIVE to match the pre-settle convention expected by the validation
+     * and zero-removal checks; settle() negates them later. Lines without
+     * finance details or a quantity are left untouched (conservative fallback).
+     */
+    private void syncStockQtyFromUserEnteredQty(BillItem bi) {
+        if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+        if (f == null || f.getQuantity() == null) {
+            return;
+        }
+        double packs = Math.abs(f.getQuantity().doubleValue());
+        double unitsPerPack = (f.getUnitsPerPack() != null && f.getUnitsPerPack().compareTo(BigDecimal.ZERO) > 0)
+                ? f.getUnitsPerPack().doubleValue() : 1.0;
+        bi.getPharmaceuticalBillItem().setQty(packs * unitsPerPack);
+        bi.getPharmaceuticalBillItem().setQtyPacks(packs);
+        bi.setQty(packs);
+    }
+
     private void updateBillItemRateAndValue(BillItem b) {
         BillItemFinanceDetails f = b.getBillItemFinanceDetails();
         double rate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
@@ -1057,6 +1105,14 @@ public class TransferIssueForRequestsController implements Serializable {
             if (f.getPurchaseRate() == null) {
                 f.setPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()));
             }
+            // Recompute valuation fields from the user-entered quantity. They are
+            // set at item-generation time from the REQUESTED qty and were never
+            // updated when the user changed the issuing qty (#21266 RC6:
+            // valueAtPurchaseRate stayed 990 = 2 x 495 while the line qty became
+            // 1). Positive sign, matching the generation-time convention.
+            f.setValueAtPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()).multiply(qtyInUnits));
+            f.setValueAtRetailRate(BigDecimal.valueOf(batch.getRetailsaleRate()).multiply(qtyInUnits));
+            f.setValueAtCostRate(costRate.multiply(qtyInUnits));
         } else {
             f.setLineCostRate(BigDecimal.ZERO);
             f.setLineCost(BigDecimal.ZERO);
