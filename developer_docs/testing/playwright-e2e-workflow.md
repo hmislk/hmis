@@ -414,6 +414,27 @@ can intercept subsequent clicks ("subtree intercepts pointer events") — click
 a neutral element on the page first (e.g. a heading) to dismiss the overlay
 before clicking Search.
 
+## 19. Some `confirm()`-guarded `type="submit"` buttons never reach the server — prefer existing data
+
+On `pharmacy/pharmacy_bill_retail_sale_native.xhtml` ("Pharmacy Retail Sale"), the
+**Settle** button is a plain `<button type="submit" onclick="...confirm(...)...">`
+(no `p:commandButton`/AJAX). Across several approaches — real `browser_click` +
+`browser_handle_dialog`, overriding `window.confirm` before clicking, and dispatching
+a synthetic click via `browser_evaluate` — the click always ran the `onclick` handler
+(confirm dialog appeared/was accepted each time) but the browser never actually
+submitted the form: no new request appeared in `browser_network_requests`, and the
+server log had no corresponding entries. Root cause not identified (possibly a
+`Tendered` client-side balance check, or a JS handler outside the visible `onclick`
+attribute, silently calling `preventDefault()`).
+
+**Workaround used:** rather than fighting this page, the existing `pharmacy_search_*`
+pages were verified against **pre-existing historical demo data** (CareCode Model
+Hospital ships with substantial seeded pharmacy sale history) instead of creating a
+fresh bill through this specific page. If a fresh bill genuinely must be created for a
+test, try the token-based "Sale for Cashier" flow instead — its item-add/quantity
+inputs worked fine in this session, only the retail-native page's Settle button was
+unreachable.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

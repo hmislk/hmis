@@ -3340,6 +3340,10 @@ public class SearchController implements Serializable {
         pharmacyBillSearch.fetchSaleSearchDtosFromNativeBills(true);
     }
 
+    public void createPharmacySaleBillItems() {
+        pharmacyBillSearch.fetchSaleBillItemSearchDtos(getMaxResult());
+    }
+
     public void createPharmacyAddToStockBills() {
         Date startTime = new Date();
         createPharmacyAddToBills(BillType.PharmacyAddtoStock, true);
