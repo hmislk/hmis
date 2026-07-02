@@ -56,6 +56,9 @@ public class PharmacyBatchApi {
     private PharmacyBatchApiService batchService;
 
     private static final Gson gson = new GsonBuilder()
+            // Serialize nulls explicitly so an unexpected null field is visible
+            // in the response instead of being silently omitted (issue #21814)
+            .serializeNulls()
             // Support multiple date formats for expiryDate and other Date fields
             .registerTypeAdapter(Date.class, (JsonDeserializer<Date>) (JsonElement json, Type typeOfT, com.google.gson.JsonDeserializationContext context) -> {
                 if (json == null) {
