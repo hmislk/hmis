@@ -3137,15 +3137,11 @@ public class PatientReportController implements Serializable {
     }
 
     public String navigateToCreatedPatientReport(PatientInvestigation pi) {
-        System.out.println("navigateToCreatedPatientReport() = called");
         String link;
         if (pi == null) {
             JsfUtil.addErrorMessage("No Patient Investigation");
             return null;
         }
-        System.out.println("pi = " + pi);
-        System.out.println("pi.getInvestigation() = " + pi.getInvestigation());
-        System.out.println("isAlternativeReportAllowed = " + pi.getInvestigation().isAlternativeReportAllowed());
 
         if (pi.getInvestigation().isAlternativeReportAllowed()) {
             link = patientInvestigationController.navigateToAlternativeReportSelector(pi);
@@ -3162,7 +3158,6 @@ public class PatientReportController implements Serializable {
             System.out.println("Create New Report and not Allow Calculate. ----> Calculated Requerd = " + calculatedRequerd);
         }
 
-        System.out.println("link = " + link);
         return link;
     }
 
