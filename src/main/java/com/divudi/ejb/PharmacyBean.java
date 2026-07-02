@@ -1283,7 +1283,17 @@ public class PharmacyBean {
     }
 
     /**
-     * Resolve the underlying AMP records for any pharmacy Item subclass.
+     * Resolve the underlying AMP records for any pharmacy Item subclass,
+     * <b>exactly</b> — an AMP (or Ampp) resolves to itself only. This preserves
+     * brand-faithful stock lookup for prescription / discharge-dispensing flows
+     * (e.g. {@code PharmacySaleBhtController.findFefoStockDtosForItem},
+     * {@code PatientEncounterController}), where the prescribed brand must not be
+     * silently swapped for a sibling. VMP/VMPP/VTM/ATM still resolve to every AMP
+     * under that node, as those are inherently generic.
+     *
+     * <p>For the on-demand "Alternatives" substitute panel, which deliberately
+     * offers sibling brands of the same VMP for the cashier to choose, use
+     * {@link #resolveSubstituteAmps(Item)} instead.
      *
      * @param item item to resolve
      * @return list of AMP objects, or an empty list if none found
@@ -1333,6 +1343,62 @@ public class PharmacyBean {
         }
 
         return new ArrayList<>();
+    }
+
+    /**
+     * Resolve the candidate AMPs for the on-demand "Alternatives" substitute
+     * panel (issue #21697). Unlike {@link #resolveAmps(Item)} this expands an
+     * AMP / Ampp to itself <b>plus its sibling AMPs sharing the same VMP</b>
+     * (alternative brands of the same virtual product), so the cashier can pick
+     * a different brand. For VMP/VMPP/VTM/ATM the result is identical to
+     * {@code resolveAmps} (those are already generic and cover every brand).
+     *
+     * <p>This is intentionally separate from {@code resolveAmps} so that
+     * brand-faithful prescription / dispensing flows are never affected — only
+     * the explicit substitute path opts into sibling expansion.
+     *
+     * @param item item to resolve substitute candidates for
+     * @return AMP list including sibling brands, or empty if none found
+     */
+    public List<Amp> resolveSubstituteAmps(Item item) {
+        if (item == null) {
+            return new ArrayList<>();
+        }
+        if (item instanceof Amp) {
+            return resolveAmpWithVmpSiblings((Amp) item);
+        }
+        if (item instanceof Ampp) {
+            return resolveAmpWithVmpSiblings(((Ampp) item).getAmp());
+        }
+        // VMP / VMPP / VTM / ATM are already generic — same as exact resolution.
+        return resolveAmps(item);
+    }
+
+    /**
+     * Resolve an AMP to itself plus its sibling AMPs that share the same VMP
+     * (true alternative brands of the same virtual product). The original AMP
+     * is always included even if its VMP is null or has no siblings.
+     */
+    private List<Amp> resolveAmpWithVmpSiblings(Amp amp) {
+        List<Amp> list = new ArrayList<>();
+        if (amp == null) {
+            return list;
+        }
+        list.add(amp);
+        Vmp vmp = amp.getVmp();
+        if (vmp == null) {
+            return list;
+        }
+        List<Amp> siblings = findAmpsForVmp(vmp);
+        if (siblings != null) {
+            for (Amp sibling : siblings) {
+                if (sibling != null && sibling.getId() != null
+                        && !sibling.getId().equals(amp.getId())) {
+                    list.add(sibling);
+                }
+            }
+        }
+        return list;
     }
 
     public List<Amp> findAmpsForVtm(Vtm vtm) {

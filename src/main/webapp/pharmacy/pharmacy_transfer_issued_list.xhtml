@@ -155,8 +155,8 @@
                                         ajax="false"
                                         value="Finalize"
                                         title="Finalize pending receive for #{p.deptId}"
-                                        class="ui-button-warning mx-1"
-                                        icon="fas fa-check"
+                                        styleClass="ui-button-stage-finalize mx-1"
+                                        icon="fas fa-lock"
                                         action="#{transferReceiveNativeSqlController.loadPendingReceiveForFinalize(p.pendingReceiveBillId)}"/>
                                     <p:commandButton
                                         id="btnCancelPendingReceive"
@@ -175,7 +175,7 @@
                                         ajax="false"
                                         value="Approve"
                                         title="Approve finalized receive for #{p.deptId}"
-                                        class="ui-button-success mx-1"
+                                        styleClass="ui-button-stage-approve mx-1"
                                         icon="fas fa-check-double"
                                         action="#{transferReceiveNativeSqlController.loadPendingReceiveForApprove(p.pendingReceiveBillId)}"/>
                                     <p:commandButton

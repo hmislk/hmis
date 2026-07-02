@@ -1481,6 +1481,7 @@ public class SearchController implements Serializable {
         filterChannelBillsByBilledDate = true;
         settledBillType = null;
         total = 0.0;
+        pharmacyBillSearch.setSaleBillDtos(null);
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {

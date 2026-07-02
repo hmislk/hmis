@@ -40,7 +40,10 @@
             <p:remoteCommand name="refreshNotifications"
                              update="notCount notificationGrowl"
                              action="#{userNotificationController.onPushRefreshNotifications}" />
-            <p:growl id="notificationGrowl" life="6000" showDetail="true" />
+            <h:panelGroup id="notificationGrowl">
+                <p:growl life="6000" showDetail="true"
+                         rendered="#{facesContext.partialViewContext.ajaxRequest}" />
+            </h:panelGroup>
             <div id="notifFloatBar">
                 <h:panelGroup id="notCount">
                     <p:badge id="bdgeNotiCount"
@@ -1170,6 +1173,13 @@
                                      value="BHT Issue Requests" icon="fas fa-clipboard-list"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
                                      rendered="#{webUserController.hasPrivilege('PharmacyBhtIssueRequest')}" />
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"
+                            value="Accept Returns from Ward"
+                            icon="fa fa-truck-ramp-box"
+                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
+                        </p:menuitem>
                         <p:menuitem  ajax="false" action="#{inwardReportControllerBht.navigateToInpatientPharmacyRequestedAndIssuedOverviewInPharmacy()}"  value="Pharmacy Requested &amp; Issued Drug Overview" icon="fas fa-list" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
 
                         <p:menuitem  ajax="false" action="#{searchController.navigateToInpatientDirectIssuesByBill()}"
@@ -1830,6 +1840,7 @@
                 <p:menuitem
                     ajax="false"
                     title="Request Manager"
+                    rendered="#{webUserController.hasPrivilege('RequestManager')}"
                     action="#{requestController.navigateToSearchRequest()}"
                     actionListener="#{requestController.makeNull()}"
                     icon="fa-solid fa-envelope">
@@ -2047,7 +2058,7 @@
                         action="/store/store_admin?faces-redirect=true"  
                         value="Manage Store" 
                         icon="fa fa-fw fa-store"
-                        rendered="#{webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
+                        rendered="#{webUserController.hasPrivilege('Store') and webUserController.hasPrivilege('StoreAdministration')}" ></p:menuitem>
                     <p:menuitem  
                         ajax="false"  
                         action="#{feeController.navigateToAdminFee()}" 

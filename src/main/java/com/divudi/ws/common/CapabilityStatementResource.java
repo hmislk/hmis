@@ -261,10 +261,35 @@ public class CapabilityStatementResource {
                         + "for strength-ratio based dispensing substitution.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Pharmacy Items", "/api/pharmacy/items",
+                        "Create, search, update, and retire dispensable pharmacy PharmaceuticalItem records used by pharmacy billing and dispensing. "
+                        + "POST/PUT fields include name, code, categoryId, dosageFormId, ampId, institutionId, departmentId, retailRate, allowFractions, discountAllowed. "
+                        + "GET /search supports query, institutionId, departmentId, size.",
+                        "API Key (Finance header)",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Pharmacy Adjustments", "/api/pharmacy_adjustments",
                         "Pharmacy stock and adjustment operations",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Pharmacy Discounts", "/api/pharmacy/discounts",
+                        "Manage PaymentSchemeDiscount rows that control per-category discount percentages "
+                        + "applied during pharmacy billing for a given payment scheme. "
+                        + "POST /api/pharmacy/discounts/bulk creates or updates a discount % across "
+                        + "all pharmacy item categories at once (idempotent). "
+                        + "GET lists rows (filter: paymentSchemeId, paymentSchemeName, billType, limit). "
+                        + "POST creates a single row. PUT /{id} updates discountPercent. DELETE /{id} soft-retires.",
+                        "API Key (Finance header)",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Payment Schemes", "/api/payment-scheme",
+                        "List and update PaymentScheme records. "
+                        + "GET lists all active schemes (optional ?query=name-filter&limit=). "
+                        + "Response includes all billing-scope flags: validForInpatientBills, validForPharmacy, "
+                        + "validForBilledBills, validForChanneling, and eligibility flags "
+                        + "(staffMemberRequired, membershipRequired, staffRequired, staffOrFamilyRequired, "
+                        + "memberRequired, memberOrFamilyRequired, seniorCitizenRequired, pregnantMotherRequired). "
+                        + "PUT /{id} performs a partial update — only fields present in the request body are changed.",
+                        "API Key (Finance header)",
+                        "GET", "PUT"))
                 .add(resource("Pharmacy Search", "/api/pharmacy_adjustments/search",
                         "Pharmacy stock search",
                         "API Key",
@@ -286,9 +311,27 @@ public class CapabilityStatementResource {
                         + "Also exposes /api/logins/last-per-user for the most recent login per unique user in a department.",
                         "API Key",
                         "GET"))
+                .add(resource("Staff", "/api/staff",
+                        "Staff CRUD. GET lists active staff (supports ?query=&departmentId=&size=). "
+                        + "GET /{id} returns a single staff record including personId, code, designation, and department. "
+                        + "POST creates a new staff member (required: name; optional: code, designation (string label), departmentId, institutionId). "
+                        + "Creates a linked Person automatically. "
+                        + "PUT /{id} updates name, code, designation, departmentId, or institutionId (partial update — only supplied fields change). "
+                        + "DELETE /{id}?retireComments=reason soft-retires a staff record. "
+                        + "Link an existing Staff to a WebUser via PUT /api/users/{id}/staff with body {staffId}. "
+                        + "POST /api/users supports optional staffId field to pre-link staff at user creation. "
+                        + "POST /api/users/{id}/privileges/all with optional body {departmentIds:[...]} assigns every privilege across specified (or all loggable) departments; "
+                        + "returns {privilegesAdded, privilegesSkipped, departments:[{departmentId, added, skipped}]}.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Users", "/api/users",
                         "User CRUD, password reset/change, loggable department assignment, "
                         + "and per-user privilege assignment with department scope. "
+                        + "Create/update accepts optional loginPage and optional staffId. "
+                        + "POST /{id}/privileges requires departmentId. "
+                        + "POST /{id}/departments/{departmentId}/privileges/category assigns all privileges from named categories. "
+                        + "POST /{id}/privileges/all with optional body {departmentIds:[...]} assigns every privilege across specified or all loggable departments. "
+                        + "PUT /{id}/staff with body {staffId} links a Staff record to the user. "
                         + "Supports filtering by departmentId and query string. "
                         + "DELETE /{id}/departments/{assignmentId} revokes one loggable department. "
                         + "DELETE /{id}/departments/{departmentId}/privileges bulk-revokes all privileges for a department. "
@@ -332,7 +375,10 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Services", "/api/services",
-                        "OPD and Inward service management including fees and categories",
+                        "OPD and Inward service management including fees and categories. "
+                        + "Fee sub-paths: /{id}/fees (GET fees, POST add), /{id}/fees/{feeId} (PUT update, DELETE remove). "
+                        + "/fees/bulk-margin (POST bulk-update marginAllowed/discountAllowed on fees in a category). "
+                        + "/fees/margin-disabled?categoryId=X (GET diagnostic list of fees with marginAllowed=false/null).",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))
                 .add(resource("Timed Items", "/api/timed-items",
@@ -340,6 +386,7 @@ public class CapabilityStatementResource {
                         + "TimedItem entities are consumed by the inward timed service page (/inward/inward_timed_service_consume.xhtml). "
                         + "Fees are ordered by sortOrder and support durationHours/overShootHours/repeating for tiered block billing. "
                         + "Sub-resource: /timed-items/{id}/fees for per-item fee management. "
+                        + "Sub-resource: /timed-items/categories for TimedItemCategory CRUD (GET list, GET /{id}, POST, PUT /{id}, DELETE /{id}). "
                         + "PATCH /activate and /deactivate control availability without retiring.",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH", "DELETE"))

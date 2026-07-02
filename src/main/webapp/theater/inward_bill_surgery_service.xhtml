@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
@@ -74,36 +74,53 @@
 
                 <p:panel rendered="#{billBhtController.batchBill ne null}">
                     <f:facet name="header">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <h:outputText value="Surgery Service(Theatre)" style="margin-right: auto;"/>
-                            <div>
-                                <p:commandButton id="btnSettle" value="Settle" action="#{billBhtController.settleBillSurgery}" ajax="false"
-                                                 styleClass="ui-button-success mx-1" icon="fa fa-check">
-                                </p:commandButton>
-                                <p:defaultCommand target="btnSettle"/>
+                        <div class="d-flex justify-content-between align-items-center w-100">
 
-                                <p:commandButton action="#{billBhtController.resetBillData}" ajax="false" value="New Bill"
-                                                 styleClass="ui-button-warning mx-1" 
-                                                 icon="fa fa-plus"/>
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-search"
-                                    styleClass="ui-button-warning mx-1" 
-                                    action="#{patientController.navigateToSearchPatients()}" 
-                                    />
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fa fa-user"
-                                    styleClass="ui-button-warning mx-1" 
-                                    action="#{patientController.navigateToOpdPatientProfile()}" 
-                                    />
-                                <p:commandButton 
-                                    ajax="false"
-                                    icon="fas fa-id-card"
-                                    styleClass="ui-button-secondary mx-1" 
-                                    action="#{bhtSummeryController.navigateToInpatientProfile()}" 
-                                    />
+                            <!-- LEFT: title -->
+                            <div class="d-flex align-items-center gap-2">
+                                <h:outputText value="Surgery Service(Theatre)"/>
                             </div>
+
+                            <!-- CENTER: entity-level navigation -->
+                            <div class="d-flex gap-2">
+                                <p:commandButton id="btnSurgeryDashboard" value="Surgery Dashboard" icon="fa fa-arrow-left"
+                                                 ajax="false" immediate="true"
+                                                 title="Return to surgery dashboard"
+                                                 action="/theater/patient_surgery?faces-redirect=true"
+                                                 styleClass="ui-button-info ui-button-outlined"/>
+                                <p:commandButton id="btnPatientLookup" value="Patient Lookup" icon="fa fa-search"
+                                                 ajax="false" immediate="true"
+                                                 title="Search for a patient"
+                                                 action="#{patientController.navigateToSearchPatients()}"
+                                                 styleClass="ui-button-info ui-button-outlined"/>
+                                <p:commandButton id="btnPatientProfile" value="Patient Profile" icon="fa fa-user"
+                                                 ajax="false" immediate="true"
+                                                 title="View patient profile"
+                                                 action="#{patientController.navigateToOpdPatientProfile()}"
+                                                 styleClass="ui-button-info ui-button-outlined"/>
+                                <p:commandButton id="btnInpatientDashboard" value="Inpatient Dashboard" icon="fas fa-id-card"
+                                                 ajax="false" immediate="true"
+                                                 title="Go to inpatient dashboard"
+                                                 action="#{bhtSummeryController.navigateToInpatientProfile()}"
+                                                 styleClass="ui-button-info ui-button-outlined"/>
+                            </div>
+
+                            <!-- RIGHT: actions, left=least important → right=primary -->
+                            <div class="d-flex gap-2 align-items-center">
+                                <p:commandButton id="btnNewBill" value="New Bill" icon="fa fa-plus"
+                                                 action="#{billBhtController.resetBillData()}"
+                                                 ajax="false"
+                                                 title="Create a new bill"
+                                                 styleClass="ui-button-warning"/>
+                                <p:commandButton id="btnSettle" value="Settle" icon="fa fa-check"
+                                                 action="#{billBhtController.settleBillSurgery}"
+                                                 ajax="false"
+                                                 title="Settle the current bill"
+                                                 style="min-width:120px"
+                                                 styleClass="ui-button-success"/>
+                            </div>
+                            <p:defaultCommand target="btnSettle"/>
+
                         </div>
                     </f:facet>
 

@@ -389,13 +389,9 @@
                                     <p:commandButton
                                         value="Add Services &amp; Investigations"
                                         ajax="false"
-                                        action="/theater/inward_bill_surgery_service?faces-redirect=true"
+                                        action="#{billBhtController.navigateToSurgeryServices(surgeryBillController.surgeryBill)}"
                                         icon="fa fa-plus-square"
-                                        class="w-100">
-                                        <f:setPropertyActionListener
-                                            value="#{surgeryBillController.surgeryBill}"
-                                            target="#{billBhtController.batchBill}"/>
-                                    </p:commandButton>
+                                        class="w-100"/>
 
                                     <p:commandButton
                                         value="Direct Issue Medicines"
@@ -412,12 +408,9 @@
                                     <p:commandButton
                                         value="Add Timed Services"
                                         ajax="false"
-                                        action="/theater/inward_timed_service_consume_surgery?faces-redirect=true"
+                                        action="#{inwardTimedItemController.navigateToSurgeryTimedServices(surgeryBillController.surgeryBill)}"
                                         icon="fa fa-clock"
                                         class="w-100">
-                                        <f:setPropertyActionListener
-                                            value="#{surgeryBillController.surgeryBill.patientEncounter}"
-                                            target="#{inwardTimedItemController.current.patientEncounter}"/>
                                     </p:commandButton>
 
                                     <p:commandButton

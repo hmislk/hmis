@@ -196,6 +196,11 @@ public class PharmacyConfigController implements Serializable {
     private boolean opdDoctorPaymentHideDetails;
     private boolean opdDoctorPaymentHideFiveFiveHeader;
 
+    // Inward BHT Direct Issue Bill Settings
+    private boolean bhtIssuePosPaper;
+    private boolean bhtIssueFiveFivePaper;
+    private boolean bhtIssueA4Paper;
+
     public PharmacyConfigController() {
     }
     
@@ -374,6 +379,11 @@ public class PharmacyConfigController implements Serializable {
         opdDoctorPaymentPosPaper = configOptionApplicationController.getBooleanValueByKey("OPD Doctor payment bill is POS paper", false);
         opdDoctorPaymentHideDetails = configOptionApplicationController.getBooleanValueByKey("Hide the details on the OPD Doctor Payment Bill", false);
         opdDoctorPaymentHideFiveFiveHeader = configOptionApplicationController.getBooleanValueByKey("Hide the Header Details on the OPD Doctor Payment 5x5 Bill", false);
+
+        // Inward BHT Direct Issue Bill Settings
+        bhtIssuePosPaper = configOptionController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is POS Paper", false);
+        bhtIssueFiveFivePaper = configOptionController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is FiveFive Paper", false);
+        bhtIssueA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is A4 Paper", false);
 
     }
 
@@ -740,6 +750,24 @@ public class PharmacyConfigController implements Serializable {
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving Credit Settlement Cancellation configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Inward BHT Direct Issue Bill configuration changes specifically
+     */
+    public void saveBhtIssueConfig() {
+        try {
+            configOptionController.setBooleanValueByKey("Pharmacy Inward Direct Issue Bill is POS Paper", bhtIssuePosPaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Inward Direct Issue Bill is FiveFive Paper", bhtIssueFiveFivePaper);
+            configOptionController.setBooleanValueByKey("Pharmacy Inward Direct Issue Bill is A4 Paper", bhtIssueA4Paper);
+
+            JsfUtil.addSuccessMessage("BHT Direct Issue Bill configuration saved successfully");
+
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving BHT Direct Issue Bill configuration: " + e.getMessage());
         }
     }
 
@@ -1812,6 +1840,31 @@ public class PharmacyConfigController implements Serializable {
 
     public void setGrnReceiptCustom3(boolean grnReceiptCustom3) {
         this.grnReceiptCustom3 = grnReceiptCustom3;
+    }
+
+    // Inward BHT Direct Issue Bill Getters and Setters
+    public boolean isBhtIssuePosPaper() {
+        return bhtIssuePosPaper;
+    }
+
+    public void setBhtIssuePosPaper(boolean bhtIssuePosPaper) {
+        this.bhtIssuePosPaper = bhtIssuePosPaper;
+    }
+
+    public boolean isBhtIssueFiveFivePaper() {
+        return bhtIssueFiveFivePaper;
+    }
+
+    public void setBhtIssueFiveFivePaper(boolean bhtIssueFiveFivePaper) {
+        this.bhtIssueFiveFivePaper = bhtIssueFiveFivePaper;
+    }
+
+    public boolean isBhtIssueA4Paper() {
+        return bhtIssueA4Paper;
+    }
+
+    public void setBhtIssueA4Paper(boolean bhtIssueA4Paper) {
+        this.bhtIssueA4Paper = bhtIssueA4Paper;
     }
 
 }

@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.bean.common.PatientDepositController;
@@ -17,8 +18,10 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BooleanMessage;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dto.BillItemData;
+import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.data.dto.PrintBillData;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.Bill;
@@ -36,6 +39,8 @@ import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.clinical.Prescription;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.facade.ItemBatchFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientFacade;
@@ -80,7 +85,7 @@ import org.primefaces.event.SelectEvent;
  */
 @Named
 @SessionScoped
-public class RetailSaleNativeSqlController implements Serializable, ControllerWithPatient {
+public class RetailSaleNativeSqlController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
     private static final Logger LOGGER = Logger.getLogger(RetailSaleNativeSqlController.class.getName());
 
@@ -111,6 +116,10 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
     private PharmacyService pharmacyService;
     @EJB
     private RetailSaleNativeSqlService nativeSqlService;
+    @EJB
+    private com.divudi.service.PaymentService paymentService;
+    @EJB
+    private com.divudi.service.pharmacy.PharmacySubstituteService pharmacySubstituteService;
     @EJB
     private DiscountSchemeValidationService discountSchemeValidationService;
     @EJB
@@ -373,6 +382,16 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         recalculateDiscountsForAll();
         calTotal();
 
+        // For Multiple Payment Methods, the entered components must cover the net
+        // total (and balance-backed components must have sufficient balance)
+        // before the bill is settled as paid. Mirrors the legacy retail sale
+        // page validation (PharmacySaleController.errorCheck).
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods
+                && validateMultiplePaymentsFailed()) {
+            billSettlingStarted = false;
+            return null;
+        }
+
         // Save or update the patient record
         savePatientIfNeeded();
 
@@ -389,8 +408,11 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         }
 
         try {
-            Payment payment = nativeSqlService.settle(preBillEntity, saleBillEntity, billItemDataList, paymentMethod, getPaymentMethodData(), paymentScheme);
-            drawerController.updateDrawerForIns(payment);
+            List<Payment> payments = nativeSqlService.settle(preBillEntity, saleBillEntity, billItemDataList, paymentMethod, getPaymentMethodData(), paymentScheme);
+            // Debit patient deposits and update staff/credit-company balances for
+            // balance-backed components (no-op for cash/card/etc.).
+            paymentService.updateBalances(payments);
+            drawerController.updateDrawerForIns(payments);
 
             buildPrintBill(saleBillEntity);
             clearBill();
@@ -565,6 +587,9 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
 
         // Payment
         pbd.setPaymentMethodLabel(paymentMethod != null ? paymentMethod.getLabel() : "");
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            pbd.setPayments(buildPrintPaymentLines());
+        }
         if (paymentScheme != null) {
             pbd.setPaymentSchemePrintingName(
                     paymentScheme.getPrintingName() != null ? paymentScheme.getPrintingName() : paymentScheme.getName());
@@ -593,8 +618,27 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         pbd.setDiscount(discTot);
         pbd.setNetTotal(netTot);
         pbd.setDiscountPercentPharmacy(grossTot > 0 ? (discTot / grossTot) * 100.0 : 0.0);
-        pbd.setCashPaid(cashPaid);
-        pbd.setBalance(cashPaid - netTot);
+        // For Multiple Payment Methods the Tendered field is not used; the amount
+        // paid is the sum of the entered components. Show that (and a zero
+        // balance) instead of the unused single cashPaid (which is 0.0).
+        double tendered = cashPaid;
+        double printedBalance = tendered - netTot;
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            tendered = 0.0;
+            for (PrintBillData.PaymentLine line : pbd.getPayments()) {
+                tendered += line.getValue();
+            }
+            // settle accepts the split when it is within 1.0 of the net total
+            // (validateMultiplePaymentsFailed); clamp the printed balance to zero
+            // within the same tolerance so an already-settled bill never shows a
+            // residual balance.
+            printedBalance = tendered - netTot;
+            if (Math.abs(printedBalance) <= 1.0) {
+                printedBalance = 0.0;
+            }
+        }
+        pbd.setCashPaid(tendered);
+        pbd.setBalance(printedBalance);
 
         printBill = pbd;
 
@@ -612,6 +656,79 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
             printCopy.add(p);
         }
         printBillItems = printCopy;
+    }
+
+    /**
+     * Builds one {@link PrintBillData.PaymentLine} per entered component of a
+     * Multiple Payment Methods bill, so the printout itemises each payment
+     * (e.g. "Cash 50.00", "Credit Card 145.90") instead of showing the bundled
+     * "Multiple Payment Methods" label with a single value. Components with no
+     * value are skipped (matching the settle path).
+     */
+    private List<PrintBillData.PaymentLine> buildPrintPaymentLines() {
+        List<PrintBillData.PaymentLine> lines = new ArrayList<>();
+        if (getPaymentMethodData().getPaymentMethodMultiple() == null
+                || getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
+            return lines;
+        }
+        for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            if (cd == null || cd.getPaymentMethod() == null || cd.getPaymentMethodData() == null) {
+                continue;
+            }
+            PaymentMethodData cpmd = cd.getPaymentMethodData();
+            double value = 0.0;
+            String reference = "";
+            switch (cd.getPaymentMethod()) {
+                case Cash:
+                    value = cpmd.getCash().getTotalValue();
+                    break;
+                case Card:
+                    value = cpmd.getCreditCard().getTotalValue();
+                    reference = cpmd.getCreditCard().getNo();
+                    break;
+                case Cheque:
+                    value = cpmd.getCheque().getTotalValue();
+                    reference = cpmd.getCheque().getNo();
+                    break;
+                case ewallet:
+                    value = cpmd.getEwallet().getTotalValue();
+                    reference = cpmd.getEwallet().getReferenceNo();
+                    break;
+                case Slip:
+                    value = cpmd.getSlip().getTotalValue();
+                    reference = cpmd.getSlip().getReferenceNo();
+                    break;
+                case OnlineSettlement:
+                    value = cpmd.getOnlineSettlement().getTotalValue();
+                    reference = cpmd.getOnlineSettlement().getReferenceNo();
+                    break;
+                case IOU:
+                    value = cpmd.getIou().getTotalValue();
+                    reference = cpmd.getIou().getReferenceNo();
+                    break;
+                case Credit:
+                    value = cpmd.getCredit().getTotalValue();
+                    reference = cpmd.getCredit().getReferenceNo();
+                    break;
+                case PatientDeposit:
+                    value = cpmd.getPatient_deposit().getTotalValue();
+                    break;
+                case Staff:
+                    value = cpmd.getStaffCredit().getTotalValue();
+                    break;
+                case Staff_Welfare:
+                    value = cpmd.getStaffWelfare().getTotalValue();
+                    break;
+                default:
+                    break;
+            }
+            if (value <= 0.0) {
+                continue;
+            }
+            lines.add(new PrintBillData.PaymentLine(
+                    cd.getPaymentMethod().getLabel(), value, reference == null ? "" : reference));
+        }
+        return lines;
     }
 
     // -----------------------------------------------------------------------
@@ -910,6 +1027,121 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         calTotal();
     }
 
+    // ===================================================================
+    // On-demand substitute (alternative) medicines (issue #21697)
+    // ===================================================================
+    private BillItemData itemDataForSubstitution;
+    private com.divudi.core.data.dto.StockDTO selectedSubstituteStock;
+    private List<com.divudi.core.data.dto.StockDTO> substituteStocks;
+
+    public void prepareSubstitute(BillItemData bid) {
+        itemDataForSubstitution = bid;
+        selectedSubstituteStock = null;
+        substituteStocks = new ArrayList<>();
+        if (bid == null || bid.getItemId() == null) {
+            return;
+        }
+        Item item = itemFacade.find(bid.getItemId());
+        if (item == null) {
+            return;
+        }
+        double requiredQty = Math.abs(bid.getQty());
+        substituteStocks = pharmacySubstituteService.findSubstituteStocks(item, sessionController.getDepartment(), requiredQty);
+    }
+
+    public void replaceSelectedSubstitute() {
+        if (itemDataForSubstitution == null || selectedSubstituteStock == null
+                || selectedSubstituteStock.getStockId() == null) {
+            JsfUtil.addErrorMessage("Please select a substitute stock.");
+            return;
+        }
+
+        com.divudi.core.data.dto.StockDTO sub = selectedSubstituteStock;
+        BillItemData bid = itemDataForSubstitution;
+
+        // Same quantity as the line being substituted. All rate/batch fields come
+        // from the single native lookup already on the DTO - no extra queries.
+        double qty = Math.abs(bid.getQty());
+
+        double batchRetailRate = sub.getRetailRate() != null ? sub.getRetailRate() : 0.0;
+        double batchPurchaseRate = sub.getPurchaseRate() != null ? sub.getPurchaseRate() : 0.0;
+        double batchWholesaleRate = sub.getWholesaleRate() != null ? sub.getWholesaleRate() : 0.0;
+        Double batchCostRate = (sub.getCostRate() != null && sub.getCostRate() > 0) ? sub.getCostRate() : null;
+
+        long ampItemId = resolveAmpItemId(sub.getItemId());
+
+        bid.setItemId(sub.getItemId());
+        bid.setItemName(sub.getItemName());
+        bid.setAmpItemId(ampItemId);
+        bid.setStockId(sub.getStockId());
+        bid.setItemBatchId(sub.getItemBatchId());
+        bid.setPbiQty(-Math.abs(qty));
+        bid.setRetailRate(batchRetailRate);
+        bid.setPurchaseRate(batchPurchaseRate);
+        bid.setWholesaleRate(batchWholesaleRate);
+        bid.setCostRate(batchCostRate != null ? batchCostRate : batchPurchaseRate);
+        bid.setBatchRetailRate(batchRetailRate);
+        bid.setBatchPurchaseRate(batchPurchaseRate);
+        bid.setBatchWholesaleRate(batchWholesaleRate);
+        bid.setBatchCostRate(batchCostRate);
+        bid.setDoe(sub.getDateOfExpire());
+        bid.setDescription(sub.getItemName());
+
+        double lineRetailRate = batchRetailRate;
+        double grossValue = lineRetailRate * qty;
+        double discountPct = 0.0;
+        double discountValue = 0.0;
+        try {
+            Item substituteItem = itemFacade.find(sub.getItemId());
+            if (substituteItem != null && Boolean.TRUE.equals(substituteItem.isDiscountAllowed())) {
+                Double pct = priceMatrixController.getPaymentSchemeDiscountPercent(
+                        paymentMethod, paymentScheme, sessionController.getDepartment(), substituteItem);
+                discountPct = pct != null ? pct : 0.0;
+                discountValue = (discountPct / 100.0) * grossValue;
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "Discount lookup failed for substitute item {0}: {1}",
+                    new Object[]{sub.getItemId(), e.getMessage()});
+        }
+        double netValue = grossValue - discountValue;
+        double netRate = qty > 0 ? netValue / qty : lineRetailRate;
+
+        bid.setRate(lineRetailRate);
+        bid.setNetRate(netRate);
+        bid.setDiscountPercent(discountPct);
+        bid.setDiscountValue(discountValue);
+        bid.setMarginValue(0.0);
+        bid.setNetValue(-netValue);
+        bid.setGrossValue(-grossValue);
+
+        calTotal();
+        JsfUtil.addSuccessMessage("Stock replaced successfully.");
+    }
+
+    public BillItemData getItemDataForSubstitution() {
+        return itemDataForSubstitution;
+    }
+
+    public void setItemDataForSubstitution(BillItemData itemDataForSubstitution) {
+        this.itemDataForSubstitution = itemDataForSubstitution;
+    }
+
+    public com.divudi.core.data.dto.StockDTO getSelectedSubstituteStock() {
+        return selectedSubstituteStock;
+    }
+
+    public void setSelectedSubstituteStock(com.divudi.core.data.dto.StockDTO selectedSubstituteStock) {
+        this.selectedSubstituteStock = selectedSubstituteStock;
+    }
+
+    public List<com.divudi.core.data.dto.StockDTO> getSubstituteStocks() {
+        return substituteStocks;
+    }
+
+    public void setSubstituteStocks(List<com.divudi.core.data.dto.StockDTO> substituteStocks) {
+        this.substituteStocks = substituteStocks;
+    }
+
     public void recalculateDiscountsForAll() {
         if (billItemDataList == null || billItemDataList.isEmpty()) {
             return;
@@ -1136,6 +1368,246 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
 
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
+    }
+
+    @Override
+    public double calculatRemainForMultiplePaymentTotal() {
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            double multiplePaymentMethodTotalValue = 0.0;
+            for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                if (cd == null) {
+                    continue;
+                }
+                if (cd.getPaymentMethodData() != null && cd.getPaymentMethod() != null) {
+                    // Only add the value from the selected payment method for this ComponentDetail
+                    switch (cd.getPaymentMethod()) {
+                        case Cash:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                            break;
+                        case Card:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                            break;
+                        case Cheque:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                            break;
+                        case ewallet:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                            break;
+                        case PatientDeposit:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                            break;
+                        case Slip:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                            break;
+                        case Staff:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                            break;
+                        case Staff_Welfare:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                            break;
+                        case Credit:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCredit().getTotalValue();
+                            break;
+                        case OnlineSettlement:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                            break;
+                        case IOU:
+                            multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getIou().getTotalValue();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+            return getPreBill().getNetTotal() - multiplePaymentMethodTotalValue;
+        }
+        return getPreBill().getTotal();
+    }
+
+    @Override
+    public void recieveRemainAmountAutomatically() {
+        double remainAmount = calculatRemainForMultiplePaymentTotal();
+        // Already fully covered (or over-paid): do not auto-fill a negative
+        // remaining amount into the last component, which would later persist a
+        // negative Payment.paidValue and distort drawer/balance updates.
+        if (remainAmount <= 0.0) {
+            return;
+        }
+        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            int arrSize = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
+            if (arrSize == 0) {
+                return; // No payment methods added yet
+            }
+            ComponentDetail pm = getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
+            if (pm.getPaymentMethodData() == null) {
+                return; // Payment method data not initialized
+            }
+            if (pm.getPaymentMethod() == PaymentMethod.Cash) {
+                // Only set value automatically if not already set by user
+                if (pm.getPaymentMethodData().getCash().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getCash().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.Card) {
+                if (pm.getPaymentMethodData().getCreditCard().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getCreditCard().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.Cheque) {
+                if (pm.getPaymentMethodData().getCheque().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getCheque().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.Slip) {
+                if (pm.getPaymentMethodData().getSlip().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getSlip().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.ewallet) {
+                if (pm.getPaymentMethodData().getEwallet().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.PatientDeposit) {
+                if (patient == null || patient.getId() == null) {
+                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
+                    return; // Patient not selected yet, ignore
+                }
+                // Initialize patient deposit data for UI component
+                pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
+                PatientDeposit pd = patientDepositController.getDepositOfThePatient(patient, sessionController.getDepartment());
+                if (pd != null && pd.getId() != null) {
+                    pm.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(true);
+                    pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
+                    // Set total value to remain amount only if there's sufficient balance, otherwise set to available balance
+                    double availableBalance = pd.getBalance();
+                    if (availableBalance >= remainAmount) {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(remainAmount);
+                    } else {
+                        pm.getPaymentMethodData().getPatient_deposit().setTotalValue(availableBalance);
+                    }
+                } else {
+                    pm.getPaymentMethodData().getPatient_deposit().getPatient().setHasAnAccount(false);
+                    pm.getPaymentMethodData().getPatient_deposit().setTotalValue(0.0);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.Credit) {
+                if (pm.getPaymentMethodData().getCredit().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
+                if (pm.getPaymentMethodData().getStaffCredit().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                if (pm.getPaymentMethodData().getStaffWelfare().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getStaffWelfare().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.OnlineSettlement) {
+                if (pm.getPaymentMethodData().getOnlineSettlement().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
+                }
+            } else if (pm.getPaymentMethod() == PaymentMethod.IOU) {
+                if (pm.getPaymentMethodData().getIou().getTotalValue() == 0.0) {
+                    pm.getPaymentMethodData().getIou().setTotalValue(remainAmount);
+                }
+            }
+        }
+    }
+
+    /**
+     * Validates a Multiple Payment Methods bill before settling: there must be
+     * at least one component, balance-backed components (Patient Deposit, Staff,
+     * Staff Welfare) must have sufficient balance, and the sum of the entered
+     * component values must match the bill net total (within a 1.0 tolerance).
+     * Adds a user-facing error message and returns {@code true} when settling
+     * must be aborted. Mirrors {@code PharmacySaleController.errorCheck}.
+     */
+    private boolean validateMultiplePaymentsFailed() {
+        if (getPaymentMethodData().getPaymentMethodMultiple() == null
+                || getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null
+                || getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
+            JsfUtil.addErrorMessage("No Details on multiple payment methods given");
+            return true;
+        }
+
+        double netTotal = Math.abs(getPreBill().getNetTotal());
+        double multiplePaymentMethodTotalValue = 0.0;
+        for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            if (cd.getPaymentMethod() == null || cd.getPaymentMethodData() == null) {
+                continue;
+            }
+            switch (cd.getPaymentMethod()) {
+                case Cash:
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
+                    break;
+                case Card:
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                    break;
+                case Cheque:
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
+                    break;
+                case ewallet:
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
+                    break;
+                case Slip:
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                    break;
+                case OnlineSettlement:
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
+                    break;
+                case IOU:
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getIou().getTotalValue();
+                    break;
+                case Credit:
+                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCredit().getTotalValue();
+                    break;
+                case PatientDeposit: {
+                    double value = cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
+                    PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
+                    if (pd == null) {
+                        JsfUtil.addErrorMessage("No Patient Deposit.");
+                        return true;
+                    }
+                    if (value > pd.getBalance()) {
+                        JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
+                        return true;
+                    }
+                    multiplePaymentMethodTotalValue += value;
+                    break;
+                }
+                case Staff: {
+                    double value = cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                    Staff selectedStaff = cd.getPaymentMethodData().getStaffCredit().getToStaff();
+                    if (value == 0.0 || selectedStaff == null) {
+                        JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
+                        return true;
+                    }
+                    if (selectedStaff.getCurrentCreditValue() + value > selectedStaff.getCreditLimitQualified()) {
+                        JsfUtil.addErrorMessage("No enough Credit.");
+                        return true;
+                    }
+                    multiplePaymentMethodTotalValue += value;
+                    break;
+                }
+                case Staff_Welfare: {
+                    double value = cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
+                    Staff welfareStaff = cd.getPaymentMethodData().getStaffWelfare().getToStaff();
+                    if (value == 0.0 || welfareStaff == null) {
+                        JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
+                        return true;
+                    }
+                    if (Math.abs(welfareStaff.getAnnualWelfareUtilized()) + value > welfareStaff.getAnnualWelfareQualified()) {
+                        JsfUtil.addErrorMessage("No enough credit.");
+                        return true;
+                    }
+                    multiplePaymentMethodTotalValue += value;
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+        if (Math.abs(netTotal - multiplePaymentMethodTotalValue) > 1.0) {
+            JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
+            return true;
+        }
+        return false;
     }
 
     public PaymentMethodData getPaymentMethodData() {

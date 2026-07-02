@@ -1231,7 +1231,7 @@ public class PharmacyController implements Serializable {
      * avoid loading full entity graph
      */
     public void fillAmpsDto() {
-        String jpql = "SELECT new com.divudi.core.data.dto.AmpDTO("
+        String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
                 + "a.id, "
                 + "a.name, "
                 + "a.category.id, "
