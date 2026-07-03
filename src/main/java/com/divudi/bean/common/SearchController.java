@@ -23864,8 +23864,15 @@ public class SearchController implements Serializable {
 
     public StreamedContent getBundleAsPdf() {
         StreamedContent pdfSc = null;
+        bundle.setName("Cashier Summary Report");
+        bundle.setFromDate(fromDate);
+        bundle.setToDate(toDate);
+        bundle.setFilterInstitution(institution);
+        bundle.setFilterSite(site);
+        bundle.setFilterDepartment(department);
+        bundle.setFilterWebUser(webUser);
         try {
-            pdfSc = pdfController.createPdfForBundle(bundle);
+            pdfSc = pdfController.createPdfForBundle(bundle, PageSize.A4, true);
         } catch (IOException e) {
             logger.error("getBundleAsPdf: Error creating pdfSc via pdfController.createPdfForBundle", e);
             pdfSc = null;
