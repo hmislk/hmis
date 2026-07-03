@@ -13,7 +13,10 @@ import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.InvestigationItem;
 import com.divudi.core.entity.lab.InvestigationItemValueFlag;
 import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.entity.lab.PatientReportGroup;
+import com.divudi.core.facade.PatientReportGroupFacade;
 import com.divudi.core.entity.lab.PatientReportItemValue;
 import com.divudi.core.entity.lab.ReportItem;
 import com.divudi.core.facade.AntibioticFacade;
@@ -47,6 +50,8 @@ public class PatientReportBean {
     private InvestigationItemFacade ixItemFacade;
     @EJB
     private PatientReportItemValueFacade ptRivFacade;
+    @EJB
+    private PatientReportGroupFacade patientReportGroupFacade;
     @EJB
     private PatientReportFacade prFacade;
     @EJB
@@ -435,6 +440,102 @@ public class PatientReportBean {
         }
         //System.err.println("items :" + ptReport.getPatientReportItemValues());
 
+    }
+
+    /**
+     * Adds only the non-antibiotic report item values (Value / DynamicLabel of
+     * Memo type) and placeholder rows for ExternalImage items for a
+     * microbiology report. The antibiotic sensitivity list is NOT created
+     * here - antibiotic groups are added manually afterwards using
+     * {@link #addAntibioticGroupWithValues(PatientReport, String, WebUser)}.
+     */
+    public void addMicrobiologyNonAntibioticReportItemValuesForReport(PatientReport ptReport) {
+        String sql;
+        Investigation temIx = (Investigation) ptReport.getItem();
+        for (ReportItem ii : temIx.getReportItems()) {
+            if (ii.isRetired()) {
+                continue;
+            }
+            PatientReportItemValue val = null;
+            if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.DynamicLabel)) {
+                if (ii.getIxItemValueType() == InvestigationItemValueType.Memo) {
+                    sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
+                            + " and i.investigationItem=:inv ";
+                    HashMap hm = new HashMap();
+                    hm.put("ptRp", ptReport);
+                    hm.put("inv", ii);
+                    val = getPtRivFacade().findFirstByJpql(sql, hm);
+                    if (val == null) {
+                        val = new PatientReportItemValue();
+                        val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
+                        val.setInvestigationItem((InvestigationItem) ii);
+                        val.setPatient(ptReport.getPatientInvestigation().getPatient());
+                        val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+                        val.setPatientReport(ptReport);
+                        getPtRivFacade().create(val);
+                        ptReport.getPatientReportItemValues().add(val);
+                    }
+                }
+            } else if (ii.getIxItemType() == InvestigationItemType.ExternalImage) {
+                sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
+                        + " and i.investigationItem=:inv ";
+                HashMap hm = new HashMap();
+                hm.put("ptRp", ptReport);
+                hm.put("inv", ii);
+                val = getPtRivFacade().findFirstByJpql(sql, hm);
+                if (val == null) {
+                    val = new PatientReportItemValue();
+                    val.setInvestigationItem((InvestigationItem) ii);
+                    val.setPatient(ptReport.getPatientInvestigation().getPatient());
+                    val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+                    val.setPatientReport(ptReport);
+                    getPtRivFacade().create(val);
+                    ptReport.getPatientReportItemValues().add(val);
+                }
+            }
+        }
+    }
+
+    /**
+     * Creates a new antibiotic group for the report and populates it with a
+     * fresh antibiotic sensitivity list (one row per active antibiotic).
+     *
+     * The group is persisted and flushed first so its generated id is assigned
+     * to the same instance; the antibiotic values are then created referencing
+     * that managed group. This avoids the detached-merge pitfall where the
+     * group id stays null (which previously caused the values to fail to
+     * persist and the group to be duplicated on the next merge).
+     *
+     * The new group and values are also added to the report's in-memory
+     * collections so the UI reflects them immediately after an AJAX update.
+     */
+    public PatientReportGroup addAntibioticGroupWithValues(PatientReport ptReport, String groupName, WebUser creator) {
+        PatientReportGroup group = new PatientReportGroup();
+        group.setGroupName(groupName);
+        group.setPatientReport(ptReport);
+        group.setCreatedAt(new Date());
+        group.setCreater(creator);
+        patientReportGroupFacade.createAndFlush(group);
+
+        if (ptReport.getPatientReportGroups() == null) {
+            ptReport.setPatientReportGroups(new ArrayList<>());
+        }
+        ptReport.getPatientReportGroups().add(group);
+
+        List<Antibiotic> abs = getAntibioticFacade().findByJpql("select a from Antibiotic a where a.retired=false order by a.name");
+        for (Antibiotic a : abs) {
+            InvestigationItem ii = investigationItemForAntibiotic(a, ptReport.getPatientInvestigation().getInvestigation());
+            PatientReportItemValue val = new PatientReportItemValue();
+            val.setStrValue("");
+            val.setInvestigationItem(ii);
+            val.setPatient(ptReport.getPatientInvestigation().getPatient());
+            val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
+            val.setPatientReport(ptReport);
+            val.setPatientReportGroup(group);
+            getPtRivFacade().create(val);
+            ptReport.getPatientReportItemValues().add(val);
+        }
+        return group;
     }
 
     @EJB

@@ -470,11 +470,34 @@ public class PharmacyDirectPurchaseController implements Serializable {
             f.setRetailSaleRatePerUnit(f.getRetailSaleRate());
         }
 
-        // Recalculate item totals when retail rate changes  
+        // Recalculate item totals when retail rate changes
         calculateItemTotals(currentBillItem);
     }
 
-    // </editor-fold>  
+    public void onWholesaleRateChange() {
+        if (currentBillItem == null) {
+            return;
+        }
+
+        BillItemFinanceDetails f = currentBillItem.getBillItemFinanceDetails();
+        if (f == null || f.getWholesaleRate() == null) {
+            return;
+        }
+
+        Item item = currentBillItem.getItem();
+        if (item instanceof Ampp) {
+            double dblVal = item.getDblValue();
+            BigDecimal unitsPerPack = dblVal > 0.0 ? BigDecimal.valueOf(dblVal) : BigDecimal.ONE;
+            f.setWholesaleRatePerUnit(f.getWholesaleRate().divide(unitsPerPack, MathContext.DECIMAL64));
+        } else {
+            f.setWholesaleRatePerUnit(f.getWholesaleRate());
+        }
+
+        // Recalculate item totals when wholesale rate changes
+        calculateItemTotals(currentBillItem);
+    }
+
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Inner Classes Static Converter">
@@ -1148,6 +1171,17 @@ public class PharmacyDirectPurchaseController implements Serializable {
                     f.setRetailSaleRatePerUnit(f.getRetailSaleRate().divide(unitsPerPack, MathContext.DECIMAL64));
                 } else {
                     f.setRetailSaleRatePerUnit(f.getRetailSaleRate());
+                }
+            }
+
+            // Sync wholesaleRatePerUnit from wholesaleRate (same logic as onWholesaleRateChange)
+            if (f.getWholesaleRate() != null) {
+                if (item instanceof Ampp) {
+                    double dblVal = item.getDblValue();
+                    BigDecimal unitsPerPack = dblVal > 0.0 ? BigDecimal.valueOf(dblVal) : BigDecimal.ONE;
+                    f.setWholesaleRatePerUnit(f.getWholesaleRate().divide(unitsPerPack, MathContext.DECIMAL64));
+                } else {
+                    f.setWholesaleRatePerUnit(f.getWholesaleRate());
                 }
             }
 
