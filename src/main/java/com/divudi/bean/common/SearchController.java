@@ -1481,6 +1481,7 @@ public class SearchController implements Serializable {
         filterChannelBillsByBilledDate = true;
         settledBillType = null;
         total = 0.0;
+        pharmacyBillSearch.setSaleBillDtos(null);
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
@@ -3337,6 +3338,10 @@ public class SearchController implements Serializable {
 
     public void createPharmacyRetailBills() {
         pharmacyBillSearch.fetchSaleSearchDtosFromNativeBills(true);
+    }
+
+    public void createPharmacySaleBillItems() {
+        pharmacyBillSearch.fetchSaleBillItemSearchDtos(getMaxResult());
     }
 
     public void createPharmacyAddToStockBills() {

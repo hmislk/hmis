@@ -87,6 +87,8 @@ public enum Privileges {
     InwardServicesAndItemsAddOutSideCharges("Inward Add Outside Charges"),
     InwardServicesAndItemsAddProfessionalFee("Inward Add Professional Fee"),
     InwardServicesAndItemsAddTimedServices("Inward Add Timed Services"),
+    InwardServiceItemRequestApproval("Inward Service/Item Request Approval"),
+    InwardServiceItemRequestRejection("Inward Service/Item Request Rejection"),
     InwardAddChargesAfterNursingDischarge("Inward Add Charges After Nursing Discharge"),
     InwardBilling("Inward Billing"),
     InwardBillingInterimBill("Inward Interim Bill"),
@@ -1151,6 +1153,8 @@ public enum Privileges {
             case TheatreAcceptPatient:
             case TheatreReturnPatient:
             case WardAcceptTheatreReturn:
+            case InwardServiceItemRequestApproval:
+            case InwardServiceItemRequestRejection:
                 return "Inward";
 
             case AdminInactivePatients:

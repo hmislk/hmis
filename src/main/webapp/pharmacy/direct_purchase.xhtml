@@ -277,7 +277,32 @@
                                     </div>
 
                                     <div class="col-1">
-                                        <p:outputLabel 
+                                        <h:outputLabel
+                                            class="w-100 m-1"
+                                            style="white-space: nowrap;"
+                                            value="Wholesale Rate" /><br/>
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="txtWholesaleRate"
+                                            widgetVar="dpWholesaleRate"
+                                            onfocus="this.select()"
+                                            class="w-100 m-1 text-end"
+                                            onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                            onkeyup="if (event.keyCode === 13) { event.preventDefault(); var addBtnId = '#{p:resolveFirstComponentWithId('btnAdd',view).clientId}'; this.blur(); setTimeout(function () { document.getElementById(addBtnId).click(); }, 350); }"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.wholesaleRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                            <p:ajax
+                                                event="blur"
+                                                async="true"
+                                                process="@this"
+                                                listener="#{pharmacyDirectPurchaseController.onWholesaleRateChange}"
+                                                update="txtRetailValue txtPackOrUnit txtUnitsPerPack
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
+                                        </p:inputText>
+                                    </div>
+
+                                    <div class="col-1">
+                                        <p:outputLabel
                                             class="w-100 m-1"
                                             style="white-space: nowrap;"
                                             value="Date of Expiry"/>
@@ -627,6 +652,16 @@
                                             autocomplete="off"
                                             onfocus="this.select()"
                                             value="#{pharmacyDirectPurchaseController.editingBillItem.billItemFinanceDetails.retailSaleRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+
+                                        <p:outputLabel for="editWR" value="Wholesale Rate" />
+                                        <p:inputText
+                                            id="editWR"
+                                            class="w-100 text-end"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.billItemFinanceDetails.wholesaleRate}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:inputText>
 

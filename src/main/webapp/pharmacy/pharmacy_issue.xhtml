@@ -12,7 +12,6 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form id="bill">
-                    <p:growl id="panelError" />
 
 
 
@@ -96,7 +95,7 @@
                                         <p:commandButton
                                             id="btnNavFinalize"
                                             value="Disposal Issues to Finalize"
-                                            icon="fas fa-tasks"
+                                            icon="fas fa-lock"
                                             ajax="false"
                                             action="/pharmacy/pharmacy_disposal_issue_list_to_finalize?faces-redirect=true"
                                             styleClass="ui-button-info ui-button-outlined"
@@ -105,7 +104,7 @@
                                         <p:commandButton
                                             id="btnNavApprove"
                                             value="Disposal Issues to Approve"
-                                            icon="fas fa-check-circle"
+                                            icon="fas fa-check-double"
                                             ajax="false"
                                             action="/pharmacy/pharmacy_disposal_issue_list_to_approve?faces-redirect=true"
                                             styleClass="ui-button-info ui-button-outlined"
@@ -119,8 +118,8 @@
                                             id="btnNew"
                                             accesskey="n"
                                             value="New Disposal Issue Bill"
-                                            icon="pi pi-plus"
-                                            styleClass="ui-button-warning"
+                                            icon="fas fa-plus-circle"
+                                            styleClass="ui-button-stage-save"
                                             ajax="false"
                                             action="/pharmacy/pharmacy_issue"
                                             actionListener="#{pharmacyIssueController.resetAll()}"/>
@@ -129,18 +128,17 @@
                                             accesskey="s"
                                             value="Save"
                                             icon="fas fa-floppy-disk"
-                                            styleClass="ui-button-success"
+                                            styleClass="ui-button-stage-save"
                                             ajax="false"
                                             action="#{pharmacyIssueController.saveDisposalIssueDraft()}"
-                                            onclick="return confirm('Save this disposal issue draft?');"
                                             rendered="#{pharmacyIssueController.preBill.checkedBy eq null and webUserController.hasPrivilege('PharmacyDisposalIssue')}"
                                             style="min-width:100px"/>
                                         <p:commandButton
                                             id="btnFinalize"
                                             accesskey="f"
                                             value="Finalize"
-                                            icon="fas fa-check-circle"
-                                            styleClass="ui-button-success"
+                                            icon="fas fa-lock"
+                                            styleClass="ui-button-stage-finalize"
                                             ajax="false"
                                             action="#{pharmacyIssueController.finalizeCurrentDraft()}"
                                             onclick="return confirm('Finalize this disposal issue? It will be queued for approval.');"
@@ -151,7 +149,7 @@
                                             accesskey="a"
                                             value="Approve"
                                             icon="fas fa-check-double"
-                                            styleClass="ui-button-success"
+                                            styleClass="ui-button-stage-approve"
                                             ajax="false"
                                             action="#{pharmacyIssueController.approveDisposalIssue(pharmacyIssueController.preBill.id)}"
                                             onclick="return confirm('Approve this disposal issue? Stock will be deducted.');"
@@ -256,7 +254,7 @@
                                                         event="keyup"
                                                         listener="#{pharmacyIssueController.calculateBillItemAtQtyChange}"
                                                         process="acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId}"
-                                                        update="txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtIssueVal :#{p:resolveFirstComponentWithId('panelError',view).clientId}" ></p:ajax>
+                                                        update="txtRate txtPRate txtPurchaseRate txtCostRate txtPVal txtRVal txtCostVal txtIssueVal :growl" ></p:ajax>
                                                 </p:inputText>
                                                 <p:keyFilter for="txtQty" mask="#{pharmacyIssueController.stockDto.allowFractions ? 'num' : 'int'}" />
                                             </div>
@@ -270,7 +268,7 @@
                                                     value="Add"
                                                     action="#{pharmacyIssueController.addBillItem}"
                                                     process="@this acStock txtQty :#{p:resolveFirstComponentWithId('acDept',view).clientId} :#{p:resolveFirstComponentWithId('selDepartmentType',view).clientId}"
-                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('selDepartmentType',view).clientId} txtRate txtPRate txtPurchaseRate txtCostRate txtQty txtPVal txtRVal txtCostVal txtIssueVal acStock focusItem" >
+                                                    update=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} :growl :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('selDepartmentType',view).clientId} txtRate txtPRate txtPurchaseRate txtCostRate txtQty txtPVal txtRVal txtCostVal txtIssueVal acStock focusItem" >
                                                 </p:commandButton>
 
                                                 <p:defaultCommand  target="btnAdd" />
@@ -386,7 +384,7 @@
                                         </f:facet>
                                         <p:dataTable
                                             id="tblBillItem"
-                                            value="#{pharmacyIssueController.preBill.billItems}"
+                                            value="#{pharmacyIssueController.activeBillItems}"
                                             var="bi"
                                             rowIndexVar="s"
                                             editable="true"
@@ -518,7 +516,7 @@
                                                 id="selDepartmentType"
                                                 value="#{pharmacyIssueController.preBill.departmentType}"
                                                 class="w-100"
-                                                disabled="#{pharmacyIssueController.preBill.checkedBy ne null or (not empty pharmacyIssueController.preBill.billItems and pharmacyIssueController.preBill.billItems.size() > 0)}">
+                                                disabled="#{pharmacyIssueController.preBill.checkedBy ne null or not empty pharmacyIssueController.activeBillItems}">
                                                 <f:selectItem itemLabel="Select Department Type" itemValue="#{null}"/>
                                                 <f:selectItems value="#{sessionController.availableDepartmentTypesForPharmacyTransactions}"
                                                                var="dt"
@@ -534,6 +532,10 @@
                                             <h:outputLabel value="Comment"/>
                                             <p:inputTextarea class="w-100" value="#{pharmacyIssueController.preBill.comments}" id="comment"
                                                              readonly="#{pharmacyIssueController.preBill.checkedBy ne null}"/>
+
+                                            <h:outputLabel value="Discard Category"/>
+                                            <p:inputText class="w-100" value="#{pharmacyIssueController.preBill.referenceNumber}" id="discardCategory"
+                                                         readonly="#{pharmacyIssueController.preBill.checkedBy ne null}"/>
 
                                         </h:panelGrid>
 
@@ -644,7 +646,7 @@
                                     <p:commandButton
                                         id="btnPrintNavFinalize"
                                         value="Disposal Issues to Finalize"
-                                        icon="fas fa-tasks"
+                                        icon="fas fa-lock"
                                         ajax="false"
                                         action="/pharmacy/pharmacy_disposal_issue_list_to_finalize?faces-redirect=true"
                                         styleClass="ui-button-info ui-button-outlined"
@@ -653,7 +655,7 @@
                                     <p:commandButton
                                         id="btnPrintNavApprove"
                                         value="Disposal Issues to Approve"
-                                        icon="fas fa-check-circle"
+                                        icon="fas fa-check-double"
                                         ajax="false"
                                         action="/pharmacy/pharmacy_disposal_issue_list_to_approve?faces-redirect=true"
                                         styleClass="ui-button-info ui-button-outlined"
@@ -667,8 +669,8 @@
                                         id="btnPrintNew"
                                         accesskey="n"
                                         value="New Disposal Issue Bill"
-                                        icon="pi pi-plus"
-                                        styleClass="ui-button-warning"
+                                        icon="fas fa-plus-circle"
+                                        styleClass="ui-button-stage-save"
                                         ajax="false"
                                         action="/pharmacy/pharmacy_issue"
                                         actionListener="#{pharmacyIssueController.resetAll()}"/>

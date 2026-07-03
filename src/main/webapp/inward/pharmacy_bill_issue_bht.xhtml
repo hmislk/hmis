@@ -151,7 +151,7 @@
             </h:panelGroup>
 
             <!-- ===================== BILL ENTRY ===================== -->
-            <h:panelGroup rendered="#{inpatientDirectIssueNativeSqlController.patientEncounter ne null}">
+            <h:panelGroup id="gpPatientPanel" rendered="#{inpatientDirectIssueNativeSqlController.patientEncounter ne null}">
 
                 <p:panel rendered="#{!inpatientDirectIssueNativeSqlController.billPreview}">
                     <f:facet name="header">
@@ -193,7 +193,7 @@
                                 oncomplete="document.getElementById('settlingOverlay').style.display='none';"
                                 ondblclick="return false;"
                                 action="#{inpatientDirectIssueNativeSqlController.settleInpatientDirectIssue()}"
-                                update="@form"
+                                update="gpPatientPanel panelErrorMsg"
                                 class="ui-button-success mx-2"
                                 icon="fa-solid fa-check">
                             </p:commandButton>
