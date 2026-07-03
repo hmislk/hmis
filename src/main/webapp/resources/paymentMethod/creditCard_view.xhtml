@@ -14,40 +14,31 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <div class="d-flex flex-wrap align-items-center gap-3">
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel value="Amount:" styleClass="form-label mb-0" style="min-width: 80px;"/>
-                <h:outputText
-                    value="#{cc.attrs.paymentMethodData.creditCard.totalValue}"
-                    styleClass="form-control-plaintext fw-bold"
-                    style="width: 150px;">
+        <div class="d-flex flex-wrap align-items-stretch gap-3 py-1">
+            <div class="d-flex flex-column border rounded-3 bg-light px-3 py-2">
+                <p:outputLabel value="Amount" styleClass="text-muted text-uppercase small mb-1"/>
+                <h:outputText value="#{cc.attrs.paymentMethodData.creditCard.totalValue}" styleClass="fs-5 fw-bold text-primary">
                     <f:convertNumber pattern="#,##0.00" />
                 </h:outputText>
             </div>
 
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel value="Last 4 Digits:" styleClass="form-label mb-0"/>
-                <h:outputText
-                    value="#{cc.attrs.paymentMethodData.creditCard.no}"
-                    styleClass="form-control-plaintext"
-                    style="width: 120px;"/>
-            </div>
+            <h:panelGroup layout="block" styleClass="d-flex flex-column border rounded-3 bg-light px-3 py-2"
+                          rendered="#{not empty cc.attrs.paymentMethodData.creditCard.no}">
+                <p:outputLabel value="Last 4 Digits" styleClass="text-muted text-uppercase small mb-1"/>
+                <h:outputText value="#{cc.attrs.paymentMethodData.creditCard.no}" styleClass="fw-semibold"/>
+            </h:panelGroup>
 
-            <div class="d-flex align-items-center gap-2">
-                <p:outputLabel value="Bank:" styleClass="form-label mb-0"/>
-                <h:outputText
-                    value="#{cc.attrs.paymentMethodData.creditCard.institution.name}"
-                    styleClass="form-control-plaintext fw-semibold"
-                    style="width: 180px;"/>
-            </div>
+            <h:panelGroup layout="block" styleClass="d-flex flex-column border rounded-3 bg-light px-3 py-2"
+                          rendered="#{not empty cc.attrs.paymentMethodData.creditCard.institution}">
+                <p:outputLabel value="Bank" styleClass="text-muted text-uppercase small mb-1"/>
+                <h:outputText value="#{cc.attrs.paymentMethodData.creditCard.institution.name}" styleClass="fw-semibold"/>
+            </h:panelGroup>
 
-            <div class="d-flex align-items-center gap-2 flex-grow-1">
-                <p:outputLabel value="Comment:" styleClass="form-label mb-0"/>
-                <h:outputText
-                    value="#{cc.attrs.paymentMethodData.creditCard.comment}"
-                    styleClass="form-control-plaintext"
-                    style="flex-grow: 1;"/>
-            </div>
+            <h:panelGroup layout="block" styleClass="d-flex flex-column border rounded-3 bg-light px-3 py-2 flex-grow-1"
+                          rendered="#{not empty cc.attrs.paymentMethodData.creditCard.comment}">
+                <p:outputLabel value="Comment" styleClass="text-muted text-uppercase small mb-1"/>
+                <h:outputText value="#{cc.attrs.paymentMethodData.creditCard.comment}"/>
+            </h:panelGroup>
         </div>
     </cc:implementation>
 </html>

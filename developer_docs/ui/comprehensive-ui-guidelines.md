@@ -201,7 +201,17 @@ Report filter panels use an 8-column `h:panelGrid` with the pattern: `label(1) |
 
 5. **Do not mix `p:spacer` counts to "push" a field rightward** as an alignment trick — this is fragile. If a field should appear in a specific column, count the cells from the start of the row.
 
-Reference implementation: `src/main/webapp/inward/report_admission_by_consultant.xhtml`
+6. **🚨 Institution / Site / Department MUST share one row and align on the same level.** When a report filters by location, the three location selectors always go together on their own row in this exact order and column position: `Institution(label+input) | spacer | Site(label+input) | spacer | Department(label+input)` = 8 cells. Never stagger them across multiple rows (the classic symptom of a `columns="2"` or `columns="4"` grid) or put another filter between them. They are a single visual unit and end users expect to scan them left-to-right on one line. This is the single most common filter-layout defect in the report pages.
+
+7. **Department is always four rendered `p:selectOneMenu` variants** keyed on the institution/site selection, wrapped in a single `<h:panelGroup id="...">` that the institution and site `p:ajax` re-render via `update`. Use the correct `DepartmentController` method per variant — they are NOT interchangeable:
+   - both null → `getDepartmentsOfInstitutionAndSite()`
+   - site only → `getDepartmentsOfInstitutionAndSite(site)`
+   - **institution only → `getDepartmentsOfInstitutionAndSiteForInstitution(institution)`** (NOT `getDepartmentsOfInstitutionAndSite(institution)` — that overload takes a *site* and silently filters by `d.site`, returning the wrong departments)
+   - both → `getDepartmentsOfInstitutionAndSite(institution, site)`
+
+Reference implementations:
+- `src/main/webapp/inward/report_admission_by_consultant.xhtml` (location filters as the last row)
+- `src/main/webapp/reports/inventoryReports/cost_of_goods_sold.xhtml` (Institution/Site/Department aligned on one row in an inventory report)
 
 ---
 
@@ -223,17 +233,105 @@ Reference implementation: `src/main/webapp/inward/report_admission_by_consultant
 </div>
 ```
 
+### Index / landing page menus (accordion-sidebar button lists)
+
+Module landing pages (e.g. `pharmacy/disbursement_index.xhtml`, `opd/analytics/index.xhtml`) place a vertical list of navigation buttons inside `p:accordionPanel` tabs in a narrow left sidebar, with the working area (`subcontent`) on the right. This is an ERP, not a marketing site — **maximise the data area and eliminate wasted whitespace in the menu.**
+
+**🚨 Use `<div class="d-grid gap-2">` to stack the buttons — never `<p:panelGrid columns="1">`.** `p:panelGrid` renders an HTML `<table>`: each button lands in a padded `<td>` that does not fill the tab width even with `w-100`, producing ragged button widths and wasted horizontal/vertical space. The Bootstrap `d-grid` makes every button truly full-width with a tight, uniform `gap-2`.
+
+```xhtml
+<p:tab title="Transfer Requests">
+    <div class="d-grid gap-2">
+        <p:commandButton value="Create Request"
+                         ajax="false"
+                         style="text-align: left"
+                         icon="fas fa-plus-circle"
+                         styleClass="ui-button-stage-save w-100"
+                         action="#{...}"
+                         rendered="#{webUserController.hasPrivilege('...')}"/>
+        <p:commandButton value="Finalize Requests"
+                         ajax="false"
+                         style="text-align: left"
+                         icon="fas fa-lock"
+                         styleClass="ui-button-stage-finalize w-100"
+                         action="#{...}"
+                         rendered="#{webUserController.hasPrivilege('...')}"/>
+        <p:commandButton value="Approve Requests"
+                         ajax="false"
+                         style="text-align: left"
+                         icon="fas fa-check-double"
+                         styleClass="ui-button-stage-approve w-100"
+                         action="#{...}"
+                         rendered="#{webUserController.hasPrivilege('...')}"/>
+        <p:commandButton value="Completed Requests"
+                         ajax="false"
+                         style="text-align: left"
+                         icon="fas fa-check-double"
+                         styleClass="ui-button-secondary w-100"
+                         action="#{...}"
+                         rendered="#{webUserController.hasPrivilege('...')}"/>
+    </div>
+</p:tab>
+```
+
+Rules:
+- Each button: `styleClass="... w-100"`, `style="text-align: left"` (vertical menus read better left-aligned), and a leading `icon` reflecting the workflow stage.
+- **Always use `styleClass` (not `class`) for stage-class buttons** so PrimeFaces applies them correctly.
+- **Workflow stage colour convention for all sidebar menus:**
+  - Create / New / Save → `styleClass="ui-button-stage-save w-100"` (blue/primary) + action-appropriate icon (e.g. `fas fa-plus-circle`, `fas fa-trash`, `fas fa-recycle`)
+  - Finalize → `styleClass="ui-button-stage-finalize w-100"` (amber) + `icon="fas fa-lock"`
+  - Approve → `styleClass="ui-button-stage-approve w-100"` (green) + `icon="fas fa-check-double"`
+  - View completed / search / informational → `styleClass="ui-button-secondary w-100"` or `ui-button-info w-100`
+- Wrap the whole accordion in a single `<h:form>` and use `activeIndex` for tab persistence (see § Forms & State).
+- Favour a narrow menu column (`col-2`) over a wide one so the data area gets the space; only widen to `col-md-3` when button labels genuinely need it.
+
+Reference implementation: `src/main/webapp/pharmacy/disposal_index.xhtml` — canonical example of the correct `d-grid` layout and stage-class buttons (Create = `ui-button-stage-save`, Finalize = `ui-button-stage-finalize`, Approve = `ui-button-stage-approve`).
+
 ### Primary data actions (row-level)
+
 | Action | Style class | Icon suggestion | Notes |
 |--------|-------------|-----------------|-------|
 | Edit / Continue | `ui-button-warning` | `fas fa-edit` | Switch to view mode when finalized. |
-| Finalize | `ui-button-success` | `fas fa-check-circle` | Disable or swap label when already finalized. |
-| Approve / Complete | `ui-button-success` | `fas fa-check-circle` or `fas fa-check-double` | Reuse icon across the module. |
+| Finalize | `ui-button-stage-finalize` | `fas fa-lock` | Use `styleClass`. Disable or swap label when already finalized. |
+| Approve / Complete | `ui-button-stage-approve` | `fas fa-check-double` | Use `styleClass`. Reuse icon across the module. |
 | Print / View | `ui-button-info` | `fas fa-print` / `fas fa-eye` | Keep `min-width: 90px` for consistency. |
 | Cancel / Close | `ui-button-danger ui-button-outlined` | `fas fa-times` | Always add confirmation. |
 
 Supporting rules:
 - Use `p:growl` for feedback after actions.
+- For any Save / Finalize / Approve button, always use the `ui-button-stage-*` classes — see § Three-Stage Transaction Workflow below.
+
+### 🚨 Three-Stage Transaction Workflow (Save → Finalize → Approve) — MANDATORY STANDARD
+
+Many transaction workflows in the system (pharmacy transfer request/issue/receive, disposals, GRN returns, purchase orders, etc.) progress through three stages: **Save (Draft) → Finalize → Approve.** Historically each page chose its own colour and icon — most stages were all green (`ui-button-success`) with random icons (`pi pi-save`, `pi pi-check`, `fas fa-check`, `fas fa-check-circle`), so a user could not tell the stages apart. **This is now standardised through dedicated CSS classes** so the palette is defined once and every workflow button follows. The colour temperature progresses with the workflow (blue → amber → green) and each stage has one fixed icon:
+
+| Stage | Meaning | Style class (colour) | Icon | Confirm? |
+|-------|---------|----------------------|------|----------|
+| **Create / New** | Navigate to a new transaction form | `ui-button-stage-save` (blue) | Action-specific (e.g. `fas fa-plus-circle`, `fas fa-trash`) | No |
+| **Save / Save Draft** | Save an editable draft in-form, nothing committed yet | `ui-button-stage-save` (blue) | `fas fa-floppy-disk` | No |
+| **Finalize** | Locks the draft; sends it forward for approval | `ui-button-stage-finalize` (amber) | `fas fa-lock` | Yes — `onclick="return confirm('…?')"` |
+| **Approve** | Final sign-off, completes the transaction | `ui-button-stage-approve` (green) | `fas fa-check-double` | Yes — `onclick="return confirm('…?')"` |
+
+The three `ui-button-stage-*` classes are defined **once** in `src/main/webapp/resources/css/ohmis.css` (loaded globally by the template) and are the single source of truth for the workflow palette. Use them via `styleClass` instead of `ui-button-info/warning/success` — to re-theme every workflow button across the system, edit those three classes, not the pages. The matching **icon stays on the markup** (PrimeFaces renders button icons natively), so each button carries `styleClass="ui-button-stage-…"` **and** the `icon` listed above.
+
+```xhtml
+<p:commandButton id="btnSave"     value="Save"     icon="fas fa-floppy-disk"  styleClass="mx-1 ui-button-stage-save"     ajax="false" action="#{ctrl.save()}" />
+<p:commandButton id="btnFinalize" value="Finalize" icon="fas fa-lock"         styleClass="mx-1 ui-button-stage-finalize" ajax="false" action="#{ctrl.finalize()}" onclick="return confirm('Are you sure you want to finalize? This cannot be undone.');" />
+<p:commandButton id="btnApprove"  value="Approve"  icon="fas fa-check-double" styleClass="mx-1 ui-button-stage-approve"  ajax="false" action="#{ctrl.approve()}" onclick="return confirm('Are you sure you want to approve?');" />
+```
+
+Rules:
+- Always use the `ui-button-stage-*` class (not the raw `ui-button-info/warning/success`) for any Save/Finalize/Approve button so the palette stays centralised. Use `styleClass`, not `class` (canonical PrimeFaces attribute).
+- Apply the **same** stage class + icon everywhere it appears — on the action page header, in list-page row actions ("Edit and Finalize", "Edit and Approve"), and in landing-page menus. The "Edit and …" list variants keep the destination stage's class/icon (e.g. "Edit and Finalize" = `ui-button-stage-finalize` + `fas fa-lock`).
+- Finalize and Approve are irreversible transitions → always guard with native `confirm()` (see Confirmation Dialogs below).
+- Never reuse the green Approve class for Save or Finalize, and never reuse `pi pi-check` / `fas fa-check-circle` for these three stages — those collisions are exactly what this standard removes.
+- This overrides the generic row-level "Finalize / Approve" rows in the table above for any button that is part of a three-stage transaction workflow.
+
+CSS source: `src/main/webapp/resources/css/ohmis.css` (search "Three-Stage Transaction Workflow buttons").
+
+**Reference implementations:**
+- **Action page** (the transaction form itself): `src/main/webapp/pharmacy/pharmacy_issue.xhtml` — canonical example of a three-zone panel header containing Save (`ui-button-stage-save`), Finalize (`ui-button-stage-finalize`), and Approve (`ui-button-stage-approve`) in the right zone, with outlined navigation links in the center zone (`ui-button-info ui-button-outlined` — **always use `ui-button-info ui-button-outlined` for center nav, never stage classes there**, because the `!important` background in stage classes prevents the outlined modifier from rendering correctly).
+- **Index / landing page** (sidebar accordion menu): `src/main/webapp/pharmacy/disposal_index.xhtml` — canonical example of `d-grid` layout with stage-class buttons (Create = `ui-button-stage-save`, Finalize = `ui-button-stage-finalize`, Approve = `ui-button-stage-approve`).
 
 ### Confirmation Dialogs
 
@@ -262,6 +360,30 @@ Rules:
 - Format numbers with `<f:convertNumber pattern="#,##0.00"/>` and dates with application preference patterns (`#{sessionController.applicationPreference.shortDateTimeFormat}` etc.).
 - Avoid placing decorative icons in every cell; reserve icons for headers or action columns.
 - Use neutral currency labels (e.g., `Requested Value`, `Net Amount`) and neutral icons such as `pi pi-money-bill` (or `fas fa-coins` when no PrimeFaces option exists) so pages stay multi-currency friendly.
+
+### DataTable Compact Size (required for data-entry and multi-column tables)
+
+Always add `styleClass="p-datatable-sm"` to `p:dataTable` components on data-entry and transaction pages. This is the PrimeFaces 14 standard for compact row padding and keeps more rows visible without scrolling.
+
+```xhtml
+<p:dataTable id="tbl"
+             value="#{bean.items}"
+             var="item"
+             styleClass="p-datatable-sm">
+```
+
+**Column width rules** — always use the `width` attribute on `p:column`, never `style="min-width:…"` (PrimeFaces ignores CSS min-width in its column width allocation algorithm):
+
+| Column type | Recommended width |
+|---|---|
+| Row index (`#`) | `2em` |
+| Item / description name | `15em` |
+| Quantity / short number | `6em` |
+| Currency value | `6em` |
+| Date | `6em` |
+| Actions | `8em`–`10em` |
+
+If the sum of all column widths exceeds the table container, add `scrollable="true"` to enable horizontal scroll rather than letting columns collapse to zero.
 
 ### Badge Usage for Status Indicators
 - **ALWAYS use PrimeFaces `p:badge`** instead of HTML/Bootstrap badge classes (`badge`, `badge-*`)

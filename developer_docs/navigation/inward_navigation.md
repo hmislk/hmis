@@ -1,4 +1,4 @@
-# Inward (Inpatient) Module — Developer Reference
+﻿# Inward (Inpatient) Module — Developer Reference
 
 This document covers the pages, navigation paths, controllers, and workflow for the Inward (IP) module. It is intended as a quick reference so that developers do not need to rediscover file locations and flow for each issue.
 
@@ -194,8 +194,8 @@ Patients pay deposits during or after admission. Deposits are deducted from the 
 
 | Page | Purpose | Controller |
 |---|---|---|
-| `/theater/inward_bill_surgery.xhtml` | Surgery billing — **legacy, replaced by `surgery_workbench.xhtml`** | `SurgeryBillController` |
-| `/theater/surgery_workbench.xhtml` | Surgery workbench (current page) | `SurgeryBillController` |
+| `/theater/inward_bill_surgery.xhtml` | Surgery billing — **legacy, replaced by `patient_surgery.xhtml`** | `SurgeryBillController` |
+| `/theater/patient_surgery.xhtml` | Surgery workbench (current page) | `SurgeryBillController` |
 | `/theater/surgery_professional_fees.xhtml` | Add surgery professional fees (bill-per-session) | `InwardProfessionalBillController.navigateToSurgeryProfessionalFees(Bill)` |
 | `/theater/surgery_professional_fees_list.xhtml` | List of professional fee bills for a surgery | `InwardProfessionalBillController.navigateToSurgeryProfessionalFeesList(Bill)` |
 | `/theater/surgery_professional_fees_cancel.xhtml` | Cancel a professional fee bill (with reason + print) | `InwardProfessionalBillController.navigateToSurgeryProfessionalFeeCancel(Bill)` |

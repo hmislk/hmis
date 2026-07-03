@@ -18,6 +18,7 @@ public class ItemFeeUpdateRequestDTO {
     private Double fee;
     private Double ffee;
     private Boolean discountAllowed;
+    private Boolean marginAllowed;
     private Long institutionId;
     private Long departmentId;
     private Long specialityId;
@@ -28,7 +29,8 @@ public class ItemFeeUpdateRequestDTO {
 
     public boolean isValid() {
         return name != null || feeType != null || fee != null || ffee != null
-                || discountAllowed != null || institutionId != null || departmentId != null
+                || discountAllowed != null || marginAllowed != null
+                || institutionId != null || departmentId != null
                 || specialityId != null || staffId != null;
     }
 
@@ -70,6 +72,14 @@ public class ItemFeeUpdateRequestDTO {
 
     public void setDiscountAllowed(Boolean discountAllowed) {
         this.discountAllowed = discountAllowed;
+    }
+
+    public Boolean getMarginAllowed() {
+        return marginAllowed;
+    }
+
+    public void setMarginAllowed(Boolean marginAllowed) {
+        this.marginAllowed = marginAllowed;
     }
 
     public Long getInstitutionId() {

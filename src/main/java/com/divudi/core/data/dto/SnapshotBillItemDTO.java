@@ -16,6 +16,7 @@ public class SnapshotBillItemDTO implements Serializable {
     private Long billItemId;
     private Double qty;
     private String itemName;
+    private String itemCode;
     private String categoryName;
     private Double netValue;
     private Double costRate;
@@ -53,6 +54,15 @@ public class SnapshotBillItemDTO implements Serializable {
         this.departmentType = departmentType;
     }
 
+    public SnapshotBillItemDTO(Long billItemId, Double qty, String itemName, String itemCode,
+                                String categoryName, Double netValue, Double costRate, Double purchaseRate,
+                                Double retailRate, Date expiryDate, String batchNo, String dosageForm,
+                                DepartmentType departmentType) {
+        this(billItemId, qty, itemName, categoryName, netValue, costRate, purchaseRate, retailRate,
+                expiryDate, batchNo, dosageForm, departmentType);
+        this.itemCode = itemCode;
+    }
+
     public Long getBillItemId() { return billItemId; }
     public void setBillItemId(Long billItemId) { this.billItemId = billItemId; }
 
@@ -61,6 +71,21 @@ public class SnapshotBillItemDTO implements Serializable {
 
     public String getItemName() { return itemName; }
     public void setItemName(String itemName) { this.itemName = itemName; }
+
+    public String getItemCode() { return itemCode; }
+    public void setItemCode(String itemCode) { this.itemCode = itemCode; }
+
+    /**
+     * Item name with the item code appended in parentheses, for on-screen
+     * display where there is no separate code column. Falls back to just the
+     * name when no code is available.
+     */
+    public String getItemNameWithCode() {
+        if (itemCode == null || itemCode.trim().isEmpty()) {
+            return itemName;
+        }
+        return (itemName != null ? itemName : "") + " (" + itemCode + ")";
+    }
 
     public String getCategoryName() { return categoryName; }
     public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
