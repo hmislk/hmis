@@ -195,6 +195,14 @@ it recalculated just because no error was shown yet.
   return true, then fire `btn.click()` **twice in the same tick** on the
   non-AJAX settle button (e.g. `btnSettleReceive`). A correct implementation
   produces exactly one bill with no duplicate items.
+- **Do not register `page.once('dialog', ...)` inside `browser_run_code_unsafe`.**
+  The MCP server tracks dialogs itself; a script-registered handler accepts the
+  dialog but leaves the harness's modal state stuck — subsequent tool calls fail
+  with "does not handle the modal state" while `browser_handle_dialog` reports
+  "already handled". Recover with a `browser_snapshot` (clears the stale modal
+  state). Prefer overriding `window.confirm = () => true` via `page.evaluate`
+  *before* the click; note the override is lost on every full (non-AJAX) page
+  reload and must be re-applied per page instance.
 
 ---
 
