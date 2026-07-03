@@ -332,16 +332,23 @@
                                     </div>
 
                                     <div class="col-1">
-                                        <h:outputLabel 
-                                            class="w-100 m-1"
-                                            value="&nbsp;"></h:outputLabel>
+                                        <h:panelGroup layout="block" class="m-1" title="Tick to allow saving a retail rate that is below the purchase rate (e.g. clearance pricing). Issue #21635 / #13103.">
+                                            <h:selectBooleanCheckbox
+                                                id="chkAllowRateBelowPurchase"
+                                                value="#{pharmacyDirectPurchaseController.allowRetailRateBelowPurchaseRate}" />
+                                            <p:outputLabel
+                                                for="chkAllowRateBelowPurchase"
+                                                style="white-space: normal; font-size: 0.75rem;"
+                                                class="ms-1"
+                                                value="Allow rate below purchase" />
+                                        </h:panelGroup>
                                         <p:commandButton
                                             id="btnAdd"
                                             value="Add"
                                             class="ui-button-success w-100"
                                             icon="fas fa-plus"
                                             action="#{pharmacyDirectPurchaseController.addItem}"
-                                            process="@this :#{p:resolveFirstComponentWithId('selDepartmentType',view).clientId}"
+                                            process="@this itemselectgrid chkAllowRateBelowPurchase :#{p:resolveFirstComponentWithId('selDepartmentType',view).clientId}"
                                             update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('lblGrossTotal',view).clientId} :#{p:resolveFirstComponentWithId('saleValue',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('selDepartmentType',view).clientId} msg"/>
                                     </div>
 

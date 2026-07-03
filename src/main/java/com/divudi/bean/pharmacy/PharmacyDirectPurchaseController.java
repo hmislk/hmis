@@ -83,6 +83,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
     private BillItem editingBillItem;
     private boolean printPreview;
     private boolean showAllBillFormats = false;
+    // Issue #21635 / #13103: allow a retail rate below the purchase rate only when the user
+    // explicitly opts in (clearance / loss-leader pricing). Default false so addItem() blocks
+    // accidental below-cost pricing.
+    private boolean allowRetailRateBelowPurchaseRate;
     private BillItem currentExpense;
     private List<BillItem> billExpenses;
     private String warningMessage;
@@ -141,6 +145,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         billExpenses = null;
         currentExpense = null;
         warningMessage = null;
+        allowRetailRateBelowPurchaseRate = false;
     }
 
     /**
@@ -244,6 +249,14 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         if (BigDecimalUtil.isNullOrZero(f.getRetailSaleRatePerUnit()) || BigDecimalUtil.isNegative(f.getRetailSaleRatePerUnit())) {
             JsfUtil.addErrorMessage("Please enter the sale rate");
+            return;
+        }
+
+        // Issue #21635: block a retail rate below the purchase rate (selling at a loss),
+        // unless the user explicitly ticks "Allow rate below purchase rate" (issue #13103,
+        // for clearance / loss-leader pricing). Normalize AMPP pack rates to per-unit before comparing.
+        if (!allowRetailRateBelowPurchaseRate && isRetailRateBelowPurchaseRate(item, f)) {
+            JsfUtil.addErrorMessage("Retail rate is below the purchase rate. Tick 'Allow rate below purchase rate' to proceed.");
             return;
         }
 
@@ -1174,6 +1187,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 }
             }
 
+            if (!allowRetailRateBelowPurchaseRate && isRetailRateBelowPurchaseRate(item, f)) {
+                JsfUtil.addErrorMessage("Retail rate is below the purchase rate. Tick 'Allow rate below purchase rate' to proceed.");
+                return;
+            }
+
             // Sync wholesaleRatePerUnit from wholesaleRate (same logic as onWholesaleRateChange)
             if (f.getWholesaleRate() != null) {
                 if (item instanceof Ampp) {
@@ -1208,6 +1226,19 @@ public class PharmacyDirectPurchaseController implements Serializable {
         distributeProportionalBillValuesToItems();
         recalculateProfitMarginsForAllItems();
         editingBillItem = null;
+    }
+
+    private boolean isRetailRateBelowPurchaseRate(Item item, BillItemFinanceDetails f) {
+        BigDecimal purchaseRatePerUnit = BigDecimalUtil.valueOrZero(f.getLineGrossRate());
+        if (item instanceof Ampp) {
+            BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(f.getUnitsPerPack());
+            if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
+                double dblVal = item.getDblValue();
+                unitsPerPack = BigDecimal.valueOf(dblVal > 0 ? dblVal : 1);
+            }
+            purchaseRatePerUnit = purchaseRatePerUnit.divide(unitsPerPack, 6, RoundingMode.HALF_UP);
+        }
+        return purchaseRatePerUnit.compareTo(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit())) > 0;
     }
 
     /**
@@ -2354,6 +2385,14 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
+    }
+
+    public boolean isAllowRetailRateBelowPurchaseRate() {
+        return allowRetailRateBelowPurchaseRate;
+    }
+
+    public void setAllowRetailRateBelowPurchaseRate(boolean allowRetailRateBelowPurchaseRate) {
+        this.allowRetailRateBelowPurchaseRate = allowRetailRateBelowPurchaseRate;
     }
 
     public BillItem getCurrentBillItem() {
