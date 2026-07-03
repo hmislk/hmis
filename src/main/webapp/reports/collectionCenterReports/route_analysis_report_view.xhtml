@@ -259,7 +259,7 @@
                                 </div>
                             </div>
 
-                            <h:panelGroup layout="block" styleClass="route-chart-block" rendered="#{reportsController.bundle ne null and reportsController.reportType ne null}">
+                            <h:panelGroup layout="block" styleClass="route-chart-block" rendered="#{reportsController.showChart and reportsController.bundle ne null and reportsController.reportType ne null}">
                                 <p:lineChart id="countChart"
                                              widgetVar="printCountChartWidget"
                                              model="#{chartJsView.countChartModel}"
@@ -267,7 +267,7 @@
                                 </p:lineChart>
                             </h:panelGroup>
 
-                            <h:panelGroup layout="block" styleClass="route-chart-block" rendered="#{reportsController.bundle ne null and reportsController.reportType ne null}">
+                            <h:panelGroup layout="block" styleClass="route-chart-block" rendered="#{reportsController.showChart and reportsController.bundle ne null and reportsController.reportType ne null}">
                                 <p:lineChart id="serviceChart"
                                              widgetVar="printServiceChartWidget"
                                              model="#{chartJsView.serviceChartModel}"

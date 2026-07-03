@@ -82,7 +82,7 @@
                                     ajax="false" 
                                     value="Edit and Finalize Request"
                                     title="Edit and Finalize Request"
-                                    icon="fas fa-check-circle" class="ui-button-success mx-2"
+                                    icon="fas fa-lock" styleClass="ui-button-stage-finalize mx-2"
                                     action="#{transferRequestController.navigateToEditRequest}"
                                     disabled="#{b.checkedBy ne null or b.cancelled eq true}">
                                     <f:setPropertyActionListener target="#{transferRequestController.transferRequestBillPre}" value="#{b}"/>

@@ -977,6 +977,9 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public List<EncounterCreditCompany> getEncounterCreditCompanys() {
+        if (encounterCreditCompanys == null && current != null) {
+            fillCreditCompaniesByPatient();
+        }
         return encounterCreditCompanys;
     }
 
