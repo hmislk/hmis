@@ -4355,9 +4355,11 @@ public class GrnCostingController implements Serializable {
                 return null;
             }
 
-            BigDecimal prGiven = inputBillItem.getBillItemFinanceDetails().getLineNetRate();
+            BigDecimal prGiven = BigDecimalUtil.valueOrZero(
+                    inputBillItem.getBillItemFinanceDetails().getLineNetRate());
 
-            BigDecimal unitsPerPack = inputBillItem.getBillItemFinanceDetails().getUnitsPerPack();
+            BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(
+                    inputBillItem.getBillItemFinanceDetails().getUnitsPerPack());
             if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
                 unitsPerPack = BigDecimal.ONE;
             }
@@ -4369,10 +4371,17 @@ public class GrnCostingController implements Serializable {
             );
 
             purchaseRatePerUnit = prPerUnit.doubleValue();
-            retailRatePerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
+            BigDecimal rawRetailPerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit();
+            if (rawRetailPerUnit == null || rawRetailPerUnit.compareTo(BigDecimal.ZERO) == 0) {
+                BigDecimal packRetail = BigDecimalUtil.valueOrZero(
+                        inputBillItem.getBillItemFinanceDetails().getRetailSaleRate());
+                rawRetailPerUnit = packRetail.divide(unitsPerPack, PRICE_SCALE, RoundingMode.HALF_EVEN);
+            }
+            retailRatePerUnit = rawRetailPerUnit.doubleValue();
             wholesaleRate = Optional.ofNullable(inputBillItem.getBillItemFinanceDetails().getWholesaleRatePerUnit())
                     .orElse(BigDecimal.ZERO).doubleValue();
-            costRatePerUnit = inputBillItem.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
+            costRatePerUnit = BigDecimalUtil.valueOrZero(
+                    inputBillItem.getBillItemFinanceDetails().getTotalCostRate()).doubleValue();
 
             itemBatch = fetchItemBatchWithCosting(amp, purchaseRatePerUnit, retailRatePerUnit, costRatePerUnit, expiryDate);
         } else {
