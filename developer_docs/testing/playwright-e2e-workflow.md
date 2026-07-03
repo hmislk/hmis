@@ -169,6 +169,20 @@ Every `p:inputText`, `p:autoComplete`, `p:calendar`, and `p:selectOneMenu`
 that a Playwright test needs to interact with MUST carry a `widgetVar`
 attribute. It costs nothing and makes elements identifiable across sessions.
 
+### `p:inputText` driving a client-side recalculation (e.g. "Difference") ✅
+
+Some totals fields (like GRN costing's "Invoice Total" vs. "Difference") are
+recalculated by a client-side script bound to a plain blur event, not a
+`p:ajax`. A single `fill()` or even a plain `Tab` key press after typing can
+leave the dependent field stale, so a validation check reading that stale
+value (e.g. "The invoice does not match..! Check again") fires even though
+the number you typed is correct. Fix: click into the field, `Control+a` to
+select existing content, type the new value with `slowly: true`
+(`pressSequentially`), then click a neutral, non-interactive element elsewhere
+on the page (a heading works well) to force a real blur. Re-check the
+dependent field's value in the next snapshot before proceeding — don't assume
+it recalculated just because no error was shown yet.
+
 ---
 
 ## 4. Confirmations and double-click protection
@@ -181,6 +195,14 @@ attribute. It costs nothing and makes elements identifiable across sessions.
   return true, then fire `btn.click()` **twice in the same tick** on the
   non-AJAX settle button (e.g. `btnSettleReceive`). A correct implementation
   produces exactly one bill with no duplicate items.
+- **Do not register `page.once('dialog', ...)` inside `browser_run_code_unsafe`.**
+  The MCP server tracks dialogs itself; a script-registered handler accepts the
+  dialog but leaves the harness's modal state stuck — subsequent tool calls fail
+  with "does not handle the modal state" while `browser_handle_dialog` reports
+  "already handled". Recover with a `browser_snapshot` (clears the stale modal
+  state). Prefer overriding `window.confirm = () => true` via `page.evaluate`
+  *before* the click; note the override is lost on every full (non-AJAX) page
+  reload and must be re-applied per page instance.
 
 ---
 
@@ -413,6 +435,27 @@ input directly is unreliable. After picking the date, the calendar overlay
 can intercept subsequent clicks ("subtree intercepts pointer events") — click
 a neutral element on the page first (e.g. a heading) to dismiss the overlay
 before clicking Search.
+
+## 19. Some `confirm()`-guarded `type="submit"` buttons never reach the server — prefer existing data
+
+On `pharmacy/pharmacy_bill_retail_sale_native.xhtml` ("Pharmacy Retail Sale"), the
+**Settle** button is a PrimeFaces `p:commandButton` with `ajax="false"` and a
+`confirm(...)` guard. Across several approaches — real `browser_click` +
+`browser_handle_dialog`, overriding `window.confirm` before clicking, and dispatching
+a synthetic click via `browser_evaluate` — the click always ran the `onclick` handler
+(confirm dialog appeared/was accepted each time) but the browser never actually
+submitted the form: no new request appeared in `browser_network_requests`, and the
+server log had no corresponding entries. Root cause not identified (possibly a
+`Tendered` client-side balance check, or a JS handler outside the visible `onclick`
+attribute, silently calling `preventDefault()`).
+
+**Workaround used:** rather than fighting this page, the existing `pharmacy_search_*`
+pages were verified against **pre-existing historical demo data** (CareCode Model
+Hospital ships with substantial seeded pharmacy sale history) instead of creating a
+fresh bill through this specific page. If a fresh bill genuinely must be created for a
+test, try the token-based "Sale for Cashier" flow instead — its item-add/quantity
+inputs worked fine in this session, only the retail-native page's Settle button was
+unreachable.
 
 ## Quick checklist
 
