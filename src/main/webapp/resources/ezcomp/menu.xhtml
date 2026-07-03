@@ -699,10 +699,18 @@
 
                     </p:submenu>
 
-                    <p:menuitem  
-                        ajax="false"  
-                        action="/inward/investigation_search_for_reporting_bht?faces-redirect=true" 
-                        value="Investigation Trace" 
+                    <p:menuitem
+                        ajax="false"
+                        action="#{itemRequestApprovalController.navigateToPendingRequests()}"
+                        value="Service/Item Requests"
+                        icon="fa fa-clipboard-check"
+                        rendered="#{webUserController.hasPrivilege('InwardServiceItemRequestApproval') or webUserController.hasPrivilege('InwardServiceItemRequestRejection')}">
+                    </p:menuitem>
+
+                    <p:menuitem
+                        ajax="false"
+                        action="/inward/investigation_search_for_reporting_bht?faces-redirect=true"
+                        value="Investigation Trace"
                         icon="fa fa-search">
                     </p:menuitem>
 
@@ -1112,11 +1120,12 @@
 
                     </p:submenu>
 
-                    <p:submenu label="Wholesale Transactions" icon="fas fa-truck-loading" rendered="#{webUserController.hasPrivilege('PharmacyWholeSaleTransactionMenue')}">
-                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_bill_retail_sale?faces-redirect=true"
-                                     value="Sale" icon="fas fa-shopping-cart" rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSale')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true"
-                                     value="Sale for cashier" icon="fas fa-cash-register" rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSaleForCashier')}" actionListener="#{pharmacySaleController.resetAll()}" ></p:menuitem>
+                    <p:submenu label="Wholesale Transactions" icon="fas fa-truck-loading" rendered="#{webUserController.hasPrivilege('PharmacyWholeSaleTransactionMenue') and configOptionApplicationController.getBooleanValueByKey('Enable Wholesale Pharmacy Transactions', false)}">
+                        <p:menuitem ajax="false"
+                                    action="/pharmacy/pharmacy_bill_wholesale_sale_native?faces-redirect=true"
+                                    actionListener="#{wholesaleSaleNativeSqlController.resetAll()}"
+                                    value="Sale" icon="fas fa-shopping-cart"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSale')}"></p:menuitem>
                         <p:menuitem  ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_bill?faces-redirect=true"
                                      value="Search Sale Bill" icon="fas fa-search-dollar"
                                      actionListener="#{searchController.makeListNull}"
@@ -1173,6 +1182,13 @@
                                      value="BHT Issue Requests" icon="fas fa-clipboard-list"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
                                      rendered="#{webUserController.hasPrivilege('PharmacyBhtIssueRequest')}" />
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"
+                            value="Accept Returns from Ward"
+                            icon="fa fa-truck-ramp-box"
+                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept')}" >
+                        </p:menuitem>
                         <p:menuitem  ajax="false" action="#{inwardReportControllerBht.navigateToInpatientPharmacyRequestedAndIssuedOverviewInPharmacy()}"  value="Pharmacy Requested &amp; Issued Drug Overview" icon="fas fa-list" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
 
                         <p:menuitem  ajax="false" action="#{searchController.navigateToInpatientDirectIssuesByBill()}"

@@ -206,30 +206,41 @@
                         <div class="d-flex align-items-center my-4">
 
                             <p:commandButton 
-                                class="ui-button-warning mx-1"
+                                class="ui-button-warning mx-2"
+                                style="width: 115px"
                                 icon="fas fa-cogs"
                                 ajax="false"
                                 action="#{inwardReportController.createIpIncomeCategoryWiseReport}"
                                 value="Process" />
 
                             <p:commandButton 
-                                class="ui-button-primary mx-1"
+                                id="btnPrintIpIncomeCategoryWise"
+                                type="button"
+                                class="mx-2 ui-button-info"
+                                style="width: 115px"
                                 icon="fas fa-print"
                                 ajax="false"
-                                value="Print All" />
+                                value="Print">
+                                <p:printer target="printPanel" />
+                            </p:commandButton>
 
                             <p:commandButton 
-                                class="ui-button-success mx-1"
+                                id="btnDownloadIpIncomeCategoryWiseExcel"
+                                class="ui-button-success mx-2"
+                                style="width: 115px"
                                 icon="fas fa-file-excel"
                                 ajax="false"
+                                action="#{inwardReportController.downloadIpIncomeCategoryWiseExcel}"
                                 value="Download" />
 
                             <p:commandButton 
-                                class="ui-button-danger mx-1"
+                                id="btnDownloadIpIncomeCategoryWisePdf"
+                                class="ui-button-danger mx-2"
+                                style="width: 115px"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
+                                action="#{inwardReportController.downloadIpIncomeCategoryWisePdf}"
                                 value="PDF">
-                                <!--                                <p:fileDownload  />-->
                             </p:commandButton>
 
                         </div>
