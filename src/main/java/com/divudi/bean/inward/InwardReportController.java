@@ -164,7 +164,7 @@ import com.lowagie.text.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import javax.imageio.ImageIO;
-
+import java.awt.Color;
 /**
  *
  * @author pdhs
@@ -1107,184 +1107,6 @@ public class InwardReportController implements Serializable {
         bundle = generateIpIncomeCategoryWiseReport();
     }
 
-    public StreamedContent getIpIncomeCategoryWiseExcel() {
-        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
-            JsfUtil.addErrorMessage("No data available to export. Please process the report first.");
-            return null;
-        }
-        try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            XSSFSheet sheet = wb.createSheet("IP Income Category Wise");
-            String[] headers = {
-                "Group Name", "Quantity", "Base Price", "Discount",
-                "Sponsor Discount", "Hospital Fee", "Sponsor Payable",
-                "Patient Pay", "Professional Fee", "Total"
-            };
-            Row headerRow = sheet.createRow(0);
-            for (int i = 0; i < headers.length; i++) {
-                headerRow.createCell(i).setCellValue(headers[i]);
-            }
-            CreationHelper helper = wb.getCreationHelper();
-            CellStyle moneyStyle = wb.createCellStyle();
-            moneyStyle.setDataFormat(helper.createDataFormat().getFormat("#,##0.00"));
-            int rowNum = 1;
-            for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
-                Row r = sheet.createRow(rowNum++);
-                String groupName = row.getItem() != null ? row.getItem().getName()
-                        : (row.getCategory() != null ? row.getCategory().getName() : "");
-                r.createCell(0).setCellValue(groupName);
-                r.createCell(1).setCellValue(row.getItemCount() != null ? row.getItemCount() : 0L);
-                for (int col = 2; col <= 9; col++) {
-                    r.createCell(col).setCellStyle(moneyStyle);
-                }
-                r.getCell(2).setCellValue(row.getItemTotal() != null ? row.getItemTotal() : 0.0);
-                r.getCell(3).setCellValue(row.getItemDiscountAmount() != null ? row.getItemDiscountAmount() : 0.0);
-                r.getCell(4).setCellValue(row.getItemDiscount() != null ? row.getItemDiscount() : 0.0);
-                r.getCell(5).setCellValue(row.getItemHospitalFee() != null ? row.getItemHospitalFee() : 0.0);
-                r.getCell(6).setCellValue(row.getRowValueIn() != null ? row.getRowValueIn() : 0.0);
-                r.getCell(7).setCellValue(row.getRowValueOut() != null ? row.getRowValueOut() : 0.0);
-                r.getCell(8).setCellValue(row.getItemProfessionalFee() != null ? row.getItemProfessionalFee() : 0.0);
-                r.getCell(9).setCellValue(row.getItemNetTotal() != null ? row.getItemNetTotal() : 0.0);
-            }
-            Row totalsRow = sheet.createRow(rowNum);
-            totalsRow.createCell(0).setCellValue("Total");
-            totalsRow.createCell(1).setCellValue(bundle.getCount() != null ? bundle.getCount() : 0L);
-            for (int col = 2; col <= 9; col++) {
-                totalsRow.createCell(col).setCellStyle(moneyStyle);
-            }
-            totalsRow.getCell(2).setCellValue(bundle.getGrossTotal() != null ? bundle.getGrossTotal() : 0.0);
-            totalsRow.getCell(3).setCellValue(bundle.getDiscount() != null ? bundle.getDiscount() : 0.0);
-            totalsRow.getCell(4).setCellValue(0.0);
-            totalsRow.getCell(5).setCellValue(bundle.getHospitalTotal() != null ? bundle.getHospitalTotal() : 0.0);
-            totalsRow.getCell(6).setCellValue(ipIncomeTotalSponsorPay);
-            totalsRow.getCell(7).setCellValue(ipIncomeTotalPatientPay);
-            totalsRow.getCell(8).setCellValue(bundle.getStaffTotal() != null ? bundle.getStaffTotal() : 0.0);
-            totalsRow.getCell(9).setCellValue(bundle.getTotal() != null ? bundle.getTotal() : 0.0);
-            for (int i = 0; i < headers.length; i++) {
-                sheet.autoSizeColumn(i);
-            }
-            wb.write(out);
-            byte[] bytes = out.toByteArray();
-            return DefaultStreamedContent.builder()
-                    .name("IP_Income_Category_Wise_Report.xlsx")
-                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                    .stream(() -> new ByteArrayInputStream(bytes))
-                    .build();
-        } catch (IOException e) {
-            java.util.logging.Logger.getLogger(InwardReportController.class.getName())
-                    .log(java.util.logging.Level.SEVERE, "Excel generation failed", e);
-            JsfUtil.addErrorMessage("Failed to generate Excel: " + e.getMessage());
-            return null;
-        }
-    }
-
-    public void downloadIpIncomeCategoryWisePdf() {
-        if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
-            JsfUtil.addErrorMessage("No data available to export. Please process the report first.");
-            return;
-        }
-        FacesContext context = FacesContext.getCurrentInstance();
-        ExternalContext externalContext = context.getExternalContext();
-        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
-        SimpleDateFormat sdt = new SimpleDateFormat("dd MMM yyyy HH:mm");
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            Document document = new Document(com.lowagie.text.PageSize.A4.rotate());
-            com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
-            document.open();
-            String institutionName = sessionController.getInstitution() != null
-                    ? sessionController.getInstitution().getName() : "All Institutions";
-            document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
-            document.add(new Paragraph("IP Income Category Wise Report",
-                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14)));
-            document.add(new Paragraph("Generated: " + sdf.format(new java.util.Date()),
-                    FontFactory.getFont(FontFactory.HELVETICA, 10)));
-            document.add(new Paragraph(" "));
-            PdfPTable info = new PdfPTable(2);
-            info.setWidthPercentage(60);
-            info.setSpacingBefore(5);
-            info.setWidths(new float[]{1f, 2f});
-            addInfoCell(info, "Institution:", institution != null ? institution.getName() : "All");
-            addInfoCell(info, "From Date:", fromDate != null ? sdt.format(fromDate) : "-");
-            addInfoCell(info, "To Date:", toDate != null ? sdt.format(toDate) : "-");
-            document.add(info);
-            document.add(new Paragraph(" "));
-            PdfPTable table = new PdfPTable(10);
-            table.setWidthPercentage(100);
-            table.setSpacingBefore(10);
-            table.setWidths(new float[]{3f, 1.2f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f});
-            String[] headers = {
-                "Group Name", "Qty", "Base Price", "Discount",
-                "Sponsor Disc.", "Hospital Fee", "Sponsor Pay",
-                "Patient Pay", "Prof. Fee", "Total"
-            };
-            for (String h : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(h, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-                cell.setBackgroundColor(new java.awt.Color(220, 220, 220));
-                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                cell.setPadding(3);
-                table.addCell(cell);
-            }
-            java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0.00");
-            for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
-                String groupName = row.getItem() != null ? row.getItem().getName()
-                        : (row.getCategory() != null ? row.getCategory().getName() : "");
-                table.addCell(new Phrase(groupName, FontFactory.getFont(FontFactory.HELVETICA, 8)));
-                table.addCell(new Phrase(String.valueOf(row.getItemCount() != null ? row.getItemCount() : 0),
-                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
-                table.addCell(new Phrase(df.format(row.getItemTotal() != null ? row.getItemTotal() : 0.0),
-                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
-                table.addCell(new Phrase(df.format(row.getItemDiscountAmount() != null ? row.getItemDiscountAmount() : 0.0),
-                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
-                table.addCell(new Phrase(df.format(row.getItemDiscount() != null ? row.getItemDiscount() : 0.0),
-                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
-                table.addCell(new Phrase(df.format(row.getItemHospitalFee() != null ? row.getItemHospitalFee() : 0.0),
-                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
-                table.addCell(new Phrase(df.format(row.getRowValueIn() != null ? row.getRowValueIn() : 0.0),
-                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
-                table.addCell(new Phrase(df.format(row.getRowValueOut() != null ? row.getRowValueOut() : 0.0),
-                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
-                table.addCell(new Phrase(df.format(row.getItemProfessionalFee() != null ? row.getItemProfessionalFee() : 0.0),
-                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
-                table.addCell(new Phrase(df.format(row.getItemNetTotal() != null ? row.getItemNetTotal() : 0.0),
-                        FontFactory.getFont(FontFactory.HELVETICA, 8)));
-            }
-            PdfPCell totalLabel = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-            totalLabel.setPadding(3);
-            table.addCell(totalLabel);
-            String[] footerVals = {
-                String.valueOf(bundle.getCount() != null ? bundle.getCount() : 0),
-                df.format(bundle.getGrossTotal() != null ? bundle.getGrossTotal() : 0.0),
-                df.format(bundle.getDiscount() != null ? bundle.getDiscount() : 0.0),
-                "0.00",
-                df.format(bundle.getHospitalTotal() != null ? bundle.getHospitalTotal() : 0.0),
-                df.format(ipIncomeTotalSponsorPay),
-                df.format(ipIncomeTotalPatientPay),
-                df.format(bundle.getStaffTotal() != null ? bundle.getStaffTotal() : 0.0),
-                df.format(bundle.getTotal() != null ? bundle.getTotal() : 0.0)
-            };
-            for (String v : footerVals) {
-                PdfPCell fc = new PdfPCell(new Phrase(v, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8)));
-                fc.setPadding(3);
-                table.addCell(fc);
-            }
-            document.add(table);
-            document.close();
-            byte[] bytes = baos.toByteArray();
-            response.reset();
-            response.setContentType("application/pdf");
-            response.setHeader("Content-Disposition",
-                    "attachment; filename=IP_Income_Category_Wise_Report.pdf");
-            response.setContentLength(bytes.length);
-            try (OutputStream os = response.getOutputStream()) {
-                os.write(bytes);
-                os.flush();
-            }
-            context.responseComplete();
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
-        }
-    }
-
     public ReportTemplateRowBundle generateIpIncomeCategoryWiseReport() {
         ReportTemplateRowBundle rtrb = new ReportTemplateRowBundle();
 
@@ -1656,6 +1478,21 @@ public class InwardReportController implements Serializable {
         row.setItemNetTotal(row.getItemNetTotal() + netValue);
         row.setRowValueIn(row.getRowValueIn() + sponsorPay);
         row.setRowValueOut(row.getRowValueOut() + patientPay);
+    }
+    
+    private void applyIpIncomeExcelBorders(CellStyle style) {
+    style.setBorderBottom(BorderStyle.THIN);
+    style.setBorderTop(BorderStyle.THIN);
+    style.setBorderLeft(BorderStyle.THIN);
+    style.setBorderRight(BorderStyle.THIN);
+    }
+    
+    private Paragraph buildSectionTitle(String text) {
+    Paragraph p = new Paragraph(text, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11));
+    p.setAlignment(Element.ALIGN_CENTER);
+    p.setSpacingBefore(12f);
+    p.setSpacingAfter(6f);
+    return p;
     }
 
     private void populateIpIncomeProfitMatrixAndBillDiscounts(List<IpIncomeCategoryWiseRowDTO> rows) {
@@ -2408,6 +2245,7 @@ public class InwardReportController implements Serializable {
             titleFont.setFontHeightInPoints((short) 14);
             titleStyle.setFont(titleFont);
             titleStyle.setAlignment(HorizontalAlignment.CENTER);
+            titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
             // ── Info label style ───────────────────────────────────────────────────
             XSSFCellStyle infoLabelStyle = workbook.createCellStyle();
@@ -7788,5 +7626,699 @@ public class InwardReportController implements Serializable {
     public void setVatRegNo(String vatRegNo) {
         this.vatRegNo = vatRegNo;
     }
+    
+    public void downloadIpIncomeCategoryWiseExcel() {
+        try {
+            if (bundle == null) {
+                bundle = new ReportTemplateRowBundle();
+            }
+            if (bundle.getReportTemplateRows() == null) {
+                bundle.setReportTemplateRows(new ArrayList<>());
+            }
 
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            SimpleDateFormat fileDateFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
+
+            try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                XSSFSheet sheet = wb.createSheet("IP Income Category Wise");
+
+                // ===== Styles =====
+                XSSFCellStyle titleStyle = wb.createCellStyle();
+                XSSFFont titleFont = wb.createFont();
+                titleFont.setBold(true);
+                titleFont.setFontHeightInPoints((short) 14);
+                titleStyle.setFont(titleFont);
+                titleStyle.setAlignment(HorizontalAlignment.CENTER);
+                titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
+                XSSFCellStyle sectionTitleStyle = wb.createCellStyle();
+                XSSFFont sectionFont = wb.createFont();
+                sectionFont.setBold(true);
+                sectionFont.setFontHeightInPoints((short) 11);
+                sectionTitleStyle.setFont(sectionFont);
+                sectionTitleStyle.setAlignment(HorizontalAlignment.CENTER);
+                sectionTitleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                sectionTitleStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+                sectionTitleStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                applyIpIncomeExcelBorders(sectionTitleStyle);
+
+                XSSFCellStyle infoLabelStyle = wb.createCellStyle();
+                XSSFFont infoLabelFont = wb.createFont();
+                infoLabelFont.setBold(true);
+                infoLabelStyle.setFont(infoLabelFont);
+                infoLabelStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+                infoLabelStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                infoLabelStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                applyIpIncomeExcelBorders(infoLabelStyle);
+
+                XSSFCellStyle infoValueStyle = wb.createCellStyle();
+                infoValueStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                applyIpIncomeExcelBorders(infoValueStyle);
+
+                XSSFCellStyle headerStyle = wb.createCellStyle();
+                XSSFFont headerFont = wb.createFont();
+                headerFont.setBold(true);
+                headerFont.setColor(IndexedColors.WHITE.getIndex());
+                headerStyle.setFont(headerFont);
+                headerStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+                headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                headerStyle.setAlignment(HorizontalAlignment.CENTER);
+                headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                applyIpIncomeExcelBorders(headerStyle);
+
+                XSSFCellStyle textStyle = wb.createCellStyle();
+                textStyle.setAlignment(HorizontalAlignment.LEFT);
+                textStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                applyIpIncomeExcelBorders(textStyle);
+
+                XSSFCellStyle numberStyle = wb.createCellStyle();
+                numberStyle.setAlignment(HorizontalAlignment.RIGHT);
+                numberStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                numberStyle.setDataFormat(wb.createDataFormat().getFormat("#,##0.00"));
+                applyIpIncomeExcelBorders(numberStyle);
+
+                XSSFCellStyle integerStyle = wb.createCellStyle();
+                integerStyle.setAlignment(HorizontalAlignment.RIGHT);
+                integerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                integerStyle.setDataFormat(wb.createDataFormat().getFormat("0"));
+                applyIpIncomeExcelBorders(integerStyle);
+
+                XSSFCellStyle totalStyle = wb.createCellStyle();
+                XSSFFont totalFont = wb.createFont();
+                totalFont.setBold(true);
+                totalStyle.setFont(totalFont);
+                totalStyle.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+                totalStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                totalStyle.setAlignment(HorizontalAlignment.RIGHT);
+                totalStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                totalStyle.setDataFormat(wb.createDataFormat().getFormat("#,##0.00"));
+                applyIpIncomeExcelBorders(totalStyle);
+
+                XSSFCellStyle totalTextStyle = wb.createCellStyle();
+                XSSFFont totalTextFont = wb.createFont();
+                totalTextFont.setBold(true);
+                totalTextStyle.setFont(totalTextFont);
+                totalTextStyle.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+                totalTextStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+                totalTextStyle.setAlignment(HorizontalAlignment.LEFT);
+                totalTextStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                applyIpIncomeExcelBorders(totalTextStyle);
+
+                int rowNum = 0;
+
+                // ===== Title =====
+                Row titleRow = sheet.createRow(rowNum++);
+                titleRow.setHeightInPoints(24);
+                Cell titleCell = titleRow.createCell(0);
+                titleCell.setCellValue("Inpatient Income Category Wise Report");
+                titleCell.setCellStyle(titleStyle);
+                sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 9));
+
+                rowNum++;
+
+                // ===== Report Info =====
+                Row info1 = sheet.createRow(rowNum++);
+                Cell i11 = info1.createCell(0);
+                i11.setCellValue("Institution");
+                i11.setCellStyle(infoLabelStyle);
+                Cell i12 = info1.createCell(1);
+                i12.setCellValue(institution != null ? institution.getName() : "All");
+                i12.setCellStyle(infoValueStyle);
+                Cell i13 = info1.createCell(2);
+                i13.setCellValue("Site");
+                i13.setCellStyle(infoLabelStyle);
+                Cell i14 = info1.createCell(3);
+                i14.setCellValue(site != null ? site.getName() : "All");
+                i14.setCellStyle(infoValueStyle);
+
+                Row info2 = sheet.createRow(rowNum++);
+                Cell i21 = info2.createCell(0);
+                i21.setCellValue("Department");
+                i21.setCellStyle(infoLabelStyle);
+                Cell i22 = info2.createCell(1);
+                i22.setCellValue(department != null ? department.getName() : "All");
+                i22.setCellStyle(infoValueStyle);
+                Cell i23 = info2.createCell(2);
+                i23.setCellValue("Service Group");
+                i23.setCellStyle(infoLabelStyle);
+                Cell i24 = info2.createCell(3);
+                i24.setCellValue(category != null ? category.getName() : "All");
+                i24.setCellStyle(infoValueStyle);
+
+                Row info3 = sheet.createRow(rowNum++);
+                Cell i31 = info3.createCell(0);
+                i31.setCellValue("From Date");
+                i31.setCellStyle(infoLabelStyle);
+                Cell i32 = info3.createCell(1);
+                i32.setCellValue(fromDate != null ? sdf.format(fromDate) : "");
+                i32.setCellStyle(infoValueStyle);
+                Cell i33 = info3.createCell(2);
+                i33.setCellValue("To Date");
+                i33.setCellStyle(infoLabelStyle);
+                Cell i34 = info3.createCell(3);
+                i34.setCellValue(toDate != null ? sdf.format(toDate) : "");
+                i34.setCellStyle(infoValueStyle);
+
+                Row info4 = sheet.createRow(rowNum++);
+                Cell i41 = info4.createCell(0);
+                i41.setCellValue("Report Type");
+                i41.setCellStyle(infoLabelStyle);
+                Cell i42 = info4.createCell(1);
+                i42.setCellValue(reportType != null ? reportType : "");
+                i42.setCellStyle(infoValueStyle);
+
+                rowNum++;
+
+                // ===== Main Report Table =====
+                Row headerRow = sheet.createRow(rowNum++);
+                headerRow.setHeightInPoints(20);
+
+                String[] headers = {
+                    "Group Name",
+                    "Quantity",
+                    "Base Price",
+                    "Discount",
+                    "Sponsor Discount",
+                    "Hospital Fee",
+                    "Sponsor Payable",
+                    "Patient Pay",
+                    "Professional Fee",
+                    "Total"
+                };
+
+                for (int i = 0; i < headers.length; i++) {
+                    Cell c = headerRow.createCell(i);
+                    c.setCellValue(headers[i]);
+                    c.setCellStyle(headerStyle);
+                }
+
+                for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+                    Row dataRow = sheet.createRow(rowNum++);
+
+                    String groupName = "";
+                    if (row.getCategory() != null && row.getItem() == null) {
+                        groupName = row.getCategory().getName();
+                    } else if (row.getItem() != null) {
+                        groupName = row.getItem().getName();
+                    }
+
+                    Cell c0 = dataRow.createCell(0);
+                    c0.setCellValue(groupName);
+                    c0.setCellStyle(textStyle);
+
+                    Cell c1 = dataRow.createCell(1);
+                    c1.setCellValue(row.getItemCount() != null ? row.getItemCount() : 0);
+                    c1.setCellStyle(integerStyle);
+
+                    Cell c2 = dataRow.createCell(2);
+                    c2.setCellValue(row.getItemTotal() != null ? row.getItemTotal() : 0.0);
+                    c2.setCellStyle(numberStyle);
+
+                    Cell c3 = dataRow.createCell(3);
+                    c3.setCellValue(row.getItemDiscountAmount() != null ? row.getItemDiscountAmount() : 0.0);
+                    c3.setCellStyle(numberStyle);
+
+                    Cell c4 = dataRow.createCell(4);
+                    c4.setCellValue(row.getItemDiscount() != null ? row.getItemDiscount() : 0.0);
+                    c4.setCellStyle(numberStyle);
+
+                    Cell c5 = dataRow.createCell(5);
+                    c5.setCellValue(row.getItemHospitalFee() != null ? row.getItemHospitalFee() : 0.0);
+                    c5.setCellStyle(numberStyle);
+
+                    Cell c6 = dataRow.createCell(6);
+                    c6.setCellValue(row.getRowValueIn() != null ? row.getRowValueIn() : 0.0);
+                    c6.setCellStyle(numberStyle);
+
+                    Cell c7 = dataRow.createCell(7);
+                    c7.setCellValue(row.getRowValueOut() != null ? row.getRowValueOut() : 0.0);
+                    c7.setCellStyle(numberStyle);
+
+                    Cell c8 = dataRow.createCell(8);
+                    c8.setCellValue(row.getItemProfessionalFee() != null ? row.getItemProfessionalFee() : 0.0);
+                    c8.setCellStyle(numberStyle);
+
+                    Cell c9 = dataRow.createCell(9);
+                    c9.setCellValue(row.getItemNetTotal() != null ? row.getItemNetTotal() : 0.0);
+                    c9.setCellStyle(numberStyle);
+                }
+
+                Row totalRow = sheet.createRow(rowNum++);
+                Cell t0 = totalRow.createCell(0);
+                t0.setCellValue("Total");
+                t0.setCellStyle(totalTextStyle);
+
+                Cell t1 = totalRow.createCell(1);
+                t1.setCellValue(bundle.getCount() != null ? bundle.getCount() : 0);
+                t1.setCellStyle(totalStyle);
+
+                Cell t2 = totalRow.createCell(2);
+                t2.setCellValue(bundle.getGrossTotal() != null ? bundle.getGrossTotal() : 0.0);
+                t2.setCellStyle(totalStyle);
+
+                Cell t3 = totalRow.createCell(3);
+                t3.setCellValue(bundle.getDiscount() != null ? bundle.getDiscount() : 0.0);
+                t3.setCellStyle(totalStyle);
+
+                Cell t4 = totalRow.createCell(4);
+                t4.setCellValue(0.0);
+                t4.setCellStyle(totalStyle);
+
+                Cell t5 = totalRow.createCell(5);
+                t5.setCellValue(bundle.getHospitalTotal() != null ? bundle.getHospitalTotal() : 0.0);
+                t5.setCellStyle(totalStyle);
+
+                Cell t6 = totalRow.createCell(6);
+                t6.setCellValue(ipIncomeTotalSponsorPay);
+                t6.setCellStyle(totalStyle);
+
+                Cell t7 = totalRow.createCell(7);
+                t7.setCellValue(ipIncomeTotalPatientPay);
+                t7.setCellStyle(totalStyle);
+
+                Cell t8 = totalRow.createCell(8);
+                t8.setCellValue(bundle.getStaffTotal() != null ? bundle.getStaffTotal() : 0.0);
+                t8.setCellStyle(totalStyle);
+
+                Cell t9 = totalRow.createCell(9);
+                t9.setCellValue(bundle.getTotal() != null ? bundle.getTotal() : 0.0);
+                t9.setCellStyle(totalStyle);
+
+                rowNum += 2;
+
+                // ===== Profit Matrix =====
+                Row pmTitle = sheet.createRow(rowNum++);
+                pmTitle.setHeightInPoints(18);
+                Cell pmTitleCell = pmTitle.createCell(0);
+                pmTitleCell.setCellValue("Profit Matrix");
+                pmTitleCell.setCellStyle(sectionTitleStyle);
+                sheet.addMergedRegion(new CellRangeAddress(pmTitle.getRowNum(), pmTitle.getRowNum(), 0, 2));
+
+                Row pmHeader = sheet.createRow(rowNum++);
+                Cell pmh0 = pmHeader.createCell(0);
+                pmh0.setCellValue("Cash");
+                pmh0.setCellStyle(headerStyle);
+                Cell pmh1 = pmHeader.createCell(1);
+                pmh1.setCellValue("Credit");
+                pmh1.setCellStyle(headerStyle);
+                Cell pmh2 = pmHeader.createCell(2);
+                pmh2.setCellValue("Total");
+                pmh2.setCellStyle(headerStyle);
+
+                Row pmData = sheet.createRow(rowNum++);
+                Cell pm1 = pmData.createCell(0);
+                pm1.setCellValue(ipIncomeCashTotal);
+                pm1.setCellStyle(numberStyle);
+                Cell pm2 = pmData.createCell(1);
+                pm2.setCellValue(ipIncomeCreditTotal);
+                pm2.setCellStyle(numberStyle);
+                Cell pm3 = pmData.createCell(2);
+                pm3.setCellValue(ipIncomeCashTotal + ipIncomeCreditTotal);
+                pm3.setCellStyle(numberStyle);
+
+                rowNum += 2;
+
+                // ===== Bill Discount =====
+                Row bdTitle = sheet.createRow(rowNum++);
+                bdTitle.setHeightInPoints(18);
+                Cell bdTitleCell = bdTitle.createCell(0);
+                bdTitleCell.setCellValue("Bill Discount");
+                bdTitleCell.setCellStyle(sectionTitleStyle);
+                sheet.addMergedRegion(new CellRangeAddress(bdTitle.getRowNum(), bdTitle.getRowNum(), 0, 1));
+
+                Row bdHeader = sheet.createRow(rowNum++);
+                Cell bdh0 = bdHeader.createCell(0);
+                bdh0.setCellValue("Invoice No");
+                bdh0.setCellStyle(headerStyle);
+                Cell bdh1 = bdHeader.createCell(1);
+                bdh1.setCellValue("Bill Discount");
+                bdh1.setCellStyle(headerStyle);
+
+                if (ipIncomeBillDiscounts != null && !ipIncomeBillDiscounts.isEmpty()) {
+                    for (Map<String, Object> discountRow : ipIncomeBillDiscounts) {
+                            Row bdRow = sheet.createRow(rowNum++);
+
+                            Cell inv = bdRow.createCell(0);
+                            Object invoiceNo = discountRow.get("invoiceNo");
+                            inv.setCellValue(invoiceNo != null ? invoiceNo.toString() : "");
+                            inv.setCellStyle(textStyle);
+
+                            Cell dis = bdRow.createCell(1);
+                             Object discount = discountRow.get("discount");
+                            double val = discount instanceof Number ? ((Number) discount).doubleValue() : 0.0;
+                            dis.setCellValue(val);
+                            dis.setCellStyle(numberStyle);
+                    }
+                }
+
+                Row bdTotal = sheet.createRow(rowNum++);
+                Cell bdt0 = bdTotal.createCell(0);
+                bdt0.setCellValue("Total Bill Discount");
+                bdt0.setCellStyle(totalTextStyle);
+
+                Cell bdt1 = bdTotal.createCell(1);
+                bdt1.setCellValue(ipIncomeTotalBillDiscount);
+                bdt1.setCellStyle(totalStyle);
+
+                rowNum += 2;
+
+                // ===== Summary Details =====
+                Row sdTitle = sheet.createRow(rowNum++);
+                sdTitle.setHeightInPoints(18);
+                Cell sdTitleCell = sdTitle.createCell(0);
+                sdTitleCell.setCellValue("Summary Details");
+                sdTitleCell.setCellStyle(sectionTitleStyle);
+                sheet.addMergedRegion(new CellRangeAddress(sdTitle.getRowNum(), sdTitle.getRowNum(), 0, 1));
+
+                Row sdHeader = sheet.createRow(rowNum++);
+                Cell sdh0 = sdHeader.createCell(0);
+                sdh0.setCellValue("Description");
+                sdh0.setCellStyle(headerStyle);
+                Cell sdh1 = sdHeader.createCell(1);
+                sdh1.setCellValue("Amount");
+                sdh1.setCellStyle(headerStyle);
+
+                Row sd1 = sheet.createRow(rowNum++);
+                Cell sd10 = sd1.createCell(0);
+                sd10.setCellValue("Total Patient Pay");
+                sd10.setCellStyle(textStyle);
+                Cell sd11 = sd1.createCell(1);
+                sd11.setCellValue(ipIncomeTotalPatientPay);
+                sd11.setCellStyle(numberStyle);
+
+                Row sd2 = sheet.createRow(rowNum++);
+                Cell sd20 = sd2.createCell(0);
+                sd20.setCellValue("Total Sponsor Pay");
+                sd20.setCellStyle(textStyle);
+                Cell sd21 = sd2.createCell(1);
+                sd21.setCellValue(ipIncomeTotalSponsorPay);
+                sd21.setCellStyle(numberStyle);
+
+                Row sd3 = sheet.createRow(rowNum++);
+                Cell sd30 = sd3.createCell(0);
+                sd30.setCellValue("Net Amount");
+                sd30.setCellStyle(totalTextStyle);
+                Cell sd31 = sd3.createCell(1);
+                sd31.setCellValue(bundle.getTotal() != null ? bundle.getTotal() : 0.0);
+                sd31.setCellStyle(totalStyle);
+
+                for (int i = 0; i < 10; i++) {
+                    sheet.autoSizeColumn(i);
+                }
+
+                wb.write(out);
+                byte[] excelBytes = out.toByteArray();
+
+                externalContext.responseReset();
+                externalContext.setResponseContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                externalContext.setResponseContentLength(excelBytes.length);
+                externalContext.setResponseHeader(
+                        "Content-Disposition",
+                        "attachment; filename=\"IP_Income_Category_Wise_" + fileDateFormat.format(new Date()) + ".xlsx\""
+                );
+
+                OutputStream output = externalContext.getResponseOutputStream();
+                output.write(excelBytes);
+                output.flush();
+                facesContext.responseComplete();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JsfUtil.addErrorMessage("Error generating Excel: " + e.getMessage());
+        }
+    }
+
+    public void downloadIpIncomeCategoryWisePdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
+        SimpleDateFormat sdt = new SimpleDateFormat("dd MMM yyyy HH:mm");
+        String dates = CommonFunctions.dateRangeForFileName(
+                fromDate, toDate,
+                sessionController.getApplicationPreference().getLongDateFormat());
+
+        try {
+            if (bundle == null) {
+                bundle = new ReportTemplateRowBundle();
+            }
+            if (bundle.getReportTemplateRows() == null) {
+                bundle.setReportTemplateRows(new ArrayList<>());
+            }
+
+            try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                Document document = new Document(com.lowagie.text.PageSize.A4.rotate(), 18, 18, 24, 18);
+                com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
+                document.open();
+
+                String institutionName = sessionController.getInstitution() != null
+                        ? sessionController.getInstitution().getName()
+                        : "No Logged Institution";
+
+                Paragraph p1 = new Paragraph(institutionName,
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16));
+                p1.setAlignment(Element.ALIGN_CENTER);
+                document.add(p1);
+
+                Paragraph p2 = new Paragraph("Inpatient Income Category Wise Report",
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14));
+                p2.setAlignment(Element.ALIGN_CENTER);
+                document.add(p2);
+
+                Paragraph p3 = new Paragraph("Generated Date : " + sdf.format(new Date()),
+                        FontFactory.getFont(FontFactory.HELVETICA, 10));
+                p3.setAlignment(Element.ALIGN_CENTER);
+                document.add(p3);
+
+                document.add(new Paragraph(" "));
+
+                PdfPTable infoTable = buildIpIncomeCategoryWisePdfInfoTable(sdt);
+                document.add(infoTable);
+
+                // ===== Main Report Table =====
+                PdfPTable table = new PdfPTable(10);
+                table.setWidthPercentage(100);
+                table.setSpacingBefore(10);
+                table.setWidths(new float[]{3.2f, 1.0f, 1.3f, 1.2f, 1.4f, 1.2f, 1.4f, 1.3f, 1.3f, 1.3f});
+
+                com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, java.awt.Color.WHITE);
+                com.lowagie.text.Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+                com.lowagie.text.Font totalFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+
+                java.awt.Color totalBg = new java.awt.Color(255, 242, 204);
+
+                String[] headers = {
+                    "Group Name",
+                    "Qty",
+                    "Base Price",
+                    "Discount",
+                    "Sponsor Discount",
+                    "Hospital Fee",
+                    "Sponsor Payable",
+                    "Patient Pay",
+                    "Professional Fee",
+                    "Total"
+                };
+
+                for (String header : headers) {
+                    PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                    cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+                    cell.setBackgroundColor(new java.awt.Color(41, 128, 185));
+                    cell.setPaddingTop(6f);
+                    cell.setPaddingBottom(6f);
+                    cell.setPaddingLeft(4f);
+                    cell.setPaddingRight(4f);
+                    table.addCell(cell);
+                }
+
+                for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+                    String groupName = "";
+                    if (row.getCategory() != null && row.getItem() == null) {
+                        groupName = row.getCategory().getName();
+                    } else if (row.getItem() != null) {
+                        groupName = row.getItem().getName();
+                    }
+
+                    addPdfCell(table, groupName, cellFont, Element.ALIGN_LEFT, null);
+                    addPdfCell(table, String.valueOf(row.getItemCount() != null ? row.getItemCount() : 0), cellFont, Element.ALIGN_RIGHT, null);
+                    addPdfCell(table, String.format("%,.2f", row.getItemTotal() != null ? row.getItemTotal() : 0.0), cellFont, Element.ALIGN_RIGHT, null);
+                    addPdfCell(table, String.format("%,.2f", row.getItemDiscountAmount() != null ? row.getItemDiscountAmount() : 0.0), cellFont, Element.ALIGN_RIGHT, null);
+                    addPdfCell(table, String.format("%,.2f", row.getItemDiscount() != null ? row.getItemDiscount() : 0.0), cellFont, Element.ALIGN_RIGHT, null);
+                    addPdfCell(table, String.format("%,.2f", row.getItemHospitalFee() != null ? row.getItemHospitalFee() : 0.0), cellFont, Element.ALIGN_RIGHT, null);
+                    addPdfCell(table, String.format("%,.2f", row.getRowValueIn() != null ? row.getRowValueIn() : 0.0), cellFont, Element.ALIGN_RIGHT, null);
+                    addPdfCell(table, String.format("%,.2f", row.getRowValueOut() != null ? row.getRowValueOut() : 0.0), cellFont, Element.ALIGN_RIGHT, null);
+                    addPdfCell(table, String.format("%,.2f", row.getItemProfessionalFee() != null ? row.getItemProfessionalFee() : 0.0), cellFont, Element.ALIGN_RIGHT, null);
+                    addPdfCell(table, String.format("%,.2f", row.getItemNetTotal() != null ? row.getItemNetTotal() : 0.0), cellFont, Element.ALIGN_RIGHT, null);
+                }
+
+                addPdfCell(table, "Total", totalFont, Element.ALIGN_LEFT, totalBg);
+                addPdfCell(table, String.valueOf(bundle.getCount() != null ? bundle.getCount() : 0), totalFont, Element.ALIGN_RIGHT, totalBg);
+                addPdfCell(table, String.format("%,.2f", bundle.getGrossTotal() != null ? bundle.getGrossTotal() : 0.0), totalFont, Element.ALIGN_RIGHT, totalBg);
+                addPdfCell(table, String.format("%,.2f", bundle.getDiscount() != null ? bundle.getDiscount() : 0.0), totalFont, Element.ALIGN_RIGHT, totalBg);
+                addPdfCell(table, String.format("%,.2f", 0.0), totalFont, Element.ALIGN_RIGHT, totalBg);
+                addPdfCell(table, String.format("%,.2f", bundle.getHospitalTotal() != null ? bundle.getHospitalTotal() : 0.0), totalFont, Element.ALIGN_RIGHT, totalBg);
+                addPdfCell(table, String.format("%,.2f", ipIncomeTotalSponsorPay), totalFont, Element.ALIGN_RIGHT, totalBg);
+                addPdfCell(table, String.format("%,.2f", ipIncomeTotalPatientPay), totalFont, Element.ALIGN_RIGHT, totalBg);
+                addPdfCell(table, String.format("%,.2f", bundle.getStaffTotal() != null ? bundle.getStaffTotal() : 0.0), totalFont, Element.ALIGN_RIGHT, totalBg);
+                addPdfCell(table, String.format("%,.2f", bundle.getTotal() != null ? bundle.getTotal() : 0.0), totalFont, Element.ALIGN_RIGHT, totalBg);
+
+                document.add(table);
+
+                // ===== Profit Matrix =====
+                document.add(buildSectionTitle("Profit Matrix"));
+
+                PdfPTable pmTable = new PdfPTable(3);
+                pmTable.setWidthPercentage(60);
+                pmTable.setHorizontalAlignment(Element.ALIGN_CENTER);
+                pmTable.setSpacingBefore(5);
+                pmTable.setWidths(new float[]{1f, 1f, 1f});
+
+                addPdfHeaderCell(pmTable, "Cash");
+                addPdfHeaderCell(pmTable, "Credit");
+                addPdfHeaderCell(pmTable, "Total");
+
+                addPdfCell(pmTable, String.format("%,.2f", ipIncomeCashTotal), cellFont, Element.ALIGN_RIGHT, null);
+                addPdfCell(pmTable, String.format("%,.2f", ipIncomeCreditTotal), cellFont, Element.ALIGN_RIGHT, null);
+                addPdfCell(pmTable, String.format("%,.2f", ipIncomeCashTotal + ipIncomeCreditTotal), cellFont, Element.ALIGN_RIGHT, null);
+
+                document.add(pmTable);
+
+                // ===== Bill Discount =====
+                document.add(buildSectionTitle("Bill Discount"));
+
+                PdfPTable bdTable = new PdfPTable(2);
+                bdTable.setWidthPercentage(60);
+                bdTable.setHorizontalAlignment(Element.ALIGN_CENTER);
+                bdTable.setSpacingBefore(5);
+                bdTable.setWidths(new float[]{2f, 1f});
+
+                addPdfHeaderCell(bdTable, "Invoice No");
+                addPdfHeaderCell(bdTable, "Bill Discount");
+
+                if (ipIncomeBillDiscounts != null && !ipIncomeBillDiscounts.isEmpty()) {
+                     for (Map<String, Object> discountRow : ipIncomeBillDiscounts) {
+                            Object invoiceNo = discountRow.get("invoiceNo");
+                            addPdfCell(bdTable, invoiceNo != null ? invoiceNo.toString() : "", cellFont, Element.ALIGN_LEFT, null);
+                            Object discount = discountRow.get("discount");
+                            double val = discount instanceof Number ? ((Number) discount).doubleValue() : 0.0;
+                            addPdfCell(bdTable, String.format("%,.2f", val), cellFont, Element.ALIGN_RIGHT, null);
+                    }
+                }
+
+                addPdfCell(bdTable, "Total Bill Discount", totalFont, Element.ALIGN_LEFT, totalBg);
+                addPdfCell(bdTable, String.format("%,.2f", ipIncomeTotalBillDiscount), totalFont, Element.ALIGN_RIGHT, totalBg);
+
+                document.add(bdTable);
+
+                // ===== Summary Details =====
+                document.add(buildSectionTitle("Summary Details"));
+
+                PdfPTable sdTable = new PdfPTable(2);
+                sdTable.setWidthPercentage(60);
+                sdTable.setHorizontalAlignment(Element.ALIGN_CENTER);
+                sdTable.setSpacingBefore(5);
+                sdTable.setWidths(new float[]{2f, 1f});
+
+                addPdfHeaderCell(sdTable, "Description");
+                addPdfHeaderCell(sdTable, "Amount");
+
+                addPdfCell(sdTable, "Total Patient Pay", cellFont, Element.ALIGN_LEFT, null);
+                addPdfCell(sdTable, String.format("%,.2f", ipIncomeTotalPatientPay), cellFont, Element.ALIGN_RIGHT, null);
+
+                addPdfCell(sdTable, "Total Sponsor Pay", cellFont, Element.ALIGN_LEFT, null);
+                addPdfCell(sdTable, String.format("%,.2f", ipIncomeTotalSponsorPay), cellFont, Element.ALIGN_RIGHT, null);
+
+                addPdfCell(sdTable, "Net Amount", totalFont, Element.ALIGN_LEFT, totalBg);
+                addPdfCell(sdTable, String.format("%,.2f", bundle.getTotal() != null ? bundle.getTotal() : 0.0), totalFont, Element.ALIGN_RIGHT, totalBg);
+
+                document.add(sdTable);
+
+                document.close();
+
+                byte[] bytes = baos.toByteArray();
+                response.reset();
+                response.setContentType("application/pdf");
+                response.setHeader("Content-Disposition",
+                        "attachment; filename=IP_Income_Category_Wise_" + dates + ".pdf");
+                response.setContentLength(bytes.length);
+
+                try (OutputStream out = response.getOutputStream()) {
+                    out.write(bytes);
+                    out.flush();
+                }
+
+                context.responseComplete();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+        }
+    }
+    
+    private PdfPTable buildIpIncomeCategoryWisePdfInfoTable(SimpleDateFormat sdt) throws DocumentException {
+        PdfPTable info = new PdfPTable(2);
+        info.setWidthPercentage(65);
+        info.setHorizontalAlignment(Element.ALIGN_CENTER);
+        info.setSpacingBefore(8);
+        info.setSpacingAfter(12);
+        info.setWidths(new float[]{1f, 2f});
+
+        addPdfInfoCell(info, "Institution:", institution != null ? institution.getName() : "All");
+        addPdfInfoCell(info, "Site:", site != null ? site.getName() : "All");
+        addPdfInfoCell(info, "Department:", department != null ? department.getName() : "All");
+        addPdfInfoCell(info, "Service Group:", category != null ? category.getName() : "All");
+        addPdfInfoCell(info, "Report Type:", reportType != null ? reportType : "");
+        addPdfInfoCell(info, "From Date:", fromDate != null ? sdt.format(fromDate) : "-");
+        addPdfInfoCell(info, "To Date:", toDate != null ? sdt.format(toDate) : "-");
+
+        return info;
+    }
+
+    private void addPdfInfoCell(PdfPTable table, String label, String value) {
+        com.lowagie.text.Font labelFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+        com.lowagie.text.Font valueFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+
+        PdfPCell labelCell = new PdfPCell(new Phrase(label, labelFont));
+        labelCell.setBorder(PdfPCell.NO_BORDER);
+        labelCell.setPadding(3f);
+
+        PdfPCell valueCell = new PdfPCell(new Phrase(value != null ? value : "", valueFont));
+        valueCell.setBorder(PdfPCell.NO_BORDER);
+        valueCell.setPadding(3f);
+
+        table.addCell(labelCell);
+        table.addCell(valueCell);
+    }
+
+    private void addPdfHeaderCell(PdfPTable table, String text) {
+        com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, java.awt.Color.WHITE);
+            PdfPCell cell = new PdfPCell(new Phrase(text, headerFont));
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            cell.setBackgroundColor(new java.awt.Color(41, 128, 185));
+            cell.setPaddingTop(6f);
+            cell.setPaddingBottom(6f);
+            cell.setPaddingLeft(4f);
+            cell.setPaddingRight(4f);
+            table.addCell(cell);
+    }
+
+    private void addPdfCell(PdfPTable table, String text, com.lowagie.text.Font font, int alignment, java.awt.Color bg) {
+        PdfPCell cell = new PdfPCell(new Phrase(text != null ? text : "", font));
+        cell.setHorizontalAlignment(alignment);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPaddingTop(5f);
+        cell.setPaddingBottom(5f);
+        cell.setPaddingLeft(4f);
+        cell.setPaddingRight(4f);
+        if (bg != null) {
+            cell.setBackgroundColor(bg);
+        }
+        table.addCell(cell);
+    }
 }

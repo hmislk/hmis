@@ -94,6 +94,7 @@
                                         value="View / Finalize"
                                         title="View and Finalize Disposal Issue #{g.id}"
                                         ajax="false"
+                                        onclick="return confirm('Open disposal issue ##{g.id} for finalization?');"
                                         action="#{pharmacyIssueController.loadDraftForEdit(g.id)}"/>
                                     <p:commandButton
                                         id="btnCancel"

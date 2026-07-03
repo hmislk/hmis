@@ -384,6 +384,55 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject itemRequestTool = Json.createObjectBuilder()
+                .add("name", "manage_item_requests")
+                .add("description",
+                        "Submit, look up, list, or cancel item/service requests against a patient's active BHT "
+                        + "(meals like Breakfast/Lunch/Dinner, and stock items like Water Bottle/Tea/Milk/Sugar). "
+                        + "Use POST to submit a new request. Use GET with id to poll a single request's status "
+                        + "(PENDING, APPROVED, REJECTED, CANCELLED). Use GET without id to list/search requests. "
+                        + "Use PUT to cancel a still-PENDING request. Approval/rejection happen only in-app via the "
+                        + "department's JSF approval queue and are NOT available through this tool.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("GET").add("POST").add("PUT"))
+                                        .add("description", "HTTP method: GET=fetch/list, POST=submit new request, PUT=cancel"))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Request ID as a string. Required for GET-single and PUT (cancel)."))
+                                .add("bhtNo", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Patient's active BHT number. Required for POST."))
+                                .add("targetDepartmentId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Department ID the request is routed to for approval. Required for POST; optional filter for GET-list."))
+                                .add("comments", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Optional comments for the request (POST)."))
+                                .add("linesJson", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "JSON array of request lines for POST, e.g. [{\"itemId\":123,\"qty\":2}]"))
+                                .add("reason", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Reason for cancellation. Used with PUT."))
+                                .add("status", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Filter GET-list by status: PENDING, APPROVED, REJECTED, CANCELLED (optional)."))
+                                .add("fromDate", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Filter GET-list from date, format yyyy-MM-dd (optional)."))
+                                .add("toDate", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Filter GET-list to date, format yyyy-MM-dd (optional)."))
+                                .add("limit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max rows to return for GET-list (optional).")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         JsonObject collectingCentreFeesTool = Json.createObjectBuilder()
                 .add("name", "manage_collecting_centre_fees")
                 .add("description",
@@ -1504,6 +1553,7 @@ public class AnthropicApiService implements Serializable {
                 .add(searchConfigTool)
                 .add(manageConfigOptionTool)
                 .add(clinicalMetadataTool)
+                .add(itemRequestTool)
                 .add(collectingCentreFeesTool)
                 .add(inwardDiscountMatrixTool)
                 .add(inwardPriceAdjustmentTool)
@@ -1572,6 +1622,21 @@ public class AnthropicApiService implements Serializable {
                     String size   = toolInput.containsKey("size")  ? toolInput.getString("size", "20") : "20";
                     return callClinicalMetadataApi(method, type, id, name, code, desc, query, page, size,
                             hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_item_requests": {
+                    String method             = toolInput.getString("method", "GET");
+                    String id                 = toolInput.containsKey("id") ? toolInput.getString("id", "") : "";
+                    String bhtNo              = toolInput.containsKey("bhtNo") ? toolInput.getString("bhtNo", "") : "";
+                    String targetDepartmentId = toolInput.containsKey("targetDepartmentId") ? toolInput.getString("targetDepartmentId", "") : "";
+                    String comments           = toolInput.containsKey("comments") ? toolInput.getString("comments", "") : "";
+                    String linesJson          = toolInput.containsKey("linesJson") ? toolInput.getString("linesJson", "") : "";
+                    String reason             = toolInput.containsKey("reason") ? toolInput.getString("reason", "") : "";
+                    String status             = toolInput.containsKey("status") ? toolInput.getString("status", "") : "";
+                    String fromDate           = toolInput.containsKey("fromDate") ? toolInput.getString("fromDate", "") : "";
+                    String toDate             = toolInput.containsKey("toDate") ? toolInput.getString("toDate", "") : "";
+                    String limit              = toolInput.containsKey("limit") ? toolInput.getString("limit", "") : "";
+                    return callItemRequestApi(method, id, bhtNo, targetDepartmentId, comments, linesJson,
+                            reason, status, fromDate, toDate, limit, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_collecting_centre_fees": {
                     String method          = toolInput.getString("method", "GET");
@@ -2250,6 +2315,123 @@ public class AnthropicApiService implements Serializable {
             return "Clinical metadata API call interrupted.";
         } catch (Exception e) {
             return "Clinical metadata API error: " + e.getMessage();
+        }
+    }
+
+    private String callItemRequestApi(String method, String id, String bhtNo, String targetDepartmentId,
+            String comments, String linesJson, String reason, String status, String fromDate, String toDate,
+            String limit, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured. Cannot call item requests API.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: No active HMIS API key found for the current user.";
+        }
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+            String base = hmisBaseUrl.trim().replaceAll("/+$", "") + "/api/itemrequests";
+            String url;
+            String requestBody = null;
+            String httpMethod;
+
+            switch (method.toUpperCase()) {
+                case "POST": {
+                    if (bhtNo == null || bhtNo.trim().isEmpty()) {
+                        return "Error: bhtNo is required for POST.";
+                    }
+                    if (targetDepartmentId == null || targetDepartmentId.trim().isEmpty()) {
+                        return "Error: targetDepartmentId is required for POST.";
+                    }
+                    url = base;
+                    httpMethod = "POST";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    bodyBuilder.add("bhtNo", bhtNo);
+                    bodyBuilder.add("targetDepartmentId", Long.parseLong(targetDepartmentId.trim()));
+                    if (comments != null && !comments.isEmpty()) {
+                        bodyBuilder.add("comments", comments);
+                    }
+                    if (linesJson != null && !linesJson.trim().isEmpty()) {
+                        try (JsonReader reader = Json.createReader(new StringReader(linesJson))) {
+                            bodyBuilder.add("lines", reader.readArray());
+                        } catch (Exception e) {
+                            return "Error: linesJson is not valid JSON: " + e.getMessage();
+                        }
+                    } else {
+                        return "Error: linesJson is required for POST (JSON array of {itemId, qty}).";
+                    }
+                    requestBody = bodyBuilder.build().toString();
+                    break;
+                }
+                case "PUT": {
+                    if (id == null || id.trim().isEmpty()) {
+                        return "Error: id is required for PUT (cancel).";
+                    }
+                    url = base + "/" + id.trim() + "/cancel";
+                    httpMethod = "PUT";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    if (reason != null && !reason.isEmpty()) {
+                        bodyBuilder.add("reason", reason);
+                    }
+                    requestBody = bodyBuilder.build().toString();
+                    break;
+                }
+                case "GET": {
+                    if (id != null && !id.trim().isEmpty()) {
+                        url = base + "/" + id.trim();
+                    } else {
+                        StringBuilder urlBuilder = new StringBuilder(base).append("?");
+                        boolean first = true;
+                        if (targetDepartmentId != null && !targetDepartmentId.isEmpty()) {
+                            urlBuilder.append("targetDepartmentId=").append(URLEncoder.encode(targetDepartmentId, StandardCharsets.UTF_8));
+                            first = false;
+                        }
+                        if (status != null && !status.isEmpty()) {
+                            urlBuilder.append(first ? "" : "&").append("status=").append(URLEncoder.encode(status, StandardCharsets.UTF_8));
+                            first = false;
+                        }
+                        if (fromDate != null && !fromDate.isEmpty()) {
+                            urlBuilder.append(first ? "" : "&").append("fromDate=").append(URLEncoder.encode(fromDate, StandardCharsets.UTF_8));
+                            first = false;
+                        }
+                        if (toDate != null && !toDate.isEmpty()) {
+                            urlBuilder.append(first ? "" : "&").append("toDate=").append(URLEncoder.encode(toDate, StandardCharsets.UTF_8));
+                            first = false;
+                        }
+                        if (limit != null && !limit.isEmpty()) {
+                            urlBuilder.append(first ? "" : "&").append("limit=").append(URLEncoder.encode(limit, StandardCharsets.UTF_8));
+                        }
+                        url = urlBuilder.toString();
+                    }
+                    httpMethod = "GET";
+                    break;
+                }
+                default:
+                    return "Error: Unknown method: " + method;
+            }
+
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Finance", hmisApiKey)
+                    .header("Content-Type", "application/json");
+
+            if (requestBody != null) {
+                reqBuilder.method(httpMethod, HttpRequest.BodyPublishers.ofString(requestBody));
+            } else {
+                reqBuilder.GET();
+            }
+
+            HttpResponse<String> response = client.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + "\n" + response.body();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Item request API call interrupted.";
+        } catch (Exception e) {
+            return "Item request API error: " + e.getMessage();
         }
     }
 
@@ -5334,6 +5516,22 @@ public class AnthropicApiService implements Serializable {
                     {"POST",   "/inward/room-facility-charges",    "Create room facility charge. Body: name (required), roomId, roomCategoryId, departmentId, charge fields, timedItemFee fields"},
                     {"PUT",    "/inward/room-facility-charges/{id}", "Update room facility charge"},
                     {"DELETE", "/inward/room-facility-charges/{id}", "Soft-retire room facility charge"}
+                });
+
+        appendModule(sb, "Inward - Item Requests", "/itemrequests",
+                "External systems submit item/service requests (meals like Breakfast/Lunch/Dinner as InwardService "
+                + "items, and stock items like Water Bottle/Tea/Milk/Sugar) against a patient's active BHT. Requests "
+                + "are saved Pending (no charge, no stock movement) and routed to a target department's in-app "
+                + "approval queue. A department user approves (charges the BHT and deducts stock atomically, failing "
+                + "the whole approval if any line has insufficient stock) or rejects (records a reason) the request "
+                + "via a JSF approval page — approval/rejection is in-app only and is NOT exposed by this API. "
+                + "External systems poll GET /{id} for status: PENDING, APPROVED, REJECTED, CANCELLED.",
+                null,
+                new String[][]{
+                    {"POST", "/itemrequests",           "Submit a new item/service request. Body: {bhtNo, targetDepartmentId, comments, lines:[{itemId, qty}]}"},
+                    {"GET",  "/itemrequests/{id}",      "Get a single item/service request by ID, including status and lines. Poll this for status changes"},
+                    {"GET",  "/itemrequests",           "List/search item/service requests. Query params: targetDepartmentId, status, fromDate, toDate (yyyy-MM-dd), limit"},
+                    {"PUT",  "/itemrequests/{id}/cancel", "Cancel a still-PENDING request. Body: {reason}"}
                 });
 
         appendModule(sb, "Timed Items", "/timed-items",
