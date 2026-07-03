@@ -139,8 +139,9 @@ requestable items exist:
 
 1. **Meal/service items** (Breakfast, Lunch, Dinner) — create as `InwardService`
    items via the existing `POST /api/services` endpoint (`ServiceApi`). Each
-   item needs at least one `ItemFee` configured so approval charges a real fee
-   (an item with zero `ItemFee` rows falls back to a single generic fee entry).
+   item needs at least one `ItemFee` configured — approving a service item
+   with zero `ItemFee` rows fails with "No fee configured for service item"
+   (silently charging zero would under-bill the BHT).
 2. **Inventory items** (Water Bottle, Tea, Milk, Sugar) — provision as normal
    stock-tracked items (VTM/VMP/AMP as applicable) via the existing
    pharmaceutical item management API/flow, then stock them for the target

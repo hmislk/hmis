@@ -91,6 +91,11 @@ public class ItemRequestApprovalController implements Serializable {
             JsfUtil.addErrorMessage("No request selected.");
             return;
         }
+        if (!belongsToCurrentDepartment(request)) {
+            JsfUtil.addErrorMessage("This request belongs to another department's queue.");
+            loadPendingRequests();
+            return;
+        }
         try {
             itemRequestApiService.approveRequest(request.getId(), sessionController.getLoggedUser(), sessionController.getDepartment());
             JsfUtil.addSuccessMessage("Request approved successfully.");
@@ -115,8 +120,13 @@ public class ItemRequestApprovalController implements Serializable {
             JsfUtil.addErrorMessage("Rejection reason is required");
             return;
         }
+        if (!belongsToCurrentDepartment(request)) {
+            JsfUtil.addErrorMessage("This request belongs to another department's queue.");
+            loadPendingRequests();
+            return;
+        }
         try {
-            itemRequestApiService.rejectRequest(request.getId(), reason, sessionController.getLoggedUser());
+            itemRequestApiService.rejectRequest(request.getId(), reason, sessionController.getLoggedUser(), sessionController.getDepartment());
             JsfUtil.addSuccessMessage("Request rejected.");
         } catch (IllegalStateException e) {
             JsfUtil.addErrorMessage(e.getMessage());
@@ -125,6 +135,17 @@ public class ItemRequestApprovalController implements Serializable {
         }
         setRejectionReason(null);
         loadPendingRequests();
+    }
+
+    /**
+     * Fast-fail UI guard; the authoritative department scope check is enforced
+     * again inside {@link ItemRequestApiService} before any status change.
+     */
+    private boolean belongsToCurrentDepartment(Bill request) {
+        return sessionController.getDepartment() != null
+                && sessionController.getDepartment().getId() != null
+                && request.getToDepartment() != null
+                && sessionController.getDepartment().getId().equals(request.getToDepartment().getId());
     }
 
     /**

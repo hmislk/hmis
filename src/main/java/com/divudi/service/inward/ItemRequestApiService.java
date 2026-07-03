@@ -297,6 +297,7 @@ public class ItemRequestApiService implements Serializable {
      */
     public Bill approveRequest(Long requestBillId, WebUser approvingUser, Department approvingDepartment) {
         Bill requestBill = fetchRequestBillOrThrow(requestBillId);
+        assertRequestBelongsToDepartment(requestBill, approvingDepartment, "approve");
         String status = deriveStatus(requestBill);
         if (!"PENDING".equals(status)) {
             throw new IllegalStateException("Request is already " + status + ", cannot approve");
@@ -430,8 +431,9 @@ public class ItemRequestApiService implements Serializable {
     // Reject
     // =========================================================================
 
-    public Bill rejectRequest(Long requestBillId, String reason, WebUser rejectingUser) {
+    public Bill rejectRequest(Long requestBillId, String reason, WebUser rejectingUser, Department rejectingDepartment) {
         Bill requestBill = fetchRequestBillOrThrow(requestBillId);
+        assertRequestBelongsToDepartment(requestBill, rejectingDepartment, "reject");
         String status = deriveStatus(requestBill);
         if (!"PENDING".equals(status)) {
             throw new IllegalStateException("Request is already " + status + ", cannot reject");
@@ -456,6 +458,21 @@ public class ItemRequestApiService implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("bht", bhtNo);
         return patientEncounterFacade.findFirstByJpql(jpql, params);
+    }
+
+    /**
+     * Server-side authorization scope check: approve/reject may only act on
+     * requests routed to the acting user's own department. The JSF queue is
+     * already department-filtered, but that is UI-level only — a crafted
+     * postback (or a stale session list after a department switch) could
+     * otherwise act on another department's request.
+     */
+    private void assertRequestBelongsToDepartment(Bill requestBill, Department actingDepartment, String action) {
+        if (actingDepartment == null || actingDepartment.getId() == null
+                || requestBill.getToDepartment() == null
+                || !actingDepartment.getId().equals(requestBill.getToDepartment().getId())) {
+            throw new IllegalStateException("Request belongs to another department's queue, cannot " + action);
+        }
     }
 
     private Bill fetchRequestBillOrThrow(Long id) {
@@ -568,8 +585,9 @@ public class ItemRequestApiService implements Serializable {
 
     /**
      * Mirrors {@code InwardAdditionalChargeController.saveBillFee(BillItem)}:
-     * creates one BillFee per configured ItemFee for the item, falling back to
-     * a single generic fee entry when the item has no ItemFee records.
+     * creates one BillFee per configured ItemFee for the item. An item with no
+     * ItemFee records cannot be priced, so approval is rejected outright —
+     * silently charging zero would under-bill the BHT without anyone noticing.
      *
      * @return the total fee value charged for this line (sum of feeValue)
      */
@@ -577,30 +595,32 @@ public class ItemRequestApiService implements Serializable {
         List<ItemFee> itemFees = billBeanController.fillFees(item);
         double lineTotal = 0.0;
 
-        if (itemFees != null && !itemFees.isEmpty()) {
-            List<BillFee> created = new ArrayList<>();
-            for (ItemFee f : itemFees) {
-                BillFee bf = new BillFee();
-                bf.setBill(approvalBill);
-                bf.setBillItem(approvalLine);
-                bf.setFee(f);
-                bf.setFeeAt(new Date());
-                bf.setCreatedAt(new Date());
-                bf.setCreater(approvingUser);
-                bf.setPatienEncounter(approvalBill.getPatientEncounter());
-                bf.setPatient(approvalBill.getPatientEncounter() != null ? approvalBill.getPatientEncounter().getPatient() : null);
-                bf.setFeeValue(f.getFee());
-                bf.setFeeGrossValue(f.getFee());
-                bf.setFeeDiscount(0.0);
-                billFeeFacade.create(bf);
-                created.add(bf);
-                lineTotal += f.getFee();
-            }
-            approvalLine.setBillFees(created);
-            approvalLine.setGrossValue(lineTotal);
-            approvalLine.setNetValue(lineTotal);
-            billItemFacade.edit(approvalLine);
+        if (itemFees == null || itemFees.isEmpty()) {
+            throw new IllegalStateException("No fee configured for service item: " + item.getName());
         }
+
+        List<BillFee> created = new ArrayList<>();
+        for (ItemFee f : itemFees) {
+            BillFee bf = new BillFee();
+            bf.setBill(approvalBill);
+            bf.setBillItem(approvalLine);
+            bf.setFee(f);
+            bf.setFeeAt(new Date());
+            bf.setCreatedAt(new Date());
+            bf.setCreater(approvingUser);
+            bf.setPatienEncounter(approvalBill.getPatientEncounter());
+            bf.setPatient(approvalBill.getPatientEncounter() != null ? approvalBill.getPatientEncounter().getPatient() : null);
+            bf.setFeeValue(f.getFee());
+            bf.setFeeGrossValue(f.getFee());
+            bf.setFeeDiscount(0.0);
+            billFeeFacade.create(bf);
+            created.add(bf);
+            lineTotal += f.getFee();
+        }
+        approvalLine.setBillFees(created);
+        approvalLine.setGrossValue(lineTotal);
+        approvalLine.setNetValue(lineTotal);
+        billItemFacade.edit(approvalLine);
 
         return lineTotal;
     }

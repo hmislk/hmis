@@ -267,7 +267,7 @@ public class ItemRequestApi {
         }
 
         ApiKey apiKey = apiKeyController.findApiKey(key);
-        if (apiKey == null) {
+        if (apiKey == null || apiKey.isRetired()) {
             return null;
         }
 
