@@ -51,8 +51,19 @@
                         <h:outputLabel value="#{r.creater.webUserPerson.name}"/>
                     </p:column>
 
-                    <p:column headerText="Requested Items" style="width: 25%;">
-                        <p:dataTable var="li" value="#{itemRequestApprovalController.getRequestLines(r)}">
+                    <p:column headerText="Remaining Services/Investigations" style="width: 20%;">
+                        <p:dataTable var="li" value="#{itemRequestApprovalController.getRemainingServiceLines(r)}" emptyMessage="None remaining">
+                            <p:column headerText="Item">
+                                <h:outputLabel value="#{li.item.name}"/>
+                            </p:column>
+                            <p:column headerText="Qty">
+                                <h:outputLabel value="#{li.qty}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:column>
+
+                    <p:column headerText="Remaining Inventory Items" style="width: 20%;">
+                        <p:dataTable var="li" value="#{itemRequestApprovalController.getRemainingInventoryLines(r)}" emptyMessage="None remaining">
                             <p:column headerText="Item">
                                 <h:outputLabel value="#{li.item.name}"/>
                             </p:column>
@@ -64,18 +75,28 @@
 
                     <p:column headerText="Actions">
                         <p:commandButton
-                            id="btnApprove#{r.id}"
-                            title="Approve Request"
+                            id="btnProcessServices#{r.id}"
+                            title="Process Services/Investigations"
+                            value="Process Services/Investigations"
                             class="ui-button-success m-1"
                             ajax="false"
-                            icon="fa fa-check"
-                            onclick="return confirm('Approve this request? This will charge the BHT and/or deduct stock immediately.');"
-                            action="#{itemRequestApprovalController.approve(r)}"
-                            rendered="#{webUserController.hasPrivilege('InwardServiceItemRequestApproval')}"/>
+                            icon="fa fa-utensils"
+                            action="#{itemRequestApprovalController.processServices(r)}"
+                            rendered="#{webUserController.hasPrivilege('InwardServiceItemRequestApproval') and not empty itemRequestApprovalController.getRemainingServiceLines(r)}"/>
+
+                        <p:commandButton
+                            id="btnProcessInventory#{r.id}"
+                            title="Process Inventory Items"
+                            value="Process Inventory Items"
+                            class="ui-button-success m-1"
+                            ajax="false"
+                            icon="fa fa-box"
+                            action="#{itemRequestApprovalController.processInventory(r)}"
+                            rendered="#{webUserController.hasPrivilege('InwardServiceItemRequestApproval') and not empty itemRequestApprovalController.getRemainingInventoryLines(r)}"/>
 
                         <p:commandButton
                             id="btnOpenReject#{r.id}"
-                            title="Reject Request"
+                            title="Reject Remaining Lines"
                             class="ui-button-danger m-1"
                             icon="fa fa-times"
                             process="@this"
@@ -91,7 +112,7 @@
             </p:panel>
 
             <p:dialog widgetVar="rejectRequestDialog"
-                      header="Reject Request"
+                      header="Reject Remaining Lines"
                       modal="true"
                       resizable="false"
                       width="420">
@@ -110,7 +131,7 @@
                             class="ui-button-danger m-1"
                             ajax="false"
                             icon="fa fa-times"
-                            onclick="if(document.getElementById('itemRequestPendingListForm:rejectionReasonInput').value.trim()===''){alert('Rejection reason is required');return false;}return confirm('Reject this request?');"
+                            onclick="if(document.getElementById('itemRequestPendingListForm:rejectionReasonInput').value.trim()===''){alert('Rejection reason is required');return false;}return confirm('Reject the remaining lines of this request?');"
                             action="#{itemRequestApprovalController.reject(itemRequestApprovalController.selectedRequest, itemRequestApprovalController.rejectionReason)}"/>
                     </div>
                 </h:panelGroup>
