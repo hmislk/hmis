@@ -11,6 +11,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dto.adjustment.*;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.WebUser;
@@ -31,6 +32,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.transaction.Transactional;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -439,12 +441,19 @@ public class PharmacyAdjustmentApiService implements Serializable {
 
     private PharmaceuticalBillItem createStockAdjustmentBillItem(Bill bill, Stock stock, double quantityChange,
                                                                double beforeQty, double afterQty, WebUser user) {
+        double retailsaleRate = stock.getItemBatch().getRetailsaleRate();
+        Double costRateObj = stock.getItemBatch().getCostRate();
+        double costRate = (costRateObj != null) ? costRateObj : stock.getItemBatch().getPurcahseRate();
+
+        double deltaRetailValue = quantityChange * retailsaleRate;
+        double deltaCostValue = quantityChange * costRate;
+
         BillItem billItem = new BillItem();
         billItem.setItem(stock.getItemBatch().getItem());
         billItem.setQty(quantityChange);
-        billItem.setGrossValue(stock.getItemBatch().getRetailsaleRate() * afterQty);
-        billItem.setNetRate(stock.getItemBatch().getRetailsaleRate());
-        billItem.setNetValue(afterQty * billItem.getNetRate());
+        billItem.setGrossValue(Math.abs(deltaRetailValue));
+        billItem.setNetRate(retailsaleRate);
+        billItem.setNetValue(deltaRetailValue);
         billItem.setDiscount(billItem.getGrossValue() - billItem.getNetValue());
         billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setBill(bill);
@@ -465,6 +474,28 @@ public class PharmacyAdjustmentApiService implements Serializable {
         pharmaceuticalBillItem.setBillItem(billItem);
 
         billItemFacade.create(billItem);
+
+        // Populate BillFinanceDetails + bill totals so the F15 report's Adjustment
+        // Transactions section reconciles Opening + ... + Adjustments = Closing.
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails(bill);
+            bill.setBillFinanceDetails(bfd);
+        }
+        bfd.setTotalRetailSaleValue(BigDecimal.valueOf(deltaRetailValue));
+        bfd.setTotalCostValue(BigDecimal.valueOf(deltaCostValue));
+        bfd.setGrossTotal(BigDecimal.valueOf(Math.abs(deltaRetailValue)));
+        bfd.setNetTotal(BigDecimal.valueOf(deltaRetailValue));
+        bfd.setTotalQuantity(BigDecimal.valueOf(Math.abs(quantityChange)));
+        bfd.setTotalBeforeAdjustmentValue(BigDecimal.valueOf(beforeQty * retailsaleRate));
+        bfd.setTotalAfterAdjustmentValue(BigDecimal.valueOf(afterQty * retailsaleRate));
+        bfd.setTotalPurchaseValue(BigDecimal.ZERO);
+        bfd.setTotalWholesaleValue(BigDecimal.ZERO);
+
+        bill.setTotal(Math.abs(deltaRetailValue));
+        bill.setNetTotal(deltaRetailValue);
+        billFacade.edit(bill);
+
         return pharmaceuticalBillItem;
     }
 
