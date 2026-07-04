@@ -554,7 +554,7 @@ public class PharmacyAdjustmentApiService implements Serializable {
                                                                     Date newExpiryDate, WebUser user) {
         BillItem billItem = new BillItem();
         billItem.setItem(stock.getItemBatch().getItem());
-        billItem.setQty(0.0); // No quantity change for expiry adjustment
+        billItem.setQty(0.0);
         billItem.setGrossValue(0.0);
         billItem.setNetValue(0.0);
         billItem.setInwardChargeType(InwardChargeType.Medicine);
@@ -575,6 +575,26 @@ public class PharmacyAdjustmentApiService implements Serializable {
         pharmaceuticalBillItem.setBillItem(billItem);
 
         billItemFacade.create(billItem);
+
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails(bill);
+            bill.setBillFinanceDetails(bfd);
+        }
+        bfd.setTotalRetailSaleValue(BigDecimal.ZERO);
+        bfd.setTotalCostValue(BigDecimal.ZERO);
+        bfd.setTotalPurchaseValue(BigDecimal.ZERO);
+        bfd.setTotalWholesaleValue(BigDecimal.ZERO);
+        bfd.setGrossTotal(BigDecimal.ZERO);
+        bfd.setNetTotal(BigDecimal.ZERO);
+        bfd.setTotalQuantity(BigDecimal.ZERO);
+        bfd.setTotalBeforeAdjustmentValue(BigDecimal.ZERO);
+        bfd.setTotalAfterAdjustmentValue(BigDecimal.ZERO);
+
+        bill.setTotal(0.0);
+        bill.setNetTotal(0.0);
+        billFacade.edit(bill);
+
         return pharmaceuticalBillItem;
     }
 

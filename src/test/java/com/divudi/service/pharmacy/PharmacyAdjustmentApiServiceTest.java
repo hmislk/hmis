@@ -77,6 +77,13 @@ public class PharmacyAdjustmentApiServiceTest {
         }
     }
 
+    private static class DummyConfigOptionApplicationController extends com.divudi.bean.common.ConfigOptionApplicationController {
+        @Override
+        public Boolean getBooleanValueByKey(String key, boolean defaultValue) {
+            return defaultValue;
+        }
+    }
+
     private PharmacyAdjustmentApiService service;
     private DummyBillFacade billFacade;
     private DummyBillItemFacade billItemFacade;
@@ -118,7 +125,7 @@ public class PharmacyAdjustmentApiServiceTest {
         setField("itemBatchFacade", new DummyItemBatchFacade());
         setField("billNumberGenerator", new DummyBillNumberGenerator());
         setField("pharmacyBean", new DummyPharmacyBean());
-        setField("configOptionApplicationController", new com.divudi.bean.common.ConfigOptionApplicationController());
+        setField("configOptionApplicationController", new DummyConfigOptionApplicationController());
     }
 
     private void setField(String name, Object value) throws Exception {
@@ -205,6 +212,25 @@ public class PharmacyAdjustmentApiServiceTest {
         assertEquals(100.0, bill.getTotal(), 0.001);
         assertNotNull(bill.getBillFinanceDetails());
         assertEquals(0, java.math.BigDecimal.valueOf(100.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()));
+        assertEquals(0, java.math.BigDecimal.ZERO.compareTo(bill.getBillFinanceDetails().getTotalRetailSaleValue()));
+    }
+
+    @Test
+    @DisplayName("Expiry date adjustment creates a zero-valued BillFinanceDetails, not a null one")
+    public void testExpiryDateAdjustmentCreatesZeroValueFinanceDetails() throws Exception {
+        com.divudi.core.data.dto.adjustment.ExpiryDateAdjustmentDTO request =
+                new com.divudi.core.data.dto.adjustment.ExpiryDateAdjustmentDTO();
+        request.setStockId(1L);
+        request.setNewExpiryDate("2027-12-31");
+        request.setComment("expiry correction");
+        request.setDepartmentId(1L);
+
+        service.adjustExpiryDate(request, user);
+
+        assertEquals(1, billFacade.saved.size());
+        Bill bill = billFacade.saved.get(0);
+        assertEquals(0.0, bill.getNetTotal(), 0.001);
+        assertNotNull(bill.getBillFinanceDetails(), "Even a zero-value adjustment should have an explicit BFD row");
         assertEquals(0, java.math.BigDecimal.ZERO.compareTo(bill.getBillFinanceDetails().getTotalRetailSaleValue()));
     }
 }
