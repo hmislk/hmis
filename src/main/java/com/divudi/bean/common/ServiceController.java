@@ -537,12 +537,12 @@ public class ServiceController implements Serializable {
             return;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Item Codes Generate - Automatically create Item Codes by Department.", false)) {
-            if (getCurrent().getId() == null) {
-                if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()) {
-                    String code = itemController.generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
-                    getCurrent().setCode(code);
-                }
+        if (getCurrent().getId() == null
+                && (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty())) {
+            if (configOptionApplicationController.getBooleanValueByKey(
+                    "Item Codes Generate - Automatically create Item Codes by Department.", true)) {
+                String code = itemController.generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
+                getCurrent().setCode(code);
             }
         }
 

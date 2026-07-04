@@ -203,7 +203,8 @@
                                 </p:column>
                                 <p:column style="padding: 4px; width: 6em;"/>
                                 <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.saleValue}"
-                                          class="text-end #{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue' }">
+                                          class="text-end #{configOptionApplicationController.getBooleanValueByKey('Print RetailValue in Direct Purchase Bill', true) ? 'showRetailValue' : 'hideRetailValue' }"
+                                          rendered="#{cc.attrs.ShowRetailValue}">
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{cc.attrs.bill.saleValue}">
                                             <f:convertNumber pattern="#,##0.00"/>

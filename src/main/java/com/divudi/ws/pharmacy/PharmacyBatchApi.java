@@ -55,35 +55,47 @@ public class PharmacyBatchApi {
     @Inject
     private PharmacyBatchApiService batchService;
 
+    // Support multiple date formats for expiryDate and other Date fields
+    private static final JsonDeserializer<Date> DATE_DESERIALIZER = (JsonElement json, Type typeOfT, com.google.gson.JsonDeserializationContext context) -> {
+        if (json == null) {
+            return null;
+        }
+        String s = json.getAsString();
+        if (s == null || s.trim().isEmpty()) {
+            return null;
+        }
+
+        String value = s.trim();
+        String[] patterns = new String[]{
+                "yyyy-MM-dd HH:mm:ss",
+                "yyyy-MM-dd'T'HH:mm:ss",
+                "yyyy-MM-dd"
+        };
+
+        for (String p : patterns) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat(p);
+                sdf.setLenient(false);
+                return sdf.parse(value);
+            } catch (ParseException ignored) {
+            }
+        }
+
+        throw new JsonParseException("Invalid date format: " + value);
+    };
+
     private static final Gson gson = new GsonBuilder()
-            // Support multiple date formats for expiryDate and other Date fields
-            .registerTypeAdapter(Date.class, (JsonDeserializer<Date>) (JsonElement json, Type typeOfT, com.google.gson.JsonDeserializationContext context) -> {
-                if (json == null) {
-                    return null;
-                }
-                String s = json.getAsString();
-                if (s == null || s.trim().isEmpty()) {
-                    return null;
-                }
+            .registerTypeAdapter(Date.class, DATE_DESERIALIZER)
+            .create();
 
-                String value = s.trim();
-                String[] patterns = new String[]{
-                        "yyyy-MM-dd HH:mm:ss",
-                        "yyyy-MM-dd'T'HH:mm:ss",
-                        "yyyy-MM-dd"
-                };
-
-                for (String p : patterns) {
-                    try {
-                        SimpleDateFormat sdf = new SimpleDateFormat(p);
-                        sdf.setLenient(false);
-                        return sdf.parse(value);
-                    } catch (ParseException ignored) {
-                    }
-                }
-
-                throw new JsonParseException("Invalid date format: " + value);
-            })
+    // Used only for the batch-create response: serializes nulls explicitly so an
+    // unexpected null field is visible instead of being silently omitted
+    // (issue #21814). Kept separate from `gson` because searchOrCreateAmp/searchAmp
+    // share AmpResponseDTO, whose nullable genericName/categoryName would otherwise
+    // start appearing as explicit nulls for those existing consumers too.
+    private static final Gson gsonWithNulls = new GsonBuilder()
+            .registerTypeAdapter(Date.class, DATE_DESERIALIZER)
+            .serializeNulls()
             .create();
 
     public PharmacyBatchApi() {
@@ -161,7 +173,7 @@ public class PharmacyBatchApi {
 
             // Process batch creation
             BatchCreateResponseDTO response = batchService.createBatch(request, user);
-            return successResponse(response);
+            return successResponse(response, gsonWithNulls);
 
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);
@@ -263,10 +275,14 @@ public class PharmacyBatchApi {
      * Create success response following existing pattern
      */
     private Response successResponse(Object data) {
+        return successResponse(data, gson);
+    }
+
+    private Response successResponse(Object data, Gson serializer) {
         Map<String, Object> response = new HashMap<>();
         response.put("status", "success");
         response.put("code", 200);
         response.put("data", data);
-        return Response.status(200).entity(gson.toJson(response)).build();
+        return Response.status(200).entity(serializer.toJson(response)).build();
     }
 }

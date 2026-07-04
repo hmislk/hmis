@@ -159,17 +159,20 @@ public class GrnCostingController implements Serializable {
     }
 
     public String navigateToResiveCosting() {
-        // Check if there are existing unapproved GRNs for this purchase order
-        if (getApproveBill() != null && getApproveBill().getListOfBill() != null) {
-            for (Bill existingGrn : getApproveBill().getListOfBill()) {
-                if (existingGrn != null
-                        && existingGrn.getBillTypeAtomic() != null
-                        && existingGrn.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_PRE
-                        && !existingGrn.isRetired()
-                        && !existingGrn.isCancelled()) {
-                    JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or delete the existing GRN before creating a new one.");
-                    return "";
-                }
+        // Guard against orphan PRE bills. The @Transient getListOfBill() is empty
+        // whenever the session was cleared or the user navigated directly, so a
+        // direct DB count is the only reliable check. (Issue #21579)
+        if (getApproveBill() != null && getApproveBill().getId() != null) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("po", getApproveBill());
+            params.put("type", BillTypeAtomic.PHARMACY_GRN_PRE);
+            long orphanCount = getBillFacade().findLongByJpql(
+                    "SELECT COUNT(b) FROM Bill b WHERE b.referenceBill = :po "
+                    + "AND b.billTypeAtomic = :type AND b.retired = false AND b.cancelled = false",
+                    params, TemporalType.TIMESTAMP);
+            if (orphanCount > 0) {
+                JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or cancel the existing GRN before creating a new one.");
+                return "";
             }
         }
 
@@ -1798,6 +1801,9 @@ public class GrnCostingController implements Serializable {
             pbi.setRetailRatePack(Optional.ofNullable(f.getRetailSaleRate()).orElse(BigDecimal.ZERO).doubleValue());
             pbi.setRetailRateInUnit(Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue());
 
+            pbi.setWholesaleRate(Optional.ofNullable(f.getWholesaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue());
+            pbi.setWholesaleRatePack(Optional.ofNullable(f.getWholesaleRate()).orElse(BigDecimal.ZERO).doubleValue());
+
             // Update BillItem quantity and rate in packs
             bi.setQty(qtyPacks.doubleValue());
             bi.setRate(pbi.getPurchaseRatePack());
@@ -1824,6 +1830,10 @@ public class GrnCostingController implements Serializable {
             pbi.setRetailRate(r);
             pbi.setRetailRatePack(r);
             pbi.setRetailRateInUnit(r);
+
+            double wr = Optional.ofNullable(f.getWholesaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue();
+            pbi.setWholesaleRate(wr);
+            pbi.setWholesaleRatePack(wr);
 
             // Update BillItem quantity and rate in units
             bi.setQty(qty.doubleValue());
@@ -1897,6 +1907,21 @@ public class GrnCostingController implements Serializable {
         recalculateFinancialsBeforeAddingBillItem(f);
 
         // Redistribute bill discount after retail rate changes (even if discount is 0 to clear previous distributions)
+        ensureBillDiscountSynchronization();
+        calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+        recalculateProfitMarginsForAllItems();
+        calDifference();
+    }
+
+    public void wholesaleRateChangedListner(BillItem tmp) {
+        BillItemFinanceDetails f = tmp.getBillItemFinanceDetails();
+        if (f == null) {
+            return;
+        }
+        recalculateFinancialsBeforeAddingBillItem(f);
+
+        // Redistribute bill discount after wholesale rate changes (even if discount is 0 to clear previous distributions)
         ensureBillDiscountSynchronization();
         calculateBillTotalsFromItems();
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
@@ -2633,17 +2658,20 @@ public class GrnCostingController implements Serializable {
             }
         }
 
-        // Check if there are existing unapproved GRNs for this purchase order
-        if (getApproveBill() != null && getApproveBill().getListOfBill() != null) {
-            for (Bill existingGrn : getApproveBill().getListOfBill()) {
-                if (existingGrn != null
-                        && existingGrn.getBillTypeAtomic() != null
-                        && existingGrn.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_PRE
-                        && !existingGrn.isRetired()
-                        && !existingGrn.isCancelled()) {
-                    JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or delete the existing GRN before creating a new one.");
-                    return "";
-                }
+        // Guard against orphan PRE bills. The @Transient getListOfBill() is empty
+        // whenever the session was cleared or the user navigated directly, so a
+        // direct DB count is the only reliable check. (Issue #21579)
+        if (getApproveBill() != null && getApproveBill().getId() != null) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("po", getApproveBill());
+            params.put("type", BillTypeAtomic.PHARMACY_GRN_PRE);
+            long orphanCount = getBillFacade().findLongByJpql(
+                    "SELECT COUNT(b) FROM Bill b WHERE b.referenceBill = :po "
+                    + "AND b.billTypeAtomic = :type AND b.retired = false AND b.cancelled = false",
+                    params, TemporalType.TIMESTAMP);
+            if (orphanCount > 0) {
+                JsfUtil.addErrorMessage("There is already an unapproved GRN for this purchase order. Please approve or cancel the existing GRN before creating a new one.");
+                return "";
             }
         }
 
@@ -3242,6 +3270,27 @@ public class GrnCostingController implements Serializable {
         getCurrentGrnBillPre().setNetTotal(-Math.abs(getCurrentGrnBillPre().getNetTotal()));
         getBillFacade().edit(getCurrentGrnBillPre());
 
+        // Retire any surviving orphan PREs for the same PO that were left behind
+        // by previous interrupted sessions. The current bill is already PHARMACY_GRN
+        // so the type filter excludes it, but the id guard adds extra safety. (#21579)
+        if (getCurrentGrnBillPre().getReferenceBill() != null
+                && getCurrentGrnBillPre().getId() != null) {
+            Map<String, Object> orphanParams = new HashMap<>();
+            orphanParams.put("po", getCurrentGrnBillPre().getReferenceBill());
+            orphanParams.put("type", BillTypeAtomic.PHARMACY_GRN_PRE);
+            orphanParams.put("currentId", getCurrentGrnBillPre().getId());
+            List<Bill> orphanPres = getBillFacade().findByJpql(
+                    "SELECT b FROM Bill b WHERE b.referenceBill = :po "
+                    + "AND b.billTypeAtomic = :type AND b.retired = false "
+                    + "AND b.id != :currentId",
+                    orphanParams, TemporalType.TIMESTAMP);
+            for (Bill orphan : orphanPres) {
+                orphan.setRetired(true);
+                orphan.setRetiredAt(new Date());
+                getBillFacade().edit(orphan);
+            }
+        }
+
         JsfUtil.addSuccessMessage("GRN Finalized");
         printPreview = true;
     }
@@ -3564,6 +3613,14 @@ public class GrnCostingController implements Serializable {
         billItemFinanceDetails.setRetailSaleRatePerUnit(
                 BigDecimalUtil.isPositive(unitsPerPack)
                 ? retailRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO
+        );
+
+        // Re-derive wholesaleRatePerUnit from a user-edited wholesaleRate, mirroring retail above
+        BigDecimal wholesaleRate = BigDecimalUtil.valueOrZero(billItemFinanceDetails.getWholesaleRate());
+        billItemFinanceDetails.setWholesaleRatePerUnit(
+                BigDecimalUtil.isPositive(unitsPerPack)
+                ? wholesaleRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO
         );
 
@@ -4325,9 +4382,11 @@ public class GrnCostingController implements Serializable {
                 return null;
             }
 
-            BigDecimal prGiven = inputBillItem.getBillItemFinanceDetails().getLineNetRate();
+            BigDecimal prGiven = BigDecimalUtil.valueOrZero(
+                    inputBillItem.getBillItemFinanceDetails().getLineNetRate());
 
-            BigDecimal unitsPerPack = inputBillItem.getBillItemFinanceDetails().getUnitsPerPack();
+            BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(
+                    inputBillItem.getBillItemFinanceDetails().getUnitsPerPack());
             if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
                 unitsPerPack = BigDecimal.ONE;
             }
@@ -4339,8 +4398,17 @@ public class GrnCostingController implements Serializable {
             );
 
             purchaseRatePerUnit = prPerUnit.doubleValue();
-            retailRatePerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
-            costRatePerUnit = inputBillItem.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
+            BigDecimal rawRetailPerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit();
+            if (rawRetailPerUnit == null || rawRetailPerUnit.compareTo(BigDecimal.ZERO) == 0) {
+                BigDecimal packRetail = BigDecimalUtil.valueOrZero(
+                        inputBillItem.getBillItemFinanceDetails().getRetailSaleRate());
+                rawRetailPerUnit = packRetail.divide(unitsPerPack, PRICE_SCALE, RoundingMode.HALF_EVEN);
+            }
+            retailRatePerUnit = rawRetailPerUnit.doubleValue();
+            wholesaleRate = Optional.ofNullable(inputBillItem.getBillItemFinanceDetails().getWholesaleRatePerUnit())
+                    .orElse(BigDecimal.ZERO).doubleValue();
+            costRatePerUnit = BigDecimalUtil.valueOrZero(
+                    inputBillItem.getBillItemFinanceDetails().getTotalCostRate()).doubleValue();
 
             itemBatch = fetchItemBatchWithCosting(amp, purchaseRatePerUnit, retailRatePerUnit, costRatePerUnit, expiryDate);
         } else {
@@ -4366,6 +4434,8 @@ public class GrnCostingController implements Serializable {
 
             getItemBatchFacade().create(itemBatch);
         } else {
+            itemBatch.setWholesaleRate(wholesaleRate);
+            getItemBatchFacade().edit(itemBatch);
         }
 
         return itemBatch;

@@ -558,6 +558,7 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
     // -----------------------------------------------------------------------
 
     public void resetAll() {
+        patientEncounter = null;
         preBill = null;
         printBill = null;
         printBillItems = null;
