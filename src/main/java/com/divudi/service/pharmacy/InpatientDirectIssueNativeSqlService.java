@@ -103,8 +103,8 @@ public class InpatientDirectIssueNativeSqlService {
                 "INSERT INTO " + billItemTable()
                 + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, netRate,"
                 + " createdAt, creater_ID, retired, refunded, billItemRefunded,"
-                + " consideredForCosting, inwardChargeType)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine')")
+                + " consideredForCosting, inwardChargeType, referanceBillItem_ID)"
+                + " VALUES (?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine',?)")
                 .setParameter(1, billId)
                 .setParameter(2, d.getItemId())
                 .setParameter(3, absQty)
@@ -114,6 +114,7 @@ public class InpatientDirectIssueNativeSqlService {
                 .setParameter(7, netRate)
                 .setParameter(8, new Timestamp(createdAt.getTime()))
                 .setParameter(9, d.getCreaterId())
+                .setParameter(10, d.getSourceRequestBillItemId())
                 .executeUpdate();
             biIds[i] = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
 

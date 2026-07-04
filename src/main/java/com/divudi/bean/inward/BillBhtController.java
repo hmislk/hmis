@@ -347,6 +347,38 @@ public class BillBhtController implements Serializable {
         return "/inward/inward_bill_service?faces-redirect=true";
     }
 
+    /**
+     * Entry point from the Item/Service Request pending queue (issue #21793
+     * redesign): seeds this controller's cart with the request's still-unfulfilled
+     * lines, exactly as if the user had searched for and added each one manually,
+     * then navigates to the same Add Services page. The user can edit/add/remove
+     * before clicking the page's own Save button.
+     */
+    public String navigateToAddServicesFromItemRequest(Bill itemRequest, List<BillItem> remainingLines) {
+        navigateToAddServicesFromAdmissionProfile();
+        setPatientEncounter(itemRequest.getPatientEncounter());
+        // navigateToAddServicesFromAdmissionProfile() resets lstBillEntries to null; normally
+        // the next page render (via the getter) lazily re-initializes it before addToBill() is
+        // ever invoked. Here we call addToBill() synchronously with no intervening render, so
+        // force the lazy-init now to avoid a NullPointerException on the first entry.
+        getLstBillEntries();
+        for (BillItem requestLine : remainingLines) {
+            BillItem seed = new BillItem();
+            seed.setItem(requestLine.getItem());
+            setCurrentBillItem(seed);
+            setCurrentBillItemQty(requestLine.getQty());
+            if (requestLine.getItem() != null && requestLine.getItem().getClass() == Investigation.class) {
+                seed.setBillTime(new Date());
+            }
+            int sizeBefore = lstBillEntries.size();
+            addToBill();
+            if (lstBillEntries.size() > sizeBefore) {
+                lstBillEntries.get(lstBillEntries.size() - 1).setSourceRequestBillItem(requestLine);
+            }
+        }
+        return "/inward/inward_bill_service?faces-redirect=true";
+    }
+
     public String navigateToAddServicesFromMenu() {
         BillBhtController date = null;
         patientEncounter = null;
@@ -440,6 +472,7 @@ public class BillBhtController implements Serializable {
                     tmp.add(e);
                 }
             }
+            applyItemRequestReference(myBill, tmp);
             List<BillItem> tmpBis = saveBillItems(myBill, tmp, getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
             for (int i = 0; i < tmpBis.size(); i++) {
                 tmpBis.get(i).setSearialNo(i);
@@ -451,6 +484,22 @@ public class BillBhtController implements Serializable {
 
     }
 
+    /**
+     * If any of the entries being saved onto this bill originated from an
+     * Item/Service Request line (issue #21793 redesign), set the bill's
+     * referenceBill so the request stays traceable to the bill it produced.
+     * Each such entry's originating request BillItem is threaded onto the
+     * real BillItem in {@link #saveBillItems(Bill, BillItem, BillEntry, List, WebUser, Department)}.
+     */
+    private void applyItemRequestReference(Bill bill, List<BillEntry> entries) {
+        for (BillEntry e : entries) {
+            if (e.getSourceRequestBillItem() != null && e.getSourceRequestBillItem().getBill() != null) {
+                bill.setReferenceBill(e.getSourceRequestBillItem().getBill());
+                return;
+            }
+        }
+    }
+
     public BillItem saveBillItems(Bill bill, BillItem billItem, BillEntry billEntry, List<BillFee> billFees, WebUser wu, Department matrixDepartment) {
 
         billItem.setCreatedAt(new Date());
@@ -460,6 +509,10 @@ public class BillBhtController implements Serializable {
         if (billItem.getInwardChargeType() == null && billItem.getItem() != null
                 && billItem.getItem().getInwardChargeType() != null) {
             billItem.setInwardChargeType(billItem.getItem().getInwardChargeType());
+        }
+
+        if (billEntry != null && billEntry.getSourceRequestBillItem() != null) {
+            billItem.setReferanceBillItem(billEntry.getSourceRequestBillItem());
         }
 
         if (billItem.getId() == null) {
@@ -562,6 +615,7 @@ public class BillBhtController implements Serializable {
         if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp, matrixDepartment);
+            applyItemRequestReference(b, getLstBillEntries());
 
             List<BillItem> list = saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
             b.setBillItems(list);

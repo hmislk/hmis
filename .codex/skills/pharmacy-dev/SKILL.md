@@ -21,6 +21,7 @@ For detailed pharmacy development, refer to these files:
 - [Quantity Decimals](../../../developer_docs/pharmacy/quantity-decimal-validation-guide.md) - Decimal validation
 - [Transfer Disbursement](../../../developer_docs/PHARMACY_TRANSFER_DISBURSEMENT_DOCUMENTATION.md) - Transfer workflow
 - [Purchase Order Workflow](../../../developer_docs/po-workflow-documentation.md) - PO workflow
+- [Bulk Stock Verification Adjustment](../../../developer_docs/pharmacy/bulk-stock-verification-adjustment-guide.md) - Reconciling a physical stock count spreadsheet against system stock at scale via the adjustment/batch-creation APIs
 
 ## Configuration Options
 

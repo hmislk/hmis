@@ -212,6 +212,16 @@ public class CapabilityStatementResource {
                         + "timedItemFeeDurationDaysForMoCharge.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Item Requests", "/api/itemrequests",
+                        "External systems submit item/service requests (meals like Breakfast/Lunch/Dinner as "
+                        + "InwardService items, and stock items like Water Bottle/Tea/Milk/Sugar) against a patient's "
+                        + "active BHT. Requests are saved Pending (no charge, no stock movement) and routed to a "
+                        + "target department's in-app approval queue. A department user approves (charges the BHT and "
+                        + "deducts stock atomically, failing the whole approval if any line has insufficient stock) or "
+                        + "rejects (records a reason) the request via the JSF approval page — this API does not expose "
+                        + "approve/reject. External systems poll GET /{id} for status: PENDING, APPROVED, REJECTED, CANCELLED.",
+                        "API Key",
+                        "GET", "POST", "PUT"))
                 .add(resource("LIMS", "/api/lims",
                         "Laboratory Information Management System integrations",
                         "API Key",

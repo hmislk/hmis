@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="content">
+        <h:form id="itemRequestPendingListForm">
+            <p:panel class="w-100">
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h:outputText styleClass="fa-solid fa-clipboard-check"/>
+                            <p:outputLabel value="Pending Item/Service Requests - #{sessionController.department.name}" class="mx-4"/>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <p:dataTable
+                    value="#{itemRequestApprovalController.pendingRequests}"
+                    var="r"
+                    rows="10"
+                    paginator="true"
+                    paginatorPosition="bottom"
+                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                    rowsPerPageTemplate="5,10,15"
+                    emptyMessage="No pending requests"
+                    class="w-100">
+
+                    <p:column headerText="Request No">
+                        <h:outputText value="#{r.deptId}"/>
+                    </p:column>
+
+                    <p:column headerText="BHT No">
+                        <h:outputLabel value="#{r.patientEncounter.bhtNo}"/>
+                    </p:column>
+
+                    <p:column headerText="Patient Name">
+                        <h:outputLabel value="#{r.patientEncounter.patient.person.nameWithTitle}"/>
+                    </p:column>
+
+                    <p:column headerText="Requested At">
+                        <h:outputLabel value="#{r.createdAt}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Requested By">
+                        <h:outputLabel value="#{r.creater.webUserPerson.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Remaining Services/Investigations" style="width: 20%;">
+                        <p:dataTable var="li" value="#{itemRequestApprovalController.getRemainingServiceLines(r)}" emptyMessage="None remaining">
+                            <p:column headerText="Item">
+                                <h:outputText value="#{li.item.name}"/>
+                            </p:column>
+                            <p:column headerText="Qty">
+                                <h:outputText value="#{li.qty}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:column>
+
+                    <p:column headerText="Remaining Inventory Items" style="width: 20%;">
+                        <p:dataTable var="li" value="#{itemRequestApprovalController.getRemainingInventoryLines(r)}" emptyMessage="None remaining">
+                            <p:column headerText="Item">
+                                <h:outputText value="#{li.item.name}"/>
+                            </p:column>
+                            <p:column headerText="Qty">
+                                <h:outputText value="#{li.qty}"/>
+                            </p:column>
+                        </p:dataTable>
+                    </p:column>
+
+                    <p:column headerText="Actions">
+                        <p:commandButton
+                            id="btnProcessServices"
+                            title="Process Services/Investigations"
+                            value="Process Services/Investigations"
+                            class="ui-button-success m-1"
+                            ajax="false"
+                            icon="fa fa-utensils"
+                            action="#{itemRequestApprovalController.processServices(r)}"
+                            rendered="#{webUserController.hasPrivilege('InwardServiceItemRequestApproval') and not empty itemRequestApprovalController.getRemainingServiceLines(r)}"/>
+
+                        <p:commandButton
+                            id="btnProcessInventory"
+                            title="Process Inventory Items"
+                            value="Process Inventory Items"
+                            class="ui-button-success m-1"
+                            ajax="false"
+                            icon="fa fa-box"
+                            action="#{itemRequestApprovalController.processInventory(r)}"
+                            rendered="#{webUserController.hasPrivilege('InwardServiceItemRequestApproval') and not empty itemRequestApprovalController.getRemainingInventoryLines(r)}"/>
+
+                        <p:commandButton
+                            id="btnOpenReject"
+                            title="Reject Remaining Lines"
+                            class="ui-button-danger m-1"
+                            icon="fa fa-times"
+                            process="@this"
+                            update=":itemRequestPendingListForm:rejectDialogPanel"
+                            oncomplete="PF('rejectRequestDialog').show()"
+                            rendered="#{webUserController.hasPrivilege('InwardServiceItemRequestRejection')}">
+                            <f:setPropertyActionListener value="#{r}" target="#{itemRequestApprovalController.selectedRequest}"/>
+                            <f:setPropertyActionListener value="#{null}" target="#{itemRequestApprovalController.rejectionReason}"/>
+                        </p:commandButton>
+                    </p:column>
+
+                </p:dataTable>
+            </p:panel>
+
+            <p:dialog widgetVar="rejectRequestDialog"
+                      header="Reject Remaining Lines"
+                      modal="true"
+                      resizable="false"
+                      width="420">
+                <h:panelGroup id="rejectDialogPanel" layout="block">
+                    <p:outputLabel value="Reason for Rejection"/>
+                    <p:inputTextarea
+                        id="rejectionReasonInput"
+                        value="#{itemRequestApprovalController.rejectionReason}"
+                        rows="4"
+                        class="w-100"/>
+                    <p:spacer height="10"/>
+                    <div class="d-flex justify-content-end">
+                        <p:commandButton
+                            id="btnConfirmReject"
+                            value="Confirm Reject"
+                            class="ui-button-danger m-1"
+                            ajax="false"
+                            icon="fa fa-times"
+                            onclick="if(document.getElementById('itemRequestPendingListForm:rejectionReasonInput').value.trim()===''){alert('Rejection reason is required');return false;}return confirm('Reject the remaining lines of this request?');"
+                            action="#{itemRequestApprovalController.reject(itemRequestApprovalController.selectedRequest, itemRequestApprovalController.rejectionReason)}"/>
+                    </div>
+                </h:panelGroup>
+            </p:dialog>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

@@ -21,6 +21,7 @@ For detailed pharmacy development, refer to these files:
 - [Quantity Decimals](../../developer_docs/pharmacy/quantity-decimal-validation-guide.md) - Decimal validation
 - [Transfer Disbursement](../../developer_docs/billing/PHARMACY_TRANSFER_DISBURSEMENT_DOCUMENTATION.md) - Transfer workflow
 - [Purchase Order Workflow](../../developer_docs/po-workflow-documentation.md) - PO workflow
+- [Bulk Stock Verification Adjustment](../../developer_docs/pharmacy/bulk-stock-verification-adjustment-guide.md) - Reconciling a physical stock count spreadsheet against system stock at scale via the adjustment/batch-creation APIs
 
 ## Configuration Options
 
@@ -28,6 +29,7 @@ Pharmacy uses `configOptionApplicationController.getBooleanValueByKey()` for fea
 - `Pharmacy Transfer is by Purchase Rate` / `Cost Rate` / `Retail Rate`
 - `Display Colours for Stock Autocomplete Items`
 - `Pharmacy Disbursement Reports - Display *` (various column visibility)
+- `Pharmacy - Allow Cross-Department PO Receiving` (default `false`) - lets a PO created in one department be received/GRN'd from any other department in the same institution; see [Purchase Order Workflow § Receiving Department Scoping](../../developer_docs/po-workflow-documentation.md#receiving-department-scoping-issue-21848)
 
 ## Common Patterns
 

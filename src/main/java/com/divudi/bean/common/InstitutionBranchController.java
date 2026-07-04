@@ -110,7 +110,7 @@ public class InstitutionBranchController implements Serializable {
     public void saveSelected() {
         getCurrent().setInstitutionType(InstitutionType.branch);
         if (getCurrent().getInstitution() == null) {
-            JsfUtil.addErrorMessage("Select the Institution");
+            JsfUtil.addErrorMessage("Select the Bank");
             return;
         }
         if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()) {
