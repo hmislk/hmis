@@ -316,9 +316,16 @@ public class PharmacyAdjustmentApiService implements Serializable {
         result.setComputedNetTotal(netTotal);
         result.setComputedTotal(Math.abs(netTotal));
 
+        // Build disclosure text (applies to both dry-run and apply paths)
+        String disclosureSuffix = "";
+        if (costValueApproximatedFromCurrentRate) {
+            disclosureSuffix = ". Cost value approximated using current item batch cost rate "
+                    + "(no historical cost-rate snapshot exists for this bill type)";
+        }
+
         if (!apply) {
             result.setApplied(false);
-            result.setNote("Dry run: not persisted");
+            result.setNote("Dry run: not persisted" + disclosureSuffix);
             return result;
         }
 
@@ -339,11 +346,7 @@ public class PharmacyAdjustmentApiService implements Serializable {
         billFacade.edit(bill);
 
         result.setApplied(true);
-        String note = "Backfilled from stored before/after audit values";
-        if (costValueApproximatedFromCurrentRate) {
-            note += ". Cost value approximated using current item batch cost rate "
-                    + "(no historical cost-rate snapshot exists for this bill type)";
-        }
+        String note = "Backfilled from stored before/after audit values" + disclosureSuffix;
         result.setNote(note);
         return result;
     }

@@ -168,4 +168,23 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
         assertEquals(999.0, bill.getNetTotal(), 0.001, "Existing BFD must not be recomputed/overwritten");
         assertTrue(billFacade.edited.isEmpty());
     }
+
+    @Test
+    @DisplayName("Dry run for stock adjustment includes cost-approximation disclosure in the note")
+    public void testDryRunStockAdjustmentIncludesCostApproximationDisclosure() {
+        Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0);
+
+        BackfillResultDTO result = service.backfillFinanceDetails(bill, false /* dry run */);
+
+        assertFalse(result.isApplied());
+        assertEquals(1500.0, result.getComputedNetTotal(), 0.001);
+        assertTrue(billFacade.edited.isEmpty(), "Dry run must not persist changes");
+
+        // Verify that dry-run note includes the same cost-approximation disclosure as apply path.
+        assertNotNull(result.getNote());
+        assertTrue(result.getNote().contains("Dry run: not persisted"),
+                "Expected dry-run base message, got: " + result.getNote());
+        assertTrue(result.getNote().contains("Cost value approximated using current item batch cost rate"),
+                "Expected dry-run note to disclose cost-value approximation, got: " + result.getNote());
+    }
 }
