@@ -49,6 +49,12 @@ public class ItemRequestApprovalController implements Serializable {
     private ItemRequestApiService itemRequestApiService;
 
     @Inject
+    private com.divudi.bean.inward.BillBhtController billBhtController;
+
+    @Inject
+    private com.divudi.bean.pharmacy.InpatientDirectIssueNativeSqlController inpatientDirectIssueNativeSqlController;
+
+    @Inject
     private SessionController sessionController;
 
     @Inject
@@ -72,39 +78,54 @@ public class ItemRequestApprovalController implements Serializable {
         Map<String, Object> params = new HashMap<>();
         String jpql = "select b from Bill b where b.retired=false and b.toDepartment=:toDep "
                 + "and b.billType=:bTp and b.cancelled=false "
-                + "and b.id not in (select ab.referenceBill.id from Bill ab where ab.billTypeAtomic=:approvedType and ab.referenceBill is not null) "
                 + "order by b.createdAt desc";
         params.put("toDep", sessionController.getDepartment());
         params.put("bTp", BillType.InwardServiceItemRequest);
-        params.put("approvedType", BillTypeAtomic.INWARD_SERVICE_ITEM_APPROVAL);
 
         List<Bill> results = billFacade.findByJpql(jpql, params);
-        pendingRequests = results != null ? results : new ArrayList<Bill>();
+        List<Bill> withRemainingLines = new ArrayList<>();
+        for (Bill candidate : results != null ? results : new ArrayList<Bill>()) {
+            if (!getRemainingServiceLines(candidate).isEmpty() || !getRemainingInventoryLines(candidate).isEmpty()) {
+                withRemainingLines.add(candidate);
+            }
+        }
+        pendingRequests = withRemainingLines;
     }
 
-    public void approve(Bill request) {
+    public String processServices(Bill request) {
         if (!webUserController.hasPrivilege("InwardServiceItemRequestApproval")) {
-            JsfUtil.addErrorMessage("You do not have privileges to approve item/service requests.");
-            return;
+            JsfUtil.addErrorMessage("You do not have privileges to process item/service requests.");
+            return null;
         }
-        if (request == null || request.getId() == null) {
-            JsfUtil.addErrorMessage("No request selected.");
-            return;
-        }
-        if (!belongsToCurrentDepartment(request)) {
+        if (request == null || !belongsToCurrentDepartment(request)) {
             JsfUtil.addErrorMessage("This request belongs to another department's queue.");
             loadPendingRequests();
-            return;
+            return null;
         }
-        try {
-            itemRequestApiService.approveRequest(request.getId(), sessionController.getLoggedUser(), sessionController.getDepartment());
-            JsfUtil.addSuccessMessage("Request approved successfully.");
-        } catch (IllegalStateException e) {
-            JsfUtil.addErrorMessage(e.getMessage());
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage("Approval failed: " + e.getMessage());
+        List<BillItem> remaining = getRemainingServiceLines(request);
+        if (remaining.isEmpty()) {
+            JsfUtil.addErrorMessage("No remaining service/investigation lines on this request.");
+            return null;
         }
-        loadPendingRequests();
+        return billBhtController.navigateToAddServicesFromItemRequest(request, remaining);
+    }
+
+    public String processInventory(Bill request) {
+        if (!webUserController.hasPrivilege("InwardServiceItemRequestApproval")) {
+            JsfUtil.addErrorMessage("You do not have privileges to process item/service requests.");
+            return null;
+        }
+        if (request == null || !belongsToCurrentDepartment(request)) {
+            JsfUtil.addErrorMessage("This request belongs to another department's queue.");
+            loadPendingRequests();
+            return null;
+        }
+        List<BillItem> remaining = getRemainingInventoryLines(request);
+        if (remaining.isEmpty()) {
+            JsfUtil.addErrorMessage("No remaining inventory lines on this request.");
+            return null;
+        }
+        return inpatientDirectIssueNativeSqlController.navigateToDirectIssueFromItemRequest(request, remaining);
     }
 
     public void reject(Bill request, String reason) {
@@ -125,9 +146,16 @@ public class ItemRequestApprovalController implements Serializable {
             loadPendingRequests();
             return;
         }
+        List<BillItem> remaining = new ArrayList<>();
+        remaining.addAll(getRemainingServiceLines(request));
+        remaining.addAll(getRemainingInventoryLines(request));
+        if (remaining.isEmpty()) {
+            JsfUtil.addErrorMessage("This request has no remaining lines to reject.");
+            return;
+        }
         try {
-            itemRequestApiService.rejectRequest(request.getId(), reason, sessionController.getLoggedUser(), sessionController.getDepartment());
-            JsfUtil.addSuccessMessage("Request rejected.");
+            itemRequestApiService.rejectRemainingLines(request.getId(), remaining, reason, sessionController.getLoggedUser(), sessionController.getDepartment());
+            JsfUtil.addSuccessMessage("Remaining lines rejected.");
         } catch (IllegalStateException e) {
             JsfUtil.addErrorMessage(e.getMessage());
         } catch (Exception e) {
@@ -161,6 +189,45 @@ public class ItemRequestApprovalController implements Serializable {
         List<BillItem> lines = billItemFacade.findByJpql(
                 "select bi from BillItem bi where bi.retired=false and bi.bill=:b", params);
         return lines != null ? lines : new ArrayList<BillItem>();
+    }
+
+    /**
+     * A request line counts as fulfilled once some other BillItem references it
+     * via referanceBillItem — set by BillBhtController/InpatientDirectIssueNativeSqlController's
+     * save paths once the user completes the corresponding page (issue #21793 redesign).
+     */
+    private boolean isLineFulfilled(BillItem requestLine) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("line", requestLine);
+        Long count = billItemFacade.findLongByJpql(
+                "select count(bi) from BillItem bi where bi.retired=false and bi.referanceBillItem=:line",
+                params);
+        return count != null && count > 0;
+    }
+
+    private boolean isServiceOrInvestigationItem(com.divudi.core.entity.Item item) {
+        return item instanceof com.divudi.core.entity.Service
+                || item instanceof com.divudi.core.entity.lab.Investigation;
+    }
+
+    public List<BillItem> getRemainingServiceLines(Bill request) {
+        List<BillItem> remaining = new ArrayList<>();
+        for (BillItem line : getRequestLines(request)) {
+            if (isServiceOrInvestigationItem(line.getItem()) && !isLineFulfilled(line)) {
+                remaining.add(line);
+            }
+        }
+        return remaining;
+    }
+
+    public List<BillItem> getRemainingInventoryLines(Bill request) {
+        List<BillItem> remaining = new ArrayList<>();
+        for (BillItem line : getRequestLines(request)) {
+            if (!isServiceOrInvestigationItem(line.getItem()) && !isLineFulfilled(line)) {
+                remaining.add(line);
+            }
+        }
+        return remaining;
     }
 
     public List<Bill> getPendingRequests() {
