@@ -3,6 +3,13 @@
     font-size: xx-large ;
 }
 
+/* Remove the browser's default <form> bottom margin on the top menu bar.
+   Without this, every page shows a ~16px gap between the menu and the
+   page's content panel (issue #21837). */
+form[id$=":menuForm"] {
+    margin-bottom: 0;
+}
+
 /* Custom styles for PrimeFaces panels */
 
 /* Cancelled Panel - header */
@@ -306,12 +313,6 @@ th.align-right-header .ui-column-title {
     padding: 2px !important;
     border: none !important; /* optional, if you want minimal borders */
 }
-
-/* Example: set a background to verify it’s applied */
-.compact-panelgrid.ui-panelgrid {
-    background-color: #eef !important;
-}
-
 
 
 .compact-column-borders {
