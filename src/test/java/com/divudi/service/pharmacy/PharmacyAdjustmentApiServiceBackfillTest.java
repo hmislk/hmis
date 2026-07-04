@@ -86,6 +86,61 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
         assertNotNull(bill.getBillFinanceDetails());
         assertEquals(0, java.math.BigDecimal.valueOf(1500.0).compareTo(bill.getBillFinanceDetails().getTotalRetailSaleValue()));
         assertEquals(1, billFacade.edited.size());
+
+        // Finding 2: totalBeforeAdjustmentValue/totalAfterAdjustmentValue must be populated,
+        // computed as quantity * netRate (before=10*100=1000, after=25*100=2500).
+        assertNotNull(bill.getBillFinanceDetails().getTotalBeforeAdjustmentValue());
+        assertNotNull(bill.getBillFinanceDetails().getTotalAfterAdjustmentValue());
+        assertEquals(0, java.math.BigDecimal.valueOf(1000.0).compareTo(bill.getBillFinanceDetails().getTotalBeforeAdjustmentValue()));
+        assertEquals(0, java.math.BigDecimal.valueOf(2500.0).compareTo(bill.getBillFinanceDetails().getTotalAfterAdjustmentValue()));
+
+        // Finding 1: cost-value approximation must be disclosed via the note field for this bill type.
+        assertNotNull(result.getNote());
+        assertTrue(result.getNote().contains("Cost value approximated using current item batch cost rate"),
+                "Expected note to disclose cost-value approximation, got: " + result.getNote());
+    }
+
+    @Test
+    @DisplayName("Backfill for retail-rate adjustment bills uses stored before/after values directly and does not add the cost-approximation note")
+    public void testBackfillRetailRateAdjustmentPopulatesBeforeAfterTotalsWithoutApproximationNote() {
+        Bill bill = new Bill();
+        bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT);
+        bill.setBillFinanceDetails(null);
+
+        ItemBatch itemBatch = new ItemBatch();
+        itemBatch.setItem(new Item());
+
+        Stock stock = new Stock();
+        stock.setItemBatch(itemBatch);
+
+        BillItem billItem = new BillItem();
+        billItem.setBill(bill);
+        billItem.setInwardChargeType(InwardChargeType.Medicine);
+        billItem.setCreatedAt(Calendar.getInstance().getTime());
+        billItem.setQty(50.0);
+
+        PharmaceuticalBillItem phItem = new PharmaceuticalBillItem();
+        phItem.setStock(stock);
+        phItem.setItemBatch(itemBatch);
+        // before/after are already total values (qty * rate) for this bill type.
+        phItem.setBeforeAdjustmentValue(50.0 * 10.0); // 500
+        phItem.setAfterAdjustmentValue(50.0 * 12.0);  // 600
+        billItem.setPharmaceuticalBillItem(phItem);
+        phItem.setBillItem(billItem);
+
+        bill.getBillItems().add(billItem);
+
+        BackfillResultDTO result = service.backfillFinanceDetails(bill, true /* apply */);
+
+        assertTrue(result.isApplied());
+        assertNotNull(bill.getBillFinanceDetails());
+        assertEquals(0, java.math.BigDecimal.valueOf(500.0).compareTo(bill.getBillFinanceDetails().getTotalBeforeAdjustmentValue()));
+        assertEquals(0, java.math.BigDecimal.valueOf(600.0).compareTo(bill.getBillFinanceDetails().getTotalAfterAdjustmentValue()));
+
+        // Cost-value approximation disclosure only applies to PHARMACY_STOCK_ADJUSTMENT bills.
+        assertNotNull(result.getNote());
+        assertFalse(result.getNote().contains("Cost value approximated"),
+                "Retail-rate adjustment backfill should not carry the cost-approximation note, got: " + result.getNote());
     }
 
     @Test

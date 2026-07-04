@@ -260,8 +260,15 @@ public class PharmacyAdjustmentApi {
                 return errorResponse("departmentId is required", 400);
             }
 
-            String privilege = "PharmacyAdjustmentDepartmentStockQTY";
-            if (!webUserService.hasPrivilege(privilege, user, request.getDepartmentId())) {
+            // This backfill's JPQL query (backfillFinanceDetailsForDepartment) touches bills of
+            // THREE distinct types - PHARMACY_STOCK_ADJUSTMENT, PHARMACY_RETAIL_RATE_ADJUSTMENT,
+            // and PHARMACY_PURCHASE_RATE_ADJUSTMENT - each normally gated by its own privilege on
+            // the regular (non-backfill) endpoints. Require all three here so a user privileged
+            // for only one adjustment type cannot use this endpoint to write to bill types they
+            // hold no direct privilege over.
+            if (!webUserService.hasPrivilege("PharmacyAdjustmentDepartmentStockQTY", user, request.getDepartmentId())
+                    || !webUserService.hasPrivilege("PharmacyAdjustmentSaleRate", user, request.getDepartmentId())
+                    || !webUserService.hasPrivilege("PharmacyAdjustmentPurchaseRate", user, request.getDepartmentId())) {
                 return errorResponse("Not authorized", 403);
             }
 

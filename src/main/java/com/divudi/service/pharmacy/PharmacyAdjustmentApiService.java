@@ -266,6 +266,9 @@ public class PharmacyAdjustmentApiService implements Serializable {
         double deltaCostValue = 0.0;
         double deltaPurchaseValue = 0.0;
         double deltaQty = 0.0;
+        double totalBeforeValue = 0.0;
+        double totalAfterValue = 0.0;
+        boolean costValueApproximatedFromCurrentRate = false;
 
         for (BillItem item : bill.getBillItems()) {
             PharmaceuticalBillItem ph = item.getPharmaceuticalBillItem();
@@ -280,18 +283,32 @@ public class PharmacyAdjustmentApiService implements Serializable {
                 // captured at adjustment time.
                 double qtyDelta = after - before;
                 deltaRetailValue += qtyDelta * item.getNetRate();
+                // NOTE: no historical cost-rate snapshot exists on PharmaceuticalBillItem for
+                // this bill type (costRate is never set by the adjustment-creation code), so
+                // we fall back to the item batch's CURRENT cost/purchase rate. This is an
+                // approximation, not the rate in effect at the time of the original adjustment.
+                // Disclosed to the caller via result.note below.
                 Double costRateObj = ph.getItemBatch() != null ? ph.getItemBatch().getCostRate() : null;
                 double costRate = costRateObj != null ? costRateObj
                         : (ph.getItemBatch() != null ? ph.getItemBatch().getPurcahseRate() : item.getNetRate());
                 deltaCostValue += qtyDelta * costRate;
                 deltaQty += Math.abs(qtyDelta);
+                costValueApproximatedFromCurrentRate = true;
+                // before/after are quantities here; convert to values using the retail rate
+                // captured at adjustment time (item.getNetRate()), matching createStockAdjustmentBillItem.
+                totalBeforeValue += before * item.getNetRate();
+                totalAfterValue += after * item.getNetRate();
             } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT) {
                 // before/after are total values (qty * rate) already, per createRetailRateAdjustmentBillItem
                 deltaRetailValue += (after - before);
                 deltaQty += item.getQty();
+                totalBeforeValue += before;
+                totalAfterValue += after;
             } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT) {
                 deltaPurchaseValue += (after - before);
                 deltaQty += item.getQty();
+                totalBeforeValue += before;
+                totalAfterValue += after;
             }
         }
 
@@ -313,6 +330,8 @@ public class PharmacyAdjustmentApiService implements Serializable {
         bfd.setGrossTotal(BigDecimal.valueOf(Math.abs(netTotal)));
         bfd.setNetTotal(BigDecimal.valueOf(netTotal));
         bfd.setTotalQuantity(BigDecimal.valueOf(deltaQty));
+        bfd.setTotalBeforeAdjustmentValue(BigDecimal.valueOf(totalBeforeValue));
+        bfd.setTotalAfterAdjustmentValue(BigDecimal.valueOf(totalAfterValue));
         bill.setBillFinanceDetails(bfd);
         bill.setTotal(Math.abs(netTotal));
         bill.setNetTotal(netTotal);
@@ -320,7 +339,12 @@ public class PharmacyAdjustmentApiService implements Serializable {
         billFacade.edit(bill);
 
         result.setApplied(true);
-        result.setNote("Backfilled from stored before/after audit values");
+        String note = "Backfilled from stored before/after audit values";
+        if (costValueApproximatedFromCurrentRate) {
+            note += ". Cost value approximated using current item batch cost rate "
+                    + "(no historical cost-rate snapshot exists for this bill type)";
+        }
+        result.setNote(note);
         return result;
     }
 
