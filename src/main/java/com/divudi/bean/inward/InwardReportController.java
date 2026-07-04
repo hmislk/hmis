@@ -70,6 +70,7 @@ import com.divudi.core.data.dto.RoomCategoryOccupancyDTO;
 import com.divudi.core.data.dto.RoomOccupancyRowDTO;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.data.dto.SurgeryCostEstimationDTO;
+import com.divudi.core.data.dto.SurgeryCostSummaryDTO;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.entity.inward.EncounterComponent;
@@ -285,6 +286,7 @@ public class InwardReportController implements Serializable {
 
     // Surgery Cost Estimation Report
     private List<SurgeryCostEstimationDTO> surgeryCostEstimationList;
+    private List<SurgeryCostSummaryDTO> surgeryCostSummaryList;
     private PatientEncounterDto selectedPatient;
     private Staff selectedAdmitDoctor;
     private Staff selectedSurgeon;
@@ -366,6 +368,14 @@ public class InwardReportController implements Serializable {
 
     public void setSurgeryCostEstimationList(List<SurgeryCostEstimationDTO> surgeryCostEstimationList) {
         this.surgeryCostEstimationList = surgeryCostEstimationList;
+    }
+
+    public List<SurgeryCostSummaryDTO> getSurgeryCostSummaryList() {
+        return surgeryCostSummaryList;
+    }
+
+    public void setSurgeryCostSummaryList(List<SurgeryCostSummaryDTO> surgeryCostSummaryList) {
+        this.surgeryCostSummaryList = surgeryCostSummaryList;
     }
 
     public PatientEncounterDto getSelectedPatient() {
@@ -7731,15 +7741,25 @@ public class InwardReportController implements Serializable {
 
     private static final int IN_CLAUSE_BATCH_SIZE = 1000;
 
-    
     public void processSurgeryCostEstimationReport() {
         surgeryCostEstimationList = new ArrayList<>();
+        surgeryCostSummaryList = new ArrayList<>();
 
         if (fromDate == null || toDate == null) {
             JsfUtil.addErrorMessage("Please select both From and To dates.");
             return;
         }
 
+        boolean isSummaryMode = surgeryCostEstimationReportType != null
+                && !surgeryCostEstimationReportType.isEmpty()
+                && !"detail".equals(surgeryCostEstimationReportType);
+
+        if (isSummaryMode) {
+            fetchSurgeryCostSummary(surgeryCostEstimationReportType);
+            return;
+        }
+
+        // ---- Detail mode ----
         List<SurgeryCostEstimationDTO> list = fetchBaseSurgeryCostEstimationList();
         if (list == null || list.isEmpty()) {
             JsfUtil.addErrorMessage("No records found.");
@@ -7866,6 +7886,93 @@ public class InwardReportController implements Serializable {
             return selectedPatient.getPhn().trim().toLowerCase();
         }
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void fetchSurgeryCostSummary(String type) {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder(1024);
+        switch (type) {
+            case "bySurgeon":
+                jpql.append("SELECT new com.divudi.core.data.dto.SurgeryCostSummaryDTO(p.person.name, COUNT(DISTINCT sb.id)) ")
+                        .append("FROM BilledBill sb ")
+                        .append("LEFT JOIN sb.staff p ")
+                        .append("JOIN sb.patientEncounter admission ");
+                appendSummaryWhereClause(jpql, params);
+                jpql.append(" GROUP BY p.id, p.person.name ORDER BY COUNT(DISTINCT sb.id) DESC");
+                break;
+
+            case "bySurgeryType":
+                jpql.append("SELECT new com.divudi.core.data.dto.SurgeryCostSummaryDTO(cat.name, COUNT(DISTINCT sb.id)) ")
+                        .append("FROM BilledBill sb ")
+                        .append("JOIN sb.procedure proc ")
+                        .append("JOIN proc.item item ")
+                        .append("LEFT JOIN item.category cat ")
+                        .append("JOIN sb.patientEncounter admission ");
+                appendSummaryWhereClause(jpql, params);
+                jpql.append(" GROUP BY cat.id, cat.name ORDER BY COUNT(DISTINCT sb.id) DESC");
+                break;
+
+            case "bySurgeonAndService":
+                jpql.append("SELECT new com.divudi.core.data.dto.SurgeryCostSummaryDTO(p.person.name, item.name, COUNT(DISTINCT sb.id)) ")
+                        .append("FROM BilledBill sb ")
+                        .append("JOIN sb.procedure proc ")
+                        .append("JOIN proc.item item ")
+                        .append("LEFT JOIN sb.staff p ")
+                        .append("JOIN sb.patientEncounter admission ");
+                appendSummaryWhereClause(jpql, params, BillType.InwardBill, BillTypeAtomic.INWARD_SERVICE_BILL);
+                jpql.append(" GROUP BY p.id, p.person.name, item.id, item.name ORDER BY p.person.name ASC, COUNT(DISTINCT sb.id) DESC");
+                break;
+
+            case "byOtRoom":
+                jpql.append("SELECT new com.divudi.core.data.dto.SurgeryCostSummaryDTO(room.name, COUNT(DISTINCT sb.id)) ")
+                        .append("FROM BilledBill sb ")
+                        .append("JOIN sb.procedure proc ")
+                        .append("JOIN proc.item item ")
+                        .append("JOIN sb.patientEncounter admission ")
+                        .append("LEFT JOIN PatientTransferRequest ptr ON ptr.surgeryBill = sb AND ptr.retired = false ")
+                        .append("   AND ptr.id = (SELECT MAX(ptr2.id) FROM PatientTransferRequest ptr2 ")
+                        .append("                 WHERE ptr2.retired = false AND ptr2.surgeryBill = sb) ")
+                        .append("LEFT JOIN ptr.toRoomFacilityCharge room ");
+                appendSummaryWhereClause(jpql, params);
+                jpql.append(" GROUP BY room.id, room.name ORDER BY COUNT(DISTINCT sb.id) DESC");
+                break;
+
+            default:
+                JsfUtil.addErrorMessage("Unsupported summary type: " + type);
+                return;
+        }
+
+        surgeryCostSummaryList = (List<SurgeryCostSummaryDTO>) billFacade.findDTOsByJpql(
+                jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
+    private void appendSummaryWhereClause(StringBuilder jpql, Map<String, Object> params) {
+        appendSummaryWhereClause(jpql, params, BillType.SurgeryBill, null);
+    }
+
+    private void appendSummaryWhereClause(StringBuilder jpql, Map<String, Object> params,
+            BillType billType, BillTypeAtomic billTypeAtomic) {
+        jpql.append("WHERE sb.retired = false ")
+                .append("AND sb.cancelled = false ")
+                .append("AND sb.billType = :surgeryBillType ");
+        params.put("surgeryBillType", billType);
+
+        if (billTypeAtomic != null) {
+            jpql.append("AND sb.billTypeAtomic = :surgeryBillTypeAtomic ");
+            params.put("surgeryBillTypeAtomic", billTypeAtomic);
+        }
+
+        jpql.append("AND admission.discharged = true ")
+                .append("AND admission.dateOfDischarge BETWEEN :fromDate AND :toDate ")
+                .append("AND NOT EXISTS ( ")
+                .append("  SELECT cb.id FROM CancelledBill cb ")
+                .append("  WHERE cb.retired = false AND cb.billedBill = sb) ");
+
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        appendOptionalFilters(jpql, params);
     }
 
     private static final class ReportLookups {
@@ -8149,7 +8256,6 @@ public class InwardReportController implements Serializable {
             dto.setTotalAmount(total);
         }
     }
-
 
     private static double toDouble(Object value) {
         return value instanceof Number ? ((Number) value).doubleValue() : 0.0;

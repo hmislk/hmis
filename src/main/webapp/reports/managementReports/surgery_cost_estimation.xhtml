@@ -297,13 +297,13 @@
                                 <h:outputText value="&#xf46d;" styleClass="fa mr-2"/> 
                                 <p:outputLabel value="Type" for="summeryType" styleClass="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="summeryType" styleClass="w-100">
+                            <p:selectOneMenu id="summeryType" styleClass="w-100" value="#{inwardReportController.surgeryCostEstimationReportType}">
                                 <f:selectItem itemLabel="Select Report Type " itemValue="" noSelectionOption="true"/>
-                                <f:selectItem itemLabel="Detail" itemValue="line"/>
-                                <f:selectItem itemLabel="Summary By Surgery Time" itemValue="bar"/>
-                                <f:selectItem itemLabel="Summary By Surgery" itemValue="line"/>
-                                <f:selectItem itemLabel="Summary By Surgon" itemValue="line"/>
-                                <f:selectItem itemLabel="Summary By OT Room" itemValue="line"/>
+                                <f:selectItem itemLabel="Detail" itemValue="detail"/>
+                                <f:selectItem itemLabel="Summary By Surgeon" itemValue="bySurgeon"/>
+                                <f:selectItem itemLabel="Summary By Surgery Type" itemValue="bySurgeryType"/>
+                                <f:selectItem itemLabel="Summary By Surgeon and Service" itemValue="bySurgeonAndService"/>
+                                <f:selectItem itemLabel="Summary By OT Room" itemValue="byOtRoom"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"/>
@@ -346,6 +346,7 @@
                         <h:panelGroup id="printPanel">
                             <p:panel header="Surgery Cost Estimation Report" styleClass="m-3">
                                 <p:dataTable id="detailWise"
+                                             rendered="#{inwardReportController.surgeryCostEstimationReportType eq 'detail' or empty inwardReportController.surgeryCostEstimationReportType}"
                                              value="#{inwardReportController.surgeryCostEstimationList}"
                                              var="var"
                                              rowIndexVar="n"
@@ -419,6 +420,75 @@
                                         <h:outputText value="#{var.netAmount}"/>
                                     </p:column>
 
+                                </p:dataTable>
+
+                                <!-- Summary By Surgeon -->
+                                <p:dataTable id="summaryBySurgeon"
+                                             rendered="#{inwardReportController.surgeryCostEstimationReportType eq 'bySurgeon'}"
+                                             value="#{inwardReportController.surgeryCostSummaryList}"
+                                             var="s"
+                                             rowIndexVar="n"
+                                             paginator="true"
+                                             paginatorPosition="bottom"
+                                             rows="10"
+                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                             rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                                    <p:column headerText="SL No" style="width: 100px">
+                                        <h:outputText value="#{n + 1}"/>
+                                    </p:column>
+                                    <p:column headerText="Surgeon">
+                                        <h:outputText value="#{s.label1}"/>
+                                    </p:column>
+                                    <p:column headerText="Count">
+                                        <h:outputText value="#{s.count}"/>
+                                    </p:column>
+                                </p:dataTable>
+
+                                <!-- Summary By Surgery Type -->
+                                <p:dataTable id="summaryBySurgeryType"
+                                             rendered="#{inwardReportController.surgeryCostEstimationReportType eq 'bySurgeryType'}"
+                                             value="#{inwardReportController.surgeryCostSummaryList}"
+                                             var="s"
+                                             rowIndexVar="n"
+                                             paginator="true"
+                                             paginatorPosition="bottom"
+                                             rows="10"
+                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                             rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                                    <p:column headerText="SL No" style="width: 100px">
+                                        <h:outputText value="#{n + 1}"/>
+                                    </p:column>
+                                    <p:column headerText="Surgery Type">
+                                        <h:outputText value="#{s.label1}"/>
+                                    </p:column>
+                                    <p:column headerText="Count">
+                                        <h:outputText value="#{s.count}"/>
+                                    </p:column>
+                                </p:dataTable>
+
+                                <!-- Summary By Surgeon and Service -->
+                                <p:dataTable id="summaryBySurgeonAndService"
+                                             rendered="#{inwardReportController.surgeryCostEstimationReportType eq 'bySurgeonAndService'}"
+                                             value="#{inwardReportController.surgeryCostSummaryList}"
+                                             var="s"
+                                             rowIndexVar="n"
+                                             paginator="true"
+                                             paginatorPosition="bottom"
+                                             rows="10"
+                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                             rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
+                                    <p:column headerText="SL No" style="width: 100px">
+                                        <h:outputText value="#{n + 1}"/>
+                                    </p:column>
+                                    <p:column headerText="Surgeon">
+                                        <h:outputText value="#{s.label1}"/>
+                                    </p:column>
+                                    <p:column headerText="Surgery">
+                                        <h:outputText value="#{s.label2}"/>
+                                    </p:column>
+                                    <p:column headerText="Count">
+                                        <h:outputText value="#{s.count}"/>
+                                    </p:column>
                                 </p:dataTable>
                             </p:panel>
                         </h:panelGroup>
