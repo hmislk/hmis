@@ -70,7 +70,7 @@ Since this feature never reached production, there is no legacy data to preserve
 
 `GET /api/itemrequests/{id}` status becomes per-line:
 - Each line reports `PENDING` or `FULFILLED` (with the fulfilling bill's id, type, and the department user who saved it).
-- Overall request status: `PENDING` (no lines fulfilled), `PARTIALLY_FULFILLED` (some but not all), `FULFILLED` (all lines fulfilled), `REJECTED` (remaining lines were rejected and none were ever fulfilled), or a mix — a request can be `PARTIALLY_FULFILLED_AND_REJECTED` if some lines were fulfilled and the rest rejected. (Exact enum-vs-string representation to be finalized in the implementation plan.)
+- Overall request status is a plain string computed from line states, one of: `PENDING` (no lines fulfilled, none rejected), `PARTIALLY_FULFILLED` (some lines fulfilled, rest still pending), `FULFILLED` (all lines fulfilled), `REJECTED` (all remaining lines were rejected and none were ever fulfilled), `PARTIALLY_FULFILLED_AND_REJECTED` (some lines fulfilled, the rest rejected — a terminal state, since rejection only ever applies to still-pending lines).
 - `ItemRequestResponseDTO.approvalBillId` (singular) is replaced with a list of `{billId, billType, lineIds[]}` entries, since a request can now produce more than one bill over time (one per visit per page).
 
 ### Cleanup
