@@ -562,6 +562,9 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         setPatientEncounter(itemRequest.getPatientEncounter());
         this.sourceItemRequest = itemRequest;
         for (BillItem requestLine : remainingLines) {
+            if (requestLine.getQty() == null) {
+                continue;
+            }
             StockDTO stockDto = findEarliestExpiryStockForItem(
                     requestLine.getItem() != null ? requestLine.getItem().getId() : null,
                     requestLine.getQty());
