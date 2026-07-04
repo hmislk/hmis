@@ -186,4 +186,25 @@ public class PharmacyAdjustmentApiServiceTest {
         assertEquals(0, java.math.BigDecimal.valueOf(200.0).compareTo(bill.getBillFinanceDetails().getTotalRetailSaleValue()));
         assertEquals(0, java.math.BigDecimal.ZERO.compareTo(bill.getBillFinanceDetails().getTotalCostValue()));
     }
+
+    @Test
+    @DisplayName("Purchase rate adjustment records the rate-change value in totalPurchaseValue")
+    public void testPurchaseRateAdjustmentPopulatesFinanceDetails() throws Exception {
+        com.divudi.core.data.dto.adjustment.PurchaseRateAdjustmentDTO request =
+                new com.divudi.core.data.dto.adjustment.PurchaseRateAdjustmentDTO();
+        request.setStockId(1L);
+        request.setNewPurchaseRate(70.0); // was 60.0, stock qty = 10 -> change = 10 * 10 = 100.0
+        request.setComment("purchase rate correction");
+        request.setDepartmentId(1L);
+
+        service.adjustPurchaseRate(request, user);
+
+        assertEquals(1, billFacade.saved.size());
+        Bill bill = billFacade.saved.get(0);
+        assertEquals(100.0, bill.getNetTotal(), 0.001);
+        assertEquals(100.0, bill.getTotal(), 0.001);
+        assertNotNull(bill.getBillFinanceDetails());
+        assertEquals(0, java.math.BigDecimal.valueOf(100.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()));
+        assertEquals(0, java.math.BigDecimal.ZERO.compareTo(bill.getBillFinanceDetails().getTotalRetailSaleValue()));
+    }
 }
