@@ -99,6 +99,7 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
     private boolean billPreview = false;
     private String errorMessage = "";
     private double marginTotal = 0.0;
+    private Bill sourceItemRequest;
 
     @PostConstruct
     public void init() {
@@ -277,6 +278,10 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         b.setTotal(0.0);
         b.setNetTotal(0.0);
         b.setGrantTotal(0.0);
+
+        if (sourceItemRequest != null) {
+            b.setReferenceBill(sourceItemRequest);
+        }
 
         return b;
     }
@@ -515,6 +520,66 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         return lastAutocompleteResults != null ? lastAutocompleteResults : new ArrayList<>();
     }
 
+    /**
+     * FIFO earliest-expiry stock lookup by item id, for pre-loading suggested
+     * quantities from an Item/Service Request line (issue #21793 redesign) —
+     * unlike completeAvailableStockOptimizedDto(), this looks up by exact item
+     * id rather than a name search.
+     */
+    public StockDTO findEarliestExpiryStockForItem(Long itemId, double qty) {
+        if (itemId == null) {
+            return null;
+        }
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", sessionController.getLoggedUser().getDepartment());
+        parameters.put("itemId", itemId);
+        parameters.put("stockMin", qty);
+
+        String sql = "SELECT NEW com.divudi.core.data.dto.StockDTO("
+                + "i.id, i.itemBatch.id, i.itemBatch.item.id, i.itemBatch.item.name, i.itemBatch.item.code, "
+                + "i.itemBatch.item.name, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire) "
+                + "FROM Stock i "
+                + "WHERE i.stock >= :stockMin "
+                + "AND i.department = :department "
+                + "AND i.itemBatch.item.id = :itemId "
+                + "ORDER BY i.itemBatch.dateOfExpire";
+
+        @SuppressWarnings("unchecked")
+        List<StockDTO> results = (List<StockDTO>) stockFacade.findLightsByJpql(sql, parameters, TemporalType.TIMESTAMP, 1);
+        return results != null && !results.isEmpty() ? results.get(0) : null;
+    }
+
+    /**
+     * Entry point from the Item/Service Request pending queue (issue #21793
+     * redesign): seeds this controller's cart with a suggested stock batch per
+     * remaining inventory line, then hands control to the normal Direct Issue
+     * page — the user reviews/edits and clicks the page's own Settle button.
+     * Lines with no available stock are skipped (left remaining, reported back
+     * to the queue) rather than blocking the whole navigation.
+     */
+    public String navigateToDirectIssueFromItemRequest(Bill itemRequest, List<BillItem> remainingLines) {
+        resetAll();
+        setPatientEncounter(itemRequest.getPatientEncounter());
+        this.sourceItemRequest = itemRequest;
+        for (BillItem requestLine : remainingLines) {
+            StockDTO stockDto = findEarliestExpiryStockForItem(
+                    requestLine.getItem() != null ? requestLine.getItem().getId() : null,
+                    requestLine.getQty());
+            if (stockDto == null) {
+                continue;
+            }
+            selectedStockDto = stockDto;
+            selectedStockId = stockDto.getId();
+            qty = requestLine.getQty();
+            int sizeBefore = billItemDataList != null ? billItemDataList.size() : 0;
+            addBillItem();
+            if (billItemDataList != null && billItemDataList.size() > sizeBefore) {
+                billItemDataList.get(billItemDataList.size() - 1).setSourceRequestBillItemId(requestLine.getId());
+            }
+        }
+        return "/inward/pharmacy_bill_issue_bht_native?faces-redirect=true";
+    }
+
     public void handleStockSelect(SelectEvent event) {
         try {
             StockDTO selectedDto = (StockDTO) event.getObject();
@@ -570,12 +635,14 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         billPreview = false;
         errorMessage = "";
         marginTotal = 0.0;
+        sourceItemRequest = null;
     }
 
     private void clearBill() {
         preBill = null;
         billItemDataList = null;
         marginTotal = 0.0;
+        sourceItemRequest = null;
     }
 
     private void clearBillItem() {
