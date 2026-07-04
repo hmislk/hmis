@@ -244,6 +244,131 @@ public class PharmacyAdjustmentApiService implements Serializable {
         return response;
     }
 
+    /**
+     * Recomputes BillFinanceDetails + bill totals for a single pre-fix adjustment
+     * bill, using the before/after audit values already stored on its bill items.
+     * Skips (no-op) any bill that already has BillFinanceDetails, so this is safe
+     * to re-run over the same set of bills repeatedly.
+     */
+    @Transactional
+    public BackfillResultDTO backfillFinanceDetails(Bill bill, boolean apply) {
+        BackfillResultDTO result = new BackfillResultDTO();
+        result.setBillId(bill.getId());
+        result.setBillTypeAtomic(bill.getBillTypeAtomic() != null ? bill.getBillTypeAtomic().name() : null);
+
+        if (bill.hasBillFinanceDetails()) {
+            result.setApplied(false);
+            result.setNote("Skipped: BillFinanceDetails already present");
+            return result;
+        }
+
+        double deltaRetailValue = 0.0;
+        double deltaCostValue = 0.0;
+        double deltaPurchaseValue = 0.0;
+        double deltaQty = 0.0;
+
+        for (BillItem item : bill.getBillItems()) {
+            PharmaceuticalBillItem ph = item.getPharmaceuticalBillItem();
+            if (ph == null) {
+                continue;
+            }
+            double before = ph.getBeforeAdjustmentValue();
+            double after = ph.getAfterAdjustmentValue();
+
+            if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT) {
+                // before/after are quantities; item.getNetRate() is the retail rate
+                // captured at adjustment time.
+                double qtyDelta = after - before;
+                deltaRetailValue += qtyDelta * item.getNetRate();
+                Double costRateObj = ph.getItemBatch() != null ? ph.getItemBatch().getCostRate() : null;
+                double costRate = costRateObj != null ? costRateObj
+                        : (ph.getItemBatch() != null ? ph.getItemBatch().getPurcahseRate() : item.getNetRate());
+                deltaCostValue += qtyDelta * costRate;
+                deltaQty += Math.abs(qtyDelta);
+            } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT) {
+                // before/after are total values (qty * rate) already, per createRetailRateAdjustmentBillItem
+                deltaRetailValue += (after - before);
+                deltaQty += item.getQty();
+            } else if (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT) {
+                deltaPurchaseValue += (after - before);
+                deltaQty += item.getQty();
+            }
+        }
+
+        double netTotal = deltaRetailValue + deltaPurchaseValue;
+        result.setComputedNetTotal(netTotal);
+        result.setComputedTotal(Math.abs(netTotal));
+
+        if (!apply) {
+            result.setApplied(false);
+            result.setNote("Dry run: not persisted");
+            return result;
+        }
+
+        BillFinanceDetails bfd = new BillFinanceDetails(bill);
+        bfd.setTotalRetailSaleValue(BigDecimal.valueOf(deltaRetailValue));
+        bfd.setTotalCostValue(BigDecimal.valueOf(deltaCostValue));
+        bfd.setTotalPurchaseValue(BigDecimal.valueOf(deltaPurchaseValue));
+        bfd.setTotalWholesaleValue(BigDecimal.ZERO);
+        bfd.setGrossTotal(BigDecimal.valueOf(Math.abs(netTotal)));
+        bfd.setNetTotal(BigDecimal.valueOf(netTotal));
+        bfd.setTotalQuantity(BigDecimal.valueOf(deltaQty));
+        bill.setBillFinanceDetails(bfd);
+        bill.setTotal(Math.abs(netTotal));
+        bill.setNetTotal(netTotal);
+
+        billFacade.edit(bill);
+
+        result.setApplied(true);
+        result.setNote("Backfilled from stored before/after audit values");
+        return result;
+    }
+
+    /**
+     * Finds pre-fix adjustment bills for a department in a date range (BillFinanceDetails
+     * IS NULL is the fingerprint of "created before this fix went live") and runs the
+     * backfill over each, in dry-run or apply mode.
+     */
+    public java.util.List<BackfillResultDTO> backfillFinanceDetailsForDepartment(
+            Department department, java.util.Date fromDate, java.util.Date toDate, boolean apply) {
+        java.util.List<BillTypeAtomic> types = java.util.Arrays.asList(
+                BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
+                BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT);
+
+        String jpql = "select b from Bill b where b.department=:dep "
+                + "and b.billTypeAtomic in :types and b.createdAt between :from and :to "
+                + "and b.billFinanceDetails is null and b.retired=:ret order by b.createdAt asc";
+
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("dep", department);
+        params.put("types", types);
+        params.put("from", fromDate);
+        params.put("to", toDate);
+        params.put("ret", false);
+
+        java.util.List<Bill> bills = billFacade.findByJpql(jpql, params);
+
+        java.util.List<BackfillResultDTO> results = new java.util.ArrayList<>();
+        for (Bill bill : bills) {
+            results.add(backfillFinanceDetails(bill, apply));
+        }
+        return results;
+    }
+
+    /**
+     * REST-facing overload: resolves departmentId -> Department and parses
+     * yyyy-MM-dd date strings before delegating to
+     * {@link #backfillFinanceDetailsForDepartment(Department, Date, Date, boolean)}.
+     */
+    public java.util.List<BackfillResultDTO> backfillFinanceDetailsForDepartment(
+            Long departmentId, String fromDateStr, String toDateStr, boolean apply) throws Exception {
+        Department department = loadAndValidateDepartment(departmentId);
+        Date fromDate = parseDate(fromDateStr);
+        Date toDate = parseDate(toDateStr);
+        return backfillFinanceDetailsForDepartment(department, fromDate, toDate, apply);
+    }
+
     // Private helper methods
 
     private void validateStockQuantityRequest(StockQuantityAdjustmentDTO request) throws Exception {
