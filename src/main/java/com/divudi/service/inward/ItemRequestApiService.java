@@ -18,6 +18,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Service;
+import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -271,6 +272,9 @@ public class ItemRequestApiService implements Serializable {
         assertRequestBelongsToDepartment(requestBill, rejectingDepartment, "reject");
 
         for (BillItem line : linesToReject) {
+            if (line.getBill() == null || !line.getBill().equals(requestBill)) {
+                continue;
+            }
             if (isLineFulfilled(line)) {
                 continue;
             }
@@ -443,12 +447,15 @@ public class ItemRequestApiService implements Serializable {
 
     /**
      * SERVICE covers both OPD {@link Service} and {@link
-     * com.divudi.core.entity.inward.InwardService} (which extends Service).
-     * Anything else passed to this request/approval flow is treated as an
-     * INVENTORY (stock) item, e.g. Water Bottle/Tea/Milk/Sugar.
+     * com.divudi.core.entity.inward.InwardService} (which extends Service), as
+     * well as {@link Investigation} lines (which extend {@link Item} directly,
+     * not {@link Service}) — these are routed through the same Add
+     * Services / Investigations approval path as real services. Anything else
+     * passed to this request/approval flow is treated as an INVENTORY (stock)
+     * item, e.g. Water Bottle/Tea/Milk/Sugar.
      */
     private boolean isServiceItem(Item item) {
-        return item instanceof Service;
+        return item instanceof Service || item instanceof Investigation;
     }
 
     private Map<String, Object> singleParam(String key, Object value) {

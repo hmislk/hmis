@@ -33,7 +33,7 @@ Since this feature never reached production, there is no legacy data to preserve
 3. Instead of one "Approve" button, each request shows up to two buttons depending on what remains unfulfilled:
    - **Process Services/Investigations** — shown if the request has any service or investigation line not yet fulfilled.
    - **Process Inventory Items** — shown if the request has any inventory line not yet fulfilled.
-4. Clicking a button navigates to the corresponding existing page (`inward_bill_service.xhtml` or `pharmacy_bill_issue_bht_native.xhtml`) with:
+4. Clicking a button navigates to the corresponding existing page (`inward_bill_service.xhtml` or `pharmacy_bill_issue_bht.xhtml`) with:
    - The patient/BHT already selected (from the request's `PatientEncounter`).
    - The remaining lines of that type already added to the page's cart, at the requested quantities — exactly as if the user had manually searched for and added each one.
 5. The user is free to edit quantities, remove lines, or add extra items before clicking that page's own, completely unmodified Save/Settle button. Nothing happens automatically.

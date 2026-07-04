@@ -391,7 +391,7 @@ Add this method after `findEarliestExpiryStockForItem(...)`:
                 billItemDataList.get(billItemDataList.size() - 1).setSourceRequestBillItemId(requestLine.getId());
             }
         }
-        return "/inward/pharmacy_bill_issue_bht_native?faces-redirect=true";
+        return "/inward/pharmacy_bill_issue_bht?faces-redirect=true";
     }
 ```
 
@@ -1141,7 +1141,7 @@ Expected: `REFERANCEBILLITEM_ID` (exact column name per Task 3 Step 1's verifica
 - [ ] **Step 5: Return to the queue and process the inventory line**
 
 Navigate back to `/inward/item_request_pending_list.xhtml`. Confirm the same request row now shows "None remaining" under Services/Investigations but still lists the Water Bottle line under Remaining Inventory Items, and only "Process Inventory Items" is rendered. Click it.
-Expected: navigates to `/inward/pharmacy_bill_issue_bht_native.xhtml` with the BHT selected and the Water Bottle line pre-added at qty 3 (assuming stock ≥ 3 exists for that department).
+Expected: navigates to `/inward/pharmacy_bill_issue_bht.xhtml` with the BHT selected and the Water Bottle line pre-added at qty 3 (assuming stock ≥ 3 exists for that department).
 
 - [ ] **Step 6: Save and verify stock deduction + linkage + COGS**
 
