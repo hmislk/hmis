@@ -580,7 +580,7 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
                 billItemDataList.get(billItemDataList.size() - 1).setSourceRequestBillItemId(requestLine.getId());
             }
         }
-        return "/inward/pharmacy_bill_issue_bht_native?faces-redirect=true";
+        return "/inward/pharmacy_bill_issue_bht?faces-redirect=true";
     }
 
     public void handleStockSelect(SelectEvent event) {
