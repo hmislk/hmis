@@ -7398,6 +7398,11 @@ public class SearchController implements Serializable {
         createPoTable(billTypesToList, billTypesToAttachedToEachBillInTheList);
     }
 
+    private boolean isCrossDepartmentPoReceivingAllowed() {
+        return configOptionApplicationController
+                .getBooleanValueByKey("Pharmacy - Allow Cross-Department PO Receiving", false);
+    }
+
     /**
      * DTO-based version of createPoTablePharmacy for optimized performance.
      * Uses direct DTO query to avoid N+1 problem and entity graph loading. Does
@@ -7409,8 +7414,7 @@ public class SearchController implements Serializable {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
-        boolean allowCrossDepartmentPoReceiving = configOptionApplicationController
-                .getBooleanValueByKey("Pharmacy - Allow Cross-Department PO Receiving", false);
+        boolean allowCrossDepartmentPoReceiving = isCrossDepartmentPoReceivingAllowed();
         String departmentClause = allowCrossDepartmentPoReceiving ? "" : "AND b.department = :dept ";
 
         // First, get count to verify data exists
@@ -7607,8 +7611,7 @@ public class SearchController implements Serializable {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
-        boolean allowCrossDepartmentPoReceiving = configOptionApplicationController
-                .getBooleanValueByKey("Pharmacy - Allow Cross-Department PO Receiving", false);
+        boolean allowCrossDepartmentPoReceiving = isCrossDepartmentPoReceivingAllowed();
 
         jpql = "Select b From Bill b "
                 + " where b.retired = false"
