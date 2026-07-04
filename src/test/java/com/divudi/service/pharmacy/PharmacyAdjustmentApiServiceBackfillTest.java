@@ -17,8 +17,10 @@ import org.junit.jupiter.api.Test;
 
 import javax.persistence.EntityManager;
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -186,5 +188,36 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
                 "Expected dry-run base message, got: " + result.getNote());
         assertTrue(result.getNote().contains("Cost value approximated using current item batch cost rate"),
                 "Expected dry-run note to disclose cost-value approximation, got: " + result.getNote());
+    }
+
+    @Test
+    @DisplayName("endOfDay normalizes a date to 23:59:59.999 of the same calendar day, "
+            + "so a bill created later that day falls within a between(from, endOfDay(toDate)) range")
+    public void testEndOfDayIncludesSameDayBillsInBackfillRange() throws Exception {
+        SimpleDateFormat dayFormat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat dayTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        Date parsedToDate = dayFormat.parse("2026-07-04"); // midnight, as parseDate() produces
+        Date normalizedToDate = service.endOfDay(parsedToDate);
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(normalizedToDate);
+        assertEquals(23, cal.get(Calendar.HOUR_OF_DAY));
+        assertEquals(59, cal.get(Calendar.MINUTE));
+        assertEquals(59, cal.get(Calendar.SECOND));
+        assertEquals(999, cal.get(Calendar.MILLISECOND));
+        // Still the same calendar day - only the time-of-day component changed.
+        Calendar original = Calendar.getInstance();
+        original.setTime(parsedToDate);
+        assertEquals(original.get(Calendar.YEAR), cal.get(Calendar.YEAR));
+        assertEquals(original.get(Calendar.DAY_OF_YEAR), cal.get(Calendar.DAY_OF_YEAR));
+
+        // A bill created at 14:30:00 on the same day must fall within [from, normalizedToDate],
+        // whereas it would have been excluded by the un-normalized midnight bound.
+        Date billCreatedAt = dayTimeFormat.parse("2026-07-04 14:30:00");
+        assertTrue(billCreatedAt.after(parsedToDate),
+                "Sanity check: bill timestamp is after the un-normalized midnight bound");
+        assertFalse(billCreatedAt.after(normalizedToDate),
+                "Bill created at 14:30:00 on toDate must be included once toDate is normalized to end-of-day");
     }
 }

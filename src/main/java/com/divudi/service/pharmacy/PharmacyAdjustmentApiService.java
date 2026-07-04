@@ -356,6 +356,7 @@ public class PharmacyAdjustmentApiService implements Serializable {
      * IS NULL is the fingerprint of "created before this fix went live") and runs the
      * backfill over each, in dry-run or apply mode.
      */
+    @Transactional
     public java.util.List<BackfillResultDTO> backfillFinanceDetailsForDepartment(
             Department department, java.util.Date fromDate, java.util.Date toDate, boolean apply) {
         java.util.List<BillTypeAtomic> types = java.util.Arrays.asList(
@@ -392,7 +393,10 @@ public class PharmacyAdjustmentApiService implements Serializable {
             Long departmentId, String fromDateStr, String toDateStr, boolean apply) throws Exception {
         Department department = loadAndValidateDepartment(departmentId);
         Date fromDate = parseDate(fromDateStr);
-        Date toDate = parseDate(toDateStr);
+        // toDate is parsed to midnight (00:00:00) by parseDate; advance it to the end
+        // of that day so bills created later on the same calendar day are not silently
+        // excluded from the JPQL "between :from and :to" range below.
+        Date toDate = endOfDay(parseDate(toDateStr));
         return backfillFinanceDetailsForDepartment(department, fromDate, toDate, apply);
     }
 
@@ -496,6 +500,21 @@ public class PharmacyAdjustmentApiService implements Serializable {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
         cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+        return cal.getTime();
+    }
+
+    /**
+     * Advances the given date to the last instant of that calendar day
+     * (23:59:59.999), so it can be used as an inclusive upper bound in a
+     * "between" range query without excluding bills created later that day.
+     */
+    Date endOfDay(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        cal.set(Calendar.MILLISECOND, 999);
         return cal.getTime();
     }
 
