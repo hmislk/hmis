@@ -137,6 +137,22 @@
                             <p:selectBooleanCheckbox value="#{webUserController.current.activated}" >
                             </p:selectBooleanCheckbox>
 
+                            <p:outputLabel value="Restrict Login By IP" class=" m-1"></p:outputLabel>
+                            <p:outputLabel value=":" style="width: 20px;"/>
+                            <p:selectBooleanCheckbox value="#{webUserController.current.restrictLoginByIp}">
+                                <p:ajax update="allowedIpAddressesBlock" process="@this" />
+                            </p:selectBooleanCheckbox>
+
+                            <p:outputLabel value="Allowed IP Addresses " style="width: 100px;" for="allowedIpAddresses" />
+                            <p:outputLabel value=":" style="width: 20px;"/>
+                            <h:panelGroup id="allowedIpAddressesBlock">
+                                <p:inputText id="allowedIpAddresses"
+                                             value="#{webUserController.current.allowedIpAddresses}"
+                                             rendered="#{webUserController.current.restrictLoginByIp}"
+                                             title="Comma-separated IP addresses"
+                                             style="width: 300px;" />
+                            </h:panelGroup>
+
                         </h:panelGrid>
                     </p:panel>
                 </f:view>
