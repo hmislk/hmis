@@ -191,20 +191,6 @@ public class ItemRequestApprovalController implements Serializable {
         return lines != null ? lines : new ArrayList<BillItem>();
     }
 
-    /**
-     * A request line counts as fulfilled once some other BillItem references it
-     * via referanceBillItem — set by BillBhtController/InpatientDirectIssueNativeSqlController's
-     * save paths once the user completes the corresponding page (issue #21793 redesign).
-     */
-    private boolean isLineFulfilled(BillItem requestLine) {
-        Map<String, Object> params = new HashMap<>();
-        params.put("line", requestLine);
-        Long count = billItemFacade.findLongByJpql(
-                "select count(bi) from BillItem bi where bi.retired=false and bi.referanceBillItem=:line",
-                params);
-        return count != null && count > 0;
-    }
-
     private boolean isServiceOrInvestigationItem(com.divudi.core.entity.Item item) {
         return item instanceof com.divudi.core.entity.Service
                 || item instanceof com.divudi.core.entity.lab.Investigation;
@@ -213,7 +199,7 @@ public class ItemRequestApprovalController implements Serializable {
     public List<BillItem> getRemainingServiceLines(Bill request) {
         List<BillItem> remaining = new ArrayList<>();
         for (BillItem line : getRequestLines(request)) {
-            if (isServiceOrInvestigationItem(line.getItem()) && !isLineFulfilled(line)) {
+            if (isServiceOrInvestigationItem(line.getItem()) && !itemRequestApiService.isLineFulfilled(line)) {
                 remaining.add(line);
             }
         }
@@ -223,7 +209,7 @@ public class ItemRequestApprovalController implements Serializable {
     public List<BillItem> getRemainingInventoryLines(Bill request) {
         List<BillItem> remaining = new ArrayList<>();
         for (BillItem line : getRequestLines(request)) {
-            if (!isServiceOrInvestigationItem(line.getItem()) && !isLineFulfilled(line)) {
+            if (!isServiceOrInvestigationItem(line.getItem()) && !itemRequestApiService.isLineFulfilled(line)) {
                 remaining.add(line);
             }
         }

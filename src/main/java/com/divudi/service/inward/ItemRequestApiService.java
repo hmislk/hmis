@@ -327,7 +327,7 @@ public class ItemRequestApiService implements Serializable {
      * save paths — issue #21793 redesign). Overall status is derived from the mix
      * of fulfilled / rejected / pending lines.
      */
-    private boolean isLineFulfilled(BillItem requestLine) {
+    public boolean isLineFulfilled(BillItem requestLine) {
         Map<String, Object> params = new HashMap<>();
         params.put("line", requestLine);
         Long count = billItemFacade.findLongByJpql(
@@ -349,7 +349,7 @@ public class ItemRequestApiService implements Serializable {
             return "CANCELLED";
         }
         List<BillItem> lines = billItemFacade.findByJpql(
-                "select bi from BillItem bi where bi.retired=false and bi.bill=:b",
+                "select bi from BillItem bi where bi.bill=:b",
                 singleParam("b", requestBill));
         boolean anyFulfilled = false;
         boolean anyPending = false;
