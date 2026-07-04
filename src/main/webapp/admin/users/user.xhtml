@@ -143,8 +143,8 @@
                                 <p:ajax update="allowedIpAddressesBlock" process="@this" />
                             </p:selectBooleanCheckbox>
 
-                            <p:outputLabel value="Allowed IP Addresses " style="width: 100px;" for="allowedIpAddresses" />
-                            <p:outputLabel value=":" style="width: 20px;"/>
+                            <p:outputLabel value="Allowed IP Addresses " style="width: 100px;" for="allowedIpAddresses" rendered="#{webUserController.current.restrictLoginByIp}" />
+                            <p:outputLabel value=":" style="width: 20px;" rendered="#{webUserController.current.restrictLoginByIp}"/>
                             <h:panelGroup id="allowedIpAddressesBlock">
                                 <p:inputText id="allowedIpAddresses"
                                              value="#{webUserController.current.allowedIpAddresses}"
