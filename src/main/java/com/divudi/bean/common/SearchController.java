@@ -21110,6 +21110,10 @@ public class SearchController implements Serializable {
             //Start - Atomic Bill Type with Cash in and cash out added for 10088-all-cashier-summary-had-calculated-fund-bills
             List<BillTypeAtomic> btas = BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN);
             btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+            // Collecting Centre Agent Payment / Cancellation are agent commission payouts, not cashier
+            // collections - exclude them (issue #21840)
+            btas.remove(BillTypeAtomic.CC_AGENT_PAYMENT);
+            btas.remove(BillTypeAtomic.CC_AGENT_PAYMENT_CANCELLATION);
             jpql += "AND bill.billTypeAtomic in :btas ";
             parameters.put("btas", btas);
             // End - Atomic Bill Type with Cash in and cash out added FOR 10088-all-cashier-summary-had-calculated-fund-bills
