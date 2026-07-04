@@ -518,8 +518,8 @@ public class PharmacyAdjustmentApiService implements Serializable {
         pharmaceuticalBillItem.setItemBatch(stock.getItemBatch());
         pharmaceuticalBillItem.setQty(stock.getStock());
         pharmaceuticalBillItem.setRetailRate(oldRetailRate);
-        pharmaceuticalBillItem.setLastPurchaseRate(newRetailRate); // Store new rate in this field
-        pharmaceuticalBillItem.setFreeQty((float) rateChange); // Store rate change in this field
+        pharmaceuticalBillItem.setLastPurchaseRate(newRetailRate);
+        pharmaceuticalBillItem.setFreeQty((float) rateChange);
         pharmaceuticalBillItem.setBeforeAdjustmentValue(stock.getStock() * oldRetailRate);
         pharmaceuticalBillItem.setAfterAdjustmentValue(stock.getStock() * newRetailRate);
 
@@ -527,6 +527,26 @@ public class PharmacyAdjustmentApiService implements Serializable {
         pharmaceuticalBillItem.setBillItem(billItem);
 
         billItemFacade.create(billItem);
+
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails(bill);
+            bill.setBillFinanceDetails(bfd);
+        }
+        bfd.setTotalRetailSaleValue(BigDecimal.valueOf(changeValue));
+        bfd.setGrossTotal(BigDecimal.valueOf(Math.abs(changeValue)));
+        bfd.setNetTotal(BigDecimal.valueOf(changeValue));
+        bfd.setTotalQuantity(BigDecimal.valueOf(stock.getStock()));
+        bfd.setTotalBeforeAdjustmentValue(BigDecimal.valueOf(stock.getStock() * oldRetailRate));
+        bfd.setTotalAfterAdjustmentValue(BigDecimal.valueOf(stock.getStock() * newRetailRate));
+        bfd.setTotalCostValue(BigDecimal.ZERO);
+        bfd.setTotalPurchaseValue(BigDecimal.ZERO);
+        bfd.setTotalWholesaleValue(BigDecimal.ZERO);
+
+        bill.setTotal(Math.abs(changeValue));
+        bill.setNetTotal(changeValue);
+        billFacade.edit(bill);
+
         return pharmaceuticalBillItem;
     }
 

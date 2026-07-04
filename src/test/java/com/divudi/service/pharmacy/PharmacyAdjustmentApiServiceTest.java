@@ -165,4 +165,25 @@ public class PharmacyAdjustmentApiServiceTest {
         assertEquals(-600.0, bill.getNetTotal(), 0.001);
         assertEquals(600.0, bill.getTotal(), 0.001, "Bill.total (gross) should be the absolute value of the change");
     }
+
+    @Test
+    @DisplayName("Retail rate adjustment records the rate-change value across current stock qty")
+    public void testRetailRateAdjustmentPopulatesFinanceDetails() throws Exception {
+        com.divudi.core.data.dto.adjustment.RetailRateAdjustmentDTO request =
+                new com.divudi.core.data.dto.adjustment.RetailRateAdjustmentDTO();
+        request.setStockId(1L);
+        request.setNewRetailRate(120.0); // was 100.0, stock qty = 10 -> change = 10 * 20 = 200.0
+        request.setComment("rate correction");
+        request.setDepartmentId(1L);
+
+        service.adjustRetailRate(request, user);
+
+        assertEquals(1, billFacade.saved.size());
+        Bill bill = billFacade.saved.get(0);
+        assertEquals(200.0, bill.getNetTotal(), 0.001);
+        assertEquals(200.0, bill.getTotal(), 0.001);
+        assertNotNull(bill.getBillFinanceDetails());
+        assertEquals(0, java.math.BigDecimal.valueOf(200.0).compareTo(bill.getBillFinanceDetails().getTotalRetailSaleValue()));
+        assertEquals(0, java.math.BigDecimal.ZERO.compareTo(bill.getBillFinanceDetails().getTotalCostValue()));
+    }
 }
