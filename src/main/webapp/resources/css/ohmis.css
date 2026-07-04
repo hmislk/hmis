@@ -898,6 +898,38 @@ th.align-right-header .ui-column-title {
 }
 
 
+/* ============================================================
+   Data-dense page patterns — sticky action areas
+   Standard classes for keeping page actions reachable while the
+   user scrolls long data-entry pages. Usage documented in
+   developer_docs/ui/data-dense-page-patterns.md:
+     .sticky-panel-header  → on the main transaction p:panel; keeps
+                             the three-zone header (Save/Finalize/
+                             Approve) pinned to the viewport top.
+     .sticky-action-bar    → on a block h:panelGroup wrapping the
+                             action buttons below a form; pins them
+                             to the viewport bottom.
+   Both degrade gracefully to normal flow if an ancestor container
+   prevents position:sticky from engaging.
+   ============================================================ */
+
+.sticky-panel-header > .ui-panel-titlebar {
+    position: sticky;
+    top: 0;
+    z-index: 900;
+}
+
+.sticky-action-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 900;
+    background-color: #ffffff;
+    border-top: 1px solid #dee2e6;
+    box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.08);
+    padding: 0.5rem 0.75rem;
+}
+
+
 /* Optimised menu item — subtle green tinge */
 a.ui-menuitem-link.menu-item-optimised,
 a.ui-menuitem-link.menu-item-optimised .ui-menuitem-text,
