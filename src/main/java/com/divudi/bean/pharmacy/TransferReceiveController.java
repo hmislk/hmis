@@ -1000,6 +1000,9 @@ public class TransferReceiveController implements Serializable {
         getReceivedBill().setBillType(BillType.PharmacyTransferReceive);
         getReceivedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE);
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
+        if (getIssuedBill().getDepartmentType() != null) {
+            getReceivedBill().setDepartmentType(getIssuedBill().getDepartmentType());
+        }
         List<BillItem> itemsToAdd = new ArrayList<>();
 
         for (BillItem i : getReceivedBill().getBillItems()) {
@@ -1124,6 +1127,9 @@ public class TransferReceiveController implements Serializable {
         getReceivedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE);
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
         getReceivedBill().setFromStaff(getIssuedBill().getToStaff());
+        if (getIssuedBill().getDepartmentType() != null) {
+            getReceivedBill().setDepartmentType(getIssuedBill().getDepartmentType());
+        }
         if (getReceivedBill().getId() == null) {
             getReceivedBill().setCreatedAt(new Date());
             getReceivedBill().setCreater(sessionController.getLoggedUser());

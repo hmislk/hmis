@@ -2740,6 +2740,46 @@ public class SearchController implements Serializable {
                 .sum();
     }
 
+    public double getOpdSaleSummaryHospitalFeeTotal() {
+        if (opdSaleSummaryDtos == null || opdSaleSummaryDtos.isEmpty()) {
+            return 0.0;
+        }
+        return opdSaleSummaryDtos.stream()
+                .filter(dto -> dto.getHospitalFee() != null)
+                .mapToDouble(OpdSaleSummaryDTO::getHospitalFee)
+                .sum();
+    }
+
+    public double getOpdSaleSummaryProfessionalFeeTotal() {
+        if (opdSaleSummaryDtos == null || opdSaleSummaryDtos.isEmpty()) {
+            return 0.0;
+        }
+        return opdSaleSummaryDtos.stream()
+                .filter(dto -> dto.getProfessionalFee() != null)
+                .mapToDouble(OpdSaleSummaryDTO::getProfessionalFee)
+                .sum();
+    }
+
+    public double getOpdSaleSummaryGrossAmountTotal() {
+        if (opdSaleSummaryDtos == null || opdSaleSummaryDtos.isEmpty()) {
+            return 0.0;
+        }
+        return opdSaleSummaryDtos.stream()
+                .filter(dto -> dto.getGrossAmount() != null)
+                .mapToDouble(OpdSaleSummaryDTO::getGrossAmount)
+                .sum();
+    }
+
+    public double getOpdSaleSummaryDiscountTotal() {
+        if (opdSaleSummaryDtos == null || opdSaleSummaryDtos.isEmpty()) {
+            return 0.0;
+        }
+        return opdSaleSummaryDtos.stream()
+                .filter(dto -> dto.getDiscountAmount() != null)
+                .mapToDouble(OpdSaleSummaryDTO::getDiscountAmount)
+                .sum();
+    }
+
     public int getOpdAnalyticsIndex() {
         return opdAnalyticsIndex;
     }

@@ -7,12 +7,17 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.dataStructure.BillListWithTotals;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.PharmacyStockRow;
@@ -58,6 +63,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
 import java.math.RoundingMode;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -244,6 +250,14 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         if (BigDecimalUtil.isNullOrZero(f.getRetailSaleRatePerUnit()) || BigDecimalUtil.isNegative(f.getRetailSaleRatePerUnit())) {
             JsfUtil.addErrorMessage("Please enter the sale rate");
+            return;
+        }
+
+        // Issue #21635 / #13103 / #21837: block a retail rate below the purchase rate (selling
+        // at a loss) unless config allows it (clearance / loss-leader pricing). Normalize AMPP
+        // pack rates to per-unit before comparing.
+        if (!isAllowRetailRateBelowPurchaseRate() && isRetailRateBelowPurchaseRate(item, f)) {
+            JsfUtil.addErrorMessage("Retail rate is below the purchase rate. Enable 'Allow Retail Rate Below Purchase Rate in Pharmacy Purchasing' to proceed.");
             return;
         }
 
@@ -539,6 +553,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
     PharmacyCalculation pharmacyBillBean;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
     @Inject
     ConfigOptionController configOptionController;
     @Inject
@@ -1174,6 +1190,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 }
             }
 
+            if (!isAllowRetailRateBelowPurchaseRate() && isRetailRateBelowPurchaseRate(item, f)) {
+                JsfUtil.addErrorMessage("Retail rate is below the purchase rate. Enable 'Allow Retail Rate Below Purchase Rate in Pharmacy Purchasing' to proceed.");
+                return;
+            }
+
             // Sync wholesaleRatePerUnit from wholesaleRate (same logic as onWholesaleRateChange)
             if (f.getWholesaleRate() != null) {
                 if (item instanceof Ampp) {
@@ -1208,6 +1229,19 @@ public class PharmacyDirectPurchaseController implements Serializable {
         distributeProportionalBillValuesToItems();
         recalculateProfitMarginsForAllItems();
         editingBillItem = null;
+    }
+
+    private boolean isRetailRateBelowPurchaseRate(Item item, BillItemFinanceDetails f) {
+        BigDecimal purchaseRatePerUnit = BigDecimalUtil.valueOrZero(f.getLineGrossRate());
+        if (item instanceof Ampp) {
+            BigDecimal unitsPerPack = BigDecimalUtil.valueOrZero(f.getUnitsPerPack());
+            if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
+                double dblVal = item.getDblValue();
+                unitsPerPack = BigDecimal.valueOf(dblVal > 0 ? dblVal : 1);
+            }
+            purchaseRatePerUnit = purchaseRatePerUnit.divide(unitsPerPack, 6, RoundingMode.HALF_UP);
+        }
+        return purchaseRatePerUnit.compareTo(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit())) > 0;
     }
 
     /**
@@ -2356,6 +2390,24 @@ public class PharmacyDirectPurchaseController implements Serializable {
         this.printPreview = printPreview;
     }
 
+    /**
+     * Issue #21635 / #13103: whether saving a retail rate below the purchase rate
+     * (clearance / loss-leader pricing) is allowed. Policy decision, config-driven
+     * rather than a free per-transaction user toggle.
+     */
+    public boolean isAllowRetailRateBelowPurchaseRate() {
+        return configOptionApplicationController.getBooleanValueByKey(
+                "Allow Retail Rate Below Purchase Rate in Pharmacy Purchasing", false);
+    }
+
+    /**
+     * Issue #21837: gates the Wholesale Rate field/columns on this page.
+     */
+    public boolean isWholesaleTransactionsAllowed() {
+        return configOptionApplicationController.getBooleanValueByKey(
+                "Allow Wholesale Transactions in Pharmacy Purchasing", false);
+    }
+
     public BillItem getCurrentBillItem() {
         if (currentBillItem == null) {
             currentBillItem = new BillItem();
@@ -2477,6 +2529,118 @@ public class PharmacyDirectPurchaseController implements Serializable {
     public String toggleShowAllBillFormats() {
         this.showAllBillFormats = !this.showAllBillFormats;
         return "";
+    }
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata(
+                "pharmacy/direct_purchase",
+                "Pharmacy Direct Purchase",
+                "Create and manage direct purchase bills for pharmacy stock",
+                "PharmacyDirectPurchaseController"
+        );
+
+        // Configuration Options - APPLICATION scope
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Allow Wholesale Transactions in Pharmacy Purchasing",
+                "Shows the Wholesale Rate field on the Add New Item row and item edit dialog",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Allow Retail Rate Below Purchase Rate in Pharmacy Purchasing",
+                "Allows saving a retail rate below the purchase rate (clearance / loss-leader pricing)",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Use Save Finalize Approve Workflow for Direct Purchase",
+                "Switches the page from single-step Settle to a Save Draft / Finalize / Approve workflow",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Enable Consignment in Pharmacy Purchasing",
+                "Shows or hides the consignment checkbox option in the purchasing details panel",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Direct Purchase Bill Print - A4",
+                "Renders the standard A4 print format for direct purchase bills",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Direct Purchase Bill Print - A4 (Custom 1)",
+                "Renders the A4 (Custom 1) print format for direct purchase bills",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Direct Purchase Bill Print - A4 Details",
+                "Renders the A4 format with costing details for direct purchase bills",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Direct Purchase Bill Print - Custom 1",
+                "Renders custom print format 1 with costing details for direct purchase bills",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Direct Purchase Bill Print - Custom 2",
+                "Renders custom print format 2 with costing details for direct purchase bills",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Direct Purchase Bill Print - Custom Letter Format",
+                "Renders the custom letter format with costing details for direct purchase bills",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Show Profit % in Direct Purchase Bill",
+                "Shows the profit percentage column on direct purchase bill printouts",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Show Retail Value in Direct Purchase Bill",
+                "Shows the retail value column on direct purchase bill printouts",
+                OptionScope.APPLICATION
+        ));
+
+        // Privileges
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access to page configuration",
+                "Config button visibility"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyDirectPurchaseSave",
+                "Permission to save a direct purchase draft",
+                "Save Draft button visibility"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyDirectPurchaseFinalize",
+                "Permission to finalize a direct purchase draft",
+                "Finalize button visibility"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "PharmacyDirectPurchaseApprove",
+                "Permission to approve a finalized direct purchase draft",
+                "Controls access to the Approve Direct Purchase list page"
+        ));
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ChangeReceiptPrintingPaperTypes",
+                "Access to receipt printing configuration settings",
+                "Controls visibility of the Settings button in print preview"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
     }
 
 }
