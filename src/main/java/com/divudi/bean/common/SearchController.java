@@ -7409,20 +7409,26 @@ public class SearchController implements Serializable {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
+        boolean allowCrossDepartmentPoReceiving = configOptionApplicationController
+                .getBooleanValueByKey("Pharmacy - Allow Cross-Department PO Receiving", false);
+        String departmentClause = allowCrossDepartmentPoReceiving ? "" : "AND b.department = :dept ";
+
         // First, get count to verify data exists
         String countJpql = "SELECT COUNT(b) "
                 + "FROM Bill b "
                 + "WHERE b.retired = false "
                 + "AND b.billTypeAtomic = :bta "
                 + "AND b.referenceBill.institution = :ins "
-                + "AND b.department = :dept "
+                + departmentClause
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
 
         Map<String, Object> countParams = new HashMap<>();
         countParams.put("toDate", getToDate());
         countParams.put("fromDate", getFromDate());
         countParams.put("ins", getSessionController().getInstitution());
-        countParams.put("dept", sessionController.getDepartment());
+        if (!allowCrossDepartmentPoReceiving) {
+            countParams.put("dept", sessionController.getDepartment());
+        }
         countParams.put("bta", BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
 
         logger.debug("createPoTablePharmacyDto: Count JPQL = {}", countJpql);
@@ -7440,7 +7446,7 @@ public class SearchController implements Serializable {
                 + "WHERE b.retired = false "
                 + "AND b.billTypeAtomic = :bta "
                 + "AND b.referenceBill.institution = :ins "
-                + "AND b.department = :dept "
+                + departmentClause
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
 
         List testResult = getBillFacade().findByJpql(testJpql, countParams, TemporalType.TIMESTAMP);
@@ -7474,7 +7480,7 @@ public class SearchController implements Serializable {
                 + "WHERE b.retired = false "
                 + "AND b.billTypeAtomic = :bta "
                 + "AND b.referenceBill.institution = :ins "
-                + "AND b.department = :dept "
+                + departmentClause
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
 
         logger.debug("createPoTablePharmacyDto: DTO JPQL = {}", jpql);
@@ -7514,7 +7520,9 @@ public class SearchController implements Serializable {
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
         params.put("ins", getSessionController().getInstitution());
-        params.put("dept", sessionController.getDepartment());
+        if (!allowCrossDepartmentPoReceiving) {
+            params.put("dept", sessionController.getDepartment());
+        }
         params.put("bta", BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
 
         logger.info("createPoTablePharmacyDto: Executing DTO query...");
@@ -7599,11 +7607,14 @@ public class SearchController implements Serializable {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
+        boolean allowCrossDepartmentPoReceiving = configOptionApplicationController
+                .getBooleanValueByKey("Pharmacy - Allow Cross-Department PO Receiving", false);
+
         jpql = "Select b From Bill b "
                 + " where b.retired = false"
                 + " and b.billTypeAtomic in :btas"
                 + " and b.referenceBill.institution = :ins "
-                + " and b.department = :dept "
+                + (allowCrossDepartmentPoReceiving ? "" : " and b.department = :dept ")
                 + " and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword() != null) {
@@ -7639,7 +7650,9 @@ public class SearchController implements Serializable {
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
         params.put("ins", getSessionController().getInstitution());
-        params.put("dept", sessionController.getDepartment());
+        if (!allowCrossDepartmentPoReceiving) {
+            params.put("dept", sessionController.getDepartment());
+        }
         params.put("btas", billTypeAtomicToList);
 
         if (getReportKeyWord() != null && getReportKeyWord().isAdditionalDetails()) {
