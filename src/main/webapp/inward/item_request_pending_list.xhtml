@@ -54,10 +54,10 @@
                     <p:column headerText="Remaining Services/Investigations" style="width: 20%;">
                         <p:dataTable var="li" value="#{itemRequestApprovalController.getRemainingServiceLines(r)}" emptyMessage="None remaining">
                             <p:column headerText="Item">
-                                <h:outputLabel value="#{li.item.name}"/>
+                                <h:outputText value="#{li.item.name}"/>
                             </p:column>
                             <p:column headerText="Qty">
-                                <h:outputLabel value="#{li.qty}"/>
+                                <h:outputText value="#{li.qty}"/>
                             </p:column>
                         </p:dataTable>
                     </p:column>
@@ -65,17 +65,17 @@
                     <p:column headerText="Remaining Inventory Items" style="width: 20%;">
                         <p:dataTable var="li" value="#{itemRequestApprovalController.getRemainingInventoryLines(r)}" emptyMessage="None remaining">
                             <p:column headerText="Item">
-                                <h:outputLabel value="#{li.item.name}"/>
+                                <h:outputText value="#{li.item.name}"/>
                             </p:column>
                             <p:column headerText="Qty">
-                                <h:outputLabel value="#{li.qty}"/>
+                                <h:outputText value="#{li.qty}"/>
                             </p:column>
                         </p:dataTable>
                     </p:column>
 
                     <p:column headerText="Actions">
                         <p:commandButton
-                            id="btnProcessServices#{r.id}"
+                            id="btnProcessServices"
                             title="Process Services/Investigations"
                             value="Process Services/Investigations"
                             class="ui-button-success m-1"
@@ -85,7 +85,7 @@
                             rendered="#{webUserController.hasPrivilege('InwardServiceItemRequestApproval') and not empty itemRequestApprovalController.getRemainingServiceLines(r)}"/>
 
                         <p:commandButton
-                            id="btnProcessInventory#{r.id}"
+                            id="btnProcessInventory"
                             title="Process Inventory Items"
                             value="Process Inventory Items"
                             class="ui-button-success m-1"
@@ -95,7 +95,7 @@
                             rendered="#{webUserController.hasPrivilege('InwardServiceItemRequestApproval') and not empty itemRequestApprovalController.getRemainingInventoryLines(r)}"/>
 
                         <p:commandButton
-                            id="btnOpenReject#{r.id}"
+                            id="btnOpenReject"
                             title="Reject Remaining Lines"
                             class="ui-button-danger m-1"
                             icon="fa fa-times"

@@ -535,6 +535,8 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         parameters.put("itemId", itemId);
         parameters.put("stockMin", qty);
 
+        parameters.put("today", new Date());
+
         String sql = "SELECT NEW com.divudi.core.data.dto.StockDTO("
                 + "i.id, i.itemBatch.id, i.itemBatch.item.id, i.itemBatch.item.name, i.itemBatch.item.code, "
                 + "i.itemBatch.item.name, i.itemBatch.retailsaleRate, i.stock, i.itemBatch.dateOfExpire) "
@@ -542,6 +544,7 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
                 + "WHERE i.stock >= :stockMin "
                 + "AND i.department = :department "
                 + "AND i.itemBatch.item.id = :itemId "
+                + "AND (i.itemBatch.dateOfExpire IS NULL OR i.itemBatch.dateOfExpire >= :today) "
                 + "ORDER BY i.itemBatch.dateOfExpire";
 
         @SuppressWarnings("unchecked")

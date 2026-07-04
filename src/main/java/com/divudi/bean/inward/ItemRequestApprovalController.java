@@ -65,6 +65,17 @@ public class ItemRequestApprovalController implements Serializable {
     private String rejectionReason;
 
     /**
+     * Per-request-id cache of the remaining (still-pending) service and
+     * inventory lines, populated once per {@link #loadPendingRequests()} call.
+     * The pending queue page's datatable and per-row button {@code rendered}
+     * attributes each re-evaluate these lists via EL, so without caching a
+     * page with N requests x M lines re-runs the JPQL fulfillment check
+     * (isLineFulfilled) several times per line per render.
+     */
+    private final Map<Long, List<BillItem>> remainingServiceLinesCache = new HashMap<>();
+    private final Map<Long, List<BillItem>> remainingInventoryLinesCache = new HashMap<>();
+
+    /**
      * Navigation method: loads the pending-request list for the current
      * department and returns the redirect outcome. Initialization happens
      * here (not in a f:viewAction) because this bean is @SessionScoped.
@@ -75,6 +86,9 @@ public class ItemRequestApprovalController implements Serializable {
     }
 
     public void loadPendingRequests() {
+        remainingServiceLinesCache.clear();
+        remainingInventoryLinesCache.clear();
+
         Map<String, Object> params = new HashMap<>();
         String jpql = "select b from Bill b where b.retired=false and b.toDepartment=:toDep "
                 + "and b.billType=:bTp and b.cancelled=false "
@@ -191,29 +205,40 @@ public class ItemRequestApprovalController implements Serializable {
         return lines != null ? lines : new ArrayList<BillItem>();
     }
 
-    private boolean isServiceOrInvestigationItem(com.divudi.core.entity.Item item) {
-        return item instanceof com.divudi.core.entity.Service
-                || item instanceof com.divudi.core.entity.lab.Investigation;
-    }
-
     public List<BillItem> getRemainingServiceLines(Bill request) {
-        List<BillItem> remaining = new ArrayList<>();
-        for (BillItem line : getRequestLines(request)) {
-            if (isServiceOrInvestigationItem(line.getItem()) && !itemRequestApiService.isLineFulfilled(line)) {
-                remaining.add(line);
-            }
-        }
-        return remaining;
+        computeRemainingLinesIfAbsent(request);
+        return request != null && request.getId() != null
+                ? remainingServiceLinesCache.get(request.getId()) : new ArrayList<BillItem>();
     }
 
     public List<BillItem> getRemainingInventoryLines(Bill request) {
-        List<BillItem> remaining = new ArrayList<>();
+        computeRemainingLinesIfAbsent(request);
+        return request != null && request.getId() != null
+                ? remainingInventoryLinesCache.get(request.getId()) : new ArrayList<BillItem>();
+    }
+
+    /**
+     * Splits a request's still-pending lines into service/investigation vs.
+     * inventory buckets in a single pass and caches both, keyed by request id.
+     */
+    private void computeRemainingLinesIfAbsent(Bill request) {
+        if (request == null || request.getId() == null || remainingServiceLinesCache.containsKey(request.getId())) {
+            return;
+        }
+        List<BillItem> remainingServices = new ArrayList<>();
+        List<BillItem> remainingInventory = new ArrayList<>();
         for (BillItem line : getRequestLines(request)) {
-            if (!isServiceOrInvestigationItem(line.getItem()) && !itemRequestApiService.isLineFulfilled(line)) {
-                remaining.add(line);
+            if (itemRequestApiService.isLineFulfilled(line)) {
+                continue;
+            }
+            if (ItemRequestApiService.isServiceItem(line.getItem())) {
+                remainingServices.add(line);
+            } else {
+                remainingInventory.add(line);
             }
         }
-        return remaining;
+        remainingServiceLinesCache.put(request.getId(), remainingServices);
+        remainingInventoryLinesCache.put(request.getId(), remainingInventory);
     }
 
     public List<Bill> getPendingRequests() {

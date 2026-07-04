@@ -270,6 +270,9 @@ public class ItemRequestApiService implements Serializable {
     public Bill rejectRemainingLines(Long requestBillId, List<BillItem> linesToReject, String reason, WebUser rejectingUser, Department rejectingDepartment) {
         Bill requestBill = fetchRequestBillOrThrow(requestBillId);
         assertRequestBelongsToDepartment(requestBill, rejectingDepartment, "reject");
+        if (requestBill.isCancelled()) {
+            throw new IllegalStateException("Request is cancelled, cannot reject lines");
+        }
 
         for (BillItem line : linesToReject) {
             if (line.getBill() == null || !line.getBill().equals(requestBill)) {
@@ -453,8 +456,12 @@ public class ItemRequestApiService implements Serializable {
      * Services / Investigations approval path as real services. Anything else
      * passed to this request/approval flow is treated as an INVENTORY (stock)
      * item, e.g. Water Bottle/Tea/Milk/Sugar.
+     *
+     * <p>Shared with {@link com.divudi.bean.inward.ItemRequestApprovalController}
+     * so the pending-queue "remaining lines" split and this API's per-line
+     * {@code itemType} reporting cannot drift apart.
      */
-    private boolean isServiceItem(Item item) {
+    public static boolean isServiceItem(Item item) {
         return item instanceof Service || item instanceof Investigation;
     }
 
