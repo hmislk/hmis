@@ -70,7 +70,7 @@
                             </p:panel>
                         </h:panelGroup>
 
-                        <p:panel rendered="#{pharmacyIssueController.toDepartment ne null and pharmacyIssueController.toDepartment ne sessionController.loggedUser.department}">
+                        <p:panel styleClass="sticky-panel-header" rendered="#{pharmacyIssueController.toDepartment ne null and pharmacyIssueController.toDepartment ne sessionController.loggedUser.department}">
                             <f:facet name="header">
                                 <div class="d-flex justify-content-between align-items-center w-100">
 
@@ -388,6 +388,8 @@
                                             var="bi"
                                             rowIndexVar="s"
                                             editable="true"
+                                            stickyHeader="true"
+                                            styleClass="p-datatable-sm"
                                             sortBy="#{bi.searialNo}" >
 
                                             <p:column headerText="Item" style="padding: 6px; width:300px;">
