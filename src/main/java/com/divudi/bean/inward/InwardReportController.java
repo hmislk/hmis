@@ -76,6 +76,7 @@ import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.entity.inward.PatientTransferRequest;
 import com.divudi.core.data.inward.TheatreOccupancyStatus;
 import com.divudi.core.data.inward.PatientEncounterComponentType;
+import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.PatientTransferRequestFacade;
 import java.io.Serializable;
@@ -174,6 +175,8 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import com.lowagie.text.Image;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import javax.imageio.ImageIO;
 
 /**
@@ -218,7 +221,7 @@ public class InwardReportController implements Serializable {
     @Inject
     InwardBeanController inwardBeanController;
     @Inject
-    EnumController enumController;;
+    EnumController enumController;
     @Inject
     RoomCategoryController roomCategoryController;
 
@@ -7701,57 +7704,93 @@ public class InwardReportController implements Serializable {
             return "";
         }
         switch (status) {
-            case SCHEDULED: return "Scheduled";
-            case SENT_TO_THEATRE: return "Sent to Theatre";
-            case RECEIVED_IN_THEATRE: return "Received in Theatre";
-            case IN_THEATRE: return "In Theatre";
-            case PROCEDURE_COMPLETED: return "Procedure Completed";
-            case IN_RECOVERY: return "In Recovery";
-            case RETURNED_TO_WARD: return "Returned to Ward";
-            case CANCELLED: return "Cancelled";
-            default: return status.name();
+            case SCHEDULED:
+                return "Scheduled";
+            case SENT_TO_THEATRE:
+                return "Sent to Theatre";
+            case RECEIVED_IN_THEATRE:
+                return "Received in Theatre";
+            case IN_THEATRE:
+                return "In Theatre";
+            case PROCEDURE_COMPLETED:
+                return "Procedure Completed";
+            case IN_RECOVERY:
+                return "In Recovery";
+            case RETURNED_TO_WARD:
+                return "Returned to Ward";
+            case CANCELLED:
+                return "Cancelled";
+            default:
+                return status.name();
         }
     }
 
+    private static final int IN_CLAUSE_BATCH_SIZE = 1000;
+
+    
     public void processSurgeryCostEstimationReport() {
         surgeryCostEstimationList = new ArrayList<>();
+
         if (fromDate == null || toDate == null) {
             JsfUtil.addErrorMessage("Please select both From and To dates.");
             return;
         }
 
-        Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder();
+        List<SurgeryCostEstimationDTO> list = fetchBaseSurgeryCostEstimationList();
+        if (list == null || list.isEmpty()) {
+            JsfUtil.addErrorMessage("No records found.");
+            return;
+        }
 
-        jpql.append("SELECT new com.divudi.core.data.dto.SurgeryCostEstimationDTO(")
-            .append("  sb.id, proc.id, ")
-            .append("  admission.patient.phn, admission.patient.person.name, ")
-            .append("  admission.bhtNo, admission.dateOfAdmission, ")
-            .append("  room.name, ")
-            .append("  item.name, cat.name ")
-            .append(") ")
-            .append("FROM BilledBill sb ")
-            .append("JOIN sb.procedure proc ")
-            .append("JOIN proc.item item ")
-            .append("LEFT JOIN item.category cat ")
-            .append("JOIN sb.patientEncounter admission ")
-            .append("LEFT JOIN admission.currentPatientRoom room ")
-            .append("WHERE sb.retired = false ")
-            .append("  AND sb.cancelled = false ")
-            .append("  AND sb.billType = :surgeryBillType ")
-            .append("  AND admission.discharged = true ")
-            .append("  AND admission.dateOfDischarge BETWEEN :fromDate AND :toDate ");
+        ReportLookups lookups = buildLookups(list);
+
+        enrichSurgeonsAndAssistants(lookups.procIds, lookups.dtosByProcId);
+        enrichOtRoomAndStatus(lookups.billIds, lookups.dtoByBillId);
+        enrichChildBillCharges(lookups.billIds, lookups.dtoByBillId);
+        enrichRoomCharges(lookups.peIds, lookups.dtosByPeId);
+        enrichDrugCharges(lookups.peIds, lookups.dtosByPeId);
+
+        computeTotals(list);
+
+        surgeryCostEstimationList = list;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<SurgeryCostEstimationDTO> fetchBaseSurgeryCostEstimationList() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder(1024);
+
+        jpql.append("SELECT new com.divudi.core.data.dto.SurgeryCostEstimationDTO( ")
+                .append("sb.id, proc.id, admission.patient.phn, admission.patient.person.name, ")
+                .append("admission.bhtNo, admission.dateOfAdmission, room.name, ")
+                .append("item.name, cat.name, admission.id) ")
+                .append("FROM BilledBill sb ")
+                .append("JOIN sb.procedure proc ")
+                .append("JOIN proc.item item ")
+                .append("LEFT JOIN item.category cat ")
+                .append("JOIN sb.patientEncounter admission ")
+                .append("LEFT JOIN admission.currentPatientRoom room ")
+                .append("WHERE sb.retired = false ")
+                .append("AND sb.cancelled = false ")
+                .append("AND sb.billType = :surgeryBillType ")
+                .append("AND admission.discharged = true ")
+                .append("AND admission.dateOfDischarge BETWEEN :fromDate AND :toDate ")
+                .append("AND NOT EXISTS ( ")
+                .append("  SELECT cb.id FROM CancelledBill cb ")
+                .append("  WHERE cb.retired = false AND cb.billedBill = sb) ");
 
         params.put("surgeryBillType", BillType.SurgeryBill);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
 
-        jpql.append("  AND NOT EXISTS ( ")
-            .append("      SELECT cb.id FROM CancelledBill cb ")
-            .append("      WHERE cb.retired = false ")
-            .append("        AND cb.billedBill = sb ")
-            .append("  ) ");
+        appendOptionalFilters(jpql, params);
 
+        jpql.append(" ORDER BY admission.dateOfDischarge ASC ");
+
+        return (List<SurgeryCostEstimationDTO>) billFacade.findDTOsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
+    private void appendOptionalFilters(StringBuilder jpql, Map<String, Object> params) {
         if (institution != null) {
             jpql.append(" AND sb.institution = :institution ");
             params.put("institution", institution);
@@ -7773,190 +7812,359 @@ public class InwardReportController implements Serializable {
             params.put("surgeryItem", surgeryItem);
         }
 
-        if (selectedPatient != null) {
-            String searchTerm = null;
-            if (selectedPatient.getPatientName() != null
-                    && !selectedPatient.getPatientName().trim().isEmpty()) {
-                searchTerm = selectedPatient.getPatientName().trim().toLowerCase();
-            } else if (selectedPatient.getPhn() != null
-                    && !selectedPatient.getPhn().trim().isEmpty()) {
-                searchTerm = selectedPatient.getPhn().trim().toLowerCase();
-            }
-            if (searchTerm != null) {
-                jpql.append("AND (LOWER(admission.patient.person.name) LIKE :pn ")
-                        .append("OR LOWER(admission.patient.phn) LIKE :pn) ");
-                params.put("pn", "%" + searchTerm + "%");
-            }
+        String patientSearchTerm = resolvePatientSearchTerm();
+        if (patientSearchTerm != null) {
+            jpql.append(" AND (LOWER(admission.patient.person.name) LIKE :pn ")
+                    .append("     OR LOWER(admission.patient.phn) LIKE :pn) ");
+            params.put("pn", "%" + patientSearchTerm + "%");
         }
+
         if (selectedAdmitDoctor != null) {
             jpql.append(" AND admission.referringDoctor = :selectedAdmitDoctor ");
             params.put("selectedAdmitDoctor", selectedAdmitDoctor);
         }
         if (selectedSurgeon != null) {
             jpql.append(" AND EXISTS (SELECT ec.id FROM EncounterComponent ec ")
-                .append("   WHERE ec.patientEncounter = proc AND ec.retired = false ")
-                .append("     AND ec.patientEncounterComponentType = com.divudi.core.data.inward.PatientEncounterComponentType.Performed_By ")
-                .append("     AND ec.staff = :selectedSurgeon) ");
+                    .append("   WHERE ec.patientEncounter = proc AND ec.retired = false ")
+                    .append("     AND ec.patientEncounterComponentType = com.divudi.core.data.inward.PatientEncounterComponentType.Performed_By ")
+                    .append("     AND ec.staff = :selectedSurgeon) ");
             params.put("selectedSurgeon", selectedSurgeon);
         }
         if (selectedAssistantSurgeon != null) {
             jpql.append(" AND EXISTS (SELECT ec.id FROM EncounterComponent ec ")
-                .append("   WHERE ec.patientEncounter = proc AND ec.retired = false ")
-                .append("     AND ec.patientEncounterComponentType = com.divudi.core.data.inward.PatientEncounterComponentType.Assisted_by ")
-                .append("     AND ec.staff = :selectedAssistantSurgeon) ");
+                    .append("   WHERE ec.patientEncounter = proc AND ec.retired = false ")
+                    .append("     AND ec.patientEncounterComponentType = com.divudi.core.data.inward.PatientEncounterComponentType.Assisted_by ")
+                    .append("     AND ec.staff = :selectedAssistantSurgeon) ");
             params.put("selectedAssistantSurgeon", selectedAssistantSurgeon);
         }
         if (selectedOtRoom != null) {
             jpql.append(" AND EXISTS (SELECT ptr.id FROM PatientTransferRequest ptr ")
-                .append("   WHERE ptr.surgeryBill = sb AND ptr.retired = false ")
-                .append("     AND ptr.toRoomFacilityCharge = :selectedOtRoom) ");
+                    .append("   WHERE ptr.surgeryBill = sb AND ptr.retired = false ")
+                    .append("     AND ptr.toRoomFacilityCharge = :selectedOtRoom) ");
             params.put("selectedOtRoom", selectedOtRoom);
         }
         if (selectedSurgeryStatus != null) {
             jpql.append(" AND EXISTS (SELECT ptr.id FROM PatientTransferRequest ptr ")
-                .append("   WHERE ptr.surgeryBill = sb AND ptr.retired = false ")
-                .append("     AND ptr.theatreOccupancyStatus = :selectedSurgeryStatus) ");
+                    .append("   WHERE ptr.surgeryBill = sb AND ptr.retired = false ")
+                    .append("     AND ptr.theatreOccupancyStatus = :selectedSurgeryStatus) ");
             params.put("selectedSurgeryStatus", selectedSurgeryStatus);
         }
+    }
 
-        jpql.append(" ORDER BY admission.dateOfDischarge ASC ");
+    private String resolvePatientSearchTerm() {
+        if (selectedPatient == null) {
+            return null;
+        }
+        if (selectedPatient.getPatientName() != null && !selectedPatient.getPatientName().trim().isEmpty()) {
+            return selectedPatient.getPatientName().trim().toLowerCase();
+        }
+        if (selectedPatient.getPhn() != null && !selectedPatient.getPhn().trim().isEmpty()) {
+            return selectedPatient.getPhn().trim().toLowerCase();
+        }
+        return null;
+    }
 
-        List<SurgeryCostEstimationDTO> list = (List<SurgeryCostEstimationDTO>) billFacade.findDTOsByJpql(
-                jpql.toString(), params, TemporalType.TIMESTAMP);
+    private static final class ReportLookups {
 
-        if (list == null || list.isEmpty()) {
-            JsfUtil.addErrorMessage("No records found.");
+        final Set<Long> billIds = new LinkedHashSet<>();
+        final Set<Long> procIds = new LinkedHashSet<>();
+        final Set<Long> peIds = new LinkedHashSet<>();
+        final Map<Long, SurgeryCostEstimationDTO> dtoByBillId = new HashMap<>();
+        final Map<Long, List<SurgeryCostEstimationDTO>> dtosByProcId = new HashMap<>();
+        final Map<Long, List<SurgeryCostEstimationDTO>> dtosByPeId = new HashMap<>();
+    }
+
+    private ReportLookups buildLookups(List<SurgeryCostEstimationDTO> list) {
+        ReportLookups lookups = new ReportLookups();
+        for (SurgeryCostEstimationDTO dto : list) {
+            initializeDtoDefaults(dto);
+
+            lookups.billIds.add(dto.getSurgeryBillId());
+            lookups.procIds.add(dto.getProcedureId());
+            lookups.dtoByBillId.put(dto.getSurgeryBillId(), dto);
+            lookups.dtosByProcId.computeIfAbsent(dto.getProcedureId(), k -> new ArrayList<>()).add(dto);
+
+            if (dto.getAdmissionId() != null) {
+                lookups.peIds.add(dto.getAdmissionId());
+                lookups.dtosByPeId.computeIfAbsent(dto.getAdmissionId(), k -> new ArrayList<>()).add(dto);
+            }
+        }
+        return lookups;
+    }
+
+    private void initializeDtoDefaults(SurgeryCostEstimationDTO dto) {
+        dto.setTotalHospitalCharge(0.0);
+        dto.setProfessionalCharge(0.0);
+        dto.setTotalAmount(0.0);
+        dto.setBillDiscount(0.0);
+        dto.setNetAmount(0.0);
+        dto.setRoomCharges(0.0);
+        dto.setDrugCharges(0.0);
+    }
+
+    private void enrichSurgeonsAndAssistants(Set<Long> procIds,
+            Map<Long, List<SurgeryCostEstimationDTO>> dtosByProcId) {
+        if (procIds.isEmpty()) {
             return;
         }
 
-        List<Long> billIds = new ArrayList<>();
-        List<Long> procIds = new ArrayList<>();
-        Map<Long, SurgeryCostEstimationDTO> dtoByBillId = new HashMap<>();
-        Map<Long, List<SurgeryCostEstimationDTO>> dtosByProcId = new HashMap<>();
+        String ecJpql = "SELECT ec FROM EncounterComponent ec "
+                + "WHERE ec.retired = false AND ec.patientEncounter.id IN :procIds "
+                + "AND ec.patientEncounterComponentType IN (:perfType, :asstType)";
 
-        for (SurgeryCostEstimationDTO dto : list) {
-            billIds.add(dto.getSurgeryBillId());
-            procIds.add(dto.getProcedureId());
-            dtoByBillId.put(dto.getSurgeryBillId(), dto);
-            
-            if (!dtosByProcId.containsKey(dto.getProcedureId())) {
-                dtosByProcId.put(dto.getProcedureId(), new ArrayList<SurgeryCostEstimationDTO>());
+        for (List<Long> batch : partition(procIds, IN_CLAUSE_BATCH_SIZE)) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("procIds", batch);
+            params.put("perfType", PatientEncounterComponentType.Performed_By);
+            params.put("asstType", PatientEncounterComponentType.Assisted_by);
+
+            List<EncounterComponent> ecList = encounterComponentFacade.findByJpql(ecJpql, params);
+            if (ecList == null) {
+                continue;
             }
-            dtosByProcId.get(dto.getProcedureId()).add(dto);
 
-            dto.setTotalHospitalCharge(0.0);
-            dto.setProfessionalCharge(0.0);
-            dto.setTotalAmount(0.0);
-            dto.setBillDiscount(0.0);
-            dto.setNetAmount(0.0);
-        }
-
-        // 1. Enrich Surgeons & Assistants
-        if (!procIds.isEmpty()) {
-            String ecJpql = "SELECT ec FROM EncounterComponent ec "
-                    + "WHERE ec.retired = false AND ec.patientEncounter.id IN :procIds "
-                    + "AND ec.patientEncounterComponentType IN (:perfType, :asstType)";
-            Map<String, Object> ecParams = new HashMap<>();
-            ecParams.put("procIds", procIds);
-            ecParams.put("perfType", PatientEncounterComponentType.Performed_By);
-            ecParams.put("asstType", PatientEncounterComponentType.Assisted_by);
-            List<EncounterComponent> ecList = encounterComponentFacade.findByJpql(ecJpql, ecParams);
-
-            if (ecList != null) {
-                for (EncounterComponent ec : ecList) {
-                    Long procId = ec.getPatientEncounter().getId();
-                    List<SurgeryCostEstimationDTO> targetDtos = dtosByProcId.get(procId);
-                    if (targetDtos != null) {
-                        String staffName = "";
-                        if (ec.getStaff() != null) {
-                            if (ec.getStaff().getPerson() != null) {
-                                staffName = ec.getStaff().getPerson().getNameWithTitle();
-                            } else {
-                                staffName = ec.getStaff().getName();
-                            }
-                        }
-                        for (SurgeryCostEstimationDTO dto : targetDtos) {
-                            if (ec.getPatientEncounterComponentType() == PatientEncounterComponentType.Performed_By) {
-                                dto.setSurgeonName(staffName);
-                            } else if (ec.getPatientEncounterComponentType() == PatientEncounterComponentType.Assisted_by) {
-                                dto.setAssistantSurgeonName(staffName);
-                            }
-                        }
+            for (EncounterComponent ec : ecList) {
+                Long procId = ec.getPatientEncounter().getId();
+                List<SurgeryCostEstimationDTO> targetDtos = dtosByProcId.get(procId);
+                if (targetDtos == null) {
+                    continue;
+                }
+                String staffName = resolveStaffName(ec);
+                boolean isPerformer = ec.getPatientEncounterComponentType() == PatientEncounterComponentType.Performed_By;
+                for (SurgeryCostEstimationDTO dto : targetDtos) {
+                    if (isPerformer) {
+                        dto.setSurgeonName(staffName);
+                    } else if (ec.getPatientEncounterComponentType() == PatientEncounterComponentType.Assisted_by) {
+                        dto.setAssistantSurgeonName(staffName);
                     }
                 }
             }
         }
+    }
 
-        // 2. Enrich OT Room & Surgery Status
-        if (!billIds.isEmpty()) {
-            String ptrJpql = "SELECT ptr FROM PatientTransferRequest ptr "
-                    + "WHERE ptr.retired = false AND ptr.surgeryBill.id IN :billIds "
-                    + "ORDER BY ptr.id ASC";
-            Map<String, Object> ptrParams = new HashMap<>();
-            ptrParams.put("billIds", billIds);
-            List<PatientTransferRequest> ptrList = patientTransferRequestFacade.findByJpql(ptrJpql, ptrParams);
+    private String resolveStaffName(EncounterComponent ec) {
+        if (ec.getStaff() == null) {
+            return "";
+        }
+        if (ec.getStaff().getPerson() != null) {
+            return ec.getStaff().getPerson().getNameWithTitle();
+        }
+        return ec.getStaff().getName();
+    }
 
-            if (ptrList != null) {
-                Map<Long, PatientTransferRequest> latestPtrMap = new HashMap<>();
-                for (PatientTransferRequest ptr : ptrList) {
-                    if (ptr.getSurgeryBill() != null) {
-                        latestPtrMap.put(ptr.getSurgeryBill().getId(), ptr);
-                    }
+    private void enrichOtRoomAndStatus(Set<Long> billIds,
+            Map<Long, SurgeryCostEstimationDTO> dtoByBillId) {
+        if (billIds.isEmpty()) {
+            return;
+        }
+
+        String ptrJpql = "SELECT ptr FROM PatientTransferRequest ptr "
+                + "WHERE ptr.retired = false "
+                + "AND ptr.surgeryBill.id IN :billIds "
+                + "AND ptr.id = ( "
+                + "    SELECT MAX(ptr2.id) FROM PatientTransferRequest ptr2 "
+                + "    WHERE ptr2.retired = false AND ptr2.surgeryBill = ptr.surgeryBill "
+                + ")";
+
+        for (List<Long> batch : partition(billIds, IN_CLAUSE_BATCH_SIZE)) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("billIds", batch);
+
+            List<PatientTransferRequest> latestPtrs = patientTransferRequestFacade.findByJpql(ptrJpql, params);
+            if (latestPtrs == null) {
+                continue;
+            }
+
+            for (PatientTransferRequest ptr : latestPtrs) {
+                if (ptr.getSurgeryBill() == null) {
+                    continue;
                 }
-
-                for (Map.Entry<Long, PatientTransferRequest> entry : latestPtrMap.entrySet()) {
-                    SurgeryCostEstimationDTO dto = dtoByBillId.get(entry.getKey());
-                    if (dto != null) {
-                        PatientTransferRequest ptr = entry.getValue();
-                        if (ptr.getToRoomFacilityCharge() != null) {
-                            dto.setOtRoomName(ptr.getToRoomFacilityCharge().getName());
-                        }
-                        if (ptr.getTheatreOccupancyStatus() != null) {
-                            dto.setSurgeryStatusLabel(getTheatreOccupancyStatusLabel(ptr.getTheatreOccupancyStatus()));
-                        }
-                    }
+                SurgeryCostEstimationDTO dto = dtoByBillId.get(ptr.getSurgeryBill().getId());
+                if (dto == null) {
+                    continue;
+                }
+                if (ptr.getToRoomFacilityCharge() != null) {
+                    dto.setOtRoomName(ptr.getToRoomFacilityCharge().getName());
+                }
+                if (ptr.getTheatreOccupancyStatus() != null) {
+                    dto.setSurgeryStatusLabel(getTheatreOccupancyStatusLabel(ptr.getTheatreOccupancyStatus()));
                 }
             }
         }
+    }
 
-        // 3. Aggregate Child Bills (Charges)
-        if (!billIds.isEmpty()) {
-            String childJpql = "SELECT b FROM Bill b "
-                    + "WHERE b.retired = false AND b.cancelled = false "
-                    + "AND b.forwardReferenceBill.id IN :billIds";
-            Map<String, Object> childParams = new HashMap<>();
-            childParams.put("billIds", billIds);
-            List<Bill> childBills = billFacade.findByJpql(childJpql, childParams);
+    private void enrichChildBillCharges(Set<Long> billIds,
+            Map<Long, SurgeryCostEstimationDTO> dtoByBillId) {
+        if (billIds.isEmpty()) {
+            return;
+        }
 
-            if (childBills != null) {
-                for (Bill childBill : childBills) {
-                    Long parentId = childBill.getForwardReferenceBill().getId();
-                    SurgeryCostEstimationDTO dto = dtoByBillId.get(parentId);
-                    if (dto != null) {
-                        double net = childBill.getNetTotal();
-                        double discount = childBill.getDiscount();
+        String childJpql = "SELECT b.forwardReferenceBill.id, b.surgeryBillType, SUM(b.netTotal), SUM(b.discount) "
+                + "FROM Bill b WHERE b.retired = false AND b.cancelled = false "
+                + "AND b.forwardReferenceBill.id IN :billIds "
+                + "GROUP BY b.forwardReferenceBill.id, b.surgeryBillType";
 
-                        if (childBill.getSurgeryBillType() == com.divudi.core.data.inward.SurgeryBillType.ProfessionalFee) {
-                            dto.setProfessionalCharge(dto.getProfessionalCharge() + net);
-                        } else if (childBill.getSurgeryBillType() == com.divudi.core.data.inward.SurgeryBillType.Service
-                                || childBill.getSurgeryBillType() == com.divudi.core.data.inward.SurgeryBillType.PharmacyItem
-                                || childBill.getSurgeryBillType() == com.divudi.core.data.inward.SurgeryBillType.TimedService) {
-                            dto.setTotalHospitalCharge(dto.getTotalHospitalCharge() + net);
-                        }
-                        dto.setBillDiscount(dto.getBillDiscount() + discount);
-                    }
+        for (List<Long> batch : partition(billIds, IN_CLAUSE_BATCH_SIZE)) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("billIds", batch);
+
+            List<Object[]> childBillsAgg = billFacade.findAggregates(childJpql, params);
+            if (childBillsAgg == null) {
+                continue;
+            }
+
+            for (Object[] row : childBillsAgg) {
+                Long parentId = (Long) row[0];
+                SurgeryBillType sbType = (SurgeryBillType) row[1];
+                double net = toDouble(row[2]);
+                double discount = toDouble(row[3]);
+
+                SurgeryCostEstimationDTO dto = dtoByBillId.get(parentId);
+                if (dto == null) {
+                    continue;
+                }
+                if (sbType == SurgeryBillType.ProfessionalFee) {
+                    dto.setProfessionalCharge(dto.getProfessionalCharge() + net);
+                } else if (sbType == SurgeryBillType.Service
+                        || sbType == SurgeryBillType.PharmacyItem
+                        || sbType == SurgeryBillType.TimedService) {
+                    dto.setTotalHospitalCharge(dto.getTotalHospitalCharge() + net);
+                }
+                dto.setBillDiscount(dto.getBillDiscount() + discount);
+            }
+        }
+    }
+
+    private void enrichRoomCharges(Set<Long> peIds,
+            Map<Long, List<SurgeryCostEstimationDTO>> dtosByPeId) {
+        if (peIds.isEmpty()) {
+            return;
+        }
+
+        String roomJpql
+                = "SELECT p.patientEncounter.id, "
+                + " SUM(p.calculatedRoomCharge - p.discountRoomCharge) "
+                + "   + SUM(p.calculatedMoCharge - p.discountMoCharge) "
+                + "   + SUM(p.calculatedNursingCharge - p.discountNursingCharge) "
+                + "   + SUM(p.calculatedMaintainCharge - p.discountMaintainCharge) "
+                + "   + SUM(p.calculatedMedicalCareCharge - p.discountMedicalCareCharge) "
+                + "   + SUM(p.calculatedAdministrationCharge - p.discountAdministrationCharge) "
+                + "   + SUM(p.calculatedLinenCharge - p.discountLinenCharge) "
+                + "   + SUM(COALESCE(( "
+                + "         SELECT SUM(t.calculatedCharge - t.discountCharge) "
+                + "         FROM PatientRoomTimedItemCharge t "
+                + "         WHERE t.patientRoom = p), 0)) "
+                + "FROM PatientRoom p "
+                + "WHERE p.retired = false AND p.patientEncounter.id IN :peIds "
+                + "GROUP BY p.patientEncounter.id";
+
+        for (List<Long> batch : partition(peIds, IN_CLAUSE_BATCH_SIZE)) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("peIds", batch);
+
+            List<Object[]> roomList = billFacade.findAggregates(roomJpql, params);
+            if (roomList == null) {
+                continue;
+            }
+
+            for (Object[] row : roomList) {
+                Long peId = (Long) row[0];
+                double totalRoomCharge = toDouble(row[1]);
+
+                List<SurgeryCostEstimationDTO> dtos = dtosByPeId.get(peId);
+                if (dtos == null) {
+                    continue;
+                }
+                for (SurgeryCostEstimationDTO dto : dtos) {
+                    dto.setRoomCharges(dto.getRoomCharges() + totalRoomCharge);
                 }
             }
         }
+    }
 
+    private static final List<BillTypeAtomic> DRUG_CHARGE_BILL_TYPES = Arrays.asList(
+            BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+            BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
+            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
+    );
+
+    private void enrichDrugCharges(Set<Long> peIds,
+            Map<Long, List<SurgeryCostEstimationDTO>> dtosByPeId) {
+        if (peIds.isEmpty()) {
+            return;
+        }
+
+        String drugJpql = "SELECT pb.patientEncounter.id, SUM(pb.netTotal) "
+                + "FROM Bill pb "
+                + "WHERE pb.retired = false "
+                + "AND pb.billTypeAtomic IN :btas "
+                + "AND pb.patientEncounter.id IN :peIds "
+                + "GROUP BY pb.patientEncounter.id";
+
+        for (List<Long> batch : partition(peIds, IN_CLAUSE_BATCH_SIZE)) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("peIds", batch);
+            params.put("btas", DRUG_CHARGE_BILL_TYPES);
+
+            List<Object[]> drugList = billFacade.findAggregates(drugJpql, params);
+            if (drugList == null) {
+                continue;
+            }
+
+            for (Object[] row : drugList) {
+                Long peId = (Long) row[0];
+                double drugVal = toDouble(row[1]);
+
+                List<SurgeryCostEstimationDTO> dtos = dtosByPeId.get(peId);
+                if (dtos == null) {
+                    continue;
+                }
+                for (SurgeryCostEstimationDTO dto : dtos) {
+                    dto.setDrugCharges(drugVal);
+                }
+            }
+        }
+    }
+
+    private void computeTotals(List<SurgeryCostEstimationDTO> list) {
         for (SurgeryCostEstimationDTO dto : list) {
             double net = dto.getTotalHospitalCharge() + dto.getProfessionalCharge();
             double total = net + dto.getBillDiscount();
             dto.setNetAmount(net);
             dto.setTotalAmount(total);
         }
+    }
 
-        surgeryCostEstimationList = list;
+
+    private static double toDouble(Object value) {
+        return value instanceof Number ? ((Number) value).doubleValue() : 0.0;
+    }
+
+    private static List<List<Long>> partition(Collection<Long> ids, int batchSize) {
+        List<List<Long>> batches = new ArrayList<>();
+        List<Long> current = new ArrayList<>(batchSize);
+        for (Long id : ids) {
+            current.add(id);
+            if (current.size() == batchSize) {
+                batches.add(current);
+                current = new ArrayList<>(batchSize);
+            }
+        }
+        if (!current.isEmpty()) {
+            batches.add(current);
+        }
+        return batches;
     }
 
     public void downloadSurgeryCostEstimationExcel() {
@@ -8052,7 +8260,9 @@ public class InwardReportController implements Serializable {
             infoRow1.createCell(4).setCellValue(toDate != null ? sdf.format(toDate) : "");
             for (int col = 0; col < 6; col++) {
                 Cell c = infoRow1.getCell(col);
-                if (c != null) c.setCellStyle(infoStyle);
+                if (c != null) {
+                    c.setCellStyle(infoStyle);
+                }
             }
 
             rowIdx++; // Blank row
@@ -8090,8 +8300,13 @@ public class InwardReportController implements Serializable {
                 row.createCell(6).setCellValue(dto.getSurgeonName());
                 row.createCell(7).setCellValue(dto.getSurgeryTypeName());
                 row.createCell(8).setCellValue(dto.getServiceName());
-                row.createCell(9).setCellValue("N/A");
-                row.createCell(10).setCellValue("N/A");
+                Cell c9 = row.createCell(9);
+                c9.setCellValue(dto.getRoomCharges() != null ? dto.getRoomCharges() : 0.0);
+                c9.setCellStyle(numberStyle);
+
+                Cell c10 = row.createCell(10);
+                c10.setCellValue(dto.getDrugCharges() != null ? dto.getDrugCharges() : 0.0);
+                c10.setCellStyle(numberStyle);
 
                 Cell c11 = row.createCell(11);
                 c11.setCellValue(dto.getTotalHospitalCharge() != null ? dto.getTotalHospitalCharge() : 0.0);

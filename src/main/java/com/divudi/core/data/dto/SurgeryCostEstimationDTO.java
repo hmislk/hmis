@@ -36,6 +36,24 @@ public class SurgeryCostEstimationDTO implements Serializable {
     private Double billDiscount;
     private Double netAmount;
 
+    private Long admissionId;
+    
+    // New constructor matching optimized JPQL projection
+    public SurgeryCostEstimationDTO(Long surgeryBillId, Long procedureId, String phn, String patientName,
+                                    String admissionNo, Date admissionDate, String bedNo,
+                                    String serviceName, String surgeryTypeName, Long admissionId) {
+        this.surgeryBillId = surgeryBillId;
+        this.procedureId = procedureId;
+        this.phn = phn;
+        this.patientName = patientName;
+        this.admissionNo = admissionNo;
+        this.admissionDate = admissionDate;
+        this.bedNo = bedNo;
+        this.serviceName = serviceName;
+        this.surgeryTypeName = surgeryTypeName;
+        this.admissionId = admissionId;
+    }
+
     // Constructor matching JPQL projection
     public SurgeryCostEstimationDTO(Long surgeryBillId, Long procedureId, String phn, String patientName,
                                     String admissionNo, Date admissionDate, String bedNo,
@@ -57,6 +75,14 @@ public class SurgeryCostEstimationDTO implements Serializable {
 
     public void setSurgeryBillId(Long surgeryBillId) {
         this.surgeryBillId = surgeryBillId;
+    }
+
+    public Long getAdmissionId() {
+        return admissionId;
+    }
+
+    public void setAdmissionId(Long admissionId) {
+        this.admissionId = admissionId;
     }
 
     public Long getProcedureId() {
