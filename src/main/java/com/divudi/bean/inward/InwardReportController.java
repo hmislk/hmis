@@ -416,6 +416,10 @@ public class InwardReportController implements Serializable {
         this.selectedSurgeryStatus = selectedSurgeryStatus;
     }
 
+    public TheatreOccupancyStatus[] getTheatreOccupancyStatusValues() {
+        return TheatreOccupancyStatus.values();
+    }
+
     public String getSurgeryCostEstimationReportType() {
         return surgeryCostEstimationReportType;
     }

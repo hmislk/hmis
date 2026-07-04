@@ -227,8 +227,15 @@
                                 <h:outputText value="&#xf236;" styleClass="fa mr-2" />
                                 <p:outputLabel value="Surgery Status" for="staus" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="staus" styleClass="w-100 form-control" filter="true">
-                                <f:selectItem itemLabel="All Surgery Status"/>
+                            <p:selectOneMenu id="staus"
+                                            value="#{inwardReportController.selectedSurgeryStatus}"
+                                            styleClass="w-100 form-control"
+                                            filter="true">
+                                <f:selectItem itemLabel="All Surgery Status" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{inwardReportController.theatreOccupancyStatusValues}"
+                                               var="tos"
+                                               itemLabel="#{inwardReportController.getTheatreOccupancyStatusLabel(tos)}"
+                                               itemValue="#{tos}"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20"/>
