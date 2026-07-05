@@ -1247,23 +1247,16 @@ public class InwardReportController implements Serializable {
             return;
         }
 
-        com.lowagie.text.Document document = null;
-        try {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             FacesContext facesContext = FacesContext.getCurrentInstance();
             ExternalContext externalContext = facesContext.getExternalContext();
-            externalContext.responseReset();
-            externalContext.setResponseContentType("application/pdf");
 
             String fileName = "Surgery_Cost_Estimation_"
                     + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
-            externalContext.setResponseHeader("Content-Disposition",
-                    "attachment; filename=\"" + fileName + "\"");
 
-            OutputStream out = externalContext.getResponseOutputStream();
-
-            document = new com.lowagie.text.Document(
+            com.lowagie.text.Document document = new com.lowagie.text.Document(
                     com.lowagie.text.PageSize.A3.rotate(), 15, 15, 30, 20);
-            com.lowagie.text.pdf.PdfWriter.getInstance(document, out);
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
             document.open();
 
             com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
@@ -1324,8 +1317,13 @@ public class InwardReportController implements Serializable {
                 table.addCell(new Phrase(dto.getSurgeonName(), normalFont));
                 table.addCell(new Phrase(dto.getSurgeryTypeName(), normalFont));
                 table.addCell(new Phrase(dto.getServiceName(), normalFont));
-                table.addCell(new Phrase("N/A", normalFont));
-                table.addCell(new Phrase("N/A", normalFont));
+                PdfPCell cRoom = new PdfPCell(new Phrase(df.format(dto.getRoomCharges() != null ? dto.getRoomCharges() : 0.0), normalFont));
+                cRoom.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cRoom);
+
+                PdfPCell cDrug = new PdfPCell(new Phrase(df.format(dto.getDrugCharges() != null ? dto.getDrugCharges() : 0.0), normalFont));
+                cDrug.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cDrug);
 
                 double hosp = dto.getTotalHospitalCharge() != null ? dto.getTotalHospitalCharge() : 0.0;
                 double prof = dto.getProfessionalCharge() != null ? dto.getProfessionalCharge() : 0.0;
@@ -1386,14 +1384,22 @@ public class InwardReportController implements Serializable {
             table.addCell(tgNet);
 
             document.add(table);
+            document.close();
+
+            byte[] pdfBytes = baos.toByteArray();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+            externalContext.setResponseContentLength(pdfBytes.length);
+            externalContext.setResponseHeader("Content-Disposition",
+                    "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            out.write(pdfBytes);
+            out.flush();
             facesContext.responseComplete();
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Failed to generate PDF: " + e.getMessage());
-        } finally {
-            if (document != null) {
-                document.close();
-            }
         }
     }
 
