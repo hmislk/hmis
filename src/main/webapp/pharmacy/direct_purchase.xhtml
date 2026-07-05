@@ -586,15 +586,17 @@
 
                                 <p:column>
                                     <p:commandButton
+                                        id="btnEditItem"
                                         styleClass="ui-button-warning"
                                         style="margin-right:10px"
                                         icon="fas fa-edit"
                                         title="Edit Item"
+                                        disabled="#{pharmacyDirectPurchaseController.bill.completed}"
                                         process="@this"
                                         update=":bill:dlgEditBillItem"
                                         oncomplete="PF('dlgEditBillItem').show()"
                                         action="#{pharmacyDirectPurchaseController.prepareEditBillItem(ph)}" />
-                                    <p:commandButton styleClass="ui-button-danger" icon="fas fa-trash" title="Delete Item" ajax="false" action="#{pharmacyDirectPurchaseController.removeItem(ph)}" />
+                                    <p:commandButton id="btnDeleteItem" styleClass="ui-button-danger" icon="fas fa-trash" title="Delete Item" disabled="#{pharmacyDirectPurchaseController.bill.completed}" ajax="false" action="#{pharmacyDirectPurchaseController.removeItem(ph)}" />
                                 </p:column>
                             </p:dataTable>
 
@@ -777,6 +779,7 @@
                                                 value="Add"
                                                 icon="fas fa-plus"
                                                 class="ui-button-warning w-100"
+                                                disabled="#{pharmacyDirectPurchaseController.bill.completed}"
                                                 action="#{pharmacyDirectPurchaseController.addExpense()}"
                                                 ajax = "false"
                                                 process="billExpenseGrid btnAddExpense @this"
@@ -814,6 +817,7 @@
                                             title="Delete expense"
                                             styleClass="ui-button-danger"
                                             icon="pi pi-trash"
+                                            disabled="#{pharmacyDirectPurchaseController.bill.completed}"
                                             action="#{pharmacyDirectPurchaseController.removeExpense(be)}"
                                             process="@this"
                                             update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId}" />
