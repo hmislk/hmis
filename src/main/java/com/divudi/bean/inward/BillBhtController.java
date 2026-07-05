@@ -72,8 +72,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.ejb.EJB;
@@ -1224,6 +1226,7 @@ public class BillBhtController implements Serializable {
                 temItems = itemApplicationController.getInvestigationsAndServices();
                 break;
         }
+        applyInwardFeeTotals(temItems);
         boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List Inward Items by Department", false);
         if (listItemsByDepartment) {
             fillInwardItemDepartments(temItems);
@@ -1235,6 +1238,51 @@ public class BillBhtController implements Serializable {
         }
 
         return temItems;
+    }
+
+    /**
+     * Overrides the displayed price of each inward item so the list reflects the
+     * fee that will actually be billed. When "Inward Bill Fees are based on the
+     * site" is ON and the logged department has a site, the site fee is shown;
+     * if the item has no site fee, the base fee is shown (matching the
+     * site&rarr;base fallback in {@link #billFeeFromBillItemWithMatrix}). When the
+     * config is OFF, the base fee is shown. Items with no fee show 0.00 and are
+     * blocked from being added in {@link #addToBill()}.
+     */
+    private void applyInwardFeeTotals(List<ItemLight> items) {
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site", false);
+        boolean foreigner = patientEncounter != null && patientEncounter.isForiegner();
+        Institution site = sessionController.getDepartment() != null ? sessionController.getDepartment().getSite() : null;
+
+        List<Long> itemIds = new ArrayList<>();
+        for (ItemLight il : items) {
+            if (il.getId() != null) {
+                itemIds.add(il.getId());
+            }
+        }
+        if (itemIds.isEmpty()) {
+            return;
+        }
+
+        boolean useSiteFees = siteBasedBillFees && site != null;
+        Map<Long, Double> baseTotals = itemFeeManager.fetchInwardFeeTotalsByItemIds(itemIds, null, foreigner);
+        Map<Long, Double> siteTotals = useSiteFees
+                ? itemFeeManager.fetchInwardFeeTotalsByItemIds(itemIds, site, foreigner)
+                : new HashMap<>();
+
+        for (ItemLight il : items) {
+            Double value = null;
+            if (useSiteFees) {
+                Double s = siteTotals.get(il.getId());
+                value = (s != null && s != 0.0) ? s : baseTotals.get(il.getId());
+            } else {
+                value = baseTotals.get(il.getId());
+            }
+            il.setTotal(value != null ? value : 0.0);
+        }
     }
 
     private List<ItemLight> filterItemLightesByDepartment(List<ItemLight> ils, Department dept) {
@@ -1642,7 +1690,9 @@ public class BillBhtController implements Serializable {
     public void reloadItemLights() {
         itemApplicationController.reloadItems();
         itemController.reloadItems();
-        fillInwardItems();
+        // Force the inward item list (with its fee-based prices) to rebuild
+        inwardItem = null;
+        getInwardItem();
     }
 
     public void setInwardItems(List<ItemLight> inwardItems) {
