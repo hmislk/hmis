@@ -11,6 +11,8 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dto.BillListReportDTO;
 import com.divudi.core.data.dto.InpatientPharmacyBillItemDTO;
+import com.divudi.core.data.dto.InpatientPharmacyDepartmentSummaryDTO;
+import com.divudi.core.data.dto.InpatientPharmacyItemSummaryDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.PatientEncounter;
@@ -20,7 +22,10 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -72,10 +77,16 @@ public class InwardPharmacyEncounterReportController implements Serializable {
     private List<Bill> pharmacyRequestBillsToPatientEncounter;
     private double pharmacyRequestBillsToPatientEncounterNetTotal;
 
-    // 2) Direct Issues list (PharmacyBhtPre PreBill sale bills)
+    // 2) Direct Issues list (PharmacyBhtPre PreBill sale bills, merged with their
+    // RefundBill returns so the whole picture is visible on one page)
     private List<BillListReportDTO> directIssueBillsToPatientEncounter;
     private double directIssueBillsToPatientEncounterNetTotal;
+    private double directIssueBillsToPatientEncounterTotal;
+    private double directIssueBillsToPatientEncounterMargin;
+    private double directIssueBillsToPatientEncounterDiscount;
     private List<InpatientPharmacyBillItemDTO> directIssueBillItemsToPatientEncounter;
+    private List<InpatientPharmacyItemSummaryDTO> directIssueItemSummary;
+    private List<InpatientPharmacyDepartmentSummaryDTO> directIssueDepartmentSummary;
 
     // 3) Issue Returns list (PharmacyBhtPre RefundBill bills)
     private List<BillListReportDTO> returnBillsToPatientEncounter;
@@ -171,12 +182,26 @@ public class InwardPharmacyEncounterReportController implements Serializable {
         }
         directIssueBillsToPatientEncounter = new ArrayList<>();
         directIssueBillsToPatientEncounterNetTotal = 0.0;
+        directIssueBillsToPatientEncounterTotal = 0.0;
+        directIssueBillsToPatientEncounterMargin = 0.0;
+        directIssueBillsToPatientEncounterDiscount = 0.0;
         directIssueBillItemsToPatientEncounter = new ArrayList<>();
+        directIssueItemSummary = new ArrayList<>();
+        directIssueDepartmentSummary = new ArrayList<>();
         try {
             directIssueBillsToPatientEncounter = fetchDirectIssueBills();
             for (BillListReportDTO dto : directIssueBillsToPatientEncounter) {
                 if (dto.getNetTotal() != null) {
                     directIssueBillsToPatientEncounterNetTotal += dto.getNetTotal().doubleValue();
+                }
+                if (dto.getTotal() != null) {
+                    directIssueBillsToPatientEncounterTotal += dto.getTotal().doubleValue();
+                }
+                if (dto.getServiceCharge() != null) {
+                    directIssueBillsToPatientEncounterMargin += dto.getServiceCharge().doubleValue();
+                }
+                if (dto.getDiscount() != null) {
+                    directIssueBillsToPatientEncounterDiscount += dto.getDiscount().doubleValue();
                 }
             }
 
@@ -185,6 +210,8 @@ public class InwardPharmacyEncounterReportController implements Serializable {
                 billIds.add(dto.getBillId());
             }
             directIssueBillItemsToPatientEncounter = fetchDirectIssueBillItems(billIds);
+            directIssueItemSummary = buildItemSummary(directIssueBillItemsToPatientEncounter);
+            directIssueDepartmentSummary = buildDepartmentSummary(directIssueBillItemsToPatientEncounter);
         } catch (Exception e) {
             Logger.getLogger(InwardPharmacyEncounterReportController.class.getName())
                     .log(Level.SEVERE, "Error loading direct issue bills", e);
@@ -229,6 +256,58 @@ public class InwardPharmacyEncounterReportController implements Serializable {
 
         List<BillListReportDTO> result = (List<BillListReportDTO>) billFacade
                 .findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
+        List<BillListReportDTO> issues = result != null ? result : new ArrayList<>();
+
+        // Merge in returns of these direct issues (RefundBill rows created by
+        // BhtIssueReturnController.settle()) so the whole picture - issues and
+        // their returns - is visible on one list, per issue #21871.
+        List<BillListReportDTO> returns = fetchDirectIssueReturnBills();
+        List<BillListReportDTO> merged = new ArrayList<>(issues.size() + returns.size());
+        merged.addAll(issues);
+        merged.addAll(returns);
+        merged.sort(Comparator.comparing(BillListReportDTO::getCreatedAt).reversed());
+        return merged;
+    }
+
+    private List<BillListReportDTO> fetchDirectIssueReturnBills() {
+        // Same DTO shape as fetchReturnBills() (17-arg constructor incl.
+        // referenceBillNumber = the original issue bill's printed number), but
+        // scoped only to the two direct-issue return atomics so ward
+        // issue-on-request returns are not pulled into this report.
+        String jpql = "SELECT new com.divudi.core.data.dto.BillListReportDTO("
+                + "b.id, "
+                + "COALESCE(b.deptId, ''), "
+                + "b.billTypeAtomic, "
+                + "b.paymentMethod, "
+                + "COALESCE(b.patientEncounter.patient.person.name, ''), "
+                + "b.createdAt, "
+                + "COALESCE(b.creater.name, ''), "
+                + "b.retired, "
+                + "b.cancelled, "
+                + "b.refunded, "
+                + "b.total, "
+                + "b.discount, "
+                + "b.netTotal, "
+                + "COALESCE(b.patientEncounter.bhtNo, ''), "
+                + "COALESCE(b.deptId, ''), "
+                + "b.margin, "
+                + "COALESCE(b.billedBill.deptId, '')) "
+                + "FROM RefundBill b "
+                + "WHERE b.billType = :billType "
+                + "AND b.billTypeAtomic IN :returnAtomics "
+                + "AND b.retired = false "
+                + "AND b.patientEncounter = :pe "
+                + "ORDER BY b.createdAt DESC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billType", BillType.PharmacyBhtPre);
+        params.put("returnAtomics", Arrays.asList(
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN));
+        params.put("pe", patientEncounter);
+
+        List<BillListReportDTO> result = (List<BillListReportDTO>) billFacade
+                .findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
         return result != null ? result : new ArrayList<>();
     }
 
@@ -241,7 +320,11 @@ public class InwardPharmacyEncounterReportController implements Serializable {
                 + "bi.item.name, "
                 + "COALESCE(bi.item.code, ''), "
                 + "bi.qty, "
-                + "bi.netValue) "
+                + "bi.grossValue, "
+                + "bi.marginValue, "
+                + "bi.discount, "
+                + "bi.netValue, "
+                + "COALESCE(bi.bill.department.name, '')) "
                 + "FROM BillItem bi "
                 + "WHERE bi.bill.id IN :billIds "
                 + "AND bi.retired = false "
@@ -253,6 +336,57 @@ public class InwardPharmacyEncounterReportController implements Serializable {
         List<InpatientPharmacyBillItemDTO> result = (List<InpatientPharmacyBillItemDTO>) billItemFacade
                 .findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
         return result != null ? result : new ArrayList<>();
+    }
+
+    /**
+     * In-memory aggregation (no new query) grouping the already-fetched
+     * encounter item list by item name+code, for the Items Summary panel
+     * (issue #21871). Includes both direct-issue and return line items, so
+     * the totals reflect net consumption.
+     */
+    private List<InpatientPharmacyItemSummaryDTO> buildItemSummary(List<InpatientPharmacyBillItemDTO> items) {
+        Map<String, InpatientPharmacyItemSummaryDTO> byItem = new LinkedHashMap<>();
+        for (InpatientPharmacyBillItemDTO item : items) {
+            String key = item.getItemName() + "|" + item.getItemCode();
+            InpatientPharmacyItemSummaryDTO summary = byItem.get(key);
+            if (summary == null) {
+                summary = new InpatientPharmacyItemSummaryDTO(item.getItemName(), item.getItemCode());
+                byItem.put(key, summary);
+            }
+            summary.setQty(summary.getQty() + nz(item.getQty()));
+            summary.setTotal(summary.getTotal() + nz(item.getTotal()));
+            summary.setMargin(summary.getMargin() + nz(item.getMargin()));
+            summary.setDiscount(summary.getDiscount() + nz(item.getDiscount()));
+            summary.setNetTotal(summary.getNetTotal() + nz(item.getNetValue()));
+        }
+        return new ArrayList<>(byItem.values());
+    }
+
+    /**
+     * In-memory aggregation (no new query) grouping the already-fetched
+     * encounter item list by issuing department, for the Issuing Department
+     * Summary panel (issue #21871).
+     */
+    private List<InpatientPharmacyDepartmentSummaryDTO> buildDepartmentSummary(List<InpatientPharmacyBillItemDTO> items) {
+        Map<String, InpatientPharmacyDepartmentSummaryDTO> byDept = new LinkedHashMap<>();
+        for (InpatientPharmacyBillItemDTO item : items) {
+            String key = item.getDepartmentName();
+            InpatientPharmacyDepartmentSummaryDTO summary = byDept.get(key);
+            if (summary == null) {
+                summary = new InpatientPharmacyDepartmentSummaryDTO(key);
+                byDept.put(key, summary);
+            }
+            summary.setQty(summary.getQty() + nz(item.getQty()));
+            summary.setTotal(summary.getTotal() + nz(item.getTotal()));
+            summary.setMargin(summary.getMargin() + nz(item.getMargin()));
+            summary.setDiscount(summary.getDiscount() + nz(item.getDiscount()));
+            summary.setNetTotal(summary.getNetTotal() + nz(item.getNetValue()));
+        }
+        return new ArrayList<>(byDept.values());
+    }
+
+    private double nz(Double value) {
+        return value != null ? value : 0.0;
     }
 
     /**
@@ -438,12 +572,52 @@ public class InwardPharmacyEncounterReportController implements Serializable {
         this.directIssueBillsToPatientEncounterNetTotal = directIssueBillsToPatientEncounterNetTotal;
     }
 
+    public double getDirectIssueBillsToPatientEncounterTotal() {
+        return directIssueBillsToPatientEncounterTotal;
+    }
+
+    public void setDirectIssueBillsToPatientEncounterTotal(double directIssueBillsToPatientEncounterTotal) {
+        this.directIssueBillsToPatientEncounterTotal = directIssueBillsToPatientEncounterTotal;
+    }
+
+    public double getDirectIssueBillsToPatientEncounterMargin() {
+        return directIssueBillsToPatientEncounterMargin;
+    }
+
+    public void setDirectIssueBillsToPatientEncounterMargin(double directIssueBillsToPatientEncounterMargin) {
+        this.directIssueBillsToPatientEncounterMargin = directIssueBillsToPatientEncounterMargin;
+    }
+
+    public double getDirectIssueBillsToPatientEncounterDiscount() {
+        return directIssueBillsToPatientEncounterDiscount;
+    }
+
+    public void setDirectIssueBillsToPatientEncounterDiscount(double directIssueBillsToPatientEncounterDiscount) {
+        this.directIssueBillsToPatientEncounterDiscount = directIssueBillsToPatientEncounterDiscount;
+    }
+
     public List<InpatientPharmacyBillItemDTO> getDirectIssueBillItemsToPatientEncounter() {
         return directIssueBillItemsToPatientEncounter;
     }
 
     public void setDirectIssueBillItemsToPatientEncounter(List<InpatientPharmacyBillItemDTO> directIssueBillItemsToPatientEncounter) {
         this.directIssueBillItemsToPatientEncounter = directIssueBillItemsToPatientEncounter;
+    }
+
+    public List<InpatientPharmacyItemSummaryDTO> getDirectIssueItemSummary() {
+        return directIssueItemSummary;
+    }
+
+    public void setDirectIssueItemSummary(List<InpatientPharmacyItemSummaryDTO> directIssueItemSummary) {
+        this.directIssueItemSummary = directIssueItemSummary;
+    }
+
+    public List<InpatientPharmacyDepartmentSummaryDTO> getDirectIssueDepartmentSummary() {
+        return directIssueDepartmentSummary;
+    }
+
+    public void setDirectIssueDepartmentSummary(List<InpatientPharmacyDepartmentSummaryDTO> directIssueDepartmentSummary) {
+        this.directIssueDepartmentSummary = directIssueDepartmentSummary;
     }
 
     public List<BillListReportDTO> getReturnBillsToPatientEncounter() {
