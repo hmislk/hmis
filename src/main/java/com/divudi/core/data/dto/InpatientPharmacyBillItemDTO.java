@@ -17,6 +17,10 @@ public class InpatientPharmacyBillItemDTO implements Serializable {
     private String itemCode;
     private Double qty;
     private Double netValue;
+    private Double total;
+    private Double margin;
+    private Double discount;
+    private String departmentName;
 
     public InpatientPharmacyBillItemDTO() {
     }
@@ -27,6 +31,24 @@ public class InpatientPharmacyBillItemDTO implements Serializable {
         this.itemCode = itemCode;
         this.qty = qty;
         this.netValue = netValue;
+    }
+
+    // Constructor adding the Total/Margin/Discount breakdown and issuing department
+    // (Inpatient Dashboard Direct Issues report enhancement, issue #21871). Added
+    // rather than modifying the original constructor per project rule (never change
+    // existing constructor signatures).
+    public InpatientPharmacyBillItemDTO(Long billId, String itemName, String itemCode,
+            Double qty, Double total, Double margin, Double discount, Double netValue,
+            String departmentName) {
+        this.billId = billId;
+        this.itemName = itemName;
+        this.itemCode = itemCode;
+        this.qty = qty;
+        this.total = total;
+        this.margin = margin;
+        this.discount = discount;
+        this.netValue = netValue;
+        this.departmentName = departmentName;
     }
 
     public Long getBillId() {
@@ -67,5 +89,37 @@ public class InpatientPharmacyBillItemDTO implements Serializable {
 
     public void setNetValue(Double netValue) {
         this.netValue = netValue;
+    }
+
+    public Double getTotal() {
+        return total;
+    }
+
+    public void setTotal(Double total) {
+        this.total = total;
+    }
+
+    public Double getMargin() {
+        return margin;
+    }
+
+    public void setMargin(Double margin) {
+        this.margin = margin;
+    }
+
+    public Double getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(Double discount) {
+        this.discount = discount;
+    }
+
+    public String getDepartmentName() {
+        return departmentName;
+    }
+
+    public void setDepartmentName(String departmentName) {
+        this.departmentName = departmentName;
     }
 }
