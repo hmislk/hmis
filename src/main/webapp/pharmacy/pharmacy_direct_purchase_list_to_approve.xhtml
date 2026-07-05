@@ -7,58 +7,60 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="content">
-        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyDirectPurchaseApprove')}">You are NOT authorized</h:panelGroup>
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyDirectPurchaseApprove')}">
+            <h:outputText value="You are NOT authorized"/>
+        </h:panelGroup>
         <h:panelGroup id="gpDirectPurchaseApprove" rendered="#{webUserController.hasPrivilege('PharmacyDirectPurchaseApprove')}">
         <h:form>
             <p:panel styleClass="shadow-sm border-0">
                 <f:facet name="header">
                     <div class="d-flex align-items-center">
-                        <i class="fas fa-check-circle text-success me-2"></i>
-                        <h4 class="mb-0 text-success">Direct Purchase List - To Approve</h4>
+                        <h:outputText styleClass="fas fa-check-circle text-success me-2"/>
+                        <h:outputText styleClass="mb-0 text-success fw-bold" value="Direct Purchase List - To Approve"/>
                     </div>
                 </f:facet>
 
                 <div class="row g-3">
                     <div class="col-lg-3 col-md-4">
                         <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-calendar-alt me-1"></i>From Date
-                                </label>
+                            <div class="mb-2">
+                                <p:outputLabel for="fromDate" styleClass="form-label fw-bold text-secondary d-block">
+                                    <h:outputText styleClass="fas fa-calendar-alt me-1"/>
+                                    <h:outputText value="From Date"/>
+                                </p:outputLabel>
                                 <p:calendar
                                     id="fromDate"
-                                    class="w-100"
-                                    inputStyleClass="form-control"
+                                    styleClass="w-100"
+                                    inputStyleClass="w-100"
                                     value="#{searchController.fromDate}"
                                     navigator="false"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     placeholder="Select start date">
                                 </p:calendar>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold text-secondary">
-                                    <i class="fas fa-calendar-alt me-1"></i>To Date
-                                </label>
+                            <div class="mb-2">
+                                <p:outputLabel for="toDate" styleClass="form-label fw-bold text-secondary d-block">
+                                    <h:outputText styleClass="fas fa-calendar-alt me-1"/>
+                                    <h:outputText value="To Date"/>
+                                </p:outputLabel>
                                 <p:calendar
                                     id="toDate"
-                                    class="w-100"
-                                    inputStyleClass="form-control"
+                                    styleClass="w-100"
+                                    inputStyleClass="w-100"
                                     value="#{searchController.toDate}"
                                     navigator="false"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                     placeholder="Select end date">
                                 </p:calendar>
                             </div>
-                            <div class="mb-4">
-                                <p:commandButton
-                                    class="ui-button-success w-100"
-                                    icon="fas fa-search"
-                                    id="btnSearch"
-                                    ajax="false"
-                                    value="Search Direct Purchases to Approve"
-                                    action="#{searchController.createDirectPurchaseTableToApprove}"
-                                    style="min-height: 45px;"/>
-                            </div>
+                            <p:commandButton
+                                id="btnSearch"
+                                value="Search Direct Purchases to Approve"
+                                icon="fas fa-search"
+                                ajax="false"
+                                action="#{searchController.createDirectPurchaseTableToApprove}"
+                                styleClass="ui-button-info w-100"/>
+                            <p:defaultCommand target="btnSearch"/>
                         </p:panel>
                     </div>
                     <div class="col-lg-9 col-md-8">
@@ -67,12 +69,14 @@
                                 id="tblDirectPurchaseApprove"
                                 value="#{searchController.bills}"
                                 var="g"
+                                rowKey="#{g.id}"
+                                stickyHeader="true"
                                 paginator="true"
-                                rows="10"
+                                rows="25"
                                 paginatorPosition="bottom"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                rowsPerPageTemplate="5,10,15,25"
-                                styleClass="table-striped"
+                                rowsPerPageTemplate="25,50,100"
+                                styleClass="p-datatable-sm"
                                 emptyMessage="No Direct Purchases found matching your criteria"
                                 sortMode="multiple"
                                 resizableColumns="true"
@@ -84,7 +88,7 @@
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Department" width="6em">
+                            <p:column headerText="Department" width="8em">
                                 <h:outputLabel value="#{g.department.name}"/>
                             </p:column>
 
@@ -105,25 +109,20 @@
                             </p:column>
 
                             <p:column headerText="Value" width="8em" styleClass="text-end" sortBy="#{g.netTotal}">
-                                <div class="d-flex align-items-center justify-content-end">
-                                    <i class="fas fa-coins text-success me-2"></i>
-                                    <span class="fw-bold text-success fs-6">
-                                        <h:outputLabel value="#{g.netTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </span>
-                                </div>
+                                <h:outputLabel value="#{g.netTotal}" styleClass="fw-bold text-success">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="120">
+                            <p:column headerText="Actions" styleClass="text-center" exportable="false" width="10em">
                                 <p:commandButton
-                                    class="ui-button-success"
-                                    icon="fas fa-check"
-                                    value="Approve"
-                                    title="Open and Approve Direct Purchase"
+                                    styleClass="ui-button-info"
+                                    icon="fas fa-eye"
+                                    value="To Approve"
+                                    title="Open Direct Purchase #{g.deptId} for review and approval"
                                     ajax="false"
                                     action="#{pharmacyBillSearch.navigateToEditSavedDirectPurchase()}"
-                                    style="min-width: 80px;">
+                                    style="min-width: 100px;">
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{g}"/>
                                 </p:commandButton>
                             </p:column>
