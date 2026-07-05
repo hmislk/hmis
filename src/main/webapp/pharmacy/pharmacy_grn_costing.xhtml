@@ -205,9 +205,27 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:inputText>
                                 </p:column>
+                                <p:column
+                                    headerText="Wholesale Rate"
+                                    width="8em"
+                                    styleClass="text-end">
+                                    <p:inputText
+                                        autocomplete="off"
+                                        id="wRate"
+                                        class="text-end text-primary w-100"
+                                        value="#{bi.billItemFinanceDetails.wholesaleRate}"
+                                        onfocus="this.select()">
+                                        <f:ajax
+                                            event="blur"
+                                            execute="wRate"
+                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total profMargin diff :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
+                                            listener="#{grnCostingController.wholesaleRateChangedListner(bi)}"></f:ajax>
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:inputText>
+                                </p:column>
 
-                                <p:column 
-                                    headerText="Line Net Total" 
+                                <p:column
+                                    headerText="Line Net Total"
                                     width="8em"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
                                     <h:panelGroup id="total">
@@ -364,9 +382,9 @@
                                         </div>
                                     </div>
                                 </h:panelGroup>
-                                <p:dataTable 
+                                <p:dataTable
                                     id="tblExpenses"
-                                    value="#{grnCostingController.billExpenses}" 
+                                    value="#{grnCostingController.grnBill.billExpenses}"
                                     var="be"
                                     class="w-100"
                                     emptyMessage="No Bill Expenses" >

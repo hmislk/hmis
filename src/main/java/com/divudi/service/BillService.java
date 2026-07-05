@@ -1308,9 +1308,11 @@ public class BillService {
                 + " b.discount, "
                 + " b.margin, "
                 + " b.serviceCharge, "
-                + " coalesce(bfd.totalCostValue, 0.0), "
-                + " coalesce(bfd.totalPurchaseValue, 0.0), "
-                + " coalesce(bfd.totalRetailSaleValue, 0.0), "
+                // NOTE: select the BigDecimal columns directly (no coalesce) — see
+                // fetchBillLightsWithFinanceDetailsCompleted for why coalesce(bfd.x, 0.0) breaks binding.
+                + " bfd.totalCostValue, "
+                + " bfd.totalPurchaseValue, "
+                + " bfd.totalRetailSaleValue, "
                 + " b.paymentMethod, "
                 + " b.patientEncounter "
                 + ") "
@@ -1392,9 +1394,14 @@ public class BillService {
                 + " b.discount, "
                 + " b.margin, "
                 + " b.serviceCharge, "
-                + " coalesce(bfd.totalCostValue, 0.0), "
-                + " coalesce(bfd.totalPurchaseValue, 0.0), "
-                + " coalesce(bfd.totalRetailSaleValue, 0.0), "
+                // NOTE: select the BigDecimal columns directly (no coalesce). coalesce(bfd.totalCostValue, 0.0)
+                // promotes the result to Double because of the 0.0 literal, which then fails to bind to the
+                // BillLight constructor's BigDecimal parameters with "argument type mismatch". findByJpql
+                // swallows that exception and returns an empty list, so F15 adjustment rows silently showed 0.00
+                // (issues #18774 / #17598 / #18767). The constructor and PharmacyBundle already null-guard these.
+                + " bfd.totalCostValue, "
+                + " bfd.totalPurchaseValue, "
+                + " bfd.totalRetailSaleValue, "
                 + " b.paymentMethod, "
                 + " b.patientEncounter, "
                 + " bfd.grossTotal, "
@@ -1472,9 +1479,14 @@ public class BillService {
                 + " b.discount, "
                 + " b.margin, "
                 + " b.serviceCharge, "
-                + " coalesce(bfd.totalCostValue, 0.0), "
-                + " coalesce(bfd.totalPurchaseValue, 0.0), "
-                + " coalesce(bfd.totalRetailSaleValue, 0.0), "
+                // NOTE: select the BigDecimal columns directly (no coalesce). coalesce(bfd.totalCostValue, 0.0)
+                // promotes the result to Double because of the 0.0 literal, which then fails to bind to the
+                // BillLight constructor's BigDecimal parameters with "argument type mismatch". findLightsByJpqlWithoutCache
+                // swallows that exception and returns an empty list, so F15 purchase rows silently showed 0.00.
+                // The constructor and PharmacyBundle already null-guard these.
+                + " bfd.totalCostValue, "
+                + " bfd.totalPurchaseValue, "
+                + " bfd.totalRetailSaleValue, "
                 + " b.paymentMethod, "
                 + " b.patientEncounter "
                 + ") "
@@ -1548,9 +1560,11 @@ public class BillService {
                 + " b.discount, "
                 + " b.margin, "
                 + " b.serviceCharge, "
-                + " coalesce(bfd.totalCostValue, 0.0), "
-                + " coalesce(bfd.totalPurchaseValue, 0.0), "
-                + " coalesce(bfd.totalRetailSaleValue, 0.0), "
+                // NOTE: select the BigDecimal columns directly (no coalesce) — see
+                // fetchBillLightsWithFinanceDetailsCompleted for why coalesce(bfd.x, 0.0) breaks binding.
+                + " bfd.totalCostValue, "
+                + " bfd.totalPurchaseValue, "
+                + " bfd.totalRetailSaleValue, "
                 + " b.paymentMethod, "
                 + " pe.admissionType, "
                 + " ps.name "
@@ -1708,7 +1722,9 @@ public class BillService {
         String jpql = "select new com.divudi.core.data.dto.PharmacyIncomeCostBillDTO("
                 + " b.id, b.deptId, b.billTypeAtomic, "
                 + " coalesce(pers.name,'N/A'), coalesce(pe.bhtNo,''), b.createdAt, "
-                + " coalesce(bfd.totalRetailSaleValue,0), coalesce(bfd.totalPurchaseValue,0)) "
+                // NOTE: select the BigDecimal columns directly (no coalesce) — see
+                // fetchBillLightsWithFinanceDetailsCompleted for why coalesce(bfd.x, 0) breaks binding.
+                + " bfd.totalRetailSaleValue, bfd.totalPurchaseValue) "
                 + " from Bill b "
                 + " left join b.billFinanceDetails bfd "
                 + " left join b.patient pat "
@@ -1775,7 +1791,9 @@ public class BillService {
         jpql = "select new com.divudi.core.data.dto.PharmacyIncomeBillDTO("
                 + " b.id, b.deptId, coalesce(pers.name,'N/A'), b.billTypeAtomic, b.createdAt, coalesce(b.netTotal, 0.0), b.paymentMethod, coalesce(b.total, 0.0), "
                 + " b.patientEncounter, coalesce(b.discount, 0.0), coalesce(b.margin, 0.0), coalesce(b.serviceCharge, 0.0), b.paymentScheme, "
-                + " coalesce(bfd.totalRetailSaleValue, 0.0), coalesce(bfd.totalPurchaseValue, 0.0), coalesce(bfd.totalCostValue, 0.0) ) "
+                // NOTE: select the BigDecimal columns directly (no coalesce) — see
+                // fetchBillLightsWithFinanceDetailsCompleted for why coalesce(bfd.x, 0.0) breaks binding.
+                + " bfd.totalRetailSaleValue, bfd.totalPurchaseValue, bfd.totalCostValue ) "
                 + " from Bill b "
                 + " left join b.billFinanceDetails bfd "
                 + " left join b.patient pat "
@@ -1877,7 +1895,9 @@ public class BillService {
         jpql = "select new com.divudi.core.data.dto.PharmacyIncomeBillDTO("
                 + " b.id, b.deptId, coalesce(pers.name,'N/A'), b.billTypeAtomic, b.createdAt, coalesce(b.netTotal, 0.0), b.paymentMethod, coalesce(b.total, 0.0), "
                 + " b.patientEncounter, coalesce(b.discount, 0.0), coalesce(b.margin, 0.0), coalesce(b.serviceCharge, 0.0), b.paymentScheme, "
-                + " coalesce(bfd.totalRetailSaleValue, 0.0), coalesce(bfd.totalPurchaseValue, 0.0), coalesce(bfd.totalCostValue, 0.0) ) "
+                // NOTE: select the BigDecimal columns directly (no coalesce) — see
+                // fetchBillLightsWithFinanceDetailsCompleted for why coalesce(bfd.x, 0.0) breaks binding.
+                + " bfd.totalRetailSaleValue, bfd.totalPurchaseValue, bfd.totalCostValue ) "
                 + " from Bill b "
                 + " left join b.billFinanceDetails bfd "
                 + " left join b.patient pat "

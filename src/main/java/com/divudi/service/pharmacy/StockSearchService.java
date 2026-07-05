@@ -123,7 +123,7 @@ public class StockSearchService {
                 "s.itemBatch.batchNo, " +
                 "s.itemBatch.purcahseRate, " +
                 "s.itemBatch.wholesaleRate, " +
-                "s.itemBatch.retailsaleRate, " +
+                "s.itemBatch.costRate, " +
                 "s.itemBatch.item.allowFractions) " +
                 "FROM Stock s " +
                 "WHERE s.department = :d " +
@@ -145,7 +145,7 @@ public class StockSearchService {
                 "s.itemBatch.id, " +
                 "s.itemBatch.item.name, " +
                 "s.itemBatch.item.code, " +
-                "s.itemBatch.costRate, " +
+                "s.itemBatch.retailsaleRate, " +
                 "s.stock, " +
                 "s.itemBatch.dateOfExpire, " +
                 "s.itemBatch.batchNo, " +

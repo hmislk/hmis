@@ -21,19 +21,23 @@
                             <div>
                                 <h:outputText styleClass="fas fa-shopping-bag"/>
                                 <h:outputText class="mx-4" value="Pharmacy Direct Purchase" />
+                                <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('Admin')}"
+                                    value="Config"
+                                    icon="fa fa-cog"
+                                    title="Page Configuration Management"
+                                    action="#{pageAdminController.navigateToPageAdmin('pharmacy/direct_purchase')}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary ms-3"/>
                             </div>
                             <div>
 
-                                <!-- Single-step Settle: shown when draft workflow is NOT active -->
                                 <p:commandButton
-                                    id="btnSettle"
-                                    value="Settle"
-                                    onclick="if (!confirm('Are you sure?')) return false"
-                                    action="#{pharmacyDirectPurchaseController.settleDirectPurchaseBillFinally}"
-                                    styleClass="ui-button-success"
+                                    value="New Direct Purchase Bill"
                                     ajax="false"
-                                    icon="pi pi-check-circle"
-                                    rendered="#{!pharmacyDirectPurchaseController.draftMode and !configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false)}"
+                                    styleClass="ui-button-warning"
+                                    icon="pi pi-plus"
+                                    action="#{pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill()}"
                                     style="margin-right: 8px;">
                                 </p:commandButton>
 
@@ -49,7 +53,7 @@
                                     style="margin-right: 8px;">
                                 </p:commandButton>
 
-                                <!-- Finalize: shown when draft is saved but not yet finalized -->
+                                <!-- Finalize: also shown before any draft save — finalizing saves the draft first if needed -->
                                 <p:commandButton
                                     id="btnFinalize"
                                     value="Finalize"
@@ -58,30 +62,34 @@
                                     styleClass="ui-button-warning"
                                     ajax="false"
                                     icon="pi pi-check"
-                                    rendered="#{pharmacyDirectPurchaseController.draftMode and pharmacyDirectPurchaseController.bill.id ne null and !pharmacyDirectPurchaseController.bill.completed and webUserController.hasPrivilege('PharmacyDirectPurchaseFinalize')}"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false) and !pharmacyDirectPurchaseController.bill.completed and webUserController.hasPrivilege('PharmacyDirectPurchaseFinalize')}"
                                     style="margin-right: 8px;">
                                 </p:commandButton>
 
-                                <!-- Approve: shown when draft is finalized but not yet approved -->
+                                <!-- Approve: shown once finalized (completed) but not yet approved (checked) -->
                                 <p:commandButton
                                     id="btnApprove"
                                     value="Approve"
-                                    onclick="if (!confirm('Approve this Direct Purchase? Stock will be updated.')) return false"
+                                    onclick="if (!confirm('Approve this finalized Direct Purchase? Stock will be updated.')) return false"
                                     action="#{pharmacyDirectPurchaseController.approveDirectPurchaseDraft}"
                                     styleClass="ui-button-success"
                                     ajax="false"
-                                    icon="pi pi-check-circle"
-                                    rendered="#{pharmacyDirectPurchaseController.draftMode and pharmacyDirectPurchaseController.bill.completed and !pharmacyDirectPurchaseController.bill.checked and webUserController.hasPrivilege('PharmacyDirectPurchaseApprove')}"
+                                    icon="pi pi-verified"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false) and pharmacyDirectPurchaseController.bill.completed and !pharmacyDirectPurchaseController.bill.checked and webUserController.hasPrivilege('PharmacyDirectPurchaseApprove')}"
                                     style="margin-right: 8px;">
                                 </p:commandButton>
 
+                                <!-- Single-step Settle: shown when draft workflow is NOT active. Primary action, rightmost per UI guidelines. -->
                                 <p:commandButton
-                                    value="New Direct Purchase Bill"
+                                    id="btnSettle"
+                                    value="Settle"
+                                    onclick="if (!confirm('Are you sure?')) return false"
+                                    action="#{pharmacyDirectPurchaseController.settleDirectPurchaseBillFinally}"
+                                    styleClass="ui-button-success"
                                     ajax="false"
-                                    styleClass="ui-button-warning"
-                                    icon="pi pi-plus"
-                                    action="#{pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill()}"
-                                    style="margin-right: 8px;">
+                                    icon="pi pi-check-circle"
+                                    rendered="#{!pharmacyDirectPurchaseController.draftMode and !configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false)}"
+                                    style="margin-right: 8px; min-width: 120px;">
                                 </p:commandButton>
                             </div>
                         </div>
@@ -276,8 +284,33 @@
                                         </p:inputText>
                                     </div>
 
+                                    <h:panelGroup layout="block" styleClass="col-1" rendered="#{pharmacyDirectPurchaseController.isWholesaleTransactionsAllowed()}">
+                                        <h:outputLabel
+                                            class="w-100 m-1"
+                                            style="white-space: nowrap;"
+                                            value="Wholesale Rate" /><br/>
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="txtWholesaleRate"
+                                            widgetVar="dpWholesaleRate"
+                                            onfocus="this.select()"
+                                            class="w-100 m-1 text-end"
+                                            onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                            onkeyup="if (event.keyCode === 13) { event.preventDefault(); var addBtnId = '#{p:resolveFirstComponentWithId('btnAdd',view).clientId}'; this.blur(); setTimeout(function () { document.getElementById(addBtnId).click(); }, 350); }"
+                                            value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.wholesaleRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                            <p:ajax
+                                                event="blur"
+                                                async="true"
+                                                process="@this"
+                                                listener="#{pharmacyDirectPurchaseController.onWholesaleRateChange}"
+                                                update="txtRetailValue txtPackOrUnit txtUnitsPerPack
+                                                :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
+                                        </p:inputText>
+                                    </h:panelGroup>
+
                                     <div class="col-1">
-                                        <p:outputLabel 
+                                        <p:outputLabel
                                             class="w-100 m-1"
                                             style="white-space: nowrap;"
                                             value="Date of Expiry"/>
@@ -307,21 +340,21 @@
                                     </div>
 
                                     <div class="col-1">
-                                        <h:outputLabel 
+                                        <h:outputLabel
                                             class="w-100 m-1"
-                                            value="&nbsp;"></h:outputLabel>
+                                            value="&#160;"/><br/>
                                         <p:commandButton
                                             id="btnAdd"
                                             value="Add"
                                             class="ui-button-success w-100"
                                             icon="fas fa-plus"
                                             action="#{pharmacyDirectPurchaseController.addItem}"
-                                            process="@this :#{p:resolveFirstComponentWithId('selDepartmentType',view).clientId}"
+                                            process="@this itemselectgrid :#{p:resolveFirstComponentWithId('selDepartmentType',view).clientId}"
                                             update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('lblGrossTotal',view).clientId} :#{p:resolveFirstComponentWithId('saleValue',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('selDepartmentType',view).clientId} msg"/>
                                     </div>
 
                                     <div class="col-1 text-end">
-                                        <h:outputLabel 
+                                        <h:outputLabel
                                             class="w-100 m-1"
                                             style="white-space: nowrap;"
                                             value="Pack or Unit" />
@@ -335,7 +368,7 @@
                                     </div>
 
                                     <div class="col-1 text-end">
-                                        <h:outputLabel 
+                                        <h:outputLabel
                                             class="w-100 m-1"
                                             style="white-space: nowrap;"
                                             value="Units per pack" />
@@ -553,15 +586,17 @@
 
                                 <p:column>
                                     <p:commandButton
+                                        id="btnEditItem"
                                         styleClass="ui-button-warning"
                                         style="margin-right:10px"
                                         icon="fas fa-edit"
                                         title="Edit Item"
+                                        disabled="#{pharmacyDirectPurchaseController.bill.completed}"
                                         process="@this"
                                         update=":bill:dlgEditBillItem"
                                         oncomplete="PF('dlgEditBillItem').show()"
                                         action="#{pharmacyDirectPurchaseController.prepareEditBillItem(ph)}" />
-                                    <p:commandButton styleClass="ui-button-danger" icon="fas fa-trash" title="Delete Item" ajax="false" action="#{pharmacyDirectPurchaseController.removeItem(ph)}" />
+                                    <p:commandButton id="btnDeleteItem" styleClass="ui-button-danger" icon="fas fa-trash" title="Delete Item" disabled="#{pharmacyDirectPurchaseController.bill.completed}" ajax="false" action="#{pharmacyDirectPurchaseController.removeItem(ph)}" />
                                 </p:column>
                             </p:dataTable>
 
@@ -620,6 +655,17 @@
                                             autocomplete="off"
                                             onfocus="this.select()"
                                             value="#{pharmacyDirectPurchaseController.editingBillItem.billItemFinanceDetails.retailSaleRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+
+                                        <p:outputLabel for="editWR" value="Wholesale Rate" rendered="#{pharmacyDirectPurchaseController.isWholesaleTransactionsAllowed()}" />
+                                        <p:inputText
+                                            id="editWR"
+                                            class="w-100 text-end"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            rendered="#{pharmacyDirectPurchaseController.isWholesaleTransactionsAllowed()}"
+                                            value="#{pharmacyDirectPurchaseController.editingBillItem.billItemFinanceDetails.wholesaleRate}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:inputText>
 
@@ -733,6 +779,7 @@
                                                 value="Add"
                                                 icon="fas fa-plus"
                                                 class="ui-button-warning w-100"
+                                                disabled="#{pharmacyDirectPurchaseController.bill.completed}"
                                                 action="#{pharmacyDirectPurchaseController.addExpense()}"
                                                 ajax = "false"
                                                 process="billExpenseGrid btnAddExpense @this"
@@ -770,6 +817,7 @@
                                             title="Delete expense"
                                             styleClass="ui-button-danger"
                                             icon="pi pi-trash"
+                                            disabled="#{pharmacyDirectPurchaseController.bill.completed}"
                                             action="#{pharmacyDirectPurchaseController.removeExpense(be)}"
                                             process="@this"
                                             update="tblExpenses :#{p:resolveFirstComponentWithId('billExpenseGrid',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails',view).clientId}" />
@@ -794,20 +842,6 @@
                                     <h:outputText class="mx-4" value="Purchasing Details"/>
                                 </f:facet>
                                 <h:panelGrid class="w-100">
-                                    <h:outputLabel value="Department Type" for="selDepartmentType"/>
-                                    <p:selectOneMenu
-                                        id="selDepartmentType"
-                                        value="#{pharmacyDirectPurchaseController.bill.departmentType}"
-                                        class="w-100 my-2"
-                                        disabled="#{not empty pharmacyDirectPurchaseController.billItems and pharmacyDirectPurchaseController.billItems.size() > 0}">
-                                        <f:selectItem itemLabel="Select Department Type" itemValue="#{null}"/>
-                                        <f:selectItems value="#{sessionController.availableDepartmentTypesForPharmacyTransactions}"
-                                                       var="dt"
-                                                       itemLabel="#{dt.label}"
-                                                       itemValue="#{dt}"/>
-                                        <p:ajax process="@this" update="acItem" event="change"/>
-                                    </p:selectOneMenu>
-
                                     <p:outputLabel value="Select Supplier"/>
                                     <p:autoComplete
                                         id="acSupplier"
@@ -855,12 +889,30 @@
                                         <p:ajax event="change" process="cmbPs" ></p:ajax>
                                     </p:selectOneMenu>
 
-                                    <p:spacer class="my-1"  rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}"></p:spacer>
-                                    <h:panelGroup class="my-1" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
-                                        <p:selectBooleanCheckbox value="#{pharmacyDirectPurchaseController.bill.consignment}" itemLabel="Consignment"/>
-                                    </h:panelGroup>
-
                                 </h:panelGrid>
+
+                                <div class="row my-2 align-items-end">
+                                    <div class="col-6">
+                                        <h:outputLabel value="Department Type" for="selDepartmentType"/>
+                                        <p:selectOneMenu
+                                            id="selDepartmentType"
+                                            value="#{pharmacyDirectPurchaseController.bill.departmentType}"
+                                            class="w-100 my-2"
+                                            disabled="#{not empty pharmacyDirectPurchaseController.billItems and pharmacyDirectPurchaseController.billItems.size() > 0}">
+                                            <f:selectItem itemLabel="Select Department Type" itemValue="#{null}"/>
+                                            <f:selectItems value="#{sessionController.availableDepartmentTypesForPharmacyTransactions}"
+                                                           var="dt"
+                                                           itemLabel="#{dt.label}"
+                                                           itemValue="#{dt}"/>
+                                            <p:ajax process="@this" update="acItem" event="change"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="col-6">
+                                        <h:panelGroup class="my-1" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Consignment in Pharmacy Purchasing', true)}">
+                                            <p:selectBooleanCheckbox value="#{pharmacyDirectPurchaseController.bill.consignment}" itemLabel="Consignment"/>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
                             </p:panel>
                             <p:panel id="panelBillDetails" header="Bill details" class="m-1" >
                                 <f:facet name="header" >
@@ -870,7 +922,7 @@
                                 <p:tabView id="tot">
                                     <!-- Legacy Summary -->
                                     <p:tab title="Bill Summary">
-                                        <p:panelGrid columns="2" >
+                                        <p:panelGrid columns="2" styleClass="ui-panelgrid compact-panelgrid w-100">
                                             <p:outputLabel 
                                                 value="Gross Total" />
                                             <p:outputLabel 

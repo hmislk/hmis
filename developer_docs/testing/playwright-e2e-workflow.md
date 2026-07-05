@@ -169,6 +169,20 @@ Every `p:inputText`, `p:autoComplete`, `p:calendar`, and `p:selectOneMenu`
 that a Playwright test needs to interact with MUST carry a `widgetVar`
 attribute. It costs nothing and makes elements identifiable across sessions.
 
+### `p:inputText` driving a client-side recalculation (e.g. "Difference") ✅
+
+Some totals fields (like GRN costing's "Invoice Total" vs. "Difference") are
+recalculated by a client-side script bound to a plain blur event, not a
+`p:ajax`. A single `fill()` or even a plain `Tab` key press after typing can
+leave the dependent field stale, so a validation check reading that stale
+value (e.g. "The invoice does not match..! Check again") fires even though
+the number you typed is correct. Fix: click into the field, `Control+a` to
+select existing content, type the new value with `slowly: true`
+(`pressSequentially`), then click a neutral, non-interactive element elsewhere
+on the page (a heading works well) to force a real blur. Re-check the
+dependent field's value in the next snapshot before proceeding — don't assume
+it recalculated just because no error was shown yet.
+
 ---
 
 ## 4. Confirmations and double-click protection
@@ -181,6 +195,14 @@ attribute. It costs nothing and makes elements identifiable across sessions.
   return true, then fire `btn.click()` **twice in the same tick** on the
   non-AJAX settle button (e.g. `btnSettleReceive`). A correct implementation
   produces exactly one bill with no duplicate items.
+- **Do not register `page.once('dialog', ...)` inside `browser_run_code_unsafe`.**
+  The MCP server tracks dialogs itself; a script-registered handler accepts the
+  dialog but leaves the harness's modal state stuck — subsequent tool calls fail
+  with "does not handle the modal state" while `browser_handle_dialog` reports
+  "already handled". Recover with a `browser_snapshot` (clears the stale modal
+  state). Prefer overriding `window.confirm = () => true` via `page.evaluate`
+  *before* the click; note the override is lost on every full (non-AJAX) page
+  reload and must be re-applied per page instance.
 
 ---
 

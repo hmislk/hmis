@@ -1,0 +1,210 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <ui:define name="content">
+        <h:form id="form">
+            <p:growl id="inpatientPharmacyReturnsGrowl"></p:growl>
+            <p:panel>
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center w-100">
+                        <div class="d-flex align-items-center gap-2">
+                            <h:outputText styleClass="fa fa-rotate-left"></h:outputText>
+                            <p:outputLabel value="Issue Returns"></p:outputLabel>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <p:commandButton
+                                id="btnBackToProfile"
+                                value="Inpatient Dashboard"
+                                action="#{inwardPharmacyEncounterReportController.navigateToAdmissionProfile()}"
+                                ajax="false"
+                                icon="fa fa-arrow-circle-left"
+                                styleClass="ui-button-info ui-button-outlined">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Download"
+                                ajax="false"
+                                icon="fa fa-download"
+                                styleClass="ui-button-secondary">
+                                <p:dataExporter fileName="Inpatient Pharmacy Issue Returns" target="tbl1" type="xlsx"></p:dataExporter>
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Print"
+                                ajax="false"
+                                icon="fa fa-print"
+                                styleClass="ui-button-secondary">
+                                <p:printer target="tbl1"></p:printer>
+                            </p:commandButton>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <style>
+                    @media print {
+                        body {
+                            margin: 0px 5px;
+                        }
+                    }
+                </style>
+
+                <div class="row">
+                    <div class="col-3">
+                        <div class="m-1">
+                            <p:panel class="w-100 m-1">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-user"></h:outputText>
+                                    <h:outputLabel value="Patient Details" class="mx-4"></h:outputLabel>
+                                </f:facet>
+                                <div class="row">
+                                    <div class="col-md-5"><p:outputLabel value="Name" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.nameWithTitle}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Gender" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.sex}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Age" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.ageAsString}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Mobile No." /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.mobile}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="Phone No." /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{admissionController.current.patient.person.phone}" /></div>
+
+                                    <div class="col-md-5"><p:outputLabel value="NIC" /></div>
+                                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                                    <div class="col-md-6"><h:outputText value="#{empty admissionController.current.patient.person.nic ? 'N/A' : admissionController.current.patient.person.nic}" /></div>
+                                </div>
+                            </p:panel>
+                        </div>
+                        <div class="m-1">
+                            <common:admission_details admission="#{admissionController.current}" class="w-100 m-1"></common:admission_details>
+                        </div>
+                    </div>
+                    <div class="col-9">
+                        <p:panel>
+                            <f:facet name="header">
+                                <p:outputLabel value="Issue Returns" style="font-weight: bold"></p:outputLabel>
+                            </f:facet>
+
+                            <p:dataTable
+                                id="tbl1"
+                                rowIndexVar="rowIndex"
+                                rowKey="#{dto.billId}"
+                                value="#{inwardPharmacyEncounterReportController.returnBillsToPatientEncounter}"
+                                var="dto">
+
+                                <p:column width="2em" style="padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{rowIndex+1}" />
+                                </p:column>
+
+                                <p:column width="8em" style="padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Sale Bill No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.referenceBillNumber}" />
+                                </p:column>
+
+                                <p:column width="8em" style="padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Return Bill No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.billNumber}" />
+                                </p:column>
+
+                                <p:column width="12em" style="padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Returned At" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" timeZone="Asia/Colombo" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column width="10em" style="padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Returned By" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.createdUserName}" />
+                                </p:column>
+
+                                <p:column width="8em" style="text-align: right; padding: 2px" styleClass="#{dto.cancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Net Value" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{dto.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardPharmacyEncounterReportController.returnBillsToPatientEncounterNetTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column width="8em" style="padding: 2px" exportable="false">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Action" />
+                                    </f:facet>
+                                    <p:commandButton
+                                        id="btnViewBill"
+                                        value="View Bill"
+                                        icon="fa fa-eye"
+                                        ajax="false"
+                                        class="ui-button-info"
+                                        disabled="#{dto.cancelled}"
+                                        action="/inward/pharmacy_reprint_bill_return_bht?faces-redirect=true">
+                                        <f:setPropertyActionListener value="#{dto.billId}" target="#{pharmacyBillSearch.billId}"/>
+                                    </p:commandButton>
+                                </p:column>
+
+                                <p:column style="width: 3em" exportable="false">
+                                    <p:rowToggler />
+                                </p:column>
+
+                                <p:rowExpansion>
+                                    <p:dataTable var="item" value="#{inwardPharmacyEncounterReportController.getItemsForReturnBill(dto.billId)}">
+                                        <p:column headerText="Item Name" width="45%">
+                                            <h:outputLabel value="#{item.itemName}"/>
+                                        </p:column>
+                                        <p:column headerText="Code" width="20%">
+                                            <h:outputLabel value="#{item.itemCode}"/>
+                                        </p:column>
+                                        <p:column headerText="Qty" width="15%" style="text-align: right;">
+                                            <h:outputLabel value="#{item.qty}">
+                                                <f:convertNumber pattern="#0.##" />
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Net Value" width="20%" style="text-align: right;">
+                                            <h:outputLabel value="#{item.netValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:rowExpansion>
+
+                            </p:dataTable>
+
+                        </p:panel>
+
+                    </div>
+                </div>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+</ui:composition>
