@@ -939,6 +939,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void addExpense() {
+        if (getBill().isCompleted()) {
+            JsfUtil.addErrorMessage("This bill is completed and cannot be edited.");
+            return;
+        }
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
             if (getBill().getBillFinanceDetails() == null) {
@@ -973,10 +977,14 @@ public class PharmacyDirectPurchaseController implements Serializable {
         recalculateExpenseTotals();
         recalculateProfitMarginsForAllItems();
 
-        // Persist the updated bill
-        if (getBill().getId() != null) {
-            getBillFacade().edit(getBill());
-        }
+        // Persist the expense directly so its generated id lands on this same
+        // in-memory object. Relying on getBillFacade().edit(getBill())'s cascade
+        // merges a copy of the bill graph - the id never comes back to
+        // currentExpense, so later save paths see getId()==null and either
+        // duplicate-create it or wrongly retire the row cascade already made
+        // (issue #21856 review).
+        getBillItemFacade().create(currentExpense);
+        getBillFacade().edit(getBill());
 
         currentExpense = null;
 
@@ -984,6 +992,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     public void removeExpense(BillItem expense) {
         if (expense == null) {
+            return;
+        }
+        if (getBill().isCompleted()) {
+            JsfUtil.addErrorMessage("This bill is completed and cannot be edited.");
             return;
         }
 
@@ -1174,6 +1186,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void removeItem(BillItem bi) {
+        if (getBill().isCompleted()) {
+            JsfUtil.addErrorMessage("This bill is completed and cannot be edited.");
+            return;
+        }
         getBillItems().remove(bi);
 
         int i = 0;
@@ -1195,6 +1211,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void updateBillItem() {
+        if (getBill().isCompleted()) {
+            JsfUtil.addErrorMessage("This bill is completed and cannot be edited.");
+            return;
+        }
         if (editingBillItem == null) {
             JsfUtil.addErrorMessage("No item selected for editing");
             return;
