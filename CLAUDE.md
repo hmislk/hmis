@@ -43,6 +43,7 @@
 
 ### When Working on UI/XHTML
 - [UI Development Handbook](developer_docs/ui/comprehensive-ui-guidelines.md) - Complete UI reference. **Authoring data-entry pages**: every actionable button needs a stable `id`; cap `p:autoComplete` with `maxResults`; guard the Enter key so it never clears/submits the form; make settle/issue/receive double-click-safe (JS `confirm()` + server-side re-entrancy guard). See § Accessibility-first development and § Data-entry components.
+- [Data-Dense Page Patterns](developer_docs/ui/data-dense-page-patterns.md) - **Required for pages with large tables / many inputs**: `stickyHeader` + `p-datatable-sm` on long tables, sticky action areas (`sticky-panel-header` / `sticky-action-bar`), `p:defaultCommand` + `p:focus` keyboard-first entry, lazy loading for large lists, button-clutter budget, busy indicators.
 - [Icon Management](developer_docs/ui/icon-management.md) - Standard icons and sizing
 
 ### When Testing with Playwright (E2E verification)

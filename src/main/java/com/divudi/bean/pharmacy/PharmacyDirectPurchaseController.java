@@ -1384,14 +1384,22 @@ public class PharmacyDirectPurchaseController implements Serializable {
     
     // <editor-fold defaultstate="collapsed" desc="Draft Workflow Methods">
 
-    public void saveDraftDirectPurchase() {
+    /**
+     * Persists the current bill and items as a draft (PRE type, not completed).
+     * Shared by the explicit Save Draft action and by Finalize, which
+     * transparently saves first when no draft has been saved yet.
+     *
+     * @return true if the draft was persisted, false if validation failed (an
+     * error message has already been added to the growl in that case)
+     */
+    private boolean persistDraftDirectPurchase() {
         if (getBillItems() == null || getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Please add items before saving");
-            return;
+            return false;
         }
         if (getBill().getFromInstitution() == null) {
             JsfUtil.addErrorMessage("Please select a Supplier");
-            return;
+            return false;
         }
 
         // Save bill header as PRE type — no bill number yet, no stock
@@ -1447,13 +1455,22 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
 
         getBillFacade().edit(getBill());
-        JsfUtil.addSuccessMessage("Direct Purchase draft saved successfully.");
         draftMode = true;
+        return true;
+    }
+
+    public void saveDraftDirectPurchase() {
+        if (persistDraftDirectPurchase()) {
+            JsfUtil.addSuccessMessage("Direct Purchase draft saved successfully.");
+        }
     }
 
     public void finalizeDraftDirectPurchase() {
-        if (bill == null || bill.getId() == null) {
-            JsfUtil.addErrorMessage("No draft loaded. Please save the draft first.");
+        // Always (re)persist first: addItem() may have already created a bare
+        // bill row (to get an id for the item FK) before department/supplier
+        // were set, so bill.getId() != null does not mean the draft is fully
+        // saved. persistDraftDirectPurchase() handles both create and edit.
+        if (!persistDraftDirectPurchase()) {
             return;
         }
 
