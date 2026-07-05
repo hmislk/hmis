@@ -24,6 +24,7 @@
                         <p:tab title="Purchase Orders">
                             <div class="d-grid gap-2">
                                 <p:commandButton
+                                    id="btnCreatePO"
                                     value="Create PO"
                                     ajax="false"
                                     action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"
@@ -32,22 +33,25 @@
                                     icon="fas fa-plus-circle"
                                     rendered="#{webUserController.hasPrivilege('CreatePurchaseOrder')}" />
                                 <p:commandButton
+                                    id="btnAutoOrderPModel"
                                     value="Auto Ordering - P Model"
                                     ajax="false"
                                     action="#{reorderController.autoOrderByDistributor()}"
-                                    class="ui-button-info w-100"
+                                    styleClass="ui-button-info w-100"
                                     style="text-align: left"
                                     icon="fas fa-sync-alt"
                                     rendered="#{webUserController.hasPrivilege('AutoOrderPModel')}" />
                                 <p:commandButton
+                                    id="btnAutoOrderQModel"
                                     value="Auto Ordering - Q Model"
                                     ajax="false"
                                     action="#{reorderController.autoOrderByDistributor()}"
-                                    class="ui-button-info w-100"
+                                    styleClass="ui-button-info w-100"
                                     style="text-align: left"
                                     icon="fas fa-retweet"
                                     rendered="#{webUserController.hasPrivilege('AutoOrderQModal')}" />
                                 <p:commandButton
+                                    id="btnFinalizePOs"
                                     value="Finalize POs"
                                     ajax="false"
                                     action="#{searchController.navigateToPurchaseOrderFinalize}"
@@ -56,6 +60,7 @@
                                     icon="fas fa-lock"
                                     rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder')}" />
                                 <p:commandButton
+                                    id="btnPoApproval"
                                     value="PO Approval"
                                     ajax="false"
                                     action="#{searchController.navigateToPurchaseOrderApprove}"
@@ -69,6 +74,7 @@
                         <p:tab title="Direct Purchase">
                             <div class="d-grid gap-2">
                                 <p:commandButton
+                                    id="btnDirectPurchaseWithCosting"
                                     value="Direct Purchase"
                                     ajax="false"
                                     action="#{pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill}"
@@ -77,6 +83,7 @@
                                     icon="fas fa-hand-holding-usd"
                                     rendered="#{webUserController.hasPrivilege('DirectPurchase') and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" />
                                 <p:commandButton
+                                    id="btnDirectPurchaseNoCosting"
                                     value="Direct Purchase"
                                     ajax="false"
                                     action="/pharmacy/pharmacy_purchase?faces-redirect=true"
@@ -86,6 +93,7 @@
                                     icon="fas fa-hand-holding-usd"
                                     rendered="#{webUserController.hasPrivilege('DirectPurchase') and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" />
                                 <p:commandButton
+                                    id="btnFinalizeDirectPurchase"
                                     value="Finalize Direct Purchase"
                                     ajax="false"
                                     action="#{searchController.navigateToDirectPurchaseListToFinalize()}"
@@ -94,6 +102,7 @@
                                     icon="fas fa-lock"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDirectPurchaseFinalize')}" />
                                 <p:commandButton
+                                    id="btnApproveDirectPurchase"
                                     value="Approve Direct Purchase"
                                     ajax="false"
                                     action="#{searchController.navigateToDirectPurchaseListToApprove()}"
@@ -107,6 +116,7 @@
                         <p:tab title="GRN">
                             <div class="d-grid gap-2">
                                 <p:commandButton
+                                    id="btnGrn"
                                     value="GRN"
                                     ajax="false"
                                     action="#{searchController.navigateToListPurchaseOrdersToReceive()}"
@@ -115,6 +125,7 @@
                                     icon="fas fa-dolly-flatbed"
                                     rendered="#{webUserController.hasPrivilege('GoodsRecipt')}" />
                                 <p:commandButton
+                                    id="btnApprovedPOsToGrn"
                                     value="Approved POs to Create GRN"
                                     ajax="false"
                                     action="#{searchController.navigateToListPurchaseOrdersToReceiveDto()}"
@@ -123,6 +134,7 @@
                                     icon="fas fa-rocket"
                                     rendered="#{webUserController.hasPrivilege('GoodsRecipt')}" />
                                 <p:commandButton
+                                    id="btnGrnFinalize"
                                     value="GRN Finalize"
                                     ajax="false"
                                     action="#{searchController.navigateToGrnListToFinalize()}"
@@ -131,6 +143,7 @@
                                     icon="fas fa-lock"
                                     rendered="#{webUserController.hasPrivilege('PharmacyGrnFinalize')}" />
                                 <p:commandButton
+                                    id="btnGrnApproval"
                                     value="GRN Approval"
                                     ajax="false"
                                     action="#{searchController.navigateToGrnListToApprove()}"
@@ -139,11 +152,12 @@
                                     icon="fas fa-check-double"
                                     rendered="#{webUserController.hasPrivilege('PharmacyGrnApprove')}" />
                                 <p:commandButton
+                                    id="btnGoodsReceiptWithApproval"
                                     value="Goods Receipt With Approval"
                                     ajax="false"
                                     action="/pharmacy/pharmacy_purchase_order_list_for_recieve_with_approval?faces-redirect=true"
                                     actionListener="#{searchController.makeListNull()}"
-                                    class="ui-button-info w-100"
+                                    styleClass="ui-button-info w-100"
                                     style="text-align: left"
                                     icon="fas fa-dolly-flatbed"
                                     rendered="#{webUserController.hasPrivilege('GoodsRecipt') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}" />
@@ -153,6 +167,7 @@
                         <p:tab title="Donations">
                             <div class="d-grid gap-2">
                                 <p:commandButton
+                                    id="btnPharmacyDonations"
                                     value="Pharmacy Donations"
                                     ajax="false"
                                     action="#{pharmacyDonationController.navigateToStartNewDonationBill}"
@@ -171,7 +186,7 @@
                                     icon="fa fa-cog"
                                     title="Procurement Return Configuration"
                                     type="button"
-                                    class="ui-button-secondary w-100"
+                                    styleClass="ui-button-secondary w-100"
                                     style="text-align: left"
                                     onclick="PF('procurementReturnConfigDialog').show();"
                                     rendered="#{webUserController.hasPrivilege('PharmacyGrnApprove') or webUserController.hasPrivilege('PharmacyDirectPurchaseApprove')}" />

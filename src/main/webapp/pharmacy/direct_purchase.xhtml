@@ -34,6 +34,7 @@
                             <!-- CENTER: entity-level navigation, shown when the draft workflow is active -->
                             <div class="d-flex gap-2">
                                 <p:commandButton
+                                    id="btnFinalizeListNav"
                                     value="Finalize List"
                                     ajax="false"
                                     action="#{searchController.navigateToDirectPurchaseListToFinalize()}"
@@ -41,6 +42,7 @@
                                     icon="fas fa-tasks"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false) and webUserController.hasPrivilege('PharmacyDirectPurchaseFinalize')}" />
                                 <p:commandButton
+                                    id="btnApproveListNav"
                                     value="Approve List"
                                     ajax="false"
                                     action="#{searchController.navigateToDirectPurchaseListToApprove()}"
@@ -52,6 +54,7 @@
                             <div>
 
                                 <p:commandButton
+                                    id="btnNewDirectPurchase"
                                     value="New Direct Purchase Bill"
                                     ajax="false"
                                     styleClass="ui-button-stage-save"
@@ -1065,6 +1068,7 @@
                                 <h:outputText styleClass="fa-solid fa-circle-plus" />
                                 <h:outputLabel value="Direct Purchase Order" class="mx-4"></h:outputLabel>
                                 <p:commandButton
+                                    id="btnDirectPurchasePrintSettings"
                                     rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                                     value="Settings"
                                     icon="fas fa-cog"
@@ -1076,6 +1080,7 @@
                             <!-- CENTER: entity-level navigation, shown when the draft workflow is active -->
                             <div class="d-flex gap-2">
                                 <p:commandButton
+                                    id="btnFinalizeListNavPrintView"
                                     value="Finalize List"
                                     ajax="false"
                                     action="#{searchController.navigateToDirectPurchaseListToFinalize()}"
@@ -1083,6 +1088,7 @@
                                     icon="fas fa-tasks"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false) and webUserController.hasPrivilege('PharmacyDirectPurchaseFinalize')}" />
                                 <p:commandButton
+                                    id="btnApproveListNavPrintView"
                                     value="Approve List"
                                     ajax="false"
                                     action="#{searchController.navigateToDirectPurchaseListToApprove()}"
@@ -1094,6 +1100,7 @@
                             <!-- RIGHT: actions, left = least important -> right = primary (Print) -->
                             <div class="d-flex gap-2 align-items-center">
                                 <p:commandButton
+                                    id="btnNewBillFromPrintView"
                                     ajax="false"
                                     styleClass="ui-button-stage-save"
                                     icon="fas fa-plus-circle"
