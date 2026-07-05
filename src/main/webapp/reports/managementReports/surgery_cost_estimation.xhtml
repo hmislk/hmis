@@ -228,9 +228,9 @@
                                 <p:outputLabel value="Surgery Status" for="staus" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu id="staus"
-                                            value="#{inwardReportController.selectedSurgeryStatus}"
-                                            styleClass="w-100 form-control"
-                                            filter="true">
+                                             value="#{inwardReportController.selectedSurgeryStatus}"
+                                             styleClass="w-100 form-control"
+                                             filter="true">
                                 <f:selectItem itemLabel="All Surgery Status" itemValue="#{null}" noSelectionOption="true"/>
                                 <f:selectItems value="#{inwardReportController.theatreOccupancyStatusValues}"
                                                var="tos"
@@ -312,18 +312,22 @@
                         <!-- Action Buttons -->
                         <div class="d-flex align-items-center my-3">
                             <p:commandButton
+                                id="btnProcessSurgeryCost"
                                 class="ui-button-warning mx-1"
                                 icon="fas fa-cogs"
                                 ajax="false"
                                 value="Process"
                                 action="#{inwardReportController.processSurgeryCostEstimationReport()}"/>
-                            <p:commandButton class="ui-button-primary mx-1"
-                                             icon="fas fa-print"
-                                             ajax="false"
-                                             value="Print All">
+                            <p:commandButton 
+                                id="btnPrintAllSurgeryCost"
+                                class="ui-button-primary mx-1"
+                                icon="fas fa-print"
+                                ajax="false"
+                                value="Print All">
                                 <p:printer target="printPanel"/>
                             </p:commandButton>
                             <p:commandButton
+                                id="btnDownloadSurgeryCostExcel"
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
@@ -331,6 +335,7 @@
                                 action="#{inwardReportController.downloadSurgeryCostEstimationExcel}">
                             </p:commandButton>
                             <p:commandButton
+                                id="btnDownloadSurgeryCostPdf"
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
