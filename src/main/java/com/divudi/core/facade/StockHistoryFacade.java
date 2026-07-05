@@ -38,6 +38,24 @@ public class StockHistoryFacade extends AbstractFacade<StockHistory> {
     }
 
     /**
+     * Finds the StockHistory row written at the time of a given stock movement
+     * (e.g. a stock-quantity adjustment), so its cost/purchase/retail rate
+     * snapshot - captured by PharmacyBean.addToStockHistory at that exact
+     * moment - can be used instead of the item batch's CURRENT rate, which may
+     * have since changed via a later rate adjustment.
+     */
+    public StockHistory findByPharmaceuticalBillItem(com.divudi.core.entity.pharmacy.PharmaceuticalBillItem pbItem) {
+        if (pbItem == null || pbItem.getId() == null) {
+            return null;
+        }
+        String jpql = "select sh from StockHistory sh where sh.pbItem=:pbItem order by sh.id desc";
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("pbItem", pbItem);
+        List<StockHistory> results = findByJpql(jpql, params);
+        return (results == null || results.isEmpty()) ? null : results.get(0);
+    }
+
+    /**
      * Calculates the stock value at retail rate for a given date and department.
      * This method uses a simplified native SQL query for better performance.
      *

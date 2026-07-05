@@ -33,6 +33,13 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
         @Override public void edit(Bill entity) { edited.add(entity); }
     }
 
+    private static class DummyStockHistoryFacade extends com.divudi.core.facade.StockHistoryFacade {
+        @Override public com.divudi.core.entity.pharmacy.StockHistory findByPharmaceuticalBillItem(
+                com.divudi.core.entity.pharmacy.PharmaceuticalBillItem pbItem) {
+            return null;
+        }
+    }
+
     private PharmacyAdjustmentApiService service;
     private DummyBillFacade billFacade;
 
@@ -43,6 +50,10 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
         Field f = PharmacyAdjustmentApiService.class.getDeclaredField("billFacade");
         f.setAccessible(true);
         f.set(service, billFacade);
+
+        Field shf = PharmacyAdjustmentApiService.class.getDeclaredField("stockHistoryFacade");
+        shf.setAccessible(true);
+        shf.set(service, new DummyStockHistoryFacade());
     }
 
     private Bill buildHistoricalQuantityAdjustmentBill(double beforeQty, double afterQty, double netRate) {
@@ -75,6 +86,44 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
 
         bill.getBillItems().add(billItem);
         return bill;
+    }
+
+    @Test
+    @DisplayName("Backfill prefers the StockHistory rate snapshot at adjustment time over the item batch's "
+            + "current rate, and does not disclose an approximation when a snapshot is found")
+    public void testBackfillUsesHistoricalStockHistoryRateNotCurrentRate() throws Exception {
+        // Item batch's CURRENT rates (e.g. changed by a later rate adjustment, after this bill was created).
+        Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0); // delta qty = 15
+        PharmaceuticalBillItem ph = bill.getBillItems().get(0).getPharmaceuticalBillItem();
+        // Current cost/purchase rates from buildHistoricalQuantityAdjustmentBill: 60.0 / 70.0.
+        // Historical snapshot at adjustment time was actually 55.0 / 65.0 - simulating a rate
+        // change that happened AFTER this bill was created but BEFORE the backfill runs.
+        com.divudi.core.entity.pharmacy.StockHistory snapshot = new com.divudi.core.entity.pharmacy.StockHistory();
+        snapshot.setCostRate(55.0);
+        snapshot.setPurchaseRate(65.0);
+
+        Field shf = PharmacyAdjustmentApiService.class.getDeclaredField("stockHistoryFacade");
+        shf.setAccessible(true);
+        shf.set(service, new com.divudi.core.facade.StockHistoryFacade() {
+            @Override public com.divudi.core.entity.pharmacy.StockHistory findByPharmaceuticalBillItem(
+                    com.divudi.core.entity.pharmacy.PharmaceuticalBillItem pbItem) {
+                return pbItem == ph ? snapshot : null;
+            }
+        });
+
+        BackfillResultDTO result = service.backfillFinanceDetails(bill, true /* apply */);
+
+        assertTrue(result.isApplied());
+        // Historical: 15 * 55.0 = 825.0 (NOT 15 * 60.0 = 900.0, the current rate)
+        assertEquals(0, java.math.BigDecimal.valueOf(825.0).compareTo(bill.getBillFinanceDetails().getTotalCostValue()),
+                "Expected cost value computed from the historical StockHistory snapshot (55.0), not the current item batch rate (60.0)");
+        // Historical: 15 * 65.0 = 975.0 (NOT 15 * 70.0 = 1050.0, the current rate)
+        assertEquals(0, java.math.BigDecimal.valueOf(975.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()),
+                "Expected purchase value computed from the historical StockHistory snapshot (65.0), not the current item batch rate (70.0)");
+
+        assertNotNull(result.getNote());
+        assertFalse(result.getNote().contains("approximated using current item batch rates"),
+                "A real historical snapshot was found, so no approximation disclosure should be added, got: " + result.getNote());
     }
 
     @Test

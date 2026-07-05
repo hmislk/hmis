@@ -64,6 +64,9 @@ public class PharmacyAdjustmentApiService implements Serializable {
     private DepartmentFacade departmentFacade;
 
     @EJB
+    private com.divudi.core.facade.StockHistoryFacade stockHistoryFacade;
+
+    @EJB
     private PharmacyBean pharmacyBean;
 
     @EJB
@@ -283,21 +286,40 @@ public class PharmacyAdjustmentApiService implements Serializable {
                 // captured at adjustment time.
                 double qtyDelta = after - before;
                 deltaRetailValue += qtyDelta * item.getNetRate();
-                // NOTE: no historical cost-rate snapshot exists on PharmaceuticalBillItem for
-                // this bill type (costRate is never set by the adjustment-creation code), so
-                // we fall back to the item batch's CURRENT cost/purchase rate. This is an
-                // approximation, not the rate in effect at the time of the original adjustment.
-                // Disclosed to the caller via result.note below.
-                Double costRateObj = ph.getItemBatch() != null ? ph.getItemBatch().getCostRate() : null;
-                double costRate = costRateObj != null ? costRateObj
-                        : (ph.getItemBatch() != null ? ph.getItemBatch().getPurcahseRate() : item.getNetRate());
+                // PharmacyBean.addToStockHistory records a cost/purchase rate snapshot on the
+                // StockHistory row it writes at the exact time of this adjustment (same row
+                // resetStock() creates). Prefer that historical snapshot over the item batch's
+                // CURRENT rate, which may have since changed via a later rate adjustment -
+                // using the current rate for a bill from days/weeks ago silently produces a
+                // wrong delta if the rate has moved since. Fall back to current rate only when
+                // no snapshot exists at all (disclosed to the caller via result.note below).
+                com.divudi.core.entity.pharmacy.StockHistory historicalSnapshot =
+                        stockHistoryFacade.findByPharmaceuticalBillItem(ph);
+
+                Double historicalCostRate = (historicalSnapshot != null && historicalSnapshot.getCostRate() != 0.0)
+                        ? historicalSnapshot.getCostRate() : null;
+                double costRate;
+                if (historicalCostRate != null) {
+                    costRate = historicalCostRate;
+                } else {
+                    Double costRateObj = ph.getItemBatch() != null ? ph.getItemBatch().getCostRate() : null;
+                    costRate = costRateObj != null ? costRateObj
+                            : (ph.getItemBatch() != null ? ph.getItemBatch().getPurcahseRate() : item.getNetRate());
+                    costValueApproximatedFromCurrentRate = true;
+                }
                 deltaCostValue += qtyDelta * costRate;
-                // Same approximation caveat as cost: no historical purchase-rate snapshot
-                // exists for this bill type, so fall back to the item batch's current rate.
-                double purchaseRate = ph.getItemBatch() != null ? ph.getItemBatch().getPurcahseRate() : item.getNetRate();
+
+                Double historicalPurchaseRate = (historicalSnapshot != null && historicalSnapshot.getPurchaseRate() != 0.0)
+                        ? historicalSnapshot.getPurchaseRate() : null;
+                double purchaseRate;
+                if (historicalPurchaseRate != null) {
+                    purchaseRate = historicalPurchaseRate;
+                } else {
+                    purchaseRate = ph.getItemBatch() != null ? ph.getItemBatch().getPurcahseRate() : item.getNetRate();
+                    costValueApproximatedFromCurrentRate = true;
+                }
                 deltaPurchaseValue += qtyDelta * purchaseRate;
                 deltaQty += Math.abs(qtyDelta);
-                costValueApproximatedFromCurrentRate = true;
                 // before/after are quantities here; convert to values using the retail rate
                 // captured at adjustment time (item.getNetRate()), matching createStockAdjustmentBillItem.
                 totalBeforeValue += before * item.getNetRate();
