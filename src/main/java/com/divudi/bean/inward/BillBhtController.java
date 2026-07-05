@@ -978,15 +978,24 @@ public class BillBhtController implements Serializable {
         }
         addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
         bItem.setMarginValue(getBillBean().calBillItemMargin(addingEntry));
+
+        // Block items with no fee configured (neither site nor base fee) before adding
+        double feeGrossTotal = 0.0;
+        if (addingEntry.getLstBillFees() != null) {
+            for (BillFee bf : addingEntry.getLstBillFees()) {
+                feeGrossTotal += bf.getFeeGrossValue();
+            }
+        }
+        if (feeGrossTotal == 0.0) {
+            JsfUtil.addErrorMessage("This item has no fee configured and cannot be added.");
+            return;
+        }
+
         lstBillEntries.add(addingEntry);
 
         bItem.setRate(getBillBean().billItemRate(addingEntry));
 
         calTotals();
-        if (bItem.getNetValue() == 0.0) {
-            JsfUtil.addErrorMessage("Please enter the rate");
-            return;
-        }
 
         clearBillItemValues();
         //JsfUtil.addSuccessMessage("Item Added");
@@ -995,18 +1004,14 @@ public class BillBhtController implements Serializable {
     public List<BillFee> billFeeFromBillItemWithMatrix(BillItem billItem, PatientEncounter patientEncounter, Department matrixDepartment, PaymentMethod paymentMethod) {
 
         List<BillFee> billFeeList = new ArrayList<>();
-        boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are the same for all departments, institutions and sites.", true);
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site", false);
+        Institution site = sessionController.getDepartment() != null ? sessionController.getDepartment().getSite() : null;
         List<ItemFee> itemFee;
 
-        if (siteBasedBillFees && !addAllBillFees) {
-            if (sessionController.getDepartment() != null
-                    && sessionController.getDepartment().getSite() != null) {
-                itemFee = itemFeeManager.fillFees(
-                        billItem.getItem(),
-                        sessionController.getDepartment().getSite()
-                );
-            } else {
+        if (siteBasedBillFees && site != null) {
+            itemFee = itemFeeManager.fillFees(billItem.getItem(), site);
+            if (itemFee == null || itemFee.isEmpty()) {
+                // Fall back to base fees when the item has no site fee for this site
                 itemFee = itemFeeManager.fillFees(billItem.getItem());
             }
         } else {
