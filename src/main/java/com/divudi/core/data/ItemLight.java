@@ -500,6 +500,40 @@ public class ItemLight {
 
     }
 
+    /**
+     * Copy constructor. Produces an independent instance so callers can safely
+     * mutate per-context fields (e.g. {@code total}) without corrupting shared,
+     * application-scoped cached {@code ItemLight} objects.
+     */
+    public ItemLight(ItemLight o) {
+        this.id = o.id;
+        this.orderNo = o.orderNo;
+        this.isMasterItem = o.isMasterItem;
+        this.hasReportFormat = o.hasReportFormat;
+        this.categoryName = o.categoryName;
+        this.categoryId = o.categoryId;
+        this.total = o.total;
+        this.totalForForeigner = o.totalForForeigner;
+        this.institutionName = o.institutionName;
+        this.institutionId = o.institutionId;
+        this.departmentName = o.departmentName;
+        this.departmentId = o.departmentId;
+        this.specialityName = o.specialityName;
+        this.specialityId = o.specialityId;
+        this.staffName = o.staffName;
+        this.staffId = o.staffId;
+        this.dtype = o.dtype;
+        this.name = o.name;
+        this.code = o.code;
+        this.barcode = o.barcode;
+        this.printName = o.printName;
+        this.shortName = o.shortName;
+        this.fullName = o.fullName;
+        this.feeName = o.feeName;
+        this.feeValue = o.feeValue;
+        this.feeValueForeign = o.feeValueForeign;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
