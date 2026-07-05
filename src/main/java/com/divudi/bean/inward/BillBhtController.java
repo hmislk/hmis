@@ -1231,7 +1231,7 @@ public class BillBhtController implements Serializable {
                 temItems = itemApplicationController.getInvestigationsAndServices();
                 break;
         }
-        applyInwardFeeTotals(temItems);
+        temItems = applyInwardFeeTotals(temItems);
         boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List Inward Items by Department", false);
         if (listItemsByDepartment) {
             fillInwardItemDepartments(temItems);
@@ -1254,9 +1254,9 @@ public class BillBhtController implements Serializable {
      * config is OFF, the base fee is shown. Items with no fee show 0.00 and are
      * blocked from being added in {@link #addToBill()}.
      */
-    private void applyInwardFeeTotals(List<ItemLight> items) {
+    private List<ItemLight> applyInwardFeeTotals(List<ItemLight> items) {
         if (items == null || items.isEmpty()) {
-            return;
+            return items;
         }
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site", false);
         boolean foreigner = patientEncounter != null && patientEncounter.isForiegner();
@@ -1269,7 +1269,7 @@ public class BillBhtController implements Serializable {
             }
         }
         if (itemIds.isEmpty()) {
-            return;
+            return items;
         }
 
         boolean useSiteFees = siteBasedBillFees && site != null;
@@ -1278,8 +1278,13 @@ public class BillBhtController implements Serializable {
                 ? itemFeeManager.fetchInwardFeeTotalsByItemIds(itemIds, site, foreigner)
                 : new HashMap<>();
 
-        for (ItemLight il : items) {
-            Double value = null;
+        // Work on copies: the source lists can be application-scoped cached
+        // ItemLight instances shared across sessions, so mutating them in place
+        // would leak one session's price into another.
+        List<ItemLight> result = new ArrayList<>(items.size());
+        for (ItemLight src : items) {
+            ItemLight il = new ItemLight(src);
+            Double value;
             if (useSiteFees) {
                 Double s = siteTotals.get(il.getId());
                 value = (s != null && s != 0.0) ? s : baseTotals.get(il.getId());
@@ -1287,7 +1292,9 @@ public class BillBhtController implements Serializable {
                 value = baseTotals.get(il.getId());
             }
             il.setTotal(value != null ? value : 0.0);
+            result.add(il);
         }
+        return result;
     }
 
     private List<ItemLight> filterItemLightesByDepartment(List<ItemLight> ils, Department dept) {
