@@ -54,6 +54,7 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
         itemBatch.setItem(new Item());
         itemBatch.setRetailsaleRate(netRate);
         itemBatch.setCostRate(netRate * 0.6);
+        itemBatch.setPurcahseRate(netRate * 0.7);
 
         Stock stock = new Stock();
         stock.setItemBatch(itemBatch);
@@ -98,8 +99,8 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
 
         // Finding 1: cost-value approximation must be disclosed via the note field for this bill type.
         assertNotNull(result.getNote());
-        assertTrue(result.getNote().contains("Cost value approximated using current item batch cost rate"),
-                "Expected note to disclose cost-value approximation, got: " + result.getNote());
+        assertTrue(result.getNote().contains("Cost and purchase values approximated using current item batch rates"),
+                "Expected note to disclose cost/purchase-value approximation, got: " + result.getNote());
     }
 
     @Test
@@ -139,10 +140,27 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
         assertEquals(0, java.math.BigDecimal.valueOf(500.0).compareTo(bill.getBillFinanceDetails().getTotalBeforeAdjustmentValue()));
         assertEquals(0, java.math.BigDecimal.valueOf(600.0).compareTo(bill.getBillFinanceDetails().getTotalAfterAdjustmentValue()));
 
-        // Cost-value approximation disclosure only applies to PHARMACY_STOCK_ADJUSTMENT bills.
+        // Cost/purchase-value approximation disclosure only applies to PHARMACY_STOCK_ADJUSTMENT bills.
         assertNotNull(result.getNote());
-        assertFalse(result.getNote().contains("Cost value approximated"),
-                "Retail-rate adjustment backfill should not carry the cost-approximation note, got: " + result.getNote());
+        assertFalse(result.getNote().contains("approximated using current item batch rates"),
+                "Retail-rate adjustment backfill should not carry the cost/purchase-approximation note, got: " + result.getNote());
+    }
+
+    @Test
+    @DisplayName("Backfill for a stock-quantity bill also populates totalPurchaseValue, "
+            + "without double-counting it into the bill's netTotal")
+    public void testBackfillStockAdjustmentPopulatesPurchaseValueWithoutDoubleCountingNetTotal() {
+        Bill bill = buildHistoricalQuantityAdjustmentBill(10.0, 25.0, 100.0); // delta qty = 15, purcahseRate = 70.0
+
+        BackfillResultDTO result = service.backfillFinanceDetails(bill, true /* apply */);
+
+        assertTrue(result.isApplied());
+        // totalPurchaseValue = 15 * 70.0 = 1050.0 (F15 report's "Stock Value (Purchase)" column)
+        assertEquals(0, java.math.BigDecimal.valueOf(1050.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()));
+        // netTotal/computedNetTotal stay scoped to the retail dimension (1500.0) - must NOT
+        // become 1500.0 + 1050.0, which would double-count the same quantity change twice.
+        assertEquals(1500.0, bill.getNetTotal(), 0.001);
+        assertEquals(1500.0, result.getComputedNetTotal(), 0.001);
     }
 
     @Test
@@ -186,8 +204,8 @@ public class PharmacyAdjustmentApiServiceBackfillTest {
         assertNotNull(result.getNote());
         assertTrue(result.getNote().contains("Dry run: not persisted"),
                 "Expected dry-run base message, got: " + result.getNote());
-        assertTrue(result.getNote().contains("Cost value approximated using current item batch cost rate"),
-                "Expected dry-run note to disclose cost-value approximation, got: " + result.getNote());
+        assertTrue(result.getNote().contains("Cost and purchase values approximated using current item batch rates"),
+                "Expected dry-run note to disclose cost/purchase-value approximation, got: " + result.getNote());
     }
 
     @Test

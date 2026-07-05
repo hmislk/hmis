@@ -292,6 +292,10 @@ public class PharmacyAdjustmentApiService implements Serializable {
                 double costRate = costRateObj != null ? costRateObj
                         : (ph.getItemBatch() != null ? ph.getItemBatch().getPurcahseRate() : item.getNetRate());
                 deltaCostValue += qtyDelta * costRate;
+                // Same approximation caveat as cost: no historical purchase-rate snapshot
+                // exists for this bill type, so fall back to the item batch's current rate.
+                double purchaseRate = ph.getItemBatch() != null ? ph.getItemBatch().getPurcahseRate() : item.getNetRate();
+                deltaPurchaseValue += qtyDelta * purchaseRate;
                 deltaQty += Math.abs(qtyDelta);
                 costValueApproximatedFromCurrentRate = true;
                 // before/after are quantities here; convert to values using the retail rate
@@ -312,15 +316,22 @@ public class PharmacyAdjustmentApiService implements Serializable {
             }
         }
 
-        double netTotal = deltaRetailValue + deltaPurchaseValue;
+        // Purchase-rate-adjustment bills carry their value in deltaPurchaseValue only;
+        // stock-quantity and retail-rate adjustments carry it in deltaRetailValue. A
+        // stock-quantity bill now also populates deltaPurchaseValue (see above) so the
+        // BFD's totalPurchaseValue reconciles, but that must not double-count into the
+        // bill's own total/netTotal - only one dimension is ever the bill's "primary" value.
+        double netTotal = (bill.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT)
+                ? deltaPurchaseValue
+                : deltaRetailValue;
         result.setComputedNetTotal(netTotal);
         result.setComputedTotal(Math.abs(netTotal));
 
         // Build disclosure text (applies to both dry-run and apply paths)
         String disclosureSuffix = "";
         if (costValueApproximatedFromCurrentRate) {
-            disclosureSuffix = ". Cost value approximated using current item batch cost rate "
-                    + "(no historical cost-rate snapshot exists for this bill type)";
+            disclosureSuffix = ". Cost and purchase values approximated using current item batch rates "
+                    + "(no historical rate snapshot exists for this bill type)";
         }
 
         if (!apply) {
@@ -375,7 +386,16 @@ public class PharmacyAdjustmentApiService implements Serializable {
         params.put("to", toDate);
         params.put("ret", false);
 
-        java.util.List<Bill> bills = billFacade.findByJpql(jpql, params);
+        // Bill.createdAt is @Temporal(TIMESTAMP). The 2-arg findByJpql(jpql, params)
+        // overload binds every Date parameter as TemporalType.DATE, which silently
+        // truncates the time-of-day - toDate's end-of-day precision (23:59:59.999)
+        // would be dropped and the query would compare against midnight instead,
+        // silently excluding same-day bills. Bind from/to explicitly as TIMESTAMP.
+        java.util.Map<String, javax.persistence.TemporalType> temporalTypes = new java.util.HashMap<>();
+        temporalTypes.put("from", javax.persistence.TemporalType.TIMESTAMP);
+        temporalTypes.put("to", javax.persistence.TemporalType.TIMESTAMP);
+
+        java.util.List<Bill> bills = billFacade.findByJpql(jpql, params, temporalTypes);
 
         java.util.List<BackfillResultDTO> results = new java.util.ArrayList<>();
         for (Bill bill : bills) {
@@ -615,9 +635,11 @@ public class PharmacyAdjustmentApiService implements Serializable {
         double retailsaleRate = stock.getItemBatch().getRetailsaleRate();
         Double costRateObj = stock.getItemBatch().getCostRate();
         double costRate = (costRateObj != null) ? costRateObj : stock.getItemBatch().getPurcahseRate();
+        double purchaseRate = stock.getItemBatch().getPurcahseRate();
 
         double deltaRetailValue = quantityChange * retailsaleRate;
         double deltaCostValue = quantityChange * costRate;
+        double deltaPurchaseValue = quantityChange * purchaseRate;
 
         BillItem billItem = new BillItem();
         billItem.setItem(stock.getItemBatch().getItem());
@@ -660,7 +682,9 @@ public class PharmacyAdjustmentApiService implements Serializable {
         bfd.setTotalQuantity(BigDecimal.valueOf(Math.abs(quantityChange)));
         bfd.setTotalBeforeAdjustmentValue(BigDecimal.valueOf(beforeQty * retailsaleRate));
         bfd.setTotalAfterAdjustmentValue(BigDecimal.valueOf(afterQty * retailsaleRate));
-        bfd.setTotalPurchaseValue(BigDecimal.ZERO);
+        // A quantity change moves stock value at cost, purchase, AND retail rates
+        // simultaneously - populate all three so each F15 report column reconciles.
+        bfd.setTotalPurchaseValue(BigDecimal.valueOf(deltaPurchaseValue));
         bfd.setTotalWholesaleValue(BigDecimal.ZERO);
 
         bill.setTotal(Math.abs(deltaRetailValue));

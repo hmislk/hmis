@@ -155,6 +155,9 @@ public class PharmacyAdjustmentApiServiceTest {
         assertNotNull(bill.getBillFinanceDetails(), "BillFinanceDetails must be created so the F15 report can read it");
         assertEquals(0, java.math.BigDecimal.valueOf(1500.0).compareTo(bill.getBillFinanceDetails().getTotalRetailSaleValue()));
         assertEquals(0, java.math.BigDecimal.valueOf(15.0 * 55.0).compareTo(bill.getBillFinanceDetails().getTotalCostValue()));
+        // A quantity change moves stock value at the purchase rate too (F15 report's
+        // "Stock Value (Purchase)" column), not just cost/retail.
+        assertEquals(0, java.math.BigDecimal.valueOf(15.0 * 60.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()));
     }
 
     @Test
@@ -171,6 +174,8 @@ public class PharmacyAdjustmentApiServiceTest {
         Bill bill = billFacade.saved.get(0);
         assertEquals(-600.0, bill.getNetTotal(), 0.001);
         assertEquals(600.0, bill.getTotal(), 0.001, "Bill.total (gross) should be the absolute value of the change");
+        assertEquals(0, java.math.BigDecimal.valueOf(-6.0 * 60.0).compareTo(bill.getBillFinanceDetails().getTotalPurchaseValue()),
+                "A quantity decrease must record a negative purchase-value delta too");
     }
 
     @Test
