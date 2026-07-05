@@ -1287,6 +1287,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 if (SecurityController.matchPassword(password, u.getWebUserPassword())) {
+                    if (!u.isIpAllowed(populateRequestInfo().getIpAddress())) {
+                        JsfUtil.addErrorMessage("Login not allowed from this IP address for this user.");
+                        return false;
+                    }
                     if (!canLogToDept(u, department)) {
                         JsfUtil.addErrorMessage("No privilage to Login This Department");
                         return false;
@@ -1509,6 +1513,10 @@ public class SessionController implements Serializable, HttpSessionListener {
                     passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
                 }
                 if (passwordIsOk) {
+                    if (!u.isIpAllowed(populateRequestInfo().getIpAddress())) {
+                        JsfUtil.addErrorMessage("Login not allowed from this IP address for this user.");
+                        return false;
+                    }
                     System.out.println("DEBUG: Password verification successful, loading departments...");
                     long deptStartTime = System.currentTimeMillis();
                     departments = listLoggableDepts(u);

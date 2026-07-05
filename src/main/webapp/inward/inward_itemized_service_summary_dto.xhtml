@@ -154,24 +154,44 @@
                     </p:column>
                     <p:column class="text-end">
                         <f:facet name="header"><h:outputText value="Hospital Fee" /></f:facet>
+                        <f:facet name="footer">
+                            <h:outputText value="#{searchController.opdSaleSummaryHospitalFeeTotal}" style="font-weight: bold;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
                         <h:outputText value="#{row.hospitalFee}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
                     </p:column>
                     <p:column class="text-end">
                         <f:facet name="header"><h:outputText value="Professional Fee" /></f:facet>
+                        <f:facet name="footer">
+                            <h:outputText value="#{searchController.opdSaleSummaryProfessionalFeeTotal}" style="font-weight: bold;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
                         <h:outputText value="#{row.professionalFee}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
                     </p:column>
                     <p:column class="text-end">
                         <f:facet name="header"><h:outputText value="Gross Amount" /></f:facet>
+                        <f:facet name="footer">
+                            <h:outputText value="#{searchController.opdSaleSummaryGrossAmountTotal}" style="font-weight: bold;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
                         <h:outputText value="#{row.grossAmount}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
                     </p:column>
                     <p:column class="text-end">
                         <f:facet name="header"><h:outputText value="Discount" /></f:facet>
+                        <f:facet name="footer">
+                            <h:outputText value="#{searchController.opdSaleSummaryDiscountTotal}" style="font-weight: bold;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
                         <h:outputText value="#{row.discountAmount}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>

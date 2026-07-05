@@ -13,31 +13,22 @@ import com.divudi.core.data.dto.itemrequest.ItemRequestLineResponseDTO;
 import com.divudi.core.data.dto.itemrequest.ItemRequestResponseDTO;
 import com.divudi.core.data.dto.itemrequest.ItemRequestSearchResultDTO;
 import com.divudi.core.entity.Bill;
-import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Item;
-import com.divudi.core.entity.ItemFee;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Service;
+import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.WebUser;
-import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.facade.BillFacade;
-import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
-import com.divudi.core.facade.PharmaceuticalBillItemFacade;
-import com.divudi.core.facade.StockFacade;
-import com.divudi.bean.common.BillBeanController;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.service.pharmacy.DirectIssueBatchService;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -51,10 +42,12 @@ import java.util.Map;
  * External systems submit item/service requests (meals, stock items such as
  * water/tea/milk/sugar) against a patient's active BHT. Requests are saved as
  * a Pending {@link BillType#InwardServiceItemRequest} bill (no charge, no
- * stock movement). A department user later approves (charges the BHT and
- * deducts stock atomically) or rejects (records a reason) the request via a
- * JSF approval queue built separately. External systems poll
- * {@code GET /api/itemrequests/{id}} for status.
+ * stock movement). A department user later fulfills each line by navigating
+ * into the real Add Services / Direct Issue pages (which link the resulting
+ * BillItem back to the request line via {@code referanceBillItem}), or
+ * rejects still-pending lines (records a reason) via a JSF approval queue
+ * built separately. External systems poll {@code GET /api/itemrequests/{id}}
+ * for status.
  *
  * @author Claude AI Assistant
  */
@@ -68,9 +61,6 @@ public class ItemRequestApiService implements Serializable {
     private BillItemFacade billItemFacade;
 
     @EJB
-    private BillFeeFacade billFeeFacade;
-
-    @EJB
     private ItemFacade itemFacade;
 
     @EJB
@@ -80,19 +70,7 @@ public class ItemRequestApiService implements Serializable {
     private DepartmentFacade departmentFacade;
 
     @EJB
-    private StockFacade stockFacade;
-
-    @EJB
-    private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-
-    @EJB
     private BillNumberGenerator billNumberBean;
-
-    @Inject
-    private BillBeanController billBeanController;
-
-    @Inject
-    private DirectIssueBatchService directIssueBatchService;
 
     // =========================================================================
     // Submit
@@ -168,9 +146,9 @@ public class ItemRequestApiService implements Serializable {
         requestBill.setDeptId(deptId);
         requestBill.setInsId(deptId);
 
-        // See approveRequest()'s note on Bill.billItems (@OneToMany cascade=ALL,
-        // orphanRemoval=true) — keep it in sync with every BillItem persisted
-        // against this bill to avoid a spurious delete-orphan on a later edit().
+        // Bill.billItems is a @OneToMany(cascade=ALL, orphanRemoval=true) collection.
+        // Keep it in sync with every BillItem persisted against this bill to avoid
+        // a spurious delete-orphan on a later edit().
         requestBill.setBillItems(new ArrayList<BillItem>());
 
         billFacade.create(requestBill);
@@ -199,7 +177,7 @@ public class ItemRequestApiService implements Serializable {
         // be null when the response DTO is built.
         billFacade.flush();
 
-        return toResponseDTO(requestBill, savedLines, "PENDING", null, null, null);
+        return toResponseDTO(requestBill, savedLines, "PENDING");
     }
 
     // =========================================================================
@@ -280,171 +258,35 @@ public class ItemRequestApiService implements Serializable {
     }
 
     // =========================================================================
-    // Approve — the core transactional operation
-    // =========================================================================
-
-    /**
-     * Approves a pending item/service request: charges the BHT for every line
-     * and, for inventory lines, deducts stock atomically. If any line cannot be
-     * fulfilled (insufficient stock) the whole operation rolls back — this
-     * method is expected to run inside the EJB container-managed transaction of
-     * this {@code @Stateless} bean, so a thrown exception undoes everything
-     * already persisted in this call.
-     * <p>
-     * Re-fetches the request bill by id (rather than accepting a pre-fetched
-     * entity) to guard against a stale in-memory bill racing a concurrent
-     * approval/rejection/cancellation of the same request.
-     */
-    public Bill approveRequest(Long requestBillId, WebUser approvingUser, Department approvingDepartment) {
-        Bill requestBill = fetchRequestBillOrThrow(requestBillId);
-        assertRequestBelongsToDepartment(requestBill, approvingDepartment, "approve");
-        String status = deriveStatus(requestBill);
-        if (!"PENDING".equals(status)) {
-            throw new IllegalStateException("Request is already " + status + ", cannot approve");
-        }
-
-        List<BillItem> requestLines = billItemFacade.findByJpql(
-                "select bi from BillItem bi where bi.retired=false and bi.bill=:b",
-                singleParam("b", requestBill));
-
-        Bill approvalBill = new Bill();
-        approvalBill.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_ITEM_APPROVAL);
-        approvalBill.setBillType(BillType.InwardServiceItemApproval);
-        approvalBill.setReferenceBill(requestBill);
-        approvalBill.setFromDepartment(requestBill.getFromDepartment());
-        approvalBill.setFromInstitution(requestBill.getFromInstitution());
-        approvalBill.setToDepartment(requestBill.getToDepartment());
-        approvalBill.setToInstitution(requestBill.getToInstitution());
-        approvalBill.setDepartment(approvingDepartment);
-        approvalBill.setInstitution(approvingDepartment != null ? approvingDepartment.getInstitution() : null);
-        approvalBill.setPatientEncounter(requestBill.getPatientEncounter());
-        approvalBill.setCreater(approvingUser);
-        approvalBill.setCreatedAt(new Date());
-
-        String deptId = approvingDepartment != null
-                ? billNumberBean.departmentBillNumberGeneratorYearly(approvingDepartment, BillTypeAtomic.INWARD_SERVICE_ITEM_APPROVAL)
-                : null;
-        approvalBill.setDeptId(deptId);
-        approvalBill.setInsId(deptId);
-
-        // Bill.billItems is a @OneToMany(cascade=ALL, orphanRemoval=true) collection.
-        // Every BillItem persisted against this bill MUST also be appended here,
-        // otherwise the next time this Bill is managed/edited, EclipseLink treats
-        // the DB-only rows as orphans removed from the collection and issues a
-        // DELETE for them (causing a spurious FK-violation rollback).
-        approvalBill.setBillItems(new ArrayList<BillItem>());
-
-        billFacade.create(approvalBill);
-
-        List<BillItem> inventoryBillItems = new ArrayList<>();
-        double approvalTotal = 0.0;
-        double approvalNetTotal = 0.0;
-
-        for (BillItem requestLine : requestLines) {
-            Item item = requestLine.getItem();
-            double qty = Math.abs(requestLine.getQty());
-
-            if (isServiceItem(item)) {
-                BillItem approvalLine = new BillItem();
-                approvalLine.setBill(approvalBill);
-                approvalLine.setItem(item);
-                approvalLine.setQty(qty);
-                approvalLine.setReferanceBillItem(requestLine);
-                approvalLine.setCreatedAt(new Date());
-                approvalLine.setCreater(approvingUser);
-                billItemFacade.create(approvalLine);
-                approvalBill.getBillItems().add(approvalLine);
-
-                double lineTotal = saveServiceLineFees(approvalBill, approvalLine, item, approvingUser);
-                approvalTotal += lineTotal;
-                approvalNetTotal += lineTotal;
-            } else {
-                Stock stock = findAvailableStockForItem(item, approvalBill.getToDepartment(), qty);
-                if (stock == null) {
-                    throw new IllegalStateException("Insufficient stock for item: " + item.getName());
-                }
-
-                // Charge the BHT at the batch retail rate, mirroring
-                // PharmacySaleBhtController's BHT-issue pricing.
-                double retailRate = stock.getItemBatch() != null ? stock.getItemBatch().getRetailsaleRate() : 0.0;
-                double lineValue = retailRate * qty;
-
-                BillItem approvalLine = new BillItem();
-                approvalLine.setBill(approvalBill);
-                approvalLine.setItem(item);
-                approvalLine.setQty(qty);
-                approvalLine.setRate(retailRate);
-                approvalLine.setGrossValue(lineValue);
-                approvalLine.setNetValue(lineValue);
-                approvalLine.setReferanceBillItem(requestLine);
-                approvalLine.setCreatedAt(new Date());
-                approvalLine.setCreater(approvingUser);
-                approvalTotal += lineValue;
-                approvalNetTotal += lineValue;
-                // BillItem.pharmaceuticalBillItem is the inverse side of a
-                // @OneToOne(cascade=ALL) owned by PharmaceuticalBillItem.billItem —
-                // must persist BillItem first with the relation still null, then
-                // create+link PharmaceuticalBillItem, then edit BOTH sides, mirroring
-                // PharmacySaleBhtController.savePreBillItemsFinallyRequest (lines
-                // ~1396-1407). Skipping the final PharmaceuticalBillItem edit causes
-                // EclipseLink to lose track of the relationship and issue a spurious
-                // DELETE on the BillItem at commit time (FK violation).
-                billItemFacade.create(approvalLine);
-                approvalBill.getBillItems().add(approvalLine);
-
-                PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
-                pbi.setBillItem(approvalLine);
-                pbi.setStock(stock);
-                pbi.setQty(qty);
-                pbi.setQtyInUnit(qty);
-                pharmaceuticalBillItemFacade.create(pbi);
-
-                approvalLine.setPharmaceuticalBillItem(pbi);
-                billItemFacade.edit(approvalLine);
-                pbi.setBillItem(approvalLine);
-                pharmaceuticalBillItemFacade.edit(pbi);
-
-                inventoryBillItems.add(approvalLine);
-            }
-        }
-
-        if (!inventoryBillItems.isEmpty()) {
-            // Throws (RuntimeException) on insufficient stock at commit time —
-            // propagated, not swallowed, so the container rolls back everything
-            // persisted above in this same transaction.
-            directIssueBatchService.batchStockDeduction(inventoryBillItems);
-        }
-
-        if (approvalTotal > 0 || approvalNetTotal > 0) {
-            approvalBill.setTotal(approvalTotal);
-            approvalBill.setNetTotal(approvalNetTotal);
-            billFacade.edit(approvalBill);
-        }
-
-        requestBill.setFullyIssued(true);
-        billFacade.edit(requestBill);
-
-        return approvalBill;
-    }
-
-    // =========================================================================
     // Reject
     // =========================================================================
 
-    public Bill rejectRequest(Long requestBillId, String reason, WebUser rejectingUser, Department rejectingDepartment) {
+    /**
+     * Rejects only the given still-pending request lines (retires their
+     * BillItem rows with a reason), leaving any already-fulfilled lines and
+     * their real bills untouched. Issue #21793 redesign — rejection is no
+     * longer whole-request once partial fulfillment is possible.
+     */
+    public Bill rejectRemainingLines(Long requestBillId, List<BillItem> linesToReject, String reason, WebUser rejectingUser, Department rejectingDepartment) {
         Bill requestBill = fetchRequestBillOrThrow(requestBillId);
         assertRequestBelongsToDepartment(requestBill, rejectingDepartment, "reject");
-        String status = deriveStatus(requestBill);
-        if (!"PENDING".equals(status)) {
-            throw new IllegalStateException("Request is already " + status + ", cannot reject");
+        if (requestBill.isCancelled()) {
+            throw new IllegalStateException("Request is cancelled, cannot reject lines");
         }
 
-        requestBill.setCancelled(true);
-        requestBill.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_ITEM_REJECTION);
-        String existingComments = requestBill.getComments();
-        requestBill.setComments((existingComments == null || existingComments.trim().isEmpty() ? "" : existingComments + " | ")
-                + "Rejected: " + reason);
-        billFacade.edit(requestBill);
+        for (BillItem line : linesToReject) {
+            if (line.getBill() == null || !line.getBill().equals(requestBill)) {
+                continue;
+            }
+            if (isLineFulfilled(line)) {
+                continue;
+            }
+            line.setRetired(true);
+            line.setRetirer(rejectingUser);
+            line.setRetiredAt(new Date());
+            line.setRetireComments(reason);
+            billItemFacade.edit(line);
+        }
 
         return requestBill;
     }
@@ -486,62 +328,81 @@ public class ItemRequestApiService implements Serializable {
         return bill;
     }
 
-    private String deriveStatus(Bill requestBill) {
-        if (requestBill.isCancelled()) {
-            if (requestBill.getBillTypeAtomic() == BillTypeAtomic.INWARD_SERVICE_ITEM_REJECTION) {
-                return "REJECTED";
-            }
-            return "CANCELLED";
-        }
-        Bill approvalBill = findApprovalBill(requestBill);
-        if (approvalBill != null) {
-            return "APPROVED";
-        }
-        return "PENDING";
+    /**
+     * A request line is FULFILLED once some BillItem elsewhere references it via
+     * referanceBillItem (set by BillBhtController/InpatientDirectIssueNativeSqlController's
+     * save paths — issue #21793 redesign). Overall status is derived from the mix
+     * of fulfilled / rejected / pending lines.
+     */
+    public boolean isLineFulfilled(BillItem requestLine) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("line", requestLine);
+        Long count = billItemFacade.findLongByJpql(
+                "select count(bi) from BillItem bi where bi.retired=false and bi.referanceBillItem=:line",
+                params);
+        return count != null && count > 0;
     }
 
-    private Bill findApprovalBill(Bill requestBill) {
-        String jpql = "select b from Bill b where b.referenceBill=:reqBill "
-                + "and b.billTypeAtomic=:approvalType and b.cancelled=false";
+    private BillItem findFulfillingBillItem(BillItem requestLine) {
         Map<String, Object> params = new HashMap<>();
-        params.put("reqBill", requestBill);
-        params.put("approvalType", BillTypeAtomic.INWARD_SERVICE_ITEM_APPROVAL);
-        return billFacade.findFirstByJpql(jpql, params);
+        params.put("line", requestLine);
+        return billItemFacade.findFirstByJpql(
+                "select bi from BillItem bi where bi.retired=false and bi.referanceBillItem=:line",
+                params);
+    }
+
+    private String deriveStatus(Bill requestBill) {
+        if (requestBill.isCancelled()) {
+            return "CANCELLED";
+        }
+        List<BillItem> lines = billItemFacade.findByJpql(
+                "select bi from BillItem bi where bi.bill=:b",
+                singleParam("b", requestBill));
+        boolean anyFulfilled = false;
+        boolean anyPending = false;
+        boolean anyRejected = false;
+        for (BillItem line : lines) {
+            if (isLineFulfilled(line)) {
+                anyFulfilled = true;
+            } else if (Boolean.TRUE.equals(line.isRetired())) {
+                anyRejected = true;
+            } else {
+                anyPending = true;
+            }
+        }
+        if (anyFulfilled && anyRejected && !anyPending) {
+            return "PARTIALLY_FULFILLED_AND_REJECTED";
+        }
+        if (anyFulfilled && anyPending) {
+            return "PARTIALLY_FULFILLED";
+        }
+        if (anyFulfilled) {
+            return "FULFILLED";
+        }
+        if (anyRejected && !anyPending) {
+            return "REJECTED";
+        }
+        return "PENDING";
     }
 
     private ItemRequestResponseDTO buildResponseForRequestBill(Bill requestBill) {
         List<BillItem> lines = billItemFacade.findByJpql(
                 "select bi from BillItem bi where bi.retired=false and bi.bill=:b",
                 singleParam("b", requestBill));
+        // Include retired (rejected) lines too, so the API can report their status.
+        List<BillItem> retiredLines = billItemFacade.findByJpql(
+                "select bi from BillItem bi where bi.retired=true and bi.bill=:b",
+                singleParam("b", requestBill));
+
+        List<BillItem> allLines = new ArrayList<>();
+        allLines.addAll(lines);
+        allLines.addAll(retiredLines);
 
         String status = deriveStatus(requestBill);
-        Bill approvalBill = null;
-        String rejectionReason = null;
-
-        if ("APPROVED".equals(status)) {
-            approvalBill = findApprovalBill(requestBill);
-        } else if ("REJECTED".equals(status)) {
-            // Cancellation reasons stay in comments only; rejectionReason is
-            // reserved for department rejections.
-            rejectionReason = requestBill.getComments();
-        }
-
-        Long approvalBillId = approvalBill != null ? approvalBill.getId() : null;
-        Date decidedAt = approvalBill != null ? approvalBill.getCreatedAt() : null;
-        String decidedBy = approvalBill != null && approvalBill.getCreater() != null
-                ? approvalBill.getCreater().getName() : null;
-
-        return toResponseDTO(requestBill, lines, status, approvalBillId, decidedAt, decidedBy, rejectionReason);
+        return toResponseDTO(requestBill, allLines, status);
     }
 
-    private ItemRequestResponseDTO toResponseDTO(Bill requestBill, List<BillItem> lines, String status,
-            Long approvalBillId, Date decidedAt, String decidedBy) {
-        return toResponseDTO(requestBill, lines, status, approvalBillId, decidedAt, decidedBy, null);
-    }
-
-    private ItemRequestResponseDTO toResponseDTO(Bill requestBill, List<BillItem> lines, String status,
-            Long approvalBillId, Date decidedAt, String decidedBy, String rejectionReason) {
-
+    private ItemRequestResponseDTO toResponseDTO(Bill requestBill, List<BillItem> lines, String status) {
         ItemRequestResponseDTO dto = new ItemRequestResponseDTO();
         dto.setId(requestBill.getId());
         dto.setRequestNo(requestBill.getDeptId());
@@ -550,14 +411,11 @@ public class ItemRequestApiService implements Serializable {
         dto.setTargetDepartmentName(requestBill.getToDepartment() != null ? requestBill.getToDepartment().getName() : null);
         dto.setStatus(status);
         dto.setComments(requestBill.getComments());
-        dto.setRejectionReason(rejectionReason);
         dto.setCreatedAt(requestBill.getCreatedAt());
         dto.setCreatedBy(requestBill.getCreater() != null ? requestBill.getCreater().getName() : null);
-        dto.setApprovalBillId(approvalBillId);
-        dto.setDecidedAt(decidedAt);
-        dto.setDecidedBy(decidedBy);
 
         List<ItemRequestLineResponseDTO> lineDtos = new ArrayList<>();
+        List<Long> fulfillingBillIds = new ArrayList<>();
         for (BillItem bi : lines) {
             ItemRequestLineResponseDTO lineDto = new ItemRequestLineResponseDTO();
             lineDto.setBillItemId(bi.getId());
@@ -565,85 +423,46 @@ public class ItemRequestApiService implements Serializable {
             lineDto.setItemName(bi.getItem() != null ? bi.getItem().getName() : null);
             lineDto.setItemType(isServiceItem(bi.getItem()) ? "SERVICE" : "INVENTORY");
             lineDto.setQty(bi.getQty() != null ? bi.getQty() : 0.0);
-            lineDto.setNetValue(bi.getNetValue());
+
+            if (Boolean.TRUE.equals(bi.isRetired())) {
+                lineDto.setStatus("REJECTED");
+                lineDto.setRejectionReason(bi.getRetireComments());
+            } else {
+                BillItem fulfillingLine = findFulfillingBillItem(bi);
+                if (fulfillingLine != null) {
+                    lineDto.setStatus("FULFILLED");
+                    lineDto.setFulfillingBillId(fulfillingLine.getBill().getId());
+                    lineDto.setFulfillingBillType(fulfillingLine.getBill().getBillType().name());
+                    if (!fulfillingBillIds.contains(fulfillingLine.getBill().getId())) {
+                        fulfillingBillIds.add(fulfillingLine.getBill().getId());
+                    }
+                } else {
+                    lineDto.setStatus("PENDING");
+                }
+            }
             lineDtos.add(lineDto);
         }
         dto.setLines(lineDtos);
+        dto.setFulfillingBillIds(fulfillingBillIds);
 
         return dto;
     }
 
     /**
      * SERVICE covers both OPD {@link Service} and {@link
-     * com.divudi.core.entity.inward.InwardService} (which extends Service).
-     * Anything else passed to this request/approval flow is treated as an
-     * INVENTORY (stock) item, e.g. Water Bottle/Tea/Milk/Sugar.
-     */
-    private boolean isServiceItem(Item item) {
-        return item instanceof Service;
-    }
-
-    /**
-     * Mirrors {@code InwardAdditionalChargeController.saveBillFee(BillItem)}:
-     * creates one BillFee per configured ItemFee for the item. An item with no
-     * ItemFee records cannot be priced, so approval is rejected outright —
-     * silently charging zero would under-bill the BHT without anyone noticing.
+     * com.divudi.core.entity.inward.InwardService} (which extends Service), as
+     * well as {@link Investigation} lines (which extend {@link Item} directly,
+     * not {@link Service}) — these are routed through the same Add
+     * Services / Investigations approval path as real services. Anything else
+     * passed to this request/approval flow is treated as an INVENTORY (stock)
+     * item, e.g. Water Bottle/Tea/Milk/Sugar.
      *
-     * @return the total fee value charged for this line (sum of feeValue)
+     * <p>Shared with {@link com.divudi.bean.inward.ItemRequestApprovalController}
+     * so the pending-queue "remaining lines" split and this API's per-line
+     * {@code itemType} reporting cannot drift apart.
      */
-    private double saveServiceLineFees(Bill approvalBill, BillItem approvalLine, Item item, WebUser approvingUser) {
-        List<ItemFee> itemFees = billBeanController.fillFees(item);
-        double lineTotal = 0.0;
-
-        if (itemFees == null || itemFees.isEmpty()) {
-            throw new IllegalStateException("No fee configured for service item: " + item.getName());
-        }
-
-        List<BillFee> created = new ArrayList<>();
-        for (ItemFee f : itemFees) {
-            BillFee bf = new BillFee();
-            bf.setBill(approvalBill);
-            bf.setBillItem(approvalLine);
-            bf.setFee(f);
-            bf.setFeeAt(new Date());
-            bf.setCreatedAt(new Date());
-            bf.setCreater(approvingUser);
-            bf.setPatienEncounter(approvalBill.getPatientEncounter());
-            bf.setPatient(approvalBill.getPatientEncounter() != null ? approvalBill.getPatientEncounter().getPatient() : null);
-            bf.setFeeValue(f.getFee());
-            bf.setFeeGrossValue(f.getFee());
-            bf.setFeeDiscount(0.0);
-            billFeeFacade.create(bf);
-            created.add(bf);
-            lineTotal += f.getFee();
-        }
-        approvalLine.setBillFees(created);
-        approvalLine.setGrossValue(lineTotal);
-        approvalLine.setNetValue(lineTotal);
-        billItemFacade.edit(approvalLine);
-
-        return lineTotal;
-    }
-
-    /**
-     * Finds a Stock row for the given item+department with enough quantity,
-     * ordered by earliest expiry (mirrors {@code PharmacyBean.getStockByQty}
-     * FIFO-by-expiry pattern, but queried directly against Stock.itemBatch.item
-     * rather than requiring an Amp/Vmp cast, since stock items such as Water
-     * Bottle/Tea/Milk/Sugar are not necessarily pharmaceutical Amps).
-     */
-    private Stock findAvailableStockForItem(Item item, Department department, double qty) {
-        if (item == null || department == null) {
-            return null;
-        }
-        String jpql = "select s from Stock s where s.retired=false "
-                + "and s.itemBatch.item=:item and s.department=:d and s.stock>=:q "
-                + "order by s.itemBatch.dateOfExpire";
-        Map<String, Object> params = new HashMap<>();
-        params.put("item", item);
-        params.put("d", department);
-        params.put("q", qty);
-        return stockFacade.findFirstByJpql(jpql, params);
+    public static boolean isServiceItem(Item item) {
+        return item instanceof Service || item instanceof Investigation;
     }
 
     private Map<String, Object> singleParam(String key, Object value) {
