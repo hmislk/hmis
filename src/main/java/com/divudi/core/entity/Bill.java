@@ -3081,6 +3081,16 @@ public class Bill implements Serializable, RetirableEntity {
         return billFinanceDetails;
     }
 
+    /**
+     * Null-check for billFinanceDetails that does NOT auto-vivify a new instance
+     * (unlike getBillFinanceDetails(), which lazily creates one on first call).
+     * Use this when the presence/absence of BillFinanceDetails is itself meaningful,
+     * e.g. as the fingerprint of "bill created before BFD population existed".
+     */
+    public boolean hasBillFinanceDetails() {
+        return billFinanceDetails != null;
+    }
+
     public void setBillFinanceDetails(BillFinanceDetails billFinanceDetails) {
         this.billFinanceDetails = billFinanceDetails;
         if (billFinanceDetails != null && billFinanceDetails.getBill() != this) {
