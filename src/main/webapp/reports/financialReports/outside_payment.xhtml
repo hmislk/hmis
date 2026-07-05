@@ -29,7 +29,7 @@
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class="w-100" inputStyleClass="w-100" ></p:datePicker>
-                                          <p:spacer width="20"/> 
+                            <p:spacer width="20"/> 
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
@@ -48,8 +48,8 @@
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class="w-100" inputStyleClass="w-100"></p:datePicker>
-                                          <p:spacer width="20"/> 
-                                          
+                            <p:spacer width="20"/> 
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Invoice Approved From Date" class="mx-3"/>
@@ -67,20 +67,17 @@
                             <p:datePicker value="#{reportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class="w-100" inputStyleClass="w-100"></p:datePicker>
-                                          
+
                             <p:spacer width="20"/> 
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Institution" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100 ">
+                            <p:selectOneMenu value="#{searchController.institution}" filter="true" class="w-100 ">
                                 <f:selectItem itemLabel="All Institutions" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+
                             </p:selectOneMenu>
 
                             <p:spacer width="20"></p:spacer>
@@ -89,29 +86,23 @@
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Site" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100 ">
+                            <p:selectOneMenu value="#{searchController}" filter="true" class="w-100 ">
                                 <f:selectItem itemLabel="All Sites" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+
                             </p:selectOneMenu>
                             <p:spacer width="20"/> 
-  
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Department" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true" class="w-100 ">
+                            <p:selectOneMenu value="#{searchController.department}" filter="true" class="w-100 ">
                                 <f:selectItem itemLabel="All Deparments" ></f:selectItem>
-                                <f:selectItems value=""
-                                               var="i"
-                                               itemLabel=""
-                                               itemValue=""
-                                               ></f:selectItems>
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+
                             </p:selectOneMenu>
-                            
+
                             <p:spacer width="20"/> 
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -131,12 +122,12 @@
                                 <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Credit Company" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                            <p:selectOneMenu value="#{searchController.creditCompany}" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value=""
+                                <f:selectItems value="#{creditCompanyController.creditCompanies}"
                                                var="i"
-                                               itemLabel=""
-                                               itemValue=""
+                                               itemLabel="#{i.name}"
+                                               itemValue="#{i}"
                                                ></f:selectItems>
                             </p:selectOneMenu>
 
@@ -146,7 +137,7 @@
                                 <h:outputText value="&#xf084;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Admission Type" class="mx-3"/>
                             </h:panelGroup>
-                            
+
                             <p:selectCheckboxMenu class="w-100"
                                                   value="#{admissionTypeController.selectedItems}"
                                                   label="Select Admission Types">
@@ -167,11 +158,9 @@
                                                itemValue="#{i}"
                                                ></f:selectItems>
                             </p:selectOneMenu>
-                            
+
 
                         </h:panelGrid><br/>
-
-
 
                         <div class="d-flex align-items-center my-3">
                             <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
@@ -186,24 +175,24 @@
 
                         <h:panelGroup>
                             <p:dataTable
-                                    id="tblobs"
-                                    value="#"
-                                    var="var"
-                                    rowIndexVar="n"
-                                    paginator="false"
-                                    paginatorPosition="bottom"
-                                    rows="10"
-                                    rendered="true"
-                                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
-                                    rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
-                                    styleClass="table-sm">
-                                    
+                                id="tblobs"
+                                value="#"
+                                var="var"
+                                rowIndexVar="n"
+                                paginator="false"
+                                paginatorPosition="bottom"
+                                rows="10"
+                                rendered="true"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                                styleClass="table-sm">
+
                                 <p:column headerText="Item"  style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Invoice No"/>
                                     </f:facet>
-                                        <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="" ></h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Item"  style="width: 100px" >
                                     <f:facet name="header">
@@ -279,7 +268,7 @@
                                 </p:column>
                                 <p:column headerText="Item"  style="width: 200px" >
                                     <f:facet name="header">
-                                         <h:outputLabel value="Memo"/>
+                                        <h:outputLabel value="Memo"/>
                                     </f:facet>
                                     <h:outputLabel value="" ></h:outputLabel>
                                 </p:column>
@@ -305,7 +294,7 @@
                                         <p:commandButton type="button" value="Update" styleClass="ui-button-info" />
                                     </h:outputLabel>
                                 </p:column>
-                                    
+
                             </p:dataTable>
                         </h:panelGroup>
                     </p:panel>                          
