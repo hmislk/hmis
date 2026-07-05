@@ -959,6 +959,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
         currentExpense.setNetValue(currentExpense.getNetRate() * currentExpense.getQty());
         currentExpense.setGrossValue(currentExpense.getRate() * currentExpense.getQty());
 
+        // Owning-side FK: without this, Bill.billExpenses' cascade persists
+        // nothing back to this bill (issue #21856)
+        currentExpense.setExpenseBill(getBill());
+
         getCurrentExpense().setSearialNo(getBillExpenses().size());
         getBillExpenses().add(currentExpense);
 
@@ -993,6 +997,15 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         if (getBill().getBillExpenses() != null) {
             getBill().getBillExpenses().remove(expense);
+        }
+
+        // Retire the persisted row - removing it from the in-memory list alone
+        // does not delete it (Bill.billExpenses has no orphanRemoval), so an
+        // "un-retired" removal would silently reappear on reload (issue #21856).
+        if (expense.getId() != null) {
+            expense.setRetired(true);
+            expense.setRetireComments("Removed during draft edit");
+            getBillItemFacade().edit(expense);
         }
 
         recalculateExpenseTotals();
@@ -1121,10 +1134,22 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         //check and calculate expenses separately
         if (billExpenses != null && !billExpenses.isEmpty()) {
-            getBill().setBillExpenses(billExpenses);
-
+            // Persist each expense explicitly and set the owning-side expenseBill
+            // FK - relying on Bill.billExpenses' cascade alone leaves this FK
+            // NULL, since the mappedBy side (Bill.billExpenses) is not the
+            // owning side of the relationship (issue #21856).
+            int expenseSerial = 0;
             double totalForExpenses = 0;
-            for (BillItem expense : getBillExpenses()) {
+            for (BillItem expense : billExpenses) {
+                expense.setSearialNo(expenseSerial++);
+                expense.setExpenseBill(getBill());
+                expense.setCreatedAt(new Date());
+                expense.setCreater(getSessionController().getLoggedUser());
+                if (expense.getId() == null) {
+                    getBillItemFacade().create(expense);
+                } else {
+                    getBillItemFacade().edit(expense);
+                }
                 totalForExpenses += expense.getNetValue();
             }
 
@@ -1453,6 +1478,45 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 getBillItemFacade().edit(bi);
             }
         }
+
+        // Retire any previously persisted expenses that were removed from the session list
+        java.util.Map<String, Object> retireExpenseParams = new java.util.HashMap<>();
+        retireExpenseParams.put("billId", getBill().getId());
+        List<BillItem> persistedExpenses = getBillItemFacade().findByJpql(
+            "SELECT be FROM BillItem be WHERE be.expenseBill.id = :billId AND be.retired = false",
+            retireExpenseParams);
+        java.util.Set<Long> sessionExpenseIds = new java.util.HashSet<>();
+        for (BillItem be : getBillExpenses()) {
+            if (be.getId() != null) {
+                sessionExpenseIds.add(be.getId());
+            }
+        }
+        for (BillItem persisted : persistedExpenses) {
+            if (!sessionExpenseIds.contains(persisted.getId())) {
+                persisted.setRetired(true);
+                persisted.setRetireComments("Removed during draft edit");
+                getBillItemFacade().edit(persisted);
+            }
+        }
+
+        // Save each bill expense explicitly - do not rely on Bill.billExpenses'
+        // cascade alone, since the owning-side expenseBill FK must be set on
+        // each child for the cascade-insert to actually link back to this bill
+        int expenseSerial = 0;
+        double totalForExpenses = 0.0;
+        for (BillItem expense : getBillExpenses()) {
+            expense.setSearialNo(expenseSerial++);
+            expense.setExpenseBill(getBill());
+            expense.setCreatedAt(new Date());
+            expense.setCreater(getSessionController().getLoggedUser());
+            if (expense.getId() == null) {
+                getBillItemFacade().create(expense);
+            } else {
+                getBillItemFacade().edit(expense);
+            }
+            totalForExpenses += expense.getNetValue();
+        }
+        getBill().setExpenseTotal(-Math.abs(totalForExpenses));
 
         getBillFacade().edit(getBill());
         draftMode = true;

@@ -1393,6 +1393,22 @@ public class Bill implements Serializable, RetirableEntity {
         this.billItems = billItems;
     }
 
+    /**
+     * Bill items excluding retired ones. Bill print templates should use
+     * this instead of getBillItems() directly, so a line item removed
+     * during draft editing (retired = true) doesn't still appear on the
+     * printed bill (issue #21856).
+     */
+    public List<BillItem> getActiveBillItems() {
+        List<BillItem> active = new ArrayList<>();
+        for (BillItem bi : getBillItems()) {
+            if (!bi.isRetired()) {
+                active.add(bi);
+            }
+        }
+        return active;
+    }
+
     public Date getBillDate() {
         if (billDate == null) {
             billDate = createdAt;
