@@ -67,6 +67,7 @@ import com.divudi.bean.common.EnumController;
 import com.divudi.core.data.dto.AdmissionDischargeDTO;
 import com.divudi.core.data.dto.RoomCategoryOccupancyDTO;
 import com.divudi.core.data.dto.RoomOccupancyRowDTO;
+import com.divudi.core.data.dto.SurgeryCountTypeWiseDTO;
 import com.divudi.core.facade.PatientRoomFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -165,6 +166,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import javax.imageio.ImageIO;
 import java.awt.Color;
+import java.util.TreeSet;
+
 /**
  *
  * @author pdhs
@@ -203,7 +206,8 @@ public class InwardReportController implements Serializable {
     @Inject
     InwardBeanController inwardBeanController;
     @Inject
-    EnumController enumController;;
+    EnumController enumController;
+    ;
     @Inject
     RoomCategoryController roomCategoryController;
 
@@ -1479,20 +1483,20 @@ public class InwardReportController implements Serializable {
         row.setRowValueIn(row.getRowValueIn() + sponsorPay);
         row.setRowValueOut(row.getRowValueOut() + patientPay);
     }
-    
+
     private void applyIpIncomeExcelBorders(CellStyle style) {
-    style.setBorderBottom(BorderStyle.THIN);
-    style.setBorderTop(BorderStyle.THIN);
-    style.setBorderLeft(BorderStyle.THIN);
-    style.setBorderRight(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
     }
-    
+
     private Paragraph buildSectionTitle(String text) {
-    Paragraph p = new Paragraph(text, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11));
-    p.setAlignment(Element.ALIGN_CENTER);
-    p.setSpacingBefore(12f);
-    p.setSpacingAfter(6f);
-    return p;
+        Paragraph p = new Paragraph(text, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11));
+        p.setAlignment(Element.ALIGN_CENTER);
+        p.setSpacingBefore(12f);
+        p.setSpacingAfter(6f);
+        return p;
     }
 
     private void populateIpIncomeProfitMatrixAndBillDiscounts(List<IpIncomeCategoryWiseRowDTO> rows) {
@@ -2444,7 +2448,6 @@ public class InwardReportController implements Serializable {
                 totalCell.setCellValue(item.getTotalSurgeries());
                 totalCell.setCellStyle(totalColStyle);
             }
-
             // ── Column widths ──────────────────────────────────────────────────────
             int[] colWidths = {
                 6000, 5000,
@@ -2519,6 +2522,138 @@ public class InwardReportController implements Serializable {
                 } catch (Exception ignored) {
                 }
             }
+        }
+    }
+    private List<SurgeryCountTypeWiseDTO> surgeryCountTypeList;
+    private List<String> surgeryCategoryNames;
+    private Map<String, Integer> totalCategoryCounts;
+    private int totalAllSurgeryCount;
+
+    public List<SurgeryCountTypeWiseDTO> getSurgeryCountTypeList() {
+        return surgeryCountTypeList;
+    }
+
+    public void setSurgeryCountTypeList(List<SurgeryCountTypeWiseDTO> surgeryCountTypeList) {
+        this.surgeryCountTypeList = surgeryCountTypeList;
+    }
+
+    public List<String> getSurgeryCategoryNames() {
+        return surgeryCategoryNames;
+    }
+
+    public void setSurgeryCategoryNames(List<String> surgeryCategoryNames) {
+        this.surgeryCategoryNames = surgeryCategoryNames;
+    }
+
+    public Map<String, Integer> getTotalCategoryCounts() {
+        return totalCategoryCounts;
+    }
+
+    public void setTotalCategoryCounts(Map<String, Integer> totalCategoryCounts) {
+        this.totalCategoryCounts = totalCategoryCounts;
+    }
+
+    public int getTotalAllSurgeryCount() {
+        return totalAllSurgeryCount;
+    }
+
+    public void setTotalAllSurgeryCount(int totalAllSurgeryCount) {
+        this.totalAllSurgeryCount = totalAllSurgeryCount;
+    }
+
+    public void processSurgeryCountType() {
+        surgeryCountTypeList = new ArrayList<>();
+        surgeryCategoryNames = new ArrayList<>();
+        totalCategoryCounts = new HashMap<>();
+        totalAllSurgeryCount = 0;
+
+        if (fromYearStartDate == null || toYearEndDate == null) {
+            JsfUtil.addErrorMessage("Please select both From and To dates.");
+            return;
+        }
+
+        StringBuilder jpql = new StringBuilder();
+        jpql.append(" select ")
+                .append("   coalesce(upper(c.name), 'OTHER'), ")
+                .append("   function('MONTH', b.createdAt), ")
+                .append("   count(b) ")
+                .append(" from BilledBill b ")
+                .append(" join b.procedure p ")
+                .append(" join p.item i ")
+                .append(" left join i.category c ")
+                .append(" where b.retired = false ")
+                .append(" and b.cancelled = false ")
+                .append(" and b.billType = :bt ")
+                .append(" and b.createdAt between :fd and :td ");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bt", BillType.SurgeryBill);
+        params.put("fd", fromYearStartDate);
+        params.put("td", toYearEndDate);
+
+        if (institution != null) {
+            jpql.append(" and b.institution = :inst ");
+            params.put("inst", institution);
+        }
+        if (department != null) {
+            jpql.append(" and b.department = :dept ");
+            params.put("dept", department);
+        }
+        if (site != null) {
+            jpql.append(" and b.department.site = :site ");
+            params.put("site", site);
+        }
+        if (surgeryType != null) {
+            jpql.append(" and c = :stype ");
+            params.put("stype", surgeryType);
+        }
+        if (surgeryItem != null) {
+            jpql.append(" and i = :sitem ");
+            params.put("sitem", surgeryItem);
+        }
+
+        jpql.append(" group by coalesce(upper(c.name), 'OTHER'), function('MONTH', b.createdAt) ");
+        jpql.append(" order by 1 ");
+
+        List<Object[]> results = billFacade.findObjectArrayByJpql(
+                jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        if (results == null || results.isEmpty()) {
+            JsfUtil.addErrorMessage("No surgery records found for the selected period.");
+            surgeryCategoryNames = new ArrayList<>();
+            return;
+        }
+
+        String[] months = {"January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"};
+
+        SurgeryCountTypeWiseDTO[] monthDtos = new SurgeryCountTypeWiseDTO[12];
+        for (int i = 0; i < 12; i++) {
+            monthDtos[i] = new SurgeryCountTypeWiseDTO(months[i], i);
+        }
+
+        Set<String> categorySet = new TreeSet<>(); // sorted automatically, O(log n) add
+
+        for (Object[] row : results) {
+            String categoryName = (String) row[0];
+            int month = ((Number) row[1]).intValue();
+            int count = ((Number) row[2]).intValue();
+            int monthIndex = month - 1;
+
+            if (monthIndex < 0 || monthIndex >= 12) {
+                continue; // defensive, shouldn't happen
+            }
+
+            categorySet.add(categoryName);
+            monthDtos[monthIndex].addCount(categoryName, count);
+            totalCategoryCounts.merge(categoryName, count, Integer::sum);
+            totalAllSurgeryCount += count;
+        }
+
+        surgeryCategoryNames = new ArrayList<>(categorySet);
+
+        for (int i = 0; i < 12; i++) {
+            surgeryCountTypeList.add(monthDtos[i]);
         }
     }
 
@@ -7626,7 +7761,7 @@ public class InwardReportController implements Serializable {
     public void setVatRegNo(String vatRegNo) {
         this.vatRegNo = vatRegNo;
     }
-    
+
     public void downloadIpIncomeCategoryWiseExcel() {
         try {
             if (bundle == null) {
@@ -7958,18 +8093,18 @@ public class InwardReportController implements Serializable {
 
                 if (ipIncomeBillDiscounts != null && !ipIncomeBillDiscounts.isEmpty()) {
                     for (Map<String, Object> discountRow : ipIncomeBillDiscounts) {
-                            Row bdRow = sheet.createRow(rowNum++);
+                        Row bdRow = sheet.createRow(rowNum++);
 
-                            Cell inv = bdRow.createCell(0);
-                            Object invoiceNo = discountRow.get("invoiceNo");
-                            inv.setCellValue(invoiceNo != null ? invoiceNo.toString() : "");
-                            inv.setCellStyle(textStyle);
+                        Cell inv = bdRow.createCell(0);
+                        Object invoiceNo = discountRow.get("invoiceNo");
+                        inv.setCellValue(invoiceNo != null ? invoiceNo.toString() : "");
+                        inv.setCellStyle(textStyle);
 
-                            Cell dis = bdRow.createCell(1);
-                             Object discount = discountRow.get("discount");
-                            double val = discount instanceof Number ? ((Number) discount).doubleValue() : 0.0;
-                            dis.setCellValue(val);
-                            dis.setCellStyle(numberStyle);
+                        Cell dis = bdRow.createCell(1);
+                        Object discount = discountRow.get("discount");
+                        double val = discount instanceof Number ? ((Number) discount).doubleValue() : 0.0;
+                        dis.setCellValue(val);
+                        dis.setCellStyle(numberStyle);
                     }
                 }
 
@@ -8200,12 +8335,12 @@ public class InwardReportController implements Serializable {
                 addPdfHeaderCell(bdTable, "Bill Discount");
 
                 if (ipIncomeBillDiscounts != null && !ipIncomeBillDiscounts.isEmpty()) {
-                     for (Map<String, Object> discountRow : ipIncomeBillDiscounts) {
-                            Object invoiceNo = discountRow.get("invoiceNo");
-                            addPdfCell(bdTable, invoiceNo != null ? invoiceNo.toString() : "", cellFont, Element.ALIGN_LEFT, null);
-                            Object discount = discountRow.get("discount");
-                            double val = discount instanceof Number ? ((Number) discount).doubleValue() : 0.0;
-                            addPdfCell(bdTable, String.format("%,.2f", val), cellFont, Element.ALIGN_RIGHT, null);
+                    for (Map<String, Object> discountRow : ipIncomeBillDiscounts) {
+                        Object invoiceNo = discountRow.get("invoiceNo");
+                        addPdfCell(bdTable, invoiceNo != null ? invoiceNo.toString() : "", cellFont, Element.ALIGN_LEFT, null);
+                        Object discount = discountRow.get("discount");
+                        double val = discount instanceof Number ? ((Number) discount).doubleValue() : 0.0;
+                        addPdfCell(bdTable, String.format("%,.2f", val), cellFont, Element.ALIGN_RIGHT, null);
                     }
                 }
 
@@ -8259,7 +8394,7 @@ public class InwardReportController implements Serializable {
             JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
         }
     }
-    
+
     private PdfPTable buildIpIncomeCategoryWisePdfInfoTable(SimpleDateFormat sdt) throws DocumentException {
         PdfPTable info = new PdfPTable(2);
         info.setWidthPercentage(65);
@@ -8297,15 +8432,15 @@ public class InwardReportController implements Serializable {
 
     private void addPdfHeaderCell(PdfPTable table, String text) {
         com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, java.awt.Color.WHITE);
-            PdfPCell cell = new PdfPCell(new Phrase(text, headerFont));
-            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-            cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-            cell.setBackgroundColor(new java.awt.Color(41, 128, 185));
-            cell.setPaddingTop(6f);
-            cell.setPaddingBottom(6f);
-            cell.setPaddingLeft(4f);
-            cell.setPaddingRight(4f);
-            table.addCell(cell);
+        PdfPCell cell = new PdfPCell(new Phrase(text, headerFont));
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setBackgroundColor(new java.awt.Color(41, 128, 185));
+        cell.setPaddingTop(6f);
+        cell.setPaddingBottom(6f);
+        cell.setPaddingLeft(4f);
+        cell.setPaddingRight(4f);
+        table.addCell(cell);
     }
 
     private void addPdfCell(PdfPTable table, String text, com.lowagie.text.Font font, int alignment, java.awt.Color bg) {
