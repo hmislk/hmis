@@ -62,7 +62,8 @@
                                 action="#{inwardReportController.processSurgeryCountTypeReport()}"
                                 value="Process" />
 
-                            <p:commandButton 
+                            <p:commandButton
+                                id="btnPrintAll"
                                 class="ui-button-primary mx-1"
                                 icon="fas fa-print"
                                 ajax="false"
@@ -70,7 +71,8 @@
                                 <p:printer target="tb" />
                             </p:commandButton>
 
-                            <p:commandButton 
+                            <p:commandButton
+                                id="btnDownloadExcel"
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
@@ -78,7 +80,8 @@
                                 <p:dataExporter type="xlsx" target="tb" fileName="Surgery_Count_Surgery_Type_Wise"/>
                             </p:commandButton>
 
-                            <p:commandButton 
+                            <p:commandButton
+                                id="btnDownloadPdf"
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
