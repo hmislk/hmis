@@ -336,6 +336,7 @@ public class InwardReportController implements Serializable {
     private String surgeryWiseLineChartModel;
     private String surgeryWiseBarChartModel;
     
+    private String surgeryCountChartType;
     private String surgeryCountBarChartModel;
     private String surgeryCountLineChartModel;
 
@@ -708,6 +709,14 @@ public class InwardReportController implements Serializable {
 
     public void setSurgeryCostEstimationReportType(String surgeryCostEstimationReportType) {
         this.surgeryCostEstimationReportType = surgeryCostEstimationReportType;
+    }
+
+    public String getSurgeryCountChartType() {
+        return surgeryCountChartType;
+    }
+
+    public void setSurgeryCountChartType(String surgeryCountChartType) {
+        this.surgeryCountChartType = surgeryCountChartType;
     }
 
     public String getSurgeryCountBarChartModel() {
@@ -3681,7 +3690,7 @@ public class InwardReportController implements Serializable {
 
         aggregateResults(results);
 
-        if (reportType != null && !reportType.isEmpty()) {
+        if (surgeryCountChartType != null && !surgeryCountChartType.isEmpty()) {
             createSurgeryCountChartModels();
         }
     }
@@ -3795,7 +3804,7 @@ public class InwardReportController implements Serializable {
     }
 
     private String localizedMonthName(int monthIndex) {
-        return Month.of(monthIndex + 1).getDisplayName(TextStyle.FULL, Locale.getDefault());
+        return Month.of(monthIndex + 1).getDisplayName(TextStyle.FULL, Locale.ENGLISH);
     }
 
     private void createSurgeryCountChartModels() {

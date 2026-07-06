@@ -45,7 +45,7 @@
                                 <h:outputText value="&#xf080;" styleClass="fa mr-2"/> 
                                 <p:outputLabel value="Chart Type" for="chartType" styleClass="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="chartType" value="#{inwardReportController.reportType}" styleClass="w-100">
+                            <p:selectOneMenu id="chartType" value="#{inwardReportController.surgeryCountChartType}" styleClass="w-100">
                                 <f:selectItem itemLabel="Select Chart Type" itemValue="" noSelectionOption="true"/>
                                 <f:selectItem itemLabel="Bar Chart" itemValue="bar"/>
                                 <f:selectItem itemLabel="Line Chart" itemValue="line"/>
@@ -132,11 +132,11 @@
                         <h:panelGroup id="chartPanel" layout="block">
                             <h:panelGroup layout="block" 
                                           rendered="#{not empty inwardReportController.surgeryCountTypeList 
-                                                      and not empty inwardReportController.reportType}">
+                                                      and not empty inwardReportController.surgeryCountChartType}">
 
                                 <!-- Bar Chart -->
                                 <h:panelGroup layout="block" 
-                                              rendered="#{inwardReportController.reportType eq 'bar' 
+                                              rendered="#{inwardReportController.surgeryCountChartType eq 'bar' 
                                                           and inwardReportController.surgeryCountBarChartModel ne null}"
                                               styleClass="my-3">
                                     <p:panel header="Surgery Count - Bar Chart (#{inwardReportController.selectedYear})">
@@ -150,7 +150,7 @@
 
                                 <!-- Line Chart -->
                                 <h:panelGroup layout="block" 
-                                              rendered="#{inwardReportController.reportType eq 'line' 
+                                              rendered="#{inwardReportController.surgeryCountChartType eq 'line' 
                                                           and inwardReportController.surgeryCountLineChartModel ne null}"
                                               styleClass="my-3">
                                     <p:panel header="Surgery Count - Line Chart (#{inwardReportController.selectedYear})">
@@ -167,7 +167,7 @@
                             <!-- Message when no chart type selected but data exists -->
                             <h:panelGroup layout="block" 
                                           rendered="#{not empty inwardReportController.surgeryCountTypeList 
-                                                      and empty inwardReportController.reportType}"
+                                                      and empty inwardReportController.surgeryCountChartType}"
                                           styleClass="my-3 text-center">
                                 <h:outputText value="Please select a Chart Type above to view the chart." 
                                               styleClass="text-muted"/>
