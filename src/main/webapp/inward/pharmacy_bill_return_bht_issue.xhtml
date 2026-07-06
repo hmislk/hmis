@@ -12,10 +12,39 @@
         <h:form>
             <h:panelGroup rendered="#{!bhtIssueReturnController.printPreview}" styleClass="alignTop" >
                 <p:panel>
-                    <f:facet name="header" >      
-                        <div class="d-flex justify-content-between">
-                            <div class="d-flex gap-3 mt-2">
-                                <h:outputText value="BHT Issue Return"  />  
+                    <f:facet name="header" >
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div class="d-flex gap-3 align-items-center">
+                                <h:outputText value="BHT Issue Return"  />
+                            </div>
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Bill View"
+                                    icon="fa fa-eye"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    action="#{pharmacyBillSearch.navigateToViewPharmacyDirectIssueForInpatientBill()}">
+                                    <f:setPropertyActionListener
+                                        value="#{bhtIssueReturnController.bill}"
+                                        target="#{pharmacyBillSearch.bill}" />
+                                </p:commandButton>
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Interim Bill"
+                                    icon="fa fa-backward"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    action="/inward/inward_bill_intrim" />
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Inpatient Dashboard"
+                                    icon="fa fa-id-card"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    action="#{admissionController.navigateToAdmissionProfilePage}"
+                                    rendered="#{bhtIssueReturnController.bill.patientEncounter ne null}">
+                                    <f:setPropertyActionListener
+                                        value="#{bhtIssueReturnController.bill.patientEncounter}"
+                                        target="#{admissionController.current}" />
+                                </p:commandButton>
                             </div>
                             <div class="d-flex gap-3">
                                 <h:outputLabel value="Reason for Return" class="mt-2" style="font-weight: 600;"/>
@@ -36,13 +65,14 @@
                                         itemValue="#{option}"/>
                                 </p:selectOneMenu>
 
-                                <p:commandButton  
-                                    value="Return" 
+                                <p:commandButton
+                                    value="Return"
                                     icon="fa fa-undo"
-                                    action="#{bhtIssueReturnController.settle}" 
-                                    ajax="false" 
+                                    action="#{bhtIssueReturnController.settle}"
+                                    ajax="false"
                                     onclick="return confirm('Are you sure you want to return this items ?')"
-                                    class="ui-button-warning">
+                                    styleClass="ui-button-success"
+                                    style="min-width:120px">
                                 </p:commandButton>
                             </div>
                         </div>
