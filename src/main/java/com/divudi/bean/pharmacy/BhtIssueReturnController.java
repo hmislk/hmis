@@ -50,6 +50,7 @@ public class BhtIssueReturnController implements Serializable {
     private boolean printPreview;
     private List<BillItem> billItems;
     private String returnComment = "";
+    private double discountTotal = 0.0;
     
     
     ///////
@@ -448,23 +449,31 @@ public class BhtIssueReturnController implements Serializable {
         double grossTotal = 0.0;
         double netTotal = 0.0;
         double marginTotal = 0.0;
+        double discTotal = 0.0;
 
         for (BillItem p : getBillItems()) {
             grossTotal += p.getRate() * p.getQty();
             marginTotal += p.getMarginRate() * p.getQty();
+            discTotal += p.getDiscountRate() * p.getQty();
             netTotal += p.getNetRate() * p.getQty();
 
             p.setNetValue(p.getNetRate() * p.getQty());
             p.setGrossValue(p.getRate() * p.getQty());
             p.setMarginValue(p.getMarginRate() * p.getQty());
+            p.setDiscount(p.getDiscountRate() * p.getQty());
 
         }
 
         getReturnBill().setTotal(grossTotal);
         getReturnBill().setMargin(marginTotal);
         getReturnBill().setNetTotal(netTotal);
+        discountTotal = discTotal;
 
         //  return grossTotal;
+    }
+
+    public double getDiscountTotal() {
+        return discountTotal;
     }
 
     public void generateBillComponent() {

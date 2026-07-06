@@ -98,13 +98,18 @@ public class InpatientDirectIssueNativeSqlService {
             double absNetValue  = Math.abs(d.getNetValue());
             double absGrossValue = Math.abs(d.getGrossValue());
             double netRate      = absQty > 0 ? absNetValue / absQty : 0.0;
+            double rate         = d.getRate();
+            double marginValue  = Math.abs(d.getMarginValue());
+            double discountValue = Math.abs(d.getDiscountValue());
+            double discountPercent = d.getDiscountPercent();
 
             em.createNativeQuery(
                 "INSERT INTO " + billItemTable()
                 + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, netRate,"
+                + " rate, marginValue, discount, discountRate,"
                 + " createdAt, creater_ID, retired, refunded, billItemRefunded,"
                 + " consideredForCosting, inwardChargeType, referanceBillItem_ID)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine',?)")
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine',?)")
                 .setParameter(1, billId)
                 .setParameter(2, d.getItemId())
                 .setParameter(3, absQty)
@@ -112,9 +117,13 @@ public class InpatientDirectIssueNativeSqlService {
                 .setParameter(5, absNetValue)
                 .setParameter(6, absGrossValue)
                 .setParameter(7, netRate)
-                .setParameter(8, new Timestamp(createdAt.getTime()))
-                .setParameter(9, d.getCreaterId())
-                .setParameter(10, d.getSourceRequestBillItemId())
+                .setParameter(8, rate)
+                .setParameter(9, marginValue)
+                .setParameter(10, discountValue)
+                .setParameter(11, discountPercent)
+                .setParameter(12, new Timestamp(createdAt.getTime()))
+                .setParameter(13, d.getCreaterId())
+                .setParameter(14, d.getSourceRequestBillItemId())
                 .executeUpdate();
             biIds[i] = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
 
