@@ -155,50 +155,64 @@
 
                 <p:panel rendered="#{!inpatientDirectIssueNativeSqlController.billPreview}">
                     <f:facet name="header">
-                        <div class="d-flex justify-content-between">
-                            <div>
+                        <div class="d-flex justify-content-between align-items-center w-100">
+
+                            <!-- LEFT: title -->
+                            <div class="d-flex align-items-center gap-2">
                                 <h:outputText styleClass="fa-solid fa-pills fa-lg" />
                                 <p:outputLabel value="Direct Issue of Medicines to Inpatients (Native SQL)" class="mx-4" />
                             </div>
+
+                            <!-- CENTER: entity-level navigation -->
                             <div class="d-flex gap-2">
                                 <p:commandButton
-                                    value="New Bill"
+                                    value="Inpatient Dashboard"
                                     ajax="false"
-                                    class="ui-button-warning"
-                                    icon="fa-solid fa-plus"
-                                    action="pharmacy_bill_issue_bht"
-                                    actionListener="#{inpatientDirectIssueNativeSqlController.resetAll}">
+                                    icon="fas fa-id-card"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    action="#{admissionController.navigateToAdmissionProfilePage}"
+                                    rendered="#{inpatientDirectIssueNativeSqlController.patientEncounter ne null}">
+                                    <f:setPropertyActionListener
+                                        value="#{inpatientDirectIssueNativeSqlController.patientEncounter}"
+                                        target="#{admissionController.current}" />
                                 </p:commandButton>
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                     <p:commandButton
                                         value="Nursing WorkBench"
                                         action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                         ajax="false"
-                                        class="ui-button-operating-theatre"
-                                        icon="fa fa-arrow-left">
+                                        icon="fa fa-arrow-left"
+                                        styleClass="ui-button-info ui-button-outlined">
                                     </p:commandButton>
                                 </h:panelGroup>
                             </div>
+
+                            <!-- RIGHT: actions, left=least important -> right=primary -->
+                            <div class="d-flex gap-2 align-items-center">
+                                <p:commandButton
+                                    value="New Bill"
+                                    ajax="false"
+                                    styleClass="ui-button-warning"
+                                    icon="fa-solid fa-plus"
+                                    action="pharmacy_bill_issue_bht"
+                                    actionListener="#{inpatientDirectIssueNativeSqlController.resetAll}">
+                                </p:commandButton>
+                                <p:commandButton
+                                    id="btnSettleNative"
+                                    value="Settle"
+                                    ajax="true"
+                                    onclick="if(!confirm('Are you sure you want to settle this pharmacy bill issue?')){return false;} var o=document.getElementById('settlingOverlay'); o.style.display='flex'; o.style.pointerEvents='all';"
+                                    oncomplete="document.getElementById('settlingOverlay').style.display='none';"
+                                    ondblclick="return false;"
+                                    action="#{inpatientDirectIssueNativeSqlController.settleInpatientDirectIssue()}"
+                                    update="gpPatientPanel panelErrorMsg"
+                                    styleClass="ui-button-success"
+                                    style="min-width:120px"
+                                    icon="fa-solid fa-check-circle">
+                                </p:commandButton>
+                            </div>
                         </div>
                     </f:facet>
-
-                    <!-- Settle button row -->
-                    <div class="row mb-3">
-                        <div class="d-flex justify-content-end align-items-center">
-                            <p:commandButton
-                                id="btnSettleNative"
-                                value="Settle"
-                                ajax="true"
-                                onclick="if(!confirm('Are you sure you want to settle this pharmacy bill issue?')){return false;} var o=document.getElementById('settlingOverlay'); o.style.display='flex'; o.style.pointerEvents='all';"
-                                oncomplete="document.getElementById('settlingOverlay').style.display='none';"
-                                ondblclick="return false;"
-                                action="#{inpatientDirectIssueNativeSqlController.settleInpatientDirectIssue()}"
-                                update="gpPatientPanel panelErrorMsg"
-                                class="ui-button-success mx-2"
-                                icon="fa-solid fa-check">
-                            </p:commandButton>
-                        </div>
-                    </div>
 
                     <div class="row">
                         <!-- Patient detail panel -->

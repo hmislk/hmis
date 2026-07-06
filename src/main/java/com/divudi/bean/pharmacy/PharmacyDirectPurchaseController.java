@@ -939,6 +939,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void addExpense() {
+        if (getBill().isCompleted()) {
+            JsfUtil.addErrorMessage("This bill is completed and cannot be edited.");
+            return;
+        }
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
             if (getBill().getBillFinanceDetails() == null) {
@@ -959,6 +963,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
         currentExpense.setNetValue(currentExpense.getNetRate() * currentExpense.getQty());
         currentExpense.setGrossValue(currentExpense.getRate() * currentExpense.getQty());
 
+        // Owning-side FK: without this, Bill.billExpenses' cascade persists
+        // nothing back to this bill (issue #21856)
+        currentExpense.setExpenseBill(getBill());
+
         getCurrentExpense().setSearialNo(getBillExpenses().size());
         getBillExpenses().add(currentExpense);
 
@@ -969,10 +977,14 @@ public class PharmacyDirectPurchaseController implements Serializable {
         recalculateExpenseTotals();
         recalculateProfitMarginsForAllItems();
 
-        // Persist the updated bill
-        if (getBill().getId() != null) {
-            getBillFacade().edit(getBill());
-        }
+        // Persist the expense directly so its generated id lands on this same
+        // in-memory object. Relying on getBillFacade().edit(getBill())'s cascade
+        // merges a copy of the bill graph - the id never comes back to
+        // currentExpense, so later save paths see getId()==null and either
+        // duplicate-create it or wrongly retire the row cascade already made
+        // (issue #21856 review).
+        getBillItemFacade().create(currentExpense);
+        getBillFacade().edit(getBill());
 
         currentExpense = null;
 
@@ -980,6 +992,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     public void removeExpense(BillItem expense) {
         if (expense == null) {
+            return;
+        }
+        if (getBill().isCompleted()) {
+            JsfUtil.addErrorMessage("This bill is completed and cannot be edited.");
             return;
         }
 
@@ -995,12 +1011,37 @@ public class PharmacyDirectPurchaseController implements Serializable {
             getBill().getBillExpenses().remove(expense);
         }
 
+        // Retire the persisted row - removing it from the in-memory list alone
+        // does not delete it (Bill.billExpenses has no orphanRemoval), so an
+        // "un-retired" removal would silently reappear on reload (issue #21856).
+        if (expense.getId() != null) {
+            expense.setRetired(true);
+            expense.setRetireComments("Removed during draft edit");
+            getBillItemFacade().edit(expense);
+        }
+
         recalculateExpenseTotals();
         recalculateProfitMarginsForAllItems();
 
         if (getBill().getId() != null) {
             billFacade.edit(getBill());
         }
+    }
+
+    /**
+     * Shared by settle/finalize/approve so the rule lives in one place instead of an
+     * inline copy at each call site. Shows an error message and returns false if invalid.
+     */
+    private boolean isPaymentMethodValid(com.divudi.core.entity.Bill b) {
+        if (b.getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select Payment Method");
+            return false;
+        }
+        if (b.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            JsfUtil.addErrorMessage("MultiplePayments Not Allowed.");
+            return false;
+        }
+        return true;
     }
 
     public void settleDirectPurchaseBillFinally() {
@@ -1035,12 +1076,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 return;
             }
         }
-        if (getBill().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Select Payment Method");
-            return;
-        }
-        if (getBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
-            JsfUtil.addErrorMessage("MultiplePayments Not Allowed.");
+        if (!isPaymentMethodValid(getBill())) {
             return;
         }
 
@@ -1061,6 +1097,34 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
 //        Payment p = createPayment(getBill());
         billItemsTotalQty = 0;
+
+        // Calculate bill-level totals and distribute bill-level adjustments (discount,
+        // tax, expenses) into each item's cost rate BEFORE ItemBatch/Stock are created
+        // below. saveItemBatchWithCosting() reads BillItemFinanceDetails.totalCostRate
+        // to set ItemBatch.costRate (which StockHistory then snapshots) - if this ran
+        // after item batches were created, the batch/stock would be left with the
+        // pre-distribution cost rate forever while the report's cost totals reflect
+        // the post-distribution one, producing a permanent COGS cost variance.
+        calculateBillTotalsFromItems();
+        if (getBill().getDiscount() != 0.0 || getBill().getTax() != 0.0 || getBill().getExpensesTotalConsideredForCosting() != 0.0) {
+            distributeProportionalBillValuesToItems();
+            // Persist the distributed values for previously-saved items here (a zero-qty/
+            // zero-freeQty item is skipped by the loop below's `continue` before it ever
+            // reaches create/edit(i) or getBill().getBillItems(), so it would otherwise
+            // silently lose whatever distribute() computed for it). Brand-new items (id
+            // still null - the common case for a Direct Purchase settled directly without
+            // going through the Save Draft flow first) are deliberately skipped here: edit()
+            // is em.merge(), which on a transient entity inserts a row but does NOT populate
+            // this object's id - the loop below would then see getId()==null and create() a
+            // second, duplicate row for the same item. Those items already carry the
+            // distributed values in memory and get persisted correctly by the loop's own
+            // create(i) call.
+            for (BillItem item : getBillItems()) {
+                if (item.getId() != null) {
+                    getBillItemFacade().edit(item);
+                }
+            }
+        }
 
         for (BillItem i : getBillItems()) {
             double lastPurchaseRate = 0.0;
@@ -1102,29 +1166,30 @@ public class PharmacyDirectPurchaseController implements Serializable {
             getBill().getBillItems().add(i);
         }
 
-        // CRITICAL: Calculate bill-level totals and update BillFinanceDetails after all items are processed
-        calculateBillTotalsFromItems();
-
-        // Distribute bill-level adjustments proportionally to items if needed
+        // Recalculate BillFinanceDetails cost aggregates after distribution
+        // This ensures bill-level totals reflect the updated cost rates with expenses
         if (getBill().getDiscount() != 0.0 || getBill().getTax() != 0.0 || getBill().getExpensesTotalConsideredForCosting() != 0.0) {
-            distributeProportionalBillValuesToItems();
-
-            for (BillItem item : getBillItems()) {
-                getBillItemFacade().edit(item);
-            }
-
-            // Recalculate BillFinanceDetails cost aggregates after distribution
-            // This ensures bill-level totals reflect the updated cost rates with expenses
             recalculateBillFinanceDetailsCostAggregates();
-
         }
 
         //check and calculate expenses separately
         if (billExpenses != null && !billExpenses.isEmpty()) {
-            getBill().setBillExpenses(billExpenses);
-
+            // Persist each expense explicitly and set the owning-side expenseBill
+            // FK - relying on Bill.billExpenses' cascade alone leaves this FK
+            // NULL, since the mappedBy side (Bill.billExpenses) is not the
+            // owning side of the relationship (issue #21856).
+            int expenseSerial = 0;
             double totalForExpenses = 0;
-            for (BillItem expense : getBillExpenses()) {
+            for (BillItem expense : billExpenses) {
+                expense.setSearialNo(expenseSerial++);
+                expense.setExpenseBill(getBill());
+                expense.setCreatedAt(new Date());
+                expense.setCreater(getSessionController().getLoggedUser());
+                if (expense.getId() == null) {
+                    getBillItemFacade().create(expense);
+                } else {
+                    getBillItemFacade().edit(expense);
+                }
                 totalForExpenses += expense.getNetValue();
             }
 
@@ -1149,6 +1214,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void removeItem(BillItem bi) {
+        if (getBill().isCompleted()) {
+            JsfUtil.addErrorMessage("This bill is completed and cannot be edited.");
+            return;
+        }
         getBillItems().remove(bi);
 
         int i = 0;
@@ -1170,6 +1239,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void updateBillItem() {
+        if (getBill().isCompleted()) {
+            JsfUtil.addErrorMessage("This bill is completed and cannot be edited.");
+            return;
+        }
         if (editingBillItem == null) {
             JsfUtil.addErrorMessage("No item selected for editing");
             return;
@@ -1384,14 +1457,22 @@ public class PharmacyDirectPurchaseController implements Serializable {
     
     // <editor-fold defaultstate="collapsed" desc="Draft Workflow Methods">
 
-    public void saveDraftDirectPurchase() {
+    /**
+     * Persists the current bill and items as a draft (PRE type, not completed).
+     * Shared by the explicit Save Draft action and by Finalize, which
+     * transparently saves first when no draft has been saved yet.
+     *
+     * @return true if the draft was persisted, false if validation failed (an
+     * error message has already been added to the growl in that case)
+     */
+    private boolean persistDraftDirectPurchase() {
         if (getBillItems() == null || getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Please add items before saving");
-            return;
+            return false;
         }
         if (getBill().getFromInstitution() == null) {
             JsfUtil.addErrorMessage("Please select a Supplier");
-            return;
+            return false;
         }
 
         // Save bill header as PRE type — no bill number yet, no stock
@@ -1446,14 +1527,62 @@ public class PharmacyDirectPurchaseController implements Serializable {
             }
         }
 
+        // Retire any previously persisted expenses that were removed from the session list
+        java.util.Map<String, Object> retireExpenseParams = new java.util.HashMap<>();
+        retireExpenseParams.put("billId", getBill().getId());
+        List<BillItem> persistedExpenses = getBillItemFacade().findByJpql(
+            "SELECT be FROM BillItem be WHERE be.expenseBill.id = :billId AND be.retired = false",
+            retireExpenseParams);
+        java.util.Set<Long> sessionExpenseIds = new java.util.HashSet<>();
+        for (BillItem be : getBillExpenses()) {
+            if (be.getId() != null) {
+                sessionExpenseIds.add(be.getId());
+            }
+        }
+        for (BillItem persisted : persistedExpenses) {
+            if (!sessionExpenseIds.contains(persisted.getId())) {
+                persisted.setRetired(true);
+                persisted.setRetireComments("Removed during draft edit");
+                getBillItemFacade().edit(persisted);
+            }
+        }
+
+        // Save each bill expense explicitly - do not rely on Bill.billExpenses'
+        // cascade alone, since the owning-side expenseBill FK must be set on
+        // each child for the cascade-insert to actually link back to this bill
+        int expenseSerial = 0;
+        double totalForExpenses = 0.0;
+        for (BillItem expense : getBillExpenses()) {
+            expense.setSearialNo(expenseSerial++);
+            expense.setExpenseBill(getBill());
+            expense.setCreatedAt(new Date());
+            expense.setCreater(getSessionController().getLoggedUser());
+            if (expense.getId() == null) {
+                getBillItemFacade().create(expense);
+            } else {
+                getBillItemFacade().edit(expense);
+            }
+            totalForExpenses += expense.getNetValue();
+        }
+        getBill().setExpenseTotal(-Math.abs(totalForExpenses));
+
         getBillFacade().edit(getBill());
-        JsfUtil.addSuccessMessage("Direct Purchase draft saved successfully.");
         draftMode = true;
+        return true;
+    }
+
+    public void saveDraftDirectPurchase() {
+        if (persistDraftDirectPurchase()) {
+            JsfUtil.addSuccessMessage("Direct Purchase draft saved successfully.");
+        }
     }
 
     public void finalizeDraftDirectPurchase() {
-        if (bill == null || bill.getId() == null) {
-            JsfUtil.addErrorMessage("No draft loaded. Please save the draft first.");
+        // Always (re)persist first: addItem() may have already created a bare
+        // bill row (to get an id for the item FK) before department/supplier
+        // were set, so bill.getId() != null does not mean the draft is fully
+        // saved. persistDraftDirectPurchase() handles both create and edit.
+        if (!persistDraftDirectPurchase()) {
             return;
         }
 
@@ -1465,6 +1594,9 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
         if (freshBill.isCompleted()) {
             JsfUtil.addErrorMessage("This draft was already finalized by another user. Please refresh the list.");
+            return;
+        }
+        if (!isPaymentMethodValid(freshBill)) {
             return;
         }
 
@@ -1499,6 +1631,21 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (freshBill.isChecked()) {
             JsfUtil.addErrorMessage("This bill was already approved by another user. Please refresh the list.");
             return;
+        }
+        // The Payment Method dropdown on direct_purchase.xhtml stays editable on this screen
+        // (unlike items/expenses), but nothing else on this page persists it, and unlike
+        // finalize (which calls persistDraftDirectPurchase() first) nothing saves `bill`
+        // before this method runs either - so a selection made here would otherwise be
+        // silently discarded by the DB reload above on every Approve click. Validate the
+        // pending in-memory selection itself (not the possibly-stale freshBill copy) before
+        // persisting it, so an invalid choice is rejected without ever being written.
+        if (!isPaymentMethodValid(bill)) {
+            return;
+        }
+        PaymentMethod pendingPaymentMethod = bill.getPaymentMethod();
+        if (freshBill.getPaymentMethod() != pendingPaymentMethod) {
+            freshBill.setPaymentMethod(pendingPaymentMethod);
+            getBillFacade().edit(freshBill);
         }
 
         // Switch session bill to the fresh DB copy so finalizeBill()/approveBill() operate on it
@@ -1551,6 +1698,25 @@ public class PharmacyDirectPurchaseController implements Serializable {
         String expJpql = "SELECT be FROM BillItem be WHERE be.expenseBill.id = :billId AND be.retired = false ORDER BY be.searialNo";
         billExpenses = billItemFacade.findByJpql(expJpql, params);
 
+        // Calculate bill-level totals and distribute bill-level adjustments (discount,
+        // tax, expenses) into each item's cost rate BEFORE ItemBatch/Stock are created
+        // below. saveItemBatchWithCosting() reads BillItemFinanceDetails.totalCostRate
+        // to set ItemBatch.costRate (which StockHistory then snapshots) - if this ran
+        // after item batches were created, the batch/stock would be left with the
+        // pre-distribution cost rate forever while the report's cost totals reflect
+        // the post-distribution one, producing a permanent COGS cost variance (mirrors
+        // the same fix in settleDirectPurchaseBillFinally()).
+        calculateBillTotalsFromItems();
+        if (getBill().getDiscount() != 0.0 || getBill().getTax() != 0.0 || getBill().getExpensesTotalConsideredForCosting() != 0.0) {
+            distributeProportionalBillValuesToItems();
+            // Unlike settle (fully in-memory graph, cascaded on the final bill edit),
+            // these items were reloaded from DB above, so they need an explicit edit
+            // here for the distributed values to persist.
+            for (BillItem item : getBillItems()) {
+                getBillItemFacade().edit(item);
+            }
+        }
+
         // Add stock for each item (mirrors settleDirectPurchaseBillFinally())
         billItemsTotalQty = 0;
         for (BillItem i : getBillItems()) {
@@ -1582,13 +1748,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
             getBill().getBillItems().add(i);
         }
 
-        calculateBillTotalsFromItems();
-
         if (getBill().getDiscount() != 0.0 || getBill().getTax() != 0.0 || getBill().getExpensesTotalConsideredForCosting() != 0.0) {
-            distributeProportionalBillValuesToItems();
-            for (BillItem item : getBillItems()) {
-                getBillItemFacade().edit(item);
-            }
             recalculateBillFinanceDetailsCostAggregates();
         }
 

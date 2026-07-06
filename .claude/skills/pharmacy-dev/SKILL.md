@@ -29,6 +29,7 @@ Pharmacy uses `configOptionApplicationController.getBooleanValueByKey()` for fea
 - `Pharmacy Transfer is by Purchase Rate` / `Cost Rate` / `Retail Rate`
 - `Display Colours for Stock Autocomplete Items`
 - `Pharmacy Disbursement Reports - Display *` (various column visibility)
+- `Pharmacy - Allow Cross-Department PO Receiving` (default `false`) - lets a PO created in one department be received/GRN'd from any other department in the same institution; see [Purchase Order Workflow § Receiving Department Scoping](../../developer_docs/po-workflow-documentation.md#receiving-department-scoping-issue-21848)
 
 ## Common Patterns
 

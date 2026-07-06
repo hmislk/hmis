@@ -102,7 +102,7 @@
                 <div>
                     <p:dataTable
                         rowIndexVar="rowIndex"
-                        value="#{cc.attrs.bill.billItems}"
+                        value="#{cc.attrs.bill.activeBillItems}"
                         var="bip"
                         style="font-size: 15px; margin-left: 3%; margin-right: 3%;">
                         <p:column style="padding: 4px;width: 6em;">
@@ -330,7 +330,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                                <ui:repeat value="#{cc.attrs.bill.activeBillItems}" var="bip">
                                     <tr>
                                         <td style="border: 1px solid #000; padding: 8px;">
                                             <h:outputText value="#{bip.item.name}"/>
