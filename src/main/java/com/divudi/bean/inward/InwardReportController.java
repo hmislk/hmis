@@ -166,6 +166,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import javax.imageio.ImageIO;
 import java.awt.Color;
+import java.time.Month;
+import java.time.format.TextStyle;
+import java.util.Locale;
 import java.util.TreeSet;
 
 /**
@@ -314,9 +317,14 @@ public class InwardReportController implements Serializable {
 
     private String surgeryWiseLineChartModel;
     private String surgeryWiseBarChartModel;
-    
+
     private String surgeryCountLineChartModel;
     private String surgeryCountBarChartModel;
+
+    private List<SurgeryCountTypeWiseDTO> surgeryCountTypeList;
+    private List<String> surgeryCategoryNames;
+    private Map<String, Integer> totalCategoryCounts;
+    private int totalAllSurgeryCount;
 
     private String specialtyLineChartImage;
     private String specialtyBarChartImage;
@@ -2527,54 +2535,99 @@ public class InwardReportController implements Serializable {
             }
         }
     }
-    private List<SurgeryCountTypeWiseDTO> surgeryCountTypeList;
-    private List<String> surgeryCategoryNames;
-    private Map<String, Integer> totalCategoryCounts;
-    private int totalAllSurgeryCount;
 
-    public List<SurgeryCountTypeWiseDTO> getSurgeryCountTypeList() {
-        return surgeryCountTypeList;
-    }
+    private static final String[] CHART_COLORS = {
+        "75, 192, 192", "255, 99, 132", "54, 162, 235", "255, 206, 86",
+        "153, 102, 255", "255, 159, 64", "199, 199, 199", "83, 102, 255",
+        "255, 99, 255", "99, 255, 132", "220, 20, 60", "65, 105, 225"
+    };
 
-    public void setSurgeryCountTypeList(List<SurgeryCountTypeWiseDTO> surgeryCountTypeList) {
-        this.surgeryCountTypeList = surgeryCountTypeList;
-    }
-
-    public List<String> getSurgeryCategoryNames() {
-        return surgeryCategoryNames;
-    }
-
-    public void setSurgeryCategoryNames(List<String> surgeryCategoryNames) {
-        this.surgeryCategoryNames = surgeryCategoryNames;
-    }
-
-    public Map<String, Integer> getTotalCategoryCounts() {
-        return totalCategoryCounts;
-    }
-
-    public void setTotalCategoryCounts(Map<String, Integer> totalCategoryCounts) {
-        this.totalCategoryCounts = totalCategoryCounts;
-    }
-
-    public int getTotalAllSurgeryCount() {
-        return totalAllSurgeryCount;
-    }
-
-    public void setTotalAllSurgeryCount(int totalAllSurgeryCount) {
-        this.totalAllSurgeryCount = totalAllSurgeryCount;
-    }
-
-    public void processSurgeryCountType() {
+    public void processSurgeryCountTypeReport() {
         surgeryCountTypeList = new ArrayList<>();
         surgeryCategoryNames = new ArrayList<>();
         totalCategoryCounts = new HashMap<>();
         totalAllSurgeryCount = 0;
 
-        if (fromYearStartDate == null || toYearEndDate == null) {
-            JsfUtil.addErrorMessage("Please select both From and To dates.");
+        if (!isDateRangeValid()) {
             return;
         }
 
+        Map<String, Object> params = new HashMap<>();
+        String jpql = buildSurgeryCountJpql(params);
+
+        List<Object[]> results = billFacade.findObjectArrayByJpql(
+                jpql, params, TemporalType.TIMESTAMP);
+
+        if (results == null || results.isEmpty()) {
+            JsfUtil.addErrorMessage("No surgery records found for the selected period.");
+            return;
+        }
+
+        aggregateResults(results);
+
+        if (reportType != null && !reportType.isEmpty()) {
+            createSurgeryCountChartModels();
+        }
+    }
+
+    private boolean isDateRangeValid() {
+        if (fromYearStartDate == null || toYearEndDate == null) {
+            JsfUtil.addErrorMessage("Please select both From and To dates.");
+            return false;
+        }
+        if (fromYearStartDate.after(toYearEndDate)) {
+            JsfUtil.addErrorMessage("From Date must not be after To Date.");
+            return false;
+        }
+
+        Calendar from = Calendar.getInstance();
+        from.setTime(fromYearStartDate);
+        Calendar to = Calendar.getInstance();
+        to.setTime(toYearEndDate);
+
+        if (from.get(Calendar.YEAR) != to.get(Calendar.YEAR)) {
+            JsfUtil.addErrorMessage(
+                    "Please select a date range within a single calendar year. "
+                    + "Monthly totals are grouped by month only, so a "
+                    + "multi-year range would merge counts from different years.");
+            return false;
+        }
+        return true;
+    }
+
+    private void aggregateResults(List<Object[]> results) {
+        SurgeryCountTypeWiseDTO[] monthDtos = new SurgeryCountTypeWiseDTO[12];
+        for (int i = 0; i < 12; i++) {
+            monthDtos[i] = new SurgeryCountTypeWiseDTO(localizedMonthName(i), i);
+        }
+
+        Set<String> categorySet = new TreeSet<>(); // sorted, dedupe on insert
+
+        for (Object[] row : results) {
+            String categoryName = (String) row[0];
+            int month = ((Number) row[1]).intValue();
+            int count = ((Number) row[2]).intValue();
+            int monthIndex = month - 1;
+
+            if (monthIndex < 0 || monthIndex >= 12) {
+                continue; // defensive, shouldn't happen
+            }
+
+            categorySet.add(categoryName);
+            monthDtos[monthIndex].addCount(categoryName, count);
+            totalCategoryCounts.merge(categoryName, count, Integer::sum);
+            totalAllSurgeryCount += count;
+        }
+
+        surgeryCategoryNames = new ArrayList<>(categorySet);
+        surgeryCountTypeList.addAll(Arrays.asList(monthDtos));
+    }
+
+    private String localizedMonthName(int monthIndex) {
+        return Month.of(monthIndex + 1).getDisplayName(TextStyle.FULL, Locale.getDefault());
+    }
+
+    private String buildSurgeryCountJpql(Map<String, Object> params) {
         StringBuilder jpql = new StringBuilder();
         jpql.append(" select ")
                 .append("   coalesce(upper(c.name), 'OTHER'), ")
@@ -2589,7 +2642,6 @@ public class InwardReportController implements Serializable {
                 .append(" and b.billType = :bt ")
                 .append(" and b.createdAt between :fd and :td ");
 
-        Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.SurgeryBill);
         params.put("fd", fromYearStartDate);
         params.put("td", toYearEndDate);
@@ -2615,53 +2667,11 @@ public class InwardReportController implements Serializable {
             params.put("sitem", surgeryItem);
         }
 
-        jpql.append(" group by coalesce(upper(c.name), 'OTHER'), function('MONTH', b.createdAt) ");
-        jpql.append(" order by 1 ");
+        jpql.append(" group by coalesce(upper(c.name), 'OTHER'), ")
+                .append(" function('MONTH', b.createdAt) ")
+                .append(" order by 1 ");
 
-        List<Object[]> results = billFacade.findObjectArrayByJpql(
-                jpql.toString(), params, TemporalType.TIMESTAMP);
-
-        if (results == null || results.isEmpty()) {
-            JsfUtil.addErrorMessage("No surgery records found for the selected period.");
-            surgeryCategoryNames = new ArrayList<>();
-            return;
-        }
-
-        String[] months = {"January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"};
-
-        SurgeryCountTypeWiseDTO[] monthDtos = new SurgeryCountTypeWiseDTO[12];
-        for (int i = 0; i < 12; i++) {
-            monthDtos[i] = new SurgeryCountTypeWiseDTO(months[i], i);
-        }
-
-        Set<String> categorySet = new TreeSet<>(); // sorted automatically, O(log n) add
-
-        for (Object[] row : results) {
-            String categoryName = (String) row[0];
-            int month = ((Number) row[1]).intValue();
-            int count = ((Number) row[2]).intValue();
-            int monthIndex = month - 1;
-
-            if (monthIndex < 0 || monthIndex >= 12) {
-                continue; // defensive, shouldn't happen
-            }
-
-            categorySet.add(categoryName);
-            monthDtos[monthIndex].addCount(categoryName, count);
-            totalCategoryCounts.merge(categoryName, count, Integer::sum);
-            totalAllSurgeryCount += count;
-        }
-
-        surgeryCategoryNames = new ArrayList<>(categorySet);
-
-        for (int i = 0; i < 12; i++) {
-            surgeryCountTypeList.add(monthDtos[i]);
-        }
-
-        if (reportType != null && !reportType.isEmpty()) {
-            createSurgeryCountChartModels();
-        }
+        return jpql.toString();
     }
 
     private void createSurgeryCountChartModels() {
@@ -2670,45 +2680,29 @@ public class InwardReportController implements Serializable {
             surgeryCountLineChartModel = null;
             return;
         }
-        
+
         createSurgeryCountBarChart();
         createSurgeryCountLineChart();
     }
-    
+
     private void createSurgeryCountBarChart() {
         if (surgeryCountTypeList == null || surgeryCountTypeList.isEmpty()) {
             surgeryCountBarChartModel = null;
             return;
         }
 
-        String[] colors = {
-            "75, 192, 192", "255, 99, 132", "54, 162, 235", "255, 206, 86",
-            "153, 102, 255", "255, 159, 64", "199, 199, 199", "83, 102, 255",
-            "255, 99, 255", "99, 255, 132", "220, 20, 60", "65, 105, 225"
-        };
-        
-        int colorIndex = 0;
-
         BarChart barChart = new BarChart();
         BarData barData = new BarData();
-        barData.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
-        
+        barData.addLabels(shortMonthLabels());
+
+        int colorIndex = 0;
         for (String categoryName : surgeryCategoryNames) {
-            String[] rgb = colors[colorIndex % colors.length].split(",");
-            RGBAColor bgColor = new RGBAColor(
-                    Integer.parseInt(rgb[0].trim()),
-                    Integer.parseInt(rgb[1].trim()),
-                    Integer.parseInt(rgb[2].trim()), 0.7);
-            RGBAColor borderColor = new RGBAColor(
-                    Integer.parseInt(rgb[0].trim()),
-                    Integer.parseInt(rgb[1].trim()),
-                    Integer.parseInt(rgb[2].trim()), 1);
+            int[] rgb = parseRgb(CHART_COLORS[colorIndex % CHART_COLORS.length]);
 
             BarDataset dataset = new BarDataset()
                     .setLabel(categoryName)
-                    .setBackgroundColor(bgColor)
-                    .setBorderColor(borderColor)
+                    .setBackgroundColor(toRgba(rgb, 0.7))
+                    .setBorderColor(toRgba(rgb, 1))
                     .setBorderWidth(1);
 
             for (SurgeryCountTypeWiseDTO dto : surgeryCountTypeList) {
@@ -2721,19 +2715,10 @@ public class InwardReportController implements Serializable {
         barChart.setData(barData);
 
         BarOptions barOptionsObj = new BarOptions();
-        Plugins plugins = new Plugins();
-        plugins.setTitle(new Title().setDisplay(true)
-                .setText("Surgery Count Type - Year " + getSelectedYear()));
-        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.TOP));
-        barOptionsObj.setPlugins(plugins);
-
-        Scales scales = new Scales();
-        scales.addScale("y", new LinearScaleOptions()
-                .setBeginAtZero(true)
-                .setTicks(new LinearTickOptions().setStepSize(1)));
-        barOptionsObj.setScales(scales);
-
+        barOptionsObj.setPlugins(buildChartPlugins());
+        barOptionsObj.setScales(buildChartScales());
         barChart.setOptions(barOptionsObj);
+
         surgeryCountBarChartModel = barChart.toJson();
     }
 
@@ -2743,28 +2728,17 @@ public class InwardReportController implements Serializable {
             return;
         }
 
-        String[] colors = {
-            "75, 192, 192", "255, 99, 132", "54, 162, 235", "255, 206, 86",
-            "153, 102, 255", "255, 159, 64", "199, 199, 199", "83, 102, 255",
-            "255, 99, 255", "99, 255, 132", "220, 20, 60", "65, 105, 225"
-        };
-        int colorIndex = 0;
-
         LineChart lineChart = new LineChart();
         LineData lineData = new LineData();
-        lineData.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+        lineData.addLabels(shortMonthLabels());
 
+        int colorIndex = 0;
         for (String categoryName : surgeryCategoryNames) {
-            String[] rgb = colors[colorIndex % colors.length].split(",");
-            RGBAColor borderColor = new RGBAColor(
-                    Integer.parseInt(rgb[0].trim()),
-                    Integer.parseInt(rgb[1].trim()),
-                    Integer.parseInt(rgb[2].trim()), 1);
+            int[] rgb = parseRgb(CHART_COLORS[colorIndex % CHART_COLORS.length]);
 
             LineDataset dataset = new LineDataset()
                     .setLabel(categoryName)
-                    .setBorderColor(borderColor)
+                    .setBorderColor(toRgba(rgb, 1))
                     .setFill(new Fill(false))
                     .setTension(0.4f);
 
@@ -2778,20 +2752,45 @@ public class InwardReportController implements Serializable {
         lineChart.setData(lineData);
 
         LineOptions lineOptionsObj = new LineOptions();
+        lineOptionsObj.setPlugins(buildChartPlugins());
+        lineOptionsObj.setScales(buildChartScales());
+        lineChart.setOptions(lineOptionsObj);
+
+        surgeryCountLineChartModel = lineChart.toJson();
+    }
+
+    private String[] shortMonthLabels() {
+        return new String[]{"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    }
+
+    private int[] parseRgb(String csv) {
+        String[] parts = csv.split(",");
+        return new int[]{
+            Integer.parseInt(parts[0].trim()),
+            Integer.parseInt(parts[1].trim()),
+            Integer.parseInt(parts[2].trim())
+        };
+    }
+
+    private RGBAColor toRgba(int[] rgb, double alpha) {
+        return new RGBAColor(rgb[0], rgb[1], rgb[2], alpha);
+    }
+
+    private Plugins buildChartPlugins() {
         Plugins plugins = new Plugins();
         plugins.setTitle(new Title().setDisplay(true)
                 .setText("Surgery Count Type - Year " + getSelectedYear()));
         plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.TOP));
-        lineOptionsObj.setPlugins(plugins);
+        return plugins;
+    }
 
+    private Scales buildChartScales() {
         Scales scales = new Scales();
         scales.addScale("y", new LinearScaleOptions()
                 .setBeginAtZero(true)
                 .setTicks(new LinearTickOptions().setStepSize(1)));
-        lineOptionsObj.setScales(scales);
-
-        lineChart.setOptions(lineOptionsObj);
-        surgeryCountLineChartModel = lineChart.toJson();
+        return scales;
     }
 
     private List<SurgeryCountSurgeryWiseDTO> surgeryCountSurgeryWiseList;
@@ -7504,6 +7503,38 @@ public class InwardReportController implements Serializable {
 
     public void setSurgeryCountBarChartModel(String surgeryCountBarChartModel) {
         this.surgeryCountBarChartModel = surgeryCountBarChartModel;
+    }
+
+    public List<SurgeryCountTypeWiseDTO> getSurgeryCountTypeList() {
+        return surgeryCountTypeList;
+    }
+
+    public void setSurgeryCountTypeList(List<SurgeryCountTypeWiseDTO> surgeryCountTypeList) {
+        this.surgeryCountTypeList = surgeryCountTypeList;
+    }
+
+    public List<String> getSurgeryCategoryNames() {
+        return surgeryCategoryNames;
+    }
+
+    public void setSurgeryCategoryNames(List<String> surgeryCategoryNames) {
+        this.surgeryCategoryNames = surgeryCategoryNames;
+    }
+
+    public Map<String, Integer> getTotalCategoryCounts() {
+        return totalCategoryCounts;
+    }
+
+    public void setTotalCategoryCounts(Map<String, Integer> totalCategoryCounts) {
+        this.totalCategoryCounts = totalCategoryCounts;
+    }
+
+    public int getTotalAllSurgeryCount() {
+        return totalAllSurgeryCount;
+    }
+
+    public void setTotalAllSurgeryCount(int totalAllSurgeryCount) {
+        this.totalAllSurgeryCount = totalAllSurgeryCount;
     }
 
     public class IncomeByCategoryRecord {
