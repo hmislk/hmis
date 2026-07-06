@@ -314,6 +314,9 @@ public class InwardReportController implements Serializable {
 
     private String surgeryWiseLineChartModel;
     private String surgeryWiseBarChartModel;
+    
+    private String surgeryCountLineChartModel;
+    private String surgeryCountBarChartModel;
 
     private String specialtyLineChartImage;
     private String specialtyBarChartImage;
@@ -2655,6 +2658,140 @@ public class InwardReportController implements Serializable {
         for (int i = 0; i < 12; i++) {
             surgeryCountTypeList.add(monthDtos[i]);
         }
+
+        if (reportType != null && !reportType.isEmpty()) {
+            createSurgeryCountChartModels();
+        }
+    }
+
+    private void createSurgeryCountChartModels() {
+        if (surgeryCountTypeList == null || surgeryCountTypeList.isEmpty()) {
+            surgeryCountBarChartModel = null;
+            surgeryCountLineChartModel = null;
+            return;
+        }
+        
+        createSurgeryCountBarChart();
+        createSurgeryCountLineChart();
+    }
+    
+    private void createSurgeryCountBarChart() {
+        if (surgeryCountTypeList == null || surgeryCountTypeList.isEmpty()) {
+            surgeryCountBarChartModel = null;
+            return;
+        }
+
+        String[] colors = {
+            "75, 192, 192", "255, 99, 132", "54, 162, 235", "255, 206, 86",
+            "153, 102, 255", "255, 159, 64", "199, 199, 199", "83, 102, 255",
+            "255, 99, 255", "99, 255, 132", "220, 20, 60", "65, 105, 225"
+        };
+        
+        int colorIndex = 0;
+
+        BarChart barChart = new BarChart();
+        BarData barData = new BarData();
+        barData.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+        
+        for (String categoryName : surgeryCategoryNames) {
+            String[] rgb = colors[colorIndex % colors.length].split(",");
+            RGBAColor bgColor = new RGBAColor(
+                    Integer.parseInt(rgb[0].trim()),
+                    Integer.parseInt(rgb[1].trim()),
+                    Integer.parseInt(rgb[2].trim()), 0.7);
+            RGBAColor borderColor = new RGBAColor(
+                    Integer.parseInt(rgb[0].trim()),
+                    Integer.parseInt(rgb[1].trim()),
+                    Integer.parseInt(rgb[2].trim()), 1);
+
+            BarDataset dataset = new BarDataset()
+                    .setLabel(categoryName)
+                    .setBackgroundColor(bgColor)
+                    .setBorderColor(borderColor)
+                    .setBorderWidth(1);
+
+            for (SurgeryCountTypeWiseDTO dto : surgeryCountTypeList) {
+                dataset.addData(dto.getCount(categoryName));
+            }
+            barData.addDataset(dataset);
+            colorIndex++;
+        }
+
+        barChart.setData(barData);
+
+        BarOptions barOptionsObj = new BarOptions();
+        Plugins plugins = new Plugins();
+        plugins.setTitle(new Title().setDisplay(true)
+                .setText("Surgery Count Type - Year " + getSelectedYear()));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.TOP));
+        barOptionsObj.setPlugins(plugins);
+
+        Scales scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions()
+                .setBeginAtZero(true)
+                .setTicks(new LinearTickOptions().setStepSize(1)));
+        barOptionsObj.setScales(scales);
+
+        barChart.setOptions(barOptionsObj);
+        surgeryCountBarChartModel = barChart.toJson();
+    }
+
+    private void createSurgeryCountLineChart() {
+        if (surgeryCountTypeList == null || surgeryCountTypeList.isEmpty()) {
+            surgeryCountLineChartModel = null;
+            return;
+        }
+
+        String[] colors = {
+            "75, 192, 192", "255, 99, 132", "54, 162, 235", "255, 206, 86",
+            "153, 102, 255", "255, 159, 64", "199, 199, 199", "83, 102, 255",
+            "255, 99, 255", "99, 255, 132", "220, 20, 60", "65, 105, 225"
+        };
+        int colorIndex = 0;
+
+        LineChart lineChart = new LineChart();
+        LineData lineData = new LineData();
+        lineData.addLabels("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+
+        for (String categoryName : surgeryCategoryNames) {
+            String[] rgb = colors[colorIndex % colors.length].split(",");
+            RGBAColor borderColor = new RGBAColor(
+                    Integer.parseInt(rgb[0].trim()),
+                    Integer.parseInt(rgb[1].trim()),
+                    Integer.parseInt(rgb[2].trim()), 1);
+
+            LineDataset dataset = new LineDataset()
+                    .setLabel(categoryName)
+                    .setBorderColor(borderColor)
+                    .setFill(new Fill(false))
+                    .setTension(0.4f);
+
+            for (SurgeryCountTypeWiseDTO dto : surgeryCountTypeList) {
+                dataset.addData(dto.getCount(categoryName));
+            }
+            lineData.addDataset(dataset);
+            colorIndex++;
+        }
+
+        lineChart.setData(lineData);
+
+        LineOptions lineOptionsObj = new LineOptions();
+        Plugins plugins = new Plugins();
+        plugins.setTitle(new Title().setDisplay(true)
+                .setText("Surgery Count Type - Year " + getSelectedYear()));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.TOP));
+        lineOptionsObj.setPlugins(plugins);
+
+        Scales scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions()
+                .setBeginAtZero(true)
+                .setTicks(new LinearTickOptions().setStepSize(1)));
+        lineOptionsObj.setScales(scales);
+
+        lineChart.setOptions(lineOptionsObj);
+        surgeryCountLineChartModel = lineChart.toJson();
     }
 
     private List<SurgeryCountSurgeryWiseDTO> surgeryCountSurgeryWiseList;
@@ -7351,6 +7488,22 @@ public class InwardReportController implements Serializable {
 
     public void setSelectedRoomCategories(List<RoomCategory> selectedRoomCategories) {
         this.selectedRoomCategories = selectedRoomCategories;
+    }
+
+    public String getSurgeryCountLineChartModel() {
+        return surgeryCountLineChartModel;
+    }
+
+    public void setSurgeryCountLineChartModel(String surgeryCountLineChartModel) {
+        this.surgeryCountLineChartModel = surgeryCountLineChartModel;
+    }
+
+    public String getSurgeryCountBarChartModel() {
+        return surgeryCountBarChartModel;
+    }
+
+    public void setSurgeryCountBarChartModel(String surgeryCountBarChartModel) {
+        this.surgeryCountBarChartModel = surgeryCountBarChartModel;
     }
 
     public class IncomeByCategoryRecord {
