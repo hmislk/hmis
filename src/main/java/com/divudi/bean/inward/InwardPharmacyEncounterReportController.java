@@ -85,8 +85,8 @@ public class InwardPharmacyEncounterReportController implements Serializable {
     private double directIssueBillsToPatientEncounterMargin;
     private double directIssueBillsToPatientEncounterDiscount;
     private List<InpatientPharmacyBillItemDTO> directIssueBillItemsToPatientEncounter;
-    private List<InpatientPharmacyItemSummaryDTO> directIssueItemSummary;
-    private List<InpatientPharmacyDepartmentSummaryDTO> directIssueDepartmentSummary;
+    private List<InpatientPharmacyItemSummaryDTO> directIssueItemSummary = new ArrayList<>();
+    private List<InpatientPharmacyDepartmentSummaryDTO> directIssueDepartmentSummary = new ArrayList<>();
 
     // 3) Issue Returns list (PharmacyBhtPre RefundBill bills)
     private List<BillListReportDTO> returnBillsToPatientEncounter;

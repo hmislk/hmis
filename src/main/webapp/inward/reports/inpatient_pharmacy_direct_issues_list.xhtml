@@ -83,6 +83,7 @@
                         <p:tab title="Direct Issues">
                             <div class="d-flex justify-content-end gap-2 mb-2">
                                 <p:commandButton
+                                    id="btnDirectIssuesDownload"
                                     value="Download"
                                     ajax="false"
                                     icon="fa fa-download"
@@ -90,6 +91,7 @@
                                     <p:dataExporter fileName="Inpatient Pharmacy Direct Issues" target="tbl1" type="xlsx"></p:dataExporter>
                                 </p:commandButton>
                                 <p:commandButton
+                                    id="btnDirectIssuesPrint"
                                     value="Print"
                                     ajax="false"
                                     icon="fa fa-print"
