@@ -41,22 +41,18 @@
                         </div>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{cc.attrs.admission.foriegner ne null}">
-                        <div class="row">
-                            <div class="col-md-5"><p:outputLabel value="Citizenship" /></div>
-                            <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                            <div class="col-md-6"> <h:outputLabel value="#{cc.attrs.admission.foriegner ? 'Foreigner' : 'Local'}" /></div>
-                        </div>
-                    </h:panelGroup>
+                    <div class="row">
+                        <div class="col-md-5"><p:outputLabel value="Citizenship" /></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                        <div class="col-md-6"> <h:outputLabel value="#{cc.attrs.admission.foriegner ? 'Foreigner' : 'Local'}" /></div>
+                    </div>
 
-                    <h:panelGroup rendered="#{cc.attrs.admission.claimable ne null}">
-                        <div class="row">
-                            <div class="col-md-5"><p:outputLabel value="Claimable/Non-Claimable" /></div>
-                            <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                            <div class="col-md-6"><h:outputText value="#{cc.attrs.admission.claimable ? 'Claimable' : 'Non-Claimable'}" />
-                            </div>
+                    <div class="row">
+                        <div class="col-md-5"><p:outputLabel value="Claimable/Non-Claimable" /></div>
+                        <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
+                        <div class="col-md-6"><h:outputText value="#{cc.attrs.admission.claimable ? 'Claimable' : 'Non-Claimable'}" />
                         </div>
-                    </h:panelGroup>
+                    </div>
 
                     <h:panelGroup rendered="#{cc.attrs.admission.referringDoctor ne null or cc.attrs.admission.referringConsultant ne null}">
                         <div class="row">

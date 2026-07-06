@@ -80,24 +80,20 @@
                     </div>
                 </h:panelGroup>
 
-                <h:panelGroup rendered="#{cc.attrs.admission.foriegner ne null}">
-                    <div class="row">
-                        <div class="col-md-2"><p:outputLabel value="Nationality"  /></div>
-                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" /></div>
-                        <div class="col-md-8"><h:outputLabel  value="Local" rendered="#{cc.attrs.admission.foriegner eq false}"/>
-                            <h:outputLabel  value="Foreigner" rendered="#{cc.attrs.admission.foriegner eq true}"/>
-                        </div>
+                <div class="row">
+                    <div class="col-md-2"><p:outputLabel value="Nationality"  /></div>
+                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" /></div>
+                    <div class="col-md-8"><h:outputLabel  value="Local" rendered="#{cc.attrs.admission.foriegner eq false}"/>
+                        <h:outputLabel  value="Foreigner" rendered="#{cc.attrs.admission.foriegner eq true}"/>
                     </div>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{cc.attrs.admission.claimable ne null}">
-                    <div class="row">
-                        <div class="col-md-2"><p:outputLabel value="Claimability"  /></div>
-                        <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" /></div>
-                        <div class="col-md-8"><h:outputLabel  value="Not Claimable" rendered="#{cc.attrs.admission.claimable eq false}"/>
-                            <h:outputLabel  value="Claimable" rendered="#{cc.attrs.admission.claimable eq true}"/>
-                        </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2"><p:outputLabel value="Claimability"  /></div>
+                    <div class="col-md-2 justify-content-end d-flex"><p:outputLabel value=":" /></div>
+                    <div class="col-md-8"><h:outputLabel  value="Not Claimable" rendered="#{cc.attrs.admission.claimable eq false}"/>
+                        <h:outputLabel  value="Claimable" rendered="#{cc.attrs.admission.claimable eq true}"/>
                     </div>
-                </h:panelGroup>
+                </div>
                 <h:panelGroup rendered="#{cc.attrs.admission.creditCompany ne null}">
                     <div class="row">
                         <div class="col-md-2"><p:outputLabel value="Credit Company"  /></div>
