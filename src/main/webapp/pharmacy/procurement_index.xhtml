@@ -280,15 +280,17 @@
                                 <p:messages id="procurementReturnConfigMessages" showDetail="true" closable="true" />
                                 <div class="d-flex gap-2">
                                     <p:commandButton
+                                        id="btnProcurementReturnConfigSave"
                                         value="Apply &amp; Close"
                                         icon="fas fa-save"
-                                        class="ui-button-success"
+                                        styleClass="ui-button-success"
                                         ajax="false"
                                         action="#{pharmacyReturnApprovalConfigController.saveConfig}" />
                                     <p:commandButton
+                                        id="btnProcurementReturnConfigCancel"
                                         value="Cancel"
                                         icon="fas fa-times"
-                                        class="ui-button-secondary"
+                                        styleClass="ui-button-secondary"
                                         onclick="PF('procurementReturnConfigDialog').hide(); return false;"
                                         type="button" />
                                 </div>
