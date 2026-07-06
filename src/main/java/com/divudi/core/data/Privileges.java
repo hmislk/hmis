@@ -137,6 +137,8 @@ public enum Privileges {
     //<editor-fold defaultstate="collapsed" desc="Nurse">
     NursingWorkBench("Nursing Work Bench"),
     ShowDrugCharges("Show Drug Charges"),
+    ShowServiceCharges("Show Service Charges"),
+    ShowTimeServiceCharges("Show Time Service Charges"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Finance">
@@ -1130,6 +1132,8 @@ public enum Privileges {
 
             case NursingWorkBench:
             case ShowDrugCharges:
+            case ShowServiceCharges:
+            case ShowTimeServiceCharges:
                 return "Nursing Work Bench";
                 
             case WatingRoomAdmitPatient:
