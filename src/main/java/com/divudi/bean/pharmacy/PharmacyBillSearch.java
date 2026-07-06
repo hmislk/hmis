@@ -19,6 +19,7 @@ import com.divudi.bean.store.StoreBillSearch;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaperType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -766,6 +767,36 @@ public class PharmacyBillSearch implements Serializable {
         JsfUtil.addSuccessMessage("Mark As Un Check");
 
     }
+
+    // <editor-fold defaultstate="collapsed" desc="Reprint BHT Issue - Print Format Settings (Issue #21880)">
+    public boolean isReprintBhtIssuePosPaper() {
+        return PaperType.PosPaper == getSessionController().getDepartmentPreference().getPharmacyBillPaperType();
+    }
+
+    public void setReprintBhtIssuePosPaper(boolean value) {
+        if (value) {
+            getSessionController().getDepartmentPreference().setPharmacyBillPaperType(PaperType.PosPaper);
+        } else if (isReprintBhtIssuePosPaper()) {
+            getSessionController().getDepartmentPreference().setPharmacyBillPaperType(null);
+        }
+    }
+
+    public boolean isReprintBhtIssueFiveFivePaper() {
+        return PaperType.FiveFivePaper == getSessionController().getDepartmentPreference().getPharmacyBillPaperType();
+    }
+
+    public void setReprintBhtIssueFiveFivePaper(boolean value) {
+        if (value) {
+            getSessionController().getDepartmentPreference().setPharmacyBillPaperType(PaperType.FiveFivePaper);
+        } else if (isReprintBhtIssueFiveFivePaper()) {
+            getSessionController().getDepartmentPreference().setPharmacyBillPaperType(null);
+        }
+    }
+
+    public void saveReprintBhtIssuePaperConfig() {
+        JsfUtil.addSuccessMessage("Print format settings saved");
+    }
+    // </editor-fold>
 
     public void unitCancell() {
 
