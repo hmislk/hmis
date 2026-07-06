@@ -282,7 +282,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:datePicker> 
                         </p:column>
-                        <p:column headerText="Total" styleClass="averageNumericColumn">
+                        <p:column headerText="Total" styleClass="averageNumericColumn" rendered="#{webUserController.hasPrivilege('ShowTimeServiceCharges')}">
                             <h:outputLabel  value="#{ti.serviceValue}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>

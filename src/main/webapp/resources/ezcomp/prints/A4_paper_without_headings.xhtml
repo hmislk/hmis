@@ -239,9 +239,11 @@
                         <td style="width:55%!important;">
                             <h:outputLabel value="ITEM" styleClass="itemHeadingsFiveFive" ></h:outputLabel>
                         </td>
-                        <td  style="width:10%!important;text-align: right; padding-right: 30px!important">
-                            <h:outputLabel value="VALUE"  styleClass="itemHeadingsFiveFive" ></h:outputLabel>
-                        </td>
+                        <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                            <td  style="width:10%!important;text-align: right; padding-right: 30px!important">
+                                <h:outputLabel value="VALUE"  styleClass="itemHeadingsFiveFive" />
+                            </td>
+                        </h:panelGroup>
                     </tr>
                     <tr>
                         <td colspan="2" style="text-align: center;" class="billline">
@@ -256,11 +258,13 @@
                                     <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
                                     </h:outputLabel>
                                 </td>
-                                <td style="text-align: right;" >
-                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                    <td style="text-align: right;" >
+                                        <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                </h:panelGroup>
                             </tr>
 
                         </ui:repeat>
@@ -278,17 +282,19 @@
                                         <f:convertNumber integerOnly="true" />
                                     </h:outputLabel>
                                 </td>
-                                <td    style="text-align: right;" >
-                                    <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.rate}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                    <td    style="text-align: right;" >
+                                        <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.rate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
 
-                                <td style="text-align: right;" >
-                                    <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
+                                    <td style="text-align: right;" >
+                                        <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                </h:panelGroup>
 
                             </tr>
                         </ui:repeat>
@@ -305,6 +311,7 @@
 
             </div>
 
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
             <div  >
 
                 <table style="width: 100%;">
@@ -373,6 +380,7 @@
                 </table>
 
             </div>
+            </h:panelGroup>
 
             <div style="text-decoration: overline; margin-top: 20px;">
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>

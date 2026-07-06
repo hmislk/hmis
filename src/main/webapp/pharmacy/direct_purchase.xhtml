@@ -30,13 +30,35 @@
                                     ajax="false"
                                     styleClass="ui-button-secondary ms-3"/>
                             </div>
+
+                            <!-- CENTER: entity-level navigation, shown when the draft workflow is active -->
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    id="btnFinalizeListNav"
+                                    value="Finalize List"
+                                    ajax="false"
+                                    action="#{searchController.navigateToDirectPurchaseListToFinalize()}"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    icon="fas fa-tasks"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false) and webUserController.hasPrivilege('PharmacyDirectPurchaseFinalize')}" />
+                                <p:commandButton
+                                    id="btnApproveListNav"
+                                    value="Approve List"
+                                    ajax="false"
+                                    action="#{searchController.navigateToDirectPurchaseListToApprove()}"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    icon="fas fa-check-circle"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false) and webUserController.hasPrivilege('PharmacyDirectPurchaseApprove')}" />
+                            </div>
+
                             <div>
 
                                 <p:commandButton
+                                    id="btnNewDirectPurchase"
                                     value="New Direct Purchase Bill"
                                     ajax="false"
-                                    styleClass="ui-button-warning"
-                                    icon="pi pi-plus"
+                                    styleClass="ui-button-stage-save"
+                                    icon="fas fa-plus-circle"
                                     action="#{pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill()}"
                                     style="margin-right: 8px;">
                                 </p:commandButton>
@@ -46,9 +68,9 @@
                                     id="btnSaveDraft"
                                     value="Save Draft"
                                     action="#{pharmacyDirectPurchaseController.saveDraftDirectPurchase}"
-                                    styleClass="ui-button-info"
+                                    styleClass="ui-button-stage-save"
                                     ajax="false"
-                                    icon="pi pi-save"
+                                    icon="fas fa-floppy-disk"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false) and !pharmacyDirectPurchaseController.bill.completed and webUserController.hasPrivilege('PharmacyDirectPurchaseSave')}"
                                     style="margin-right: 8px;">
                                 </p:commandButton>
@@ -59,9 +81,9 @@
                                     value="Finalize"
                                     onclick="if (!confirm('Finalize this Direct Purchase?')) return false"
                                     action="#{pharmacyDirectPurchaseController.finalizeDraftDirectPurchase}"
-                                    styleClass="ui-button-warning"
+                                    styleClass="ui-button-stage-finalize"
                                     ajax="false"
-                                    icon="pi pi-check"
+                                    icon="fas fa-lock"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false) and !pharmacyDirectPurchaseController.bill.completed and webUserController.hasPrivilege('PharmacyDirectPurchaseFinalize')}"
                                     style="margin-right: 8px;">
                                 </p:commandButton>
@@ -72,9 +94,9 @@
                                     value="Approve"
                                     onclick="if (!confirm('Approve this finalized Direct Purchase? Stock will be updated.')) return false"
                                     action="#{pharmacyDirectPurchaseController.approveDirectPurchaseDraft}"
-                                    styleClass="ui-button-success"
+                                    styleClass="ui-button-stage-approve"
                                     ajax="false"
-                                    icon="pi pi-verified"
+                                    icon="fas fa-check-double"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false) and pharmacyDirectPurchaseController.bill.completed and !pharmacyDirectPurchaseController.bill.checked and webUserController.hasPrivilege('PharmacyDirectPurchaseApprove')}"
                                     style="margin-right: 8px;">
                                 </p:commandButton>
@@ -1040,34 +1062,60 @@
             <h:panelGroup rendered="#{pharmacyDirectPurchaseController.printPreview}">
                 <p:panel >
                     <f:facet name="header" >
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div>
+                        <div class="d-flex align-items-center justify-content-between w-100">
+                            <!-- LEFT: title + contextual Settings -->
+                            <div class="d-flex align-items-center gap-2">
                                 <h:outputText styleClass="fa-solid fa-circle-plus" />
                                 <h:outputLabel value="Direct Purchase Order" class="mx-4"></h:outputLabel>
-                            </div>
-                            <div>
                                 <p:commandButton
-                                    value="Print"
-                                    ajax="false"
-                                    action="#"
-                                    class="ui-button-info mx-2"
-                                    icon="fas fa-print">
-                                    <p:printer target="gpBillPreview" ></p:printer>
-                                </p:commandButton>
-                                <p:commandButton
+                                    id="btnDirectPurchasePrintSettings"
                                     rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                                     value="Settings"
                                     icon="fas fa-cog"
-                                    class="ui-button-secondary mx-1"
+                                    styleClass="ui-button-secondary ui-button-outlined"
                                     type="button"
                                     onclick="PF('directPurchaseConfigDialog').show();" />
+                            </div>
+
+                            <!-- CENTER: entity-level navigation, shown when the draft workflow is active -->
+                            <div class="d-flex gap-2">
                                 <p:commandButton
+                                    id="btnFinalizeListNavPrintView"
+                                    value="Finalize List"
                                     ajax="false"
-                                    class="ui-button-success"
-                                    icon="fa fa-plus"
+                                    action="#{searchController.navigateToDirectPurchaseListToFinalize()}"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    icon="fas fa-tasks"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false) and webUserController.hasPrivilege('PharmacyDirectPurchaseFinalize')}" />
+                                <p:commandButton
+                                    id="btnApproveListNavPrintView"
+                                    value="Approve List"
+                                    ajax="false"
+                                    action="#{searchController.navigateToDirectPurchaseListToApprove()}"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    icon="fas fa-check-circle"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Direct Purchase', false) and webUserController.hasPrivilege('PharmacyDirectPurchaseApprove')}" />
+                            </div>
+
+                            <!-- RIGHT: actions, left = least important -> right = primary (Print) -->
+                            <div class="d-flex gap-2 align-items-center">
+                                <p:commandButton
+                                    id="btnNewBillFromPrintView"
+                                    ajax="false"
+                                    styleClass="ui-button-stage-save"
+                                    icon="fas fa-plus-circle"
                                     action="#{pharmacyDirectPurchaseController.prepareForNewDIrectPurchaseBill()}"
                                     value="New Bill"/>
-
+                                <p:commandButton
+                                    id="btnPrint"
+                                    value="Print"
+                                    ajax="false"
+                                    action="#"
+                                    styleClass="ui-button-success"
+                                    icon="pi pi-print"
+                                    style="min-width: 120px">
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
                             </div>
                         </div>
                     </f:facet>
