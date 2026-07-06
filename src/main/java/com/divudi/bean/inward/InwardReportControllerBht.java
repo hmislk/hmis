@@ -11,6 +11,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
+import static com.divudi.core.data.FeeType.Service;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -40,6 +41,7 @@ import com.divudi.service.BillService;
 import com.divudi.core.data.dto.InpatientPharmacyIssueDTO;
 import com.divudi.core.data.dto.InpatientServiceIssueDTO;
 import com.divudi.core.data.dto.BillListReportDTO;
+import com.divudi.core.entity.Service;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -285,7 +287,7 @@ public class InwardReportControllerBht implements Serializable {
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
 
-            serviceIssueDtosToPatientEncounter = fetchServiceIssueDtos(serviceTypes);
+            serviceIssueDtosToPatientEncounter = fetchOnlyIPServiceIssueDtos(serviceTypes);
 
             for (InpatientServiceIssueDTO dto : serviceIssueDtosToPatientEncounter) {
                 double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
@@ -386,6 +388,40 @@ public class InwardReportControllerBht implements Serializable {
         Map<String, Object> params = new HashMap<>();
         params.put("billTypeAtomics", billTypes);
         params.put("patientEncounter", patientEncounter);
+
+        if (department != null) {
+            jpql += "AND bi.bill.department = :department ";
+            params.put("department", department);
+        }
+
+        jpql += "ORDER BY bi.bill.createdAt, bi.id";
+
+        List<InpatientServiceIssueDTO> result = (List<InpatientServiceIssueDTO>) billItemFacade.findLightsByJpql(jpql, params);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    
+    private List<InpatientServiceIssueDTO> fetchOnlyIPServiceIssueDtos(List<BillTypeAtomic> billTypes) {
+        String jpql = "SELECT new com.divudi.core.data.dto.InpatientServiceIssueDTO("
+                + "bi.id, "
+                + "bi.item.name, "
+                + "bi.qty, "
+                + "bi.netValue, "
+                + "bi.bill.createdAt, "
+                + "bi.bill.billTypeAtomic, "
+                + "COALESCE(bi.bill.department.name, 'N/A'), "
+                + "bi.bill.cancelled) "
+                + "FROM BillItem bi "
+                + "WHERE bi.bill.patientEncounter = :patientEncounter "
+                + "AND type(bi.item)=:btp "
+                + "AND bi.bill.billTypeAtomic IN :billTypeAtomics "
+                + "AND bi.retired = FALSE "
+                + "AND bi.bill.retired = FALSE ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypeAtomics", billTypes);
+        params.put("patientEncounter", patientEncounter);
+        params.put("btp", Service.class);
 
         if (department != null) {
             jpql += "AND bi.bill.department = :department ";
@@ -575,12 +611,14 @@ public class InwardReportControllerBht implements Serializable {
     public List<BillItem> fetchLabBillItems(PatientEncounter pt, List<BillTypeAtomic> billTypesAtomics) {
         String jpql = "select bi "
                 + "from BillItem bi "
-                + "where bi.bill.retired = :ret "
+                + "where bi.bill.retired = false "
+                + "and bi.bill.cancelled = false "
+                + "and bi.retired = false "
+                + "and bi.refunded = false "
                 + "and bi.bill.billTypeAtomic in :billTypesAtomics "
                 + "and bi.bill.patientEncounter = :pe ";
 
         HashMap<String, Object> params = new HashMap<>();
-        params.put("ret", false);
         params.put("pe", pt);
         params.put("billTypesAtomics", billTypesAtomics);
 

@@ -61,6 +61,9 @@ public class BillItemData implements Serializable {
     private Long departmentId;
     private Long institutionId;
 
+    // ---- Linkage back to an originating ItemRequest line (issue #21793 redesign) ----
+    private Long sourceRequestBillItemId;
+
     public BillItemData() {
     }
 
@@ -318,5 +321,13 @@ public class BillItemData implements Serializable {
 
     public void setInstitutionId(Long institutionId) {
         this.institutionId = institutionId;
+    }
+
+    public Long getSourceRequestBillItemId() {
+        return sourceRequestBillItemId;
+    }
+
+    public void setSourceRequestBillItemId(Long sourceRequestBillItemId) {
+        this.sourceRequestBillItemId = sourceRequestBillItemId;
     }
 }

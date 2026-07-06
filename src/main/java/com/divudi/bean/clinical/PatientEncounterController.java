@@ -23,6 +23,7 @@ import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.core.data.lab.InvestigationResultForGraph;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -1469,6 +1470,8 @@ public class PatientEncounterController implements Serializable {
         // Update prescription document
         updateOrGeneratePrescription();
 
+        setEncounterMedicine(null);
+
         // Show success message
         if (addedCount > 0) {
             JsfUtil.addSuccessMessage(addedCount + " favourite medicine(s) added from " + lookupMethod);
@@ -1508,11 +1511,7 @@ public class PatientEncounterController implements Serializable {
 
         // Now find and add medicines for this diagnosis based on age group
         Patient patient = current.getPatient();
-        System.out.println("DEBUG: Starting medicine lookup for patient: " + (patient != null ? patient.getPerson().getNameWithTitle() : "NULL"));
-        System.out.println("DEBUG: Selected diagnosis: " + (selectedDiagnosis != null ? selectedDiagnosis.getName() : "NULL"));
-
         if (patient == null) {
-            System.out.println("DEBUG: Patient is null, stopping medicine lookup");
             JsfUtil.addSuccessMessage("Diagnosis added");
             return;
         }
@@ -1524,27 +1523,20 @@ public class PatientEncounterController implements Serializable {
         List<PrescriptionTemplate> favouriteMedicines = new ArrayList<>();
         String lookupMethod = "";
 
-        // Get patient weight from current encounter
         Double patientWeight = current.getWeight();
-        System.out.println("DEBUG: Patient weight: " + patientWeight);
-
-        // Get patient age in days
         Long patientAgeInDays = patient.getAgeInDays();
-        System.out.println("DEBUG: Patient age in days: " + patientAgeInDays + " (approx " + (patientAgeInDays != null ? patientAgeInDays / 365.0 : "null") + " years)");
 
         // Step 1: Find which medicines are recommended for this diagnosis (from FavouriteDiagnosis)
         List<PrescriptionTemplate> diagnosisMedicineList = new ArrayList<>();
 
         // Method 1: By Patient Weight Group (if weight is available)
         if (patientWeight != null && patientWeight > 0) {
-            System.out.println("DEBUG: Step 1 - Finding medicine list by weight group: " + patientWeight);
             diagnosisMedicineList = favouriteController.listFavouriteItems(
                     selectedDiagnosis,
                     PrescriptionTemplateType.FavouriteDiagnosis,
                     patientWeight,
                     null
             );
-            System.out.println("DEBUG: Weight-based lookup found " + (diagnosisMedicineList != null ? diagnosisMedicineList.size() : "null") + " medicine recommendations");
             if (diagnosisMedicineList != null && !diagnosisMedicineList.isEmpty()) {
                 lookupMethod = "weight group (" + patientWeight + " kg)";
             }
@@ -1552,14 +1544,12 @@ public class PatientEncounterController implements Serializable {
 
         // Method 2: By Patient Age Group (fallback when weight is not available or no weight-based favourites found)
         if ((diagnosisMedicineList == null || diagnosisMedicineList.isEmpty()) && patientAgeInDays != null && patientAgeInDays > 0) {
-            System.out.println("DEBUG: Step 1 - Finding medicine list by age group: " + patientAgeInDays + " days");
             diagnosisMedicineList = favouriteController.listFavouriteItems(
                     selectedDiagnosis,
                     PrescriptionTemplateType.FavouriteDiagnosis,
                     null,
                     patientAgeInDays
             );
-            System.out.println("DEBUG: Age-based lookup found " + (diagnosisMedicineList != null ? diagnosisMedicineList.size() : "null") + " medicine recommendations");
             if (diagnosisMedicineList != null && !diagnosisMedicineList.isEmpty()) {
                 lookupMethod = "age group (" + (patientAgeInDays / 365) + " years)";
             }
@@ -1569,14 +1559,12 @@ public class PatientEncounterController implements Serializable {
         // recorded (ageInDays == null or 0).  Returns all FavouriteDiagnosis templates for
         // this diagnosis regardless of age range so the doctor still gets suggestions.
         if (diagnosisMedicineList == null || diagnosisMedicineList.isEmpty()) {
-            System.out.println("DEBUG: Step 1 - No age/weight data available; fetching all templates for diagnosis");
             diagnosisMedicineList = favouriteController.listFavouriteItems(
                     selectedDiagnosis,
                     PrescriptionTemplateType.FavouriteDiagnosis,
                     null,
                     null
             );
-            System.out.println("DEBUG: Unrestricted lookup found " + (diagnosisMedicineList != null ? diagnosisMedicineList.size() : "null") + " medicine recommendations");
             if (diagnosisMedicineList != null && !diagnosisMedicineList.isEmpty()) {
                 lookupMethod = "diagnosis templates (no age/weight filter)";
             }
@@ -1584,20 +1572,13 @@ public class PatientEncounterController implements Serializable {
 
         // Step 2: For each recommended medicine, get its detailed configuration from FavouriteMedicine
         if (diagnosisMedicineList != null && !diagnosisMedicineList.isEmpty()) {
-            System.out.println("DEBUG: Step 2 - Getting detailed configurations for " + diagnosisMedicineList.size() + " medicines");
-
             for (PrescriptionTemplate diagnosisTemplate : diagnosisMedicineList) {
                 if (diagnosisTemplate == null || diagnosisTemplate.getItem() == null) {
-                    System.out.println("DEBUG: Skipping null diagnosis template or item");
                     continue;
                 }
 
-                System.out.println("DEBUG: Looking for detailed config for medicine: " + diagnosisTemplate.getItem().getName());
-
-                // Look for this medicine's detailed configuration in FavouriteMedicine
                 List<PrescriptionTemplate> medicineConfigs = null;
 
-                // Try weight-based first if we have weight
                 if (patientWeight != null && patientWeight > 0) {
                     medicineConfigs = favouriteController.listFavouriteItems(
                             diagnosisTemplate.getItem(),
@@ -1605,10 +1586,8 @@ public class PatientEncounterController implements Serializable {
                             patientWeight,
                             null
                     );
-                    System.out.println("DEBUG: Weight-based medicine config found " + (medicineConfigs != null ? medicineConfigs.size() : "null") + " results");
                 }
 
-                // Try age-based if weight didn't work or no weight available
                 if ((medicineConfigs == null || medicineConfigs.isEmpty()) && patientAgeInDays != null && patientAgeInDays > 0) {
                     medicineConfigs = favouriteController.listFavouriteItems(
                             diagnosisTemplate.getItem(),
@@ -1616,10 +1595,8 @@ public class PatientEncounterController implements Serializable {
                             null,
                             patientAgeInDays
                     );
-                    System.out.println("DEBUG: Age-based medicine config found " + (medicineConfigs != null ? medicineConfigs.size() : "null") + " results");
                 }
 
-                // Try no-filter if weight and age are both unavailable/zero
                 if (medicineConfigs == null || medicineConfigs.isEmpty()) {
                     medicineConfigs = favouriteController.listFavouriteItems(
                             diagnosisTemplate.getItem(),
@@ -1627,80 +1604,26 @@ public class PatientEncounterController implements Serializable {
                             null,
                             null
                     );
-                    System.out.println("DEBUG: No-filter medicine config found " + (medicineConfigs != null ? medicineConfigs.size() : "null") + " results");
                 }
 
-                // Use the first valid configuration found
                 if (medicineConfigs != null && !medicineConfigs.isEmpty()) {
-                    PrescriptionTemplate medicineTemplate = medicineConfigs.get(0);
-                    favouriteMedicines.add(medicineTemplate);
-                    System.out.println("DEBUG: Added medicine config: " + medicineTemplate.getItem().getName() +
-                                     " with dose=" + medicineTemplate.getDose() +
-                                     ", frequency=" + (medicineTemplate.getFrequencyUnit() != null ? medicineTemplate.getFrequencyUnit().getName() : "null"));
+                    favouriteMedicines.add(medicineConfigs.get(0));
                 } else {
-                    // No separate FavouriteMedicine configuration exists for this medicine -
-                    // fall back to the dose/frequency/duration already stored on the
-                    // FavouriteDiagnosis template itself.
-                    System.out.println("DEBUG: No separate FavouriteMedicine configuration found for " + diagnosisTemplate.getItem().getName() + " - using FavouriteDiagnosis template directly");
+                    // No separate FavouriteMedicine configuration exists — fall back to the
+                    // dose/frequency/duration stored on the FavouriteDiagnosis template itself.
                     favouriteMedicines.add(diagnosisTemplate);
                 }
             }
         }
 
-        System.out.println("DEBUG: Final medicine list size: " + (favouriteMedicines != null ? favouriteMedicines.size() : "null"));
-        if (favouriteMedicines != null && !favouriteMedicines.isEmpty()) {
-            System.out.println("DEBUG: Found medicines:");
-            for (int i = 0; i < favouriteMedicines.size(); i++) {
-                PrescriptionTemplate template = favouriteMedicines.get(i);
-                System.out.println("DEBUG:   " + (i+1) + ". " + (template != null && template.getItem() != null ? template.getItem().getName() : "NULL TEMPLATE/ITEM"));
-            }
-        } else {
-            System.out.println("DEBUG: No medicines found - checking possible reasons:");
-            System.out.println("DEBUG:   - selectedDiagnosis: " + (selectedDiagnosis != null ? "OK" : "NULL"));
-            System.out.println("DEBUG:   - PrescriptionTemplateType.FavouriteDiagnosis: " + PrescriptionTemplateType.FavouriteDiagnosis);
-            System.out.println("DEBUG:   - Patient weight: " + patientWeight);
-            System.out.println("DEBUG:   - Patient age: " + patientAgeInDays);
-        }
-
         // Add medicines if found
         int medicineCount = 0;
-        System.out.println("DEBUG: Starting to add medicines...");
         if (favouriteMedicines != null && !favouriteMedicines.isEmpty()) {
-            System.out.println("DEBUG: Processing " + favouriteMedicines.size() + " favourite medicines");
             for (PrescriptionTemplate template : favouriteMedicines) {
-                System.out.println("DEBUG: Processing template: " + (template != null ? "OK" : "NULL"));
                 if (template == null || template.getItem() == null) {
-                    System.out.println("DEBUG: Skipping null template or null item");
                     continue;
                 }
 
-                System.out.println("DEBUG: Adding medicine: " + template.getItem().getName());
-                System.out.println("DEBUG:   Dose: " + template.getDose() + " " + (template.getDoseUnit() != null ? template.getDoseUnit().getName() : "null"));
-                System.out.println("DEBUG:   Frequency: " + (template.getFrequencyUnit() != null ? template.getFrequencyUnit().getName() : "null"));
-                System.out.println("DEBUG:   Duration: " + template.getDuration() + " " + (template.getDurationUnit() != null ? template.getDurationUnit().getName() : "null"));
-                System.out.println("DEBUG:   Indoor: " + template.isIndoor());
-                System.out.println("DEBUG:   Template Type: " + template.getType());
-                System.out.println("DEBUG:   Template ForItem: " + (template.getForItem() != null ? template.getForItem().getName() : "null"));
-                System.out.println("DEBUG:   Template ID: " + template.getId());
-
-                // Check if any values are null or zero that shouldn't be
-                if (template.getDose() == null || template.getDose() == 0) {
-                    System.out.println("DEBUG: WARNING - Dose is null or zero!");
-                }
-                if (template.getDoseUnit() == null) {
-                    System.out.println("DEBUG: WARNING - DoseUnit is null!");
-                }
-                if (template.getFrequencyUnit() == null) {
-                    System.out.println("DEBUG: WARNING - FrequencyUnit is null!");
-                }
-                if (template.getDuration() == null || template.getDuration() == 0) {
-                    System.out.println("DEBUG: WARNING - Duration is null or zero!");
-                }
-                if (template.getDurationUnit() == null) {
-                    System.out.println("DEBUG: WARNING - DurationUnit is null!");
-                }
-
-                // Create ClinicalFindingValue for medicine (following addEncounterMedicine pattern)
                 ClinicalFindingValue cfv = new ClinicalFindingValue();
                 cfv.setEncounter(current);
                 cfv.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
@@ -1716,65 +1639,32 @@ public class PatientEncounterController implements Serializable {
 
                 cfv.setPrescription(pres);
 
-                // Debug: Check what we're about to save
-                System.out.println("DEBUG: About to save prescription:");
-                System.out.println("DEBUG:   Item: " + (pres.getItem() != null ? pres.getItem().getName() : "null"));
-                System.out.println("DEBUG:   Dose: " + pres.getDose());
-                System.out.println("DEBUG:   DoseUnit: " + (pres.getDoseUnit() != null ? pres.getDoseUnit().getName() : "null"));
-                System.out.println("DEBUG:   FrequencyUnit: " + (pres.getFrequencyUnit() != null ? pres.getFrequencyUnit().getName() : "null"));
-                System.out.println("DEBUG:   Duration: " + pres.getDuration());
-                System.out.println("DEBUG:   DurationUnit: " + (pres.getDurationUnit() != null ? pres.getDurationUnit().getName() : "null"));
-                System.out.println("DEBUG:   Indoor: " + pres.isIndoor());
-
-                // Persist the prescription and clinical finding value
                 try {
                     if (pres.getId() == null) {
                         prescriptionFacade.create(pres);
-                        System.out.println("DEBUG: Created prescription with ID: " + pres.getId());
                     } else {
                         prescriptionFacade.edit(pres);
-                        System.out.println("DEBUG: Updated prescription with ID: " + pres.getId());
                     }
                     if (cfv.getId() == null) {
                         clinicalFindingValueFacade.create(cfv);
-                        System.out.println("DEBUG: Created clinical finding value with ID: " + cfv.getId());
                     } else {
                         clinicalFindingValueFacade.edit(cfv);
-                        System.out.println("DEBUG: Updated clinical finding value with ID: " + cfv.getId());
                     }
-
                     getEncounterFindingValues().add(cfv);
                     medicineCount++;
-                    System.out.println("DEBUG: Successfully added medicine #" + medicineCount);
                 } catch (Exception e) {
-                    System.out.println("DEBUG: Error adding medicine: " + e.getMessage());
-                    e.printStackTrace();
+                    // individual medicine failure should not abort the rest
                 }
             }
-            // Refresh the encounter medicines list
-            System.out.println("DEBUG: Refreshing encounter medicines list...");
             encounterMedicines = fillEncounterMedicines(current);
             refreshIssuableSuggestions();
-            System.out.println("DEBUG: Encounter medicines list now has " + (encounterMedicines != null ? encounterMedicines.size() : "null") + " items");
-
-            // Update/generate prescription like addEncounterMedicine does
-            System.out.println("DEBUG: Updating prescription document...");
-            try {
-                updateOrGeneratePrescription();
-                System.out.println("DEBUG: Successfully updated prescription document");
-            } catch (Exception e) {
-                System.out.println("DEBUG: Error updating prescription: " + e.getMessage());
-            }
-        } else {
-            System.out.println("DEBUG: No medicines to add - list is null or empty");
+            updateOrGeneratePrescription();
         }
 
-        // Show success message
         String message = "Diagnosis added";
         if (medicineCount > 0) {
             message += " with " + medicineCount + " medicine(s) from " + lookupMethod;
         }
-        System.out.println("DEBUG: Final result - " + message);
         JsfUtil.addSuccessMessage(message);
     }
     
@@ -3697,6 +3587,7 @@ public class PatientEncounterController implements Serializable {
 
     public void setPatient(Patient patient) {
         this.patient = patient;
+        clearPatientJourneyTimeline();
     }
 
     public ClinicalFindingValueFacade getClinicalFindingValueFacade() {
@@ -4667,6 +4558,173 @@ public class PatientEncounterController implements Serializable {
 
     public void setSelectedInvestigationItem(InvestigationItem selectedInvestigationItem) {
         this.selectedInvestigationItem = selectedInvestigationItem;
+    }
+
+    // Patient Journey Timeline data
+    private Long patientJourneyTimelinePatientId;
+    private Date patientRegistrationDate;
+    private List<Object[]> opdVisitEvents = new ArrayList<>();
+    private List<Object[]> admissionStartEvents = new ArrayList<>();
+    private List<Object[]> admissionEndEvents = new ArrayList<>();
+    private List<Object[]> labEvents = new ArrayList<>();
+    private List<Object[]> surgeryEvents = new ArrayList<>();
+
+    private void clearPatientJourneyTimeline() {
+        patientJourneyTimelinePatientId = null;
+        patientRegistrationDate = null;
+        opdVisitEvents = new ArrayList<>();
+        admissionStartEvents = new ArrayList<>();
+        admissionEndEvents = new ArrayList<>();
+        labEvents = new ArrayList<>();
+        surgeryEvents = new ArrayList<>();
+    }
+
+    public void generatePatientJourneyTimeline() {
+        clearPatientJourneyTimeline();
+
+        if (patient == null) {
+            return;
+        }
+
+        patientJourneyTimelinePatientId = patient.getId();
+        patientRegistrationDate = patient.getCreatedAt();
+
+        Map<String, Object> patientOnlyParams = new HashMap<>();
+        patientOnlyParams.put("patient", patient);
+
+        Map<String, Object> opdParams = new HashMap<>(patientOnlyParams);
+        opdParams.put("patientEncounterType", PatientEncounterType.OpdVisit);
+        String opdJpql = "SELECT e.encounterDate, e.id FROM PatientEncounter e "
+                + "WHERE e.patient = :patient AND e.patientEncounterType = :patientEncounterType "
+                + "AND e.retired = false AND e.encounterDate IS NOT NULL ORDER BY e.encounterDate ASC";
+        List<Object[]> opd = ejbFacade.findObjectArrayByJpql(opdJpql, opdParams, null);
+        if (opd != null) {
+            opdVisitEvents = opd;
+        }
+
+        String admJpql = "SELECT a.dateOfAdmission, a.timeOfAdmission, a.fromTime, "
+                + "a.dateOfDischarge, a.timeOfDischarge, a.toTime, a.bhtNo "
+                + "FROM Admission a "
+                + "WHERE a.patient = :patient AND a.retired = false "
+                + "ORDER BY coalesce(a.dateOfAdmission, a.timeOfAdmission, a.fromTime) ASC";
+        List<Object[]> admissions = ejbFacade.findObjectArrayByJpql(admJpql, patientOnlyParams, null);
+        if (admissions != null) {
+            for (Object[] row : admissions) {
+                Date startDate = firstNonNullDate((Date) row[0], (Date) row[1], (Date) row[2]);
+                Date endDate   = firstNonNullDate((Date) row[3], (Date) row[4], (Date) row[5]);
+                String bhtNo   = (String) row[6];
+                if (startDate != null) {
+                    admissionStartEvents.add(new Object[]{startDate, bhtNo});
+                }
+                if (endDate != null) {
+                    admissionEndEvents.add(new Object[]{endDate, bhtNo});
+                }
+            }
+        }
+
+        String labJpql = "SELECT pi.sampledAt, pi.orderedAt, pi.createdAt, pi.id "
+                + "FROM PatientInvestigation pi WHERE pi.patient = :patient AND pi.retired = false "
+                + "AND (pi.cancelled = false OR pi.cancelled IS NULL) "
+                + "ORDER BY coalesce(pi.sampledAt, pi.orderedAt, pi.createdAt) ASC";
+        List<Object[]> labs = ejbFacade.findObjectArrayByJpql(labJpql, patientOnlyParams, null);
+        if (labs != null) {
+            for (Object[] row : labs) {
+                Date labDate = firstNonNullDate((Date) row[0], (Date) row[1], (Date) row[2]);
+                if (labDate != null) {
+                    labEvents.add(new Object[]{labDate, row[3]});
+                }
+            }
+        }
+
+        Map<String, Object> surgeryParams = new HashMap<>(patientOnlyParams);
+        surgeryParams.put("billType", BillType.SurgeryBill);
+        String surgJpql = "SELECT b.createdAt, b.billDate, b.id FROM Bill b "
+                + "WHERE b.patient = :patient AND b.billType = :billType "
+                + "AND b.retired = false AND b.cancelled = false "
+                + "ORDER BY coalesce(b.createdAt, b.billDate) ASC";
+        List<Object[]> surgs = ejbFacade.findObjectArrayByJpql(surgJpql, surgeryParams, null);
+        if (surgs != null) {
+            for (Object[] row : surgs) {
+                Date surgeryDate = firstNonNullDate((Date) row[0], (Date) row[1]);
+                if (surgeryDate != null) {
+                    surgeryEvents.add(new Object[]{surgeryDate, row[2]});
+                }
+            }
+        }
+
+        // Registration must be the earliest point on the timeline: clamp to the
+        // earliest dated event across all categories when createdAt is missing/later.
+        Date earliestEvent = minDate(
+                earliestEventDate(opdVisitEvents),
+                earliestEventDate(admissionStartEvents),
+                earliestEventDate(admissionEndEvents),
+                earliestEventDate(labEvents),
+                earliestEventDate(surgeryEvents));
+        if (earliestEvent != null && (patientRegistrationDate == null || earliestEvent.before(patientRegistrationDate))) {
+            patientRegistrationDate = earliestEvent;
+        }
+    }
+
+    private static Date earliestEventDate(List<Object[]> events) {
+        if (events == null || events.isEmpty() || events.get(0)[0] == null) {
+            return null;
+        }
+        return (Date) events.get(0)[0];
+    }
+
+    private static Date minDate(Date... dates) {
+        Date min = null;
+        if (dates == null) {
+            return null;
+        }
+        for (Date d : dates) {
+            if (d != null && (min == null || d.before(min))) {
+                min = d;
+            }
+        }
+        return min;
+    }
+
+    private static Date firstNonNullDate(Date... dates) {
+        if (dates == null) {
+            return null;
+        }
+        for (Date d : dates) {
+            if (d != null) {
+                return d;
+            }
+        }
+        return null;
+    }
+
+    public boolean isPatientJourneyTimelineReadyForCurrentPatient() {
+        return patient != null && patient.getId() != null
+                && patient.getId().equals(patientJourneyTimelinePatientId)
+                && patientRegistrationDate != null;
+    }
+
+    public Date getPatientRegistrationDate() {
+        return patientRegistrationDate;
+    }
+
+    public List<Object[]> getOpdVisitEvents() {
+        return opdVisitEvents;
+    }
+
+    public List<Object[]> getAdmissionStartEvents() {
+        return admissionStartEvents;
+    }
+
+    public List<Object[]> getAdmissionEndEvents() {
+        return admissionEndEvents;
+    }
+
+    public List<Object[]> getLabEvents() {
+        return labEvents;
+    }
+
+    public List<Object[]> getSurgeryEvents() {
+        return surgeryEvents;
     }
 
     // Autocomplete for all InvestigationItems (not patient-specific)

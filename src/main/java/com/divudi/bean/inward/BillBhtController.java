@@ -19,6 +19,7 @@ import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemMappingController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.inward.BhtSummeryController;
 
 import com.divudi.core.data.BillClassType;
@@ -71,8 +72,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.ejb.EJB;
@@ -94,6 +97,8 @@ public class BillBhtController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     BhtSummeryController bhtSummeryController;
     @Inject
@@ -186,6 +191,13 @@ public class BillBhtController implements Serializable {
     public String navigateToAddServiceFromMenu() {
         resetBillData();
         return "/inward/inward_bill_service?faces-redirect=true";
+    }
+
+    public String navigateToSurgeryServices(Bill surgeryBill) {
+        resetBillData();
+        batchBill = surgeryBill;
+        patientEncounter = surgeryBill.getPatientEncounter();
+        return "/theater/inward_bill_surgery_service?faces-redirect=true";
     }
 
     public String navigateToPrintLabelsForInvestigations() {
@@ -285,6 +297,7 @@ public class BillBhtController implements Serializable {
         referredBy = null;
         currentBillItemPriority = null;
         currentBillItemQty = null;
+        paymentMethod = null;
     }
 
     public InwardBeanController getInwardBean() {
@@ -333,6 +346,38 @@ public class BillBhtController implements Serializable {
         referredBy = null;
         currentBillItemQty = null;
         bhtSummeryController.setInstitution(sessionController.getInstitution());
+        return "/inward/inward_bill_service?faces-redirect=true";
+    }
+
+    /**
+     * Entry point from the Item/Service Request pending queue (issue #21793
+     * redesign): seeds this controller's cart with the request's still-unfulfilled
+     * lines, exactly as if the user had searched for and added each one manually,
+     * then navigates to the same Add Services page. The user can edit/add/remove
+     * before clicking the page's own Save button.
+     */
+    public String navigateToAddServicesFromItemRequest(Bill itemRequest, List<BillItem> remainingLines) {
+        navigateToAddServicesFromAdmissionProfile();
+        setPatientEncounter(itemRequest.getPatientEncounter());
+        // navigateToAddServicesFromAdmissionProfile() resets lstBillEntries to null; normally
+        // the next page render (via the getter) lazily re-initializes it before addToBill() is
+        // ever invoked. Here we call addToBill() synchronously with no intervening render, so
+        // force the lazy-init now to avoid a NullPointerException on the first entry.
+        getLstBillEntries();
+        for (BillItem requestLine : remainingLines) {
+            BillItem seed = new BillItem();
+            seed.setItem(requestLine.getItem());
+            setCurrentBillItem(seed);
+            setCurrentBillItemQty(requestLine.getQty());
+            if (requestLine.getItem() != null && requestLine.getItem().getClass() == Investigation.class) {
+                seed.setBillTime(new Date());
+            }
+            int sizeBefore = lstBillEntries.size();
+            addToBill();
+            if (lstBillEntries.size() > sizeBefore) {
+                lstBillEntries.get(lstBillEntries.size() - 1).setSourceRequestBillItem(requestLine);
+            }
+        }
         return "/inward/inward_bill_service?faces-redirect=true";
     }
 
@@ -429,6 +474,7 @@ public class BillBhtController implements Serializable {
                     tmp.add(e);
                 }
             }
+            applyItemRequestReference(myBill, tmp);
             List<BillItem> tmpBis = saveBillItems(myBill, tmp, getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
             for (int i = 0; i < tmpBis.size(); i++) {
                 tmpBis.get(i).setSearialNo(i);
@@ -440,6 +486,22 @@ public class BillBhtController implements Serializable {
 
     }
 
+    /**
+     * If any of the entries being saved onto this bill originated from an
+     * Item/Service Request line (issue #21793 redesign), set the bill's
+     * referenceBill so the request stays traceable to the bill it produced.
+     * Each such entry's originating request BillItem is threaded onto the
+     * real BillItem in {@link #saveBillItems(Bill, BillItem, BillEntry, List, WebUser, Department)}.
+     */
+    private void applyItemRequestReference(Bill bill, List<BillEntry> entries) {
+        for (BillEntry e : entries) {
+            if (e.getSourceRequestBillItem() != null && e.getSourceRequestBillItem().getBill() != null) {
+                bill.setReferenceBill(e.getSourceRequestBillItem().getBill());
+                return;
+            }
+        }
+    }
+
     public BillItem saveBillItems(Bill bill, BillItem billItem, BillEntry billEntry, List<BillFee> billFees, WebUser wu, Department matrixDepartment) {
 
         billItem.setCreatedAt(new Date());
@@ -449,6 +511,10 @@ public class BillBhtController implements Serializable {
         if (billItem.getInwardChargeType() == null && billItem.getItem() != null
                 && billItem.getItem().getInwardChargeType() != null) {
             billItem.setInwardChargeType(billItem.getItem().getInwardChargeType());
+        }
+
+        if (billEntry != null && billEntry.getSourceRequestBillItem() != null) {
+            billItem.setReferanceBillItem(billEntry.getSourceRequestBillItem());
         }
 
         if (billItem.getId() == null) {
@@ -492,7 +558,7 @@ public class BillBhtController implements Serializable {
             billItem.setSearialNo(list.size());
 
             for (BillFee bf : billItem.getBillFees()) {
-                PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeUnitGrossValue() != null ? bf.getFeeUnitGrossValue() : bf.getFeeGrossValue(), matrixDepartment, paymentMethod);
+                PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeUnitGrossValue() != null ? bf.getFeeUnitGrossValue() : bf.getFeeGrossValue(), matrixDepartment, paymentMethod, bill.getPatientEncounter() != null ? bill.getPatientEncounter().getAdmissionType() : null);
                 getInwardBean().setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix, bill.getPatientEncounter());
                 getBillFeeFacade().edit(bf);
 
@@ -551,6 +617,7 @@ public class BillBhtController implements Serializable {
         if (getBillBean().calculateNumberOfBillsPerOrder(getLstBillEntries()) == 1) {
             BilledBill temp = new BilledBill();
             Bill b = saveBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment(), temp, matrixDepartment);
+            applyItemRequestReference(b, getLstBillEntries());
 
             List<BillItem> list = saveBillItems(b, getLstBillEntries(), getSessionController().getLoggedUser(), matrixDepartment, paymentMethod);
             b.setBillItems(list);
@@ -607,6 +674,12 @@ public class BillBhtController implements Serializable {
         }
 
         if (getBatchBill().getFromDepartment() == null) {
+            return;
+        }
+
+        if (getBatchBill().getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
             return;
         }
 
@@ -748,6 +821,12 @@ public class BillBhtController implements Serializable {
             if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
                 return true;
             }
+        }
+
+        if (getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
+            return true;
         }
 
         if (getPatientEncounter().isDischarged()) {
@@ -899,15 +978,24 @@ public class BillBhtController implements Serializable {
         }
         addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bItem));
         bItem.setMarginValue(getBillBean().calBillItemMargin(addingEntry));
+
+        // Block items with no fee configured (neither site nor base fee) before adding
+        double feeGrossTotal = 0.0;
+        if (addingEntry.getLstBillFees() != null) {
+            for (BillFee bf : addingEntry.getLstBillFees()) {
+                feeGrossTotal += bf.getFeeGrossValue();
+            }
+        }
+        if (feeGrossTotal == 0.0) {
+            JsfUtil.addErrorMessage("This item has no fee configured and cannot be added.");
+            return;
+        }
+
         lstBillEntries.add(addingEntry);
 
         bItem.setRate(getBillBean().billItemRate(addingEntry));
 
         calTotals();
-        if (bItem.getNetValue() == 0.0) {
-            JsfUtil.addErrorMessage("Please enter the rate");
-            return;
-        }
 
         clearBillItemValues();
         //JsfUtil.addSuccessMessage("Item Added");
@@ -916,18 +1004,14 @@ public class BillBhtController implements Serializable {
     public List<BillFee> billFeeFromBillItemWithMatrix(BillItem billItem, PatientEncounter patientEncounter, Department matrixDepartment, PaymentMethod paymentMethod) {
 
         List<BillFee> billFeeList = new ArrayList<>();
-        boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are the same for all departments, institutions and sites.", true);
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site", false);
+        Institution site = sessionController.getDepartment() != null ? sessionController.getDepartment().getSite() : null;
         List<ItemFee> itemFee;
 
-        if (siteBasedBillFees && !addAllBillFees) {
-            if (sessionController.getDepartment() != null
-                    && sessionController.getDepartment().getSite() != null) {
-                itemFee = itemFeeManager.fillFees(
-                        billItem.getItem(),
-                        sessionController.getDepartment().getSite()
-                );
-            } else {
+        if (siteBasedBillFees && site != null) {
+            itemFee = itemFeeManager.fillFees(billItem.getItem(), site);
+            if (itemFee == null || itemFee.isEmpty()) {
+                // Fall back to base fees when the item has no site fee for this site
                 itemFee = itemFeeManager.fillFees(billItem.getItem());
             }
         } else {
@@ -937,7 +1021,7 @@ public class BillBhtController implements Serializable {
         for (Fee i : itemFee) {
             BillFee billFee = getBillBean().createBillFee(billItem, i, patientEncounter);
 
-            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment, paymentMethod);
+            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment, paymentMethod, patientEncounter != null ? patientEncounter.getAdmissionType() : null);
 
             getInwardBean().setBillFeeMargin(billFee, billItem.getItem(), priceMatrix, patientEncounter);
 
@@ -1047,7 +1131,7 @@ public class BillBhtController implements Serializable {
                 ? bf.getBillItem().getQty() : 1.0;
         bf.setFeeUnitGrossValue(bf.getFeeGrossValue() / qty);
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod());
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod(), getPatientEncounter().getAdmissionType());
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), priceMatrix);
 
@@ -1070,7 +1154,7 @@ public class BillBhtController implements Serializable {
         lstBillItems = null;
         getLstBillItems();
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeGrossValue(), getBatchBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeGrossValue(), getBatchBill().getFromDepartment(), getPatientEncounter().getPaymentMethod(), getPatientEncounter().getAdmissionType());
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getBatchBill().getFromDepartment(), priceMatrix);
 
@@ -1147,6 +1231,7 @@ public class BillBhtController implements Serializable {
                 temItems = itemApplicationController.getInvestigationsAndServices();
                 break;
         }
+        temItems = applyInwardFeeTotals(temItems);
         boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List Inward Items by Department", false);
         if (listItemsByDepartment) {
             fillInwardItemDepartments(temItems);
@@ -1158,6 +1243,58 @@ public class BillBhtController implements Serializable {
         }
 
         return temItems;
+    }
+
+    /**
+     * Overrides the displayed price of each inward item so the list reflects the
+     * fee that will actually be billed. When "Inward Bill Fees are based on the
+     * site" is ON and the logged department has a site, the site fee is shown;
+     * if the item has no site fee, the base fee is shown (matching the
+     * site&rarr;base fallback in {@link #billFeeFromBillItemWithMatrix}). When the
+     * config is OFF, the base fee is shown. Items with no fee show 0.00 and are
+     * blocked from being added in {@link #addToBill()}.
+     */
+    private List<ItemLight> applyInwardFeeTotals(List<ItemLight> items) {
+        if (items == null || items.isEmpty()) {
+            return items;
+        }
+        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site", false);
+        boolean foreigner = patientEncounter != null && patientEncounter.isForiegner();
+        Institution site = sessionController.getDepartment() != null ? sessionController.getDepartment().getSite() : null;
+
+        List<Long> itemIds = new ArrayList<>();
+        for (ItemLight il : items) {
+            if (il.getId() != null) {
+                itemIds.add(il.getId());
+            }
+        }
+        if (itemIds.isEmpty()) {
+            return items;
+        }
+
+        boolean useSiteFees = siteBasedBillFees && site != null;
+        Map<Long, Double> baseTotals = itemFeeManager.fetchInwardFeeTotalsByItemIds(itemIds, null, foreigner);
+        Map<Long, Double> siteTotals = useSiteFees
+                ? itemFeeManager.fetchInwardFeeTotalsByItemIds(itemIds, site, foreigner)
+                : new HashMap<>();
+
+        // Work on copies: the source lists can be application-scoped cached
+        // ItemLight instances shared across sessions, so mutating them in place
+        // would leak one session's price into another.
+        List<ItemLight> result = new ArrayList<>(items.size());
+        for (ItemLight src : items) {
+            ItemLight il = new ItemLight(src);
+            Double value;
+            if (useSiteFees) {
+                Double s = siteTotals.get(il.getId());
+                value = (s != null && s != 0.0) ? s : baseTotals.get(il.getId());
+            } else {
+                value = baseTotals.get(il.getId());
+            }
+            il.setTotal(value != null ? value : 0.0);
+            result.add(il);
+        }
+        return result;
     }
 
     private List<ItemLight> filterItemLightesByDepartment(List<ItemLight> ils, Department dept) {
@@ -1565,7 +1702,9 @@ public class BillBhtController implements Serializable {
     public void reloadItemLights() {
         itemApplicationController.reloadItems();
         itemController.reloadItems();
-        fillInwardItems();
+        // Force the inward item list (with its fee-based prices) to rebuild
+        inwardItem = null;
+        getInwardItem();
     }
 
     public void setInwardItems(List<ItemLight> inwardItems) {

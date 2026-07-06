@@ -27,7 +27,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -35,8 +34,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * REST API for inpatient document template management (InpatientDiagnosisCard,
- * InpatientLetter, and any future inpatient DocumentTemplateType values).
+ * REST API for document template management. Supports all DocumentTemplateType
+ * values: Prescription, MedicalCertificate, FitnessCertificate, Referral,
+ * InpatientDiagnosisCard, InpatientLetter.
  *
  * All endpoints require the Finance API key header.
  *
@@ -62,18 +62,13 @@ public class InwardDocumentTemplateApi {
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
             .create();
 
-    private static final List<DocumentTemplateType> INPATIENT_TYPES = Arrays.asList(
-            DocumentTemplateType.InpatientDiagnosisCard,
-            DocumentTemplateType.InpatientLetter
-    );
-
     // =========================================================================
     // GET /api/inward/document-templates
     // =========================================================================
 
     /**
-     * List inpatient document templates.
-     * Optional query params: type (InpatientDiagnosisCard | InpatientLetter),
+     * List document templates.
+     * Optional query params: type (any DocumentTemplateType value),
      * query (name search), size (max results, default 200).
      */
     @GET
@@ -93,11 +88,8 @@ public class InwardDocumentTemplateApi {
             if (typeParam != null && !typeParam.trim().isEmpty()) {
                 try {
                     filterType = DocumentTemplateType.valueOf(typeParam.trim());
-                    if (!INPATIENT_TYPES.contains(filterType)) {
-                        return errorResponse("type must be one of: InpatientDiagnosisCard, InpatientLetter", 400);
-                    }
                 } catch (IllegalArgumentException e) {
-                    return errorResponse("Unknown type: " + typeParam + ". Valid values: InpatientDiagnosisCard, InpatientLetter", 400);
+                    return errorResponse("Unknown type: " + typeParam, 400);
                 }
             }
 
@@ -108,9 +100,6 @@ public class InwardDocumentTemplateApi {
             if (filterType != null) {
                 jpql.append(" and t.type = :type");
                 params.put("type", filterType);
-            } else {
-                jpql.append(" and t.type in :types");
-                params.put("types", INPATIENT_TYPES);
             }
 
             if (query != null && !query.trim().isEmpty()) {
@@ -150,9 +139,6 @@ public class InwardDocumentTemplateApi {
             if (t == null || t.isRetired()) {
                 return errorResponse("Document template not found: " + id, 404);
             }
-            if (!INPATIENT_TYPES.contains(t.getType())) {
-                return errorResponse("Document template not found: " + id, 404);
-            }
             return successResponse(toDto(t, true));
         } catch (Exception e) {
             return errorResponse("An error occurred: " + e.getMessage(), 500);
@@ -164,8 +150,8 @@ public class InwardDocumentTemplateApi {
     // =========================================================================
 
     /**
-     * Create a new inpatient document template.
-     * Body: { "name": "...", "type": "InpatientLetter|InpatientDiagnosisCard",
+     * Create a new document template.
+     * Body: { "name": "...", "type": "Prescription|MedicalCertificate|...",
      * "contents": "...", "defaultTemplate": false, "autoGenerate": false }
      */
     @POST
@@ -190,11 +176,8 @@ public class InwardDocumentTemplateApi {
             DocumentTemplateType type;
             try {
                 type = DocumentTemplateType.valueOf(typeStr.trim());
-                if (!INPATIENT_TYPES.contains(type)) {
-                    return errorResponse("type must be one of: InpatientDiagnosisCard, InpatientLetter", 400);
-                }
             } catch (IllegalArgumentException e) {
-                return errorResponse("Unknown type: " + typeStr + ". Valid values: InpatientDiagnosisCard, InpatientLetter", 400);
+                return errorResponse("Unknown type: " + typeStr, 400);
             }
 
             DocumentTemplate t = new DocumentTemplate();
@@ -232,7 +215,6 @@ public class InwardDocumentTemplateApi {
 
             DocumentTemplate t = documentTemplateFacade.find(id);
             if (t == null || t.isRetired()) return errorResponse("Document template not found: " + id, 404);
-            if (!INPATIENT_TYPES.contains(t.getType())) return errorResponse("Document template not found: " + id, 404);
 
             Map<?, ?> body = parseBody(requestBody);
             if (body == null) return errorResponse("Request body is required", 400);
@@ -248,9 +230,7 @@ public class InwardDocumentTemplateApi {
                     return errorResponse("type cannot be empty", 400);
                 }
                 try {
-                    DocumentTemplateType newType = DocumentTemplateType.valueOf(typeStr.trim());
-                    if (!INPATIENT_TYPES.contains(newType)) return errorResponse("type must be InpatientDiagnosisCard or InpatientLetter", 400);
-                    t.setType(newType);
+                    t.setType(DocumentTemplateType.valueOf(typeStr.trim()));
                 } catch (IllegalArgumentException e) {
                     return errorResponse("Unknown type: " + typeStr, 400);
                 }
@@ -290,7 +270,6 @@ public class InwardDocumentTemplateApi {
             DocumentTemplate t = documentTemplateFacade.find(id);
             if (t == null) return errorResponse("Document template not found: " + id, 404);
             if (t.isRetired()) return errorResponse("Document template is already retired: " + id, 400);
-            if (!INPATIENT_TYPES.contains(t.getType())) return errorResponse("Document template not found: " + id, 404);
 
             t.setRetired(true);
             documentTemplateFacade.edit(t);

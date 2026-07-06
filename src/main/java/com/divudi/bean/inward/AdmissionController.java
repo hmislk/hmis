@@ -192,6 +192,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private String bhtNumberForSearch;
     private Doctor referringDoctorForSearch;
     private Institution institutionForSearch;
+    private String occupationForSearch;
+    private Institution creditCompanyForSearch;
     private AdmissionStatus admissionStatusForSearch;
     private AdmissionType admissionTypeForSearch;
     private Admission perantAddmission;
@@ -209,6 +211,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private Reservation latestfoundReservation;
 
     private Reservation currentReservation;
+    
+    private boolean patientForiegner;
 
     @PostConstruct
     public void init() {
@@ -742,6 +746,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         return "/inward/inward_room_occupancy?faces-redirect=true";
     }
 
+    public String navigateToBedBoard() {
+        return "/inward/inward_bed_board?faces-redirect=true";
+    }
+
     public String navigateToRoomVacancy() {
         roomOccupancyController.setRoomFacilityCharges(null);
         return "/inward/inward_room_vacant?faces-redirect=true";
@@ -1030,6 +1038,22 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             m.put("nic", patientIdentityNumberFilter);
         }
 
+        if (referringDoctorForSearch != null) {
+            j += " and c.referringDoctor=:refDoc ";
+            m.put("refDoc", referringDoctorForSearch);
+        }
+
+        String occupationFilter = normalizeSearchFilter(occupationForSearch);
+        if (occupationFilter != null) {
+            j += " and c.patient.person.occupation.name like :occ ";
+            m.put("occ", "%" + occupationFilter + "%");
+        }
+
+        if (creditCompanyForSearch != null) {
+            j += " and (c.creditCompany=:cc or c.id in (select ecc.patientEncounter.id from EncounterCreditCompany ecc where ecc.retired=false and ecc.institution=:cc)) ";
+            m.put("cc", creditCompanyForSearch);
+        }
+
         if (admissionStatusForSearch != null) {
             if (null != admissionStatusForSearch) {
                 switch (admissionStatusForSearch) {
@@ -1121,6 +1145,22 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (patientIdentityNumberFilter != null) {
             j += " and c.patient.person.nic =:nic";
             m.put("nic", patientIdentityNumberFilter);
+        }
+
+        if (referringDoctorForSearch != null) {
+            j += " and c.referringDoctor=:refDoc ";
+            m.put("refDoc", referringDoctorForSearch);
+        }
+
+        String occupationFilter = normalizeSearchFilter(occupationForSearch);
+        if (occupationFilter != null) {
+            j += " and c.patient.person.occupation.name like :occ ";
+            m.put("occ", "%" + occupationFilter + "%");
+        }
+
+        if (creditCompanyForSearch != null) {
+            j += " and (c.creditCompany=:cc or c.id in (select ecc.patientEncounter.id from EncounterCreditCompany ecc where ecc.retired=false and ecc.institution=:cc)) ";
+            m.put("cc", creditCompanyForSearch);
         }
 
         if (admissionStatusForSearch != null) {
@@ -1371,6 +1411,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         patientNumberForSearch = null;
         bhtNumberForSearch = null;
         referringDoctorForSearch = null;
+        occupationForSearch = null;
+        creditCompanyForSearch = null;
         institutionForSearch = null;
         admissionStatusForSearch = null;
         admissionTypeForSearch = null;
@@ -1622,6 +1664,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         Person person = getPatient().getPerson();
         // DON'T set to null - keep reference throughout
+        
+        if(patientForiegner){
+            getPatient().getPerson().setForeigner(true);
+        }
 
         // Save Person first (no flush yet)
         if (person != null) {
@@ -2282,6 +2328,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
         }
         getCurrent().setPaymentScheme(paymentScheme);
+        getCurrent().setForiegner(patientForiegner);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(getCurrent());
@@ -2395,6 +2442,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // Need to create EncounterCredit
         admittingProcessStarted = false;
         currentReservation = null;
+        patientForiegner = false;
         printPreview = true;
     }
 
@@ -2881,6 +2929,22 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.referringDoctorForSearch = referringDoctorForSearch;
     }
 
+    public String getOccupationForSearch() {
+        return occupationForSearch;
+    }
+
+    public void setOccupationForSearch(String occupationForSearch) {
+        this.occupationForSearch = occupationForSearch;
+    }
+
+    public Institution getCreditCompanyForSearch() {
+        return creditCompanyForSearch;
+    }
+
+    public void setCreditCompanyForSearch(Institution creditCompanyForSearch) {
+        this.creditCompanyForSearch = creditCompanyForSearch;
+    }
+
     public InwardStaffPaymentBillController getInwardStaffPaymentBillController() {
         return inwardStaffPaymentBillController;
     }
@@ -3132,6 +3196,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setCurrentReservation(Reservation currentReservation) {
         this.currentReservation = currentReservation;
+    }
+
+    public boolean isPatientForiegner() {
+        return patientForiegner;
+    }
+
+    public void setPatientForiegner(boolean patientForiegner) {
+        this.patientForiegner = patientForiegner;
     }
 
     /**

@@ -14,16 +14,41 @@
             <p:panel rendered="#{!pharmacySaleBhtController.billPreview}">
 
                 <f:facet name="header" >
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <p:outputLabel value="BHT Issue" class="m-2"/>
-                        <div class="d-flex gap-2">
+                        <div class="d-flex gap-2 flex-wrap">
+
+                            <p:commandButton
+                                id="btnInpatientDashboard"
+                                value="Inpatient Dashboard"
+                                icon="fa fa-id-card"
+                                ajax="false"
+                                class="ui-button-secondary"
+                                rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}"
+                                action="#{admissionController.navigateToAdmissionProfilePage}">
+                                <f:setPropertyActionListener
+                                    value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter}"
+                                    target="#{admissionController.current}"/>
+                            </p:commandButton>
+
+                            <p:commandButton
+                                id="btnWardMedications"
+                                value="Ward Medications"
+                                icon="fa fa-pills"
+                                ajax="false"
+                                class="ui-button-info"
+                                rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}"
+                                action="#{inpatientClinicalDataController.navigateToInwardMedicinesFromAdmission(pharmacySaleBhtController.bhtRequestBill.patientEncounter)}">
+                            </p:commandButton>
 
                             <p:selectBooleanCheckbox
                                 itemLabel="Complete the Request"
-                                value="#{pharmacySaleBhtController.completed}" >
+                                value="#{pharmacySaleBhtController.completed}"
+                                disabled="#{!webUserController.hasPrivilege('PharmacyBhtRequestForceComplete')}" >
                             </p:selectBooleanCheckbox>
 
                             <p:commandButton
+                                id="btnIssue"
                                 style="float: right;"
                                 class="ui-button-success"
                                 icon="fa fa-check"
@@ -83,11 +108,10 @@
                                                             styleClass="w-100"
                                                             inputStyleClass="w-100 form-control">
                                                 <p:column headerText="Item" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
-                                                        &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ':
-                                                                                 commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
-                                                                     severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
-                                                    </h:outputLabel>
+                                                    <h:outputText value="#{i.itemBatch.item.name}" style="width: 300px!important;" />
+                                                    &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime gt i.itemBatch.dateOfExpire or commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime gt i.itemBatch.dateOfExpire}"
+                                                                 value="#{commonFunctionsProxy.currentDateTime gt i.itemBatch.dateOfExpire ? 'Expired' : 'Expiring Soon'}"
+                                                                 severity="#{commonFunctionsProxy.currentDateTime gt i.itemBatch.dateOfExpire ? 'danger' : 'warning'}" />
                                                 </p:column>
                                                 <p:column headerText="Code" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
                                                                                                                commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
@@ -162,6 +186,12 @@
                                         <p:outputLabel value="BHT No" ></p:outputLabel>
                                         <p:outputLabel value=":" ></p:outputLabel>
                                         <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.bhtNo}" ></p:outputLabel>
+                                        <p:outputLabel value="From Department"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.fromDepartment ne null}"></p:outputLabel>
+                                        <p:outputLabel value=":"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.fromDepartment ne null}"></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.fromDepartment.name}"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.fromDepartment ne null}"></p:outputLabel>
                                         <p:outputLabel value="Credit Company" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
                                         <p:outputLabel value=":" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
                                         <!-- Credit company name, only render if paymentMethod is Credit and creditCompany is non-null -->
@@ -189,6 +219,25 @@
                                         <p:outputLabel value="Time" ></p:outputLabel>
                                         <p:outputLabel value=":" ></p:outputLabel>
                                         <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.createdAt}" > <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" /></p:outputLabel>
+                                        <p:outputLabel value="Requested By"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.creater ne null
+                                                                   and pharmacySaleBhtController.bhtRequestBill.creater.webUserPerson ne null}"></p:outputLabel>
+                                        <p:outputLabel value=":"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.creater ne null
+                                                                   and pharmacySaleBhtController.bhtRequestBill.creater.webUserPerson ne null}"></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.creater.webUserPerson.name}"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.creater ne null
+                                                                   and pharmacySaleBhtController.bhtRequestBill.creater.webUserPerson ne null}"></p:outputLabel>
+                                        <p:outputLabel value="Priority"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.priority ne null
+                                                                   and pharmacySaleBhtController.bhtRequestBill.priority.name() ne 'NORMAL'}"></p:outputLabel>
+                                        <p:outputLabel value=":"
+                                                       rendered="#{pharmacySaleBhtController.bhtRequestBill.priority ne null
+                                                                   and pharmacySaleBhtController.bhtRequestBill.priority.name() ne 'NORMAL'}"></p:outputLabel>
+                                        <p:tag value="#{pharmacySaleBhtController.bhtRequestBill.priority.displayName}"
+                                               rendered="#{pharmacySaleBhtController.bhtRequestBill.priority ne null
+                                                           and pharmacySaleBhtController.bhtRequestBill.priority.name() ne 'NORMAL'}"
+                                               style="background-color:#{pharmacySaleBhtController.bhtRequestBill.priority.priorityColor}; color:#212529;"></p:tag>
                                         <p:outputLabel value="Discount" ></p:outputLabel>
                                         <p:outputLabel value=":" ></p:outputLabel>
                                         <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.discount}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
@@ -197,7 +246,7 @@
                                         <p:outputLabel value="#{pharmacySaleBhtController.billItemTotal}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
                                         <p:outputLabel value="Comment" ></p:outputLabel>
                                         <p:outputLabel value=":" ></p:outputLabel>
-                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.comments}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                                        <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.comments}" ></p:outputLabel>
                                     </h:panelGrid>
                                 </p:panel>
                             </div>

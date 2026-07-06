@@ -206,37 +206,51 @@
                         <div class="d-flex align-items-center my-4">
 
                             <p:commandButton 
-                                class="ui-button-warning mx-1"
+                                class="ui-button-warning mx-2"
+                                style="width: 115px"
                                 icon="fas fa-cogs"
                                 ajax="false"
                                 action="#{inwardReportController.createIpIncomeCategoryWiseReport}"
                                 value="Process" />
 
-                            <p:commandButton 
-                                class="ui-button-primary mx-1"
+                            <p:commandButton
+                                id="btnPrintIpIncomeCategoryWise"
+                                type="button"
+                                class="mx-2 ui-button-info"
+                                style="width: 115px"
                                 icon="fas fa-print"
                                 ajax="false"
-                                value="Print All" />
+                                value="Print">
+                                <p:printer target="printPanel" />
+                            </p:commandButton>
 
-                            <p:commandButton 
-                                class="ui-button-success mx-1"
+                            <p:commandButton
+                                id="btnDownloadIpIncomeCategoryWiseExcel"
+                                class="ui-button-success mx-2"
+                                style="width: 115px"
                                 icon="fas fa-file-excel"
                                 ajax="false"
+                                action="#{inwardReportController.downloadIpIncomeCategoryWiseExcel}"
                                 value="Download" />
 
-                            <p:commandButton 
-                                class="ui-button-danger mx-1"
+                            <p:commandButton
+                                id="btnDownloadIpIncomeCategoryWisePdf"
+                                class="ui-button-danger mx-2"
+                                style="width: 115px"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
+                                action="#{inwardReportController.downloadIpIncomeCategoryWisePdf}"
                                 value="PDF">
-                                <!--                                <p:fileDownload  />-->
                             </p:commandButton>
 
                         </div>
 
                         <h:panelGroup id="printPanel" >
 
-                            <p:panel header="Type : Summary" styleClass="my-3" rendered="#{inwardReportController.reportType eq 'summary'}">
+                            <p:panel styleClass="my-3 border border-2 border-primary rounded" rendered="#{inwardReportController.reportType eq 'summary'}">
+                                <f:facet name="header">
+                                    <span style="font-weight: bold; font-size: 1.1em; color: #0056b3;">Type : Summary Report</span>
+                                </f:facet>
 
                                 <table class="table table-bordered table-sm mb-3">
 
@@ -537,7 +551,10 @@
 
                             </p:panel>
 
-                            <p:panel header="Type : Detail" styleClass="my-3" rendered="#{inwardReportController.reportType eq 'detail'}">
+                            <p:panel styleClass="my-3 border border-2 border-success rounded" rendered="#{inwardReportController.reportType eq 'detail'}">
+                                <f:facet name="header">
+                                    <span style="font-weight: bold; font-size: 1.1em; color: #155724;">Type : Detail Report</span>
+                                </f:facet>
 
                                 <table class="table table-bordered table-sm mb-3">
 
@@ -608,8 +625,12 @@
                                         <f:facet name="header" >
                                             <h:outputText value="Group Name" />
                                         </f:facet>
-                                        <h:outputText value="#{var.item != null ? var.item.name : (var.category != null ? var.category.name : '')}">
-                                        </h:outputText>
+                                        <h:panelGroup rendered="#{var.category != null and var.item == null}">
+                                            <b style="color: #155724; font-size: 1.05em; display: block; padding: 8px 0; background-color: #f0f7f5;">#{var.category.name}</b>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{var.item != null}">
+                                            <span style="padding-left: 30px; display: block;">#{var.item.name}</span>
+                                        </h:panelGroup>
                                         <f:facet name="footer">
                                             <h:outputText value="Total"/>
                                         </f:facet>

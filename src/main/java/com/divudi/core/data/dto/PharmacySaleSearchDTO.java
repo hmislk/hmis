@@ -25,10 +25,12 @@ public class PharmacySaleSearchDTO implements Serializable {
     private Double netTotal;
     private Boolean refunded;
     private Boolean cancelled;
+    private String comments;
 
     public PharmacySaleSearchDTO() {
     }
 
+    // Original 14-parameter constructor — kept for backward compatibility
     public PharmacySaleSearchDTO(
             Long id,
             String deptId,
@@ -58,6 +60,30 @@ public class PharmacySaleSearchDTO implements Serializable {
         this.netTotal = netTotal;
         this.refunded = refunded;
         this.cancelled = cancelled;
+    }
+
+    // New 15-parameter constructor that includes comments
+    // delegates to the 14-parameter constructor via this(...)
+    public PharmacySaleSearchDTO(
+            Long id,
+            String deptId,
+            String departmentName,
+            Date createdAt,
+            String creatorName,
+            String patientName,
+            String referredByName,
+            PaymentMethod paymentMethod,
+            String paymentSchemeName,
+            Double total,
+            Double discount,
+            Double netTotal,
+            Boolean refunded,
+            Boolean cancelled,
+            String comments) {
+        this(id, deptId, departmentName, createdAt, creatorName, patientName,
+                referredByName, paymentMethod, paymentSchemeName, total, discount,
+                netTotal, refunded, cancelled);
+        this.comments = comments;
     }
 
     public Long getId() { return id; }
@@ -101,4 +127,7 @@ public class PharmacySaleSearchDTO implements Serializable {
 
     public Boolean getCancelled() { return cancelled; }
     public void setCancelled(Boolean cancelled) { this.cancelled = cancelled; }
+
+    public String getComments() { return comments; }
+    public void setComments(String comments) { this.comments = comments; }
 }

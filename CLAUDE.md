@@ -10,11 +10,6 @@
 ### Working Directory
 0. **🚨 NEVER USE WORKTREE ISOLATION**: Always work directly in the main project checkout directory. Do NOT use `isolation: "worktree"` when spawning agents. If you find yourself in a path like `.claude/worktrees/*`, stop and perform all file edits in the main project directory instead. Worktrees cause the developer's local branch to go out of sync with remote commits, leading to confusing stale-file compilation errors. (Issue: hmislk/hmis#19944)
 
-### User Control
-1. **🚨 NO AUTO-ACTIONS**: Do NOT commit, build, run, or push code unless the user explicitly requests it
-2. **🚨 EXPLICIT COMMANDS ONLY**: Wait for user confirmation before executing Git operations, Maven builds, or deployment commands
-3. **🚨 NO AUTO-COMPILE**: Never run Maven compile unless explicitly requested
-
 ### Code Integrity
 4. **🚨 NO MOCK DATA**: NEVER use mock bills, fake entities, or temporary workarounds in business logic
 5. **🚨 DISCUSS UNCERTAINTIES**: ALWAYS discuss with user when uncertain about implementation approach
@@ -48,6 +43,7 @@
 
 ### When Working on UI/XHTML
 - [UI Development Handbook](developer_docs/ui/comprehensive-ui-guidelines.md) - Complete UI reference. **Authoring data-entry pages**: every actionable button needs a stable `id`; cap `p:autoComplete` with `maxResults`; guard the Enter key so it never clears/submits the form; make settle/issue/receive double-click-safe (JS `confirm()` + server-side re-entrancy guard). See § Accessibility-first development and § Data-entry components.
+- [Data-Dense Page Patterns](developer_docs/ui/data-dense-page-patterns.md) - **Required for pages with large tables / many inputs**: `stickyHeader` + `p-datatable-sm` on long tables, sticky action areas (`sticky-panel-header` / `sticky-action-bar`), `p:defaultCommand` + `p:focus` keyboard-first entry, lazy loading for large lists, button-clutter budget, busy indicators.
 - [Icon Management](developer_docs/ui/icon-management.md) - Standard icons and sizing
 
 ### When Testing with Playwright (E2E verification)

@@ -2482,6 +2482,52 @@ def verify_config_update(manager, dept_id, config_key, expected_value):
     return False
 ```
 
+## Bed-board SVG (issue #21592)
+
+Institutions and departments each store two SVG drawings used by the Inpatient
+Bed Board page, on a shared `viewBox="0 0 1000 600"` grid:
+
+- **`svgParentView`** — the entity's own empty floor-plan canvas, shown when you
+  navigate *into* it.
+- **`svgChildView`** — the small shape showing how this entity looks as a tile
+  *inside its parent's* canvas.
+
+Both fields are accepted on the normal `POST`/`PUT` bodies and returned by `GET`
+for both `/api/institutions` and `/api/departments`. SVG is stored **verbatim**
+(create/update → read back identical); it is sanitised at render time on the bed
+board. See the wiki page
+[Inpatient — Bed Board](https://github.com/hmislk/hmis/wiki/Inpatient-Bed-Board)
+for authoring guidance and copy-paste examples.
+
+> The bed-board navigation hierarchy is Site → Building → Floor → Unit → Room.
+> Sites live under `/api/sites` (see `API_SITES.md`); buildings/floors/units are
+> `Department`s; rooms (leaves, `svgChildView` only) live under
+> `/api/inward/rooms` (see `API_INWARD_ROOM.md`).
+
+### `/api/institutions/{id}/svg` and `/api/departments/{id}/svg`
+
+Dedicated sub-resources read/set just the drawings without round-tripping the
+whole entity (mirroring `/{id}/config` and `/{id}/preferences`).
+
+**GET** returns the two fields:
+
+```json
+{ "status": "success", "code": 200,
+  "data": { "id": 42, "name": "Building One", "svgParentView": "<svg ...>", "svgChildView": "<svg ...>" } }
+```
+
+**PUT** changes only the fields present in the body; pass an empty string to clear
+a drawing:
+
+```bash
+curl -s -H "Finance: $KEY" -H "Content-Type: application/json" \
+  -X PUT "$BASE/api/departments/42/svg" \
+  -d '{
+        "svgParentView": "<svg viewBox=\"0 0 1000 600\"><rect width=\"1000\" height=\"600\" fill=\"#f5f5f5\"/></svg>",
+        "svgChildView":  "<svg viewBox=\"0 0 1000 600\"><rect x=\"50\" y=\"50\" width=\"300\" height=\"200\"/></svg>"
+      }'
+```
+
 ## Summary
 
 This API provides comprehensive institution, department, and site management capabilities for HMIS. Key features include:

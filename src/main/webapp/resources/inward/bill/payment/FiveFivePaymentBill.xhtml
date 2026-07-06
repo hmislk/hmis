@@ -88,7 +88,7 @@
                         <td >:</td>
                         <td style="width: 5px;"></td>
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" class="billDetailsFiveFive" >
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" class="billDetailsFiveFive" >
                             </h:outputLabel>
 
                         </td>
@@ -101,7 +101,7 @@
                         </td>
 
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.patient.age}" class="billDetailsFiveFive">
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.age}" class="billDetailsFiveFive">
                             </h:outputLabel>
                         </td>
 
@@ -116,7 +116,7 @@
                         <td >:</td>
                         <td style="width: 5px;"></td>
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.patient.person.sex}" class="billDetailsFiveFive" >
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.sex}" class="billDetailsFiveFive" >
                             </h:outputLabel>
 
                         </td>
@@ -144,7 +144,7 @@
                         <td >:</td>
                         <td style="width: 5px;"></td>
                         <td>
-                            <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" class="billDetailsFiveFive" >
+                            <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.phone}" class="billDetailsFiveFive" >
                             </h:outputLabel>
 
                         </td>
@@ -286,6 +286,13 @@
 
 
             </div>
+
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Comment on Inward Deposit Bill',false) and cc.attrs.bill.comments ne null and cc.attrs.bill.comments ne ''}">
+                <div class="billDetailsFiveFive" style="margin-top: 10px; text-align: left;">
+                    <h:outputLabel value="Comment : #{cc.attrs.bill.comments}" class="billDetailsFiveFive"/>
+                </div>
+            </h:panelGroup>
+
             <div style="text-decoration: overline; margin-top: 20px;">
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
             </div>

@@ -455,6 +455,8 @@ public class SmsManagerEjb {
             URL url = new URL(targetURL);
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(30000);
             connection.setDoOutput(true);
 
             try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
@@ -493,6 +495,8 @@ public class SmsManagerEjb {
             connection.setRequestProperty("Accept", "*/*");
             connection.setRequestProperty("X-API-VERSION", "v1");
             connection.setRequestProperty("Authorization", "Bearer " + accessToken);
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(30000);
             connection.setDoOutput(true);
 
             try (OutputStream os = connection.getOutputStream()) {
@@ -756,6 +760,8 @@ public class SmsManagerEjb {
             conn.setRequestProperty("Accept", "*/*");
             conn.setRequestProperty("X-API-VERSION", "v1");
             conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(30000);
             conn.setDoOutput(true);
 
             try (OutputStream os = conn.getOutputStream()) {
@@ -823,6 +829,8 @@ public class SmsManagerEjb {
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setRequestProperty("Accept", "*/*");
             conn.setRequestProperty("X-API-VERSION", "v1");
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(30000);
 
             JSONObject credentials = new JSONObject();
             credentials.put("username", username);
@@ -850,6 +858,8 @@ public class SmsManagerEjb {
             conn.setRequestProperty("Accept", "*/*");
             conn.setRequestProperty("X-API-VERSION", "v1");
             conn.setRequestProperty("Authorization", "Bearer " + refreshToken);
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(30000);
 
             return extractTokenFromResponse(conn);
         } catch (Exception e) {
