@@ -192,6 +192,9 @@ public class RoomChangeReportController implements Serializable {
     }
 
     public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
+        }
         return fromDate;
     }
 
@@ -200,6 +203,9 @@ public class RoomChangeReportController implements Serializable {
     }
 
     public Date getToDate() {
+        if (toDate == null) {
+            toDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
+        }
         return toDate;
     }
 

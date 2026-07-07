@@ -99,13 +99,13 @@
                                             forceSelection="true"
                                             maxResults="10"
                                             var="pe"
-                                            itemLabel="#{pe.patientName}"
+                                            itemLabel="#{pe.bhtNo}"
                                             itemValue="#{pe}">
-                                <p:column headerText="Patient Name">
-                                    <h:outputText value="#{pe.patientName}"/>
-                                </p:column>
                                 <p:column headerText="MRN">
                                     <h:outputText value="#{pe.bhtNo}"/>
+                                </p:column>
+                                <p:column headerText="Patient Name">
+                                    <h:outputText value="#{pe.patientName}"/>
                                 </p:column>
                             </p:autoComplete>
 
