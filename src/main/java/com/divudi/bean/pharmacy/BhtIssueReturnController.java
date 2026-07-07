@@ -348,12 +348,17 @@ public class BhtIssueReturnController implements Serializable {
     }
 
     public void settle() {
-        
+
         if (returnComment == null || returnComment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Return comment is Mandatory..");
             return;
         }
-        
+
+        // Recompute from the just-submitted quantities. calTotal() was previously only
+        // triggered by the per-row blur AJAX (onEdit()); relying on that cached total here
+        // raced the full-page Return postback and could see a stale/zero total even when
+        // the submitted qty values were valid (issue #21883).
+        calTotal();
 
         if (getBill().getBillItems() != null) {
 //            System.out.println("this = " + getBill().getBillItems().size() );
@@ -379,10 +384,14 @@ public class BhtIssueReturnController implements Serializable {
             }
         }
 
-//
-//        System.out.println("returnBill.getTotal() = " + returnBill.getTotal());
-//        System.out.println("getReturnBill().getTotal() = " + getReturnBill().getTotal());
-        if (returnBill.getTotal() == 0) {
+// Validate against returned quantity, not gross value - a fully-margin item
+        // (Gross Rate 0.00, e.g. a service-charge-only line) has a legitimately zero
+        // returnBill.getTotal() even when a valid quantity was entered (issue #21883).
+        double totalReturnQty = 0.0;
+        for (BillItem bi : billItems) {
+            totalReturnQty += Math.abs(bi.getQty());
+        }
+        if (totalReturnQty == 0) {
             JsfUtil.addErrorMessage("Add Valied Return Quntity");
             return;
         }
