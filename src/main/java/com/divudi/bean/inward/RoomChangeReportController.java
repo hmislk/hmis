@@ -4,6 +4,7 @@ import com.divudi.core.data.dto.PatientEncounterDto;
 import com.divudi.core.data.dto.RoomChangeReportDto;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.PatientTransferRequestFacade;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
@@ -48,8 +49,8 @@ public class RoomChangeReportController implements Serializable {
     private Institution site;
     private Department department;
 
-    private Department fromWard;
-    private Department toWard;
+    private RoomFacilityCharge fromWard;
+    private RoomFacilityCharge toWard;
 
     private Date fromDate;
     private Date toDate;
@@ -119,12 +120,12 @@ public class RoomChangeReportController implements Serializable {
         }
 
         if (fromWard != null) {
-            jpql.append(" and fromDept = :fw ");
+            jpql.append(" and fromRfc = :fw ");
             params.put("fw", fromWard);
         }
 
         if (toWard != null) {
-            jpql.append(" and toDept = :tw ");
+            jpql.append(" and toRfc = :tw ");
             params.put("tw", toWard);
         }
 
@@ -316,19 +317,19 @@ public class RoomChangeReportController implements Serializable {
         this.department = department;
     }
 
-    public Department getFromWard() {
+    public RoomFacilityCharge getFromWard() {
         return fromWard;
     }
 
-    public void setFromWard(Department fromWard) {
+    public void setFromWard(RoomFacilityCharge fromWard) {
         this.fromWard = fromWard;
     }
 
-    public Department getToWard() {
+    public RoomFacilityCharge getToWard() {
         return toWard;
     }
 
-    public void setToWard(Department toWard) {
+    public void setToWard(RoomFacilityCharge toWard) {
         this.toWard = toWard;
     }
 

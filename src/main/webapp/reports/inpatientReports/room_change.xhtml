@@ -117,14 +117,17 @@
                                 <p:outputLabel value="From Ward" class="m-3"/>
                             </h:panelGroup>
 
-                            <p:selectOneMenu
-                                id="fromWard"
-                                styleClass="w-100 form-control"
-                                value="#{roomChangeReportController.fromWard}"
-                                filter="true">
-                                <f:selectItem itemLabel="All Wards" itemValue="#{null}"/>
-
-                            </p:selectOneMenu>
+                            <p:autoComplete 
+                                forceSelection="true"
+                                id="frwrd"
+                                inputStyleClass="w-100"
+                                class="m-1 w-100"
+                                value="#{roomChangeReportController.fromWard}" 
+                                completeMethod="#{roomFacilityChargeController.completeRoom}"
+                                var="rf"
+                                itemLabel="#{rf.name}"
+                                itemValue="#{rf}"
+                                size="30" />
 
                             <p:spacer width="20"/>
                             <!-- To ward -->
@@ -133,13 +136,17 @@
                                 <p:outputLabel value="To Ward" class="m-3"/>
                             </h:panelGroup>
 
-                            <p:selectOneMenu
-                                id="toWard"
-                                styleClass="w-100 form-control"
-                                value="#{roomChangeReportController.toWard}"
-                                filter="true">
-                                <f:selectItem itemLabel="All Wards" itemValue="#{null}"/>
-                            </p:selectOneMenu>
+                            <p:autoComplete 
+                                forceSelection="true"
+                                id="towrd"
+                                inputStyleClass="w-100"
+                                class="m-1 w-100"
+                                value="#{roomChangeReportController.toWard}" 
+                                completeMethod="#{roomFacilityChargeController.completeRoom}"
+                                var="rf"
+                                itemLabel="#{rf.name}"
+                                itemValue="#{rf}"
+                                size="30" />
 
                         </h:panelGrid>
 
