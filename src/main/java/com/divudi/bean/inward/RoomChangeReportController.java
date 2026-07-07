@@ -6,6 +6,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.inward.PatientTransferRequest;
 import com.divudi.core.facade.PatientTransferRequestFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -91,7 +92,7 @@ public class RoomChangeReportController implements Serializable {
                 .append("     fromDept.name, ")
                 .append("     rcPerson.name, ")
                 .append("     fromRoomEntity.name, ")
-                .append("     fromRfc.roomCategory.name, ")//13
+                .append("     fromRfc.roomCategory.name, ")
                 .append("     toInst.name, ")
                 .append("     toDept.name, ")
                 .append("     rcPerson.name, ")
@@ -150,6 +151,15 @@ public class RoomChangeReportController implements Serializable {
         roomChangeReportDtoList =(List<RoomChangeReportDto>) patientTransferRequestFacade
                 .findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
+    
+    public void downloadRoomChangeReportPdf(){
+        if(roomChangeReportDtoList == null || roomChangeReportDtoList.isEmpty()){
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+        
+        
+    }
 
     public Institution getInstitution() {
         return institution;
@@ -193,7 +203,7 @@ public class RoomChangeReportController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -204,7 +214,7 @@ public class RoomChangeReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
+            toDate = com.divudi.core.util.CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }

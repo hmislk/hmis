@@ -154,6 +154,13 @@
                                 action="#{roomChangeReportController.createRoomChangeReport()}">
                             </p:commandButton>
 
+                            <p:commandButton
+                                class="mx-2 ui-button-info m-1"
+                                icon="fa-solid fa-print"
+                                ajax="false"
+                                action="room_change_print?faces-redirect=true"
+                                value="To Print"/>
+
                             <p:commandButton class="ui-button-primary mx-1"
                                              icon="fas fa-print"
                                              ajax="false"
@@ -166,7 +173,7 @@
                                 icon="fas fa-file-excel"
                                 ajax="false"
                                 value="Download">
-                                <p:dataExporter type="xlsx" target="detailWise" fileName="Room_Change_Detail.xlsx"/>
+                                <p:dataExporter type="xlsx" target="detailWise" fileName="Room_Change_Detail"/>
                             </p:commandButton>
 
                             <p:commandButton
@@ -174,6 +181,7 @@
                                 icon="fas fa-file-pdf"
                                 ajax="false"
                                 value="PDF">
+                                <p:dataExporter type="pdf" target="detailWise" fileName="Room_Change_Detail"/>
                             </p:commandButton>
 
                         </div>
