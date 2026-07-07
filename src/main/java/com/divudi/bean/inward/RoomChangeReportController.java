@@ -59,43 +59,8 @@ public class RoomChangeReportController implements Serializable {
     private PatientEncounterDto selectedPatient;
     private PatientEncounterDto selectedBhtNo;
 
-    private List<PatientTransferRequest> patientTransferRequests;
-
     private List<RoomChangeReportDto> roomChangeReportDtoList;
 
-//    public void createRoomChangeReport() {
-//        StringBuilder jpql = new StringBuilder();
-//        jpql.append(" select r from PatientTransferRequest r ")
-//                .append(" where r.retired = false ")
-//                .append(" and r.createdAt between :fd and :td ");
-//
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("fd", fromDate);
-//        params.put("td", toDate);
-//
-//        if (selectedPatient != null && selectedPatient.getPatientEncounter() != null) {
-//            jpql.append(" and r.admission.patient = :pt ");
-//            params.put("pt", selectedPatient.getPatientEncounter().getPatient());
-//        }
-//
-//        if (selectedBhtNo != null && selectedBhtNo.getPatientEncounter() != null) {
-//            jpql.append(" and r.admission = :pe ");
-//            params.put("pe", selectedBhtNo.getPatientEncounter());
-//        }
-//
-//        if (fromWard != null) {
-//            jpql.append(" and r.fromPatientRoom.roomFacilityCharge.room.department = :fw ");
-//            params.put("fw", fromWard);
-//        }
-//
-//        if (toWard != null) {
-//            jpql.append(" and r.toRoomFacilityCharge.room.department = :tw ");
-//            params.put("tw", toWard);
-//        }
-//
-//        patientTransferRequests = patientTransferRequestFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-//
-//    }
     public void createRoomChangeReport() {
         StringBuilder jpql = new StringBuilder();
         jpql.append(" select new com.divudi.core.data.dto.RoomChangeReportDto( ")
@@ -405,14 +370,6 @@ public class RoomChangeReportController implements Serializable {
 
     public void setSelectedBhtNo(PatientEncounterDto selectedBhtNo) {
         this.selectedBhtNo = selectedBhtNo;
-    }
-
-    public List<PatientTransferRequest> getPatientTransferRequests() {
-        return patientTransferRequests;
-    }
-
-    public void setPatientTransferRequests(List<PatientTransferRequest> patientTransferRequests) {
-        this.patientTransferRequests = patientTransferRequests;
     }
 
     public PatientTransferRequestFacade getPatientTransferRequestFacade() {
