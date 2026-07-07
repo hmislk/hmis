@@ -101,7 +101,10 @@ public class InpatientDirectIssueNativeSqlService {
             double rate         = d.getRate();
             double marginValue  = Math.abs(d.getMarginValue());
             double discountValue = Math.abs(d.getDiscountValue());
-            double discountPercent = d.getDiscountPercent();
+            // discountRate is a per-unit discount amount throughout this codebase
+            // (see PharmacyFastRetailSaleController.calculateBillItemDiscountRate:
+            // dr = retailRate * discountPercent / 100), NOT the raw percentage.
+            double discountRate = absQty > 0 ? discountValue / absQty : 0.0;
 
             em.createNativeQuery(
                 "INSERT INTO " + billItemTable()
@@ -120,7 +123,7 @@ public class InpatientDirectIssueNativeSqlService {
                 .setParameter(8, rate)
                 .setParameter(9, marginValue)
                 .setParameter(10, discountValue)
-                .setParameter(11, discountPercent)
+                .setParameter(11, discountRate)
                 .setParameter(12, new Timestamp(createdAt.getTime()))
                 .setParameter(13, d.getCreaterId())
                 .setParameter(14, d.getSourceRequestBillItemId())

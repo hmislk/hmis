@@ -350,6 +350,14 @@ public class BhtIssueReturnController implements Serializable {
 
     public void settle() {
 
+        // Re-entrancy guard: a double-click or resubmission on the session-scoped
+        // controller must not create a second return bill / duplicate stock
+        // adjustments for the same returnBill instance.
+        if (getReturnBill().getId() != null) {
+            JsfUtil.addErrorMessage("This return has already been settled.");
+            return;
+        }
+
         if (returnComment == null || returnComment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Return comment is Mandatory..");
             return;
