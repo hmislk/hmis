@@ -13717,11 +13717,7 @@ public class PharmacyReportController implements Serializable {
             List<BillTypeAtomic> billTypes = Arrays.asList(
                     BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
                     BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
-                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
-                    // Ward Service/Item Request approval (#21793) also deducts stock via
-                    // StockHistory on approval, same as ISSUE_MEDICINE_ON_REQUEST_INWARD, but was
-                    // never added to any COGS row -> spurious variance equal to its value. See #21266.
-                    BillTypeAtomic.INWARD_SERVICE_ITEM_APPROVAL
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE
             );
 
             Map<String, Double> bhtIssues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypes);

@@ -73,7 +73,6 @@ public enum BillType {
     PharmacyBhtPre,
     InwardPharmacyRequest,
     InwardServiceItemRequest,
-    InwardServiceItemApproval,
     @Deprecated
     StoreBhtIssue,
     StoreBhtPre,

@@ -192,7 +192,7 @@
                                             <p:column headerText="Service">
                                                 <h:outputLabel value="#{ix.name}"/>
                                             </p:column>
-                                            <p:column headerText="Rate">
+                                            <p:column headerText="Rate" rendered="#{webUserController.hasPrivilege('ShowServiceCharges') or webUserController.hasPrivilege('ShowTimeServiceCharges')}">
                                                 <h:outputLabel value="#{ix.total}"/>
                                             </p:column>
                                         </p:autoComplete>
@@ -265,7 +265,7 @@
                                     value="#{ti.billFee.patientItem.toTime}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </p:column>
-                            <p:column headerText="Total" styleClass="averageNumericColumn">
+                            <p:column headerText="Total" styleClass="averageNumericColumn" rendered="#{webUserController.hasPrivilege('ShowTimeServiceCharges')}">
                                 <h:outputLabel value="#{ti.billFee.patientItem.serviceValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>

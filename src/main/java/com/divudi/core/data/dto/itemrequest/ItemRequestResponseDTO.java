@@ -24,12 +24,9 @@ public class ItemRequestResponseDTO implements Serializable {
     private String targetDepartmentName;
     private String status;
     private String comments;
-    private String rejectionReason;
     private Date createdAt;
     private String createdBy;
-    private Long approvalBillId;
-    private Date decidedAt;
-    private String decidedBy;
+    private List<Long> fulfillingBillIds;
     private List<ItemRequestLineResponseDTO> lines;
 
     public ItemRequestResponseDTO() {
@@ -91,14 +88,6 @@ public class ItemRequestResponseDTO implements Serializable {
         this.comments = comments;
     }
 
-    public String getRejectionReason() {
-        return rejectionReason;
-    }
-
-    public void setRejectionReason(String rejectionReason) {
-        this.rejectionReason = rejectionReason;
-    }
-
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -115,28 +104,12 @@ public class ItemRequestResponseDTO implements Serializable {
         this.createdBy = createdBy;
     }
 
-    public Long getApprovalBillId() {
-        return approvalBillId;
+    public List<Long> getFulfillingBillIds() {
+        return fulfillingBillIds;
     }
 
-    public void setApprovalBillId(Long approvalBillId) {
-        this.approvalBillId = approvalBillId;
-    }
-
-    public Date getDecidedAt() {
-        return decidedAt;
-    }
-
-    public void setDecidedAt(Date decidedAt) {
-        this.decidedAt = decidedAt;
-    }
-
-    public String getDecidedBy() {
-        return decidedBy;
-    }
-
-    public void setDecidedBy(String decidedBy) {
-        this.decidedBy = decidedBy;
+    public void setFulfillingBillIds(List<Long> fulfillingBillIds) {
+        this.fulfillingBillIds = fulfillingBillIds;
     }
 
     public List<ItemRequestLineResponseDTO> getLines() {
