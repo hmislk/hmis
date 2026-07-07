@@ -27,20 +27,6 @@
                                 icon="fa fa-arrow-circle-left"
                                 styleClass="ui-button-info ui-button-outlined">
                             </p:commandButton>
-                            <p:commandButton
-                                value="Download"
-                                ajax="false"
-                                icon="fa fa-download"
-                                styleClass="ui-button-secondary">
-                                <p:dataExporter fileName="Inpatient Pharmacy Direct Issues" target="tbl1" type="xlsx"></p:dataExporter>
-                            </p:commandButton>
-                            <p:commandButton
-                                value="Print"
-                                ajax="false"
-                                icon="fa fa-print"
-                                styleClass="ui-button-secondary">
-                                <p:printer target="tbl1"></p:printer>
-                            </p:commandButton>
                         </div>
                     </div>
                 </f:facet>
@@ -93,11 +79,26 @@
                         </div>
                     </div>
                     <div class="col-9">
-                        <p:panel>
-                            <f:facet name="header">
-                                <p:outputLabel value="Direct Issues" style="font-weight: bold"></p:outputLabel>
-                            </f:facet>
-
+                        <p:tabView>
+                        <p:tab title="Direct Issues">
+                            <div class="d-flex justify-content-end gap-2 mb-2">
+                                <p:commandButton
+                                    id="btnDirectIssuesDownload"
+                                    value="Download"
+                                    ajax="false"
+                                    icon="fa fa-download"
+                                    styleClass="ui-button-secondary">
+                                    <p:dataExporter fileName="Inpatient Pharmacy Direct Issues" target="tbl1" type="xlsx"></p:dataExporter>
+                                </p:commandButton>
+                                <p:commandButton
+                                    id="btnDirectIssuesPrint"
+                                    value="Print"
+                                    ajax="false"
+                                    icon="fa fa-print"
+                                    styleClass="ui-button-secondary">
+                                    <p:printer target="tbl1"></p:printer>
+                                </p:commandButton>
+                            </div>
                             <p:dataTable
                                 id="tbl1"
                                 rowIndexVar="rowIndex"
@@ -263,19 +264,18 @@
                                 </p:rowExpansion>
 
                             </p:dataTable>
+                        </p:tab>
 
-                        </p:panel>
-
-                        <p:panel class="mt-3">
-                            <f:facet name="header">
-                                <p:outputLabel value="Items Summary" style="font-weight: bold"></p:outputLabel>
-                            </f:facet>
+                        <p:tab title="Items Summary">
                             <p:dataTable
                                 id="tblItemSummary"
                                 value="#{inwardPharmacyEncounterReportController.directIssueItemSummary}"
                                 var="s">
                                 <p:column headerText="Item Name" width="30%">
                                     <h:outputLabel value="#{s.itemName}"/>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="Total" style="font-weight: bold" />
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Code" width="14%">
                                     <h:outputLabel value="#{s.itemCode}"/>
@@ -284,69 +284,119 @@
                                     <h:outputLabel value="#{s.qty}">
                                         <f:convertNumber pattern="#0.##" />
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardPharmacyEncounterReportController.directIssueItemSummaryQtyTotal}" style="font-weight: bold">
+                                            <f:convertNumber pattern="#0.##" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Total" width="12%" style="text-align: right;">
                                     <h:outputLabel value="#{s.total}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardPharmacyEncounterReportController.directIssueItemSummaryTotal}" style="font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Margin" width="12%" style="text-align: right;">
                                     <h:outputLabel value="#{s.margin}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardPharmacyEncounterReportController.directIssueItemSummaryMargin}" style="font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Discount" width="10%" style="text-align: right;">
                                     <h:outputLabel value="#{s.discount}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardPharmacyEncounterReportController.directIssueItemSummaryDiscount}" style="font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Net Total" width="12%" style="text-align: right;">
                                     <h:outputLabel value="#{s.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardPharmacyEncounterReportController.directIssueItemSummaryNetTotal}" style="font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
                             </p:dataTable>
-                        </p:panel>
+                        </p:tab>
 
-                        <p:panel class="mt-3">
-                            <f:facet name="header">
-                                <p:outputLabel value="Issuing Department Summary" style="font-weight: bold"></p:outputLabel>
-                            </f:facet>
+                        <p:tab title="Issuing Department Summary">
                             <p:dataTable
                                 id="tblDeptSummary"
                                 value="#{inwardPharmacyEncounterReportController.directIssueDepartmentSummary}"
                                 var="s">
                                 <p:column headerText="Department" width="30%">
                                     <h:outputLabel value="#{s.departmentName}"/>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="Total" style="font-weight: bold" />
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Qty" width="14%" style="text-align: right;">
                                     <h:outputLabel value="#{s.qty}">
                                         <f:convertNumber pattern="#0.##" />
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardPharmacyEncounterReportController.directIssueDepartmentSummaryQtyTotal}" style="font-weight: bold">
+                                            <f:convertNumber pattern="#0.##" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Total" width="14%" style="text-align: right;">
                                     <h:outputLabel value="#{s.total}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardPharmacyEncounterReportController.directIssueDepartmentSummaryTotal}" style="font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Margin" width="14%" style="text-align: right;">
                                     <h:outputLabel value="#{s.margin}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardPharmacyEncounterReportController.directIssueDepartmentSummaryMargin}" style="font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Discount" width="14%" style="text-align: right;">
                                     <h:outputLabel value="#{s.discount}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardPharmacyEncounterReportController.directIssueDepartmentSummaryDiscount}" style="font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
                                 <p:column headerText="Net Total" width="14%" style="text-align: right;">
                                     <h:outputLabel value="#{s.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardPharmacyEncounterReportController.directIssueDepartmentSummaryNetTotal}" style="font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
                                 </p:column>
                             </p:dataTable>
-                        </p:panel>
-
+                        </p:tab>
+                        </p:tabView>
                     </div>
                 </div>
             </p:panel>
