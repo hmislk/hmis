@@ -135,8 +135,13 @@ public class RoomOccupancyController implements Serializable {
         Date toDate = null;
         String sql = "SELECT rf FROM RoomFacilityCharge rf "
                 + " where rf.retired=false "
-                + " and rf.room.filled=false"
+                + " and rf.room.filled!=true"
                 + " and rf.room.retired=false"
+                + " and rf.room.id NOT IN ("
+                + " SELECT pr.roomFacilityCharge.room.id"
+                + " FROM PatientRoom pr"
+                + " WHERE pr.retired=false"
+                + " AND pr.discharged=false)"
                 + " order by rf.name";
 
         roomFacilityCharges = getRoomFacilityChargeFacade().findByJpql(sql);

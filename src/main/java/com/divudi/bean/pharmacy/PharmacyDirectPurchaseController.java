@@ -1488,6 +1488,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         } else {
+            syncBillItemsCollectionFromDatabase();
             getBillFacade().edit(getBill());
         }
 
@@ -1566,9 +1567,32 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
         getBill().setExpenseTotal(-Math.abs(totalForExpenses));
 
+        syncBillItemsCollectionFromDatabase();
         getBillFacade().edit(getBill());
         draftMode = true;
         return true;
+    }
+
+    /**
+     * Bill.billItems has orphanRemoval=true, but this method persists each BillItem
+     * directly via BillItemFacade rather than through that collection, so the in-memory
+     * bill's billItems field is otherwise left null/stale across repeated calls. If
+     * something has since refreshed this bill's shared cache entry (e.g. a Finalize
+     * attempt blocked by validation, which reloads the bill before returning), a later
+     * edit(bill) can treat that stale/empty collection as authoritative and orphan-delete
+     * the BillItem rows this method just persisted (issue #21900). Re-fetching the
+     * collection immediately before each edit(bill) keeps it accurate.
+     */
+    private void syncBillItemsCollectionFromDatabase() {
+        if (getBill().getId() == null) {
+            return;
+        }
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("billId", getBill().getId());
+        List<BillItem> currentlyPersistedItems = getBillItemFacade().findByJpql(
+            "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId", params);
+        getBill().getBillItems().clear();
+        getBill().getBillItems().addAll(currentlyPersistedItems);
     }
 
     public void saveDraftDirectPurchase() {
