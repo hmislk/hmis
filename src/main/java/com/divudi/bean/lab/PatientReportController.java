@@ -354,7 +354,7 @@ public class PatientReportController implements Serializable {
                 case UPLOAD:
                     Upload currentReportUpload = loadUpload(pr);
                     patientReportUploadController.setReportUpload(currentReportUpload);
-                    return "/lab/upload_patient_report_print?faces-redirect=true";
+                    return "/inward/inward_upload_patient_report_print?faces-redirect=true";
                 default:
                     return "";
             }

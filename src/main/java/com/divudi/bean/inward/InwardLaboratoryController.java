@@ -42,6 +42,7 @@ import javax.persistence.TemporalType;
 public class InwardLaboratoryController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final String PATIENT_TYPE_IP = "IP";
 
     @Inject
     private PatientInvestigationController patientInvestigationController;
@@ -80,7 +81,7 @@ public class InwardLaboratoryController implements Serializable {
         if (searchByOrderedDepartment) {
             patientInvestigationController.setOrderedDepartment(sessionController.getDepartment());
         }
-        patientInvestigationController.setType("IP");
+        patientInvestigationController.setType(PATIENT_TYPE_IP);
         patientInvestigationController.listBillsToGenerateBarcodes();
         return "/inward/inward_lab_dashboard?faces-redirect=true";
     }
@@ -108,7 +109,7 @@ public class InwardLaboratoryController implements Serializable {
                 .append("AND pi.billItem.bill.ipOpOrCc = :type ")
                 .append("AND pi.billItem.bill.createdAt BETWEEN :fd AND :td ");
         params.put("ret", false);
-        params.put("type", "IP");
+        params.put("type", PATIENT_TYPE_IP);
         params.put("fd", patientInvestigationController.getFromDate());
         params.put("td", patientInvestigationController.getToDate());
 
@@ -168,13 +169,23 @@ public class InwardLaboratoryController implements Serializable {
     }
 
     public void searchPatientSamples() {
-        patientInvestigationController.setType("IP");
+        patientInvestigationController.setType(PATIENT_TYPE_IP);
         patientInvestigationController.searchPatientSamples();
     }
 
     public void searchPatientReports() {
-        patientInvestigationController.setType("IP");
+        patientInvestigationController.setType(PATIENT_TYPE_IP);
         patientInvestigationController.searchPatientReports();
+    }
+
+    /**
+     * Clears the Bill Number and BHT Number filters kept on this controller,
+     * in addition to the filters cleared by {@link PatientInvestigationController#clearFilters()}.
+     */
+    public void clearFilters() {
+        billNumber = null;
+        bhtNumber = null;
+        patientInvestigationController.clearFilters();
     }
 
     /**

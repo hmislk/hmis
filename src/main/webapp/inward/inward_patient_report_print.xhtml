@@ -46,16 +46,18 @@
                                         </p:remoteCommand>
 
                                         <p:commandButton
+                                            id="btnExportPdf"
                                             value="Export PDF"
                                             class="ui-button-channelling"
                                             icon="fas fa-file-pdf"
-                                            disabled="#{!patientReportController.currentPatientReport.approved or userPreferenceController.userPreference.canPrintWithoutPermission}"
+                                            disabled="#{!patientReportController.currentPatientReport.approved and !userPreferenceController.userPreference.canPrintWithoutPermission}"
                                             onclick="downloadPdf()"
                                             type="button"
                                             ajax="false">
                                         </p:commandButton>
 
                                         <p:commandButton
+                                            id="btnPrint"
                                             class="ui-button-info"
                                             icon="fas fa-print"
                                             ajax="false"
@@ -65,6 +67,7 @@
                                         </p:commandButton>
 
                                         <p:commandButton
+                                            id="btnBackToDashboard"
                                             value="Back to Inward Lab Dashboard"
                                             action="#{inwardLaboratoryController.navigateToBackFromPatientReportPrintView()}"
                                             icon="fa fa-arrow-left"
@@ -119,8 +122,12 @@
                                         };
 
                                         html2pdf().from(element).set(opt).toPdf().get('pdf').then(function (pdf) {
-                                            pdf.deletePage(2); // Remove the second page if it exists
+                                            if (pdf.internal.getNumberOfPages() > 1) {
+                                                pdf.deletePage(2); // Remove the second page if it exists
+                                            }
                                         }).save().then(() => {
+                                            element.classList.add('print-only');
+                                        }).catch(() => {
                                             element.classList.add('print-only');
                                         });
                                     }

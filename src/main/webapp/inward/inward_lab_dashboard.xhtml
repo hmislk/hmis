@@ -150,6 +150,7 @@
                                     <h:panelGrid columns="1" class="w-100">
 
                                         <p:commandButton
+                                            id="btnInwardLabSearchBills"
                                             ajax="false"
                                             rendered="#{webUserController.hasPrivilege('InwardLaboratoryBarcodeGeneration')}"
                                             action="#{inwardLaboratoryController.searchInwardLabBills}"
@@ -162,6 +163,7 @@
                                             <hr/>
 
                                             <p:commandButton
+                                                id="btnInwardLabSearchSamples"
                                                 ajax="false"
                                                 action="#{inwardLaboratoryController.searchPatientSamples}"
                                                 value="Samples"
@@ -174,6 +176,7 @@
                                             <hr/>
 
                                             <p:commandButton
+                                                id="btnInwardLabSearchReports"
                                                 ajax="false"
                                                 action="#{inwardLaboratoryController.searchPatientReports}"
                                                 value="Reports"
@@ -185,8 +188,9 @@
                                         <hr/>
 
                                         <p:commandButton
+                                            id="btnInwardLabClearFilters"
                                             ajax="false"
-                                            action="#{patientInvestigationController.clearFilters}"
+                                            action="#{inwardLaboratoryController.clearFilters}"
                                             value="Clear"
                                             icon="fas fa-eraser"
                                             styleClass="m-1 ui-button-secondary w-100">
@@ -198,7 +202,7 @@
 
                         </h:form>
 
-                        <h:form >
+                        <h:form onkeypress="if (event.keyCode === 13) { event.preventDefault(); return false; }">
                             <div class="row" >
                                 <div class="col-10 w-80" >
 
@@ -236,6 +240,7 @@
                                             value="Re-Generate Samples"
                                             ajax="false"
                                             action="#{inwardLaboratoryController.reGenerateSampleForRejectSamples()}"
+                                            onclick="return confirm('Are you sure you want to re-generate samples for the selected rejected samples?');"
                                             title="Re-Generate Samples"
                                             icon="pi pi-plus-circle"
                                             styleClass="w-100 ui-button-success" >
@@ -249,6 +254,7 @@
                                             value="Collect Samples"
                                             ajax="false"
                                             action="#{inwardLaboratoryController.collectSamples()}"
+                                            onclick="return confirm('Are you sure you want to collect the selected samples?');"
                                             title="Collect Samples"
                                             icon="pi pi-plus-circle"
                                             styleClass="w-100 ui-button-primary" >
@@ -277,6 +283,7 @@
                                             value="Send to Lab"
                                             ajax="false"
                                             action="#{inwardLaboratoryController.sendSamplesToLab()}"
+                                            onclick="return confirm('Are you sure you want to send the selected samples to the lab?');"
                                             title="Send to Lab"
                                             icon="pi pi-external-link"
                                             styleClass="w-100 ui-button-warning" >
@@ -308,6 +315,7 @@
                                             value="Reject Samples"
                                             ajax="false"
                                             action="#{inwardLaboratoryController.rejectSamples()}"
+                                            onclick="return confirm('Are you sure you want to reject the selected samples?');"
                                             title="Reject Samples"
                                             icon="pi pi-times-circle"
                                             styleClass="w-100 ui-button-danger" >
