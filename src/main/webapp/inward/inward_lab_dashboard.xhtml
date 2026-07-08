@@ -27,17 +27,29 @@
                         <f:facet name="header">
                             <div class="d-flex align-items-center w-100 flex-wrap gap-2">
                                 <span><i class="fa fa-vials me-2" />Inpatient Laboratory Dashboard</span>
-                                <h:form styleClass="ms-auto" rendered="#{webUserController.hasPrivilege('InwardLaboratorySampleManagement')}">
-                                    <span class="d-flex align-items-center gap-2">
-                                        <h:outputLabel for="ddSampleSource" value="Sample Source" />
-                                        <p:selectOneMenu id="ddSampleSource" style="min-width: 220px;" value="#{patientInvestigationController.sampleSearchStrategy}">
-                                            <f:selectItem itemLabel="All Samples"/>
-                                            <f:selectItem itemValue="INTERNAL_ONLY" itemLabel="Internal Samples Only"/>
-                                            <f:selectItem itemValue="EXTERNAL_ONLY" itemLabel="Outsource Samples Only"/>
-                                            <p:ajax process="@this" />
-                                        </p:selectOneMenu>
-                                    </span>
-                                </h:form>
+                                <div class="d-flex align-items-center flex-wrap gap-2 ms-auto">
+                                    <h:form rendered="#{webUserController.hasPrivilege('InwardLaboratorySampleManagement')}">
+                                        <span class="d-flex align-items-center gap-2">
+                                            <h:outputLabel for="ddSampleSource" value="Sample Source" />
+                                            <p:selectOneMenu id="ddSampleSource" style="min-width: 220px;" value="#{patientInvestigationController.sampleSearchStrategy}">
+                                                <f:selectItem itemLabel="All Samples"/>
+                                                <f:selectItem itemValue="INTERNAL_ONLY" itemLabel="Internal Samples Only"/>
+                                                <f:selectItem itemValue="EXTERNAL_ONLY" itemLabel="Outsource Samples Only"/>
+                                                <p:ajax process="@this" />
+                                            </p:selectOneMenu>
+                                        </span>
+                                    </h:form>
+                                    <h:form>
+                                        <p:commandButton
+                                            id="btnBackToNursingWorkBench"
+                                            value="Back to Workbench"
+                                            icon="fa fa-arrow-left"
+                                            ajax="false"
+                                            class="ui-button-secondary"
+                                            action="#{nursingWorkBenchController.navigatetoNursingWorkBench()}">
+                                        </p:commandButton>
+                                    </h:form>
+                                </div>
                             </div>
                         </f:facet>
 
