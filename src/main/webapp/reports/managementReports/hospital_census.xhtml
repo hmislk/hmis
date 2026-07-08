@@ -180,7 +180,17 @@
                             </p:commandButton>
 
                             <p:commandButton
-                                id="exlBtn"
+                                id="exlBtnSmy"
+                                rendered="#{inwardManagementReportController.reportType eq 'Summary'}"
+                                class="ui-button-success mx-1" 
+                                icon="fas fa-file-excel" 
+                                ajax="false" 
+                                value="Download">
+                                <p:dataExporter type="xlsx" target="tbl_Summary" fileName="Hospital_Census_Summary"/>
+                            </p:commandButton>
+                            <p:commandButton
+                                id="exlBtnDtl"
+                                rendered="#{inwardManagementReportController.reportType ne 'Summary'}"
                                 class="ui-button-success mx-1" 
                                 icon="fas fa-file-excel" 
                                 ajax="false" 
