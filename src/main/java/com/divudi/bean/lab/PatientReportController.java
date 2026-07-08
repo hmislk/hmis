@@ -336,6 +336,32 @@ public class PatientReportController implements Serializable {
 
     }
 
+    public String navigateToPrintPatientReportForInward(PatientReport pr) {
+        if (pr == null) {
+            JsfUtil.addErrorMessage("No Select Patient Report");
+            return "";
+        }
+
+        if (pr.getReportType() == null) {
+            setCurrentPatientReport(pr);
+            return "/inward/inward_patient_report_print?faces-redirect=true";
+        } else {
+            switch (pr.getReportType()) {
+                case INTERFACE:
+                case GENARATE:
+                    setCurrentPatientReport(pr);
+                    return "/inward/inward_patient_report_print?faces-redirect=true";
+                case UPLOAD:
+                    Upload currentReportUpload = loadUpload(pr);
+                    patientReportUploadController.setReportUpload(currentReportUpload);
+                    return "/lab/upload_patient_report_print?faces-redirect=true";
+                default:
+                    return "";
+            }
+        }
+
+    }
+
     public String navigateToPrintPatientReportForCourier(PatientReport pr) {
         if (pr == null) {
             JsfUtil.addErrorMessage("No Select Patient Report");

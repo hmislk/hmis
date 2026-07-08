@@ -74,6 +74,15 @@ public class InwardLaboratoryController implements Serializable {
     }
 
     /**
+     * Returns to the inward laboratory dashboard from the inward patient report
+     * print view, preserving the current search results/filters instead of
+     * resetting them like {@link #navigateToInwardLaboratoryDashboard()} does.
+     */
+    public String navigateToBackFromPatientReportPrintView() {
+        return "/inward/inward_lab_dashboard?faces-redirect=true";
+    }
+
+    /**
      * Searches in-patient lab bills. Only IP bills that have at least one patient
      * investigation are returned. Supports filtering by bill number, BHT number,
      * investigation name, patient name, status and the selected date range.
