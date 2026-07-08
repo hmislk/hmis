@@ -7,7 +7,6 @@ import com.divudi.core.data.dto.HospitalCensusDetailDto;
 import com.divudi.core.data.inward.BedStatus;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
-import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.RoomFacilityChargeFacade;
 
@@ -63,7 +62,7 @@ public class InwardManagementReportController implements Serializable {
     private Department department;
     private Date fromDate;
     private Date toDate;
-    private RoomFacilityCharge ward;
+    private Department ward;
     private String reportType;
 
     private List<HospitalCensusSummaryDto> hospitalCensusSummaryDtos;
@@ -164,6 +163,10 @@ public class InwardManagementReportController implements Serializable {
         if (department != null) {
             jpql.append(" and d = :dept ");
             params.put("dept", department);
+        }
+        if (ward != null) {
+            jpql.append(" and d = :ward ");
+            params.put("ward", ward);
         }
         jpql.append(" order by d.name ");
 
@@ -629,11 +632,11 @@ public class InwardManagementReportController implements Serializable {
         this.toDate = toDate;
     }
 
-    public RoomFacilityCharge getWard() {
+    public Department getWard() {
         return ward;
     }
 
-    public void setWard(RoomFacilityCharge ward) {
+    public void setWard(Department ward) {
         this.ward = ward;
     }
 

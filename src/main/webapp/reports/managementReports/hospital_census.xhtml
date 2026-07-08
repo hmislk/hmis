@@ -133,9 +133,9 @@
                             <p:spacer width="20"/>                                                                              
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
-                                <p:outputLabel value="Type" for="phmSite" class="m-3"/>
+                                <p:outputLabel value="Type" for="typ" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu class="w-100" value="#{inwardManagementReportController.reportType}">
+                            <p:selectOneMenu id="typ" class="w-100" value="#{inwardManagementReportController.reportType}">
                                 <f:selectItem itemValue="Any" itemLabel="Any"/>
                                 <f:selectItem itemValue="Detail" itemLabel="Detail"/>
                                 <f:selectItem itemValue="Summary" itemLabel="Summary"/>
@@ -145,18 +145,26 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
-                                <p:outputLabel value="Ward" for="phmSite" class="m-3"/>
+                                <p:outputLabel value="Ward" for="ac" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu
-                                id="phmSite"
-                                styleClass="w-100 form-control"
-                                value="#{inwardManagementReportController.ward}"
-                                filter="true">
-                                <f:selectItem itemLabel="All Wards" itemValue="#{null}"/>
-                                <f:selectItems value="#" var="site" itemLabel="#{site.name}"
-                                               itemValue="#{site}"/>
-                                <p:ajax process="phmSite" update="phmDept"/>
-                            </p:selectOneMenu>
+                            <p:autoComplete id="ac"
+                                            value="#{inwardManagementReportController.ward}"
+                                            styleClass="w-100"
+                                            inputStyleClass="w-100 form-control"
+                                            placeholder="Ward"
+                                            completeMethod="#{departmentController.completeInwardDepartments}"
+                                            forceSelection="true"
+                                            maxResults="10"
+                                            var="pe"
+                                            itemLabel="#{pe.name}"
+                                            itemValue="#{pe}">
+                                <p:column headerText="Ward Name">
+                                    <h:outputText value="#{pe.name}"/>
+                                </p:column>
+                                <p:column headerText="Institution">
+                                    <h:outputText value="#{pe.institution.name}"/>
+                                </p:column>
+                            </p:autoComplete>
                         </h:panelGrid>
 
                         <div class="d-flex align-items-center my-3">
