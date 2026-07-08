@@ -165,6 +165,37 @@ public class InwardLaboratoryController implements Serializable {
         patientInvestigationController.searchPatientReports();
     }
 
+    /**
+     * Opens the inward laboratory dashboard directly on the Bills / Barcode
+     * Generation view. Alias of {@link #navigateToInwardLaboratoryDashboard()}
+     * so callers (e.g. the Nursing Work Bench) can link to a specific view.
+     */
+    public String navigateToInwardLaboratoryBills() {
+        return navigateToInwardLaboratoryDashboard();
+    }
+
+    /**
+     * Opens the inward laboratory dashboard directly on the Samples view.
+     */
+    public String navigateToInwardLaboratorySamples() {
+        patientInvestigationController.makeNull();
+        billNumber = null;
+        bhtNumber = null;
+        searchPatientSamples();
+        return "/inward/inward_lab_dashboard?faces-redirect=true";
+    }
+
+    /**
+     * Opens the inward laboratory dashboard directly on the Reports view.
+     */
+    public String navigateToInwardLaboratoryReports() {
+        patientInvestigationController.makeNull();
+        billNumber = null;
+        bhtNumber = null;
+        searchPatientReports();
+        return "/inward/inward_lab_dashboard?faces-redirect=true";
+    }
+
     public void collectSamples() {
         patientInvestigationController.collectSamples();
     }
