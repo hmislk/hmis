@@ -7,6 +7,7 @@ import com.divudi.core.data.dto.PendingPharmacyItemDTO;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -36,6 +37,9 @@ public class NursingDischargeController implements Serializable {
 
     @EJB
     private BillFacade billFacade;
+
+    @EJB
+    private PatientRoomFacade patientRoomFacade;
 
     @Inject
     private SessionController sessionController;
@@ -149,6 +153,28 @@ public class NursingDischargeController implements Serializable {
     // Nursing Discharge
     // -------------------------------------------------------------------------
 
+    /**
+     * Returns true when the encounter still has at least one active (non-retired,
+     * non-discharged) room stay.
+     * <p>
+     * This is the source of truth for "room discharge completed" instead of the
+     * cached {@code PatientEncounter.roomDischargeDateTime} field, which is only
+     * stamped by {@code RoomChangeController} when the discharged room happens to
+     * be the tail of the room-stay linked list ({@code nextRoom == null}). In
+     * multi-room-change scenarios that field can stay {@code null} even though
+     * every room stay has been discharged, permanently blocking nursing
+     * discharge (issue #21935).
+     */
+    private boolean hasActiveRoom() {
+        String jpql = "SELECT COUNT(pr) FROM PatientRoom pr"
+                + " WHERE pr.patientEncounter = :pe"
+                + " AND pr.retired = false"
+                + " AND pr.discharged = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("pe", currentEncounter);
+        return patientRoomFacade.findLongByJpql(jpql, params) > 0;
+    }
+
     public void confirmNursingDischarge() {
         if (currentEncounter == null) {
             JsfUtil.addErrorMessage("No patient encounter loaded.");
@@ -158,7 +184,7 @@ public class NursingDischargeController implements Serializable {
             JsfUtil.addErrorMessage("Nursing discharge already confirmed.");
             return;
         }
-        if (currentEncounter.getRoomDischargeDateTime() == null) {
+        if (hasActiveRoom()) {
             JsfUtil.addErrorMessage("Cannot confirm nursing discharge: room discharge has not been completed.");
             return;
         }
