@@ -427,6 +427,9 @@ public class InwardManagementReportController implements Serializable {
     }
 
     public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfDay(new Date());
+        }
         return fromDate;
     }
 
@@ -435,6 +438,9 @@ public class InwardManagementReportController implements Serializable {
     }
 
     public Date getToDate() {
+        if (toDate == null) {
+            toDate = com.divudi.core.util.CommonFunctions.getEndOfDay(new Date());
+        }
         return toDate;
     }
 
