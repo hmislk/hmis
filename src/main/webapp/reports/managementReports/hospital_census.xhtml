@@ -199,14 +199,24 @@
                             </p:commandButton>
 
                             <p:commandButton
-                                id="pdfBtn"
-                                class="ui-button-danger mx-1" 
-                                icon="fas fa-file-pdf" 
-                                ajax="false" 
+                                id="pdfBtnSmy"
+                                rendered="#{inwardManagementReportController.reportType eq 'Summary'}"
+                                class="ui-button-danger mx-1"
+                                icon="fas fa-file-pdf"
+                                ajax="false"
                                 value="PDF"
-                                action="#">
+                                action="#{inwardManagementReportController.createSummaryReportPdf()}">
                             </p:commandButton>
 
+                            <p:commandButton
+                                id="pdfBtnDtl"
+                                rendered="#{inwardManagementReportController.reportType ne 'Summary'}"
+                                class="ui-button-danger mx-1"
+                                icon="fas fa-file-pdf"
+                                ajax="false"
+                                value="PDF"
+                                action="#{inwardManagementReportController.createDetailReportPdf()}">
+                            </p:commandButton>
                         </div>
 
                         <h:panelGroup id="printPanel" >

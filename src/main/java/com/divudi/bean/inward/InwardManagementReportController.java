@@ -24,6 +24,15 @@ import java.util.List;
 import java.util.Map;
 import javax.persistence.TemporalType;
 
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.*;
+import java.io.IOException;
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletResponse;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import javax.faces.application.FacesMessage;
+
 /**
  * HIGH-PERFORMANCE Hospital Census Report Controller.
  *
@@ -383,13 +392,195 @@ public class InwardManagementReportController implements Serializable {
         return (List<HospitalCensusDetailDto>) departmentFacade.findDTOsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
-
     private static List<Long> collectDeptIds(List<DepartmentDto> departments) {
         List<Long> ids = new ArrayList<>(departments.size());
         for (DepartmentDto d : departments) {
             ids.add(d.getId());
         }
         return ids;
+    }
+
+    public void createSummaryReportPdf() {
+        if (hospitalCensusSummaryDtos == null || hospitalCensusSummaryDtos.isEmpty()) {
+            addErrorMessage("No summary data to export. Run the report first.");
+            return;
+        }
+        try {
+            Document document = new Document(PageSize.A4.rotate(), 20, 20, 30, 20);
+            OutputStream out = prepareResponse("Hospital_Census_Summary.pdf");
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            addReportTitle(document, "Hospital Census - Summary Report");
+            document.add(buildSummaryTable());
+
+            document.close();
+            FacesContext.getCurrentInstance().responseComplete();
+        } catch (DocumentException | IOException e) {
+            addErrorMessage("Failed to generate summary PDF: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Streams the Detail report as a PDF download. Wired to a dedicated button
+     * (rendered only when reportType != 'Summary').
+     */
+    public void createDetailReportPdf() {
+        if (hospitalCensusDetailDtos == null || hospitalCensusDetailDtos.isEmpty()) {
+            addErrorMessage("No detail data to export. Run the report first.");
+            return;
+        }
+        try {
+            Document document = new Document(PageSize.A4.rotate(), 20, 20, 30, 20);
+            OutputStream out = prepareResponse("Hospital_Census_Detail.pdf");
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            addReportTitle(document, "Hospital Census - Detail Report");
+            document.add(buildDetailTable());
+
+            document.close();
+            FacesContext.getCurrentInstance().responseComplete();
+        } catch (DocumentException | IOException e) {
+            addErrorMessage("Failed to generate detail PDF: " + e.getMessage());
+        }
+    }
+
+// =========================================================================
+// Shared PDF plumbing — kept generic so summary/detail methods stay thin
+// =========================================================================
+    private OutputStream prepareResponse(String filename) throws IOException {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) fc.getExternalContext().getResponse();
+        response.reset();
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        return response.getOutputStream();
+    }
+
+    private void addReportTitle(Document document, String titleText) throws DocumentException {
+        Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+        Paragraph title = new Paragraph(titleText, titleFont);
+        title.setSpacingAfter(4);
+        document.add(title);
+
+        Font subFont = FontFactory.getFont(FontFactory.HELVETICA, 9, Font.ITALIC, BaseColor.DARK_GRAY);
+        String range = (fromDate != null ? formatDate(fromDate) : "-")
+                + "  to  " + (toDate != null ? formatDate(toDate) : "-");
+        Paragraph sub = new Paragraph(range, subFont);
+        sub.setSpacingAfter(12);
+        document.add(sub);
+    }
+
+    private String formatDate(Date d) {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm").format(d);
+    }
+
+    private PdfPTable buildSummaryTable() throws DocumentException {
+        String[] headers = {
+            "Ward", "Total Beds", "Open Beds", "Prev. Day", "New Adm.",
+            "Transfer In", "Transfer Out", "Marked Disc.", "Normal Disc.",
+            "LAMA", "Deaths", "Others", "Total Present", "Occ. Rate %"
+        };
+        PdfPTable table = new PdfPTable(headers.length);
+        table.setWidthPercentage(100);
+        table.setHeaderRows(1);
+
+        Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, BaseColor.WHITE);
+        for (String h : headers) {
+            PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
+            cell.setBackgroundColor(new BaseColor(60, 60, 60));
+            cell.setPadding(4);
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(cell);
+        }
+
+        Font bodyFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+        long grandBeds = 0, grandOpen = 0, grandPresent = 0;
+
+        for (HospitalCensusSummaryDto row : hospitalCensusSummaryDtos) {
+            addBodyCell(table, row.getWard(), bodyFont, Element.ALIGN_LEFT);
+            addBodyCell(table, String.valueOf(row.getTotalBeds()), bodyFont, Element.ALIGN_RIGHT);
+            addBodyCell(table, String.valueOf(row.getOpenBeds()), bodyFont, Element.ALIGN_RIGHT);
+            addBodyCell(table, String.valueOf(row.getPreviousDaysTotal()), bodyFont, Element.ALIGN_RIGHT);
+            addBodyCell(table, String.valueOf(row.getNewAdmissions()), bodyFont, Element.ALIGN_RIGHT);
+            addBodyCell(table, String.valueOf(row.getTransferIn()), bodyFont, Element.ALIGN_RIGHT);
+            addBodyCell(table, String.valueOf(row.getTransferOut()), bodyFont, Element.ALIGN_RIGHT);
+            addBodyCell(table, String.valueOf(row.getMarkedForDischarge()), bodyFont, Element.ALIGN_RIGHT);
+            addBodyCell(table, String.valueOf(row.getNormalDischarges()), bodyFont, Element.ALIGN_RIGHT);
+            addBodyCell(table, String.valueOf(row.getLama()), bodyFont, Element.ALIGN_RIGHT);
+            addBodyCell(table, String.valueOf(row.getDeaths()), bodyFont, Element.ALIGN_RIGHT);
+            addBodyCell(table, String.valueOf(row.getOthers()), bodyFont, Element.ALIGN_RIGHT);
+            addBodyCell(table, String.valueOf(row.getTotalPresent()), bodyFont, Element.ALIGN_RIGHT);
+            addBodyCell(table, String.format("%.2f", row.getBedOccupancyRate()), bodyFont, Element.ALIGN_RIGHT);
+
+            grandBeds += row.getTotalBeds();
+            grandOpen += row.getOpenBeds();
+            grandPresent += row.getTotalPresent();
+        }
+
+        // Grand total row
+        Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+        PdfPCell totalLabel = new PdfPCell(new Phrase("Grand Total", boldFont));
+        totalLabel.setColspan(1);
+        table.addCell(totalLabel);
+        addBodyCell(table, String.valueOf(grandBeds), boldFont, Element.ALIGN_RIGHT);
+        addBodyCell(table, String.valueOf(grandOpen), boldFont, Element.ALIGN_RIGHT);
+        for (int i = 0; i < 9; i++) {
+            table.addCell(new PdfPCell(new Phrase("")));
+        }
+        addBodyCell(table, String.valueOf(grandPresent), boldFont, Element.ALIGN_RIGHT);
+        table.addCell(new PdfPCell(new Phrase("")));
+
+        return table;
+    }
+
+    private PdfPTable buildDetailTable() throws DocumentException {
+        String[] headers = {"Area", "MRN", "Name", "Age/Sex", "DOA", "Bed No", "Status", "Consultant"};
+        PdfPTable table = new PdfPTable(headers.length);
+        table.setWidthPercentage(100);
+        table.setHeaderRows(1);
+        table.setWidths(new float[]{8, 10, 16, 8, 14, 10, 10, 16});
+
+        Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, BaseColor.WHITE);
+        for (String h : headers) {
+            PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
+            cell.setBackgroundColor(new BaseColor(60, 60, 60));
+            cell.setPadding(4);
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            table.addCell(cell);
+        }
+
+        Font bodyFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+        SimpleDateFormat doaFmt = new SimpleDateFormat("M/d/yyyy H:mm");
+
+        for (HospitalCensusDetailDto row : hospitalCensusDetailDtos) {
+            addBodyCell(table, nvl(row.getArea()), bodyFont, Element.ALIGN_LEFT);
+            addBodyCell(table, nvl(row.getMrn()), bodyFont, Element.ALIGN_LEFT);
+            addBodyCell(table, nvl(row.getName()), bodyFont, Element.ALIGN_LEFT);
+            addBodyCell(table, nvl(row.getAgeSex()), bodyFont, Element.ALIGN_CENTER);
+            addBodyCell(table, row.getDoa() != null ? doaFmt.format(row.getDoa()) : "", bodyFont, Element.ALIGN_CENTER);
+            addBodyCell(table, nvl(row.getBedNo()), bodyFont, Element.ALIGN_CENTER);
+            addBodyCell(table, nvl(row.getStatus()), bodyFont, Element.ALIGN_CENTER);
+            addBodyCell(table, nvl(row.getConsultant()), bodyFont, Element.ALIGN_LEFT);
+        }
+        return table;
+    }
+
+    private void addBodyCell(PdfPTable table, String text, Font font, int align) {
+        PdfPCell cell = new PdfPCell(new Phrase(text != null ? text : "", font));
+        cell.setPadding(3);
+        cell.setHorizontalAlignment(align);
+        table.addCell(cell);
+    }
+
+    private String nvl(String s) {
+        return s != null ? s : "";
+    }
+
+    private void addErrorMessage(String msg) {
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
     }
 
     public Institution getInstitution() {
