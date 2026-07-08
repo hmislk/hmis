@@ -197,6 +197,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Consignment Option is checked in new Pharmacy Purchasing Bills", false);
         getBooleanValueByKey("GRN Returns is only after Approval", true);
         getBooleanValueByKey("GRN Return can be done without Approval", true);
+        getBooleanValueByKey("Pharmacy - Allow Cross-Department PO Receiving", false);
 
         // Stock Upload Configuration
         getBooleanValueByKey("Allow Expired Items in Direct Purchase Stock Upload", false);

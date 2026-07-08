@@ -278,7 +278,12 @@ public class CapabilityStatementResource {
                         "API Key (Finance header)",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Pharmacy Adjustments", "/api/pharmacy_adjustments",
-                        "Pharmacy stock and adjustment operations",
+                        "Pharmacy stock and adjustment operations. "
+                        + "POST /backfill_finance_details is an admin-only, idempotent backfill: recomputes "
+                        + "BillFinanceDetails + bill totals for adjustment bills created before this fix existed, "
+                        + "using each bill's own stored before/after audit values. Bills that already have "
+                        + "BillFinanceDetails are skipped, not overwritten. Body: departmentId, fromDate, toDate "
+                        + "(yyyy-MM-dd), apply (false = dry run).",
                         "API Key",
                         "GET", "POST"))
                 .add(resource("Pharmacy Discounts", "/api/pharmacy/discounts",

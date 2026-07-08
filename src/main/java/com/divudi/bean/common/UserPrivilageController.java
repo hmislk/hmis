@@ -216,6 +216,12 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReport, "Inward Reports"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdministration, "Administration"), inwardNode);
 
+        TreeNode inwardLaboratoryNode = new DefaultTreeNode(new PrivilegeHolder(null, "Laboratory"), inwardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardLaboratory, "Laboratory Dashboard Menu"), inwardLaboratoryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardLaboratoryBarcodeGeneration, "Barcode Generation"), inwardLaboratoryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardLaboratorySampleManagement, "Sample Management"), inwardLaboratoryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardLaboratoryReportSearch, "Report Search"), inwardLaboratoryNode);
+
         TreeNode inwardFormsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Forms"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFormTemplateAdmin, "Form Template Admin"), inwardFormsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFormFill, "Fill / Edit Forms"), inwardFormsNode);
@@ -930,6 +936,9 @@ public class UserPrivilageController implements Serializable {
         TreeNode nurseNode = new DefaultTreeNode(new PrivilegeHolder(null, "Nursing Work Bench"), allNode);
         TreeNode nursingWorkBench = new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBench, "Nursing Work Bench"), nurseNode);
         TreeNode showDrugCharges = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShowDrugCharges, "Show Drug Charges"), nurseNode);
+        TreeNode ShowServiceCharges = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShowServiceCharges, "Show Service Charges"), nurseNode);
+        TreeNode ShowTimeServiceCharges = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShowTimeServiceCharges, "Show Time Service Charges"), nurseNode);
+        
 
         // Admin Privileges
         TreeNode superAdminNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.SuperAdmin, "Super Admin"), allNode);

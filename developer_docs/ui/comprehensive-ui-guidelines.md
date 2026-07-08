@@ -53,8 +53,29 @@
 ---
 
 ## Layout, Typography, and Containers
-- Use **PrimeFaces components for interaction** (buttons, dialogs, tables) and **Bootstrap utilities for layout** (`row`, `col-*`, `d-flex`, spacing helpers).
+- Use **PrimeFaces components for interaction** (buttons, dialogs, tables) and **Bootstrap utilities for layout** (`row`, `col-*`, `d-flex`, spacing helpers). The full decision matrix is below — when in doubt: *if it does something, it's PrimeFaces; if it positions something, it's Bootstrap.*
 - Prefer `p:panelGrid` when you only need a grid with a header; only wrap in `p:panel` when you need facets or panel styling.
+
+### PrimeFaces vs Bootstrap — Decision Matrix
+
+Bootstrap 5.3 is loaded globally by the template, but it is a **layout toolkit only** in this project. Anything interactive or themed comes from PrimeFaces. Mixing the two for the same concern produces pages that look and behave differently module to module.
+
+| Concern | Use | Never use |
+|---|---|---|
+| Grid / columns / spacing / flex | Bootstrap `row`, `col-*`, `d-flex`, `gap-*`, `m*-*`/`p*-*`, `w-100`, `d-grid` | `p:panelGrid` for pure layout (renders a `<table>`) |
+| Buttons | `p:commandButton` / `p:button` + `ui-button-*` / `ui-button-stage-*` classes | Bootstrap `btn`, `btn-primary`, … |
+| Badges / status | `p:badge` with `severity` | Bootstrap `badge`, `bg-*` pills |
+| Tables of data | `p:dataTable` | Bootstrap `table`, `table-striped` (HTML tables only for print layouts) |
+| Form inputs | `p:inputText`, `p:selectOneMenu`, `p:autoComplete`, `p:datePicker` | Bootstrap `form-control` styling as a substitute for PF components |
+| Dialogs / overlays | `p:dialog`, `p:confirmDialog` (see Confirmation Dialogs), `p:tooltip` | Bootstrap modals, popovers, tooltips (JS conflicts with PrimeFaces) |
+| Tabs / accordions | `p:tabView`, `p:accordionPanel` | Bootstrap nav-tabs / collapse |
+| Alignment/emphasis utilities | Bootstrap `text-end`, `text-center`, `fw-bold`, `text-muted` | Custom inline CSS for the same effect |
+| Icons | PrimeFaces `pi`, then Font Awesome `fas` (see `icon-management.md`) | Bootstrap Icons (`bi-*`) in new code |
+
+Rules:
+- **Never attach Bootstrap component classes (`btn`, `badge`, `form-control`, `table`) to PrimeFaces components.** PF theming and Bootstrap component CSS fight each other; the result depends on load order.
+- Bootstrap **utility** classes (spacing, flex, text alignment, width) on PrimeFaces components are fine and encouraged — that is the sanctioned overlap.
+- Never initialize Bootstrap JavaScript components (modal, tooltip, dropdown) on a page — all interactive behaviour goes through PrimeFaces widgets.
 - Use `h:outputText` and `p:outputLabel` for **all text content** — headings, labels, messages, descriptions, static strings, and link labels. Never write bare text nodes directly inside JSF/PrimeFaces components. Attach Bootstrap utility classes for emphasis when needed.
 - Keep screens dense and business-focused; avoid marketing-style hero headers.
 
@@ -363,12 +384,13 @@ Rules:
 
 ### DataTable Compact Size (required for data-entry and multi-column tables)
 
-Always add `styleClass="p-datatable-sm"` to `p:dataTable` components on data-entry and transaction pages. This is the PrimeFaces 14 standard for compact row padding and keeps more rows visible without scrolling.
+Always add `styleClass="p-datatable-sm"` to `p:dataTable` components on data-entry and transaction pages. This is the PrimeFaces 14 standard for compact row padding and keeps more rows visible without scrolling. Any table that can grow beyond one screen also gets `stickyHeader="true"` — see [Data-Dense Page Patterns](data-dense-page-patterns.md) for the full scroll-management, lazy-loading, and action-reachability standards.
 
 ```xhtml
 <p:dataTable id="tbl"
              value="#{bean.items}"
              var="item"
+             stickyHeader="true"
              styleClass="p-datatable-sm">
 ```
 
@@ -462,7 +484,13 @@ the form reliably. The runtime counterpart is
 
 - **Never let Enter clear or wrongly submit the form.** A JSF form with no
   default command submits on Enter via the first command button, which on an
-  item-entry page silently wipes the in-progress bill. Guard it:
+  item-entry page silently wipes the in-progress bill. **First line of defence:
+  declare `<p:defaultCommand target="btnAdd"/>` pointing at the safe, repeatable
+  action** (Add on entry forms, Process/Search on filter forms — never
+  Settle/Finalize/Approve). See [Data-Dense Page Patterns § Keyboard-First Data
+  Entry](data-dense-page-patterns.md#3-keyboard-first-data-entry). Add the
+  per-field guards below only when individual fields need different Enter
+  behaviour:
   - On the item autocomplete, `onkeydown`: when the suggestion panel is open, let
     Enter select the highlighted item; otherwise `event.preventDefault()` so
     Enter does not submit.
@@ -484,6 +512,27 @@ the form reliably. The runtime counterpart is
   `settling` flag) so a rapid double-click cannot create duplicate bills/items.
   Do **not** rely on `this.disabled=true` in `onclick` — disabled fields are
   excluded from the POST, so the values they hold never reach the server.
+
+---
+
+## Validation and Feedback Patterns
+
+Consistent feedback stops users from double-clicking and re-submitting "silent" pages.
+
+### Messages: growl vs inline
+
+- **`p:growl` (template `id="growl"`) is for action outcomes**: saved, settled, failed-with-reason. Update it with `update="... :growl"` from every action button (see [AJAX guidelines](../jsf/ajax-update-guidelines.md) for the absolute-id rule).
+- **Inline `p:message for="fieldId"` is for field validation errors** — the error must appear next to the field the user has to fix, not only as a toast that disappears. On forms with server-side validation, place `p:message` beside each required input and a `p:messages showDetail="true"` at the top of the form for cross-field errors.
+- Never rely on growl alone for validation failures on long forms — the user cannot tell which of 20 fields is at fault.
+
+### Required fields
+
+- Mark required inputs with `required="true"` and `requiredMessage="..."` naming the field ("Quantity is required"), not the default cryptic message.
+- Visually indicate requiredness on the label (`p:outputLabel for="..."` renders the `*` automatically when the input is required).
+
+### Busy indicators
+
+Any action that can take longer than ~1 second must show progress — `p:ajaxStatus` (global) or `p:blockUI` (region). Patterns and code are in [Data-Dense Page Patterns § Feedback During Slow Operations](data-dense-page-patterns.md#6-feedback-during-slow-operations).
 
 ---
 
@@ -531,6 +580,7 @@ This applies to all entity-backed autocompletes: `Institution`, `Department`, `I
 ---
 
 ## Related Guides
+- `data-dense-page-patterns.md` – **scroll management, sticky action bars, keyboard-first entry, lazy loading, button-clutter budgets** for large-data pages.
 - `icon-management.md` – canonical icon library, terminology, and accessibility notes.
 - `page-break-implementation-guide.md` – printing guidance for token/bill flows.
 - Security and privilege patterns – see `developer_docs/security/privilege-system.md`.

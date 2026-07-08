@@ -4978,7 +4978,8 @@ public class AnthropicApiService implements Serializable {
                     {"POST", "/pharmacy_adjustments/stock_quantity", "Adjust quantity of a stock batch"},
                     {"POST", "/pharmacy_adjustments/retail_rate",    "Adjust retail sale rate of a stock batch"},
                     {"POST", "/pharmacy_adjustments/purchase_rate",  "Adjust purchase rate of a stock batch"},
-                    {"POST", "/pharmacy_adjustments/expiry_date",    "Adjust expiry date of a stock batch"}
+                    {"POST", "/pharmacy_adjustments/expiry_date",    "Adjust expiry date of a stock batch"},
+                    {"POST", "/pharmacy_adjustments/backfill_finance_details", "Admin-only: backfill BillFinanceDetails for pre-fix adjustment bills (dry-run by default)"}
                 });
 
         appendModule(sb, "Pharmacy - Search", "/pharmacy_adjustments/search",
