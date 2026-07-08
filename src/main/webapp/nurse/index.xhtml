@@ -450,6 +450,46 @@
                                                 </p:panel>
                                             </div>
                                         </h:panelGroup>
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardLaboratory')}">
+                                            <div class="col-2">
+                                                <p:panel header="Laboratory">
+                                                    <div class="d-grid gap-3">
+                                                        <p:commandButton
+                                                            id="btnNurseInwardLaboratoryBills"
+                                                            value="To Bills"
+                                                            icon="fas fa-file-invoice-dollar"
+                                                            title="Inpatient Laboratory Bills"
+                                                            ajax="false"
+                                                            rendered="#{webUserController.hasPrivilege('InwardLaboratoryBarcodeGeneration')}"
+                                                            action="#{inwardLaboratoryController.navigateToInwardLaboratoryBills()}"
+                                                            class="w-100 ui-button-success">
+                                                        </p:commandButton>
+
+                                                        <p:commandButton
+                                                            id="btnNurseInwardLaboratorySamples"
+                                                            value="To Samples"
+                                                            icon="fas fa-vial"
+                                                            title="Inpatient Laboratory Samples"
+                                                            ajax="false"
+                                                            rendered="#{webUserController.hasPrivilege('InwardLaboratorySampleManagement')}"
+                                                            action="#{inwardLaboratoryController.navigateToInwardLaboratorySamples()}"
+                                                            class="w-100 ui-button-warning">
+                                                        </p:commandButton>
+
+                                                        <p:commandButton
+                                                            id="btnNurseInwardLaboratoryReports"
+                                                            value="To Reports"
+                                                            icon="fas fa-file-medical"
+                                                            title="Inpatient Laboratory Reports"
+                                                            ajax="false"
+                                                            rendered="#{webUserController.hasPrivilege('InwardLaboratoryReportSearch')}"
+                                                            action="#{inwardLaboratoryController.navigateToInwardLaboratoryReports()}"
+                                                            class="w-100 ui-button-danger">
+                                                        </p:commandButton>
+                                                    </div>
+                                                </p:panel>
+                                            </div>
+                                        </h:panelGroup>
                                     </div>
                                     <div class="row m-3">
                                         <h:panelGroup  rendered="true">
