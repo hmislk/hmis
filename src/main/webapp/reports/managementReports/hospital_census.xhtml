@@ -91,7 +91,7 @@
                             </h:panelGroup>
 
 
-                           
+
                             <h:panelGroup id="phmDept">
                                 <p:selectOneMenu
                                     rendered="#{inwardManagementReportController.institution eq null and inwardManagementReportController.site eq null}"
@@ -162,6 +162,7 @@
                         <div class="d-flex align-items-center my-3">
 
                             <p:commandButton
+                                id="prcBtn"
                                 class="ui-button-warning mx-1"
                                 icon="fas fa-cogs"
                                 ajax="false"
@@ -169,20 +170,30 @@
                                 action="#{inwardManagementReportController.createHospitalCensusReport()}">
                             </p:commandButton>
 
-                            <p:commandButton class="ui-button-primary mx-1"
-                                             icon="fas fa-print"
-                                             ajax="false"
-                                             value="Print All">
+                            <p:commandButton 
+                                id="prtBtn"
+                                class="ui-button-primary mx-1"
+                                icon="fas fa-print"
+                                ajax="false"
+                                value="Print All">
                                 <p:printer target="printPanel" />
                             </p:commandButton>
 
                             <p:commandButton
-                                class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
-                                <p:dataExporter type="xlsx" target="detailWise" fileName="Inpatient_Service_Detail.xlsx"/>
+                                id="exlBtn"
+                                class="ui-button-success mx-1" 
+                                icon="fas fa-file-excel" 
+                                ajax="false" 
+                                value="Download">
+                                <p:dataExporter type="xlsx" target="detailWise" fileName="Hospital_Census_Detail"/>
                             </p:commandButton>
 
                             <p:commandButton
-                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
+                                id="pdfBtn"
+                                class="ui-button-danger mx-1" 
+                                icon="fas fa-file-pdf" 
+                                ajax="false" 
+                                value="PDF"
                                 action="#">
                             </p:commandButton>
 
