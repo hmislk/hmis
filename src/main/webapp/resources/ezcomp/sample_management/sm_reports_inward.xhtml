@@ -44,6 +44,9 @@
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                     </h:outputLabel>
                     <br/>
+                    <i class="fa-solid fa-bed text-info"></i> <!-- BHT Icon -->
+                    <h:outputLabel value="BHT : #{dpr.patientInvestigation.billItem.bill.patientEncounter.bhtNo}" class="mx-2" />
+                    <br/>
                     <!-- CC, IP, and OP Icons with Colours -->
                     <h:panelGroup rendered="#{dpr.patientInvestigation.billItem.bill.ipOpOrCc == 'CC'}">
                         <i class="fas fa-box text-warning"></i> <!-- Collecting Centre Icon -->
