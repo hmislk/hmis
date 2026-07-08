@@ -77,7 +77,7 @@
                                 value="#{inwardManagementReportController.site}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
-                                <f:selectItems value="#" var="ins" itemLabel="#{ins.name}"
+                                <f:selectItems value="#{institutionController.sites}" var="ins" itemLabel="#{ins.name}"
                                                itemValue="#{ins}"/>
                                 <p:ajax process="phmIns2" update="phmDept"/>
                             </p:selectOneMenu>
@@ -91,53 +91,43 @@
                             </h:panelGroup>
 
 
-                            <h:panelGroup layout="block">
-                                <!-- Component 1: Without Institution and Site -->
+                           
+                            <h:panelGroup id="phmDept">
                                 <p:selectOneMenu
-                                    id="phmDept"
-                                    rendered="#{inwardManagementReportController.institution eq null}"
+                                    rendered="#{inwardManagementReportController.institution eq null and inwardManagementReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{inwardManagementReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
-                                    <f:selectItems
-                                        value="#"
-                                        var="dept"
-                                        itemLabel="#{dept.name}"
-                                        itemValue="#{dept}"/>
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                   var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"/>
                                 </p:selectOneMenu>
-
-                                <!-- Component 2: With Institution but without Site -->
                                 <p:selectOneMenu
-                                    id="phmDept2"
+                                    rendered="#{inwardManagementReportController.institution eq null and inwardManagementReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{inwardManagementReportController.department}"
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardManagementReportController.site)}"
+                                                   var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"/>
+                                </p:selectOneMenu>
+                                <p:selectOneMenu
                                     rendered="#{inwardManagementReportController.institution ne null and inwardManagementReportController.site eq null}"
                                     styleClass="w-100 form-control"
                                     value="#{inwardManagementReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
-                                    <f:selectItems
-                                        value="#"
-                                        var="dept"
-                                        itemLabel="#{dept.name}"
-                                        itemValue="#{dept}"/>
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardManagementReportController.institution)}"
+                                                   var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"/>
                                 </p:selectOneMenu>
-
-                                <!-- Component 3: With Both Institution and Site -->
                                 <p:selectOneMenu
-                                    id="phmDept3"
                                     rendered="#{inwardManagementReportController.institution ne null and inwardManagementReportController.site ne null}"
                                     styleClass="w-100 form-control"
                                     value="#{inwardManagementReportController.department}"
-                                    filterMatchMode="contains"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
-                                    <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution, pharmacyReportController.site)}"
-                                        var="dept"
-                                        itemLabel="#{dept.name}"
-                                        itemValue="#{dept}"/>
+                                    filterMatchMode="contains" filter="true">
+                                    <f:selectItem itemLabel="All Departments"/>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(inwardManagementReportController.institution, inwardManagementReportController.site)}"
+                                                   var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"/>
                                 </p:selectOneMenu>
                             </h:panelGroup>
                             <p:spacer width="20"/>                                                                              
@@ -160,10 +150,10 @@
                             <p:selectOneMenu
                                 id="phmSite"
                                 styleClass="w-100 form-control"
-                                value="#"
+                                value="#{inwardManagementReportController.ward}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Wards" itemValue="#{null}"/>
-                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                <f:selectItems value="#" var="site" itemLabel="#{site.name}"
                                                itemValue="#{site}"/>
                                 <p:ajax process="phmSite" update="phmDept"/>
                             </p:selectOneMenu>
