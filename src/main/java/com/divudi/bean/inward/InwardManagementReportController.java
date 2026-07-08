@@ -237,7 +237,6 @@ public class InwardManagementReportController implements Serializable {
                 + " where pr1.retired=false "
                 + " and pr1.roomFacilityCharge.department.id=d.id "
                 + " and pr1.roomFacilityCharge.room.bedStatus =:bs "
-                + " and pr1.admittedAt>=:fd "
                 + " and pr1.admittedAt<=:td "
                 + " and (pr1.dischargedAt is null or pr1.dischargedAt>:td)), "
                 // 1 Previous Day Total
@@ -409,15 +408,19 @@ public class InwardManagementReportController implements Serializable {
             return;
         }
         try {
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
             Document document = new Document(PageSize.A4.rotate(), 20, 20, 30, 20);
-            OutputStream out = prepareResponse("Hospital_Census_Summary.pdf");
-            PdfWriter.getInstance(document, out);
+            PdfWriter.getInstance(document, baos);
             document.open();
 
             addReportTitle(document, "Hospital Census - Summary Report");
             document.add(buildSummaryTable());
 
             document.close();
+
+            OutputStream out = prepareResponse("Hospital_Census_Summary.pdf");
+            baos.writeTo(out);
+            out.flush();
             FacesContext.getCurrentInstance().responseComplete();
         } catch (DocumentException | IOException e) {
             addErrorMessage("Failed to generate summary PDF: " + e.getMessage());
@@ -434,15 +437,19 @@ public class InwardManagementReportController implements Serializable {
             return;
         }
         try {
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
             Document document = new Document(PageSize.A4.rotate(), 20, 20, 30, 20);
-            OutputStream out = prepareResponse("Hospital_Census_Detail.pdf");
-            PdfWriter.getInstance(document, out);
+            PdfWriter.getInstance(document, baos);
             document.open();
 
             addReportTitle(document, "Hospital Census - Detail Report");
             document.add(buildDetailTable());
 
             document.close();
+
+            OutputStream out = prepareResponse("Hospital_Census_Detail.pdf");
+            baos.writeTo(out);
+            out.flush();
             FacesContext.getCurrentInstance().responseComplete();
         } catch (DocumentException | IOException e) {
             addErrorMessage("Failed to generate detail PDF: " + e.getMessage());
