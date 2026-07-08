@@ -50,6 +50,7 @@ public class BhtIssueReturnController implements Serializable {
     private boolean printPreview;
     private List<BillItem> billItems;
     private String returnComment = "";
+    private double discountTotal = 0.0;
     
     
     ///////
@@ -348,12 +349,25 @@ public class BhtIssueReturnController implements Serializable {
     }
 
     public void settle() {
-        
+
+        // Re-entrancy guard: a double-click or resubmission on the session-scoped
+        // controller must not create a second return bill / duplicate stock
+        // adjustments for the same returnBill instance.
+        if (getReturnBill().getId() != null) {
+            JsfUtil.addErrorMessage("This return has already been settled.");
+            return;
+        }
+
         if (returnComment == null || returnComment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Return comment is Mandatory..");
             return;
         }
-        
+
+        // Recompute from the just-submitted quantities. calTotal() was previously only
+        // triggered by the per-row blur AJAX (onEdit()); relying on that cached total here
+        // raced the full-page Return postback and could see a stale/zero total even when
+        // the submitted qty values were valid (issue #21883).
+        calTotal();
 
         if (getBill().getBillItems() != null) {
 //            System.out.println("this = " + getBill().getBillItems().size() );
@@ -379,10 +393,14 @@ public class BhtIssueReturnController implements Serializable {
             }
         }
 
-//
-//        System.out.println("returnBill.getTotal() = " + returnBill.getTotal());
-//        System.out.println("getReturnBill().getTotal() = " + getReturnBill().getTotal());
-        if (returnBill.getTotal() == 0) {
+// Validate against returned quantity, not gross value - a fully-margin item
+        // (Gross Rate 0.00, e.g. a service-charge-only line) has a legitimately zero
+        // returnBill.getTotal() even when a valid quantity was entered (issue #21883).
+        double totalReturnQty = 0.0;
+        for (BillItem bi : billItems) {
+            totalReturnQty += Math.abs(bi.getQty());
+        }
+        if (totalReturnQty == 0) {
             JsfUtil.addErrorMessage("Add Valied Return Quntity");
             return;
         }
@@ -439,23 +457,31 @@ public class BhtIssueReturnController implements Serializable {
         double grossTotal = 0.0;
         double netTotal = 0.0;
         double marginTotal = 0.0;
+        double discTotal = 0.0;
 
         for (BillItem p : getBillItems()) {
             grossTotal += p.getRate() * p.getQty();
             marginTotal += p.getMarginRate() * p.getQty();
+            discTotal += p.getDiscountRate() * p.getQty();
             netTotal += p.getNetRate() * p.getQty();
 
             p.setNetValue(p.getNetRate() * p.getQty());
             p.setGrossValue(p.getRate() * p.getQty());
             p.setMarginValue(p.getMarginRate() * p.getQty());
+            p.setDiscount(p.getDiscountRate() * p.getQty());
 
         }
 
         getReturnBill().setTotal(grossTotal);
         getReturnBill().setMargin(marginTotal);
         getReturnBill().setNetTotal(netTotal);
+        discountTotal = discTotal;
 
         //  return grossTotal;
+    }
+
+    public double getDiscountTotal() {
+        return discountTotal;
     }
 
     public void generateBillComponent() {
