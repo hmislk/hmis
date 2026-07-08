@@ -18,34 +18,34 @@
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
                                 <p:outputLabel value="From Date" for="fromDate" class="m-3"/>
                             </h:panelGroup>
-                            
-                             <p:datePicker 
-                                 styleClass="w-100"
-                                 inputStyleClass="w-100 form-control" 
-                                 id="fromDate" 
-                                 showTime="true" 
-                                 yearNavigator="true"
-                                 monthNavigator="true"
-                                 timeInput="true"
-                                 value="#{patientInvestigationController.fromDate}" 
-                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                            <p:datePicker 
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                showTime="true" 
+                                yearNavigator="true"
+                                monthNavigator="true"
+                                timeInput="true"
+                                value="#{inwardManagementReportController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             <p:spacer width="20"/>
-                            
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
                                 <p:outputLabel value="To Date" for="toDate" class="m-3"/>
                             </h:panelGroup>
-                            
-                             <p:datePicker 
-                                 styleClass="w-100"
-                                 inputStyleClass="w-100 form-control" 
-                                 id="toDate" 
-                                 showTime="true" 
-                                 yearNavigator="true"
-                                 monthNavigator="true"
-                                 timeInput="true"
-                                 value="#{patientInvestigationController.toDate}" 
-                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                            <p:datePicker 
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                showTime="true" 
+                                yearNavigator="true"
+                                monthNavigator="true"
+                                timeInput="true"
+                                value="#{inwardManagementReportController.toDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -56,7 +56,7 @@
                             <p:selectOneMenu
                                 id="phmIns"
                                 class="w-100"
-                                value="#{pharmacyReportController.institution}"
+                                value="#{inwardManagementReportController.institution}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Institutions" itemValue="#{null}"/>
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
@@ -65,7 +65,7 @@
                             </p:selectOneMenu>
 
                             <p:spacer width="20"/>
-                            
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university mr-2"/>
                                 <p:outputLabel value="Site" for="phmIns" class="m-3">
@@ -74,14 +74,14 @@
                             <p:selectOneMenu
                                 id="phmIns2"
                                 class="w-100"
-                                value="#{pharmacyReportController.site}"
+                                value="#{inwardManagementReportController.site}"
                                 filter="true">
                                 <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
                                 <f:selectItems value="#" var="ins" itemLabel="#{ins.name}"
                                                itemValue="#{ins}"/>
                                 <p:ajax process="phmIns2" update="phmDept"/>
                             </p:selectOneMenu>
-                            
+
                             <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -89,15 +89,15 @@
                                 <p:outputLabel value="Department" for="phmDept" class="m-3">
                                 </p:outputLabel>
                             </h:panelGroup>
-                            
-                           
+
+
                             <h:panelGroup layout="block">
                                 <!-- Component 1: Without Institution and Site -->
                                 <p:selectOneMenu
                                     id="phmDept"
-                                    rendered="#{pharmacyReportController.institution eq null}"
+                                    rendered="#{inwardManagementReportController.institution eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{pharmacyReportController.department}"
+                                    value="#{inwardManagementReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
@@ -107,13 +107,13 @@
                                         itemLabel="#{dept.name}"
                                         itemValue="#{dept}"/>
                                 </p:selectOneMenu>
-                                
+
                                 <!-- Component 2: With Institution but without Site -->
                                 <p:selectOneMenu
                                     id="phmDept2"
-                                    rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
+                                    rendered="#{inwardManagementReportController.institution ne null and inwardManagementReportController.site eq null}"
                                     styleClass="w-100 form-control"
-                                    value="#{pharmacyReportController.department}"
+                                    value="#{inwardManagementReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
@@ -123,36 +123,36 @@
                                         itemLabel="#{dept.name}"
                                         itemValue="#{dept}"/>
                                 </p:selectOneMenu>
-                                
+
                                 <!-- Component 3: With Both Institution and Site -->
                                 <p:selectOneMenu
                                     id="phmDept3"
-                                    rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
+                                    rendered="#{inwardManagementReportController.institution ne null and inwardManagementReportController.site ne null}"
                                     styleClass="w-100 form-control"
-                                    value="#{pharmacyReportController.department}"
+                                    value="#{inwardManagementReportController.department}"
                                     filterMatchMode="contains"
                                     filter="true">
                                     <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
                                     <f:selectItems
-                                        value="#{departmentController.getDepartmentsByInstitutionAndSite(pharmacyReportController.institution, pharmacyReportController.site)}"
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution, pharmacyReportController.site)}"
                                         var="dept"
                                         itemLabel="#{dept.name}"
                                         itemValue="#{dept}"/>
                                 </p:selectOneMenu>
                             </h:panelGroup>
                             <p:spacer width="20"/>                                                                              
-                           <h:panelGroup layout="block" styleClass="form-group">
-                            <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
-                            <p:outputLabel value="Type" for="phmSite" class="m-3"/>
-                          </h:panelGroup>
-                            <p:selectOneMenu class="w-100" value="#">
-                                 <f:selectItem itemValue="Any" itemLabel="Any"/>
-                                 <f:selectItem itemValue="Detail" itemLabel="Detail"/>
-                                 <f:selectItem itemValue="Summary" itemLabel="Summary"/>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
+                                <p:outputLabel value="Type" for="phmSite" class="m-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu class="w-100" value="#{inwardManagementReportController.reportType}">
+                                <f:selectItem itemValue="Any" itemLabel="Any"/>
+                                <f:selectItem itemValue="Detail" itemLabel="Detail"/>
+                                <f:selectItem itemValue="Summary" itemLabel="Summary"/>
                             </p:selectOneMenu>
-                            
+
                             <p:spacer width="20"/>
-                            
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2"/>
                                 <p:outputLabel value="Ward" for="phmSite" class="m-3"/>
@@ -160,7 +160,7 @@
                             <p:selectOneMenu
                                 id="phmSite"
                                 styleClass="w-100 form-control"
-                                value="#{pharmacyReportController.site}"
+                                value="#"
                                 filter="true">
                                 <f:selectItem itemLabel="All Wards" itemValue="#{null}"/>
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
@@ -176,7 +176,7 @@
                                 icon="fas fa-cogs"
                                 ajax="false"
                                 value="Process"
-                                action="#{pharmacyReportController.generateReport}">
+                                action="#{inwardManagementReportController.createHospitalCensusReport()}">
                             </p:commandButton>
 
                             <p:commandButton class="ui-button-primary mx-1"
@@ -193,16 +193,16 @@
 
                             <p:commandButton
                                 class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
-                                action="#{pharmacyReportController.exportToPDF}">
+                                action="#">
                             </p:commandButton>
 
                         </div>
 
                         <h:panelGroup id="printPanel" >
-                            <p:panel header="Summary Report" styleClass="m-3" >
+                            <p:panel header="Summary Report" rendered="#{inwardManagementReportController.reportType eq 'Summary'}" styleClass="m-3" >
                                 <p:dataTable
                                     id="tbl_Summary"
-                                    value="#"
+                                    value="#{inwardManagementReportController.hospitalCensusSummaryDtos}"            
                                     var="var"
                                     rowIndexVar="n"
                                     paginator="true"
@@ -213,115 +213,117 @@
                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
                                     styleClass="table-sm">
-                                    
-                                        <p:column headerText="Item"  style="width: 40%" >
-                                            <f:facet name="header">
-                                                <h:outputLabel value="Ward"/>
-                                            </f:facet>
-                                            <h:outputLabel value="" ></h:outputLabel>
-                                        </p:column>
+
                                     <p:column headerText="Item"  style="width: 40%" >
-                                            <f:facet name="header">
-                                                <h:outputLabel value="Total Beds"/>
-                                            </f:facet>
-                                            <h:outputLabel value="" ></h:outputLabel>
-                                        </p:column>
-                                    <p:column headerText="Item"  style="width: 40%" >
-                                            <f:facet name="header">
-                                                <h:outputLabel value="Open Beds"/>
-                                            </f:facet>
-                                            <h:outputLabel value="" ></h:outputLabel>
-                                        </p:column>
-                                    <p:column headerText="Item"  style="width: 40%" >
-                                            <f:facet name="header">
-                                                <h:outputLabel value="Previous Day's Total"/>
-                                            </f:facet>
-                                            <h:outputLabel value="" ></h:outputLabel>
-                                        </p:column>
-                                    <p:column headerText="Item"  style="width: 40%" >
-                                            <f:facet name="header">
-                                                <h:outputLabel value="New Admission"/>
-                                            </f:facet>
-                                            <h:outputLabel value="" ></h:outputLabel>
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Ward"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{var.ward}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Item"  style="width: 40%" >
-                                            <f:facet name="header">
-                                                <h:outputLabel value="Transfer In"/>
-                                            </f:facet>
-                                            <h:outputLabel value="" ></h:outputLabel>
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Total Beds"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{var.totalBeds}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Item"  style="width: 40%" >
-                                            <f:facet name="header">
-                                                <h:outputLabel value="Transfer Out"/>
-                                            </f:facet>
-                                            <h:outputLabel value="" ></h:outputLabel>
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Open Beds"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{var.openBeds}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Item"  style="width: 40%" >
-                                            <f:facet name="header">
-                                                <h:outputLabel value="Marked for Discharge"/>
-                                            </f:facet>
-                                            <h:outputLabel value="" ></h:outputLabel>
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Previous Day's Total"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{var.previousDaysTotal}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Item"  style="width: 40%" >
-                                            <f:facet name="header">
-                                                <h:outputLabel value="Normal Discharges"/>
-                                            </f:facet>
-                                            <h:outputLabel value="" ></h:outputLabel>
+                                        <f:facet name="header">
+                                            <h:outputLabel value="New Admission"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{var.newAdmissions}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Item"  style="width: 40%" >
-                                            <f:facet name="header">
-                                                <h:outputLabel value="LAMA"/>
-                                            </f:facet>
-                                            <h:outputLabel value="" ></h:outputLabel>
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Transfer In"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{var.transferIn}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Item"  style="width: 40%" >
-                                            <f:facet name="header">
-                                                <h:outputLabel value="Deaths"/>
-                                            </f:facet>
-                                            <h:outputLabel value="" ></h:outputLabel>
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Transfer Out"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{var.transferOut}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Item"  style="width: 40%" >
-                                            <f:facet name="header">
-                                                <h:outputLabel value="Others"/>
-                                            </f:facet>
-                                            <h:outputLabel value="" ></h:outputLabel>
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Marked for Discharge"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{var.markedForDischarge}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Item"  style="width: 40%" >
-                                            <f:facet name="header">
-                                                <h:outputLabel value="Total Present"/>
-                                            </f:facet>
-                                            <h:outputLabel value="" ></h:outputLabel>
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Normal Discharges"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{var.normalDischarges}" ></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Item"  style="width: 40%" >
-                                            <f:facet name="header">
-                                                <h:outputLabel value="Bed Occupancy Rate"/>
-                                            </f:facet>
-                                            <h:outputLabel value="" ></h:outputLabel>
+                                        <f:facet name="header">
+                                            <h:outputLabel value="LAMA"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{var.lama}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Item"  style="width: 40%" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Deaths"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{var.deaths}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Item"  style="width: 40%" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Others"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{var.others}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Item"  style="width: 40%" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Total Present"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{var.totalPresent}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Item"  style="width: 40%" >
+                                        <f:facet name="header">
+                                            <h:outputLabel value="Bed Occupancy Rate"/>
+                                        </f:facet>
+                                        <h:outputLabel value="#{var.bedOccupancyRate}" >
+                                            <f:convertNumber pattern="##0.00"/>
+                                        </h:outputLabel>
                                     </p:column>
                                     <p:columnGroup type="footer">
                                         <p:row>
                                             <p:column colspan="3" footerText="Total">
-                                                    <f:facet name="footer">
-                                                        <h:outputLabel value="Total" />
-                                                        
-                                                    </f:facet>
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="Total" />
+
+                                                </f:facet>
                                             </p:column>
                                         </p:row>
                                         <p:row>
                                             <p:column colspan="3" footerText="Grand Total">
-                                                    <f:facet name="footer">
-                                                        <h:outputLabel value="Grand Total" />
-                                                    </f:facet>
+                                                <f:facet name="footer">
+                                                    <h:outputLabel value="Grand Total" />
+                                                </f:facet>
                                             </p:column>
                                         </p:row>
                                     </p:columnGroup>
                                 </p:dataTable>
                             </p:panel>
 
-                            <p:panel header="Detail Report" styleClass="m-3" >
+                            <p:panel header="Detail Report" styleClass="m-3" rendered="#{inwardManagementReportController.reportType ne 'Summary'}">
                                 <p:dataTable
                                     id="detailWise"
-                                    value=""
+                                    value="#{inwardManagementReportController.hospitalCensusDetailDtos}"
                                     var="detail"
                                     rowIndexVar="n"
                                     paginator="true"
@@ -332,7 +334,7 @@
                                     currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
                                     styleClass="table-sm table-bordered">
-                                    
+
                                     <p:columnGroup type="header">
                                         <p:row>
                                             <p:column rowspan="2" headerText="Area" style="width: 8%; text-align: center; vertical-align: middle;" styleClass="border"/>
@@ -350,63 +352,63 @@
                                             <p:column headerText="Balance" style="width: 7.5%; text-align: center;" styleClass="border"/>
                                         </p:row>
                                     </p:columnGroup>
-                                    
+
                                     <!-- Area/Ward Column -->
                                     <p:column style="width: 8%">
-                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="#{detail.area}" />
                                     </p:column>
-                                    
+
                                     <!-- MRN Column -->
                                     <p:column style="width: 10%">
-                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="#{detail.mrn}" />
                                     </p:column>
-                                    
+
                                     <!-- Name Column -->
                                     <p:column style="width: 12%">
-                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="#{detail.name}" />
                                     </p:column>
-                                    
+
                                     <!-- Age/Sex Column -->
                                     <p:column style="width: 8%">
-                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="#{detail.ageSex}" />
                                     </p:column>
-                                    
+
                                     <!-- DOA (Date of Admission) Column -->
                                     <p:column style="width: 12%">
-                                        <h:outputLabel value="">
+                                        <h:outputLabel value="#{detail.doa}">
                                             <f:convertDateTime pattern="M/d/yyyy H:mm" />
                                         </h:outputLabel>
                                     </p:column>
-                                    
+
                                     <!-- Bed No Column -->
                                     <p:column style="width: 10%">
-                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="#{detail.bedNo}" />
                                     </p:column>
-                                    
+
                                     <!-- Status Column -->
                                     <p:column style="width: 10%">
-                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="#{detail.status}" />
                                     </p:column>
-                                    
+
                                     <!-- Consultant Column -->
                                     <p:column style="width: 15%">
-                                        <h:outputLabel value="" />
+                                        <h:outputLabel value="#{detail.consultant}" />
                                     </p:column>
-                                    
+
                                     <!-- Deposited Column -->
                                     <p:column style="width: 7.5%; text-align: right;">
-                                        <h:outputLabel value="">
+                                        <h:outputLabel value="#{detail.deposited}">
                                             <f:convertNumber type="number" minFractionDigits="0" maxFractionDigits="0" groupingUsed="true" />
                                         </h:outputLabel>
                                     </p:column>
-                                    
+
                                     <!-- Balance Column -->
                                     <p:column style="width: 7.5%; text-align: right;">
-                                        <h:outputLabel value="">
+                                        <h:outputLabel value="#{detail.balance}">
                                             <f:convertNumber type="number" minFractionDigits="0" maxFractionDigits="0" groupingUsed="true" />
                                         </h:outputLabel>
                                     </p:column>
-                                    
+
                                 </p:dataTable>
                             </p:panel>
 
