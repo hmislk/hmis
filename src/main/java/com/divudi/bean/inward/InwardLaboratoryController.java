@@ -8,7 +8,13 @@ import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.lab.ListingEntity;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.entity.lab.PatientSample;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.PatientReportFacade;
+import com.divudi.core.facade.PatientSampleFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -45,8 +51,14 @@ public class InwardLaboratoryController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private DepartmentController departmentController;
+    @Inject
+    private AdmissionController admissionController;
     @EJB
     private BillFacade billFacade;
+    @EJB
+    private PatientSampleFacade patientSampleFacade;
+    @EJB
+    private PatientReportFacade patientReportFacade;
 
     private String billNumber;
     private String bhtNumber;
@@ -167,33 +179,111 @@ public class InwardLaboratoryController implements Serializable {
 
     /**
      * Opens the inward laboratory dashboard directly on the Bills / Barcode
-     * Generation view. Alias of {@link #navigateToInwardLaboratoryDashboard()}
-     * so callers (e.g. the Nursing Work Bench) can link to a specific view.
+     * Generation view, scoped to the BHT currently selected on the Nursing
+     * Work Bench. Requires a BHT to be selected first.
      */
     public String navigateToInwardLaboratoryBills() {
-        return navigateToInwardLaboratoryDashboard();
+        Admission admission = getSelectedAdmissionOrShowError();
+        if (admission == null) {
+            return null;
+        }
+        listBillsForAdmission(admission);
+        return "/inward/inward_lab_dashboard?faces-redirect=true";
     }
 
     /**
-     * Opens the inward laboratory dashboard directly on the Samples view.
+     * Opens the inward laboratory dashboard directly on the Samples view,
+     * scoped to the BHT currently selected on the Nursing Work Bench.
+     * Requires a BHT to be selected first.
      */
     public String navigateToInwardLaboratorySamples() {
-        patientInvestigationController.makeNull();
-        billNumber = null;
-        bhtNumber = null;
-        searchPatientSamples();
+        Admission admission = getSelectedAdmissionOrShowError();
+        if (admission == null) {
+            return null;
+        }
+        listSamplesForAdmission(admission);
         return "/inward/inward_lab_dashboard?faces-redirect=true";
     }
 
     /**
-     * Opens the inward laboratory dashboard directly on the Reports view.
+     * Opens the inward laboratory dashboard directly on the Reports view,
+     * scoped to the BHT currently selected on the Nursing Work Bench.
+     * Requires a BHT to be selected first.
      */
     public String navigateToInwardLaboratoryReports() {
+        Admission admission = getSelectedAdmissionOrShowError();
+        if (admission == null) {
+            return null;
+        }
+        listReportsForAdmission(admission);
+        return "/inward/inward_lab_dashboard?faces-redirect=true";
+    }
+
+    private Admission getSelectedAdmissionOrShowError() {
+        Admission admission = admissionController.getCurrent();
+        if (admission == null || admission.getId() == null || admission.getBhtNo() == null || admission.getBhtNo().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please select a BHT before navigating to the Laboratory Dashboard.");
+            return null;
+        }
+        return admission;
+    }
+
+    private void listBillsForAdmission(Admission admission) {
         patientInvestigationController.makeNull();
         billNumber = null;
-        bhtNumber = null;
-        searchPatientReports();
-        return "/inward/inward_lab_dashboard?faces-redirect=true";
+        bhtNumber = admission.getBhtNo();
+
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT pi.billItem.bill "
+                + "FROM PatientInvestigation pi "
+                + "WHERE pi.billItem.bill.retired = :ret "
+                + "AND pi.billItem.bill.patientEncounter.bhtNo = :bht "
+                + "GROUP BY pi.billItem.bill "
+                + "ORDER BY pi.billItem.bill.id DESC";
+        params.put("ret", false);
+        params.put("bht", admission.getBhtNo());
+
+        List<Bill> result = billFacade.findByJpql(jpql, params);
+        patientInvestigationController.setBills(result);
+        patientInvestigationController.setListingEntity(ListingEntity.BILLS);
+    }
+
+    private void listSamplesForAdmission(Admission admission) {
+        patientInvestigationController.makeNull();
+        billNumber = null;
+        bhtNumber = admission.getBhtNo();
+
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT ps "
+                + "FROM PatientSample ps "
+                + "WHERE ps.retired = :ret "
+                + "AND ps.bill.patientEncounter.bhtNo = :bht "
+                + "ORDER BY ps.id DESC";
+        params.put("ret", false);
+        params.put("bht", admission.getBhtNo());
+
+        List<PatientSample> result = patientSampleFacade.findByJpql(jpql, params);
+        patientInvestigationController.setPatientSamples(result);
+        patientInvestigationController.setListingEntity(ListingEntity.PATIENT_SAMPLES);
+    }
+
+    private void listReportsForAdmission(Admission admission) {
+        patientInvestigationController.makeNull();
+        billNumber = null;
+        bhtNumber = admission.getBhtNo();
+
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT r "
+                + "FROM PatientReport r "
+                + "WHERE r.retired = :ret "
+                + "AND r.patientInvestigation.billItem.bill.patientEncounter.bhtNo = :bht "
+                + "ORDER BY r.id DESC";
+        params.put("ret", false);
+        params.put("bht", admission.getBhtNo());
+
+        List<PatientReport> result = patientReportFacade.findByJpql(jpql, params);
+        patientInvestigationController.setPatientReports(result);
+        patientInvestigationController.setListingEntity(ListingEntity.PATIENT_REPORTS);
     }
 
     public void collectSamples() {
