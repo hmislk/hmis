@@ -460,6 +460,7 @@
                                                             icon="fas fa-file-invoice-dollar"
                                                             title="Inpatient Laboratory Bills"
                                                             ajax="false"
+                                                            disabled="#{admissionController.current eq null}"
                                                             rendered="#{webUserController.hasPrivilege('InwardLaboratoryBarcodeGeneration')}"
                                                             action="#{inwardLaboratoryController.navigateToInwardLaboratoryBills()}"
                                                             class="w-100 ui-button-success">
@@ -471,6 +472,7 @@
                                                             icon="fas fa-vial"
                                                             title="Inpatient Laboratory Samples"
                                                             ajax="false"
+                                                            disabled="#{admissionController.current eq null}"
                                                             rendered="#{webUserController.hasPrivilege('InwardLaboratorySampleManagement')}"
                                                             action="#{inwardLaboratoryController.navigateToInwardLaboratorySamples()}"
                                                             class="w-100 ui-button-warning">
@@ -482,6 +484,7 @@
                                                             icon="fas fa-file-medical"
                                                             title="Inpatient Laboratory Reports"
                                                             ajax="false"
+                                                            disabled="#{admissionController.current eq null}"
                                                             rendered="#{webUserController.hasPrivilege('InwardLaboratoryReportSearch')}"
                                                             action="#{inwardLaboratoryController.navigateToInwardLaboratoryReports()}"
                                                             class="w-100 ui-button-danger">
