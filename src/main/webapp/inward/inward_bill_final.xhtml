@@ -636,6 +636,18 @@
                                 </p:inputText>
                             </p:column>
 
+                            <p:column headerText="Comment" width="16em;">
+                                <p:inputText
+                                    autocomplete="off"
+                                    id="catComment"
+                                    class="w-100"
+                                    value="#{c.comments}">
+                                    <p:ajax process="@this" event="blur"
+                                            update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                            listener="#{bhtSummeryController.changeIsMade()}"/>
+                                </p:inputText>
+                            </p:column>
+
                         </p:dataTable>
                     </p:panel>
 
