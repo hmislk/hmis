@@ -4,6 +4,7 @@ import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dto.DepartmentDto;
 import com.divudi.core.data.dto.HospitalCensusSummaryDto;
 import com.divudi.core.data.dto.HospitalCensusDetailDto;
+import com.divudi.core.data.inward.BedStatus;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
@@ -23,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.persistence.TemporalType;
 
 /**
  * HIGH-PERFORMANCE Hospital Census Report Controller.
@@ -224,10 +226,22 @@ public class InwardManagementReportController implements Serializable {
         String jpql
                 = "select d.id, "
                 // 0 Current Present
+                //                + "(select count(rm)  FROM "
+                //                + " RoomFacilityCharge rm "
+                //                + " WHERE rm.retired=false "
+                //                + " and rm.department.id=d.id "
+                //                + " AND rm.room.filled!=true "
+                //                + " AND rm.room.id NOT IN( "
+                //                + " SELECT pr1.roomFacilityCharge.room.id"
+                //                + " FROM PatientRoom pr1"
+                //                + " WHERE pr1.retired=false "
+                //                + " AND pr1.discharged=false)),"
                 + "(select count(pr1) "
                 + " from PatientRoom pr1 "
                 + " where pr1.retired=false "
                 + " and pr1.roomFacilityCharge.department.id=d.id "
+                + " and pr1.roomFacilityCharge.room.bedStatus =:bs "
+                + " and pr1.admittedAt>=:fd "
                 + " and pr1.admittedAt<=:td "
                 + " and (pr1.dischargedAt is null or pr1.dischargedAt>:td)), "
                 // 1 Previous Day Total
@@ -316,8 +330,9 @@ public class InwardManagementReportController implements Serializable {
         params.put("deptIds", deptIds);
         params.put("fd", fromDate);
         params.put("td", toDate);
+        params.put("bs", BedStatus.Available);
 
-        List<Object[]> rows = (List<Object[]>) departmentFacade.findDTOsByJpql(jpql, params);
+        List<Object[]> rows = (List<Object[]>) departmentFacade.findDTOsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         Map<Long, long[]> result = new HashMap<>();
 
