@@ -96,7 +96,7 @@
                         <td class="bill-colon">:</td>
                         <td class="bill-value-right">
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                                <f:convertDateTime pattern="dd/MMM/yyyy" />
+                                <f:convertDateTime timeZone="Asia/Colombo" pattern="dd/MMM/yyyy" />
                             </h:outputLabel>
                         </td>
                         <td class="bill-label-right">
@@ -178,7 +178,7 @@
                 </table>
             </div>
 
-            <h:panelGroup rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}">
+            <h:panelGroup rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill}">
                 <div class="billline">
                     <div style="width: 100%; text-align: center; font-size: 10px;">
                         <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" />
@@ -207,14 +207,14 @@
                                                style="text-transform: capitalize !important;" />
                             </td>
 
-                            <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                            <ui:fragment rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                 <td style="text-align: right;">
                                     <h:outputLabel class="itemsBlockRightFiveFive"
                                                    value="#{bip.grossValue}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
-                            </h:panelGroup>
+                            </ui:fragment>
                         </tr>
                     </ui:repeat>
                 </table>
