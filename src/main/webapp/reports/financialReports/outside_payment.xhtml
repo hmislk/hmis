@@ -16,7 +16,7 @@
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Admission From Date" class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{outsideChargeController.fromDate}" 
+                            <p:datePicker value="#{outsideChargeReportController.fromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class=" w-100" inputStyleClass="w-100" ></p:datePicker>
 
@@ -26,7 +26,7 @@
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Admission To Date" class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{outsideChargeController.toDate}"
+                            <p:datePicker value="#{outsideChargeReportController.toDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class="w-100" inputStyleClass="w-100" ></p:datePicker>
                             <p:spacer width="20"/> 
@@ -35,7 +35,7 @@
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Discharge From Date" class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{outsideChargeController.dischargeFromDate}" 
+                            <p:datePicker value="#{outsideChargeReportController.dischargeFromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class=" w-100" inputStyleClass="w-100"></p:datePicker>
 
@@ -45,7 +45,7 @@
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Discharge To Date" class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{outsideChargeController.dischargeToDate}"
+                            <p:datePicker value="#{outsideChargeReportController.dischargeToDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class="w-100" inputStyleClass="w-100"></p:datePicker>
                             <p:spacer width="20"/> 
@@ -54,7 +54,7 @@
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Invoice Approved From Date" class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{outsideChargeController.invoiceApprovedFromDate}" 
+                            <p:datePicker value="#{outsideChargeReportController.invoiceApprovedFromDate}" 
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class=" w-100" inputStyleClass="w-100"></p:datePicker>
 
@@ -64,7 +64,7 @@
                                 <h:outputText value="&#xf133;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Invoice Approved To Date" class="mx-3"/>
                             </h:panelGroup>
-                            <p:datePicker value="#{outsideChargeController.invoiceApprovedToDate}"
+                            <p:datePicker value="#{outsideChargeReportController.invoiceApprovedToDate}"
                                           pattern="#{sessionController.applicationPreference.longDateFormat}"
                                           class="w-100" inputStyleClass="w-100"></p:datePicker>
 
@@ -74,7 +74,7 @@
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Institution" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="#{outsideChargeController.institution}" filter="true" class="w-100 ">
+                            <p:selectOneMenu value="#{outsideChargeReportController.institution}" filter="true" class="w-100 ">
                                 <f:selectItem itemLabel="All Institutions" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
 
@@ -86,7 +86,7 @@
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Site" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="#{outsideChargeController.site}" filter="true" class="w-100 ">
+                            <p:selectOneMenu value="#{outsideChargeReportController.site}" filter="true" class="w-100 ">
                                 <f:selectItem itemLabel="All Sites" ></f:selectItem>
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
 
@@ -97,7 +97,7 @@
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> 
                                 <h:outputLabel value="Department" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="#{outsideChargeController.department}" filter="true" class="w-100 ">
+                            <p:selectOneMenu value="#{outsideChargeReportController.department}" filter="true" class="w-100 ">
                                 <f:selectItem itemLabel="All Deparments" ></f:selectItem>
                                 <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
 
@@ -109,9 +109,9 @@
                                 <h:outputText value="&#xf0f0;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Referring Doctor (Admit Doctor)" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="#{outsideChargeController.referringDoctor}" filter="true"  class="w-100 " >
+                            <p:selectOneMenu value="#{outsideChargeReportController.referringDoctor}" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{doctorController.doctors}"
+                                <f:selectItems value="#{doctorController.selectedItems}"
                                                var="i"
                                                itemLabel="#{i.name}"
                                                itemValue="#{i}"
@@ -123,7 +123,7 @@
                                 <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Credit Company" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="#{outsideChargeController.creditCompany}" filter="true"  class="w-100 " >
+                            <p:selectOneMenu value="#{outsideChargeReportController.creditCompany}" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value="#{creditCompanyController.creditCompanies}"
                                                var="i"
@@ -140,7 +140,7 @@
                             </h:panelGroup>
 
                             <p:selectCheckboxMenu class="w-100"
-                                                  value="#{outsideChargeController.admissionType}"
+                                                  value="#{outsideChargeReportController.admissionType}"
                                                   label="Select Admission Types">
                                 <f:selectItems value="#{admissionTypeController.items}" var="item" itemLabel="#{item.name}" itemValue="#{item}" ></f:selectItems>
                             </p:selectCheckboxMenu>
