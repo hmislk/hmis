@@ -9,8 +9,6 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.DepartmentFacade;
-import com.divudi.core.facade.PatientEncounterFacade;
-import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.core.facade.RoomFacilityChargeFacade;
 
 import javax.ejb.EJB;
@@ -48,10 +46,6 @@ public class InwardManagementReportController implements Serializable {
 
     @EJB
     private DepartmentFacade departmentFacade;
-    @EJB
-    private PatientRoomFacade patientRoomFacade;
-    @EJB
-    private PatientEncounterFacade patientEncounterFacade;
     @EJB
     private RoomFacilityChargeFacade roomFacilityChargeFacade;
 
@@ -164,7 +158,7 @@ public class InwardManagementReportController implements Serializable {
         }
         jpql.append(" order by d.name ");
 
-        return (List<DepartmentDto>) departmentFacade.findDTOsByJpql(jpql.toString(), params);
+        return (List<DepartmentDto>) departmentFacade.findDTOsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
     /**
@@ -226,16 +220,6 @@ public class InwardManagementReportController implements Serializable {
         String jpql
                 = "select d.id, "
                 // 0 Current Present
-                //                + "(select count(rm)  FROM "
-                //                + " RoomFacilityCharge rm "
-                //                + " WHERE rm.retired=false "
-                //                + " and rm.department.id=d.id "
-                //                + " AND rm.room.filled!=true "
-                //                + " AND rm.room.id NOT IN( "
-                //                + " SELECT pr1.roomFacilityCharge.room.id"
-                //                + " FROM PatientRoom pr1"
-                //                + " WHERE pr1.retired=false "
-                //                + " AND pr1.discharged=false)),"
                 + "(select count(pr1) "
                 + " from PatientRoom pr1 "
                 + " where pr1.retired=false "
@@ -396,15 +380,9 @@ public class InwardManagementReportController implements Serializable {
         params.put("deptIds", deptIds);
         params.put("td", toDate);
 
-        return (List<HospitalCensusDetailDto>) departmentFacade.findDTOsByJpql(jpql, params);
+        return (List<HospitalCensusDetailDto>) departmentFacade.findDTOsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
-    // =========================================================================
-    // Private utilities
-    // =========================================================================
-    private boolean isSummaryOnly() {
-        return "Summary".equals(reportType);
-    }
 
     private static List<Long> collectDeptIds(List<DepartmentDto> departments) {
         List<Long> ids = new ArrayList<>(departments.size());
@@ -414,9 +392,6 @@ public class InwardManagementReportController implements Serializable {
         return ids;
     }
 
-    // =========================================================================
-    // Getters & Setters
-    // =========================================================================
     public Institution getInstitution() {
         return institution;
     }
