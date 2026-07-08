@@ -369,7 +369,7 @@ public class InwardManagementReportController implements Serializable {
                 + "  pe.dateOfAdmission, " // doa
                 + "  rfc.name, " // bedNo
                 + "  pe.discharged, " // discharged flag
-                + "  doc_per.name" // consultant name (nullable)
+                + "  conPer.name" // consultant name (nullable)
                 + ") "
                 + "from PatientRoom pr "
                 + "join pr.roomFacilityCharge rfc "
@@ -377,8 +377,8 @@ public class InwardManagementReportController implements Serializable {
                 + "join pr.patientEncounter pe "
                 + "join pe.patient pat "
                 + "join pat.person per "
-                + "left join pe.referringDoctor doc "
-                + "left join doc.person doc_per "
+                + "left join pe.referringConsultant con "
+                + "left join con.person conPer "
                 + "where pr.retired = false "
                 + "and d.id in :deptIds "
                 + "and pr.admittedAt <= :td "
