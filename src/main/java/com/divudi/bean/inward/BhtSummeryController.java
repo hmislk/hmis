@@ -2494,6 +2494,7 @@ public class BhtSummeryController implements Serializable {
             temBi.setDiscount(cit.getDiscount());
             temBi.setNetValue(cit.getNetTotal());
             temBi.setAdjustedValue(cit.getAdjustedTotal());
+            temBi.setDescreption(cit.getComments());
             temBi.setCreatedAt(new Date());
             temBi.setCreater(getSessionController().getLoggedUser());
 
@@ -2541,6 +2542,7 @@ public class BhtSummeryController implements Serializable {
             temBi.setDiscount(cit.getDiscount());
             temBi.setNetValue(cit.getNetTotal());
             temBi.setAdjustedValue(cit.getAdjustedTotal());
+            temBi.setDescreption(cit.getComments());
             temBi.setCreatedAt(new Date());
             temBi.setCreater(getSessionController().getLoggedUser());
 
@@ -2578,6 +2580,7 @@ public class BhtSummeryController implements Serializable {
             temBi.setDiscount(cit.getDiscount());
             temBi.setNetValue(cit.getNetTotal());
             temBi.setAdjustedValue(cit.getAdjustedTotal());
+            temBi.setDescreption(cit.getComments());
             temBi.setCreatedAt(new Date());
             temBi.setCreater(getSessionController().getLoggedUser());
 
@@ -3449,6 +3452,25 @@ public class BhtSummeryController implements Serializable {
 
         setNetAdjustValue();
 
+        restoreChargeItemComments();
+
+    }
+
+    private void restoreChargeItemComments() {
+        if (getPatientEncounter() == null
+                || !getPatientEncounter().isPaymentFinalized()
+                || getPatientEncounter().getFinalBill() == null) {
+            return;
+        }
+
+        for (BillItem existing : getPatientEncounter().getFinalBill().getBillItems()) {
+            for (ChargeItemTotal cit : chargeItemTotals) {
+                if (existing.getInwardChargeType() == cit.getInwardChargeType()) {
+                    cit.setComments(existing.getDescreption());
+                    break;
+                }
+            }
+        }
     }
 
     private void setNetAdjustValue() {

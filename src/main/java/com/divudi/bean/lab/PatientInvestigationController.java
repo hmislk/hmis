@@ -3325,7 +3325,7 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (type != null && !type.trim().isEmpty()) {
-            jpql += " AND r.patientInvestigation.billItem.bill.ipOpOrCC = :tp ";
+            jpql += " AND r.patientInvestigation.billItem.bill.ipOpOrCc = :tp ";
             params.put("tp", getType().trim());
         }
 
@@ -3777,7 +3777,7 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (type != null && !type.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.ipOpOrCC = :tp ";
+            jpql += " AND i.billItem.bill.ipOpOrCc = :tp ";
             params.put("tp", getType().trim());
         }
 
@@ -3916,7 +3916,7 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (type != null && !type.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.ipOpOrCC = :tp ";
+            jpql += " AND i.billItem.bill.ipOpOrCc = :tp ";
             params.put("tp", getType().trim());
         }
 
@@ -4081,7 +4081,7 @@ public class PatientInvestigationController implements Serializable {
             }
 
             if (type != null && !type.trim().isEmpty()) {
-                jpql += " AND b.bill.ipOpOrCC = :tp ";
+                jpql += " AND b.bill.ipOpOrCc = :tp ";
                 params.put("tp", getType().trim());
             }
 
@@ -4250,7 +4250,7 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (type != null && !type.trim().isEmpty()) {
-            jpql += " AND b.bill.ipOpOrCC = :tp ";
+            jpql += " AND b.bill.ipOpOrCc = :tp ";
             params.put("tp", getType().trim());
         }
 
@@ -4421,7 +4421,7 @@ public class PatientInvestigationController implements Serializable {
         }
 
         if (type != null && !type.trim().isEmpty()) {
-            jpql += " AND i.billItem.bill.ipOpOrCC = :tp ";
+            jpql += " AND i.billItem.bill.ipOpOrCc = :tp ";
             params.put("tp", getType().trim());
         }
 

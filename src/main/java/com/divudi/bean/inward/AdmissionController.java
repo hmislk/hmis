@@ -268,6 +268,55 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Title is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's title (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Name is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's name (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian NIC is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's NIC/Passport (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Address is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's address (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Mobile Number is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's mobile number (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Home Phone Number is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's home phone number (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Relationship is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's relationship to the patient (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
                 "Patient Admit - Enable Referred From in Patient Admission",
                 "Show the Referred From field during admission (default false)",
                 "inward/inward_admission",
@@ -2035,7 +2084,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     return true;
                 }
             }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian Home Phone Number is Required in Patient Admission", true)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Home Phone Number is Required in Patient Admission", false)) {
                 if (getCurrent().getGuardian().getPhone() == null || getCurrent().getGuardian().getPhone().isEmpty()) {
                     JsfUtil.addErrorMessage("Guardian Home Phone Number is Required");
                     return true;
