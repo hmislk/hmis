@@ -181,11 +181,7 @@ public class InpatientDirectIssueNativeSqlService {
         LOGGER.log(Level.INFO, "[NativeSettle] Starting finance details ms={0}", System.currentTimeMillis() - t0);
         double[] billTotals = insertFinanceDetails(billId, biIds, pbIds, items);
 
-        // Step 5: Update bill-level totals natively, then refresh the managed entity.
-        // em.refresh(bill) reloads both the updated totals and the natively-written
-        // BILLFINANCEDETAILS_ID FK (set by insertFinanceDetails) into L1. Without the
-        // refresh, L1 retains billFinanceDetails=null and that stale null FK would be
-        // merged into L2 at commit, causing subsequent EAGER loads to return null. (#20435)
+        // Step 5: Update bill-level totals natively.
         em.createNativeQuery(
                 "UPDATE " + billTable() + " SET total=?, netTotal=?, grantTotal=? WHERE ID=?")
                 .setParameter(1, billTotals[0])   // grossTotal
@@ -193,17 +189,35 @@ public class InpatientDirectIssueNativeSqlService {
                 .setParameter(3, billTotals[0])   // grantTotal = grossTotal (intentional naming per Bill entity)
                 .setParameter(4, billId)
                 .executeUpdate();
-        em.refresh(bill);
 
-        // Evict natively-written entity classes from the EclipseLink L2 cache.
-        // Bill is intentionally NOT evicted — em.refresh(bill) loaded the correct full
-        // state (totals + BILLFINANCEDETAILS_ID FK) and the commit merges it into L2.
+        // Reconcile the JPA caches with the natively-written state WITHOUT the
+        // catastrophic full-graph reload that em.refresh(bill) triggers.
+        //
+        // Previously this used em.refresh(bill) to pull the natively-written
+        // BILLFINANCEDETAILS_ID FK + totals back into L1 so a stale null FK would
+        // not be merged into L2 at commit (#20435). But em.refresh reloads the
+        // Bill's entire EAGER graph, and Bill.stockBill (EAGER) ↔ StockBill.bill
+        // (EAGER) form a circular EAGER reference; every Bill pulled in drags its
+        // own EAGER one-to-ones (pharmacyBill/stockBill/billFinanceDetails/
+        // currentRequest). For a batch whose related bill-graph is not yet in the
+        // L2 cache this fanned out into a ~30s recursive load — the "first issue of
+        // a batch is slow, later issues of the same batch are fast" symptom (#21888).
+        //
+        // Instead: detach the managed Bill so its stale (billFinanceDetails=null)
+        // state is NOT merged into L2 at commit, and evict Bill from L2 so the next
+        // read reloads the correct FK straight from the database. Same correctness
+        // guarantee as the refresh, none of the EAGER-graph cost.
+        long tReconcile = System.currentTimeMillis();
+        em.detach(bill);
         javax.persistence.Cache cache = em.getEntityManagerFactory().getCache();
+        cache.evict(Bill.class, billId);
         cache.evict(StockHistory.class);
         cache.evict(Stock.class);
         cache.evict(BillItem.class);
         cache.evict(BillFinanceDetails.class);
         cache.evict(BillItemFinanceDetails.class);
+        LOGGER.log(Level.INFO, "[NativeSettle] cache reconcile done ms={0} reconcileMs={1}",
+                new Object[]{System.currentTimeMillis() - t0, System.currentTimeMillis() - tReconcile});
 
         LOGGER.log(Level.INFO, "[NativeSettle] DONE items={0} ms={1}",
                 new Object[]{items.size(), System.currentTimeMillis() - t0});
