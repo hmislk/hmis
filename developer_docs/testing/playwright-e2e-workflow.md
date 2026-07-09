@@ -457,6 +457,27 @@ test, try the token-based "Sale for Cashier" flow instead — its item-add/quant
 inputs worked fine in this session, only the retail-native page's Settle button was
 unreachable.
 
+## 20. A privilege-gated button that never renders may be a missing DB row, not a session issue
+
+If a `rendered="#{webUserController.hasPrivilege('SomePrivilege')}"` button never
+appears even after the §17 logout/relogin-and-reselect-department trick, the
+`webuserprivilege` row for that (user, department, privilege) triple may simply not
+exist in the local seed data — no amount of re-login fixes a privilege that was never
+granted for that department. Check first:
+
+```sql
+SELECT ID, PRIVILEGE, DEPARTMENT_ID, RETIRED
+FROM webuserprivilege
+WHERE WEBUSER_ID = <id> AND PRIVILEGE = 'SomePrivilege';
+```
+
+If the row for the target department is absent, insert it (`RETIRED = 0`) for that
+`WEBUSER_ID`/`DEPARTMENT_ID`, then follow §17 (logout → login → reselect department)
+to force `SessionController.fillUserPrivileges()` to re-read it — the privilege list is
+cached per session at login and won't pick up a new row otherwise. This came up testing
+`BhtSummeryController.settle()` (`InwardSettleFinalBill`), where the local `buddhika`
+user had the privilege for `Store`/`Main Pharmacy` departments but not `Inward`.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
