@@ -1,0 +1,98 @@
+.fiveinchbill{
+    width: 14.5cm;
+    min-height: 14.2cm;
+    margin: 15px auto;
+    padding: 8px;
+    background: #f3f3f3;      /* Light gray background */
+    border: 1px solid #8a8a8a;
+    border-radius: 3px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+@media print {
+
+    .fiveinchbill{
+        width: 14.5cm !important;
+        min-height: 14.2cm !important;
+        margin: 0 auto !important;
+        padding: 6px !important;
+
+        border: none !important;      /* Remove outer border */
+        outline: none !important;
+        box-shadow: none !important;
+
+        font-family: Arial, Helvetica, sans-serif !important;
+        font-size: 12px !important;
+        color: #222 !important;
+        background: #fff !important;
+        box-sizing: border-box !important;
+    }
+
+    .institutionName{
+        text-align:center;
+        font-size:18px;
+        font-weight:bold;
+        margin-bottom:3px;
+    }
+
+    .institutionContact{
+        text-align:center;
+        font-size:11px;
+        line-height:1.2;
+    }
+
+    .institutionContact div{
+        margin:0;
+        padding:0;
+    }
+
+    .headingBillFiveFive{
+        text-align:center;
+        font-size:18px;
+        font-weight:bold;
+        margin:4px 0;
+    }
+
+    hr{
+        border:0;
+        border-top:1px solid #d3d3d3;
+        margin:6px 0;
+    }
+
+    .billDetailsFiveFive{
+        font-size:13px;
+        line-height:1.3;
+    }
+
+    .billDetailsFiveFive td{
+        padding:2px;
+    }
+
+    .itemHeadingsFiveFive{
+        font-size:14px;
+        font-weight:bold;
+    }
+
+    .itemsBlockRightFiveFive{
+        font-size:11px;
+        padding:5px 0;
+    }
+
+    .totalsBlock{
+        font-size:13px;
+        font-weight:bold;
+    }
+
+    .billline{
+        text-align:center;
+        margin:8px 0;
+    }
+
+    .footer{
+        text-align:center;
+        font-size:10px;
+        margin-top:5px;
+    }
+}
