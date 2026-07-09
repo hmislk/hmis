@@ -43,8 +43,8 @@
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
                 <h:outputLabel value="OPD / ETU"   />
 
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.cancelled}" />
+                 <h:outputLabel value="Duplicate" style="font-weight:bold;" rendered="#{cc.attrs.duplicate eq true}" />
+                 <h:outputLabel value="Cancelled" style="font-weight:bold;" rendered="#{cc.attrs.cancelled}" />
 
             </div>
 
@@ -260,107 +260,75 @@
                 </div>
             </h:panelGroup>-->
 
-            <div class="itemHeadingsFiveFive" >
+            <div class="itemHeadingsFiveFive">
 
-                <table width="100%" style="width: 100%;" >
-                    <tr>
-                        <td colspan="2" style="text-align: center;">
-                            <hr/>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="width:55%!important;">
-                            <h:outputLabel value="ITEM" styleClass="itemHeadingsFiveFive" ></h:outputLabel>
-                        </td>
-                        <td  style="width:10%!important;text-align: right; padding-right: 30px!important">
-                            <h:outputLabel value="VALUE"  styleClass="itemHeadingsFiveFive" ></h:outputLabel>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" style="text-align: center;">
-                            <hr/>
-                        </td>
-                    </tr>
+    <table width="100%" style="width: 100%;">
+        <tr>
+            <td colspan="2" style="text-align: center;">
+                <hr/>
+            </td>
+        </tr>
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
-                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip"   >
-                            <tr>
-                                <td  style="overflow: visible;">
-                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.printName}"  style="text-transform: capitalize!important;"  >
-                                    </h:outputLabel>
-                                </td>
-                                <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
-                                    <td style="text-align: right;" >
-                                        <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                </h:panelGroup>
-                            </tr>
+        <tr>
+            <td style="width:70%!important;">
+                <h:outputLabel value="ITEM" styleClass="itemHeadingsFiveFive"/>
+            </td>
+            <td style="width:30%!important;text-align: right; padding-right: 30px!important">
+                <h:outputLabel value="VALUE" styleClass="itemHeadingsFiveFive"/>
+            </td>
+        </tr>
 
-                        </ui:repeat>
+        <tr>
+            <td colspan="2" style="text-align: center;">
+                <hr/>
+            </td>
+        </tr>
+
+        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip">
+            <tr>
+                <td style="overflow: visible;">
+                    <h:outputLabel
+                        class="itemsBlockRightFiveFive"
+                        value="#{cc.attrs.bill.margin eq 0.0 ? bip.item.printName : bip.item.name}"
+                        style="text-transform: capitalize!important;"/>
+                </td>
+
+                <td style="text-align: right;">
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                        <h:outputLabel
+                            class="itemsBlockRightFiveFive"
+                            value="#{cc.attrs.bill.margin eq 0.0 ? bip.grossValue : bip.rate}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
                     </h:panelGroup>
+                </td>
+            </tr>
+        </ui:repeat>
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.margin ne 0.0}">
-                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip"   >
-                            <tr>
-                                <td  style="overflow: visible;">
-                                    <h:outputLabel class="itemsBlockRightFiveFive" value="#{bip.item.name}"  style="text-transform: capitalize!important;"  >
-                                    </h:outputLabel>
-                                </td>
-                                <td>
-                                    <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.qty}"     style="text-align: right;" >
-                                        <f:convertNumber integerOnly="true" />
-                                    </h:outputLabel>
-                                </td>
-                                <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
-                                    <td    style="text-align: right;" >
-                                        <h:outputLabel class="itemsBlockRightFiveFive"    value="#{bip.rate}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
+    </table>
 
-                                    <td style="text-align: right;" >
-                                        <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                </h:panelGroup>
-
-                            </tr>
-                        </ui:repeat>
-                    </h:panelGroup>
-
-                </table>
-
-            </div>
+</div>
 
             <div>
                 <hr/>
             </div>
 
             <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
-            <div  >
-
-                <table style="width: 100%;">
-
-                    <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
-                        <tr>
-                            <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                <h:outputLabel value="Total" />
-                            </td>
-                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
-                                <h:outputLabel value="#{cc.attrs.bill.total}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                    </h:panelGroup>
-
-                </table>
-
-            </div>
-            </h:panelGroup>
+    <div>
+        <table style="width: 100%;">
+            <tr>
+                <td class="totalsBlock" style="text-align: left; width: 60%;">
+                    <h:outputLabel value="Total"/>
+                </td>
+                <td class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                    <h:outputLabel value="#{cc.attrs.bill.total}">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputLabel>
+                </td>
+            </tr>
+        </table>
+    </div>
+</h:panelGroup>
 
             <div style="text-decoration: overline; margin-top: 20px;">
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
