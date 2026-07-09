@@ -111,13 +111,13 @@
                             </h:panelGroup>
                             <p:selectOneMenu value="#{outsideChargeReportController.referringDoctor}" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{doctorController.selectedItems}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}"
-                                               ></f:selectItems>
+                                <f:selectItems  value="#{doctorController.selectedItems}" 
+                                                var="myItem" itemValue="#{myItem}" 
+                                                itemLabel="#{myItem.person.nameWithTitle}"  
+                                                > </f:selectItems>
+
                             </p:selectOneMenu>
-                            
+
                             <p:spacer width="20"/> 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf1ad;" styleClass="fa mr-2" />

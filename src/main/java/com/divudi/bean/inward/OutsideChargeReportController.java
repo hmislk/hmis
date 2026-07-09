@@ -34,6 +34,19 @@ public class OutsideChargeReportController implements Serializable {
 
     public OutsideChargeReportController() {
     }
+    
+    public void processOutsidePaymentReport(){
+        
+        
+        
+        
+        
+        
+        
+        
+    }
+    
+    // getters and setters 
 
     public Date getFromDate() {
         if (fromDate == null) {
