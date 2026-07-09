@@ -256,14 +256,23 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return "/inward/inward_admission?faces-redirect=true";
     }
 
-    public String navigatePatientAdmit(Long reservationId) {
-
-        if (reservationId == null) {
-            JsfUtil.addErrorMessage("Error in Reservation");
+       public String navigatePatientAdmit(Long appointmentId) {
+        if (appointmentId == null) {
+            JsfUtil.addErrorMessage("Error in Appointment");
             return "";
         }
 
-        reservation = reservationFacade.find(reservationId);
+        currentAppointment = appointmentFacade.find(appointmentId);
+        if (currentAppointment == null) {
+            JsfUtil.addErrorMessage("No Appointment Found");
+            return "";
+        }
+
+        reservation = findReservationForAppointment(currentAppointment);
+        if (reservation == null) {
+            JsfUtil.addErrorMessage("Admission is only applicable for Room Reservations.");
+            return "";
+        }
 
         return navigatePatientAdmit();
     }
@@ -365,29 +374,62 @@ public class AppointmentController implements Serializable, ControllerWithPatien
             reservationFacade.edit(reservation);
         }
     }
-
-    public String navigateToManageAppointment(Long reservationId) {
-        if (reservationId == null) {
-            JsfUtil.addErrorMessage("Error in Reservation");
+    
+    private Reservation findReservationForAppointment(Appointment apt) {
+        if (apt == null) {
+            return null;
+        }
+        String jpql = "SELECT r FROM Reservation r WHERE r.retired = :ret AND r.appointment = :apt";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("apt", apt);
+        return reservationFacade.findFirstByJpql(jpql, m);
+    }
+    
+     private Date combineDateAndTime(Date date, Date time) {
+        if (date == null) {
+            return time;
+        }
+        if (time == null) {
+            return date;
+        }
+        java.util.Calendar calendar = java.util.Calendar.getInstance();
+        calendar.setTime(date);
+        int year = calendar.get(java.util.Calendar.YEAR);
+        int month = calendar.get(java.util.Calendar.MONTH);
+        int day = calendar.get(java.util.Calendar.DAY_OF_MONTH);
+        calendar.setTime(time);
+        calendar.set(java.util.Calendar.YEAR, year);
+        calendar.set(java.util.Calendar.MONTH, month);
+        calendar.set(java.util.Calendar.DAY_OF_MONTH, day);
+        return calendar.getTime();
+    }
+    
+    
+        public String navigateToManageAppointment(Long appointmentId) {
+        if (appointmentId == null) {
+            JsfUtil.addErrorMessage("Error in Appointment");
             return "";
         }
 
-        reservation = reservationFacade.find(reservationId);
-
-        if (reservation == null) {
-            JsfUtil.addErrorMessage("No Reservation Found");
-            return "";
-        }
-
-        reservedRoom = reservation.getRoom();
-        reservedFromDate = reservation.getReservedFrom();
-        reservedToDate = reservation.getReservedTo();
-
-        currentAppointment = appointmentFacade.find(reservation.getAppointment().getId());
+        currentAppointment = appointmentFacade.find(appointmentId);
 
         if (currentAppointment == null) {
             JsfUtil.addErrorMessage("No Appointment Found");
             return "";
+        }
+
+        // Fetch reservation if it exists (ROOM_ADMISSION type)
+        reservation = findReservationForAppointment(currentAppointment);
+        if (reservation != null) {
+            reservedRoom = reservation.getRoom();
+            reservedFromDate = reservation.getReservedFrom();
+            reservedToDate = reservation.getReservedTo();
+        } else {
+            // For non-room types (Procedure, Consultant, etc.)
+            reservedRoom = null;
+            reservedFromDate = currentAppointment.getAppointmentTimeFrom();
+            reservedToDate = currentAppointment.getAppointmentTimeTo();
         }
 
         patient = patientFacade.find(currentAppointment.getPatient().getId());
@@ -397,54 +439,94 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return "/inward/inward_appointment_edit?faces-redirect=true";
     }
 
-    public void searchAppointments() {
+        public void searchAppointments() {
         reservationDTOs = new ArrayList<>();
-
         HashMap params = new HashMap();
 
-        String jpql = "SELECT new com.divudi.core.data.dto.ReservationDTO( "
-                + " COALESCE(res.id, 0),"
-                + " res.reservedFrom, "
-                + " res.reservedTo, "
-                + " COALESCE(res.appointment.appointmentNumber, ''),"
-                + " res.createdAt, "
-                + " COALESCE(res.room.name, ''), "
-                + " res.patient.person.title, "
-                + " COALESCE(res.patient.person.name, ''), "
-                + " res.patient.person.dob, "
-                + " COALESCE(res.patient.person.sex, ''), "
-                + " COALESCE(res.patient.person.mobile, ''), "
-                + " res.appointment.bill.referredBy.person.title, "
-                + " COALESCE(res.appointment.bill.referredBy.person.name, ''), "
-                + " res.appointment.status "
-                + " ) "
-                + " FROM Reservation res "
-                + " WHERE res.retired =:ret"
-                + " AND res.reservedFrom BETWEEN :today AND :endDate ";
+        // 1. Query Appointment directly (safely ignoring dialect join bugs)
+        String jpql = "SELECT apt FROM Appointment apt "
+                + " WHERE apt.retired = :ret"
+                + " AND apt.appointmentType = :type";
+
+        params.put("ret", false);
+        params.put("type", com.divudi.core.data.AppointmentType.IP_APPOINTMENT);
 
         if (appointmentstatus != null) {
-            jpql += " AND res.appointment.status = :status ";
+            jpql += " AND apt.status = :status ";
             params.put("status", appointmentstatus);
         }
 
-        if (appointmentNo != null) {
-            jpql += " AND res.appointment.appointmentNumber like :aptNumber ";
+        if (appointmentNo != null && !appointmentNo.trim().isEmpty()) {
+            jpql += " AND apt.appointmentNumber LIKE :aptNumber ";
             params.put("aptNumber", "%" + appointmentNo.trim() + "%");
         }
 
-        if (patientName != null) {
-            jpql += " AND res.patient.person.name LIKE :patientName ";
-            params.put("patientName", "%" + getPatientName().trim() + "%");
+        if (patientName != null && !patientName.trim().isEmpty()) {
+            jpql += " AND apt.patient.person.name LIKE :patientName ";
+            params.put("patientName", "%" + patientName.trim() + "%");
         }
 
-        jpql += " ORDER BY res.createdAt";
+        if ((appointmentNo == null || appointmentNo.trim().isEmpty()) && 
+            (patientName == null || patientName.trim().isEmpty())) {
+            jpql += " AND apt.appointmentDate BETWEEN :today AND :endDate ";
+            params.put("today", getFromDate());
+            params.put("endDate", getToDate());
+        }
 
-        params.put("ret", false);
-        params.put("today", fromDate);
-        params.put("endDate", toDate);
+        jpql += " ORDER BY apt.createdAt";
 
-        reservationDTOs = reservationFacade.findLightsByJpqlWithoutCache(jpql, params, TemporalType.TIMESTAMP);
-
+        List<Appointment> appointments = appointmentFacade.findByJpql(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
+        
+        // 2. Safely map both room and non-room appointments to DTOs in Java
+        List<ReservationDTO> dtos = new ArrayList<>();
+        for (Appointment apt : appointments) {
+            if (apt.getPatient() == null || apt.getPatient().getPerson() == null) {
+                continue; 
+            }
+            
+            Reservation res = findReservationForAppointment(apt);
+            ReservationDTO dto;
+            
+            if (res != null) {
+                // Room Reservation details (ROOM_ADMISSION)
+                dto = new ReservationDTO(
+                    res.getId(),
+                    res.getReservedFrom(),
+                    res.getReservedTo(),
+                    apt.getAppointmentNumber(),
+                    apt.getCreatedAt(),
+                    res.getRoom() != null ? res.getRoom().getName() : "N/A",
+                    apt.getPatient().getPerson().getTitle(),
+                    apt.getPatient().getPerson().getName() != null ? apt.getPatient().getPerson().getName() : "",
+                    apt.getPatient().getPerson().getDob(),
+                    apt.getPatient().getPerson().getSex() != null ? apt.getPatient().getPerson().getSex().getLabel() : "",
+                    apt.getPatient().getPerson().getMobile() != null ? apt.getPatient().getPerson().getMobile() : "",
+                    apt.getBill() != null && apt.getBill().getReferredBy() != null && apt.getBill().getReferredBy().getPerson() != null ? apt.getBill().getReferredBy().getPerson().getTitle() : null,
+                    apt.getBill() != null && apt.getBill().getReferredBy() != null && apt.getBill().getReferredBy().getPerson() != null ? apt.getBill().getReferredBy().getPerson().getName() : "",
+                    apt.getStatus()
+                );
+            } else {
+                // Non-room Appointment details (Procedure, Consultant, etc.)
+                dto = new ReservationDTO(
+                    apt.getId(), // Store Appointment ID since there is no Reservation ID
+                    combineDateAndTime(apt.getAppointmentDate(), apt.getAppointmentTimeFrom()), // Combined date and time
+                    combineDateAndTime(apt.getAppointmentDate(), apt.getAppointmentTimeTo()), 
+                    apt.getAppointmentNumber(),
+                    apt.getCreatedAt(),
+                    "N/A", // Mark Room as N/A
+                    apt.getPatient().getPerson().getTitle(),
+                    apt.getPatient().getPerson().getName() != null ? apt.getPatient().getPerson().getName() : "",
+                    apt.getPatient().getPerson().getDob(),
+                    apt.getPatient().getPerson().getSex() != null ? apt.getPatient().getPerson().getSex().getLabel() : "",
+                    apt.getPatient().getPerson().getMobile() != null ? apt.getPatient().getPerson().getMobile() : "",
+                    apt.getBill() != null && apt.getBill().getReferredBy() != null && apt.getBill().getReferredBy().getPerson() != null ? apt.getBill().getReferredBy().getPerson().getTitle() : null,
+                    apt.getBill() != null && apt.getBill().getReferredBy() != null && apt.getBill().getReferredBy().getPerson() != null ? apt.getBill().getReferredBy().getPerson().getName() : "",
+                    apt.getStatus()
+                );
+            }
+            dtos.add(dto);
+        }
+        reservationDTOs = dtos;
     }
 
     public List<Reservation> searcheservations(String quary) {
