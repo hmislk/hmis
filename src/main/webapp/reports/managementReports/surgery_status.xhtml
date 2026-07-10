@@ -85,22 +85,43 @@
                         </h:panelGrid>
                         <p:spacer width="20"/>
                         <h:panelGrid columns="6" class="my-3">
-                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning" action="#{surgeryReportController.processSurgeryStatusReport()}" >
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Process" 
+                                icon="fas fa-cogs" 
+                                class="ui-button-warning" 
+                                action="#{surgeryReportController.processSurgeryStatusReport()}" >
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info mx-1"  >
-                                <p:printer target=""/>
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Print" 
+                                icon="fas fa-print" 
+                                class="ui-button-info mx-1"  >
+                                <p:printer target="tb"/>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success" >
-                                <p:dataExporter fileName="Surgery_Report" type="xlsx" target="" />
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Excel" 
+                                icon="fas fa-file-excel" 
+                                class="ui-button-success" >
+                                <p:dataExporter fileName="Surgery_Report" type="xlsx" target="tb" />
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" >
-                                <p:dataExporter fileName="Surgery_Report" type="pdf" target="" />
+                            <p:commandButton 
+                                ajax="false" 
+                                value="PDF" 
+                                icon="fas fa-file-pdf" 
+                                class="ui-button-danger mx-1" >
+                                <p:dataExporter fileName="Surgery_Report" type="pdf" target="tb" />
                             </p:commandButton>
                         </h:panelGrid>
 
 
 
-                        <p:dataTable value="#{surgeryReportController.reportList}" var="c" rowIndexVar="i">
+                        <p:dataTable 
+                            id="tb"
+                            value="#{surgeryReportController.reportList}" 
+                            var="c" 
+                            rowIndexVar="i">
                             <p:column headerText="SL No." style="width: 100px">
                                 <h:outputText value="#{i+1}"/>
                             </p:column>
