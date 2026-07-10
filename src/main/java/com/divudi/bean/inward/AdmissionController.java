@@ -1713,10 +1713,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         Person person = getPatient().getPerson();
         // DON'T set to null - keep reference throughout
-        
-        if(patientForiegner){
-            getPatient().getPerson().setForeigner(true);
-        }
+
+        // Persist the "Mark as Foreigner" checkbox state onto the patient. This
+        // marks a new (or existing) patient as a foreigner when checked, and
+        // clears the flag when unchecked, keeping the record in sync with the UI.
+        getPatient().getPerson().setForeigner(patientForiegner);
 
         // Save Person first (no flush yet)
         if (person != null) {
@@ -2836,6 +2837,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (current != null) {
             current.setPatient(patient);
             patientAllergies = clinicalFindingValueController.findClinicalFindingValues(patient, ClinicalFindingValueType.PatientAllergy);
+        }
+        // When a patient is searched/selected, reflect their foreigner status on the
+        // "Mark as Foreigner" checkbox so it is ticked automatically for foreigners.
+        if (patient != null && patient.getPerson() != null) {
+            patientForiegner = patient.getPerson().isForeigner();
+        } else {
+            patientForiegner = false;
         }
         selectPaymentSchemeAsPerPatientMembership();
     }
