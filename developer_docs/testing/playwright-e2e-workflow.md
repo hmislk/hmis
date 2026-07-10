@@ -478,6 +478,21 @@ cached per session at login and won't pick up a new row otherwise. This came up 
 `BhtSummeryController.settle()` (`InwardSettleFinalBill`), where the local `buddhika`
 user had the privilege for `Store`/`Main Pharmacy` departments but not `Inward`.
 
+## 21. Inward "Add Services" item picker — the Filter box does not load other departments' items
+
+On `inward/inward_bill_service.xhtml` (and the surgery equivalent) the item selector shows
+a **department button row** (OPD, ETU, Inward, MRI, …) above an "Investigation or Service"
+list. That list is scoped to the **currently selected department button**, defaulting to the
+first (usually OPD). The "Filter" textbox only narrows the *already-loaded* department's list —
+typing an item name that belongs to another department returns nothing. To bill a service
+that lives in a different department (e.g. `CT SCANNING CHARGES` / `SUTURING & DRESSING
+CHARGES` under **ETU**), first click that department's button to load its items, *then* pick
+from the list. Symptom if you skip this: the filter shows "no match" even though the item
+exists and the DB confirms it. Refs churn after the department-button AJAX, so re-`snapshot`
+before clicking the option, and click the visible listbox row (the hidden native `<option>`
+with the same text is not clickable). Verified while testing room-category service margins
+(issue #21977).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

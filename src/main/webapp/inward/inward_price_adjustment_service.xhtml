@@ -112,6 +112,22 @@
 
                                 <div class="row mt-1">
                                     <div class="col-2">
+                                        <h:outputLabel value="Room Category" class="mt-2"/>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:selectOneMenu
+                                            class="w-100"
+                                            id="cmbRoomCategory"
+                                            value="#{inwardPriceAdjustmntController.roomCategory}">
+                                            <f:selectItem itemLabel="All Room Categories" itemValue="#{null}" />
+                                            <f:selectItems value="#{roomCategoryController.items}" var="rc"
+                                                           itemValue="#{rc}" itemLabel="#{rc.name}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2">
                                         <h:outputLabel value="From" class="mt-2"></h:outputLabel>
                                     </div>
                                     <div class="col-4">
@@ -278,6 +294,14 @@
                                     <h:outputText value="#{empty a.admissionType ? 'All Admission Types' : a.admissionType.name}"/>
                                 </p:column>
 
+                                <p:column
+                                    headerText="Room Category"
+                                    filterBy="#{empty a.roomCategory ? '' : a.roomCategory.name}"
+                                    filterMatchMode="contains"
+                                    exportValue="#{empty a.roomCategory ? 'All Room Categories' : a.roomCategory.name}">
+                                    <h:outputText value="#{empty a.roomCategory ? 'All Room Categories' : a.roomCategory.name}"/>
+                                </p:column>
+
                                 <p:column headerText="Action" width="12%" >
                                     <div class="d-flex">
                                         <p:commandButton
@@ -359,6 +383,13 @@
                                 <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" />
                                 <f:selectItems value="#{admissionTypeController.items}" var="at"
                                                itemValue="#{at}" itemLabel="#{at.name}" />
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="Room Category"/>
+                            <p:selectOneMenu value="#{inwardPriceAdjustmntController.current.roomCategory}" class="w-100">
+                                <f:selectItem itemLabel="All Room Categories" itemValue="#{null}" />
+                                <f:selectItems value="#{roomCategoryController.items}" var="rc"
+                                               itemValue="#{rc}" itemLabel="#{rc.name}" />
                             </p:selectOneMenu>
                         </h:panelGrid>
 
