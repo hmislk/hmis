@@ -157,6 +157,7 @@ public class BhtSummeryController implements Serializable {
     InwardPaymentController inwardPaymentController;
     ////////////////////////
     private List<DepartmentBillItems> departmentBillItems;
+    private Map<Long, BillItem> latestCheckedBillItemsByItem;
     private List<BillFee> profesionallFee;
     private List<BillFee> doctorAndNurseFee;
     private List<BillFee> allDoctorCharges;
@@ -2282,12 +2283,28 @@ public class BhtSummeryController implements Serializable {
         if (getPatientEncounter().getAdmissionType() == null) {
             return "";
         }
-
+        
+        System.out.println("Patient Encounter = " + getPatientEncounter());
+        System.out.println("Admission Type = " + getPatientEncounter().getAdmissionType()); 
+        System.out.println("Admission Type Enum = " + getPatientEncounter().getAdmissionType().getAdmissionTypeEnum());
+        
+        System.out.println("Match = " + (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission));
+        
+        System.out.println("Privilege = " + getWebUserController().hasPrivilege("InwardBillSettleWithoutCheck"));
+        
+        System.out.println("Option = " + configOptionApplicationController.getBooleanValueByKey("Need to check inward bills before discharge"));
+        
+        System.out.println("Starting Bills Checking Process.... ");
         if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission && !getWebUserController().hasPrivilege("InwardBillSettleWithoutCheck")) {
+            System.out.println("Checking.... ---> ");
             if (checkBill()) {
                 return "";
             }
+        }else{
+            System.out.println("Ignore Checking.... ---> ");
         }
+        
+        System.out.println("End Bills Checking Process.... ");
 
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             if (getPatientEncounter().getCreditCompany() == null) {
@@ -2879,6 +2896,7 @@ public class BhtSummeryController implements Serializable {
         patientItems = null;
         paymentBill = null;
         departmentBillItems = null;
+        latestCheckedBillItemsByItem = null;
         printPreview = false;
         current = null;
         tmpPI = null;
@@ -3884,6 +3902,22 @@ public class BhtSummeryController implements Serializable {
 
     public void setDepartmentBillItems(List<DepartmentBillItems> departmentBillItems) {
         this.departmentBillItems = departmentBillItems;
+    }
+
+    /**
+     * Returns the most recently checked inward BillItem for the given service
+     * item of the current patient encounter, or null if none has been checked.
+     * The Service Details tab binds to its {@code bill.checkedBy} /
+     * {@code bill.checkeAt} to show "Checked By" / "Checked At".
+     */
+    public BillItem getLatestCheckedBillItem(Item item) {
+        if (item == null || item.getId() == null) {
+            return null;
+        }
+        if (latestCheckedBillItemsByItem == null) {
+            latestCheckedBillItemsByItem = getInwardBean().getLatestCheckedBillItemsByItem(patientEncounter);
+        }
+        return latestCheckedBillItemsByItem.get(item.getId());
     }
 
     public DepartmentFacade getDepartmentFacade() {
