@@ -763,7 +763,7 @@ public class GrnCostingController implements Serializable {
     }
 
     private void saveGrnBill() {
-        saveBill();
+        doSaveBill();
     }
 
     private void distributeValuesToItems() {
@@ -1116,6 +1116,17 @@ public class GrnCostingController implements Serializable {
         if (!isAuthorized("SAVE_BILL", "PharmacyGrnSave")) {
             return;
         }
+        doSaveBill();
+    }
+
+    /**
+     * Unguarded core of {@link #saveBill()}. Called directly (bypassing the
+     * PharmacyGrnSave check) by {@link #saveGrnBill()}, which is invoked from
+     * {@link #settle()} — a single-step create+finalize action already
+     * authorized under PharmacyGrnFinalize. A user with only the Finalize
+     * privilege must still be able to settle a brand new GRN in one step.
+     */
+    private void doSaveBill() {
         getGrnBill().setBillDate(new Date());
         getGrnBill().setBillTime(new Date());
 //        getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());

@@ -177,12 +177,14 @@
                                 <f:facet name="header" >
                                     <h:outputText value="Return Details" ></h:outputText>
                                     <p:commandButton
+                                        id="btnGrnReturnWithCostingSettle"
                                         value="Return"
                                         action="#{grnReturnWithCostingController.settleGrnReturn}"
                                         ajax="false"
                                         style="float: right;"
                                         class="ui-button-warning"
                                         disabled="#{not webUserController.hasPrivilege('ReturnReceviedGoods')}"
+                                        onclick="return confirm('Are you sure you want to settle this GRN return? This action cannot be undone.');"
                                         >
                                     </p:commandButton>
                                 </f:facet>
