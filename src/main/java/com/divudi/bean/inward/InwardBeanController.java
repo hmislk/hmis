@@ -2590,7 +2590,7 @@ public class InwardBeanController implements Serializable {
                 Department dept = item.getDepartment() != null ? item.getDepartment()
                         : (bi.getBill() != null ? bi.getBill().getDepartment() : null);
                 PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(bi, svcValue, dept,
-                        patientEncounter.getPaymentMethod(), cc, patientEncounter.getAdmissionType());
+                        patientEncounter.getPaymentMethod(), cc, patientEncounter.getAdmissionType(), resolveCurrentRoomCategory(patientEncounter));
                 if (ccMatrix != null) {
                     effectivePriceMatrix = ccMatrix;
                 }
@@ -2634,6 +2634,21 @@ public class InwardBeanController implements Serializable {
             return list.get(0).getInstitution();
         }
         return null;
+    }
+
+    /**
+     * Room category of the encounter's current room, or null when the patient is
+     * not in a room (or the room has no facility charge / category). Drives the
+     * room-category dimension of the inward margin matrix (issue #21977); null
+     * means "wildcard row only", preserving legacy behaviour.
+     */
+    private com.divudi.core.entity.inward.RoomCategory resolveCurrentRoomCategory(PatientEncounter encounter) {
+        if (encounter == null
+                || encounter.getCurrentPatientRoom() == null
+                || encounter.getCurrentPatientRoom().getRoomFacilityCharge() == null) {
+            return null;
+        }
+        return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory();
     }
 
     /**
@@ -2688,7 +2703,7 @@ public class InwardBeanController implements Serializable {
             com.divudi.core.entity.Institution creditCompany = resolveSingleCreditCompany(patientEncounter);
             if (creditCompany != null) {
                 PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(billItem, serviceValue, matrixDepartment,
-                        patientEncounter.getPaymentMethod(), creditCompany, patientEncounter.getAdmissionType());
+                        patientEncounter.getPaymentMethod(), creditCompany, patientEncounter.getAdmissionType(), resolveCurrentRoomCategory(patientEncounter));
                 if (ccMatrix != null) {
                     effectivePriceMatrix = ccMatrix;
                 }
@@ -2717,7 +2732,7 @@ public class InwardBeanController implements Serializable {
             com.divudi.core.entity.Institution creditCompany = resolveSingleCreditCompany(patientEncounter);
             if (creditCompany != null) {
                 PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(billFee.getBillItem(), serviceValue,
-                        matrixDepartment, patientEncounter.getPaymentMethod(), creditCompany, patientEncounter.getAdmissionType());
+                        matrixDepartment, patientEncounter.getPaymentMethod(), creditCompany, patientEncounter.getAdmissionType(), resolveCurrentRoomCategory(patientEncounter));
                 if (ccMatrix != null) {
                     effectivePriceMatrix = ccMatrix;
                 }
