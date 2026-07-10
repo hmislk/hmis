@@ -493,6 +493,27 @@ before clicking the option, and click the visible listbox row (the hidden native
 with the same text is not clickable). Verified while testing room-category service margins
 (issue #21977).
 
+## 22. Inward pharmacy margin lookup uses the *inpatient* department, not the issuing pharmacy
+
+When testing the inward price-adjustment (service-charge) margin for **pharmacy** issues to an
+inpatient, the matrix department is resolved by `PharmacySaleBhtController.determineMatrixDepartment()`,
+which is gated by config `"Price Matrix is calculated from Inpatient Department for <issuing dept>"`
+(**default true**). When on, the lookup uses the patient's **current room's facility-charge
+department** — for A/C/Non-A/C rooms in the model DB that is **Inward**, *not* the pharmacy you
+are logged into (e.g. Main Pharmacy). Symptom if you create the matrix row against the pharmacy
+department: the margin resolves to 0 / the wrong row even though the row exists. Fix: create the
+`InwardPriceAdjustment` row for the **room facility charge's department**
+(`SELECT rfc.department_id FROM patientencounter pe JOIN patientroom pr ON pe.currentpatientroom_id=pr.id
+JOIN roomfacilitycharge rfc ON pr.roomfacilitycharge_id=rfc.id WHERE pe.id=<enc>`), and set the
+row's payment method to match the encounter's (`patientencounter.paymentMethod`). Also beware
+**pre-existing overlapping rows** for the same dept/category/price-range/payment-method — they make
+the wildcard-vs-specific comparison ambiguous; temporarily `retired=1` them for a clean A/B test,
+then restore. Fastest confirmation without the full multi-page issue flow:
+`GET /api/inward-price-adjustment/diagnose?itemId=&departmentId=&paymentMethod=&patientEncounterId=&price=`
+with a `Finance` API-key header — it runs the identical `fetchInwardMargin(...)` call the pharmacy
+controllers use and returns the matched row id + margin %. Verified while testing room-category
+pharmacy margins (issue #21981).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
