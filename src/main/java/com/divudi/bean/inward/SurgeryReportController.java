@@ -20,10 +20,6 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
-/**
- *
- * @author pubudupiyankara
- */
 @Named
 @SessionScoped
 public class SurgeryReportController implements Serializable {
@@ -112,13 +108,6 @@ public class SurgeryReportController implements Serializable {
         attachOtStatuses(reportList);
     }
 
-    /**
-     * Batch-resolves OT status for all encounters in one query instead of
-     * calling patientTransferController.findActiveSendToTheatreRequest(...)
-     * once per row. Replace this JPQL with whatever entity actually stores
-     * theatreOccupancyStatus (e.g. SendToTheatreRequest /
-     * TheatreTransferRequest) — adjust field names to match.
-     */
     private void attachOtStatuses(List<SurgeryReportDTO> rows) {
         if (rows.isEmpty()) {
             return;
@@ -131,16 +120,10 @@ public class SurgeryReportController implements Serializable {
         String jpql = " select str.admission.id, str.theatreOccupancyStatus "
                 + " from PatientTransferRequest str "
                 + " where str.retired = false "
-                + " and str.theatreTransferType = :type "
-                + " and str.status <> :cancelled "
-                + " and (str.theatreOccupancyStatus IS NULL OR str.theatreOccupancyStatus <> :returned) "
                 + " and str.admission.id in :ids "
                 + " order by str.createdAt ASC";
         Map<String, Object> p = new HashMap<>();
         p.put("ids", encounterIds);
-        p.put("type", com.divudi.core.data.inward.TheatreTransferType.SEND_TO_THEATRE);
-        p.put("cancelled", com.divudi.core.data.inward.TransferRequestStatus.CANCELLED);
-        p.put("returned", com.divudi.core.data.inward.TheatreOccupancyStatus.RETURNED_TO_WARD);
 
         List<Object[]> statusRows = billFacade.findAggregates(jpql, p, TemporalType.TIMESTAMP);
 
@@ -157,7 +140,6 @@ public class SurgeryReportController implements Serializable {
         }
     }
 
-// replace billList/getBillList/setBillList with:
     private List<SurgeryReportDTO> reportList;
 
     public List<SurgeryReportDTO> getReportList() {
