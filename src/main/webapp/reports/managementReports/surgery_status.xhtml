@@ -41,7 +41,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 />
 
-                           
+
                             <p:outputLabel value="OT Room" >
                             </p:outputLabel>
                             <p:autoComplete
@@ -76,7 +76,7 @@
                             </p:autoComplete>
                         </h:panelGrid>
                         <p:spacer width="20"/>
-                         <h:panelGrid columns="6" class="my-3">
+                        <h:panelGrid columns="6" class="my-3">
                             <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning" action="#{surgeryReportController.processSurgeryStatusReport()}" >
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info mx-1"  >
@@ -89,48 +89,26 @@
                                 <p:dataExporter fileName="Surgery_Report" type="pdf" target="" />
                             </p:commandButton>
                         </h:panelGrid>
-                        
 
 
-                        <p:dataTable value="#{surgeryReportController.billList}" 
-                                     var="c"
-                                     rowIndexVar="i">
-                            
-                            <p:column headerText="SL No." style="width: 100px" >
-                                <h:outputText value="#{i+1}" ></h:outputText>
+
+                        <p:dataTable value="#{surgeryReportController.reportList}" var="c" rowIndexVar="i">
+                            <p:column headerText="SL No." style="width: 100px">
+                                <h:outputText value="#{i+1}"/>
                             </p:column>
-                            <p:column headerText="MRN" >
-                                <h:outputText value="#{c.patientEncounter.patient.phn}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Patient Name" >
-                                <h:outputText value="#{c.patientEncounter.patient.person.name}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Admission Date" >
-                                <h:outputText value="#{c.patientEncounter.dateOfAdmission}" >
+                            <p:column headerText="MRN"><h:outputText value="#{c.mrn}"/></p:column>
+                            <p:column headerText="Patient Name"><h:outputText value="#{c.patientName}"/></p:column>
+                            <p:column headerText="Admission Date">
+                                <h:outputText value="#{c.admissionDate}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Propose Surgery" >
-                                <h:outputText value="#{c.procedure.item.name}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="OT Room" >
-                                <h:outputText value="#{c.department.name}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Ward" >
-                                <h:outputText value="#{c.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Surgeon" >
-                                <h:outputText value="#{c.staff.person.name}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="OT Status" >
-                                <h:outputText value="#{patientTransferController.findActiveSendToTheatreRequest(c.patientEncounter).theatreOccupancyStatus}" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Consultant" >
-                                <h:outputText value="#{c.patientEncounter.referringConsultant.person.name}" ></h:outputText>
-                            </p:column>
-                           
-                            
-
+                            <p:column headerText="Propose Surgery"><h:outputText value="#{c.procedureName}"/></p:column>
+                            <p:column headerText="OT Room"><h:outputText value="#{c.otRoomName}"/></p:column>
+                            <p:column headerText="Ward"><h:outputText value="#{c.wardName}"/></p:column>
+                            <p:column headerText="Surgeon"><h:outputText value="#{c.surgeonName}"/></p:column>
+                            <p:column headerText="OT Status"><h:outputText value="#{c.otStatus}"/></p:column>
+                            <p:column headerText="Consultant"><h:outputText value="#{c.consultantName}"/></p:column>
                         </p:dataTable>
 
                     </p:panel>
