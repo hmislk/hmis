@@ -6,18 +6,18 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
     <ui:define name="content">
-        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN Returns is only after Approval')}">
-            <h:panelGroup rendered="#{!webUserController.hasPrivilege('ApproveGrnReturn')}">
-                <p:panel header="Access Denied" styleClass="ui-panel-danger">
-                    <p:messages id="msgs" showDetail="true" closable="true" />
-                    <div style="text-align: center; padding: 20px;">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 24px; color: #d9534f; margin-bottom: 10px;"></i>
-                        <h:outputText value="Not Authorized" style="display: block; font-size: 18px; color: #d9534f; font-weight: bold;" />
-                        <h:outputText value="You do not have permission to approve GRN returns." style="display: block; margin-top: 5px; color: #666;" />
-                    </div>
-                </p:panel>
-            </h:panelGroup>
-            <h:panelGroup rendered="#{webUserController.hasPrivilege('ApproveGrnReturn')}">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('ApproveGrnReturn')}">
+            <p:panel header="Access Denied" styleClass="ui-panel-danger">
+                <p:messages id="msgs" showDetail="true" closable="true" />
+                <div style="text-align: center; padding: 20px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 24px; color: #d9534f; margin-bottom: 10px;"></i>
+                    <h:outputText value="Not Authorized" style="display: block; font-size: 18px; color: #d9534f; font-weight: bold;" />
+                    <h:outputText value="You do not have permission to approve GRN returns." style="display: block; margin-top: 5px; color: #666;" />
+                </div>
+            </p:panel>
+        </h:panelGroup>
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('ApproveGrnReturn')}">
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN Returns is only after Approval')}">
                 <h:form>
                     <p:panel header="Pending GRN Return Approvals">
                         <p:dataTable value="#{grnReturnApprovalController.pendingReturns}" var="r">

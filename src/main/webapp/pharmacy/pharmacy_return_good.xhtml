@@ -11,6 +11,13 @@
     <ui:define name="content">
         <h:form>
             <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('ReturnReceviedGoods')}" >
+                You are NOT authorized
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('ReturnReceviedGoods')}" >
+
             <h:panelGroup rendered="#{!goodsReturnController.printPreview}" >
                 <p:panel header="Return Received Goods" class="w-100 m-1">
                     <div class="row" >
@@ -189,6 +196,7 @@
                                 ajax="false"
                                 icon="fa fa-cancel"
                                 style="float: right;"
+                                disabled="#{not webUserController.hasPrivilege('ReturnReceviedGoods')}"
                                 class="ui-button-danger m-1">
                             </p:commandButton>
                         </div>
@@ -217,6 +225,8 @@
 
                 </p:panel>
             </p:panel>
+
+            </h:panelGroup>
 
         </h:form>
     </ui:define>

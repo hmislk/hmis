@@ -10,6 +10,12 @@
     <ui:define name="content">
         <h:form>
 
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('ReturnReceviedGoods')}" >
+                You are NOT authorized
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('ReturnReceviedGoods')}" >
+
             <h:panelGroup rendered="#{!grnReturnWithCostingController.printPreview}" styleClass="alignTop" >
 
                 <p:panel 
@@ -170,12 +176,13 @@
                                 >
                                 <f:facet name="header" >
                                     <h:outputText value="Return Details" ></h:outputText>
-                                    <p:commandButton  
+                                    <p:commandButton
                                         value="Return"
                                         action="#{grnReturnWithCostingController.settleGrnReturn}"
-                                        ajax="false"  
+                                        ajax="false"
                                         style="float: right;"
                                         class="ui-button-warning"
+                                        disabled="#{not webUserController.hasPrivilege('ReturnReceviedGoods')}"
                                         >
                                     </p:commandButton>
                                 </f:facet>
@@ -277,6 +284,8 @@
                     <ph:grn_return_receipt_with_costing bill="#{grnReturnWithCostingController.returnBill}"/>
                 </p:panel>
             </p:panel>
+
+            </h:panelGroup>
 
         </h:form>
     </ui:define>
