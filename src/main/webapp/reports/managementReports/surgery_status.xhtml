@@ -19,11 +19,15 @@
                             </h:panelGroup>
 
                             <p:datePicker
-                                styleClass="w-100"
-                                inputStyleClass="w-100 form-control"
                                 id="fromDate"
                                 value="#{surgeryReportController.fromDate}"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
                                 />
 
                             <p:spacer width="40"/>
@@ -34,11 +38,15 @@
                             </h:panelGroup>
 
                             <p:datePicker
-                                styleClass="w-100"
-                                inputStyleClass="w-100 form-control"
                                 id="toDate"
                                 value="#{surgeryReportController.toDate}"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
                                 />
 
 
