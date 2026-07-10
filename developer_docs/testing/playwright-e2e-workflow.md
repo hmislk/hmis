@@ -478,6 +478,42 @@ cached per session at login and won't pick up a new row otherwise. This came up 
 `BhtSummeryController.settle()` (`InwardSettleFinalBill`), where the local `buddhika`
 user had the privilege for `Store`/`Main Pharmacy` departments but not `Inward`.
 
+## 21. Inward "Add Services" item picker — the Filter box does not load other departments' items
+
+On `inward/inward_bill_service.xhtml` (and the surgery equivalent) the item selector shows
+a **department button row** (OPD, ETU, Inward, MRI, …) above an "Investigation or Service"
+list. That list is scoped to the **currently selected department button**, defaulting to the
+first (usually OPD). The "Filter" textbox only narrows the *already-loaded* department's list —
+typing an item name that belongs to another department returns nothing. To bill a service
+that lives in a different department (e.g. `CT SCANNING CHARGES` / `SUTURING & DRESSING
+CHARGES` under **ETU**), first click that department's button to load its items, *then* pick
+from the list. Symptom if you skip this: the filter shows "no match" even though the item
+exists and the DB confirms it. Refs churn after the department-button AJAX, so re-`snapshot`
+before clicking the option, and click the visible listbox row (the hidden native `<option>`
+with the same text is not clickable). Verified while testing room-category service margins
+(issue #21977).
+
+## 22. Inward pharmacy margin lookup uses the *inpatient* department, not the issuing pharmacy
+
+When testing the inward price-adjustment (service-charge) margin for **pharmacy** issues to an
+inpatient, the matrix department is resolved by `PharmacySaleBhtController.determineMatrixDepartment()`,
+which is gated by config `"Price Matrix is calculated from Inpatient Department for <issuing dept>"`
+(**default true**). When on, the lookup uses the patient's **current room's facility-charge
+department** — for A/C/Non-A/C rooms in the model DB that is **Inward**, *not* the pharmacy you
+are logged into (e.g. Main Pharmacy). Symptom if you create the matrix row against the pharmacy
+department: the margin resolves to 0 / the wrong row even though the row exists. Fix: create the
+`InwardPriceAdjustment` row for the **room facility charge's department**
+(`SELECT rfc.department_id FROM patientencounter pe JOIN patientroom pr ON pe.currentpatientroom_id=pr.id
+JOIN roomfacilitycharge rfc ON pr.roomfacilitycharge_id=rfc.id WHERE pe.id=<enc>`), and set the
+row's payment method to match the encounter's (`patientencounter.paymentMethod`). Also beware
+**pre-existing overlapping rows** for the same dept/category/price-range/payment-method — they make
+the wildcard-vs-specific comparison ambiguous; temporarily `retired=1` them for a clean A/B test,
+then restore. Fastest confirmation without the full multi-page issue flow:
+`GET /api/inward-price-adjustment/diagnose?itemId=&departmentId=&paymentMethod=&patientEncounterId=&price=`
+with a `Finance` API-key header — it runs the identical `fetchInwardMargin(...)` call the pharmacy
+controllers use and returns the matched row id + margin %. Verified while testing room-category
+pharmacy margins (issue #21981).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
