@@ -11,6 +11,7 @@ import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.DepartmentType;
@@ -93,6 +94,8 @@ public class PurchaseOrderRequestController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
@@ -1041,7 +1044,39 @@ public class PurchaseOrderRequestController implements Serializable {
         }
     }
 
+    /**
+     * Authorization helper method to check Purchase Order privileges and
+     * audit denied access
+     *
+     * @param action The action being attempted (SAVE, FINALIZE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, currentBill != null ? currentBill.getId() : "null"});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = currentBill != null ? currentBill.getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Purchase Order access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " purchase order requests.");
+            return false;
+        }
+
+        return true;
+    }
+
     public void saveRequest() {
+        if (!isAuthorized("SAVE", "PurchaseOrderSave")) {
+            return;
+        }
         boolean saved = saveRequestWithoutMessage();
         if (saved) {
             JsfUtil.addSuccessMessage("Request Saved");
@@ -1122,6 +1157,9 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public synchronized void finalizeRequest() {
+        if (!isAuthorized("FINALIZE", "PurchaseOrderFinalize")) {
+            return;
+        }
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill");
             return;

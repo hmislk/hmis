@@ -636,6 +636,8 @@ public enum Privileges {
     PharmacyDirectPurchaseFinalize("Pharmacy Direct Purchase Finalize"),
     PharmacyDirectPurchaseApprove("Pharmacy Direct Purchase Approve"),
     PurchaseOrdersApprovel("Purchase Orders Approval"),
+    PurchaseOrderSave("Purchase Order Save"),
+    PurchaseOrderFinalize("Purchase Order Finalize"),
     TransferReciveApproval("Transfer Receive Approval"),
     GoodsRecipt("Goods Receipt"),
     ReturnReceviedGoods("Return Received Goods"),
@@ -949,6 +951,8 @@ public enum Privileges {
             case PharmacyDirectPurchaseFinalize:
             case PharmacyDirectPurchaseApprove:
             case PurchaseOrdersApprovel:
+            case PurchaseOrderSave:
+            case PurchaseOrderFinalize:
             case GoodsRecipt:
             case ReturnReceviedGoods:
             case CreateGrnReturn:
