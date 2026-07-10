@@ -99,7 +99,7 @@
                             </h:panelGroup>
                             <p:selectOneMenu value="#{outsideChargeReportController.department}" filter="true" class="w-100 ">
                                 <f:selectItem itemLabel="All Deparments" ></f:selectItem>
-                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(outsideChargeReportController.institution, outsideChargeReportController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
 
                             </p:selectOneMenu>
 
@@ -151,7 +151,7 @@
                                 <h:outputText value="&#xf084;" styleClass="fa mr-2" />
                                 <h:outputLabel value="Paid Type" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="" filter="true"  class="w-100 " >
+                            <p:selectOneMenu value="#{outsideChargeReportController.paidType}" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value="#{['Paid', 'Not Paid']}"
                                                var="i"
@@ -164,7 +164,7 @@
                         </h:panelGrid><br/>
 
                         <div class="d-flex align-items-center my-3">
-                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false" value="Process" action="#{reportController.processLabTestCount()}" >
+                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false" value="Process" action="#{outsideChargeReportController.processOutsidePaymentReport()}" >
                             </p:commandButton>
                             <p:commandButton class="mx-1" icon="fas fa-print" ajax="false" value="Print All">
                             </p:commandButton>
@@ -177,10 +177,10 @@
                         <h:panelGroup>
                             <p:dataTable
                                 id="tblobs"
-                                value="#"
-                                var="var"
+                                value="#{outsideChargeReportController.reportRows}"
+                                var="row"
                                 rowIndexVar="n"
-                                paginator="false"
+                                paginator="true"
                                 paginatorPosition="bottom"
                                 rows="10"
                                 rendered="true"
@@ -189,111 +189,113 @@
                                 rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
                                 styleClass="table-sm">
 
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Invoice No"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.invoiceNo}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="MRN"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.mrn}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Patient Name"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.patientName}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="BHT No"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.bhtNo}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Description"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.description}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Discharged On"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.dischargedOn}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 150px" >
+                                <p:column style="width: 150px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Cancelled/Refunded"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.cancelledOrRefundedLabel}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Inward Charge Type"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{outsideChargeReportController.getChargeTypeLabel(row.inwardChargeType)}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Creater Name"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.createrName}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Created Date"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.createdDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Invoice Added Amount"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.invoiceAddedAmount}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Paid Date"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.paidDate}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Paid Amount"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.paidAmount}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 200px" >
+                                <p:column style="width: 200px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Memo"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.memo}" ></h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Due Amount"/>
                                     </f:facet>
-                                    <h:outputLabel value="" ></h:outputLabel>
+                                    <h:outputLabel value="#{row.dueAmount}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
+                                <p:column style="width: 100px" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Paid"/>
                                     </f:facet>
-                                    <h:outputLabel value="" >
-                                        <p:selectBooleanCheckbox value=""/>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Item"  style="width: 100px" >
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Update"/>
-                                    </f:facet>
-                                    <h:outputLabel value="" >
-                                        <p:commandButton type="button" value="Update" styleClass="ui-button-info" />
-                                    </h:outputLabel>
+                                    <p:selectBooleanCheckbox value="#{row.paid}" disabled="true"/>
                                 </p:column>
 
                             </p:dataTable>
