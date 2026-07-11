@@ -16,7 +16,7 @@
             <ui:define name="content">
 
                 <h:form id="bill" >
-                    <p:defaultCommand  target="btnAdd" />
+                    <p:defaultCommand target="#{configOptionApplicationController.getBooleanValueByKey('Enable Prescription Details for Pharmacy Requests', true) ? 'btnAdd' : 'btnAddNoRx'}" />
                     <h:panelGroup
                         rendered="#{!pharmacyRequestForBhtController.billPreview}"
                         style="width: fit-content;" >
@@ -295,11 +295,11 @@
                                         <p:panel>
                                             <f:facet name="header" >
                                                 <h:outputText styleClass="fa-solid fa-circle-plus"  />
-                                                <h:outputLabel value="Add Medicines" class="mx-4"/>
+                                                <h:outputLabel value="Prescription" class="mx-4"/>
                                                 <p:commandButton
                                                     id="btnSave"
                                                     ajax="false"
-                                                    value="Save"
+                                                    value="Save Draft"
                                                     action="#{pharmacyRequestForBhtController.saveBhtIssueRequestFrompharmacy()}"
                                                     icon="pi pi-save"
                                                     class="ui-button-success"
@@ -309,6 +309,40 @@
 
 
                                             <div class="row mt-1">
+                                                <div class="col-md-12 d-flex align-items-center gap-2 flex-wrap">
+                                                    <p:outputLabel value="Show:" styleClass="me-1" />
+                                                    <p:selectBooleanButton id="tglVtm"
+                                                                           value="#{pharmacyRequestForBhtController.includeVtm}"
+                                                                           onLabel="VTM" offLabel="VTM"
+                                                                           onIcon="pi pi-check" offIcon="pi pi-times"
+                                                                           styleClass="ui-button-sm">
+                                                        <p:ajax process="@this" update="acMedicine" />
+                                                    </p:selectBooleanButton>
+                                                    <p:selectBooleanButton id="tglAtm"
+                                                                           value="#{pharmacyRequestForBhtController.includeAtm}"
+                                                                           onLabel="ATM" offLabel="ATM"
+                                                                           onIcon="pi pi-check" offIcon="pi pi-times"
+                                                                           styleClass="ui-button-sm">
+                                                        <p:ajax process="@this" update="acMedicine" />
+                                                    </p:selectBooleanButton>
+                                                    <p:selectBooleanButton id="tglVmp"
+                                                                           value="#{pharmacyRequestForBhtController.includeVmp}"
+                                                                           onLabel="VMP" offLabel="VMP"
+                                                                           onIcon="pi pi-check" offIcon="pi pi-times"
+                                                                           styleClass="ui-button-sm">
+                                                        <p:ajax process="@this" update="acMedicine" />
+                                                    </p:selectBooleanButton>
+                                                    <p:selectBooleanButton id="tglAmp"
+                                                                           value="#{pharmacyRequestForBhtController.includeAmp}"
+                                                                           onLabel="AMP" offLabel="AMP"
+                                                                           onIcon="pi pi-check" offIcon="pi pi-times"
+                                                                           styleClass="ui-button-sm">
+                                                        <p:ajax process="@this" update="acMedicine" />
+                                                    </p:selectBooleanButton>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mt-1">
                                                 <div class="col-md-8">
                                                     <p:autoComplete
                                                         class= "w-100"
@@ -316,7 +350,7 @@
                                                         forceSelection="true"
                                                         id="acMedicine"
                                                         value="#{pharmacyRequestForBhtController.billItem.prescription.item}"
-                                                        completeMethod="#{itemController.completeMedicine}"
+                                                        completeMethod="#{pharmacyRequestForBhtController.completePrescriptionMedicineWithTypeFilter}"
                                                         var="i"
                                                         inputStyleClass="form-control"
                                                         itemLabel="#{i.name}"
@@ -471,19 +505,33 @@
                                                 </div>
                                             </div>
 
+                                            <div class="row mt-2">
+                                                <div class="col-md-12 d-flex justify-content-end">
+                                                    <p:commandButton
+                                                        accesskey="a"
+                                                        id="btnAdd"
+                                                        value="Add to Dispense Request"
+                                                        icon="fa fa-plus"
+                                                        class="ui-button-success"
+                                                        action="#{pharmacyRequestForBhtController.addBillItem}"
+                                                        process="@this acItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"
+                                                        update="growl :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acMedicine acItem focusItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"   >
+                                                    </p:commandButton>
+                                                </div>
+                                            </div>
+
                                         </p:panel>
                                     </h:panelGroup>
 
                                     <p:panel class="mt-2">
                                         <f:facet name="header" >
                                             <h:outputText styleClass="fa-solid fa-circle-plus"  />
-                                            <h:outputLabel value="Drug Order" class="mx-2"/>
+                                            <h:outputLabel value="Dispense Request" class="mx-2"/>
                                         </f:facet>
 
                                         <div class="row">
                                             <div class="col-md-8"><p:outputLabel value="Medicines/Devices" ></p:outputLabel></div>
-                                            <div class="col-md-2"><p:outputLabel value="Quantity" ></p:outputLabel></div>
-                                            <div class="col-md-2"></div>
+                                            <div class="col-md-4"><p:outputLabel value="Quantity" ></p:outputLabel></div>
                                         </div>
 
                                         <p:growl id="growl" showDetail="false" life="5500" />
@@ -511,7 +559,7 @@
                                                     </p:ajax>
                                                 </p:autoComplete>
                                             </div>
-                                            <div class="col-md-2">
+                                            <div class="col-md-4">
                                                 <p:inputText
                                                     autocomplete="off"
                                                     accesskey="q"
@@ -521,18 +569,6 @@
                                                     <p:ajax event="keyup"  listener="#{pharmacyRequestForBhtController.calculateBillItemListner}" process="acItem txtQty"></p:ajax>
                                                     <p:ajax event="blur"  listener="#{pharmacyRequestForBhtController.calculateBillItemListner}" process="acItem txtQty"></p:ajax>
                                                 </p:inputText>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <p:commandButton
-                                                    accesskey="a"
-                                                    id="btnAdd"
-                                                    value="Add"
-                                                    icon="fa fa-plus"
-                                                    class="ui-button-success w-100"
-                                                    action="#{pharmacyRequestForBhtController.addBillItem}"
-                                                    process="@this acItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"
-                                                    update="growl :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acMedicine acItem focusItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"   >
-                                                </p:commandButton>
                                             </div>
 
                                             <p:focus id="focusQty" for="txtQty" ></p:focus>
@@ -544,6 +580,28 @@
                                                 <p:outputLabel value="Comment" />
                                                 <p:inputTextarea id="txtDrugOrderComments" value="#{pharmacyRequestForBhtController.billItem.prescription.comment}" class="w-100" />
                                             </div>
+                                        </div>
+
+                                        <!--
+                                            Fallback Add button (id btnAddNoRx): only rendered when prescription
+                                            details are disabled, so the Prescription panel's btnAdd is absent.
+                                            Distinct id avoids a duplicate-component-id build error; p:defaultCommand
+                                            targets whichever button is actually rendered.
+                                        -->
+                                        <div class="row mt-2">
+                                            <h:panelGroup layout="block" class="col-md-12 d-flex justify-content-end"
+                                                          rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable Prescription Details for Pharmacy Requests', true)}">
+                                                <p:commandButton
+                                                    accesskey="a"
+                                                    id="btnAddNoRx"
+                                                    value="Add to Dispense Request"
+                                                    icon="fa fa-plus"
+                                                    class="ui-button-success"
+                                                    action="#{pharmacyRequestForBhtController.addBillItem}"
+                                                    process="@this acItem txtQty txtDrugOrderComments"
+                                                    update="growl :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acItem focusItem txtQty txtDrugOrderComments"   >
+                                                </p:commandButton>
+                                            </h:panelGroup>
                                         </div>
 
                                     </p:panel>
@@ -560,8 +618,28 @@
                                                     <p:ajax event="blur" process="@this"/>
                                                 </p:inputText>
                                             </p:column>
-                                            <p:column headerText="Directions" style="color: red;" width="20em">
-                                                <h:outputLabel value="#{bi.descreption}" />
+                                            <p:column headerText="Directions" width="20em">
+                                                <h:panelGroup layout="block">
+                                                    <h:outputText value="#{bi.descreption}" style="color: red;" />
+                                                    <h:panelGroup layout="block"
+                                                                  rendered="#{bi.prescription ne null and (bi.prescription.dose ne null or bi.prescription.frequencyUnit ne null or bi.prescription.duration ne null)}"
+                                                                  style="font-size:0.85em;color:#555;margin-top:2px;">
+                                                        <h:outputText rendered="#{bi.prescription.dose ne null}" value="Dose: #{bi.prescription.dose} #{bi.prescription.doseUnit.name}  " />
+                                                        <h:outputText rendered="#{bi.prescription.frequencyUnit ne null}" value="Freq: #{bi.prescription.frequencyUnit.name}  " />
+                                                        <h:outputText rendered="#{bi.prescription.duration ne null}" value="Duration: #{bi.prescription.duration} #{bi.prescription.durationUnit.name}" />
+                                                    </h:panelGroup>
+                                                </h:panelGroup>
+                                            </p:column>
+                                            <p:column headerText="Edit" width="5em">
+                                                <p:commandButton
+                                                    icon="fa-solid fa-pen-to-square"
+                                                    title="Edit / Substitute Item"
+                                                    class="ui-button-warning"
+                                                    action="#{pharmacyRequestForBhtController.prepareEditBillItem(bi)}"
+                                                    process="@this"
+                                                    update=":#{p:resolveFirstComponentWithId('editBillItemDlg',view).clientId}"
+                                                    oncomplete="PF('editBillItemDialog').show();" >
+                                                </p:commandButton>
                                             </p:column>
                                             <p:column headerText="Remove" width="5em">
                                                 <p:commandButton
@@ -575,6 +653,48 @@
                                             </p:column>
 
                                         </p:dataTable>
+
+                                        <p:dialog
+                                            id="editBillItemDlg"
+                                            widgetVar="editBillItemDialog"
+                                            header="Edit / Substitute Item"
+                                            modal="true"
+                                            appendTo="@(body)"
+                                            width="40%"
+                                            fitViewport="true">
+                                            <h:panelGrid columns="2" cellpadding="6" styleClass="w-100"
+                                                         rendered="#{pharmacyRequestForBhtController.billItemForEdit ne null}">
+                                                <p:outputLabel value="Requested Item" />
+                                                <h:outputText value="#{pharmacyRequestForBhtController.billItemForEdit.item.name}"
+                                                              styleClass="fw-bold" />
+
+                                                <p:outputLabel value="Substitute (same generic)" for="cmbSubstitute" />
+                                                <p:selectOneMenu id="cmbSubstitute"
+                                                                 value="#{pharmacyRequestForBhtController.selectedSubstituteAmp}"
+                                                                 filter="true" filterMatchMode="contains"
+                                                                 style="width:100%">
+                                                    <f:selectItems value="#{pharmacyRequestForBhtController.substituteAmps}"
+                                                                   var="sub" itemLabel="#{sub.name}" itemValue="#{sub}" />
+                                                </p:selectOneMenu>
+
+                                                <p:outputLabel value="Quantity" for="txtEditQty" />
+                                                <p:inputText id="txtEditQty" autocomplete="off"
+                                                             value="#{pharmacyRequestForBhtController.billItemForEdit.qty}"
+                                                             style="width:100%" />
+                                            </h:panelGrid>
+
+                                            <f:facet name="footer">
+                                                <p:commandButton
+                                                    id="btnSaveEditBillItem"
+                                                    value="Save"
+                                                    icon="fa fa-check"
+                                                    class="ui-button-success"
+                                                    action="#{pharmacyRequestForBhtController.saveEditedBillItem}"
+                                                    process="@this cmbSubstitute txtEditQty"
+                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
+                                                    oncomplete="PF('editBillItemDialog').hide();" />
+                                            </f:facet>
+                                        </p:dialog>
                                     </p:panel>
 
                                 </div>

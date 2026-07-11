@@ -6,6 +6,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
@@ -41,6 +42,7 @@ import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.UserStockContainer;
@@ -90,6 +92,8 @@ public class PharmacyRequestForBhtController implements Serializable {
     PharmacyCalculation pharmacyCalculation;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ItemController itemController;
 
 ////////////////////////
     @EJB
@@ -138,6 +142,15 @@ public class PharmacyRequestForBhtController implements Serializable {
     boolean billPreview = false;
     Department department;
     String errorMessage = "";
+    // Prescription medicine-type toggle filters (VTM/ATM/VMP/AMP). Default all on = list all pharmaceutical items.
+    private boolean includeVtm = true;
+    private boolean includeAtm = true;
+    private boolean includeVmp = true;
+    private boolean includeAmp = true;
+    // Edit-a-bill-item modal state: the row being edited and the same-generic substitute options
+    private BillItem billItemForEdit;
+    private List<Item> substituteAmps;
+    private Item selectedSubstituteAmp;
     /////////////////
     List<Stock> replaceableStocks;
     //List<BillItem> billItems;
@@ -2074,6 +2087,170 @@ public class PharmacyRequestForBhtController implements Serializable {
         savePreBillFinallyRequest(pt, matrixDepartment, btp, billNumberSuffix);
         savePreBillItemsFinallyRequest(tmpBillItems);
         JsfUtil.addSuccessMessage("Request Saved");
+    }
+
+    /**
+     * Opens the edit modal for a bill item already in the request. Loads the
+     * same-generic substitute options (other AMPs sharing the resolved item's VMP)
+     * so the user can swap the algorithm-picked item for an equivalent one.
+     *
+     * @param bi the bill item row to edit
+     */
+    public void prepareEditBillItem(BillItem bi) {
+        billItemForEdit = bi;
+        selectedSubstituteAmp = null;
+        substituteAmps = new ArrayList<>();
+        if (bi == null || bi.getItem() == null) {
+            return;
+        }
+        selectedSubstituteAmp = bi.getItem();
+        fillSubstituteAmpsFor(bi.getItem());
+    }
+
+    /**
+     * Populates {@link #substituteAmps} with AMPs that share the same VMP (generic)
+     * as the given item, i.e. true therapeutic substitutes. The current item is
+     * included so the dropdown shows the present selection.
+     */
+    private void fillSubstituteAmpsFor(Item currentItem) {
+        substituteAmps = new ArrayList<>();
+        if (!(currentItem instanceof Amp)) {
+            // Only AMPs have a VMP-based generic equivalence to substitute within.
+            if (currentItem != null) {
+                substituteAmps.add(currentItem);
+            }
+            return;
+        }
+        Vmp vmp = ((Amp) currentItem).getVmp();
+        if (vmp == null) {
+            substituteAmps.add(currentItem);
+            return;
+        }
+        String jpql = "select amp from Amp amp "
+                + "where amp.retired = false "
+                + "and amp.vmp = :vmp "
+                + "order by amp.name";
+        Map<String, Object> m = new HashMap<>();
+        m.put("vmp", vmp);
+        List<Item> found = itemFacade.findByJpql(jpql, m);
+        if (found != null && !found.isEmpty()) {
+            substituteAmps.addAll(found);
+        } else {
+            substituteAmps.add(currentItem);
+        }
+    }
+
+    /**
+     * Applies the substitute item and quantity chosen in the edit modal to the
+     * bill item, and regenerates the directions text so it reflects the new item.
+     */
+    public void saveEditedBillItem() {
+        if (billItemForEdit == null) {
+            JsfUtil.addErrorMessage("No item selected to edit.");
+            return;
+        }
+        if (selectedSubstituteAmp == null) {
+            JsfUtil.addErrorMessage("Please select an item.");
+            return;
+        }
+        if (billItemForEdit.getQty() == null || billItemForEdit.getQty() <= 0) {
+            JsfUtil.addErrorMessage("Please enter a valid quantity.");
+            return;
+        }
+        billItemForEdit.setItem(selectedSubstituteAmp);
+        // Keep the prescription's item aligned with the substituted dispensable item.
+        if (billItemForEdit.getPrescription() != null) {
+            billItemForEdit.getPrescription().setItem(selectedSubstituteAmp);
+        }
+        rebuildBillItemDescription(billItemForEdit);
+        JsfUtil.addSuccessMessage("Item updated.");
+    }
+
+    /**
+     * Rebuilds a bill item's directions text from its prescription (or a simple
+     * item + qty fallback), mirroring how {@link #addBillItem()} builds it.
+     */
+    private void rebuildBillItemDescription(BillItem bi) {
+        Prescription rx = bi.getPrescription();
+        if (rx != null && hasMeaningfulPrescriptionData(rx)) {
+            String prescriptionText = rx.getFormattedPrescriptionWithoutIndoorOutdoor();
+            if (rx.getComment() != null && !rx.getComment().trim().isEmpty()) {
+                prescriptionText += " - " + rx.getComment();
+            }
+            bi.setDescreption(prescriptionText);
+        } else if (bi.getItem() != null) {
+            bi.setDescreption(bi.getItem().getName() + " - Qty: " + bi.getQty());
+        }
+    }
+
+    public BillItem getBillItemForEdit() {
+        return billItemForEdit;
+    }
+
+    public void setBillItemForEdit(BillItem billItemForEdit) {
+        this.billItemForEdit = billItemForEdit;
+    }
+
+    public List<Item> getSubstituteAmps() {
+        return substituteAmps;
+    }
+
+    public void setSubstituteAmps(List<Item> substituteAmps) {
+        this.substituteAmps = substituteAmps;
+    }
+
+    public Item getSelectedSubstituteAmp() {
+        return selectedSubstituteAmp;
+    }
+
+    public void setSelectedSubstituteAmp(Item selectedSubstituteAmp) {
+        this.selectedSubstituteAmp = selectedSubstituteAmp;
+    }
+
+    /**
+     * Autocomplete for the Prescription item field, filtered by the VTM/ATM/VMP/AMP
+     * toggle buttons. Delegates to the shared ItemController query so the filtering
+     * logic stays in one place. When no type is selected, returns an empty list and
+     * warns the user.
+     */
+    public List<Item> completePrescriptionMedicineWithTypeFilter(String query) {
+        if (!includeVtm && !includeAtm && !includeVmp && !includeAmp) {
+            JsfUtil.addErrorMessage("Please select at least one medicine type to search");
+            return new ArrayList<>();
+        }
+        return itemController.completeMedicineByTypeWithFilter(query, includeVtm, includeAtm, includeVmp, includeAmp);
+    }
+
+    public boolean isIncludeVtm() {
+        return includeVtm;
+    }
+
+    public void setIncludeVtm(boolean includeVtm) {
+        this.includeVtm = includeVtm;
+    }
+
+    public boolean isIncludeAtm() {
+        return includeAtm;
+    }
+
+    public void setIncludeAtm(boolean includeAtm) {
+        this.includeAtm = includeAtm;
+    }
+
+    public boolean isIncludeVmp() {
+        return includeVmp;
+    }
+
+    public void setIncludeVmp(boolean includeVmp) {
+        this.includeVmp = includeVmp;
+    }
+
+    public boolean isIncludeAmp() {
+        return includeAmp;
+    }
+
+    public void setIncludeAmp(boolean includeAmp) {
+        this.includeAmp = includeAmp;
     }
 
     public SessionController getSessionController() {
