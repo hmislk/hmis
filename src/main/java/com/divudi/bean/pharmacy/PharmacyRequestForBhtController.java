@@ -551,7 +551,12 @@ public class PharmacyRequestForBhtController implements Serializable {
             billItem.setPharmaceuticalBillItem(pbi);
         }
         if (billItem.getPrescription() == null) {
-            billItem.setPrescription(new Prescription());
+            Prescription newPrescription = new Prescription();
+            // Default the "Prescribed From" date to today at the start of every new
+            // cycle. Once a duration is entered, calculateToDateFromDuration() derives
+            // the "Prescribed To" date from this from-date + duration.
+            newPrescription.setPrescribedFrom(new Date());
+            billItem.setPrescription(newPrescription);
         }
         return billItem;
     }
@@ -1335,7 +1340,16 @@ public class PharmacyRequestForBhtController implements Serializable {
             // Create a detached prescription instance for in-memory use only
             // This will be persisted later during settle operations
             Prescription inMemoryPrescription = new Prescription();
-            inMemoryPrescription.setItem(billItem.getItem());
+            // Carry the PRESCRIBED medicine (selected in the Prescription panel's
+            // acMedicine) onto the prescription, NOT the resolved dispense item.
+            // The Directions text is built from the prescription's own item, so it
+            // must reflect what was prescribed (e.g. the VTM/ATM/VMP the doctor
+            // ordered), not the concrete AMP/VMP chosen for dispensing. Fall back
+            // to the dispense item only when no prescription medicine was picked.
+            Item prescribedItem = billItem.getPrescription().getItem() != null
+                    ? billItem.getPrescription().getItem()
+                    : billItem.getItem();
+            inMemoryPrescription.setItem(prescribedItem);
             inMemoryPrescription.setDose(billItem.getPrescription().getDose());
             inMemoryPrescription.setDoseUnit(billItem.getPrescription().getDoseUnit());
             inMemoryPrescription.setFrequencyUnit(billItem.getPrescription().getFrequencyUnit());
@@ -1463,7 +1477,12 @@ public class PharmacyRequestForBhtController implements Serializable {
         newBillItem.setBill(getPreBill());
 
         Prescription inMemoryPrescription = new Prescription();
-        inMemoryPrescription.setItem(dispensableItem);
+        // Carry the PRESCRIBED medicine onto the prescription so the Directions
+        // text reflects what was ordered, not the resolved dispensable AMP/VMP.
+        Item prescribedItem = sourcePrescription.getItem() != null
+                ? sourcePrescription.getItem()
+                : dispensableItem;
+        inMemoryPrescription.setItem(prescribedItem);
         inMemoryPrescription.setDose(sourcePrescription.getDose());
         inMemoryPrescription.setDoseUnit(sourcePrescription.getDoseUnit());
         inMemoryPrescription.setFrequencyUnit(sourcePrescription.getFrequencyUnit());
@@ -2621,13 +2640,15 @@ public class PharmacyRequestForBhtController implements Serializable {
             return false;
         }
 
-        // Check if any of the key prescription fields have meaningful values
+        // Check if any of the key prescription fields have meaningful values.
+        // Note: prescribedFrom is intentionally excluded here because it is now
+        // auto-defaulted to today for every new cycle (see getBillItem()), so on
+        // its own it does not indicate the user entered prescription details.
         return prescription.getDose() != null
                 || prescription.getDoseUnit() != null
                 || prescription.getFrequencyUnit() != null
                 || prescription.getDuration() != null
                 || prescription.getDurationUnit() != null
-                || prescription.getPrescribedFrom() != null
                 || prescription.getPrescribedTo() != null
                 || (prescription.getComment() != null && !prescription.getComment().trim().isEmpty())
                 || (prescription.getItem() != null && billItem != null && !prescription.getItem().equals(billItem.getItem()));
