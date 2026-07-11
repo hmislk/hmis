@@ -206,6 +206,8 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyIssueRequestSearch, "Pharmacy Issue Request Search"), inwardPharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyIssueRequestCancel, "Pharmacy Issue Request Cancel"), inwardPharmacyNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyReturnCancel, "Pharmacy Return Cancel"), inwardPharmacyNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyReturnSubmit, "Pharmacy Return Submit"), inwardPharmacyNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyBhtReceive, "Pharmacy BHT Receive"), inwardPharmacyNode);
 
         TreeNode searchNode = new DefaultTreeNode(new PrivilegeHolder(null, "Search"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearch, "Search Menu"), searchNode);
@@ -752,8 +754,11 @@ public class UserPrivilageController implements Serializable {
         TreeNode issueForRequestApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyIssueForRequestApprove, "Issue for Request Approve"), disbursementNode);
         TreeNode disbursementDirectIssue = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementDirectIssue, "Direct Issue"), disbursementNode);
         TreeNode disbursementRecieve = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRecieve, "Recieve"), disbursementNode);
+        TreeNode receiveSave = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReceiveSave, "Receive Save"), disbursementNode);
         TreeNode receiveFinalize = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReceiveFinalize, "Receive Finalize"), disbursementNode);
         TreeNode receiveApprove = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyReceiveApprove, "Receive Approve"), disbursementNode);
+        TreeNode transferIssueCancel = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyTransferIssueCancel, "Transfer Issue Cancel"), disbursementNode);
+        TreeNode transferReceiveCancel = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyTransferReceiveCancel, "Transfer Receive Cancel"), disbursementNode);
         TreeNode TransferReciveApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.TransferReciveApproval, "Recieve Approval"), disbursementNode);
         TreeNode PharmacyDisbursementReports = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementReports, "Pharmacy Disbursement Reports"), disbursementNode);
         TreeNode PharmacyTransferViewRates = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyTransferViewRates, "Pharmacy Transfer View Rates"), disbursementNode);

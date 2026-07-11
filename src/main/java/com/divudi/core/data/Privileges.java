@@ -128,6 +128,8 @@ public enum Privileges {
     InwardPharmacyIssueRequestCancel("Inward Pharmacy Issue Request Cancel"),
     InwardPharmacyIssueRequestSearch("Inward Pharmacy Issue Request Search"),
     InwardPharmacyReturnCancel("Inward Pharmacy Return Cancel"),
+    InwardPharmacyReturnSubmit("Inward Pharmacy Return Submit"),
+    InwardPharmacyBhtReceive("Inward Pharmacy BHT Receive"),
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
     TheaterIssueBHT("Theater Issue BHT"),
     InpatientClinicalAssessment("Inpatient Clinical Assessment"),
@@ -526,8 +528,11 @@ public enum Privileges {
     PharmacyIssueForRequestSave("Pharmacy Issue For Request Save"),
     PharmacyIssueForRequestFinalize("Pharmacy Issue For Request Finalize"),
     PharmacyIssueForRequestApprove("Pharmacy Issue For Request Approve"),
+    PharmacyReceiveSave("Pharmacy Receive Save"),
     PharmacyReceiveFinalize("Pharmacy Receive Finalize"),
     PharmacyReceiveApprove("Pharmacy Receive Approve"),
+    PharmacyTransferIssueCancel("Pharmacy Transfer Issue Cancel"),
+    PharmacyTransferReceiveCancel("Pharmacy Transfer Receive Cancel"),
     // Pharmacy Inpatient medication management
     InpatientMedicationManagementMenue("Inpatient Medication Management Menu"),
     PharmacyDirectIssueToBht("Pharmacy Direct Issue to BHT"),
@@ -939,6 +944,8 @@ public enum Privileges {
             case PharmacyBhtRequestForceComplete:
             case PharmacyReturnFromWardForceComplete:
             case InwardPharmacyReturnCancel:
+            case InwardPharmacyReturnSubmit:
+            case InwardPharmacyBhtReceive:
             case PharmacySearchInpatientDirectIssuesbyBill:
             case PharmacySearchInpatientDirectIssuesbyItem:
             case PharmacySearchInpatientDirectIssueReturnsbyBill:
@@ -979,8 +986,11 @@ public enum Privileges {
             case PharmacyIssueForRequestSave:
             case PharmacyIssueForRequestFinalize:
             case PharmacyIssueForRequestApprove:
+            case PharmacyReceiveSave:
             case PharmacyReceiveFinalize:
             case PharmacyReceiveApprove:
+            case PharmacyTransferIssueCancel:
+            case PharmacyTransferReceiveCancel:
 
             // Retail Transactions
             case PharmacyRetailTransaction:
