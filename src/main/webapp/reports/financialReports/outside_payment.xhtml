@@ -111,8 +111,9 @@
                             </h:panelGroup>
                             <p:selectOneMenu value="#{outsideChargeReportController.referringDoctor}" filter="true"  class="w-100 " >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems  value="#{doctorController.selectedItems}" 
-                                                var="myItem" itemValue="#{myItem}" 
+                                <f:selectItems  value="#{doctorController.items}" 
+                                                var="myItem" 
+                                                itemValue="#{myItem}" 
                                                 itemLabel="#{myItem.person.nameWithTitle}"  
                                                 > </f:selectItems>
 
@@ -269,19 +270,21 @@
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column style="width: 100px" >
+                                <p:column style="width: 100px">
                                     <f:facet name="header">
                                         <h:outputLabel value="Paid Amount"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{row.paidAmount}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
+                                    <p:inputNumber value="#{row.paidAmount}"
+                                                   decimalPlaces="2"
+                                                   thousandSeparator=","
+                                                   style="width:100%; box-sizing:border-box;"
+                                                   inputStyle="width:100%; box-sizing:border-box;"/>
                                 </p:column>
-                                <p:column style="width: 200px" >
+                                <p:column style="width: 200px">
                                     <f:facet name="header">
                                         <h:outputLabel value="Memo"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{row.memo}" ></h:outputLabel>
+                                    <p:inputText value="#{row.memo}" style="width:100%; box-sizing:border-box;"/>
                                 </p:column>
                                 <p:column style="width: 100px" >
                                     <f:facet name="header">
@@ -291,14 +294,27 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column style="width: 100px" >
+                                <p:column style="width: 100px">
                                     <f:facet name="header">
                                         <h:outputLabel value="Paid"/>
                                     </f:facet>
-                                    <p:selectBooleanCheckbox value="#{row.paid}" disabled="true"/>
+                                    <p:selectBooleanCheckbox value="#{row.paid}"/>
+                                </p:column>
+
+                                <p:column style="width: 100px">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Update"/>
+                                    </f:facet>
+                                    <p:commandButton value="Update">
+                                    </p:commandButton>
                                 </p:column>
 
                             </p:dataTable>
+
+                            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                                <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="pi pi-times" />
+                                <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                            </p:confirmDialog>
                         </h:panelGroup>
                     </p:panel>                          
                 </h:form>

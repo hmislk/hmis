@@ -5,10 +5,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * One row of the Outside Payment report (Issue #17867). Grain is one row per
- * BillItem on an InwardOutSideBill — Invoice No / Paid Date / Paid Amount /
- * Due Amount are Bill-level figures and therefore repeat across rows that
- * belong to the same invoice.
+ *
+ * @author Thisara Samuditha | github - thisarasamuditha |  thellamburavithanagethisarasam@gmail.com
  */
 public class OutsidePaymentReportDto implements Serializable {
 
@@ -27,10 +25,10 @@ public class OutsidePaymentReportDto implements Serializable {
     private final Date createdDate;
     private final Double invoiceAddedAmount;
     private final Date paidDate;
-    private final Double paidAmount;
+    private Double paidAmount;
     private final Double invoiceTotal;
-    private final String memo;
-    private final Boolean paid;
+    private String memo;
+    private Boolean paid;
 
     public OutsidePaymentReportDto(
             Long billItemId,
@@ -137,19 +135,37 @@ public class OutsidePaymentReportDto implements Serializable {
         return paidAmount;
     }
 
+    public void setPaidAmount(Double paidAmount) {
+        this.paidAmount = paidAmount;
+    }
+
+    public Double getInvoiceTotal() {
+        return invoiceTotal;
+    }
+
     public Double getDueAmount() {
-        return invoiceTotal - paidAmount;
+        return invoiceTotal - (paidAmount != null ? paidAmount : 0.0);
     }
 
     public String getMemo() {
         return memo;
     }
 
+    public void setMemo(String memo) {
+        this.memo = memo;
+    }
+
     public Boolean getPaid() {
         return paid;
     }
 
-    /** "Cancelled", "Refunded", "Cancelled / Refunded" or "" — for display only. */
+    public void setPaid(Boolean paid) {
+        this.paid = paid;
+    }
+
+    /**
+     * "Cancelled", "Refunded", "Cancelled / Refunded" or "" — for display only.
+     */
     public String getCancelledOrRefundedLabel() {
         if (Boolean.TRUE.equals(cancelled) && Boolean.TRUE.equals(refunded)) {
             return "Cancelled / Refunded";
