@@ -50,6 +50,12 @@ public class UserRoleManagementController implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Same cap as UserManagementApi.bulkRoleOperations — bulk role
+     * operations run synchronously, so bound one run's size.
+     */
+    private static final int MAX_BULK_USERS = 500;
+
     // <editor-fold desc="EJBs / injected controllers">
     @EJB
     private UserRoleApplicationService userRoleApplicationService;
@@ -343,6 +349,11 @@ public class UserRoleManagementController implements Serializable {
                 JsfUtil.addErrorMessage("Select at least one user.");
                 return;
             }
+            if (selectedUsers.size() > MAX_BULK_USERS) {
+                JsfUtil.addErrorMessage("Too many users selected (" + selectedUsers.size()
+                        + "). Narrow the filter to " + MAX_BULK_USERS + " users or fewer per run.");
+                return;
+            }
             if (selectedDepartments == null || selectedDepartments.isEmpty()) {
                 JsfUtil.addErrorMessage("Select at least one department.");
                 return;
@@ -379,6 +390,11 @@ public class UserRoleManagementController implements Serializable {
             }
             if (selectedUsers == null || selectedUsers.isEmpty()) {
                 JsfUtil.addErrorMessage("Select at least one user.");
+                return;
+            }
+            if (selectedUsers.size() > MAX_BULK_USERS) {
+                JsfUtil.addErrorMessage("Too many users selected (" + selectedUsers.size()
+                        + "). Narrow the filter to " + MAX_BULK_USERS + " users or fewer per run.");
                 return;
             }
             if (selectedDepartments == null || selectedDepartments.isEmpty()) {
