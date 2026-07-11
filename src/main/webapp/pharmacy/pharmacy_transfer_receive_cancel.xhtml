@@ -180,6 +180,7 @@
                                                 value="Cancel Bill"
                                                 icon="fas fa-ban"
                                                 action="#{transferReceiveCancellationController.confirmCancellation()}"
+                                                disabled="#{not webUserController.hasPrivilege('PharmacyTransferReceiveCancel')}"
                                                 onclick="if (!confirm('Are you sure you want to CANCEL this Transfer Receive Bill?\n\nThis action will:\n- Reverse stock movements\n- Reverse cost accounting\n- Mark the original bill as cancelled\n\nThis cannot be undone!')) return false;"
                                                 ajax="false"
                                                 class="ui-button-danger m-2"

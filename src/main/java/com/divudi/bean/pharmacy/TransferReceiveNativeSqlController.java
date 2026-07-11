@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -74,6 +75,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
     // ---- Injected ----
     @Inject
     private SessionController sessionController;
+
+    @Inject
+    private WebUserController webUserController;
 
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
@@ -246,6 +250,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
     }
 
     public String cancelPendingReceive(Long preBillId) {
+        if (!isAuthorized("CANCEL", "PharmacyTransferReceiveCancel")) {
+            return "";
+        }
         if (preBillId == null) {
             JsfUtil.addErrorMessage("No pending receive selected.");
             return null;
@@ -313,6 +320,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
      * Mirrors TransferReceiveController.settle().
      */
     public void settle() {
+        if (!isAuthorized("FINALIZE", "PharmacyReceiveFinalize")) {
+            return;
+        }
         if (itemRowList == null || itemRowList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to Receive, Please check Received Quantity");
             return;
@@ -360,6 +370,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
      * Mirrors TransferReceiveController.settleApprove().
      */
     public void settleApprove() {
+        if (!isAuthorized("APPROVE", "PharmacyReceiveApprove")) {
+            return;
+        }
         if (receivedBillId == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
             return;
@@ -421,6 +434,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
      * Mirrors TransferReceiveController.saveRequest().
      */
     public void saveRequest() {
+        if (!isAuthorized("SAVE", "PharmacyReceiveSave")) {
+            return;
+        }
         if (issuedBill == null || issuedBill.getId() == null) {
             JsfUtil.addErrorMessage("No issued bill selected");
             return;
@@ -449,6 +465,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
      * Mirrors TransferReceiveController.finalizeRequest().
      */
     public void finalizeRequest() {
+        if (!isAuthorized("FINALIZE", "PharmacyReceiveFinalize")) {
+            return;
+        }
         if (receivedBillId == null) {
             JsfUtil.addErrorMessage("No saved request found. Please save first.");
             return;
@@ -1003,5 +1022,34 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
     public void setSelectedItemRow(TransferReceiveItemRowDto selectedItemRow) {
         this.selectedItemRow = selectedItemRow;
+    }
+
+    /**
+     * Authorization helper method to check Transfer Receive privileges and
+     * audit denied access.
+     *
+     * @param action The action being attempted (SAVE, FINALIZE, APPROVE, CANCEL)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, receivedBillId});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Transfer Receive access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, receivedBillId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " transfer receive requests.");
+            return false;
+        }
+
+        return true;
     }
 }

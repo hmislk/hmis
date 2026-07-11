@@ -227,6 +227,10 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
     }
 
     public void settle() {
+        if (!webUserController.hasPrivilege(Privileges.InwardPharmacyReturnSubmit.name())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to submit this return.");
+            return;
+        }
         if (settling) {
             return;
         }

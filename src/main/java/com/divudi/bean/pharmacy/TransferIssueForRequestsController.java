@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.admin.ConfigOptionInfo;
 import com.divudi.core.data.admin.PageMetadata;
@@ -49,6 +50,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -65,6 +68,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class TransferIssueForRequestsController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(TransferIssueForRequestsController.class.getName());
 
     @EJB
     private BillFacade billFacade;
@@ -88,6 +93,8 @@ public class TransferIssueForRequestsController implements Serializable {
     private UserStockController userStockController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     private BillController billController;
     @Inject
@@ -459,6 +466,9 @@ public class TransferIssueForRequestsController implements Serializable {
      * Saves the current items as a PHARMACY_ISSUE_PRE bill without moving stock.
      */
     public void saveDraftIssue() {
+        if (!isAuthorized("SAVE_DRAFT_ISSUE", "PharmacyIssueForRequestSave")) {
+            return;
+        }
         if (getIssuedBill().getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please select a department to issue to");
             return;
@@ -557,6 +567,9 @@ public class TransferIssueForRequestsController implements Serializable {
      * Finalizes the current PHARMACY_ISSUE_PRE draft (sets completed=true).
      */
     public void finalizeDraftIssue() {
+        if (!isAuthorized("FINALIZE_DRAFT_ISSUE", "PharmacyIssueForRequestFinalize")) {
+            return;
+        }
         if (getIssuedBill() == null || getIssuedBill().getId() == null) {
             JsfUtil.addErrorMessage("No draft to finalize. Please save first.");
             return;
@@ -582,6 +595,9 @@ public class TransferIssueForRequestsController implements Serializable {
      * Approves the PHARMACY_ISSUE_PRE draft: moves stock and converts to PHARMACY_ISSUE.
      */
     public synchronized void approveDraftIssue() {
+        if (!isAuthorized("APPROVE_DRAFT_ISSUE", "PharmacyIssueForRequestApprove")) {
+            return;
+        }
         if (getIssuedBill() == null || getIssuedBill().getId() == null) {
             JsfUtil.addErrorMessage("No finalized draft to approve.");
             return;
@@ -741,6 +757,9 @@ public class TransferIssueForRequestsController implements Serializable {
      * Cancels a saved/finalized PHARMACY_ISSUE_PRE draft (retires it before approval).
      */
     public void cancelPendingIssue() {
+        if (!isAuthorized("CANCEL_PENDING_ISSUE", "PharmacyTransferIssueCancel")) {
+            return;
+        }
         if (getIssuedBill() == null || getIssuedBill().getId() == null) {
             JsfUtil.addErrorMessage("No draft to cancel.");
             return;
@@ -771,6 +790,9 @@ public class TransferIssueForRequestsController implements Serializable {
     }
 
     public synchronized void settle() {
+        if (!isAuthorized("SETTLE_ISSUE", "PharmacyIssueForRequestFinalize")) {
+            return;
+        }
         if (getIssuedBill() != null && getIssuedBill().getId() != null) {
             JsfUtil.addErrorMessage("This bill has already been saved.");
             return;
@@ -1920,6 +1942,36 @@ public class TransferIssueForRequestsController implements Serializable {
         ));
 
         pageMetadataRegistry.registerPage(issuedListMetadata);
+    }
+
+    /**
+     * Authorization helper method to check Pharmacy Transfer Issue For
+     * Requests privileges and audit denied access
+     *
+     * @param action The action being attempted (e.g. SAVE_DRAFT_ISSUE, FINALIZE_DRAFT_ISSUE, APPROVE_DRAFT_ISSUE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, issuedBill != null ? issuedBill.getId() : "null"});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = issuedBill != null ? issuedBill.getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Pharmacy Transfer Issue For Requests access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " transfer issues.");
+            return false;
+        }
+
+        return true;
     }
 
 }

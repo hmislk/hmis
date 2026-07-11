@@ -504,6 +504,7 @@
                                                             ajax="false"
                                                             action="#{admissionController.navigateToPharmacyBhtRequest}"
                                                             icon="fa fa-prescription-bottle-alt"
+                                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest')}"
                                                             class="w-100">
                                                         </p:commandButton>
 
@@ -514,6 +515,7 @@
                                                             ajax="false"
                                                             action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingList}"
                                                             icon="fa fa-truck-medical"
+                                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyBhtReceive')}"
                                                             class="w-100">
                                                         </p:commandButton>
 
@@ -523,6 +525,7 @@
                                                             ajax="false"
                                                             action="#{wardPharmacyReturnToPharmacyController.navigateToReturn}"
                                                             icon="fa fa-truck-ramp-box"
+                                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
                                                             class="w-100">
                                                         </p:commandButton>
 
