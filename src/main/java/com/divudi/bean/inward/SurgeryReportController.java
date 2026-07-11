@@ -2,7 +2,6 @@ package com.divudi.bean.inward;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.dto.SurgeryReportDTO;
-import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
