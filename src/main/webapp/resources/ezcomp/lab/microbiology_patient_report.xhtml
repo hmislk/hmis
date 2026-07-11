@@ -48,8 +48,10 @@
                 </h:panelGroup>
                 
                 <div style="position: absolute; top: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Height')}%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 14px; height: 70%; vertical-align: top;" >
-                    <div id="ixName" >
-                        <h:outputLabel value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}" style="font-weight: bold;font-size: 21px!important; "/>
+                    <div style="margin-left:5%; text-align: left;">
+                        <h:outputLabel 
+                            value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}"
+                            style="font-weight: bold;font-size: 21px!important; text-decoration: underline; "/>
                     </div>
                     <div id="labelsAndValues" style="left:5%; margin-top: 7px; width: 90%; display: inline-block; vertical-align: top; " >
                         <div style="vertical-align: top; width: 100%; padding: 1px;margin: auto;display: inline-block;">
