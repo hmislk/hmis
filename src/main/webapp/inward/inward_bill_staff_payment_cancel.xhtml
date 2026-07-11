@@ -20,13 +20,16 @@
                                         <h:outputLabel value="Cancellation" />
                                     </div>
                                     <div class="d-flex align-items-center" style="width: 50%">
-                                        <p:inputText class="w-100" placeholder="Enter a Reason to Cancel" style="width: 100%" value="#{inwardSearch.comment}"/>
+                                        <p:inputText class="w-100" placeholder="Enter a Reason to Cancel" style="width: 100%" value="#{inwardSearch.comment}"
+                                                     onkeydown="if(event.key==='Enter'){event.preventDefault();return false;}"/>
                                         <p:spacer width="20%"></p:spacer>
                                         <p:commandButton 
+                                            id="btnCancelPaymentBill"
                                             value="Cancel" 
                                             ajax="false" 
                                             class="ui-button-danger mx-1" 
                                             icon="fas fa-ban" 
+                                            onclick="if (!confirm('Are you sure you want to cancel this payment bill?')) return false;"
                                             action="#{inwardSearch.cancelPaymentBill()}" >
                                         </p:commandButton> 
                                     </div>
