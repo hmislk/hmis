@@ -122,6 +122,10 @@ public class SurgeryReportController implements Serializable {
 
         reportList = (List<SurgeryReportDTO>) billFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP, 1000);
 
+        if (reportList.size() == 1000) {
+            JsfUtil.addErrorMessage("Report may be incomplete because results were limited to 1,000 records.");
+        }
+
         attachOtStatuses(reportList);
     }
 
