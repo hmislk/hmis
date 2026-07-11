@@ -103,19 +103,15 @@
                                 ajax="false" 
                                 value="Excel" 
                                 icon="fas fa-file-excel" 
-                                class="ui-button-success" >
-                                <p:dataExporter fileName="Surgery_Report" type="xlsx" target="tb" />
-                            </p:commandButton>
+                                class="ui-button-success" 
+                                action="#{surgeryReportController.downloadExcelReport()}" />
                             <p:commandButton 
                                 ajax="false" 
                                 value="PDF" 
                                 icon="fas fa-file-pdf" 
-                                class="ui-button-danger mx-1" >
-                                <p:dataExporter fileName="Surgery_Report" type="pdf" target="tb" />
-                            </p:commandButton>
+                                class="ui-button-danger mx-1" 
+                                action="#{surgeryReportController.downloadPdfReport()}" />
                         </h:panelGrid>
-
-
 
                         <p:dataTable 
                             id="tb"
