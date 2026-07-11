@@ -3613,35 +3613,6 @@ public class PharmacyBillSearch implements Serializable {
         }
     }
 
-    /**
-     * Authorization helper method to check Transfer Issue cancellation
-     * privileges and audit denied access
-     *
-     * @param action The action being attempted (CANCEL)
-     * @param requiredPrivilege The specific privilege required
-     * @return true if authorized, false if not
-     */
-    private boolean isAuthorized(String action, String requiredPrivilege) {
-        if (webUserController == null || sessionController == null) {
-            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
-                    new Object[]{action, bill != null ? bill.getId() : "null"});
-            return false;
-        }
-
-        if (!webUserController.hasPrivilege(requiredPrivilege)) {
-            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
-            Long billId = bill != null ? bill.getId() : null;
-
-            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Transfer Issue cancellation access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
-                    new Object[]{action, userId, billId, requiredPrivilege});
-
-            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " this transfer issue.");
-            return false;
-        }
-
-        return true;
-    }
-
     public void pharmacyTransferIssueCancel() {
         if (!isAuthorized("CANCEL", "PharmacyTransferIssueCancel")) {
             return;
@@ -5836,37 +5807,6 @@ public class PharmacyBillSearch implements Serializable {
         if (issueSearchDtos == null) {
             issueSearchDtos = new ArrayList<>();
         }
-    }
-
-    /**
-     * Authorization helper method to check GRN cancellation privileges and
-     * audit denied access
-     *
-     * @param action The action being attempted (PHARMACY_GRN_CANCEL,
-     * PHARMACY_GRN_RETURN_CANCEL)
-     * @param requiredPrivilege The specific privilege required
-     * @return true if authorized, false if not
-     */
-    private boolean isAuthorized(String action, String requiredPrivilege) {
-        if (webUserController == null || sessionController == null) {
-            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null",
-                    action);
-            return false;
-        }
-
-        if (!webUserController.hasPrivilege(requiredPrivilege)) {
-            // Audit denied access attempt
-            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
-            Long billId = bill != null ? bill.getId() : null;
-
-            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized GRN cancellation access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
-                    new Object[]{action, userId, billId, requiredPrivilege});
-
-            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase().replace('_', ' ') + ".");
-            return false;
-        }
-
-        return true;
     }
 
 }
