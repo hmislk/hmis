@@ -214,7 +214,9 @@ public class OutsideChargeReportController implements Serializable {
                 return;
             }
             bill.setPaidAmount(row.getPaidAmount() != null ? row.getPaidAmount() : 0.0);
-            bill.setPaid(row.getPaid() != null && row.getPaid());
+            boolean paid = row.getPaid() != null && row.getPaid();
+            bill.setPaid(paid);
+            bill.setPaidAt(paid ? new Date() : null);
             billFacade.edit(bill);
 
             if (row.getBillItemId() != null) {
@@ -274,10 +276,17 @@ public class OutsideChargeReportController implements Serializable {
         Map<String, Object> filters = new LinkedHashMap<>();
         filters.put("Admission From Date", fromDate != null ? sdf.format(fromDate) : "N/A");
         filters.put("Admission To Date", toDate != null ? sdf.format(toDate) : "N/A");
+        filters.put("Discharge From Date", dischargeFromDate != null ? sdf.format(dischargeFromDate) : "N/A");
+        filters.put("Discharge To Date", dischargeToDate != null ? sdf.format(dischargeToDate) : "N/A");
+        filters.put("Invoice Approved From Date", invoiceApprovedFromDate != null ? sdf.format(invoiceApprovedFromDate) : "N/A");
+        filters.put("Invoice Approved To Date", invoiceApprovedToDate != null ? sdf.format(invoiceApprovedToDate) : "N/A");
         filters.put("Institution", institution != null ? institution.getName() : "All Institutions");
         filters.put("Site", site != null ? site.getName() : "All Sites");
         filters.put("Department", department != null ? department.getName() : "All Departments");
+        filters.put("Referring Doctor", referringDoctor != null ? referringDoctor.getName() : "All");
         filters.put("Credit Company", creditCompany != null ? creditCompany.getName() : "All");
+        filters.put("Admission Type", admissionType != null && !admissionType.isEmpty()
+                ? admissionType.toString() : "All");
         filters.put("Paid Type", paidType != null && !paidType.isEmpty() ? paidType : "All");
         return filters;
     }
