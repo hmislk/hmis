@@ -86,13 +86,15 @@
                         <p:spacer width="20"/>
                         <h:panelGrid columns="6" class="my-3">
                             <p:commandButton 
+                                id="btnProcess"
                                 ajax="false" 
                                 value="Process" 
                                 icon="fas fa-cogs" 
                                 class="ui-button-warning" 
                                 action="#{surgeryReportController.processSurgeryStatusReport()}" >
                             </p:commandButton>
-                            <p:commandButton 
+                            <p:commandButton
+                                id="btnPrint"
                                 ajax="false" 
                                 value="Print" 
                                 icon="fas fa-print" 
@@ -100,12 +102,14 @@
                                 <p:printer target="tb"/>
                             </p:commandButton>
                             <p:commandButton 
+                                id="btnExcel"
                                 ajax="false" 
                                 value="Excel" 
                                 icon="fas fa-file-excel" 
                                 class="ui-button-success" 
                                 action="#{surgeryReportController.downloadExcelReport()}" />
                             <p:commandButton 
+                                id="btnPdf"
                                 ajax="false" 
                                 value="PDF" 
                                 icon="fas fa-file-pdf" 
