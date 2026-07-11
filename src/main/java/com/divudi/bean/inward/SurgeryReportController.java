@@ -95,8 +95,8 @@ public class SurgeryReportController implements Serializable {
 
         Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.SurgeryBill);
-        params.put("fd", com.divudi.core.util.CommonFunctions.getStartOfDay(fromDate));
-        params.put("td", com.divudi.core.util.CommonFunctions.getEndOfDay(toDate));
+        params.put("fd", fromDate);
+        params.put("td", toDate);
 
         if (institution != null) {
             jpql.append(" and b.institution = :inst ");
