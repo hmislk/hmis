@@ -551,12 +551,16 @@ public class PharmacyRequestForBhtController implements Serializable {
             billItem.setPharmaceuticalBillItem(pbi);
         }
         if (billItem.getPrescription() == null) {
-            Prescription newPrescription = new Prescription();
-            // Default the "Prescribed From" date to today at the start of every new
-            // cycle. Once a duration is entered, calculateToDateFromDuration() derives
-            // the "Prescribed To" date from this from-date + duration.
-            newPrescription.setPrescribedFrom(new Date());
-            billItem.setPrescription(newPrescription);
+            billItem.setPrescription(new Prescription());
+        }
+        // Default the "Prescribed From" date to today whenever it is missing. This
+        // covers the start of every new cycle (a fresh prescription after
+        // clearBillItem()) as well as recovery from a postback that submitted the
+        // calendar empty and nulled the field. Once a duration is entered,
+        // calculateToDateFromDuration() derives "Prescribed To" from this
+        // from-date + duration.
+        if (billItem.getPrescription().getPrescribedFrom() == null) {
+            billItem.getPrescription().setPrescribedFrom(new Date());
         }
         return billItem;
     }
