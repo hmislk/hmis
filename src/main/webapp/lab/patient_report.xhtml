@@ -16,6 +16,15 @@
                 <h:form>
                     <h:outputStylesheet library="css" name="lab.css" ></h:outputStylesheet>
 
+                    <style>
+                        /* Preserve consecutive spaces typed into the microbiology
+                           memo Text Editor (Quill), so extra in-line spacing is
+                           not collapsed while entering the result. */
+                        .micMemoEditor .ql-editor {
+                            white-space: pre-wrap;
+                        }
+                    </style>
+
                     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js" integrity="sha512-pdCVFUWsxl1A4g0uV6fyJ3nrnTGeWnZN2Tl/56j45UvZ1OMdm9CIbctuIHj+yBIRTUUyv6I9+OivXj4i0LPEYA==" crossorigin="anonymous"></script>
                     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js" integrity="sha512-VKjwFVu/mmKGk0Z0BxgDzmn10e590qk3ou/jkmRugAkSTMSIRkd4nEnk+n7r5WBbJquusQEQjBidrBD3IQQISQ==" crossorigin="anonymous"></script>
 
@@ -492,7 +501,7 @@
                                                                 <h:panelGroup rendered="#{pvm.investigationItem.ixItemValueType eq 'Memo'}" >
                                                                     <p:textEditor
                                                                         id="txtMicMemoVal"
-                                                                        class="w-100 mt-1"
+                                                                        class="w-100 mt-1 micMemoEditor"
                                                                         secure="false"
                                                                         allowFormatting="true"
                                                                         disabled="#{patientReportController.currentPatientReport.approved}"
