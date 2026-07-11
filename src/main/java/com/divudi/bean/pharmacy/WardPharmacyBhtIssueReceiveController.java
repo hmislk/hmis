@@ -1,7 +1,9 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
@@ -42,6 +44,8 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
 
     @EJB
     private BillFacade billFacade;
@@ -155,6 +159,10 @@ public class WardPharmacyBhtIssueReceiveController implements Serializable {
     }
 
     public void settle() {
+        if (!webUserController.hasPrivilege(Privileges.InwardPharmacyBhtReceive.name())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to receive this issue.");
+            return;
+        }
         if (settling) {
             return;
         }

@@ -11,6 +11,11 @@
     <ui:define name="content">
         <h:form id="form">
 
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('PurchaseOrdersApprovel')}" >
+                You are NOT authorized
+            </h:panelGroup>
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel')}" >
+
             <h:panelGroup rendered="#{!purchaseOrderController.printPreview}">
                 <p:panel >
                     <f:facet name="header">
@@ -303,6 +308,8 @@
                     </h:panelGroup>
 
                 </p:panel>
+            </h:panelGroup>
+
             </h:panelGroup>
 
         </h:form>

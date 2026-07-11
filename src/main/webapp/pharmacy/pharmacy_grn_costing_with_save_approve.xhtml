@@ -468,7 +468,8 @@
                                         class="ui-button-success mx-1"
                                         icon="pi pi-save"
                                         ajax="false"
-                                        rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnSave')}">
+                                        rendered="#{!grnCostingController.currentGrnBillPre.completed}"
+                                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnSave')}">
                                     </p:commandButton>
                                     <p:commandButton
                                         value="Finalize"
@@ -477,7 +478,8 @@
                                         icon="fas fa-flag"
                                         ajax="false"
                                         onclick="return confirm('Are you sure you want to finalize this GRN? This action cannot be undone.');"
-                                        rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnFinalize')}">
+                                        rendered="#{!grnCostingController.currentGrnBillPre.completed}"
+                                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnFinalize')}">
                                     </p:commandButton>
                                     <p:commandButton
                                         value="Approve"
@@ -486,7 +488,8 @@
                                         icon="fas fa-check"
                                         ajax="false"
                                         onclick="return confirm('Are you sure you want to approve this GRN? This action cannot be undone.');"
-                                        rendered="#{grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnApprove')}">
+                                        rendered="#{grnCostingController.currentGrnBillPre.completed}"
+                                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnApprove')}">
                                     </p:commandButton>
                                 </f:facet>
 

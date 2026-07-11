@@ -78,6 +78,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -99,6 +101,8 @@ import java.util.stream.Collectors;
 @Named
 @SessionScoped
 public class PharmacyBillSearch implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(PharmacyBillSearch.class.getName());
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -1310,7 +1314,39 @@ public class PharmacyBillSearch implements Serializable {
         return false;
     }
 
+    /**
+     * Authorization helper shared by the PO / transfer-issue / GRN
+     * cancellation actions: checks the privilege and audits denied access.
+     *
+     * @param action The action being attempted (e.g. CANCEL, PHARMACY_GRN_CANCEL)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, bill != null ? bill.getId() : "null"});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = bill != null ? bill.getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase().replace('_', ' ') + ".");
+            return false;
+        }
+
+        return true;
+    }
+
     public String cancelPoBill() {
+        if (!isAuthorized("CANCEL", "PharmacyOrderCancellation")) {
+            return "";
+        }
         if (getSelectedBills() == null || getSelectedBills().isEmpty()) {
             JsfUtil.addErrorMessage("Please select Bills");
             return "";
@@ -3344,6 +3380,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyPoCancel() {
+        if (!isAuthorized("CANCEL", "PharmacyOrderCancellation")) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -3379,6 +3418,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyPoRequestCancel() {
+        if (!isAuthorized("CANCEL", "PharmacyOrderCancellation")) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (getBill().getReferenceBill() != null && !getBill().getReferenceBill().isCancelled()) {
                 JsfUtil.addErrorMessage("Sorry You cant Cancell Approved Bill");
@@ -3474,6 +3516,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyGrnCancel() {
+        if (!isAuthorized("PHARMACY_GRN_CANCEL", "PharmacyGrnCancel")) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -3569,6 +3614,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyTransferIssueCancel() {
+        if (!isAuthorized("CANCEL", "PharmacyTransferIssueCancel")) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -3610,6 +3658,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyTransferIssueInpatientCancel() {
+        if (!isAuthorized("CANCEL", "PharmacyTransferIssueCancel")) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -3779,6 +3830,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyGrnReturnCancel() {
+        if (!isAuthorized("PHARMACY_GRN_RETURN_CANCEL", "PharmacyGrnReturnCancel")) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
