@@ -88,8 +88,8 @@
                                             </div>
                                             <div style="float: left;width: 2%;  " ></div>
                                             <div style=" text-align: left; float:left;width: 30%;padding-left: 1px; padding-right: 1px; padding-top: 2px; vertical-align: top;">
-                                                <h:outputLabel value="#{prv.strValue}" escape="false"
-                                                               style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: uppercase;" />
+                                                <h:outputLabel value="#{fn:toLowerCase(prv.strValue)}" escape="false"
+                                                               style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Antibiotic Result Text Transform (uppercase/lowercase/capitalize/none)', 'uppercase')};" />
                                             </div>
 
                                         </h:panelGroup>
@@ -109,8 +109,8 @@
                                             </div>
                                             <div style="float: left;width: 2%;  " ></div>
                                             <div style=" text-align: left; float:left;width: 30%;padding-left: 1px; padding-right: 1px; padding-top: 2px; vertical-align: top;">
-                                                <h:outputLabel value="#{prv.strValue}" escape="false"
-                                                               style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: uppercase;" />
+                                                <h:outputLabel value="#{fn:toLowerCase(prv.strValue)}" escape="false"
+                                                               style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Antibiotic Result Text Transform (uppercase/lowercase/capitalize/none)', 'uppercase')};" />
                                             </div>
 
                                         </h:panelGroup>
@@ -153,8 +153,8 @@
                                                     </div>
                                                     <div style="float: left;width: 2%;  " ></div>
                                                     <div style=" text-align: left; float:left;width: 30%;padding-left: 1px; padding-right: 1px; padding-top: 2px; vertical-align: top;">
-                                                        <h:outputLabel value="#{prv.strValue}" escape="false"
-                                                                       style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: uppercase;" />
+                                                        <h:outputLabel value="#{fn:toLowerCase(prv.strValue)}" escape="false"
+                                                                       style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Antibiotic Result Text Transform (uppercase/lowercase/capitalize/none)', 'uppercase')};" />
                                                     </div>
 
                                                 </h:panelGroup>
@@ -180,8 +180,8 @@
                                                     </div>
                                                     <div style="float: left;width: 2%;  " ></div>
                                                     <div style=" text-align: left; float:left;width: 30%;padding-left: 1px; padding-right: 1px; padding-top: 2px; vertical-align: top;">
-                                                        <h:outputLabel value="#{prv.strValue}" escape="false"
-                                                                       style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: uppercase;" />
+                                                        <h:outputLabel value="#{fn:toLowerCase(prv.strValue)}" escape="false"
+                                                                       style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Antibiotic Result Text Transform (uppercase/lowercase/capitalize/none)', 'uppercase')};" />
                                                     </div>
                                                 </h:panelGroup>
                                             </h:panelGroup>
