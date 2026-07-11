@@ -23,30 +23,30 @@
                 <div class="posbillBreak" style="page-break-after: always!important;">
 
                     <div class="institutionName" style="text-align: center!important;">
-                        <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+                        <h:outputText value="#{cc.attrs.bill.department.printingName}" />
                     </div>
 
                     <div class="headingBill" style="text-align: center; font-weight: bold;">
-                        <h:outputLabel value="PAYMENT VOUCHER" />
+                        <h:outputText value="PAYMENT VOUCHER" />
                     </div>
 
                     <div class="billline"><hr/></div>
 
                     <div class="billDetails">
                         <div>
-                            <h:outputLabel value="Bill ID : #{cc.attrs.bill.deptId}" />
+                            <h:outputText value="Bill ID : #{cc.attrs.bill.deptId}" />
                         </div>
                         <div>
-                            <h:outputLabel value="Date : " />
-                            <h:outputLabel value="#{cc.attrs.bill.billDate}">
+                            <h:outputText value="Date : " />
+                            <h:outputText value="#{cc.attrs.bill.billDate}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel>
+                            </h:outputText>
                         </div>
                         <div>
-                            <h:outputLabel value="Payment : #{cc.attrs.bill.paymentMethod}" />
+                            <h:outputText value="Payment : #{cc.attrs.bill.paymentMethod}" />
                         </div>
                         <div>
-                            <h:outputLabel value="Doctor : #{cc.attrs.bill.staff.person.nameWithTitle}" style="text-transform: capitalize;" />
+                            <h:outputText value="Doctor : #{cc.attrs.bill.staff.person.nameWithTitle}" style="text-transform: capitalize;" />
                         </div>
                     </div>
 
@@ -54,9 +54,9 @@
 
                     <!-- Patient / BHT identity -->
                     <div style="text-align: center; font-weight: bold;">
-                        <h:outputLabel value="#{vg.displayName}" />
+                        <h:outputText value="#{vg.displayName}" />
                         <br/>
-                        <h:outputLabel value="#{vg.displayIdentifier}" rendered="#{not empty vg.displayIdentifier}" />
+                        <h:outputText value="#{vg.displayIdentifier}" rendered="#{not empty vg.displayIdentifier}" />
                     </div>
 
                     <div class="billline"><hr/></div>
@@ -71,15 +71,15 @@
                         <ui:repeat value="#{vg.billItems}" var="bip">
                             <tr>
                                 <td style="text-align: left;">
-                                    <h:outputLabel value="#{bip.paidForBillFee.bill.deptId}" />
+                                    <h:outputText value="#{bip.paidForBillFee.bill.deptId}" />
                                 </td>
                                 <td style="text-align: left;">
-                                    <h:outputLabel value="#{bip.referanceBillItem.item.name}" />
+                                    <h:outputText value="#{bip.referanceBillItem.item.name}" />
                                 </td>
                                 <td style="text-align: right;">
-                                    <h:outputLabel value="#{bip.netValue}">
+                                    <h:outputText value="#{bip.netValue}">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
+                                    </h:outputText>
                                 </td>
                             </tr>
                         </ui:repeat>
@@ -91,12 +91,12 @@
                     <table style="width: 100%;">
                         <tr>
                             <td class="totalsBlock" style="text-align: left; width: 60%;">
-                                <h:outputLabel value="Total" style="font-weight: bold;" />
+                                <h:outputText value="Total" style="font-weight: bold;" />
                             </td>
                             <td class="totalsBlock" style="text-align: right!important; width: 40%;">
-                                <h:outputLabel value="#{vg.subtotal}" style="font-weight: bold;">
+                                <h:outputText value="#{vg.subtotal}" style="font-weight: bold;">
                                     <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
+                                </h:outputText>
                             </td>
                         </tr>
                     </table>
@@ -106,11 +106,11 @@
                     <!-- Signature footer on every page (stacked for POS width) -->
                     <div>
                         <br/>
-                        <h:outputLabel value="--------------------------" /><br/>
-                        <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}" /><br/>
+                        <h:outputText value="--------------------------" /><br/>
+                        <h:outputText value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}" /><br/>
                         <br/>
-                        <h:outputLabel value="--------------------------" /><br/>
-                        <h:outputLabel value="Professional : #{cc.attrs.bill.toStaff.person.nameWithTitle}" />
+                        <h:outputText value="--------------------------" /><br/>
+                        <h:outputText value="Professional : #{cc.attrs.bill.toStaff.person.nameWithTitle}" />
                     </div>
                 </div>
             </ui:repeat>
@@ -119,21 +119,21 @@
             <div class="posbillBreak" style="page-break-after: auto!important;">
 
                 <div class="institutionName" style="text-align: center!important;">
-                    <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+                    <h:outputText value="#{cc.attrs.bill.department.printingName}" />
                 </div>
 
                 <div class="headingBill" style="text-align: center; font-weight: bold;">
-                    <h:outputLabel value="PAYMENT VOUCHER — SUMMARY" />
+                    <h:outputText value="PAYMENT VOUCHER — SUMMARY" />
                 </div>
 
                 <div class="billline"><hr/></div>
 
                 <div class="billDetails">
                     <div>
-                        <h:outputLabel value="Bill ID : #{cc.attrs.bill.deptId}" />
+                        <h:outputText value="Bill ID : #{cc.attrs.bill.deptId}" />
                     </div>
                     <div>
-                        <h:outputLabel value="Doctor : #{cc.attrs.bill.staff.person.nameWithTitle}" style="text-transform: capitalize;" />
+                        <h:outputText value="Doctor : #{cc.attrs.bill.staff.person.nameWithTitle}" style="text-transform: capitalize;" />
                     </div>
                 </div>
 
@@ -142,32 +142,32 @@
                 <table style="width: 100%;">
                     <tr>
                         <td class="totalsBlock" style="text-align: left; width: 60%;">
-                            <h:outputLabel value="Gross Total" style="font-weight: bold;" />
+                            <h:outputText value="Gross Total" style="font-weight: bold;" />
                         </td>
                         <td class="totalsBlock" style="text-align: right!important; width: 40%;">
-                            <h:outputLabel value="#{-cc.attrs.bill.total}" style="font-weight: bold;">
+                            <h:outputText value="#{-cc.attrs.bill.total}" style="font-weight: bold;">
                                 <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
+                            </h:outputText>
                         </td>
                     </tr>
                     <tr>
                         <td class="totalsBlock" style="text-align: left; width: 60%;">
-                            <h:outputLabel value="Withholding Tax" style="font-weight: bold;" />
+                            <h:outputText value="Withholding Tax" style="font-weight: bold;" />
                         </td>
                         <td class="totalsBlock" style="text-align: right!important; width: 40%;">
-                            <h:outputLabel value="#{-cc.attrs.bill.tax}" style="font-weight: bold;">
+                            <h:outputText value="#{-cc.attrs.bill.tax}" style="font-weight: bold;">
                                 <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
+                            </h:outputText>
                         </td>
                     </tr>
                     <tr>
                         <td class="totalsBlock" style="text-align: left; width: 60%;">
-                            <h:outputLabel value="Net Total" style="font-weight: bold;" />
+                            <h:outputText value="Net Total" style="font-weight: bold;" />
                         </td>
                         <td class="totalsBlock" style="text-align: right!important; width: 40%;">
-                            <h:outputLabel value="#{-cc.attrs.bill.netTotal}" style="font-weight: bold;">
+                            <h:outputText value="#{-cc.attrs.bill.netTotal}" style="font-weight: bold;">
                                 <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
+                            </h:outputText>
                         </td>
                     </tr>
                 </table>
@@ -176,11 +176,11 @@
 
                 <div>
                     <br/>
-                    <h:outputLabel value="--------------------------" /><br/>
-                    <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}" /><br/>
+                    <h:outputText value="--------------------------" /><br/>
+                    <h:outputText value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}" /><br/>
                     <br/>
-                    <h:outputLabel value="--------------------------" /><br/>
-                    <h:outputLabel value="Professional : #{cc.attrs.bill.toStaff.person.nameWithTitle}" />
+                    <h:outputText value="--------------------------" /><br/>
+                    <h:outputText value="Professional : #{cc.attrs.bill.toStaff.person.nameWithTitle}" />
                 </div>
             </div>
 

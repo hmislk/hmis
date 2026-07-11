@@ -160,6 +160,11 @@ public class ProfessionalPaymentService {
             return groups;
         }
         String jpql = "select bi from BillItem bi "
+                + " left join fetch bi.paidForBillFee bf "
+                + " left join fetch bf.bill sb "
+                + " left join fetch sb.patientEncounter pe "
+                + " left join fetch pe.patient pep "
+                + " left join fetch sb.patient sp "
                 + " where bi.retired=:ret "
                 + " and bi.bill=:b "
                 + " order by bi.id";
