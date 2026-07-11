@@ -679,6 +679,19 @@ public class DepartmentController implements Serializable {
         return departmentList;
     }
 
+    public List<Department> completeInwardDepartments(String qry) {
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select c from Department c "
+                + " where c.retired=false "
+                + " and c.inactive=false "
+                + " and c.departmentType = com.divudi.core.data.DepartmentType.Inward "
+                + " and upper(c.name) like :q "
+                + " order by c.name";
+        hm.put("q", "%" + qry.toUpperCase() + "%");
+        return getFacade().findByJpql(sql, hm);
+    }
+
     public List<Department> completeDeptWithIns(String qry) {
         FacesContext context = FacesContext.getCurrentInstance();
         Institution selectedInstitution = (Institution) UIComponent.getCurrentComponent(context).getAttributes().get("selectedInstitution");
