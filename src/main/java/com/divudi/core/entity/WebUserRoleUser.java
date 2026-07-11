@@ -30,6 +30,7 @@ public class WebUserRoleUser implements Serializable {
     private WebUserRole webUserRole;
     @ManyToOne
     private WebUser webUser;
+    @ManyToOne
     private Department department;
 
     //Created Properties

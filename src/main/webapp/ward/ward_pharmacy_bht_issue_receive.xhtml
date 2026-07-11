@@ -31,6 +31,7 @@
                                 ajax="false"
                                 class="ui-button-success"
                                 action="#{wardPharmacyBhtIssueReceiveController.settle}"
+                                disabled="#{not webUserController.hasPrivilege('InwardPharmacyBhtReceive')}"
                                 onclick="return confirm('Confirm that these medicines have been physically received into this ward?');"/>
                         </div>
                     </div>

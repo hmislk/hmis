@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
@@ -51,6 +52,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -79,8 +82,12 @@ public class GrnCostingController implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final int PRICE_SCALE = 6;
 
+    private static final Logger LOGGER = Logger.getLogger(GrnCostingController.class.getName());
+
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     private BilledBill bill;
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -476,6 +483,9 @@ public class GrnCostingController implements Serializable {
     }
 
     public void requestFinalize() {
+        if (!isAuthorized("REQUEST_FINALIZE", "PharmacyGrnFinalize")) {
+            return;
+        }
         if (Math.abs(difference) > 1) {
             JsfUtil.addErrorMessage("The invoice does not match..! Check again");
             return;
@@ -546,6 +556,9 @@ public class GrnCostingController implements Serializable {
     }
 
     public void settle() {
+        if (!isAuthorized("SETTLE", "PharmacyGrnFinalize")) {
+            return;
+        }
         if (!validateInputs()) {
             return;
         }
@@ -750,7 +763,7 @@ public class GrnCostingController implements Serializable {
     }
 
     private void saveGrnBill() {
-        saveBill();
+        doSaveBill();
     }
 
     private void distributeValuesToItems() {
@@ -1041,6 +1054,9 @@ public class GrnCostingController implements Serializable {
     }
 
     public void finalizeBill() {
+        if (!isAuthorized("FINALIZE_BILL", "PharmacyGrnFinalize")) {
+            return;
+        }
         if (currentGrnBillPre == null) {
             JsfUtil.addErrorMessage("No Bill");
             return;
@@ -1058,6 +1074,9 @@ public class GrnCostingController implements Serializable {
     }
 
     public void saveGrnPreBill() {
+        if (!isAuthorized("SAVE_GRN_PRE_BILL", "PharmacyGrnSave")) {
+            return;
+        }
         getCurrentGrnBillPre().setBillDate(new Date());
         getCurrentGrnBillPre().setBillTime(new Date());
         getCurrentGrnBillPre().setPaymentMethod(getApproveBill().getPaymentMethod());
@@ -1094,6 +1113,20 @@ public class GrnCostingController implements Serializable {
     }
 
     public void saveBill() {
+        if (!isAuthorized("SAVE_BILL", "PharmacyGrnSave")) {
+            return;
+        }
+        doSaveBill();
+    }
+
+    /**
+     * Unguarded core of {@link #saveBill()}. Called directly (bypassing the
+     * PharmacyGrnSave check) by {@link #saveGrnBill()}, which is invoked from
+     * {@link #settle()} — a single-step create+finalize action already
+     * authorized under PharmacyGrnFinalize. A user with only the Finalize
+     * privilege must still be able to settle a brand new GRN in one step.
+     */
+    private void doSaveBill() {
         getGrnBill().setBillDate(new Date());
         getGrnBill().setBillTime(new Date());
 //        getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
@@ -1124,6 +1157,9 @@ public class GrnCostingController implements Serializable {
     }
 
     public void saveWholesaleBill() {
+        if (!isAuthorized("SAVE_WHOLESALE_BILL", "PharmacyGrnSave")) {
+            return;
+        }
         getGrnBill().setBillDate(new Date());
         getGrnBill().setBillTime(new Date());
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
@@ -2822,6 +2858,21 @@ public class GrnCostingController implements Serializable {
     }
 
     public void requestWithSaveApprove() {
+        if (!isAuthorized("REQUEST_WITH_SAVE_APPROVE", "PharmacyGrnSave")) {
+            return;
+        }
+        doRequestWithSaveApprove();
+    }
+
+    /**
+     * Unguarded core of {@link #requestWithSaveApprove()}. Called directly
+     * (bypassing the PharmacyGrnSave check) by
+     * {@link #finalizeGrnWithSaveApprove()} and
+     * {@link #approveGrnWithSaveApprove()}, which auto-save a not-yet-
+     * persisted draft as part of a Finalize/Approve action that has already
+     * been authorized under its own privilege.
+     */
+    private void doRequestWithSaveApprove() {
         // Simple save method for costing save/approve workflow
         // Allow saving with incomplete data - no validation required
 
@@ -2919,6 +2970,9 @@ public class GrnCostingController implements Serializable {
     }
 
     public void finalizeGrnWithSaveApprove() {
+        if (!isAuthorized("FINALIZE_GRN_WITH_SAVE_APPROVE", "PharmacyGrnFinalize")) {
+            return;
+        }
         // Apply same validations as authorize button
         if (getCurrentGrnBillPre().getInvoiceNumber() == null || getCurrentGrnBillPre().getInvoiceNumber().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please fill invoice number");
@@ -2961,7 +3015,7 @@ public class GrnCostingController implements Serializable {
         }
 
         // First perform the save operation
-        requestWithSaveApprove();
+        doRequestWithSaveApprove();
 
         // Mark the bill as completed
         getCurrentGrnBillPre().setCompleted(true);
@@ -3091,6 +3145,9 @@ public class GrnCostingController implements Serializable {
     }
 
     public void approveGrnWithSaveApprove() {
+        if (!isAuthorized("APPROVE_GRN_WITH_SAVE_APPROVE", "PharmacyGrnApprove")) {
+            return;
+        }
         // Always use bill's invoice number, ignore controller reference
         if (getCurrentGrnBillPre().getInvoiceNumber() == null || getCurrentGrnBillPre().getInvoiceNumber().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please fill invoice number");
@@ -3117,7 +3174,7 @@ public class GrnCostingController implements Serializable {
 
         // First ensure the bill is saved
         if (getCurrentGrnBillPre().getId() == null) {
-            requestWithSaveApprove(); // Save first if not already saved
+            doRequestWithSaveApprove(); // Save first if not already saved
         }
 
         // Ensure bill discount distribution and calculate totals BEFORE processing items
@@ -4453,6 +4510,41 @@ public class GrnCostingController implements Serializable {
     
     public String convertToWord(Double d) {
         return d == null ? "" : CommonFunctions.convertToWord(d);
+    }
+
+    /**
+     * Authorization helper method to check GRN Costing privileges and audit
+     * denied access
+     *
+     * @param action The action being attempted (SAVE, FINALIZE, APPROVE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null",
+                    action);
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = null;
+            if (currentGrnBillPre != null) {
+                billId = currentGrnBillPre.getId();
+            } else if (approveBill != null) {
+                billId = approveBill.getId();
+            }
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized GRN Costing access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " GRN.");
+            return false;
+        }
+
+        return true;
     }
 
 }

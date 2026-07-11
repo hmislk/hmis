@@ -43,6 +43,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.PriceMatrix;
@@ -2085,10 +2086,27 @@ public class PharmacySaleBhtController implements Serializable {
         return true;
     }
 
+    /**
+     * The room category of the patient's current room, or null when the patient
+     * is not in a room (or the room has no facility charge / category). Drives the
+     * room-category dimension of the inward pharmacy-margin matrix (issue #21981);
+     * null means "wildcard row only", preserving legacy behaviour.
+     */
+    private RoomCategory resolveCurrentRoomCategory(PatientEncounter encounter) {
+        if (encounter == null
+                || encounter.getCurrentPatientRoom() == null
+                || encounter.getCurrentPatientRoom().getRoomFacilityCharge() == null) {
+            return null;
+        }
+        return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory();
+    }
+
     public void updateMargin(BillItem bi, Department matrixDepartment, PaymentMethod paymentMethod) {
         double rate = Math.abs(bi.getRate());
         double margin;
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment, paymentMethod);
+        PatientEncounter encounter = bi.getBill() != null ? bi.getBill().getPatientEncounter() : null;
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment, paymentMethod, null,
+                encounter != null ? encounter.getAdmissionType() : null, resolveCurrentRoomCategory(encounter));
         if (priceMatrix != null) {
             margin = ((bi.getGrossValue() * priceMatrix.getMargin()) / 100);
             bi.setMarginRate((bi.getRate() * (priceMatrix.getMargin() + 100)) / 100);
@@ -2107,12 +2125,14 @@ public class PharmacySaleBhtController implements Serializable {
         double total = 0;
         double netTotal = 0;
         double marginTotal = 0;
+        PatientEncounter encounter = bill != null ? bill.getPatientEncounter() : null;
         for (BillItem bi : billItems) {
 
             double rate = Math.abs(bi.getRate());
             double margin;
 
-            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment, paymentMethod);
+            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment, paymentMethod, null,
+                    encounter != null ? encounter.getAdmissionType() : null, resolveCurrentRoomCategory(encounter));
 
             if (priceMatrix != null) {
                 margin = ((bi.getGrossValue() * priceMatrix.getMargin()) / 100);
@@ -2599,7 +2619,10 @@ public class PharmacySaleBhtController implements Serializable {
                     bi,
                     estimatedValueBeforeAddingMarginToCalculateMatrix,
                     matrixDept,
-                    paymentMethod
+                    paymentMethod,
+                    null,
+                    getPatientEncounter() != null ? getPatientEncounter().getAdmissionType() : null,
+                    resolveCurrentRoomCategory(getPatientEncounter())
             );
         }
 
@@ -2645,7 +2668,8 @@ public class PharmacySaleBhtController implements Serializable {
         PriceMatrix priceMatrix = null;
         // Discharge medicines are issued without the inward price matrix (no service charge).
         if (!dischargeIssueMode && bi.getItem() != null) {
-            priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, estimatedValue, matrixDept, paymentMethod);
+            priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, estimatedValue, matrixDept, paymentMethod, null,
+                    getPatientEncounter() != null ? getPatientEncounter().getAdmissionType() : null, resolveCurrentRoomCategory(getPatientEncounter()));
         }
 
         double marginPercentage = priceMatrix != null ? priceMatrix.getMargin() / 100 : 0.0;
