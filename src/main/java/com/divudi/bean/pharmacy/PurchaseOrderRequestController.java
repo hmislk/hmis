@@ -127,6 +127,9 @@ public class PurchaseOrderRequestController implements Serializable {
     private String emailRecipient;
 
     public void removeSelected() {
+        if (!isAuthorized("SAVE", "PurchaseOrderSave")) {
+            return;
+        }
         if (selectedBillItems == null) {
             return;
         }
@@ -273,6 +276,9 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void removeItem(BillItem bi) {
+        if (!isAuthorized("SAVE", "PurchaseOrderSave")) {
+            return;
+        }
         if (currentBill == null || bi == null) {
             return;
         }
