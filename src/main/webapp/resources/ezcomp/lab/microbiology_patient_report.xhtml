@@ -27,6 +27,9 @@
             }
             .micMemoValue {
                 line-height: 1.45;
+                /* Preserve consecutive spaces typed in the result while still
+                   wrapping long lines, so extra in-line spacing is not collapsed. */
+                white-space: pre-wrap;
             }
         </style>
 
