@@ -1,17 +1,23 @@
 package com.divudi.service;
 
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.ProfessionalPaymentVoucherGroup;
 import com.divudi.core.data.ServiceType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.util.CommonFunctions;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
@@ -28,6 +34,9 @@ public class ProfessionalPaymentService {
 
     @EJB
     BillFacade billFacade;
+
+    @EJB
+    BillItemFacade billItemFacade;
 
     public boolean isProfessionalFeePaid(BillFee billFee) {
         if (billFee == null) {
@@ -137,6 +146,65 @@ public class ProfessionalPaymentService {
 
         Double sum = billFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
         return sum;
+    }
+
+    /**
+     * Groups a settled professional payment bill's items into one group per
+     * BHT (inward) or per patient (OPD), preserving insertion order. Items
+     * whose source bill has neither a patient encounter nor a patient (e.g.
+     * miscellaneous staff fees) fall into a single "Miscellaneous" group.
+     */
+    public List<ProfessionalPaymentVoucherGroup> groupPaymentBillItemsByPatientOrBht(Bill paymentBill) {
+        List<ProfessionalPaymentVoucherGroup> groups = new ArrayList<>();
+        if (paymentBill == null) {
+            return groups;
+        }
+        String jpql = "select bi from BillItem bi "
+                + " where bi.retired=:ret "
+                + " and bi.bill=:b "
+                + " order by bi.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("b", paymentBill);
+        List<BillItem> paymentBillItems = billItemFacade.findByJpql(jpql, params);
+        if (paymentBillItems == null) {
+            return groups;
+        }
+        Map<String, ProfessionalPaymentVoucherGroup> groupsByKey = new LinkedHashMap<>();
+        for (BillItem paymentBillItem : paymentBillItems) {
+            Bill sourceBill = resolveSourceBillOfPaymentBillItem(paymentBillItem);
+            PatientEncounter encounter = sourceBill == null ? null : sourceBill.getPatientEncounter();
+            Patient patient = null;
+            String key;
+            if (encounter != null) {
+                key = "bht:" + encounter.getId();
+            } else {
+                patient = sourceBill == null ? null : sourceBill.getPatient();
+                key = patient == null ? "misc" : "pt:" + patient.getId();
+            }
+            ProfessionalPaymentVoucherGroup group = groupsByKey.get(key);
+            if (group == null) {
+                group = new ProfessionalPaymentVoucherGroup();
+                group.setPatientEncounter(encounter);
+                group.setPatient(encounter != null ? encounter.getPatient() : patient);
+                groupsByKey.put(key, group);
+            }
+            group.addBillItem(paymentBillItem);
+        }
+        groups.addAll(groupsByKey.values());
+        return groups;
+    }
+
+    private Bill resolveSourceBillOfPaymentBillItem(BillItem paymentBillItem) {
+        if (paymentBillItem.getPaidForBillFee() != null
+                && paymentBillItem.getPaidForBillFee().getBill() != null) {
+            return paymentBillItem.getPaidForBillFee().getBill();
+        }
+        if (paymentBillItem.getReferanceBillItem() != null
+                && paymentBillItem.getReferanceBillItem().getBill() != null) {
+            return paymentBillItem.getReferanceBillItem().getBill();
+        }
+        return paymentBillItem.getReferenceBill();
     }
 
 }
