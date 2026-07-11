@@ -1350,7 +1350,7 @@
                 </h:panelGroup>
 
                 <!-- Request -->
-                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_request' and webUserController.hasPrivilege('PharmacyTransfer')}">
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_request' and webUserController.hasPrivilege('PharmacyDisbursementRequest')}">
                     <h:form>
                         <p:tooltip for="pharmacy_request" value="Request"  showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink 
@@ -1367,7 +1367,7 @@
                 </h:panelGroup>
 
                 <!-- Issue for Requests -->
-                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_issue_for_request' and webUserController.hasPrivilege('PharmacyTransfer')}">
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_issue_for_request' and webUserController.hasPrivilege('PharmacyDisbursementIssurForRequest')}">
                     <h:form>
                         <p:tooltip for="pharmacy_issue_for_request" value="Issue for Requests"  showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink
@@ -1384,7 +1384,7 @@
                 </h:panelGroup>
 
                 <!-- Direct Issue -->
-                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_direct_issue' and webUserController.hasPrivilege('PharmacyTransfer')}">
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_direct_issue' and webUserController.hasPrivilege('PharmacyDisbursementDirectIssue')}">
                     <h:form>
                         <p:tooltip for="pharmacy_direct_issue" value="Direct Issue"  showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink
@@ -1401,7 +1401,7 @@
                 </h:panelGroup>
 
                 <!-- Receive -->
-                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_receive' and webUserController.hasPrivilege('PharmacyTransfer')}">
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_receive' and webUserController.hasPrivilege('PharmacyDisbursementRecieve')}">
                     <h:form>
                         <p:tooltip for="pharmacy_receive" value="Receive"  showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink 
@@ -1418,7 +1418,7 @@
                 </h:panelGroup>
 
                 <!-- Reports -->
-                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_disbursement_reports' and webUserController.hasPrivilege('PharmacyTransfer')}">
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_disbursement_reports' and webUserController.hasPrivilege('PharmacyDisbursementReports')}">
                     <h:form>
                         <p:tooltip for="pharmacy_disbursement_reports" value="Reports"  showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink 
