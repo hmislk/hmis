@@ -978,6 +978,7 @@
                                             ajax="false"
                                             action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingList}"
                                             icon="fa fa-truck-medical"
+                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyBhtReceive')}"
                                             class="w-100"/>
                                     </div>
                                     <div class="col-6">
@@ -987,6 +988,7 @@
                                             ajax="false"
                                             action="#{wardPharmacyReturnToPharmacyController.navigateToReturn}"
                                             icon="fa fa-truck-ramp-box"
+                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
                                             class="w-100"/>
                                     </div>
                                 </div>

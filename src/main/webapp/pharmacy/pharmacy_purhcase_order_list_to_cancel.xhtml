@@ -7,6 +7,10 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <ui:define name="subcontent">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyOrderCancellation')}" >
+            You are NOT authorized
+        </h:panelGroup>
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyOrderCancellation')}" >
         <h:form>
             <p:panel >
                 <f:facet name="header">
@@ -173,8 +177,9 @@
                         </p:panel> 
                     </div>
                 </div>
-            </p:panel>            
+            </p:panel>
         </h:form>
-    </ui:define>  
+        </h:panelGroup>
+    </ui:define>
 
 </ui:composition>

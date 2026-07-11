@@ -541,6 +541,37 @@ page with `PropertyNotFoundException: Target Unreachable` when `current` is null
 GET — unlike `p:inputText`, select components resolve the value expression's *type* during
 render. Guard with `rendered="#{bean.current ne null}"`.
 
+## 24. Granting a privilege that doesn't exist on the checked-out branch silently blanks ALL privileges for that department
+
+If you insert a `webuserprivilege` row for a `Privileges` enum value that exists on
+*another* branch (e.g. one you tested earlier today) but not on the branch currently
+checked out and deployed, the entire menu goes blank and every `hasPrivilege(...)` check
+returns `false` for that user **in that department** — not just the one bad privilege.
+`WebUserPrivilege.privilege` is `@Enumerated(EnumType.STRING)`; EclipseLink converts the
+DB string to the Java enum via `Enum.valueOf(...)` when it hydrates the full result list
+for `SessionController.fillUserPrivileges()`, and a single row whose string isn't a valid
+constant on the *currently running* code silently poisons that entire fetch — with no
+`SEVERE` entry in `server.log` and no visible page error, just empty menus / "not
+authorized" everywhere for that department, while other departments the row doesn't
+affect work fine (a strong tell if you compare departments). A domain restart or a full
+undeploy+redeploy does **not** fix this — it's a data/branch mismatch, not a cache.
+
+Diagnose fast: enable the MySQL general log to a table (`SET GLOBAL log_output='TABLE';
+SET GLOBAL general_log='ON';`) and check `mysql.general_log` for the exact
+`SELECT ... FROM WEBUSERPRIVILEGE WHERE ...` query, run it directly, then diff the
+distinct `PRIVILEGE` values for that user/department against
+`grep -oP '(?<=^    )[A-Za-z0-9_]+(?=\(")' src/main/java/com/divudi/core/data/Privileges.java`
+(note: some enum lines have a trailing `//` comment that breaks a naive end-of-line
+regex — verify any apparent mismatch with a direct `grep` before trusting the diff).
+
+This came up switching from the GRN privilege-guard branch (issue #22019, which added
+`PharmacyGrnCancel`/`PharmacyGrnReturnCancel`) to the PO privilege-guard branch (#22020,
+checked out fresh from `origin/development` since #22019 wasn't merged yet) — rows
+granted while testing #22019 were still sitting in the shared local DB and broke every
+privilege check for that department under the PO branch's code. Fix: delete (or retire)
+the rows for privileges that don't exist on the currently deployed branch, re-grant only
+what the current branch's `Privileges.java` actually declares, then re-login.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.PageMetadataRegistry;
@@ -46,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -59,6 +62,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class IssueReturnController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(IssueReturnController.class.getName());
 
     ///////
     @EJB
@@ -81,6 +86,8 @@ public class IssueReturnController implements Serializable {
     private PharmacyController pharmacyController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
@@ -251,7 +258,49 @@ public class IssueReturnController implements Serializable {
         return false;
     }
 
+    /**
+     * Authorization helper method to check Pharmacy Disposal Return
+     * privileges and audit denied access
+     *
+     * @param action The action being attempted (SAVE, FINALIZE, APPROVE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null",
+                    new Object[]{action});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Pharmacy Disposal Return access attempt - action={0}, userId={1}, requiredPrivilege={2}",
+                    new Object[]{action, userId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " this disposal return.");
+            return false;
+        }
+
+        return true;
+    }
+
     public void saveDisposalIssueReturnBill() {
+        if (!isAuthorized("SAVE", "CreateDisposalReturn")) {
+            return;
+        }
+        doSaveDisposalIssueReturnBill();
+    }
+
+    /**
+     * Unguarded core of {@link #saveDisposalIssueReturnBill()}. Called
+     * directly (bypassing the CreateDisposalReturn check) by
+     * {@link #finalizeDisposalIssueReturnBill()}, which auto-saves a
+     * not-yet-persisted draft as part of a Finalize action already
+     * authorized under FinalizeDisposalReturn.
+     */
+    private void doSaveDisposalIssueReturnBill() {
         if (disposalReturnAlreadyProcessed()) {
             return;
         }
@@ -262,6 +311,9 @@ public class IssueReturnController implements Serializable {
     }
 
     public void finalizeDisposalIssueReturnBill() {
+        if (!isAuthorized("FINALIZE", "FinalizeDisposalReturn")) {
+            return;
+        }
         if (disposalReturnAlreadyProcessed()) {
             return;
         }
@@ -276,7 +328,7 @@ public class IssueReturnController implements Serializable {
             return;
         }
 
-        saveDisposalIssueReturnBill();
+        doSaveDisposalIssueReturnBill();
         // Reload from DB so we don't trigger orphan-removal on billItems
         returnBill = billService.reloadBill(getReturnBill());
         if (returnBill != null) {
@@ -299,6 +351,9 @@ public class IssueReturnController implements Serializable {
     }
 
     public void settleDisposalIssueReturnBill() {
+        if (!isAuthorized("APPROVE", "ApproveDisposalReturn")) {
+            return;
+        }
         // Re-settling an already-settled bill (double-click, stale screen, stale
         // list row) would write a second set of items and stock movements and
         // then clobber the bill header (#21266 RC5).
