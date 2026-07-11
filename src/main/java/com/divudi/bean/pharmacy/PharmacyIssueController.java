@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.PageMetadataRegistry;
@@ -69,6 +70,8 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.persistence.TemporalType;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -98,6 +101,11 @@ import javax.faces.convert.Converter;
 @Named
 @SessionScoped
 public class PharmacyIssueController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(PharmacyIssueController.class.getName());
+
+    @Inject
+    private WebUserController webUserController;
 
     String errorMessage = null;
     private static final ConcurrentHashMap<String, ReentrantLock> lockMap = new ConcurrentHashMap<>();
@@ -1018,7 +1026,49 @@ public class PharmacyIssueController implements Serializable {
     // Save → Finalize → Approve workflow for Disposal Issue
     // ──────────────────────────────────────────────────────────────────────────
 
+    /**
+     * Authorization helper method to check Pharmacy Disposal Issue
+     * privileges and audit denied access
+     *
+     * @param action The action being attempted (SAVE, FINALIZE, APPROVE, CANCEL)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null",
+                    new Object[]{action});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Pharmacy Disposal Issue access attempt - action={0}, userId={1}, requiredPrivilege={2}",
+                    new Object[]{action, userId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " this disposal issue.");
+            return false;
+        }
+
+        return true;
+    }
+
     public String saveDisposalIssueDraft() {
+        if (!isAuthorized("SAVE", "PharmacyDisposalIssue")) {
+            return null;
+        }
+        return doSaveDisposalIssueDraft();
+    }
+
+    /**
+     * Unguarded core of {@link #saveDisposalIssueDraft()}. Called directly
+     * (bypassing the PharmacyDisposalIssue check) by
+     * {@link #finalizeCurrentDraft()}, which auto-saves a not-yet-persisted
+     * draft as part of a Finalize action that has already been authorized
+     * under PharmacyDisposalIssueFinalize.
+     */
+    private String doSaveDisposalIssueDraft() {
         editingQty = null;
         errorMessage = null;
         if (toDepartment == null) {
@@ -1092,6 +1142,9 @@ public class PharmacyIssueController implements Serializable {
     }
 
     public String finalizeCurrentDraft() {
+        if (!isAuthorized("FINALIZE", "PharmacyDisposalIssueFinalize")) {
+            return null;
+        }
         if (toDepartment == null) {
             JsfUtil.addErrorMessage("Please select a Department first.");
             return null;
@@ -1113,7 +1166,7 @@ public class PharmacyIssueController implements Serializable {
         if (errorCheckForSaleBill()) {
             return null;
         }
-        saveDisposalIssueDraft();
+        doSaveDisposalIssueDraft();
         if (getPreBill().getId() == null) {
             JsfUtil.addErrorMessage("Could not save draft. Cannot finalize.");
             return null;
@@ -1277,6 +1330,9 @@ public class PharmacyIssueController implements Serializable {
     }
 
     public String approveDisposalIssue(Long billId) {
+        if (!isAuthorized("APPROVE", "PharmacyDisposalIssueApprove")) {
+            return null;
+        }
         if (billId == null) {
             JsfUtil.addErrorMessage("No draft selected.");
             return null;
@@ -1414,6 +1470,9 @@ public class PharmacyIssueController implements Serializable {
     }
 
     public String cancelPendingDisposalIssue(Long billId) {
+        if (!isAuthorized("CANCEL", "PharmacyDisposalIssueCancel")) {
+            return null;
+        }
         if (billId == null) {
             JsfUtil.addErrorMessage("No draft selected.");
             return null;
@@ -1431,6 +1490,9 @@ public class PharmacyIssueController implements Serializable {
     }
 
     public String cancelFinalizedDisposalIssue(Long billId) {
+        if (!isAuthorized("CANCEL", "PharmacyDisposalIssueCancel")) {
+            return null;
+        }
         if (billId == null) {
             JsfUtil.addErrorMessage("No draft selected.");
             return null;
