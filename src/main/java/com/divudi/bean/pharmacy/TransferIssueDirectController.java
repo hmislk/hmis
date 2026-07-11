@@ -907,7 +907,7 @@ public class TransferIssueDirectController implements Serializable {
             LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Pharmacy Direct Transfer Issue access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
                     new Object[]{action, userId, billId, requiredPrivilege});
 
-            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " direct transfer issues.");
+            JsfUtil.addErrorMessage("You don't have permission to perform this direct transfer issue action.");
             return false;
         }
 
