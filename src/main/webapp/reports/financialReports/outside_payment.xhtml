@@ -164,18 +164,58 @@
 
                         </h:panelGrid><br/>
 
-                        <div class="d-flex align-items-center my-3">
-                            <p:commandButton class="ui-button-warning mx-1" icon="fas fa-cogs" ajax="false" value="Process" action="#{outsideChargeReportController.processOutsidePaymentReport()}" >
-                            </p:commandButton>
-                            <p:commandButton class="mx-1" icon="fas fa-print" ajax="false" value="Print All">
-                            </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download" action="#{reportController.downloadLabTestCount}">
-                            </p:commandButton>
-                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
-                            </p:commandButton>
+                        <!--action buttons--> 
+                        
+                        <div class="row mb-2 my-3">
+                            <div class="col-md-2">
+                                <p:commandButton ajax="false" 
+                                                 value="Process" 
+                                                 style="width: 150px"
+                                                 action="#{outsideChargeReportController.processOutsidePaymentReport()}" 
+                                                 class="mx-2 ui-button-warning"
+                                                 icon="fas fa-cogs">
+                                </p:commandButton>
+                            </div>
+                            <div  class="col-md-2">
+                                <p:commandButton id="btnPrint" class="mx-2 ui-button-info"
+                                                 icon="fas fa-print"
+                                                 style="width: 150px"
+                                                 type="button"
+                                                 value="Print"
+                                                 onclick="printOutsidePaymentReport()">
+                                </p:commandButton>
+
+                            </div>
+
+                            <div  class="col-md-2">
+                                <p:commandButton id="btnExcel" class="mx-2 ui-button-success"
+                                                 style="width: 150px"
+                                                 icon="fas fa-file-excel"
+                                                 ajax="false" value="Export Excel">
+                                    <p:dataExporter
+                                        type="xlsx"
+                                        fileName="#{outsideChargeReportController.outsidePaymentReportFileName}"
+                                        target="tblobs"
+                                        postProcessor="#{outsideChargeReportController.postProcessOutsidePaymentReportExcel}"/>
+                                </p:commandButton>
+
+                            </div>
+                            <div  class="col-md-2">
+                                <p:commandButton
+                                    class="mx-2 ui-button-danger"
+                                    style="width: 150px"
+                                    value="Export PDF"
+                                    icon="pi pi-file-pdf"
+                                    ajax="false"
+                                    action="#{outsideChargeReportController.exportOutsidePaymentReportToPDF()}">
+                                </p:commandButton>
+                            </div>
+
                         </div>
 
+
                         <h:panelGroup>
+                          <div id="printPanel">
                             <p:dataTable
                                 id="tblobs"
                                 value="#{outsideChargeReportController.reportRows}"
@@ -301,21 +341,60 @@
                                     <p:selectBooleanCheckbox value="#{row.paid}"/>
                                 </p:column>
 
-                                <p:column style="width: 100px">
+                                <p:column style="width: 100px" exportable="false">
                                     <f:facet name="header">
                                         <h:outputLabel value="Update"/>
                                     </f:facet>
-                                    <p:commandButton value="Update">
+                                    <p:commandButton value="Update"
+                                                      icon="fas fa-save"
+                                                      action="#{outsideChargeReportController.updateOutsidePaymentRow(row)}"
+                                                      update="tblobs :growl">
+                                        <p:confirm header="Confirm Update" message="Save changes for this row?" icon="pi pi-exclamation-triangle" />
                                     </p:commandButton>
                                 </p:column>
 
                             </p:dataTable>
+                          </div>
 
                             <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
                                 <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="pi pi-times" />
                                 <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
                             </p:confirmDialog>
                         </h:panelGroup>
+
+                        <style type="text/css" media="print">
+                            body * {
+                                visibility: hidden;
+                            }
+                            #printPanel, #printPanel * {
+                                visibility: visible;
+                            }
+                            #printPanel {
+                                position: absolute;
+                                left: 0;
+                                top: 0;
+                                width: 100%;
+                            }
+                            #printPanel table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-size: 9pt;
+                            }
+                            #printPanel th, #printPanel td {
+                                border: 1px solid #333;
+                                padding: 4px 6px;
+                            }
+                            @page {
+                                size: landscape;
+                                margin: 10mm;
+                            }
+                        </style>
+
+                        <script type="text/javascript">
+                            function printOutsidePaymentReport() {
+                                window.print();
+                            }
+                        </script>
                     </p:panel>                          
                 </h:form>
 
