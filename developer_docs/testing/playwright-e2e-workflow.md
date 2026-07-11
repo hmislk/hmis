@@ -514,7 +514,34 @@ with a `Finance` API-key header — it runs the identical `fetchInwardMargin(...
 controllers use and returns the matched row id + margin %. Verified while testing room-category
 pharmacy margins (issue #21981).
 
-## 23. Granting a privilege that doesn't exist on the checked-out branch silently blanks ALL privileges for that department
+## 23. Three authoring gotchas found via E2E on the role-template pages (issue #22023)
+
+Testing `admin/users/user_role_users.xhtml` / `user_role_bulk_operations.xhtml` surfaced
+three silent-failure patterns worth checking on any new admin page:
+
+1. **`p:selectManyCheckbox` over a `List<Entity>` needs an explicit named converter.**
+   The `@FacesConverter(forClass = Department.class)` converter is *not* applied to
+   `UISelectMany` bound to a generic `List` (type erasure — JSF can't detect the element
+   type), so submitted values stay `String`s and the action later dies with
+   `ClassCastException: java.lang.String cannot be cast to ... Department` inside the EJB.
+   Fix: register a named converter (e.g. `userRoleDepartmentConverter`) and set
+   `converter="..."` on the component explicitly.
+2. **`process="cmbA cmbB"` without `@this` silently skips the button's own action.**
+   The AJAX request fires, inputs are applied, the `update` render runs — but the
+   `action` never executes because the button itself wasn't in the execute list.
+   Symptom: "No records found" with no error anywhere. Always write
+   `process="@this cmbA cmbB"`.
+3. **Multi-select checkbox column: this PrimeFaces version wants `selectionMode="multiple"`
+   on the `p:dataTable` + `<p:column selectionBox="true"/>`** — a
+   `<p:column selectionMode="multiple"/>` (the pattern current PF docs show) renders an
+   *empty* cell. Copy the working pattern from `user_remove_multiple.xhtml`.
+
+Also (rendering): a `p:selectOneMenu` bound to `#{bean.current.field}` blows up the whole
+page with `PropertyNotFoundException: Target Unreachable` when `current` is null on first
+GET — unlike `p:inputText`, select components resolve the value expression's *type* during
+render. Guard with `rendered="#{bean.current ne null}"`.
+
+## 24. Granting a privilege that doesn't exist on the checked-out branch silently blanks ALL privileges for that department
 
 If you insert a `webuserprivilege` row for a `Privileges` enum value that exists on
 *another* branch (e.g. one you tested earlier today) but not on the branch currently
