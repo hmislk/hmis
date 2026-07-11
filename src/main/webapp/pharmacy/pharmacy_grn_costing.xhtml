@@ -33,6 +33,7 @@
                             class="ui-button-success"
                             icon="fas fa-check"
                             ajax="false"
+                            disabled="#{not webUserController.hasPrivilege('PharmacyGrnFinalize')}"
                             style="float: right;">
                         </p:commandButton>
                     </f:facet>

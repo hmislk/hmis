@@ -654,6 +654,8 @@ public enum Privileges {
     PharmacyGrnSave("Pharmacy GRN Save"),
     PharmacyGrnFinalize("Pharmacy GRN Finalize"),
     PharmacyGrnApprove("Pharmacy GRN Approve"),
+    PharmacyGrnCancel("Pharmacy GRN Cancel"),
+    PharmacyGrnReturnCancel("Pharmacy GRN Return Cancel"),
     PharmacyItemSearch("Pharmacy Item Search"),
     PharmacyGenarateReports("Pharmacy Generate Reports"),
     PharmacySummaryViews("Pharmacy Summary Views"),
@@ -1043,6 +1045,8 @@ public enum Privileges {
             case PharmacyGrnSave:
             case PharmacyGrnFinalize:
             case PharmacyGrnApprove:
+            case PharmacyGrnCancel:
+            case PharmacyGrnReturnCancel:
             case PrintOriginalPoBillFromReprint:
             case PrintOriginalGrnBillFromReprint:
             case PharmacyItemNameEdit:
