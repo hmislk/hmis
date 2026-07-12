@@ -6,6 +6,7 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:phe="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
                 xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="content">
@@ -39,6 +40,17 @@
                                 class="ui-button-info"
                                 rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}"
                                 action="#{inpatientClinicalDataController.navigateToInwardMedicinesFromAdmission(pharmacySaleBhtController.bhtRequestBill.patientEncounter)}">
+                            </p:commandButton>
+
+                            <p:commandButton
+                                id="btnViewRequest"
+                                value="View Request"
+                                icon="fa fa-file-alt"
+                                type="button"
+                                class="ui-button-help"
+                                title="View the original request with comments"
+                                rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}"
+                                onclick="PF('viewRequestDialog').show();">
                             </p:commandButton>
 
                             <p:selectBooleanCheckbox
@@ -489,8 +501,19 @@
 
             </p:panel>
 
-
-
+            <p:dialog
+                id="viewRequestDlg"
+                widgetVar="viewRequestDialog"
+                header="Original Request"
+                modal="true"
+                appendTo="@(body)"
+                width="60%"
+                fitViewport="true"
+                position="top"
+                rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}">
+                <ph:pharmacy_bht_issue_request_receipt
+                    bill="#{pharmacySaleBhtController.bhtRequestBill}" />
+            </p:dialog>
 
         </h:form>
     </ui:define>
