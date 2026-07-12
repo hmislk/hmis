@@ -13,6 +13,10 @@ import com.divudi.core.data.dto.user.UserUpsertRequestDTO;
 import com.divudi.core.entity.*;
 import com.divudi.core.facade.*;
 import com.divudi.core.light.common.WebUserLight;
+import com.divudi.service.UserRoleApplicationService;
+import com.divudi.service.UserRoleApplicationService.RoleAspect;
+import com.divudi.service.UserRoleApplicationService.RoleApplicationResult;
+import com.divudi.service.UserRoleApplicationService.RoleOperation;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
@@ -59,6 +63,14 @@ public class UserManagementApi {
     private PersonFacade personFacade;
     @EJB
     private StaffFacade staffFacade;
+    @EJB
+    private UserIconFacade userIconFacade;
+    @EJB
+    private TriggerSubscriptionFacade triggerSubscriptionFacade;
+    @EJB
+    private WebUserDefaultLoginPageFacade webUserDefaultLoginPageFacade;
+    @EJB
+    private UserRoleApplicationService userRoleApplicationService;
 
     private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
 
@@ -876,6 +888,579 @@ public class UserManagementApi {
             return errorResponse("Invalid JSON format", 400);
         } catch (Exception e) {
             return errorResponse("Internal server error", 500);
+        }
+    }
+
+    // ── Role-template operations (issue #22023) ─────────────────────────────
+    // Roles are admin-time templates; these endpoints stamp/reset user-level
+    // records (privileges/icons/subscriptions/login page) from a role
+    // template via UserRoleApplicationService — same engine used by the UI
+    // and the AI assistant.
+
+    /**
+     * POST /api/users/{id}/role/reset
+     * Body: {"roleId": optional long, "departmentIds": [long,...] required,
+     * "aspects": optional ["PRIVILEGES","ICONS","SUBSCRIPTIONS","LOGIN_PAGE"] default ["PRIVILEGES"],
+     * "updateUserRole": optional bool default true, "preview": optional bool default false}
+     * roleId omitted/null uses the target user's own WebUser.role (400 if the user has no role).
+     */
+    @POST
+    @Path("/{id}/role/reset")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response resetUserRole(@PathParam("id") Long id, String body) {
+        return applyRoleOperation(RoleOperation.RESET, id, body, false);
+    }
+
+    /**
+     * POST /api/users/{id}/role/expand
+     * Body: {"roleId": required long, "departmentIds": [long,...] required,
+     * "aspects": optional default ["PRIVILEGES"], "preview": optional bool default false}
+     */
+    @POST
+    @Path("/{id}/role/expand")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response expandUserRole(@PathParam("id") Long id, String body) {
+        return applyRoleOperation(RoleOperation.EXPAND, id, body, true);
+    }
+
+    /**
+     * POST /api/users/{id}/role/narrow
+     * Body: {"roleId": required long, "departmentIds": [long,...] required,
+     * "aspects": optional default ["PRIVILEGES"], "preview": optional bool default false}
+     */
+    @POST
+    @Path("/{id}/role/narrow")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response narrowUserRole(@PathParam("id") Long id, String body) {
+        return applyRoleOperation(RoleOperation.NARROW, id, body, true);
+    }
+
+    private Response applyRoleOperation(RoleOperation op, Long id, String body, boolean roleRequired) {
+        try {
+            WebUser apiUser = validateApiUser();
+            if (apiUser == null) return errorResponse("Not a valid key", 401);
+            if (!isAdmin(apiUser)) return errorResponse("Insufficient privileges", 403);
+            WebUser u = webUserFacade.find(id);
+            if (u == null || u.isRetired()) return errorResponse("User not found", 404);
+
+            Map<String, Object> req = parseJsonBody(body);
+            WebUserRole role;
+            Object roleIdObj = req.get("roleId");
+            if (roleIdObj != null) {
+                role = findRoleOrThrow(toLong(roleIdObj, "roleId"));
+            } else if (roleRequired) {
+                throw new ApiValidationException("roleId is required", 400);
+            } else {
+                role = u.getRole();
+                if (role == null) {
+                    return errorResponse("User has no default role; specify roleId explicitly", 400);
+                }
+            }
+
+            List<Department> departments = resolveDepartments(extractLongList(req, "departmentIds", true));
+            Set<RoleAspect> aspects = parseAspects(extractStringList(req, "aspects", Collections.singletonList("PRIVILEGES")));
+            boolean updateUserRole = toBoolean(req.get("updateUserRole"), true);
+            boolean preview = toBoolean(req.get("preview"), false);
+
+            if (preview) {
+                Map<RoleAspect, Long> counts = userRoleApplicationService.previewCounts(op, u, role, departments, aspects);
+                return successResponse(previewResponse(op, u, role, departments, aspects, counts));
+            }
+
+            RoleApplicationResult result = userRoleApplicationService.apply(op, u, role, departments, aspects, updateUserRole, apiUser);
+            if (!result.isSuccess()) return errorResponse(result.getErrorMessage(), 400);
+            return successResponse(resultResponse(op, result));
+        } catch (ApiValidationException e) {
+            return errorResponse(e.getMessage(), e.getCode());
+        } catch (JsonSyntaxException e) {
+            return errorResponse("Invalid JSON format", 400);
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), 400);
+        } catch (Exception e) {
+            return errorResponse("Internal server error", 500);
+        }
+    }
+
+    /**
+     * POST /api/users/bulk/role-operations
+     * Body: {"action": "RESET"|"EXPAND"|"NARROW", "userIds": [long] optional,
+     * "filter": {"roleId": long optional, "departmentId": long optional} optional,
+     * "roleId": optional (target template role), "departmentIds": [long] required,
+     * "aspects": optional default ["PRIVILEGES"], "updateUserRole": optional bool default true,
+     * "preview": optional bool default false, "confirm": optional bool default false}
+     * Explicit userIds wins over filter. Safety gate: preview=false and confirm=false is
+     * rejected — callers must preview first, then repeat with confirm=true to apply.
+     */
+    @POST
+    @Path("/bulk/role-operations")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response bulkRoleOperations(String body) {
+        try {
+            WebUser apiUser = validateApiUser();
+            if (apiUser == null) return errorResponse("Not a valid key", 401);
+            if (!isAdmin(apiUser)) return errorResponse("Insufficient privileges", 403);
+
+            Map<String, Object> req = parseJsonBody(body);
+            Object actionObj = req.get("action");
+            if (!(actionObj instanceof String) || ((String) actionObj).trim().isEmpty()) {
+                return errorResponse("action is required", 400);
+            }
+            RoleOperation op;
+            try {
+                op = RoleOperation.valueOf(((String) actionObj).trim());
+            } catch (IllegalArgumentException e) {
+                return errorResponse("Invalid action: " + actionObj + ". Valid values: RESET, EXPAND, NARROW", 400);
+            }
+
+            Long roleId = req.get("roleId") != null ? toLong(req.get("roleId"), "roleId") : null;
+            WebUserRole role = roleId != null ? findRoleOrThrow(roleId) : null;
+
+            List<Department> departments = resolveDepartments(extractLongList(req, "departmentIds", true));
+            Set<RoleAspect> aspects = parseAspects(extractStringList(req, "aspects", Collections.singletonList("PRIVILEGES")));
+            boolean updateUserRole = toBoolean(req.get("updateUserRole"), true);
+            boolean preview = toBoolean(req.get("preview"), false);
+            boolean confirm = toBoolean(req.get("confirm"), false);
+
+            // Resolve target users: explicit userIds wins over filter.
+            List<Long> userIds = extractLongList(req, "userIds", false);
+            List<WebUser> users;
+            List<Long> missingUserIds = new ArrayList<>();
+            if (userIds != null && !userIds.isEmpty()) {
+                users = new ArrayList<>();
+                for (Long uid : userIds) {
+                    WebUser candidate = webUserFacade.find(uid);
+                    if (candidate == null || candidate.isRetired()) {
+                        missingUserIds.add(uid);
+                    } else {
+                        users.add(candidate);
+                    }
+                }
+            } else {
+                users = resolveUsersByFilter(req.get("filter"));
+            }
+
+            final int MAX_BULK_USERS = 500;
+            if (users.size() > MAX_BULK_USERS) {
+                return errorResponse("Too many users resolved (" + users.size() + "). Narrow the filter; max allowed: " + MAX_BULK_USERS, 400);
+            }
+
+            if (!preview && !confirm) {
+                Map<String, Object> m = new LinkedHashMap<>();
+                m.put("status", "error");
+                m.put("code", 400);
+                m.put("message", "Safety gate: call again with preview=true to review impact, then repeat with confirm=true to apply.");
+                m.put("resolvedUserCount", users.size());
+                if (!missingUserIds.isEmpty()) m.put("missingUserIds", missingUserIds);
+                return Response.status(400).entity(gson.toJson(m)).build();
+            }
+
+            if (preview) {
+                Map<RoleAspect, Long> totals = new EnumMap<>(RoleAspect.class);
+                for (RoleAspect a : aspects) totals.put(a, 0L);
+                int previewedCount = Math.min(users.size(), 200);
+                for (int i = 0; i < previewedCount; i++) {
+                    WebUser targetUser = users.get(i);
+                    WebUserRole effectiveRole = role != null ? role : targetUser.getRole();
+                    if (effectiveRole == null) continue;
+                    Map<RoleAspect, Long> counts = userRoleApplicationService.previewCounts(op, targetUser, effectiveRole, departments, aspects);
+                    for (RoleAspect a : aspects) {
+                        totals.merge(a, counts.getOrDefault(a, 0L), Long::sum);
+                    }
+                }
+                Map<String, Object> m = new LinkedHashMap<>();
+                m.put("preview", true);
+                m.put("action", op.name());
+                m.put("userCount", users.size());
+                m.put("previewedUserCount", previewedCount);
+                Map<String, Long> aspectTotals = new LinkedHashMap<>();
+                for (RoleAspect a : aspects) aspectTotals.put(a.name(), totals.get(a));
+                m.put("previewCounts", aspectTotals);
+                if (!missingUserIds.isEmpty()) m.put("missingUserIds", missingUserIds);
+                return successResponse(m);
+            }
+
+            // confirm == true: apply for real
+            List<RoleApplicationResult> results = userRoleApplicationService.applyBulk(op, users, role, departments, aspects, updateUserRole, apiUser);
+            List<Map<String, Object>> perUser = new ArrayList<>();
+            int succeeded = 0;
+            int failed = 0;
+            int totalAdded = 0;
+            int totalRetired = 0;
+            for (RoleApplicationResult r : results) {
+                perUser.add(resultResponse(op, r));
+                if (r.isSuccess()) {
+                    succeeded++;
+                    totalAdded += r.getTotalAdded();
+                    totalRetired += r.getTotalRetired();
+                } else {
+                    failed++;
+                }
+            }
+            Map<String, Object> summary = new LinkedHashMap<>();
+            summary.put("action", op.name());
+            summary.put("usersProcessed", results.size());
+            summary.put("succeeded", succeeded);
+            summary.put("failed", failed);
+            summary.put("totalAdded", totalAdded);
+            summary.put("totalRetired", totalRetired);
+
+            Map<String, Object> out = new LinkedHashMap<>();
+            out.put("preview", false);
+            out.put("summary", summary);
+            out.put("results", perUser);
+            if (!missingUserIds.isEmpty()) out.put("missingUserIds", missingUserIds);
+            return successResponse(out);
+        } catch (ApiValidationException e) {
+            return errorResponse(e.getMessage(), e.getCode());
+        } catch (JsonSyntaxException e) {
+            return errorResponse("Invalid JSON format", 400);
+        } catch (IllegalArgumentException e) {
+            return errorResponse(e.getMessage(), 400);
+        } catch (Exception e) {
+            return errorResponse("Internal server error", 500);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<WebUser> resolveUsersByFilter(Object filterObj) {
+        Map<String, Object> filter = (filterObj instanceof Map) ? (Map<String, Object>) filterObj : null;
+        if (filter == null || filter.isEmpty()) {
+            throw new ApiValidationException("Either userIds or filter is required", 400);
+        }
+        Long filterRoleId = filter.get("roleId") != null ? toLong(filter.get("roleId"), "filter.roleId") : null;
+        Long filterDeptId = filter.get("departmentId") != null ? toLong(filter.get("departmentId"), "filter.departmentId") : null;
+        WebUserRole filterRole = filterRoleId != null ? findRoleOrThrow(filterRoleId) : null;
+        Department filterDept = null;
+        if (filterDeptId != null) {
+            filterDept = departmentFacade.find(filterDeptId);
+            if (filterDept == null) {
+                throw new ApiValidationException("filter.departmentId not found: " + filterDeptId, 404);
+            }
+        }
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select distinct w from WebUser w");
+        if (filterDept != null) {
+            jpql.append(" join WebUserDepartment wud on wud.webUser=w");
+        }
+        jpql.append(" where w.retired=false");
+        if (filterRole != null) {
+            jpql.append(" and w.role=:role");
+            params.put("role", filterRole);
+        }
+        if (filterDept != null) {
+            jpql.append(" and wud.retired=false and wud.department=:dept");
+            params.put("dept", filterDept);
+        }
+        jpql.append(" order by w.name");
+        return webUserFacade.findByJpql(jpql.toString(), params);
+    }
+
+    /**
+     * GET /api/users/roles
+     * Active roles with template summary: id, name, description, template login page,
+     * and counts of active role-level privileges / template icons / template subscriptions.
+     */
+    @GET
+    @Path("/roles")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listUserRolesWithTemplateCounts() {
+        WebUser apiUser = validateApiUser();
+        if (apiUser == null) return errorResponse("Not a valid key", 401);
+        List<WebUserRole> roles = webUserRoleFacade.findByJpql("select r from WebUserRole r where r.retired=false order by r.name");
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (WebUserRole role : roles) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", role.getId());
+            m.put("name", role.getName());
+            m.put("description", role.getDescription());
+            m.put("loginPage", role.getLoginPage() != null ? role.getLoginPage().name() : null);
+            Map<String, Object> rp = kv("role", role);
+            long privilegeCount = webUserRolePrivilegeFacade.findLongByJpql(
+                    "select count(p) from WebUserRolePrivilege p where p.retired=false and p.webUserRole=:role", rp);
+            long iconCount = userIconFacade.findLongByJpql(
+                    "select count(u) from UserIcon u where u.retired=false and u.webUserRole=:role and u.webUser is null", rp);
+            long subscriptionCount = triggerSubscriptionFacade.findLongByJpql(
+                    "select count(t) from TriggerSubscription t where t.retired=false and t.webUserRole=:role and t.webUser is null", rp);
+            m.put("privilegeCount", privilegeCount);
+            m.put("iconCount", iconCount);
+            m.put("subscriptionCount", subscriptionCount);
+            out.add(m);
+        }
+        return successResponse(out);
+    }
+
+    /**
+     * PUT /api/users/{id}/login-page
+     * Body: {"departmentId": required long, "loginPage": required string (LoginPage enum name)}
+     * Upserts the active WebUserDefaultLoginPage row for user+department: retires the old
+     * active row (if any) and creates a new one.
+     */
+    @PUT
+    @Path("/{id}/login-page")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response setUserLoginPage(@PathParam("id") Long id, String body) {
+        try {
+            WebUser apiUser = validateApiUser();
+            if (apiUser == null) return errorResponse("Not a valid key", 401);
+            if (!isAdmin(apiUser)) return errorResponse("Insufficient privileges", 403);
+            WebUser u = webUserFacade.find(id);
+            if (u == null || u.isRetired()) return errorResponse("User not found", 404);
+
+            Map<String, Object> req = parseJsonBody(body);
+            Long departmentId = req.get("departmentId") != null ? toLong(req.get("departmentId"), "departmentId") : null;
+            if (departmentId == null) return errorResponse("departmentId is required", 400);
+            Department dept = departmentFacade.find(departmentId);
+            if (dept == null) return errorResponse("Department not found: " + departmentId, 404);
+
+            Object loginPageObj = req.get("loginPage");
+            if (!(loginPageObj instanceof String) || ((String) loginPageObj).trim().isEmpty()) {
+                return errorResponse("loginPage is required", 400);
+            }
+            LoginPage loginPage;
+            try {
+                loginPage = LoginPage.valueOf(((String) loginPageObj).trim());
+            } catch (IllegalArgumentException e) {
+                return errorResponse("Invalid loginPage: " + loginPageObj, 400);
+            }
+
+            Date now = new Date();
+            WebUserDefaultLoginPage active = webUserDefaultLoginPageFacade.findFirstByJpql(
+                    "select w from WebUserDefaultLoginPage w where w.retired=false and w.webUser=:u and w.department=:d order by w.id desc",
+                    kv("u", u, "d", dept));
+            if (active != null) {
+                active.setRetired(true);
+                active.setRetirer(apiUser);
+                active.setRetiredAt(now);
+                webUserDefaultLoginPageFacade.edit(active);
+            }
+            WebUserDefaultLoginPage fresh = new WebUserDefaultLoginPage();
+            fresh.setWebUser(u);
+            fresh.setDepartment(dept);
+            fresh.setLoginPage(loginPage);
+            fresh.setCreater(apiUser);
+            fresh.setCreatedAt(now);
+            webUserDefaultLoginPageFacade.create(fresh);
+
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("id", fresh.getId());
+            m.put("userId", u.getId());
+            m.put("departmentId", dept.getId());
+            m.put("loginPage", fresh.getLoginPage().name());
+            return successResponse(m);
+        } catch (JsonSyntaxException e) {
+            return errorResponse("Invalid JSON format", 400);
+        } catch (Exception e) {
+            return errorResponse("Internal server error", 500);
+        }
+    }
+
+    /**
+     * DELETE /api/users/{id}/login-page/{departmentId}
+     * Retires the active WebUserDefaultLoginPage row for this user+department, if any.
+     */
+    @DELETE
+    @Path("/{id}/login-page/{departmentId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteUserLoginPage(@PathParam("id") Long id, @PathParam("departmentId") Long departmentId) {
+        WebUser apiUser = validateApiUser();
+        if (apiUser == null) return errorResponse("Not a valid key", 401);
+        if (!isAdmin(apiUser)) return errorResponse("Insufficient privileges", 403);
+        WebUser u = webUserFacade.find(id);
+        if (u == null || u.isRetired()) return errorResponse("User not found", 404);
+        Department dept = departmentFacade.find(departmentId);
+        if (dept == null) return errorResponse("Department not found: " + departmentId, 404);
+
+        WebUserDefaultLoginPage active = webUserDefaultLoginPageFacade.findFirstByJpql(
+                "select w from WebUserDefaultLoginPage w where w.retired=false and w.webUser=:u and w.department=:d order by w.id desc",
+                kv("u", u, "d", dept));
+        if (active == null) return errorResponse("No active login page override for this user/department", 404);
+        active.setRetired(true);
+        active.setRetirer(apiUser);
+        active.setRetiredAt(new Date());
+        webUserDefaultLoginPageFacade.edit(active);
+        return successResponse("Login page override retired");
+    }
+
+    // ── Role-template helpers ────────────────────────────────────────────────
+
+    private Map<String, Object> previewResponse(RoleOperation op, WebUser user, WebUserRole role, List<Department> departments,
+            Set<RoleAspect> aspects, Map<RoleAspect, Long> counts) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("preview", true);
+        m.put("operation", op.name());
+        m.put("userId", user.getId());
+        m.put("roleId", role.getId());
+        m.put("roleName", role.getName());
+        m.put("departmentIds", departmentIdsOf(departments));
+        Map<String, Long> aspectCounts = new LinkedHashMap<>();
+        for (RoleAspect a : aspects) aspectCounts.put(a.name(), counts.getOrDefault(a, 0L));
+        m.put("previewCounts", aspectCounts);
+        return m;
+    }
+
+    private Map<String, Object> resultResponse(RoleOperation op, RoleApplicationResult result) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("preview", false);
+        m.put("operation", op.name());
+        m.put("userId", result.getUser() != null ? result.getUser().getId() : null);
+        m.put("userName", result.getUser() != null ? result.getUser().getName() : null);
+        m.put("success", result.isSuccess());
+        if (!result.isSuccess()) {
+            m.put("errorMessage", result.getErrorMessage());
+        }
+        Map<String, Integer> added = new LinkedHashMap<>();
+        for (Map.Entry<RoleAspect, Integer> e : result.getAdded().entrySet()) added.put(e.getKey().name(), e.getValue());
+        Map<String, Integer> retired = new LinkedHashMap<>();
+        for (Map.Entry<RoleAspect, Integer> e : result.getRetired().entrySet()) retired.put(e.getKey().name(), e.getValue());
+        m.put("added", added);
+        m.put("retired", retired);
+        m.put("totalAdded", result.getTotalAdded());
+        m.put("totalRetired", result.getTotalRetired());
+        return m;
+    }
+
+    private List<Long> departmentIdsOf(List<Department> departments) {
+        List<Long> ids = new ArrayList<>();
+        for (Department d : departments) ids.add(d.getId());
+        return ids;
+    }
+
+    private WebUserRole findRoleOrThrow(Long roleId) {
+        WebUserRole role = roleId != null ? webUserRoleFacade.find(roleId) : null;
+        if (role == null || role.isRetired()) {
+            throw new ApiValidationException("Role not found: " + roleId, 404);
+        }
+        return role;
+    }
+
+    private List<Department> resolveDepartments(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            throw new ApiValidationException("departmentIds is required and must be non-empty", 400);
+        }
+        List<Department> depts = new ArrayList<>();
+        List<Long> invalid = new ArrayList<>();
+        for (Long deptId : ids) {
+            Department d = departmentFacade.find(deptId);
+            if (d == null) {
+                invalid.add(deptId);
+            } else {
+                depts.add(d);
+            }
+        }
+        if (!invalid.isEmpty()) {
+            throw new ApiValidationException("Department(s) not found: " + invalid, 404);
+        }
+        return depts;
+    }
+
+    private Set<RoleAspect> parseAspects(List<String> names) {
+        Set<RoleAspect> set = new LinkedHashSet<>();
+        for (String n : names) {
+            try {
+                set.add(RoleAspect.valueOf(n == null ? null : n.trim()));
+            } catch (IllegalArgumentException | NullPointerException e) {
+                throw new ApiValidationException(
+                        "Invalid aspect: " + n + ". Valid values: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE", 400);
+            }
+        }
+        if (set.isEmpty()) {
+            throw new ApiValidationException("aspects must contain at least one value", 400);
+        }
+        return set;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> parseJsonBody(String body) {
+        if (body == null || body.trim().isEmpty()) {
+            return new HashMap<>();
+        }
+        Map<String, Object> parsed = gson.fromJson(body, Map.class);
+        return parsed != null ? parsed : new HashMap<>();
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Long> extractLongList(Map<String, Object> req, String key, boolean required) {
+        Object obj = req.get(key);
+        if (obj == null) {
+            if (required) throw new ApiValidationException(key + " is required", 400);
+            return null;
+        }
+        if (!(obj instanceof List)) {
+            throw new ApiValidationException(key + " must be an array", 400);
+        }
+        List<Long> out = new ArrayList<>();
+        for (Object item : (List<Object>) obj) {
+            if (item instanceof Number) {
+                out.add(((Number) item).longValue());
+            } else {
+                throw new ApiValidationException(key + " must be an array of integers, got: " + item, 400);
+            }
+        }
+        return out;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> extractStringList(Map<String, Object> req, String key, List<String> defaultVal) {
+        Object obj = req.get(key);
+        if (obj == null) return defaultVal;
+        if (!(obj instanceof List)) {
+            throw new ApiValidationException(key + " must be an array", 400);
+        }
+        List<String> out = new ArrayList<>();
+        for (Object item : (List<Object>) obj) {
+            if (item instanceof String) {
+                out.add((String) item);
+            } else {
+                throw new ApiValidationException(key + " must be an array of strings, got: " + item, 400);
+            }
+        }
+        return out;
+    }
+
+    private Long toLong(Object obj, String field) {
+        if (obj == null) return null;
+        if (obj instanceof Number) return ((Number) obj).longValue();
+        if (obj instanceof String) {
+            try {
+                return Long.parseLong(((String) obj).trim());
+            } catch (NumberFormatException e) {
+                throw new ApiValidationException(field + " must be numeric", 400);
+            }
+        }
+        throw new ApiValidationException(field + " must be numeric", 400);
+    }
+
+    private boolean toBoolean(Object obj, boolean defaultVal) {
+        if (obj == null) return defaultVal;
+        if (obj instanceof Boolean) return (Boolean) obj;
+        if (obj instanceof String) return Boolean.parseBoolean((String) obj);
+        return defaultVal;
+    }
+
+    private Map<String, Object> kv(Object... pairs) {
+        Map<String, Object> m = new HashMap<>();
+        for (int i = 0; i < pairs.length; i += 2) {
+            m.put((String) pairs[i], pairs[i + 1]);
+        }
+        return m;
+    }
+
+    /** Lightweight validation exception carrying the intended HTTP status code (400/404). */
+    private static class ApiValidationException extends RuntimeException {
+        private final int code;
+
+        ApiValidationException(String message, int code) {
+            super(message);
+            this.code = code;
+        }
+
+        int getCode() {
+            return code;
         }
     }
 

@@ -2092,5 +2092,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     public void setBundle(IncomeBundle bundle) {
         this.bundle = bundle;
     }
+    
+    public String convertToWord(double d) {
+        return CommonFunctions.convertToWord(Math.abs(d));
+    }
 
 }
