@@ -31,7 +31,7 @@ public class OpdSaleSummaryDTO implements Serializable {
 
     // Service charge (issue #22050): inward margin (BillItem.marginValue) added on top
     // of the gross amount. Net = Gross + Service Charge - Discount. Zero for OPD rows.
-    private Double serviceCharge;
+    private Double serviceCharge = 0.0;
 
     public OpdSaleSummaryDTO() {
     }
@@ -116,7 +116,7 @@ public class OpdSaleSummaryDTO implements Serializable {
         this(categoryId, categoryName, itemId, itemName, billItemId, billedDate,
              bhtNo, patientName, itemCount,
              hospitalFee, professionalFee, grossAmount, discountAmount, netTotal);
-        this.serviceCharge = serviceCharge;
+        this.serviceCharge = serviceCharge != null ? serviceCharge : 0.0;
     }
 
     public String getCategoryName() {
