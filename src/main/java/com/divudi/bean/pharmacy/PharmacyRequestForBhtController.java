@@ -2613,6 +2613,61 @@ public class PharmacyRequestForBhtController implements Serializable {
     }
 
     /**
+     * Case 1 — Generate but do NOT add.
+     *
+     * Recomputes the dispense item and quantity from the current prescription
+     * details, then leaves the resolved values in the Dispense Request panel so
+     * the user can review and adjust them before adding. Focus is moved to the
+     * Dispense item field on the page (see the button's update/focus wiring).
+     * This intentionally does not touch the bill-items table.
+     */
+    public void generateDispenseFromPrescription() {
+        calculateItemAndQuantityFromPrescription();
+        if (errorMessage != null && !errorMessage.isEmpty()) {
+            JsfUtil.addErrorMessage(errorMessage);
+        }
+    }
+
+    /**
+     * Case 2 — Calculate and Add in one step.
+     *
+     * Recomputes the dispense item and quantity from the prescription and, only
+     * if the calculation succeeds, adds the resolved line to the dispense
+     * request. If the calculation cannot produce an item and quantity (e.g. a
+     * missing dose or frequency), the error is shown and nothing is added, so a
+     * blank or stale line can never be appended.
+     */
+    public void calculateAndAddBillItem() {
+        if (billItem == null || billItem.getPrescription() == null) {
+            JsfUtil.addErrorMessage("No prescription available for calculation");
+            return;
+        }
+
+        try {
+            com.divudi.ejb.PrescriptionToItemService.PrescriptionToItemResult result
+                    = prescriptionToItemService.calculateItemAndQuantity(billItem.getPrescription());
+
+            if (!result.isSuccess() || result.getItem() == null || result.getQuantity() == null) {
+                String msg = result.getErrorMessage() != null && !result.getErrorMessage().isEmpty()
+                        ? result.getErrorMessage()
+                        : "Could not calculate the item and quantity from the prescription";
+                JsfUtil.addErrorMessage("Calculation Error: " + msg);
+                return;
+            }
+
+            setItem(result.getItem());
+            billItem.setItem(result.getItem());
+            setQty(result.getQuantity());
+            setErrorMessage("");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error calculating item and quantity: " + e.getMessage());
+            return;
+        }
+
+        addBillItem();
+    }
+
+    /**
      * Check if prescription has enough information for item/quantity
      * calculation
      */

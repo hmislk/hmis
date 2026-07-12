@@ -16,7 +16,7 @@
             <ui:define name="content">
 
                 <h:form id="bill" >
-                    <p:defaultCommand target="#{configOptionApplicationController.getBooleanValueByKey('Enable Prescription Details for Pharmacy Requests', true) ? 'btnAdd' : 'btnAddNoRx'}" />
+                    <p:defaultCommand target="#{configOptionApplicationController.getBooleanValueByKey('Enable Prescription Details for Pharmacy Requests', true) ? 'btnCalcAdd' : 'btnAddNoRx'}" />
                     <h:panelGroup
                         rendered="#{!pharmacyRequestForBhtController.billPreview}"
                         style="width: fit-content;" >
@@ -530,15 +530,40 @@
                                             </div>
 
                                             <div class="row mt-2">
-                                                <div class="col-md-12 d-flex justify-content-end">
+                                                <div class="col-md-12 d-flex justify-content-end gap-2">
+                                                    <!--
+                                                        Case 1 — Generate but do NOT add. Recalculates the
+                                                        dispense item + qty from the prescription and moves
+                                                        focus to the Dispense item so the user can review /
+                                                        adjust before adding.
+                                                    -->
+                                                    <p:commandButton
+                                                        id="btnGenerate"
+                                                        value="Generate"
+                                                        icon="fa fa-calculator"
+                                                        class="ui-button-secondary ui-button-outlined"
+                                                        title="Calculate the dispense item and quantity from the prescription without adding it, so you can review and adjust"
+                                                        action="#{pharmacyRequestForBhtController.generateDispenseFromPrescription}"
+                                                        process="@this acMedicine txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo"
+                                                        update="growl acItem txtQty focusItem" >
+                                                    </p:commandButton>
+
+                                                    <!--
+                                                        Case 2 — Calculate & Add in one step. Recomputes item +
+                                                        qty from the prescription, then adds. Aborts with a
+                                                        message if the calculation cannot resolve an item/qty.
+                                                        This is the p:defaultCommand target when prescription
+                                                        details are enabled.
+                                                    -->
                                                     <p:commandButton
                                                         accesskey="a"
-                                                        id="btnAdd"
-                                                        value="Add to Dispense Request"
+                                                        id="btnCalcAdd"
+                                                        value="Calculate &amp; Add"
                                                         icon="fa fa-plus"
                                                         class="ui-button-success"
-                                                        action="#{pharmacyRequestForBhtController.addBillItem}"
-                                                        process="@this acItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"
+                                                        title="Calculate the dispense item and quantity from the prescription and add it to the dispense request"
+                                                        action="#{pharmacyRequestForBhtController.calculateAndAddBillItem}"
+                                                        process="@this acMedicine acItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"
                                                         update="growl :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acMedicine acItem focusItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"   >
                                                     </p:commandButton>
                                                 </div>
@@ -549,8 +574,29 @@
 
                                     <p:panel class="mt-2">
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fa-solid fa-circle-plus"  />
-                                            <h:outputLabel value="Dispense Request" class="mx-2"/>
+                                            <div class="d-flex justify-content-between align-items-center w-100">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <h:outputText styleClass="fa-solid fa-circle-plus"  />
+                                                    <h:outputLabel value="Dispense Request" class="mx-2"/>
+                                                </div>
+                                                <!--
+                                                    Case 3 — Add the current dispense line directly, skipping
+                                                    the prescription. Always available; when prescription
+                                                    details are disabled this is the only Add button and is the
+                                                    p:defaultCommand target (hence the stable btnAddNoRx id).
+                                                -->
+                                                <p:commandButton
+                                                    accesskey="d"
+                                                    id="btnAddNoRx"
+                                                    value="Add Dispense Only"
+                                                    icon="fa fa-plus"
+                                                    class="ui-button-info"
+                                                    title="Add the item and quantity shown below directly to the dispense request, without prescription details"
+                                                    action="#{pharmacyRequestForBhtController.addBillItem}"
+                                                    process="@this acItem txtQty txtDrugOrderComments"
+                                                    update="growl :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acItem focusItem txtQty txtDrugOrderComments" >
+                                                </p:commandButton>
+                                            </div>
                                         </f:facet>
 
                                         <div class="row">
@@ -604,28 +650,6 @@
                                                 <p:outputLabel value="Comment" />
                                                 <p:inputTextarea id="txtDrugOrderComments" value="#{pharmacyRequestForBhtController.billItem.prescription.comment}" class="w-100" />
                                             </div>
-                                        </div>
-
-                                        <!--
-                                            Fallback Add button (id btnAddNoRx): only rendered when prescription
-                                            details are disabled, so the Prescription panel's btnAdd is absent.
-                                            Distinct id avoids a duplicate-component-id build error; p:defaultCommand
-                                            targets whichever button is actually rendered.
-                                        -->
-                                        <div class="row mt-2">
-                                            <h:panelGroup layout="block" class="col-md-12 d-flex justify-content-end"
-                                                          rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable Prescription Details for Pharmacy Requests', true)}">
-                                                <p:commandButton
-                                                    accesskey="a"
-                                                    id="btnAddNoRx"
-                                                    value="Add to Dispense Request"
-                                                    icon="fa fa-plus"
-                                                    class="ui-button-success"
-                                                    action="#{pharmacyRequestForBhtController.addBillItem}"
-                                                    process="@this acItem txtQty txtDrugOrderComments"
-                                                    update="growl :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acItem focusItem txtQty txtDrugOrderComments"   >
-                                                </p:commandButton>
-                                            </h:panelGroup>
                                         </div>
 
                                     </p:panel>
