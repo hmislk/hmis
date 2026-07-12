@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -32,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -96,6 +99,7 @@ import javax.transaction.Transactional;
 public class TransferReceiveCancellationController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(TransferReceiveCancellationController.class.getName());
 
     // EJB Dependencies
     @EJB
@@ -116,6 +120,8 @@ public class TransferReceiveCancellationController implements Serializable {
     private BillController billController;
     @Inject
     private PharmacyController pharmacyController;
+    @Inject
+    private WebUserController webUserController;
 
     // Properties
     private Bill originalReceiveBill;
@@ -539,6 +545,9 @@ public class TransferReceiveCancellationController implements Serializable {
      */
     @Transactional
     public void confirmCancellation() {
+        if (!isAuthorized("CANCEL", "PharmacyTransferReceiveCancel")) {
+            return;
+        }
         try {
             // Validation: Check cancellation reason
             if (cancellationReason == null || cancellationReason.trim().isEmpty()) {
@@ -884,5 +893,34 @@ public class TransferReceiveCancellationController implements Serializable {
 
     public BillController getBillController() {
         return billController;
+    }
+
+    /**
+     * Authorization helper method to check Transfer Receive Cancellation
+     * privileges and audit denied access.
+     *
+     * @param action The action being attempted (CANCEL)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, originalReceiveBillId});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Transfer Receive Cancellation access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, originalReceiveBillId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " transfer receive requests.");
+            return false;
+        }
+
+        return true;
     }
 }

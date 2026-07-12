@@ -775,7 +775,12 @@ public class PatientInvestigationController implements Serializable {
         } else {
             listingEntity = ListingEntity.BILLS;
             bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-            return "/lab/generate_barcode_p?faces-redirect=true";
+            
+            if ((configOptionApplicationController.getBooleanValueByKey("Use the Nursing Laboratory Dashboard for inward laboratory process.", false)) && bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_SERVICE_BILL) {
+                return "/inward/inward_lab_dashboard?faces-redirect=true";
+            }else{
+                return "/lab/generate_barcode_p?faces-redirect=true";
+            }
         }
     }
 

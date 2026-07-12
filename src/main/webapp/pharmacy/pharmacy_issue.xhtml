@@ -11,6 +11,10 @@
 
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <h:panelGroup rendered="#{!(webUserController.hasPrivilege('PharmacyDisposalIssue') or webUserController.hasPrivilege('PharmacyDisposalIssueFinalize') or webUserController.hasPrivilege('PharmacyDisposalIssueApprove'))}">
+                    You are NOT authorized
+                </h:panelGroup>
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssue') or webUserController.hasPrivilege('PharmacyDisposalIssueFinalize') or webUserController.hasPrivilege('PharmacyDisposalIssueApprove')}">
                 <h:form id="bill">
 
 
@@ -131,7 +135,8 @@
                                             styleClass="ui-button-stage-save"
                                             ajax="false"
                                             action="#{pharmacyIssueController.saveDisposalIssueDraft()}"
-                                            rendered="#{pharmacyIssueController.preBill.checkedBy eq null and webUserController.hasPrivilege('PharmacyDisposalIssue')}"
+                                            rendered="#{pharmacyIssueController.preBill.checkedBy eq null}"
+                                            disabled="#{not webUserController.hasPrivilege('PharmacyDisposalIssue')}"
                                             style="min-width:100px"/>
                                         <p:commandButton
                                             id="btnFinalize"
@@ -142,7 +147,8 @@
                                             ajax="false"
                                             action="#{pharmacyIssueController.finalizeCurrentDraft()}"
                                             onclick="return confirm('Finalize this disposal issue? It will be queued for approval.');"
-                                            rendered="#{pharmacyIssueController.preBill.checkedBy eq null and webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}"
+                                            rendered="#{pharmacyIssueController.preBill.checkedBy eq null}"
+                                            disabled="#{not webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}"
                                             style="min-width:120px"/>
                                         <p:commandButton
                                             id="btnApprove"
@@ -153,7 +159,8 @@
                                             ajax="false"
                                             action="#{pharmacyIssueController.approveDisposalIssue(pharmacyIssueController.preBill.id)}"
                                             onclick="return confirm('Approve this disposal issue? Stock will be deducted.');"
-                                            rendered="#{pharmacyIssueController.preBill.checkedBy ne null and !pharmacyIssueController.preBill.completed and webUserController.hasPrivilege('PharmacyDisposalIssueApprove')}"
+                                            rendered="#{pharmacyIssueController.preBill.checkedBy ne null and !pharmacyIssueController.preBill.completed}"
+                                            disabled="#{not webUserController.hasPrivilege('PharmacyDisposalIssueApprove')}"
                                             style="min-width:120px"/>
                                     </div>
                                 </div>
@@ -769,6 +776,7 @@
                         </h:form>
                     </p:dialog>
                 </h:form>
+                </h:panelGroup>
             </ui:define>
         </ui:composition>
     </h:body>

@@ -2000,6 +2000,48 @@ public class InwardBeanController implements Serializable {
         return countMap;
     }
 
+    /**
+     * Bulk query returning the most recently checked inward BillItem for each
+     * item of the given patient encounter. Used by the Service Details tab to
+     * display "Checked By" / "Checked At" per aggregated item row without adding
+     * transient fields to the shared Item entity.
+     *
+     * @return map of itemId -> latest checked BillItem
+     */
+    public Map<Long, BillItem> getLatestCheckedBillItemsByItem(PatientEncounter patientEncounter) {
+        Map<Long, BillItem> map = new HashMap<>();
+        if (patientEncounter == null) {
+            return map;
+        }
+
+        HashMap hm = new HashMap();
+        String sql = "SELECT b FROM BillItem b "
+                + " WHERE b.retired=false "
+                + " and b.bill.billType=:btp "
+                + " and b.bill.patientEncounter=:pe "
+                + " and type(b.bill)=:cls "
+                + " and b.bill.checkedBy is not null "
+                + " and b.bill.checkeAt is not null "
+                + " and b.bill.cancelled=false "
+                + " order by b.bill.checkeAt desc ";
+
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", patientEncounter);
+        hm.put("cls", BilledBill.class);
+
+        List<BillItem> results = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+        if (results != null) {
+            // Ordered by checkeAt desc, so the first row seen per item is the latest.
+            for (BillItem bi : results) {
+                if (bi.getItem() != null && bi.getItem().getId() != null
+                        && !map.containsKey(bi.getItem().getId())) {
+                    map.put(bi.getItem().getId(), bi);
+                }
+            }
+        }
+        return map;
+    }
+
     public Fee getStaffFeeForInward(WebUser webUser) {
         String sql = "Select f From InwardFee f "
                 + " where f.retired=false "
