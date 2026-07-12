@@ -572,6 +572,31 @@ privilege check for that department under the PO branch's code. Fix: delete (or 
 the rows for privileges that don't exist on the currently deployed branch, re-grant only
 what the current branch's `Privileges.java` actually declares, then re-login.
 
+## 25. A JPQL path expression through a nullable relationship silently INNER-JOINs and drops rows
+
+Writing `b.patientEncounter.bhtNo` or `b.patient.person.name` directly in a `SELECT`/`WHERE`
+generates an **implicit INNER JOIN** on that relationship. If the relationship is null for
+some rows (e.g. `patientEncounter`/`patient` are null on OPD bills), **every one of those
+rows silently disappears** from the result — no error, no log entry. The report just looks
+"wrong" (too few rows), and it's easy to blame filters/dates first.
+
+Tell: a combined OPD+Inward report showed only the 2 Inward rows (which have a
+`patientEncounter`) and dropped all 20 OPD rows for the same item/date range. DB count
+didn't match the report count. Fix: use explicit `left join b.patientEncounter pe` /
+`left join b.patient pat left join pat.person per` and reference the aliases (`pe.bhtNo`,
+`per.name`) in the projection. Verified on issue #21920 (`fetchItemizedServiceInstanceDTOs`
+in `BillService`). Always cross-check report row count against a direct
+`SELECT ... FROM billitem bi JOIN bill b ...` when a report projects fields from an
+optional relationship.
+
+Related sign gotcha found the same pass: cancellation/refund `BillItem` fee columns
+(`netValue`, `hospitalFee`, …) are **already stored negative** in the DB. A
+`case when billClassType in (cancel, refund) then -bi.netValue else bi.netValue end`
+double-negates them to positive — this is the "fee doubling after cancellation" symptom
+(issue #21918). Use the stored values as-is; only synthesize a sign for the row **count**
+(which has no stored value). Verify by summing `bi.netValue` directly in SQL and matching
+the report's Grand Total.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
