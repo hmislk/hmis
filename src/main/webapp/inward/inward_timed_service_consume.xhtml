@@ -311,7 +311,8 @@
                                     ajax="false"
                                     value="Remove"
                                     action="#{inwardTimedItemController.removePatientItem(ti)}"
-                                    disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}" >
+                                    disabled="#{inwardTimedItemController.current.patientEncounter.paymentFinalized}"
+                                    rendered="#{not ti.billItem.fromPackage}" >
                                 </p:commandButton>
                             </div>
 
