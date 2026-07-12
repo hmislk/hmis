@@ -2780,6 +2780,16 @@ public class SearchController implements Serializable {
                 .sum();
     }
 
+    public double getOpdSaleSummaryServiceChargeTotal() {
+        if (opdSaleSummaryDtos == null || opdSaleSummaryDtos.isEmpty()) {
+            return 0.0;
+        }
+        return opdSaleSummaryDtos.stream()
+                .filter(dto -> dto.getServiceCharge() != null)
+                .mapToDouble(OpdSaleSummaryDTO::getServiceCharge)
+                .sum();
+    }
+
     public int getOpdAnalyticsIndex() {
         return opdAnalyticsIndex;
     }

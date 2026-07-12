@@ -3297,7 +3297,8 @@ public class BillService {
                 + " bi.staffFee,"
                 + " bi.grossValue,"
                 + " bi.discount,"
-                + " bi.netValue"
+                + " bi.netValue,"
+                + " bi.marginValue" // Service charge (issue #22050) — inverted on cancellation items like the other values
                 + ") "
                 // All LEFT JOINs: item/category and patientEncounter/patient may be null on
                 // some rows. A path expression (e.g. bi.item.category.id or b.patientEncounter.bhtNo)

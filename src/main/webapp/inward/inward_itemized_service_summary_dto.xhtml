@@ -200,6 +200,17 @@
                         </h:outputText>
                     </p:column>
                     <p:column class="text-end">
+                        <f:facet name="header"><h:outputText value="Service Charge" /></f:facet>
+                        <f:facet name="footer">
+                            <h:outputText value="#{searchController.opdSaleSummaryServiceChargeTotal}" style="font-weight: bold;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </f:facet>
+                        <h:outputText value="#{row.serviceCharge}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputText>
+                    </p:column>
+                    <p:column class="text-end">
                         <f:facet name="header"><h:outputText value="Discount" /></f:facet>
                         <f:facet name="footer">
                             <h:outputText value="#{searchController.opdSaleSummaryDiscountTotal}" style="font-weight: bold;">

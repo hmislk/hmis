@@ -29,6 +29,10 @@ public class OpdSaleSummaryDTO implements Serializable {
     private String bhtNo;
     private String patientName;
 
+    // Service charge (issue #22050): inward margin (BillItem.marginValue) added on top
+    // of the gross amount. Net = Gross + Service Charge - Discount. Zero for OPD rows.
+    private Double serviceCharge;
+
     public OpdSaleSummaryDTO() {
     }
 
@@ -96,6 +100,23 @@ public class OpdSaleSummaryDTO implements Serializable {
         this.billedDate = billedDate;
         this.bhtNo = bhtNo;
         this.patientName = patientName;
+    }
+
+    // NEW (issue #22050): Per-billing-instance constructor with the service charge
+    // (inward margin). Delegates to the #21920 per-instance constructor.
+    public OpdSaleSummaryDTO(Long categoryId, String categoryName,
+                              Long itemId, String itemName,
+                              Long billItemId, Date billedDate,
+                              String bhtNo, String patientName,
+                              Long itemCount,
+                              Double hospitalFee, Double professionalFee,
+                              Double grossAmount, Double discountAmount,
+                              Double netTotal,
+                              Double serviceCharge) {
+        this(categoryId, categoryName, itemId, itemName, billItemId, billedDate,
+             bhtNo, patientName, itemCount,
+             hospitalFee, professionalFee, grossAmount, discountAmount, netTotal);
+        this.serviceCharge = serviceCharge;
     }
 
     public String getCategoryName() {
@@ -216,5 +237,13 @@ public class OpdSaleSummaryDTO implements Serializable {
 
     public void setPatientName(String patientName) {
         this.patientName = patientName;
+    }
+
+    public Double getServiceCharge() {
+        return serviceCharge;
+    }
+
+    public void setServiceCharge(Double serviceCharge) {
+        this.serviceCharge = serviceCharge;
     }
 }
