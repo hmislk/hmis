@@ -31,6 +31,21 @@
                    wrapping long lines, so extra in-line spacing is not collapsed. */
                 white-space: pre-wrap;
             }
+            /* Reproduce the Quill editor's indentation in the printed/preview
+               report. The editor applies these ql-indent-* classes on the block
+               when the indent toolbar buttons are used, but Quill's own CSS that
+               gives them padding is scoped to .ql-editor and is not present here,
+               so the indent is lost. The longhand padding-left overrides the
+               padding:0 reset above (higher specificity). Values match Quill's
+               default of 3em per indent level. */
+            .micMemoValue .ql-indent-1 { padding-left: 3em; }
+            .micMemoValue .ql-indent-2 { padding-left: 6em; }
+            .micMemoValue .ql-indent-3 { padding-left: 9em; }
+            .micMemoValue .ql-indent-4 { padding-left: 12em; }
+            .micMemoValue .ql-indent-5 { padding-left: 15em; }
+            .micMemoValue .ql-indent-6 { padding-left: 18em; }
+            .micMemoValue .ql-indent-7 { padding-left: 21em; }
+            .micMemoValue .ql-indent-8 { padding-left: 24em; }
         </style>
 
         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
