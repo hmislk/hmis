@@ -122,12 +122,11 @@
                             </p:column>
                             <p:column>
                                 <f:facet name="header">Direction</f:facet>
+                                <!-- The prescription comment is already appended to descreption
+                                     when the bill item is built, so it is not repeated here.
+                                     (Reading bip.prescription directly would also auto-create a
+                                     blank Prescription during rendering.) -->
                                 <p:outputLabel value="#{bip.descreption}" ></p:outputLabel>
-                                <h:panelGroup layout="block"
-                                              rendered="#{bip.prescription.comment ne null and bip.prescription.comment ne ''}">
-                                    <p:outputLabel value="Comment: #{bip.prescription.comment}"
-                                                   style="font-size:0.85em;font-style:italic;color:#333;display:block;" />
-                                </h:panelGroup>
                             </p:column>
                         </p:dataTable>
                     </p:panel>

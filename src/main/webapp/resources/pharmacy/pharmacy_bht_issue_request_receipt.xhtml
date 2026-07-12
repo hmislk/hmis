@@ -136,11 +136,9 @@
                                     </h:outputLabel>
                                 </td>
                                 <td class="item-name">
+                                    <!-- The prescription comment is already appended to descreption
+                                         when the bill item is built, so it is not repeated here. -->
                                     <h:outputLabel value="#{bip.descreption}" />
-                                    <h:panelGroup layout="block"
-                                                  rendered="#{bip.prescription.comment ne null and bip.prescription.comment ne ''}">
-                                        <h:outputLabel value="Comment: #{bip.prescription.comment}" styleClass="item-comment" style="font-size:0.85em;font-style:italic;color:#333;display:block;" />
-                                    </h:panelGroup>
                                 </td>
                             </tr>
                         </ui:repeat>

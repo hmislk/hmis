@@ -68,6 +68,7 @@ import javax.inject.Named;
 
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 
@@ -151,6 +152,18 @@ public class PharmacyRequestForBhtController implements Serializable {
     private BillItem billItemForEdit;
     private List<Item> substituteAmps;
     private Item selectedSubstituteAmp;
+    // Detached edit-model quantity. The dialog binds to this, not to the live
+    // billItemForEdit.qty, so a failed validation never leaves a bad quantity on
+    // the row. The value is committed to the row only when saveEditedBillItem()
+    // fully passes.
+    private Double editQty;
+    // True only when the last saveEditedBillItem() call passed all validation and
+    // committed. The dialog reads this in oncomplete to decide whether to close,
+    // so a failed edit keeps the dialog open with the bad value visible.
+    private boolean editSavedSuccessfully;
+    // Re-entrancy guard for settleBhtRequest() so a rapid double-submit cannot
+    // create duplicate bills / notifications.
+    private boolean settlingBhtRequest;
     /////////////////
     List<Stock> replaceableStocks;
     //List<BillItem> billItems;
@@ -928,6 +941,22 @@ public class PharmacyRequestForBhtController implements Serializable {
     }
 
     public void settleBhtRequest() {
+        // Server-side re-entry guard: a rapid double-submit (double-click, duplicate
+        // AJAX) must not create a second request bill / notification. The first call
+        // sets the flag; any overlapping call is rejected until this one finishes.
+        if (settlingBhtRequest) {
+            JsfUtil.addErrorMessage("This request is already being settled. Please wait.");
+            return;
+        }
+        settlingBhtRequest = true;
+        try {
+            settleBhtRequestInternal();
+        } finally {
+            settlingBhtRequest = false;
+        }
+    }
+
+    private void settleBhtRequestInternal() {
         if (getPatientEncounter() == null || getPatientEncounter().getPatient() == null) {
             JsfUtil.addErrorMessage("Please Select a BHT");
             return;
@@ -1338,7 +1367,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         newBillItem.setBill(getPreBill());
 
         // Handle prescription only if prescription data is available
-        boolean hasPrescriptionData = hasMeaningfulPrescriptionData(billItem.getPrescription());
+        boolean hasPrescriptionData = hasMeaningfulPrescriptionData(billItem.getPrescription(), billItem.getItem());
 
         if (hasPrescriptionData) {
             // Create a detached prescription instance for in-memory use only
@@ -2123,10 +2152,12 @@ public class PharmacyRequestForBhtController implements Serializable {
         billItemForEdit = bi;
         selectedSubstituteAmp = null;
         substituteAmps = new ArrayList<>();
+        editQty = null;
         if (bi == null || bi.getItem() == null) {
             return;
         }
         selectedSubstituteAmp = bi.getItem();
+        editQty = bi.getQty();
         fillSubstituteAmpsFor(bi.getItem());
     }
 
@@ -2168,25 +2199,37 @@ public class PharmacyRequestForBhtController implements Serializable {
      * bill item, and regenerates the directions text so it reflects the new item.
      */
     public void saveEditedBillItem() {
-        if (billItemForEdit == null) {
-            JsfUtil.addErrorMessage("No item selected to edit.");
-            return;
+        editSavedSuccessfully = false;
+        try {
+            if (billItemForEdit == null) {
+                JsfUtil.addErrorMessage("No item selected to edit.");
+                return;
+            }
+            if (selectedSubstituteAmp == null) {
+                JsfUtil.addErrorMessage("Please select an item.");
+                return;
+            }
+            // Validate the detached edit-model quantity; the live row is untouched
+            // until every check below passes, so a failed edit never corrupts the row.
+            if (editQty == null || editQty <= 0) {
+                JsfUtil.addErrorMessage("Please enter a valid quantity.");
+                return;
+            }
+            // All checks passed — commit the edit to the live row.
+            billItemForEdit.setItem(selectedSubstituteAmp);
+            billItemForEdit.setQty(editQty);
+            // The prescription keeps the originally prescribed medicine; only the
+            // dispensed bill-item changes when a therapeutic substitute is chosen.
+            rebuildBillItemDescription(billItemForEdit);
+            editSavedSuccessfully = true;
+            JsfUtil.addSuccessMessage("Item updated.");
+        } finally {
+            // Tell the client whether the save passed so the dialog closes only on
+            // success (see btnSaveEditBillItem oncomplete).
+            if (PrimeFaces.current().isAjaxRequest()) {
+                PrimeFaces.current().ajax().addCallbackParam("editSaved", editSavedSuccessfully);
+            }
         }
-        if (selectedSubstituteAmp == null) {
-            JsfUtil.addErrorMessage("Please select an item.");
-            return;
-        }
-        if (billItemForEdit.getQty() == null || billItemForEdit.getQty() <= 0) {
-            JsfUtil.addErrorMessage("Please enter a valid quantity.");
-            return;
-        }
-        billItemForEdit.setItem(selectedSubstituteAmp);
-        // Keep the prescription's item aligned with the substituted dispensable item.
-        if (billItemForEdit.getPrescription() != null) {
-            billItemForEdit.getPrescription().setItem(selectedSubstituteAmp);
-        }
-        rebuildBillItemDescription(billItemForEdit);
-        JsfUtil.addSuccessMessage("Item updated.");
     }
 
     /**
@@ -2194,8 +2237,8 @@ public class PharmacyRequestForBhtController implements Serializable {
      * item + qty fallback), mirroring how {@link #addBillItem()} builds it.
      */
     private void rebuildBillItemDescription(BillItem bi) {
-        Prescription rx = bi.getPrescription();
-        if (rx != null && hasMeaningfulPrescriptionData(rx)) {
+        Prescription rx = bi.hasPrescription() ? bi.getPrescription() : null;
+        if (rx != null && hasMeaningfulPrescriptionData(rx, bi.getItem())) {
             String prescriptionText = rx.getFormattedPrescriptionWithoutIndoorOutdoor();
             if (rx.getComment() != null && !rx.getComment().trim().isEmpty()) {
                 prescriptionText += " - " + rx.getComment();
@@ -2228,6 +2271,22 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public void setSelectedSubstituteAmp(Item selectedSubstituteAmp) {
         this.selectedSubstituteAmp = selectedSubstituteAmp;
+    }
+
+    public Double getEditQty() {
+        return editQty;
+    }
+
+    public void setEditQty(Double editQty) {
+        this.editQty = editQty;
+    }
+
+    public boolean isEditSavedSuccessfully() {
+        return editSavedSuccessfully;
+    }
+
+    public void setEditSavedSuccessfully(boolean editSavedSuccessfully) {
+        this.editSavedSuccessfully = editSavedSuccessfully;
     }
 
     /**
@@ -2647,7 +2706,11 @@ public class PharmacyRequestForBhtController implements Serializable {
             com.divudi.ejb.PrescriptionToItemService.PrescriptionToItemResult result
                     = prescriptionToItemService.calculateItemAndQuantity(billItem.getPrescription());
 
-            if (!result.isSuccess() || result.getItem() == null || result.getQuantity() == null) {
+            // Require a positive quantity too: setQty() silently drops values <= 0,
+            // so a non-positive result would otherwise leave the prior quantity in
+            // place and add a stale line.
+            if (!result.isSuccess() || result.getItem() == null
+                    || result.getQuantity() == null || result.getQuantity() <= 0) {
                 String msg = result.getErrorMessage() != null && !result.getErrorMessage().isEmpty()
                         ? result.getErrorMessage()
                         : "Could not calculate the item and quantity from the prescription";
@@ -2694,7 +2757,7 @@ public class PharmacyRequestForBhtController implements Serializable {
      * @param prescription The prescription to check
      * @return true if prescription has meaningful data, false otherwise
      */
-    private boolean hasMeaningfulPrescriptionData(Prescription prescription) {
+    private boolean hasMeaningfulPrescriptionData(Prescription prescription, Item dispenseItem) {
         if (prescription == null) {
             return false;
         }
@@ -2703,6 +2766,9 @@ public class PharmacyRequestForBhtController implements Serializable {
         // Note: prescribedFrom is intentionally excluded here because it is now
         // auto-defaulted to today for every new cycle (see getBillItem()), so on
         // its own it does not indicate the user entered prescription details.
+        // The item check compares the prescribed medicine against the passed-in
+        // dispensed item (a therapeutic substitute) rather than the controller-level
+        // billItem, which may already have been cleared after a row was added.
         return prescription.getDose() != null
                 || prescription.getDoseUnit() != null
                 || prescription.getFrequencyUnit() != null
@@ -2710,7 +2776,7 @@ public class PharmacyRequestForBhtController implements Serializable {
                 || prescription.getDurationUnit() != null
                 || prescription.getPrescribedTo() != null
                 || (prescription.getComment() != null && !prescription.getComment().trim().isEmpty())
-                || (prescription.getItem() != null && billItem != null && !prescription.getItem().equals(billItem.getItem()));
+                || (prescription.getItem() != null && !Objects.equals(prescription.getItem(), dispenseItem));
     }
 
     public List<ClinicalFindingValue> getAllergyListOfPatient() {

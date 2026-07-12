@@ -36,6 +36,7 @@
                                     <div class="d-flex gap-2">
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                             <p:commandButton
+                                                id="btnInpatientDashboard"
                                                 ajax="false"
                                                 icon="fa-solid fa-address-card"
                                                 styleClass="ui-button-info ui-button-outlined"
@@ -51,6 +52,7 @@
 
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                             <p:commandButton
+                                                id="btnNursingWorkBenchStart"
                                                 value="Nursing WorkBench"
                                                 title="Back to the nursing workbench"
                                                 action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
@@ -183,6 +185,7 @@
                             <div class="my-3 d-flex flex-column justify-content-end">
                                 <div class="col-12 d-flex align-item-center justify-content-center">
                                     <p:commandButton
+                                        id="btnProceed"
                                         ajax="false"
                                         style="width: 250px"
                                         class="ui-button-success px-5"
@@ -213,6 +216,7 @@
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                             <div class="d-flex gap-2">
                                                 <p:commandButton
+                                                    id="btnLookupPatient"
                                                     value="Lookup"
                                                     ajax="false"
                                                     icon="fa fa-search"
@@ -222,6 +226,7 @@
                                                 </p:commandButton>
 
                                                 <p:commandButton
+                                                    id="btnPatientProfile"
                                                     value="Profile"
                                                     ajax="false"
                                                     icon="fa fa-user"
@@ -235,6 +240,7 @@
                                                 </p:commandButton>
 
                                                 <p:commandButton
+                                                    id="btnInpatientDashboardMain"
                                                     ajax="false"
                                                     icon="fa-solid fa-address-card"
                                                     styleClass="ui-button-info ui-button-outlined"
@@ -247,6 +253,7 @@
 
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                             <p:commandButton
+                                                id="btnNursingWorkBenchMain"
                                                 value="Nursing WorkBench"
                                                 title="Back to the nursing workbench"
                                                 action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
@@ -260,6 +267,7 @@
                                     <!-- RIGHT: actions, left=least important -> right=primary -->
                                     <div class="d-flex gap-2 align-items-center">
                                         <p:commandButton
+                                            id="btnNewBill"
                                             accesskey="n"
                                             value="New Bill"
                                             ajax="false"
@@ -278,6 +286,7 @@
                                             style="min-width:120px"
                                             ajax="false"
                                             title="Settle this BHT issue request"
+                                            onclick="return confirm('Settle this BHT issue request?');"
                                             action="#{pharmacyRequestForBhtController.settleBhtRequest}"
                                             actionListener="#{pharmacyRequestForBhtController.calculateAllRates}"  >
                                         </p:commandButton>
@@ -296,10 +305,10 @@
                                     </p:panel>
                                     <p:panel class="w-100 my-2">
                                         <f:facet name="header">
-                                            <h:outputLabel value="Comment" />
+                                            <h:outputText value="Comment" />
                                         </f:facet>
                                         <p:inputTextarea
-                                            value="#{pharmacyRequestForBhtController.comment}" 
+                                            value="#{pharmacyRequestForBhtController.comment}"
                                             class="w-100" />
                                     </p:panel>
                                 </div>
@@ -310,7 +319,7 @@
                                         <p:panel>
                                             <f:facet name="header" >
                                                 <h:outputText styleClass="fa-solid fa-circle-plus"  />
-                                                <h:outputLabel value="Prescription" class="mx-4"/>
+                                                <h:outputText value="Prescription" styleClass="mx-4"/>
 <!--
     Save Draft is hidden for now (rendered="false"). It persists a PharmacyBhtPre
     PreBill, but there is currently no mechanism on this page to reload a saved
@@ -334,7 +343,7 @@
 
                                             <div class="row mt-1">
                                                 <div class="col-md-12 d-flex align-items-center gap-2 flex-wrap">
-                                                    <p:outputLabel value="Show:" styleClass="me-1" />
+                                                    <h:outputText value="Show:" styleClass="me-1" />
                                                     <p:selectBooleanButton id="tglVtm"
                                                                            value="#{pharmacyRequestForBhtController.includeVtm}"
                                                                            onLabel="VTM" offLabel="VTM"
@@ -577,7 +586,7 @@
                                             <div class="d-flex justify-content-between align-items-center w-100">
                                                 <div class="d-flex align-items-center gap-2">
                                                     <h:outputText styleClass="fa-solid fa-circle-plus"  />
-                                                    <h:outputLabel value="Dispense Request" class="mx-2"/>
+                                                    <h:outputText value="Dispense Request" styleClass="mx-2"/>
                                                 </div>
                                                 <!--
                                                     Case 3 — Add the current dispense line directly, skipping
@@ -600,8 +609,8 @@
                                         </f:facet>
 
                                         <div class="row">
-                                            <div class="col-md-8"><p:outputLabel value="Medicines/Devices" ></p:outputLabel></div>
-                                            <div class="col-md-4"><p:outputLabel value="Quantity" ></p:outputLabel></div>
+                                            <div class="col-md-8"><h:outputText value="Medicines/Devices" /></div>
+                                            <div class="col-md-4"><h:outputText value="Quantity" /></div>
                                         </div>
 
                                         <p:growl id="growl" showDetail="false" life="5500" />
@@ -669,8 +678,10 @@
                                             <p:column headerText="Directions" width="20em">
                                                 <h:panelGroup layout="block">
                                                     <h:outputText value="#{bi.descreption}" style="color: red;" />
+                                                    <!-- Guard with hasPrescription(): reading bi.prescription directly
+                                                         auto-creates a Prescription during rendering and can persist blanks. -->
                                                     <h:panelGroup layout="block"
-                                                                  rendered="#{bi.prescription ne null and (bi.prescription.dose ne null or bi.prescription.frequencyUnit ne null or bi.prescription.duration ne null)}"
+                                                                  rendered="#{bi.hasPrescription() and (bi.prescription.dose ne null or bi.prescription.frequencyUnit ne null or bi.prescription.duration ne null)}"
                                                                   style="font-size:0.85em;color:#555;margin-top:2px;">
                                                         <h:outputText rendered="#{bi.prescription.dose ne null}" value="Dose: #{bi.prescription.dose} #{bi.prescription.doseUnit.name}  " />
                                                         <h:outputText rendered="#{bi.prescription.frequencyUnit ne null}" value="Freq: #{bi.prescription.frequencyUnit.name}  " />
@@ -680,6 +691,7 @@
                                             </p:column>
                                             <p:column headerText="Edit" width="5em">
                                                 <p:commandButton
+                                                    id="btnEditBillItem"
                                                     icon="fa-solid fa-pen-to-square"
                                                     title="Edit / Substitute Item"
                                                     class="ui-button-warning"
@@ -691,6 +703,7 @@
                                             </p:column>
                                             <p:column headerText="Remove" width="5em">
                                                 <p:commandButton
+                                                    id="btnRemoveBillItem"
                                                     value="Remove"
                                                     icon="fa-solid fa-trash"
                                                     class="ui-button-danger"
@@ -726,8 +739,10 @@
                                                 </p:selectOneMenu>
 
                                                 <p:outputLabel value="Quantity" for="txtEditQty" />
+                                                <!-- Bound to the detached editQty, not the live row, so a failed
+                                                     save never leaves a bad quantity on the bill item. -->
                                                 <p:inputText id="txtEditQty" autocomplete="off"
-                                                             value="#{pharmacyRequestForBhtController.billItemForEdit.qty}"
+                                                             value="#{pharmacyRequestForBhtController.editQty}"
                                                              style="width:100%" />
                                             </h:panelGrid>
 
@@ -739,8 +754,8 @@
                                                     class="ui-button-success"
                                                     action="#{pharmacyRequestForBhtController.saveEditedBillItem}"
                                                     process="@this cmbSubstitute txtEditQty"
-                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
-                                                    oncomplete="PF('editBillItemDialog').hide();" />
+                                                    update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} @(.ui-messages)"
+                                                    oncomplete="if (args &amp;&amp; args.editSaved) { PF('editBillItemDialog').hide(); }" />
                                             </f:facet>
                                         </p:dialog>
                                     </p:panel>
@@ -769,6 +784,7 @@
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
                                         <div class="d-flex gap-2">
                                             <p:commandButton
+                                                id="btnLookupPatientView"
                                                 value="Lookup"
                                                 ajax="false"
                                                 icon="fa fa-search"
@@ -778,6 +794,7 @@
                                             </p:commandButton>
 
                                             <p:commandButton
+                                                id="btnPatientProfileView"
                                                 value="Patient Profile"
                                                 ajax="false"
                                                 icon="fa fa-user"
@@ -791,6 +808,7 @@
                                             </p:commandButton>
 
                                             <p:commandButton
+                                                id="btnInpatientDashboardView"
                                                 ajax="false"
                                                 icon="fa-solid fa-address-card"
                                                 styleClass="ui-button-info ui-button-outlined"
@@ -807,6 +825,7 @@
 
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
                                         <p:commandButton
+                                            id="btnNursingWorkBenchView"
                                             value="Nursing WorkBench"
                                             title="Back to the nursing workbench"
                                             action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
@@ -830,6 +849,7 @@
                                     </p:commandButton>
 
                                     <p:commandButton
+                                        id="btnNewMedicineRequest"
                                         value="New Medicine Request for BHT"
                                         ajax="false"
                                         style="min-width:120px"
