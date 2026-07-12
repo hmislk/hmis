@@ -1535,6 +1535,12 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("Room facility charge not set");
             return;
         }
+        if (pr.isFromPackage() && !isPackageRoomDurationExceeded(pr)) {
+            // Package-locked charge stays as set by InpatientPackageApplicationBean.
+            patientRooms = null;
+            createTables();
+            return;
+        }
         RoomFacilityCharge rfc = pr.getRoomFacilityCharge();
         pr.setCurrentRoomCharge(rfc.getRoomCharge() != null ? rfc.getRoomCharge() : 0.0);
         pr.setCurrentMaintananceCharge(rfc.getMaintananceCharge() != null ? rfc.getMaintananceCharge() : 0.0);
@@ -1591,6 +1597,38 @@ public class BhtSummeryController implements Serializable {
         charge = roomCharge * getInwardBean().calCount(timedFee, p.getAdmittedAt(), p.getDischargedAt());
 
         p.setCalculatedRoomCharge(charge);
+    }
+
+    private boolean isPackageRoomDurationExceeded(PatientRoom pr) {
+        if (pr.getIncludedRoomDurationHours() == null) {
+            return true;
+        }
+        Date to = pr.getDischargedAt() != null ? pr.getDischargedAt() : new Date();
+        if (pr.getAdmittedAt() == null) {
+            return false;
+        }
+        long stayedHours = java.time.Duration.between(
+                pr.getAdmittedAt().toInstant(), to.toInstant()).toHours();
+        return stayedHours > pr.getIncludedRoomDurationHours();
+    }
+
+    public double getPackageRoomVarianceCharge(PatientRoom pr) {
+        if (pr == null || !pr.isFromPackage() || !isPackageRoomDurationExceeded(pr) || pr.getRoomFacilityCharge() == null) {
+            return 0.0;
+        }
+        calCulateRoomCharge(pr);
+        double liveEquivalent = pr.getCalculatedRoomCharge();
+        // RoomFacilityCharge.roomCharge is a rate per TimedItemFee.durationHours block (see
+        // InwardBeanController.calCount: charge = roomCharge * count, where count is the number
+        // of durationHours-sized blocks between admittedAt/dischargedAt). Room-charge TimedItemFee
+        // configs are conventionally 24-hour ("per day") blocks, so we use the actual configured
+        // durationHours here (falling back to 24.0 if unset) rather than hardcoding 24.
+        TimedItemFee timedFee = pr.getRoomFacilityCharge().getTimedItemFee();
+        double blockHours = (timedFee != null && timedFee.getDurationHours() > 0) ? timedFee.getDurationHours() : 24.0;
+        double includedEquivalent = pr.getRoomFacilityCharge().getRoomCharge() != null
+                ? pr.getRoomFacilityCharge().getRoomCharge() * (pr.getIncludedRoomDurationHours() / blockHours)
+                : 0.0;
+        return Math.max(0.0, liveEquivalent - includedEquivalent);
     }
 
     private boolean checkDischargeTime() {
