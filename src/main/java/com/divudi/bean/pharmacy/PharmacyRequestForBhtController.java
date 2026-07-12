@@ -1305,7 +1305,7 @@ public class PharmacyRequestForBhtController implements Serializable {
 
         if (getPreBill() != null && getPreBill().getBillItems() != null) {
             for (BillItem existing : getPreBill().getBillItems()) {
-                if (existing.isFromPackage() && item.equals(existing.getItem())) {
+                if (existing.getId() == null && existing.isFromPackage() && item.equals(existing.getItem())) {
                     consumed += existing.getQty() != null ? existing.getQty() : 0.0;
                 }
             }
