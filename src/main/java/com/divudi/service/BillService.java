@@ -3281,10 +3281,10 @@ public class BillService {
 
         // Step 1: One row per BillItem — no group by, so nothing is aggregated/overwritten.
         String jpql = "select new com.divudi.core.data.dto.OpdSaleSummaryDTO("
-                + " bi.item.category.id," // Category ID for navigation
-                + " coalesce(bi.item.category.name, 'No Category')," // Category name for display
-                + " bi.item.id," // Item ID for navigation
-                + " coalesce(bi.item.name, 'No Item')," // Item name for display
+                + " cat.id," // Category ID for navigation
+                + " coalesce(cat.name, 'No Category')," // Category name for display
+                + " itm.id," // Item ID for navigation
+                + " coalesce(itm.name, 'No Item')," // Item name for display
                 + " bi.id," // BillItem ID — stable per-row key
                 + " b.createdAt," // Billed date
                 + " pe.bhtNo," // BHT (null for OPD bills — LEFT JOIN so OPD rows are kept)
@@ -3299,14 +3299,18 @@ public class BillService {
                 + " bi.discount,"
                 + " bi.netValue"
                 + ") "
-                // LEFT JOINs: patientEncounter/patient are null for OPD bills. Using a path
-                // expression (b.patientEncounter.bhtNo) would generate an implicit INNER JOIN
-                // that silently drops every OPD row. Explicit LEFT JOINs keep OPD rows.
+                // All LEFT JOINs: item/category and patientEncounter/patient may be null on
+                // some rows. A path expression (e.g. bi.item.category.id or b.patientEncounter.bhtNo)
+                // would generate an implicit INNER JOIN that silently drops those BillItem rows
+                // before coalesce() runs — the opposite of this report's "keep every billing" intent.
                 + " from BillItem bi join bi.bill b "
+                + " left join bi.item itm "
+                + " left join itm.category cat "
                 + " left join b.patientEncounter pe "
                 + " left join b.patient pat "
                 + " left join pat.person per "
                 + " where b.retired=:ret "
+                + " and (bi.retired is null or bi.retired=false) " // exclude voided bill items
                 + " and b.billTypeAtomic in :bts "
                 + " and b.createdAt between :fd and :td ";
 
@@ -3331,11 +3335,11 @@ public class BillService {
             params.put("site", site);
         }
         if (category != null) {
-            jpql += " and bi.item.category=:cat";
+            jpql += " and cat=:cat";
             params.put("cat", category);
         }
         if (item != null) {
-            jpql += " and bi.item=:itm";
+            jpql += " and itm=:itm";
             params.put("itm", item);
         }
 
@@ -3346,13 +3350,16 @@ public class BillService {
 
         // Step 2: Per-item staff (doctor/technician) name — same approach as
         // fetchOpdSaleSummaryDTOs. Staff is assigned per item, so this is a best-effort
-        // fill to keep the existing Doctor column populated.
-        String staffJpql = "select bi2.item.id, stf.person.name"
+        // fill to keep the existing Doctor column populated. Explicit join on the item and
+        // a bi2.retired guard, mirroring the main query above.
+        String staffJpql = "select itm2.id, stf.person.name"
                 + " from BillFee bf"
                 + " join bf.billItem bi2"
                 + " join bi2.bill b2"
+                + " join bi2.item itm2"
                 + " join bf.staff stf"
                 + " where b2.retired = false"
+                + " and (bi2.retired is null or bi2.retired=false)"
                 + " and b2.billTypeAtomic in :bts"
                 + " and b2.createdAt between :fd and :td"
                 + " and bf.retired = false";
@@ -3375,15 +3382,15 @@ public class BillService {
             staffParams.put("site", site);
         }
         if (category != null) {
-            staffJpql += " and bi2.item.category=:cat";
+            staffJpql += " and itm2.category=:cat";
             staffParams.put("cat", category);
         }
         if (item != null) {
-            staffJpql += " and bi2.item=:itm";
+            staffJpql += " and itm2=:itm";
             staffParams.put("itm", item);
         }
 
-        staffJpql += " group by bi2.item.id, stf.id, stf.person.name";
+        staffJpql += " group by itm2.id, stf.id, stf.person.name";
 
         List<Object[]> staffRows = billItemFacade.findObjectArrayByJpql(staffJpql, staffParams, TemporalType.TIMESTAMP);
 
