@@ -17206,7 +17206,10 @@ public class SearchController implements Serializable {
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_REFUND);
-        opdSaleSummaryDtos = billService.fetchOpdSaleSummaryDTOs(
+        // Issue #21920: one row per billing instance (not aggregated by item) with a
+        // billed date, so re-billed/cancelled/refunded services are preserved as
+        // separate rows instead of overwriting the same record.
+        opdSaleSummaryDtos = billService.fetchItemizedServiceInstanceDTOs(
                 fromDate, toDate, institution, site, department, category, item, btas);
     }
 
