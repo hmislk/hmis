@@ -53,6 +53,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.data.ProfessionalPaymentVoucherGroup;
 import com.divudi.service.DrawerService;
 import com.divudi.service.ProfessionalPaymentService;
 import java.text.DecimalFormat;
@@ -112,6 +113,8 @@ public class StaffPaymentBillController implements Serializable {
     private Date toDate;
     List<Bill> selectedItems;
     private Bill current;
+    private List<ProfessionalPaymentVoucherGroup> individualVoucherGroups;
+    private Bill individualVoucherGroupsBill;
     private List<Bill> items = null;
     String selectText = "";
     private String withholdingTaxCalculationStatus;
@@ -850,6 +853,15 @@ public class StaffPaymentBillController implements Serializable {
             current = new BilledBill();
         }
         return current;
+    }
+
+    public List<ProfessionalPaymentVoucherGroup> getIndividualVoucherGroups() {
+        if (individualVoucherGroups == null || individualVoucherGroupsBill != current) {
+            individualVoucherGroups = professionalPaymentService
+                    .groupPaymentBillItemsByPatientOrBht(current);
+            individualVoucherGroupsBill = current;
+        }
+        return individualVoucherGroups;
     }
 
     public void prepareToInitializeNewProfessionalPayment() {

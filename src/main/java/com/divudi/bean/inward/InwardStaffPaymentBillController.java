@@ -38,6 +38,7 @@ import com.divudi.core.facade.CancelledBillFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.RefundBillFacade;
 import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.data.ProfessionalPaymentVoucherGroup;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.DrawerService;
 import com.divudi.service.ProfessionalPaymentService;
@@ -109,6 +110,8 @@ public class InwardStaffPaymentBillController implements Serializable {
     private Date toDate;
 
     private Bill current;
+    private List<ProfessionalPaymentVoucherGroup> individualVoucherGroups;
+    private Bill individualVoucherGroupsBill;
     private List<Bill> items = null;
     private List<Bill> bills;
     private List<Bill> billsCan;
@@ -1573,6 +1576,15 @@ public class InwardStaffPaymentBillController implements Serializable {
             current = new BilledBill();
         }
         return current;
+    }
+
+    public List<ProfessionalPaymentVoucherGroup> getIndividualVoucherGroups() {
+        if (individualVoucherGroups == null || individualVoucherGroupsBill != current) {
+            individualVoucherGroups = professionalPaymentService
+                    .groupPaymentBillItemsByPatientOrBht(current);
+            individualVoucherGroupsBill = current;
+        }
+        return individualVoucherGroups;
     }
 
     public void setCurrent(Bill current) {
