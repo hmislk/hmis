@@ -103,11 +103,11 @@
                         <td><h:outputLabel value=":" /></td>
                         <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.nameWithTitle}" /></td>
                     </tr>
-                    <h:panelGroup rendered="#{cc.attrs.comment ne null and cc.attrs.comment ne ''}">
+                    <h:panelGroup rendered="#{(cc.attrs.comment ne null and cc.attrs.comment ne '') or (cc.attrs.bill.comments ne null and cc.attrs.bill.comments ne '')}">
                         <tr>
                             <td><h:outputLabel value="Comments" styleClass="label" /></td>
                             <td><h:outputLabel value=":" /></td>
-                            <td colspan="4"><h:outputLabel value="#{cc.attrs.comment}" /></td>
+                            <td colspan="4"><h:outputLabel value="#{(cc.attrs.comment ne null and cc.attrs.comment ne '') ? cc.attrs.comment : cc.attrs.bill.comments}" /></td>
                         </tr>
                     </h:panelGroup>
                 </table>
@@ -137,6 +137,10 @@
                                 </td>
                                 <td class="item-name">
                                     <h:outputLabel value="#{bip.descreption}" />
+                                    <h:panelGroup layout="block"
+                                                  rendered="#{bip.prescription.comment ne null and bip.prescription.comment ne ''}">
+                                        <h:outputLabel value="Comment: #{bip.prescription.comment}" styleClass="item-comment" style="font-size:0.85em;font-style:italic;color:#333;display:block;" />
+                                    </h:panelGroup>
                                 </td>
                             </tr>
                         </ui:repeat>
