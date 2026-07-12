@@ -115,6 +115,7 @@ public class InwardProfessionalBillController implements Serializable {
     private String ageText;
     private Speciality speciality;
     private Staff staff;
+    private Staff pendingPackageStaff;
     private Bill current;
     private Institution institution;
     BillEntry removeBillEntry;
@@ -254,6 +255,11 @@ public class InwardProfessionalBillController implements Serializable {
 
         if (encounterComponent.getBillFee().getPaidValue() != 0) {
             JsfUtil.addErrorMessage("Staff Payment Already Paid U cant Remove");
+            return;
+        }
+
+        if (encounterComponent.getBillFee().isFromPackage()) {
+            JsfUtil.addErrorMessage("This fee is included in the admission's package and cannot be removed.");
             return;
         }
 
@@ -736,6 +742,23 @@ public class InwardProfessionalBillController implements Serializable {
         save();
         freeOfChargeProfessionalPayment = false;
         //   JsfUtil.addSuccessMessage("Fee Added");
+    }
+
+    public void assignStaffToPackageFee(BillFee billFee, Staff staff) {
+        if (billFee == null || !billFee.isFromPackage()) {
+            JsfUtil.addErrorMessage("This action is only for package-included professional fee roles.");
+            return;
+        }
+        if (staff == null) {
+            JsfUtil.addErrorMessage("Please select a Staff");
+            return;
+        }
+        double lockedFee = billFee.getOverriddenRate() != null ? billFee.getOverriddenRate() : billFee.getFeeValue();
+        billFee.setStaff(staff);
+        billFee.setFeeValue(lockedFee);
+        billFee.setFeeGrossValue(lockedFee);
+        getBillFeeFacade().edit(billFee);
+        JsfUtil.addSuccessMessage("Staff assigned. Fee amount unchanged.");
     }
 
     public void feeChanged(BillFee bf) {
@@ -1244,6 +1267,10 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public void remove(BillFee bf) {
+        if (bf.isFromPackage()) {
+            JsfUtil.addErrorMessage("This fee is included in the admission's package and cannot be removed.");
+            return;
+        }
         bf.setRetiredAt(new Date());
         bf.setRetired(true);
         bf.setRetirer(getSessionController().getLoggedUser());
@@ -1338,6 +1365,14 @@ public class InwardProfessionalBillController implements Serializable {
 
     public void setStaff(Staff staff) {
         this.staff = staff;
+    }
+
+    public Staff getPendingPackageStaff() {
+        return pendingPackageStaff;
+    }
+
+    public void setPendingPackageStaff(Staff pendingPackageStaff) {
+        this.pendingPackageStaff = pendingPackageStaff;
     }
 
     public BillFee getCurrentBillFee() {
