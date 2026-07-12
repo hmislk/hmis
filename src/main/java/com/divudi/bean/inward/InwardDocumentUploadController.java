@@ -307,6 +307,8 @@ public class InwardDocumentUploadController implements Serializable {
             }
             emailFacade.edit(email);
         } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(InwardDocumentUploadController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Failed to send document email", ex);
             JsfUtil.addErrorMessage("Sending Email Failed");
         }
     }
