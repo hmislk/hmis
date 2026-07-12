@@ -2578,6 +2578,20 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
+        if (bi.isFromPackage() && bi.getOverriddenRate() != null) {
+            double packageRate = bi.getOverriddenRate();
+            double quantity = bi.getQty() != null ? bi.getQty() : 0.0;
+            bi.setRate(packageRate);
+            bi.setGrossValue(packageRate * quantity);
+            bi.setMarginValue(0.0);
+            bi.setNetValue(packageRate * quantity);
+            bi.setMarginRate(0.0);
+            bi.setNetRate(packageRate);
+            bi.setAdjustedValue(packageRate * quantity);
+            bi.setDiscount(0);
+            return;
+        }
+
         if (selectedStockDto != null
                 && bi.getPharmaceuticalBillItem().getStock() != null
                 && Objects.equals(selectedStockDto.getId(), bi.getPharmaceuticalBillItem().getStock().getId())) {
@@ -2936,6 +2950,11 @@ public class PharmacySaleBhtController implements Serializable {
                     billItem.setInwardChargeType(InwardChargeType.Medicine);
                     billItem.getPharmaceuticalBillItem().setBillItem(billItem);
                     billItem.setReferanceBillItem(i);
+                    if (i.isFromPackage()) {
+                        billItem.setFromPackage(true);
+                        billItem.setOverriddenRate(i.getOverriddenRate());
+                        billItem.setSourcePackageItem(i.getSourcePackageItem());
+                    }
                     billItem.setSearialNo(getBillItems().size() + 1);
                     if (isSubstitute) {
                         billItem.setAutoSubstituted(true);
@@ -2957,6 +2976,11 @@ public class PharmacySaleBhtController implements Serializable {
                 billItem.setDescreption(i.getDescreption());
                 billItem.setInwardChargeType(InwardChargeType.Medicine);
                 billItem.setReferanceBillItem(i);
+                if (i.isFromPackage()) {
+                    billItem.setFromPackage(true);
+                    billItem.setOverriddenRate(i.getOverriddenRate());
+                    billItem.setSourcePackageItem(i.getSourcePackageItem());
+                }
                 billItem.setSearialNo(getBillItems().size() + 1);
                 billItem.getPharmaceuticalBillItem().setBillItem(billItem);
                 calculateRates(billItem);
