@@ -145,6 +145,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ReservationFacade reservationFacade;
     @EJB
     private PatientTransferRequestFacade patientTransferRequestFacade;
+    @EJB
+    private com.divudi.ejb.InpatientPackageApplicationBean inpatientPackageApplicationBean;
+
+    public com.divudi.ejb.InpatientPackageApplicationBean getInpatientPackageApplicationBean() {
+        return inpatientPackageApplicationBean;
+    }
 
     @Inject
     BhtEditController bhtEditController;
@@ -2406,6 +2412,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
 
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
+
+            if (getCurrent().getInpatientPackage() != null) {
+                getInpatientPackageApplicationBean().applyPackageToAdmission(
+                        getCurrent(), currentPatientRoom, getSessionController().getLoggedUser());
+            }
 
             if (!getCurrent().isRoomAdmitted() && currentPatientRoom != null && currentPatientRoom.getRoomFacilityCharge() != null) {
                 PatientTransferRequest handoverRequest = new PatientTransferRequest();
