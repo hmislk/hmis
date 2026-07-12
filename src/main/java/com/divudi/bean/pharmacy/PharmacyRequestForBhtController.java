@@ -1303,6 +1303,14 @@ public class PharmacyRequestForBhtController implements Serializable {
                 qm);
         double consumed = alreadyIssued != null ? alreadyIssued : 0.0;
 
+        if (getPreBill() != null && getPreBill().getBillItems() != null) {
+            for (BillItem existing : getPreBill().getBillItems()) {
+                if (existing.isFromPackage() && item.equals(existing.getItem())) {
+                    consumed += existing.getQty() != null ? existing.getQty() : 0.0;
+                }
+            }
+        }
+
         if (consumed + requestedQty > packageItem.getQty()) {
             return null; // Beyond allocation — bill remaining/extra qty at live rate.
         }
