@@ -437,6 +437,13 @@
                         </p:menuitem>
                         <p:menuitem
                             ajax="false"
+                            value="Package Admission"
+                            action="#{inpatientPackageAdmissionController.navigateToPackageAdmitFromMenu()}"
+                            icon="fa fa-box-archive"
+                            rendered="#{webUserController.hasPrivilege('InwardPackageAdmission')}">
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
                             value="Manage Appointment"
                             actionListener="#{appointmentController.makeNull()}" 
                             action="#{appointmentController.navigateToSearchAppointmentsListFromMenu()}"
@@ -2058,15 +2065,22 @@
                         icon="fa fa-list"
                         rendered="#{webUserController.hasPrivilege('AdminItems')}" >
                     </p:menuitem>
-                    <p:menuitem  
+                    <p:menuitem
                         rendered="#{webUserController.hasPrivilege('InwardAdministration')}"
-                        ajax="false"  
-                        action="/inward/inward_administration?faces-redirect=true" 
-                        value="Manage Inpatient Services" 
+                        ajax="false"
+                        action="/inward/inward_administration?faces-redirect=true"
+                        value="Manage Inpatient Services"
                         icon="fa fa-bed" >
                     </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        value="Manage Inpatient Packages"
+                        action="#{inpatientPackageController.navigateToManageInpatientPackagesFromMenu()}"
+                        icon="fa fa-box-archive"
+                        rendered="#{webUserController.hasPrivilege('InwardPackageAdministration')}">
+                    </p:menuitem>
 
-                    <p:menuitem  
+                    <p:menuitem
                         ajax="false"  
                         action="#{pharmacyController.navigateToManagePharmaceuticals}" 
                         value="Pharmaceutical Management" 
