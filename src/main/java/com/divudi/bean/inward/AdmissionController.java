@@ -2440,6 +2440,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     getFacade().edit(getCurrent());
 
                     JsfUtil.addErrorMessage("Package could not be applied to this admission and it has been cancelled. Please retry. (" + ex.getMessage() + ")");
+                    admittingProcessStarted = false;
                     return;
                 }
             }
