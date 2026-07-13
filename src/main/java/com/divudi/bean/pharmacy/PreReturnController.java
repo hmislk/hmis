@@ -21,6 +21,7 @@ import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.service.StaffService;
+import com.divudi.service.PharmacyRetailSaleReturnPolicyService;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.RefundBill;
@@ -77,6 +78,8 @@ public class PreReturnController implements Serializable {
     private BillItemFacade billItemFacade;
     @Inject
     PageMetadataRegistry pageMetadataRegistry;
+    @Inject
+    private PharmacyRetailSaleReturnPolicyService pharmacyRetailSaleReturnPolicyService;
 
     @PostConstruct
     public void init() {
@@ -147,6 +150,20 @@ public class PreReturnController implements Serializable {
             OptionScope.APPLICATION
         ));
 
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Return - Days Allowed Without Approval",
+            "Number of days after the original sale a return is allowed without needing an approval request (default 3)",
+            "PharmacyRetailSaleReturnPolicyService.getNoApprovalDayLimit()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Return - Days Allowed With Approval",
+            "Number of days after the original sale a return remains possible with an approved request, beyond which it is hard-blocked (default 7)",
+            "PharmacyRetailSaleReturnPolicyService.getWithApprovalDayLimit()",
+            OptionScope.APPLICATION
+        ));
+
         // Privileges
         metadata.addPrivilege(new PrivilegeInfo(
             "Admin",
@@ -158,6 +175,12 @@ public class PreReturnController implements Serializable {
             "ChangeReceiptPrintingPaperTypes",
             "Ability to change receipt printing paper format settings",
             "Line 217 (XHTML): Settings button visibility for paper format configuration"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "PharmacyRetailSaleReturnApproval",
+            "Ability to approve or reject a pharmacy retail sale return approval request",
+            "RequestController.approvePharmacyRetailSaleReturnRequest() / navigateToApproveRequest()"
         ));
 
         // Register the metadata
@@ -174,6 +197,11 @@ public class PreReturnController implements Serializable {
         }
         if (!getSessionController().getDepartment().equals(bill.getDepartment())) {
             JsfUtil.addErrorMessage("You can't return another department's Issue. Please log to the billed department");
+            return null;
+        }
+        String returnBlockReason = pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(bill);
+        if (returnBlockReason != null) {
+            JsfUtil.addErrorMessage(returnBlockReason);
             return null;
         }
         generateBillComponent(BillType.PharmacyPre);
@@ -208,6 +236,26 @@ public class PreReturnController implements Serializable {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
+    }
+
+    /**
+     * @param saleBill the original retail sale bill being returned
+     * @return true if the return is hard-blocked because the bill is older
+     * than the "with approval" day limit, with no possible override
+     */
+    public boolean isReturnBlockedByDayLimit(Bill saleBill) {
+        return pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(saleBill) != null
+                && pharmacyRetailSaleReturnPolicyService.daysSinceBillCreation(saleBill) > pharmacyRetailSaleReturnPolicyService.getWithApprovalDayLimit();
+    }
+
+    /**
+     * @param saleBill the original retail sale bill being returned
+     * @return true if the return is still possible but requires an approved
+     * Request because the bill is older than the "no approval" day limit
+     */
+    public boolean needsReturnApproval(Bill saleBill) {
+        return pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(saleBill) != null
+                && !isReturnBlockedByDayLimit(saleBill);
     }
 
     @Inject
@@ -339,6 +387,12 @@ public class PreReturnController implements Serializable {
     StaffService staffBean;
 
     public void settle() {
+        String returnBlockReason = pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(bill);
+        if (returnBlockReason != null) {
+            JsfUtil.addErrorMessage(returnBlockReason);
+            return;
+        }
+
         // Check if credit has been partially or fully settled
         if (bill.getPaymentMethod() == PaymentMethod.Credit){
             if (bill != null && bill.getPaidAmount() > 0) {
@@ -346,7 +400,7 @@ public class PreReturnController implements Serializable {
                 return;
             }
         }
-        
+
         if (getReturnBill().getTotal() == 0) {
             JsfUtil.addErrorMessage("Total is Zero cant' return");
             return;

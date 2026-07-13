@@ -930,6 +930,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode drawerAdjustmentRequestApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.DrawerAdjustmentRequestApproval, "Drawer Adjustment Approval"), requestNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.DrawerAdjustmentDirect, "Drawer Adjustment Direct (No Approval)"), requestNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.PettyCashCancellationApproval, "Petty-Cash Cancellation Approval"), requestNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyRetailSaleReturnApproval, "Pharmacy Retail Sale Return Approval"), requestNode);
 
         // Float Transfer Privileges
         TreeNode floatTransferNode = new DefaultTreeNode(new PrivilegeHolder(null, "Float Transfer"), allNode);
