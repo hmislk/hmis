@@ -1194,9 +1194,6 @@ public class StaffController implements Serializable {
         current = new Staff();
         tempRetireDate = null;
         removeResign = false;
-        
-        System.out.println("prepareAdd: current.getPerson().getId() = " + current.getPerson().getId()); 
-        System.out.println(current.getPerson() == null);
     }
 
     public void delete() {
