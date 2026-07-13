@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillClassType;
@@ -49,6 +50,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -61,6 +64,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class GrnReturnWithCostingController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(GrnReturnWithCostingController.class.getName());
 
     /**
      * EJBs
@@ -95,6 +100,8 @@ public class GrnReturnWithCostingController implements Serializable {
     private PharmacyController pharmacyController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
     /**
@@ -1149,6 +1156,9 @@ public class GrnReturnWithCostingController implements Serializable {
     }
 
     public void settleGrnReturn() {
+        if (!isAuthorized("SETTLE_GRN_RETURN", "ReturnReceviedGoods")) {
+            return;
+        }
         if (returnBill == null) {
             JsfUtil.addErrorMessage("No GRN Return bill");
             return;
@@ -1728,6 +1738,41 @@ public class GrnReturnWithCostingController implements Serializable {
 
     public void setPaymentFacade(PaymentFacade paymentFacade) {
         this.paymentFacade = paymentFacade;
+    }
+
+    /**
+     * Authorization helper method to check GRN Return (costing) privileges
+     * and audit denied access
+     *
+     * @param action The action being attempted (SETTLE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null",
+                    action);
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = null;
+            if (returnBill != null) {
+                billId = returnBill.getId();
+            } else if (bill != null) {
+                billId = bill.getId();
+            }
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized GRN Return access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " GRN return requests.");
+            return false;
+        }
+
+        return true;
     }
 
 }

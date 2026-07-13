@@ -11,6 +11,12 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
 
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyGrnCancel')}" >
+                    You are NOT authorized
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyGrnCancel')}" >
+
                 <h:panelGroup rendered="#{not configOptionApplicationController.getBooleanValueByKey('GRN Cancellations are allowed',true)}">
                     <h1>Configuration Settings has disabled GRN Cancellations. Please change the option <span>GRN Cancellations are allowed</span>  </h1>
                 </h:panelGroup>
@@ -25,13 +31,14 @@
 
                                         <div class="d-flex gap-2">
                                             <p:inputText value="#{pharmacyBillSearch.bill.comments}" style="width: 50em;" placeholder="Enter Comments to Cancel Bill"/>
-                                            <p:commandButton 
-                                                value="Cancel" 
+                                            <p:commandButton
+                                                value="Cancel"
                                                 ajax="false"
                                                 icon="fa fa-cancel"
-                                                class="ui-button-danger" 
+                                                class="ui-button-danger"
+                                                disabled="#{not webUserController.hasPrivilege('PharmacyGrnCancel')}"
                                                 action="#{pharmacyBillSearch.pharmacyGrnCancel()}" >
-                                            </p:commandButton> 
+                                            </p:commandButton>
                                         </div>
                                     </div>
                                 </f:facet>
@@ -184,7 +191,9 @@
                             </h:panelGroup>
 
                         </p:panel>
-                    </h:form>   
+                    </h:form>
+
+                </h:panelGroup>
 
                 </h:panelGroup>
 

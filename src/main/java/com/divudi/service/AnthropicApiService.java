@@ -1217,6 +1217,132 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject userRoleResetTool = Json.createObjectBuilder()
+                .add("name", "user_role_reset")
+                .add("description",
+                        "Reset a user's role-template aspects (privileges/icons/subscriptions/login page) to exactly match a "
+                        + "role template for the given departments: retires records the user has that the template doesn't, "
+                        + "and adds records the template has that the user lacks. Roles are admin-time templates only — "
+                        + "this stamps user-level records; it never changes runtime behavior directly. "
+                        + "roleId is optional — omit it to reset to the user's own current role (the API 400s if the user "
+                        + "has no role). Set preview=true first to see added/retired counts per aspect without writing "
+                        + "anything, then call again with preview omitted/false to apply. Always confirm with the user "
+                        + "before applying (preview=false).")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("id", Json.createObjectBuilder().add("type", "string").add("description", "Target WebUser ID"))
+                                .add("roleId", Json.createObjectBuilder().add("type", "string").add("description", "Role template ID; omit to use the user's own role"))
+                                .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs to reset"))
+                                .add("aspects", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated aspects: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE. Default PRIVILEGES"))
+                                .add("updateUserRole", Json.createObjectBuilder().add("type", "string").add("description", "'true' or 'false' — also set WebUser.role to roleId. Default true"))
+                                .add("preview", Json.createObjectBuilder().add("type", "string").add("description", "'true' to preview counts without writing. Default false")))
+                        .add("required", Json.createArrayBuilder().add("id").add("departmentIds")))
+                .build();
+
+        JsonObject userRoleExpandTool = Json.createObjectBuilder()
+                .add("name", "user_role_expand")
+                .add("description",
+                        "Add role-template records (privileges/icons/subscriptions/login page) the user is missing, for the "
+                        + "given departments. Existing extra records the user already has beyond the template are left "
+                        + "untouched. roleId is required. Set preview=true first to see how many records would be added "
+                        + "per aspect, then call again with preview omitted/false to apply. Always confirm with the user "
+                        + "before applying.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("id", Json.createObjectBuilder().add("type", "string").add("description", "Target WebUser ID"))
+                                .add("roleId", Json.createObjectBuilder().add("type", "string").add("description", "Role template ID (required)"))
+                                .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs"))
+                                .add("aspects", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated aspects: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE. Default PRIVILEGES"))
+                                .add("preview", Json.createObjectBuilder().add("type", "string").add("description", "'true' to preview counts without writing. Default false")))
+                        .add("required", Json.createArrayBuilder().add("id").add("roleId").add("departmentIds")))
+                .build();
+
+        JsonObject userRoleNarrowTool = Json.createObjectBuilder()
+                .add("name", "user_role_narrow")
+                .add("description",
+                        "Retire the user's records (privileges/icons/subscriptions/login page) that match a role template, "
+                        + "for the given departments. Records the user has that are NOT part of the template are left "
+                        + "untouched. roleId is required. Set preview=true first to see how many records would be retired "
+                        + "per aspect, then call again with preview omitted/false to apply. Always confirm with the user "
+                        + "before applying.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("id", Json.createObjectBuilder().add("type", "string").add("description", "Target WebUser ID"))
+                                .add("roleId", Json.createObjectBuilder().add("type", "string").add("description", "Role template ID (required)"))
+                                .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs"))
+                                .add("aspects", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated aspects: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE. Default PRIVILEGES"))
+                                .add("preview", Json.createObjectBuilder().add("type", "string").add("description", "'true' to preview counts without writing. Default false")))
+                        .add("required", Json.createArrayBuilder().add("id").add("roleId").add("departmentIds")))
+                .build();
+
+        JsonObject userBulkRoleOperationsTool = Json.createObjectBuilder()
+                .add("name", "user_bulk_role_operations")
+                .add("description",
+                        "Apply RESET, EXPAND, or NARROW role-template operations to many users at once. Target users are "
+                        + "either an explicit userIds list (wins if given) or a filter by filterRoleId/filterDepartmentId "
+                        + "(users with that role and/or an active loggable department assignment). "
+                        + "Two-step safety gate mirroring the UI confirm dialog: first call with preview=true (confirm "
+                        + "omitted/false) to see the resolved user count and per-aspect totals (capped at the first 200 "
+                        + "users); only after showing this to the user and getting explicit approval, repeat the identical "
+                        + "call with confirm=true (preview omitted/false) to actually apply. Calling with neither preview "
+                        + "nor confirm set is rejected by the API.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("action", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("RESET").add("EXPAND").add("NARROW"))
+                                        .add("description", "Operation to apply to every resolved user"))
+                                .add("userIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated WebUser IDs. Wins over filterRoleId/filterDepartmentId if given"))
+                                .add("filterRoleId", Json.createObjectBuilder().add("type", "string").add("description", "Only used when userIds is omitted: match users with this role"))
+                                .add("filterDepartmentId", Json.createObjectBuilder().add("type", "string").add("description", "Only used when userIds is omitted: match users with an active loggable assignment to this department"))
+                                .add("roleId", Json.createObjectBuilder().add("type", "string").add("description", "Target template role ID. Omit to use each user's own current role"))
+                                .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs to operate on (required)"))
+                                .add("aspects", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated aspects: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE. Default PRIVILEGES"))
+                                .add("updateUserRole", Json.createObjectBuilder().add("type", "string").add("description", "'true' or 'false' — for RESET, also set each user's WebUser.role to roleId. Default true"))
+                                .add("preview", Json.createObjectBuilder().add("type", "string").add("description", "'true' for the first, read-only call"))
+                                .add("confirm", Json.createObjectBuilder().add("type", "string").add("description", "'true' for the second call that actually applies the operation")))
+                        .add("required", Json.createArrayBuilder().add("action").add("departmentIds")))
+                .build();
+
+        JsonObject listUserRolesTool = Json.createObjectBuilder()
+                .add("name", "list_user_roles")
+                .add("description",
+                        "List active user roles with their role-template summary: id, name, description, template login "
+                        + "page, and counts of active role-level privileges, template icons, and template subscriptions. "
+                        + "Use this to discover valid roleId values before calling user_role_reset/expand/narrow or "
+                        + "user_bulk_role_operations.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder())
+                        .add("required", Json.createArrayBuilder()))
+                .build();
+
+        JsonObject setUserLoginPageTool = Json.createObjectBuilder()
+                .add("name", "set_user_login_page")
+                .add("description",
+                        "Set or remove a user's default login page override for one department. This is separate from a "
+                        + "role's template login page (admin-time only) and from the legacy WebUser.loginPage fallback. "
+                        + "Runtime resolution order: this user+department override, then WebUser.loginPage, then HOME. "
+                        + "action SET (default) requires loginPage (a LoginPage enum name); action DELETE removes the "
+                        + "override for that department, falling back to the legacy behavior. Always confirm with the "
+                        + "user before calling.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("action", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("SET").add("DELETE"))
+                                        .add("description", "SET to upsert the override (default), DELETE to remove it"))
+                                .add("id", Json.createObjectBuilder().add("type", "string").add("description", "Target WebUser ID"))
+                                .add("departmentId", Json.createObjectBuilder().add("type", "string").add("description", "Department ID"))
+                                .add("loginPage", Json.createObjectBuilder().add("type", "string").add("description", "LoginPage enum name — required for action SET")))
+                        .add("required", Json.createArrayBuilder().add("id").add("departmentId")))
+                .build();
+
         JsonObject managePharmacyItemsTool = Json.createObjectBuilder()
                 .add("name", "manage_pharmacy_items")
                 .add("description",
@@ -1566,6 +1692,12 @@ public class AnthropicApiService implements Serializable {
                 .add(manageSubscriptionsTool)
                 .add(manageStaffTool)
                 .add(manageUsersTool)
+                .add(userRoleResetTool)
+                .add(userRoleExpandTool)
+                .add(userRoleNarrowTool)
+                .add(userBulkRoleOperationsTool)
+                .add(listUserRolesTool)
+                .add(setUserLoginPageTool)
                 .add(managePharmacyItemsTool)
                 .add(managePharmacyDiscountsTool)
                 .add(managePaymentSchemesTool)
@@ -1867,6 +1999,24 @@ public class AnthropicApiService implements Serializable {
                 }
                 case "manage_users": {
                     return callUsersApi(toolInput, hmisBaseUrl, hmisApiKey);
+                }
+                case "user_role_reset": {
+                    return callUserRoleOperationApi("reset", toolInput, false, hmisBaseUrl, hmisApiKey);
+                }
+                case "user_role_expand": {
+                    return callUserRoleOperationApi("expand", toolInput, true, hmisBaseUrl, hmisApiKey);
+                }
+                case "user_role_narrow": {
+                    return callUserRoleOperationApi("narrow", toolInput, true, hmisBaseUrl, hmisApiKey);
+                }
+                case "user_bulk_role_operations": {
+                    return callUserBulkRoleOperationsApi(toolInput, hmisBaseUrl, hmisApiKey);
+                }
+                case "list_user_roles": {
+                    return callListUserRolesApi(hmisBaseUrl, hmisApiKey);
+                }
+                case "set_user_login_page": {
+                    return callSetUserLoginPageApi(toolInput, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_pharmacy_items": {
                     return callPharmacyItemsApi(toolInput, hmisBaseUrl, hmisApiKey);
@@ -4284,6 +4434,111 @@ public class AnthropicApiService implements Serializable {
         }
     }
 
+    private String callUserRoleOperationApi(String action, JsonObject input, boolean roleRequired, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String id = requireText(jsonString(input, "id"), "id");
+            String url = hmisBaseUrl.replaceAll("/$", "") + "/api/users/" + id + "/role/" + action;
+            String roleId = jsonString(input, "roleId");
+            if (roleRequired && roleId.isEmpty()) {
+                return "Error: roleId is required for role " + action + ".";
+            }
+            javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+            addLong(b, "roleId", roleId);
+            b.add("departmentIds", csvLongArray(jsonString(input, "departmentIds")));
+            String aspects = jsonString(input, "aspects");
+            if (!aspects.isEmpty()) b.add("aspects", csvArray(aspects));
+            addBoolean(b, "updateUserRole", jsonString(input, "updateUserRole"));
+            addBoolean(b, "preview", jsonString(input, "preview"));
+            return callHmisApi(url, "POST", b.build().toString(), hmisApiKey);
+        } catch (Exception e) {
+            return "User role " + action + " error: " + e.getMessage();
+        }
+    }
+
+    private String callUserBulkRoleOperationsApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String url = hmisBaseUrl.replaceAll("/$", "") + "/api/users/bulk/role-operations";
+            javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+            b.add("action", requireText(jsonString(input, "action"), "action"));
+            String userIds = jsonString(input, "userIds");
+            if (!userIds.isEmpty()) {
+                b.add("userIds", csvLongArray(userIds));
+            } else {
+                String filterRoleId = jsonString(input, "filterRoleId");
+                String filterDepartmentId = jsonString(input, "filterDepartmentId");
+                if (!filterRoleId.isEmpty() || !filterDepartmentId.isEmpty()) {
+                    javax.json.JsonObjectBuilder filter = Json.createObjectBuilder();
+                    addLong(filter, "roleId", filterRoleId);
+                    addLong(filter, "departmentId", filterDepartmentId);
+                    b.add("filter", filter);
+                }
+            }
+            addLong(b, "roleId", jsonString(input, "roleId"));
+            b.add("departmentIds", csvLongArray(jsonString(input, "departmentIds")));
+            String aspects = jsonString(input, "aspects");
+            if (!aspects.isEmpty()) b.add("aspects", csvArray(aspects));
+            addBoolean(b, "updateUserRole", jsonString(input, "updateUserRole"));
+            addBoolean(b, "preview", jsonString(input, "preview"));
+            addBoolean(b, "confirm", jsonString(input, "confirm"));
+            return callHmisApi(url, "POST", b.build().toString(), hmisApiKey);
+        } catch (Exception e) {
+            return "Bulk role operations error: " + e.getMessage();
+        }
+    }
+
+    private String callListUserRolesApi(String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String url = hmisBaseUrl.replaceAll("/$", "") + "/api/users/roles";
+            return callHmisApi(url, "GET", null, hmisApiKey);
+        } catch (Exception e) {
+            return "List user roles error: " + e.getMessage();
+        }
+    }
+
+    private String callSetUserLoginPageApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String id = requireText(jsonString(input, "id"), "id");
+            String departmentId = requireText(jsonString(input, "departmentId"), "departmentId");
+            String action = input.containsKey("action") ? input.getString("action", "SET").toUpperCase() : "SET";
+            String base = hmisBaseUrl.replaceAll("/$", "") + "/api/users/" + id + "/login-page";
+            if ("DELETE".equals(action)) {
+                return callHmisApi(base + "/" + departmentId, "DELETE", null, hmisApiKey);
+            }
+            String loginPage = requireText(jsonString(input, "loginPage"), "loginPage");
+            String body = Json.createObjectBuilder()
+                    .add("departmentId", Long.parseLong(departmentId))
+                    .add("loginPage", loginPage)
+                    .build().toString();
+            return callHmisApi(base, "PUT", body, hmisApiKey);
+        } catch (Exception e) {
+            return "Set user login page error: " + e.getMessage();
+        }
+    }
+
     private String callPharmacyItemsApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
         if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
             return "Error: HMIS base URL is not configured.";
@@ -5182,7 +5437,19 @@ public class AnthropicApiService implements Serializable {
                 + "DELETE /{id}/departments/{assignmentId} removes one loggable department. "
                 + "DELETE /{id}/departments/{deptId}/privileges bulk-revokes all privileges for a department. "
                 + "POST /{id}/departments/{deptId}/privileges/all grants every privilege for a department. "
-                + "POST /{id}/privileges/all with optional body {departmentIds:[...]} grants every privilege across multiple departments at once.",
+                + "POST /{id}/privileges/all with optional body {departmentIds:[...]} grants every privilege across multiple departments at once.\n\n"
+                + "Role-template operations: roles (WebUserRole) are admin-time templates only — runtime behavior "
+                + "(privilege checks, login-page resolution, icons, subscriptions) reads user-level records exclusively. "
+                + "These endpoints stamp/reset a user's own records FROM a role template; they never change runtime behavior directly. "
+                + "aspects (default [\"PRIVILEGES\"]): PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE. "
+                + "RESET converges the user's records to exactly the template (retires extras, adds missing); roleId omitted defaults to the "
+                + "user's own WebUser.role and 400s if the user has none. EXPAND adds template records the user lacks, leaving extras untouched "
+                + "(roleId required). NARROW retires the user's records that match the template, leaving non-template records untouched "
+                + "(roleId required). Any single-user call with preview=true returns counts (added/retired per aspect) without writing. "
+                + "Bulk operations (POST /users/bulk/role-operations) target either explicit userIds or a {roleId?, departmentId?} filter "
+                + "(userIds wins) and use a two-step safety gate: call once with preview=true to see the resolved user count and per-aspect "
+                + "totals (capped at first 200 users), then repeat the identical call with confirm=true to actually apply — calling with "
+                + "neither preview nor confirm is rejected. GET /users/roles lists active roles with template summary counts.",
                 githubUrl(branch, "developer_docs/API_USER_MANAGEMENT.md"),
                 new String[][]{
                     {"GET",    "/users",                          "List users. Filters: query, departmentId, page, size"},
@@ -5204,7 +5471,14 @@ public class AnthropicApiService implements Serializable {
                     {"DELETE", "/users/{id}/departments/{departmentId}/privileges",  "Bulk-revoke all active privileges for a user scoped to a department"},
                     {"POST",   "/users/{id}/departments/{departmentId}/privileges/all", "Assign every Privileges enum value to a user for a department (skips duplicates)"},
                     {"PUT",    "/users/{id}/staff",               "Link an existing Staff record to the user (body: {staffId})"},
-                    {"POST",   "/users/{id}/privileges/all",      "Assign every privilege across supplied departmentIds (or all loggable depts). Returns per-dept summary"}
+                    {"POST",   "/users/{id}/privileges/all",      "Assign every privilege across supplied departmentIds (or all loggable depts). Returns per-dept summary"},
+                    {"POST",   "/users/{id}/role/reset",          "Reset a user's aspects to a role template (roleId optional; defaults to the user's own role)"},
+                    {"POST",   "/users/{id}/role/expand",         "Add role-template records the user lacks (roleId required)"},
+                    {"POST",   "/users/{id}/role/narrow",         "Retire the user's records that match a role template (roleId required)"},
+                    {"POST",   "/users/bulk/role-operations",     "Bulk RESET/EXPAND/NARROW for many users; preview=true then confirm=true"},
+                    {"GET",    "/users/roles",                    "List active roles with template summary counts (privileges/icons/subscriptions, template login page)"},
+                    {"PUT",    "/users/{id}/login-page",          "Upsert the user's default login page for a department (body: {departmentId, loginPage})"},
+                    {"DELETE", "/users/{id}/login-page/{departmentId}", "Retire the user's default login-page override for a department"}
                 });
 
         appendModule(sb, "User Roles", "/user-roles",
