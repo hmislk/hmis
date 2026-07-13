@@ -785,9 +785,15 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
         bid.setFreeQty(0.0);
         // For wholesale sale, retailRate/batchRetailRate are kept as bookkeeping metadata
         // (from the batch lookup); the actual charged rate comes from wholesaleRate.
+        // The charged rate is rounded to currency precision (2dp) so the displayed Rate
+        // and the calculated Value always agree (ItemBatch.wholesaleRate is frequently
+        // stored with more than 2 decimal places, e.g. 8.4564 - issue #21912).
+        double lineWholesaleRate = CommonFunctions.round(
+                stockDto.getWholesaleRate() != null ? stockDto.getWholesaleRate() : 0.0);
+
         bid.setRetailRate(batchRetailRate);
         bid.setPurchaseRate(batchPurchaseRate);
-        bid.setWholesaleRate(stockDto.getWholesaleRate() != null ? stockDto.getWholesaleRate() : 0.0);
+        bid.setWholesaleRate(lineWholesaleRate);
         bid.setCostRate(batchCostRate != null ? batchCostRate : batchPurchaseRate);
         bid.setBatchRetailRate(batchRetailRate);
         bid.setBatchPurchaseRate(batchPurchaseRate);
@@ -798,7 +804,6 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
         bid.setCreatedAt(new Date());
         bid.setCreaterId(sessionController.getLoggedUser().getId());
 
-        double lineWholesaleRate = stockDto.getWholesaleRate() != null ? stockDto.getWholesaleRate() : 0.0;
         double grossValue = lineWholesaleRate * qty;
         double discountPct = 0.0;
         double discountValue = 0.0;
@@ -1081,10 +1086,13 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
         bid.setItemBatchId(sub.getItemBatchId());
         bid.setPbiQty(-Math.abs(qty));
         // For wholesale sale, retailRate/batchRetailRate are kept as bookkeeping metadata;
-        // the actual charged rate comes from the substitute's wholesaleRate.
+        // the actual charged rate comes from the substitute's wholesaleRate, rounded to
+        // currency precision so the displayed Rate and calculated Value agree (#21912).
+        double lineWholesaleRate = CommonFunctions.round(batchWholesaleRate);
+
         bid.setRetailRate(batchRetailRate);
         bid.setPurchaseRate(batchPurchaseRate);
-        bid.setWholesaleRate(batchWholesaleRate);
+        bid.setWholesaleRate(lineWholesaleRate);
         bid.setCostRate(batchCostRate != null ? batchCostRate : batchPurchaseRate);
         bid.setBatchRetailRate(batchRetailRate);
         bid.setBatchPurchaseRate(batchPurchaseRate);
@@ -1093,7 +1101,6 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
         bid.setDoe(sub.getDateOfExpire());
         bid.setDescription(sub.getItemName());
 
-        double lineWholesaleRate = batchWholesaleRate;
         double grossValue = lineWholesaleRate * qty;
         double discountPct = 0.0;
         double discountValue = 0.0;
@@ -1189,7 +1196,8 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
 
     public void calculateBillItemListner() {
         if (stockDto != null && intQty != null) {
-            double rate = stockDto.getWholesaleRate() != null ? stockDto.getWholesaleRate() : 0.0;
+            double rate = CommonFunctions.round(
+                    stockDto.getWholesaleRate() != null ? stockDto.getWholesaleRate() : 0.0);
             getBillItem().setRate(rate);
             getBillItem().setNetRate(rate);
             getBillItem().setNetValue(rate * intQty);
@@ -1641,12 +1649,13 @@ public class WholesaleSaleNativeSqlController implements Serializable, Controlle
 
     public Double getPreviewRate() {
         if (stockDto == null) return null;
-        return stockDto.getWholesaleRate();
+        return stockDto.getWholesaleRate() != null ? CommonFunctions.round(stockDto.getWholesaleRate()) : null;
     }
 
     public Double getPreviewNetValue() {
         if (stockDto == null || intQty == null) return null;
-        double rate = stockDto.getWholesaleRate() != null ? stockDto.getWholesaleRate() : 0.0;
+        double rate = CommonFunctions.round(
+                stockDto.getWholesaleRate() != null ? stockDto.getWholesaleRate() : 0.0);
         return rate * intQty;
     }
 
