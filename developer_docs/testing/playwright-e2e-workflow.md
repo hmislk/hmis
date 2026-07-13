@@ -614,6 +614,40 @@ next page load — no redeploy or Payara restart needed. Reserve raw SQL for *re
 state (e.g. confirming a key auto-created with the right default on first access), never for
 writing it mid-test.
 
+## 27. Multi-Payara machines: `asadmin` without `--port` may hit ANOTHER USER'S domain
+
+On a box with two Payara installs (e.g. `/home/carecode/payara` domain `rh` admin port **9048**,
+and `/home/buddhika/payara` domain1 on default **4848**), a bare `asadmin redeploy/undeploy/deploy`
+connects to whoever owns 4848 — which can be the *other user's* server. Tells that you're on the
+wrong DAS: `redeploy` fails with **"Cannot determine the path of application"**, `deploy` fails with
+**"File not found"** for a WAR that clearly exists (the other user's Payara process can't traverse
+your 750-mode home directory), and `list-applications` shows an app list that doesn't match your
+domain. An `undeploy` in this state removes the app from the *other* server — verify with
+`ss -tlnp | grep 4848` + `ps -o user= -p <pid>` before any state-changing asadmin call, and always
+pass the explicit admin port (`asadmin --port 9048 ...` for the local `rh` domain). Recovery: stage
+the WAR in a world-readable path (`/tmp`) — rewriting `WEB-INF/classes/META-INF/persistence.xml`
+inside the copy to that domain's JNDI names via `unzip`/`sed`/`zip` — and deploy it back with
+`--name`/`--contextroot` matching what was removed. (Hit while deploying for issue #14863.)
+
+## 28. Claude-in-Chrome on heavy non-AJAX report pages (full-submit + long query)
+
+Verifying `slow_fast_none_movement.xhtml` (multi-minute aggregate queries, `ajax="false"` Process
+button) surfaced these:
+
+- **Screenshots time out while the server renders** (`Page.captureScreenshot ... renderer may be
+  frozen`). Don't retry screenshots in a loop — poll cheaply with `javascript_tool` on
+  `document.readyState` + a marker string in `document.body.innerText`, and screenshot once ready.
+- **`find`-ref and coordinate clicks on the submit button intermittently do nothing** (stale refs
+  after each full reload; overlay panels intercepting clicks). The reliable submit is DOM-level:
+  `[...document.querySelectorAll('button')].find(b=>b.textContent.includes('Process')).click()`.
+- **Set PrimeFaces inputs directly on the hidden native elements before a full submit**: p:selectOneMenu
+  → `select[id$="..._input"].value = '...'`; p:selectCheckboxMenu → toggle
+  `input[name$="billTypes"]` checkboxes; p:datePicker → `PF widget .setDate(new Date(...))`. For a
+  non-AJAX submit only the submitted values matter, so skipping the widget UI is safe and immune to
+  overlay/timing issues. (AJAX listeners do NOT fire this way — only use for full-form submits.)
+- **html2canvas does not capture PrimeFaces overlay panels** (`*_panel` appended near body root render
+  blank/absent) — capture page states instead, or read the panel's `innerText` as textual evidence.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
