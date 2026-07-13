@@ -654,27 +654,46 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return;
         }
 
-        if (getSelectedSessionInstanceForRechedule().getMaxNo() != 0) {
+        if (getSelectedSessionInstanceForRechedule().getMaxNo() != 0 && configOptionApplicationController.getBooleanValueByKey("Limited appoinments session can't get appoinement more than max amount.")) {
             if (getSelectedSessionInstanceForRechedule().getBookedPatientCount() != null) {
                 int maxNo = getSelectedSessionInstanceForRechedule().getMaxNo();
                 long bookedPatientCount = getSelectedSessionInstanceForRechedule().getBookedPatientCount();
-                if (maxNo <= bookedPatientCount) {
+                long reservedNumberCount = getSelectedSessionInstanceForRechedule().getReservedBookingCount() != null ? getSelectedSessionInstanceForRechedule().getReservedBookingCount() : 0L;
+                long totalPatientCount;
+
+                // if (maxNo <= bookedPatientCount) {
+                //     JsfUtil.addErrorMessage("Cannot reschedule the selected session: The session has reached its maximum booking capacity.");
+                //     return;
+
+                // }
+
+                List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(getSelectedSessionInstanceForRechedule().getReserveNumbers());
+                bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedNumberCount;
+
+                if (getSelectedSessionInstanceForRechedule().getCancelPatientCount() != null) {
+                    long canceledPatientCount = getSelectedSessionInstanceForRechedule().getCancelPatientCount();
+                    totalPatientCount = bookedPatientCount - canceledPatientCount;
+                } else {
+                    totalPatientCount = bookedPatientCount;
+                }
+                if (maxNo <= totalPatientCount) {
                     JsfUtil.addErrorMessage("Cannot reschedule the selected session: The session has reached its maximum booking capacity.");
                     return;
-
                 }
             }
         }
 
         if (selectedBillSession.getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Cannot reschedule: This bill session has been cancelled.");
+            return;
         }
 
         if (selectedBillSession.isRecheduledSession()) {
             JsfUtil.addErrorMessage("Cannot reschedule: This bill session has been Alrady Recheduled To Another Session !");
+            return;
         }
 
-        if (selectedBillSession.getReferenceBillSession() == null) {    // TODO: can remove after ReferenceBillSession is deprecated
+        if (selectedBillSession.getRescheduledFromBillSession() == null) {    // TODO: can remove after ReferenceBillSession is deprecated
             createBillSessionForReschedule(selectedBillSession, getSelectedSessionInstanceForRechedule());
             JsfUtil.addSuccessMessage("Reschedule Successfully");
             sendSmsOnChannelBookingReschedule();
@@ -1015,6 +1034,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
         addedItemFees.removeAll(feesToRemove);
+        selectedItemFees.removeAll(feesToRemove);
         calculateSelectedBillSessionTotal();
     }
 
@@ -2232,6 +2252,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             paymentScheme = viewScopeDataTransferController.getPaymentScheme();
         }
 
+        if (viewScopeDataTransferController.getNeedToFillFeeTotalsByBillFees() != null && viewScopeDataTransferController.getNeedToFillFeeTotalsByBillFees()) {
+            if (getBillSession() != null) {
+                // calculateSelectedBillSessionTotalForSettling();
+                calculateSelectedBillSessionTotalForSettlingByBillFees();
+            }
+            viewScopeDataTransferController.setNeedToFillFeeTotalsByBillFees(false);
+        }
+
     }
 
     public String navigateToChannelBookingFromMenuByDate() {
@@ -2415,7 +2443,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String navigateToManageBookingFromChannelBooking(BillSession bs, SessionInstance ss) {
-
         if (bs == null || bs.getId() == null || ss == null) {
             JsfUtil.addErrorMessage("Please select a Patient");
             return "";
@@ -2474,7 +2501,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String navigateToManageBooking(BillSession bs) {
-
         selectedBillSession = bs;
         if (selectedBillSession == null) {
             JsfUtil.addErrorMessage("Please select a Patient");
@@ -2495,6 +2521,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
         viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
         printPreviewC = false;
+
+        // calculate feeTotals by bill fees for settling
+        Bill bill = getBillSession() != null ? getBillSession().getBill() : null;
+        if (bill != null && bill.getBillType().getParent() == BillType.ChannelOnCall.getParent() && bill.getPaidAmount() == 0 && !bill.isCancelled()) {
+            viewScopeDataTransferController.setNeedToFillFeeTotalsByBillFees(true);
+        }
+
         if (configOptionApplicationController.getBooleanValueByKey("Automatically Load and Display the Refund Amount Upon Page Load")) {
             if (configOptionApplicationController.getBooleanValueByKey("Disable Hospital Fee Refunds")) {
                 for (BillFee bf : bs.getBill().getBillFeesWIthoutZeroValue()) {
@@ -2513,9 +2546,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
 
-        fillBaseFees();
-        fillSessionInstanceByDoctor();
-        calculateSelectedBillSessionTotal();
+        // fillBaseFees();
+        // fillSessionInstanceByDoctor();
+        // calculateSelectedBillSessionTotal();
         return "/channel/manage_booking_by_date?faces-redirect=true";
     }
 
@@ -2528,6 +2561,20 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("bill", bill);
+
+        return billSessionFacade.findFirstByJpql(sql, params);
+    }
+
+    // Get BillSession from Bill ID
+    public BillSession getBillSessionFromBillId(Long billId) {
+        String sql = " select bs from BillSession bs "
+                + " where bs.bill.id = :bill "
+                + " and bs.retired = :ret"
+                + " and bs.bill.retired = :ret ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bill", billId);
 
         return billSessionFacade.findFirstByJpql(sql, params);
     }
@@ -2552,6 +2599,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
         viewScopeDataTransferController.setNeedToPrepareForNewBooking(false);
         printPreviewC = false;
+
+        // calculate feeTotals by bill fees for settling
+        Bill bill = getBillSession() != null ? getBillSession().getBill() : null;
+        if (bill != null && bill.getBillType().getParent() == BillType.ChannelOnCall.getParent() && bill.getPaidAmount() == 0 && !bill.isCancelled()) {
+            viewScopeDataTransferController.setNeedToFillFeeTotalsByBillFees(true);
+        }
+        
         if (configOptionApplicationController.getBooleanValueByKey("Automatically Load and Display the Refund Amount Upon Page Load")) {
             if (configOptionApplicationController.getBooleanValueByKey("Disable Hospital Fee Refunds")) {
                 for (BillFee bf : bs.getBill().getBillFeesWIthoutZeroValue()) {
@@ -3635,7 +3689,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             selectedBillSession.getBillItem().getBill().getBillFees().removeAll(billFeesToRemove);
         }
         selectedBillSession.getBillItem().getBill().getBillItems().remove(selectedBillItem);
-        calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
+        // calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
+        calculateSelectedBillSessionTotalForSettlingByBillFees();
+        getBillFacade().edit(selectedBillSession.getBillItem().getBill());
         calculateCashBalance();
     }
 
@@ -3703,8 +3759,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             newBillItem.setBillFees(billFeesToAdd);
         }
 
-        calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
+        // calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
 //        fillBaseFees();  
+        calculateSelectedBillSessionTotalForSettlingByBillFees();
+        getBillFacade().edit(selectedBillSession.getBillItem().getBill());
         calculateCashBalance();
 
         itemToAddToBooking = null;
@@ -4107,13 +4165,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return;
         }
         
-        if(configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false) 
-                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for Channeling from the system", false)){
-            if(patient.isBlacklisted()){
-                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
-                settleSucessFully = false;
-                return;
-            }
+        if (patient.isBlacklisted()) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+            settleSucessFully = false;
+            return;
         }
         
         if (paymentMethodErrorPresent()) {
@@ -4173,13 +4228,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (selectedSessionInstance.getBookedPatientCount() != null) {
                 int maxNo = selectedSessionInstance.getMaxNo();
                 long bookedPatientCount = selectedSessionInstance.getBookedPatientCount();
+                long reservedNumberCount = selectedSessionInstance.getReservedBookingCount() != null ? selectedSessionInstance.getReservedBookingCount() : 0L;
                 long totalPatientCount;
 
                 List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(selectedSessionInstance.getReserveNumbers());
                 if (reservedBooking) {
                     bookedPatientCount = bookedPatientCount;
                 } else {
-                    bookedPatientCount = bookedPatientCount + reservedNumbers.size();
+                    bookedPatientCount = bookedPatientCount + reservedNumbers.size() - reservedNumberCount;
                 }
 
                 if (selectedSessionInstance.getCancelPatientCount() != null) {
@@ -4197,7 +4253,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
             if (paymentMethod == PaymentMethod.Cash) {
-                if (strTenderedValue.isEmpty()) {
+                if (strTenderedValue == null || strTenderedValue.isEmpty()) {
                     JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
                     return;
                 }
@@ -6100,16 +6156,31 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String paySelectedDoctor() {
-        if (getSpeciality() == null) {
-            JsfUtil.addErrorMessage("Please Select Specility And Staff");
+        // if (getSpeciality() == null) {
+        //     JsfUtil.addErrorMessage("Please Select Specility And Staff");
+        //     return "";
+        // }
+        // if (getStaff() == null) {
+        //     JsfUtil.addErrorMessage("Please Select Staff");
+        //     return "";
+        // }
+
+        if (selectedBillSession == null || selectedBillSession.getSessionInstance() == null) {
+            JsfUtil.addErrorMessage("Bill Session or Session Instance is not selected");
             return "";
         }
-        if (getStaff() == null) {
+        if (selectedBillSession.getStaff() == null) {
             JsfUtil.addErrorMessage("Please Select Staff");
             return "";
+        } else {
+            if (selectedBillSession.getStaff().getSpeciality() == null) {
+                JsfUtil.addErrorMessage("Please Select Speciality");
+                return "";
+            }
         }
-        channelStaffPaymentBillController.setSpeciality(getSpeciality());
-        channelStaffPaymentBillController.setCurrentStaff(getStaff());
+        channelStaffPaymentBillController.makenull();
+        channelStaffPaymentBillController.setSpeciality(selectedBillSession.getStaff().getSpeciality());
+        channelStaffPaymentBillController.setCurrentStaff(selectedBillSession.getStaff());
         channelStaffPaymentBillController.setConsiderDate(true);
         channelStaffPaymentBillController.calculateDueFees();
 
@@ -6632,17 +6703,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
 
 //            priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, selectedSessionInstance.getOriginatingSession().getCategory());
+
+            // check discountable for each fee
             if (priceMatrix != null) {
-                if (f.getFeeType() == FeeType.OwnInstitution) {
+                if (f.isDiscountAllowed()) {
                     d = bf.getFeeValue() * (priceMatrix.getDiscountPercent() / 100);
                     bf.setFeeDiscount(d);
-                } else if (f.getFeeType() == FeeType.Staff) {
-                    bf.setFeeDiscount(0.0);
                 } else {
                     bf.setFeeDiscount(0.0);
                 }
 
-                bf.setFeeGrossValue(bf.getFeeGrossValue());
                 bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
                 tmpDiscount += d;
             }
@@ -6653,6 +6723,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             billFeeList.add(bf);
         }
 
+        billItem.setGrossValue(tmpGrossTotal);
         billItem.setDiscount(tmpDiscount);
         billItem.setNetValue(tmpTotal);
         getBillItemFacade().edit(billItem);
@@ -6728,16 +6799,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
 //            priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, selectedSessionInstance.getOriginatingSession().getCategory());
                 if (priceMatrix != null) {
-                    if (f.getFeeType() == FeeType.OwnInstitution) {
+                    if (f.isDiscountAllowed()) {
                         d = bf.getFeeValue() * (priceMatrix.getDiscountPercent() / 100);
                         bf.setFeeDiscount(d);
-                    } else if (f.getFeeType() == FeeType.Staff) {
-                        bf.setFeeDiscount(0.0);
                     } else {
                         bf.setFeeDiscount(0.0);
                     }
 
-                    bf.setFeeGrossValue(bf.getFeeGrossValue());
                     bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
                     tmpDiscount += d;
                 }
@@ -6977,7 +7045,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         billToCaclculate.setNetTotal(calculatingNetBillTotal);
         billToCaclculate.setTotal(calculatingGrossBillTotal);
         getBillFacade().edit(billToCaclculate);
-        feeTotalForSelectedBill = calculatingNetBillTotal;
+        feeTotalForSelectedBill = calculatingGrossBillTotal;
+        feeNetTotalForSelectedBill = calculatingNetBillTotal;
 
     }
 
@@ -7391,11 +7460,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void markAsForeigner() {
         setForiegn(true);
         calculateSelectedBillSessionTotal();
+        calculateCashBalance();
     }
 
     public void markAsLocal() {
         setForiegn(false);
         calculateSelectedBillSessionTotal();
+        calculateCashBalance();
     }
 
     public void markAsForeignerWithBillUpdate() {
@@ -7949,30 +8020,60 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 }
             }
 
-            if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
-                if (settlePaymentMethod == PaymentMethod.Cash) {
-                    if (strTenderedValue == null || strTenderedValue.isEmpty()) {
-                        JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
-                        return;
-                    }
-                    Double tend = Double.valueOf(strTenderedValue);
-                    if (getSelectedBillSession().getBillItem().getBill().getNetTotal() > tend) {
-                        JsfUtil.addErrorMessage("Please Enter correct Tenderd Amount");
-                        return;
-                    }
-                }
-            }
-
             if (errorChecksettle()) {
                 return;
             }
 
         }
 
+        if (configOptionApplicationController.getBooleanValueByKey("Allow Tenderd amount for channel booking")) {
+            if (settlePaymentMethod == PaymentMethod.Cash) {
+                if (strTenderedValue == null || strTenderedValue.isEmpty()) {
+                    JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
+                    return;
+                }
+                Double tend;
+                try {
+                    tend = Double.parseDouble(strTenderedValue);
+                } catch (NumberFormatException e) {
+                    JsfUtil.addErrorMessage("Please Enter valid Tenderd Amount");
+                    return;
+                }
+                if (getSelectedBillSession().getBillItem().getBill().getNetTotal() > tend) {
+                    JsfUtil.addErrorMessage("Please Enter correct Tenderd Amount");
+                    return;
+                }
+            }
+        }
+
         Bill b = savePaidBill();
-        BillItem bi = savePaidBillItem(b);
-        savePaidBillFee(b, bi);
-        BillSession bs = savePaidBillSession(b, bi);
+        BillItem billItemForPaidSession = savePaidBillItem(b);
+        
+        // savePaidBillFee(b, bi);
+        PriceMatrix priceMatrix = priceMatrixController.fetchChannellingMemberShipDiscount(settlePaymentMethod, paymentScheme, selectedSessionInstance.getOriginatingSession().getCategory());
+
+        if (selectedBillSession.getBill().getBillItems() != null && !selectedBillSession.getBill().getBillItems().isEmpty()) {
+            for (BillItem abi : selectedBillSession.getBill().getBillItems()) {
+                createBillFeesForPaidBill(b, abi, priceMatrix, billItemForPaidSession);
+            }
+        }
+
+        BillItem bi = selectedBillSession.getBillItem();
+        Bill creditBill = getBillSession().getBill();
+        bi.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, bi));
+        bi.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, bi));
+        getBillItemFacade().edit(bi);
+        billItemForPaidSession.setHospitalFee(bi.getHospitalFee());
+        billItemForPaidSession.setStaffFee(bi.getStaffFee());
+        getBillItemFacade().edit(billItemForPaidSession);
+
+        creditBill.setHospitalFee(billBeanController.calFeeValue(FeeType.OwnInstitution, creditBill));
+        creditBill.setStaffFee(billBeanController.calFeeValue(FeeType.Staff, creditBill));
+        getBillFacade().edit(creditBill);
+        b.setHospitalFee(creditBill.getHospitalFee());
+        b.setStaffFee(creditBill.getStaffFee());
+
+        BillSession bs = savePaidBillSession(b, billItemForPaidSession);
 
         getBillSession().setPaidBillSession(bs);
         getBillSessionFacade().edit(bs);
@@ -7984,7 +8085,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         getBillFacade().edit(getBillSession().getBill());
 
-        b.setSingleBillItem(bi);
+        b.setSingleBillItem(billItemForPaidSession);
         b.setSingleBillSession(bs);
         getBillFacade().editAndCommit(b);
 
@@ -8078,6 +8179,61 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             bf.setBill(b);
             bf.setBillItem(bi);
             getBillFeeFacade().create(bf);
+        }
+    }
+
+    private void createBillFeesForPaidBill(Bill b, BillItem billItem, PriceMatrix priceMatrix, BillItem paidBillItem) {
+        if (selectedBillSession.getBill() == null || selectedBillSession.getBill().getBillFees() == null || selectedBillSession.getBill().getBillFees().isEmpty()) {
+            return;
+        }
+        double tmpTotal = 0;
+        double tmpDiscount = 0;
+        double tmpGrossTotal = 0.0;
+        
+        for (BillFee bf : selectedBillSession.getBill().getBillFees()) {
+            ItemFee f = (ItemFee) bf.getFee();
+
+            if (f.getItem().equals(billItem.getItem())) {
+                BillFee newBillFee = new BillFee();
+                newBillFee.copy(bf);
+                newBillFee.setCreatedAt(Calendar.getInstance().getTime());
+                newBillFee.setCreater(getSessionController().getLoggedUser());
+                newBillFee.setBill(b);
+                newBillFee.setBillItem(paidBillItem);
+                getBillFeeFacade().create(newBillFee);
+
+                double d = 0;
+
+                if (priceMatrix != null) {
+                    if (f.isDiscountAllowed()) {
+                        d = bf.getFeeValue() * (priceMatrix.getDiscountPercent() / 100);
+                        bf.setFeeDiscount(d);
+                        bf.setFeeGrossValue(bf.getFeeValue());
+                        newBillFee.setFeeGrossValue(bf.getFeeGrossValue());
+                        newBillFee.setFeeDiscount(d);
+                    }
+
+                    bf.setFeeValue(bf.getFeeGrossValue() - bf.getFeeDiscount());
+                    newBillFee.setFeeValue(bf.getFeeValue());
+                    tmpDiscount += d;
+                }
+                tmpGrossTotal += bf.getFeeGrossValue();
+                tmpTotal += bf.getFeeValue();
+                // BillFees of both bills are updated
+                getBillFeeFacade().edit(bf);
+                getBillFeeFacade().edit(newBillFee);
+            }            
+        }
+        billItem.setGrossValue(tmpGrossTotal);
+        billItem.setNetValue(tmpTotal);
+        billItem.setDiscount(tmpDiscount);
+        getBillItemFacade().edit(billItem);
+
+        if (paidBillItem.getItem().equals(billItem.getItem())) {
+            paidBillItem.setGrossValue(tmpGrossTotal);
+            paidBillItem.setNetValue(tmpTotal);
+            paidBillItem.setDiscount(tmpDiscount);
+            getBillItemFacade().edit(paidBillItem);
         }
     }
 
@@ -8915,7 +9071,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         feeNetTotalForSelectedBill = 0.0;
         if (paymentSchemeDiscount != null) {
             for (ItemFee itmf : getSelectedItemFees()) {
-//                System.out.println("itmf = " + itmf);
+                if (paymentMethod != null) {
+                    if (paymentMethod != PaymentMethod.Agent) {
+                        if (itmf.getFeeType() == FeeType.OtherInstitution) {
+                            continue;
+                        }
+                    }
+                    if (paymentMethod != PaymentMethod.OnCall) {
+                        if (itmf.getFeeType() == FeeType.OwnInstitution && itmf.getName().equalsIgnoreCase("On-Call Fee")) {
+                            continue;
+                        }
+                    }
+                }
                 if (foriegn) {
                     feeTotalForSelectedBill += itmf.getFfee();
                     if (itmf.isDiscountAllowed()) {
@@ -8923,8 +9090,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     }
                 } else {
                     feeTotalForSelectedBill += itmf.getFee();
-//                    System.out.println("itmf = " + itmf.getFee());
-//                    System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
                     if (itmf.isDiscountAllowed()) {
                         feeDiscountForSelectedBill += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
                     }
@@ -8932,54 +9097,82 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         } else {
             for (ItemFee itmf : getSelectedItemFees()) {
-//                System.out.println("itmf = " + itmf);
+                if (paymentMethod != null) {
+                    if (paymentMethod != PaymentMethod.Agent) {
+                        if (itmf.getFeeType() == FeeType.OtherInstitution) {
+                            continue;
+                        }
+                    }
+                    if (paymentMethod != PaymentMethod.OnCall) {
+                        if (itmf.getFeeType() == FeeType.OwnInstitution && itmf.getName().equalsIgnoreCase("On-Call Fee")) {
+                            continue;
+                        }
+                    }
+                }
                 if (foriegn) {
                     feeTotalForSelectedBill += itmf.getFfee();
-//                    System.out.println("itmf = " + itmf);
                 } else {
                     feeTotalForSelectedBill += itmf.getFee();
-//                    System.out.println("itmf 2 = " + itmf);
                 }
             }
 
         }
 
-//        System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
-//        System.out.println("feeDiscountForSelectedBill = " + feeDiscountForSelectedBill);
-//        System.out.println("feeNetTotalForSelectedBill 3 = " + feeNetTotalForSelectedBill);
         feeNetTotalForSelectedBill = feeTotalForSelectedBill - feeDiscountForSelectedBill;
-//        System.out.println("feeNetTotalForSelectedBill 4 = " + feeNetTotalForSelectedBill);
         if (paymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(feeNetTotalForSelectedBill);
         }
     }
 
     public void calculateSelectedBillSessionTotalWithBillUpdate() {
-        PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, getSelectedSessionInstance().getOriginatingSession().getCategory());
+        PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchChannellingMemberShipDiscount(settlePaymentMethod, paymentScheme, getSelectedSessionInstance().getOriginatingSession().getCategory());
         feeTotalForSelectedBill = 0.0;
         feeDiscountForSelectedBill = 0.0;
         feeNetTotalForSelectedBill = 0.0;
+
+        List<BillFee> billFees = getBillSession().getBill().getBillFees();
+        if (billFees == null) {
+            billFees = billBeanController.getBillFee(getBillSession().getBill());
+        }
+
         if (paymentSchemeDiscount != null) {
-            for (ItemFee itmf : getSelectedItemFees()) {
+            double d = 0.0;
+            for (BillFee bf : billFees) {
+                d = 0.0;
+                ItemFee itmf = (ItemFee) bf.getFee();
                 if (foriegn) {
                     feeTotalForSelectedBill += itmf.getFfee();
+                    bf.setFeeGrossValue(itmf.getFfee());
+
                     if (itmf.isDiscountAllowed()) {
-                        feeDiscountForSelectedBill += itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                        d = itmf.getFfee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                        feeDiscountForSelectedBill += d;     
                     }
+
                 } else {
                     feeTotalForSelectedBill += itmf.getFee();
+                    bf.setFeeGrossValue(itmf.getFee());
+                    
                     if (itmf.isDiscountAllowed()) {
-                        feeDiscountForSelectedBill += itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                        d = itmf.getFee() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                        feeDiscountForSelectedBill += d; 
                     }
                 }
+                bf.setFeeDiscount(d);
+                bf.setFeeValue(bf.getFeeGrossValue() - d);
             }
         } else {
-            for (ItemFee itmf : getSelectedItemFees()) {
+            for (BillFee bf : billFees) {
+                ItemFee itmf = (ItemFee) bf.getFee();
                 if (foriegn) {
                     feeTotalForSelectedBill += itmf.getFfee();
+                    bf.setFeeGrossValue(itmf.getFfee());
                 } else {
                     feeTotalForSelectedBill += itmf.getFee();
+                    bf.setFeeGrossValue(itmf.getFee());
                 }
+                bf.setFeeValue(bf.getFeeGrossValue());
+                bf.setFeeDiscount(0.0);
             }
 
         }
@@ -8993,34 +9186,75 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         calculateCashBalance();
     }
 
+    // private void updateBillItemValuesForForeign() {
+    //     List<BillFee> billFees = selectedBillSession.getBill().getBillFeesWIthoutZeroValue();
+    //     List<BillItem> billItems = selectedBillSession.getBill().getBillItems();
+
+    //     for (BillFee billFee : billFees) {
+    //         BillItem billItem = billFee.getBillItem();
+
+    //         if (isForiegn()) {
+    //             if (billFee.getFee().getFeeType().equals(FeeType.Staff)) {
+    //                 billItem.setStaffFee(billFee.getFee().getProfessionalFfee());
+    //             } else if (billFee.getFee().getFeeType().equals(FeeType.OwnInstitution)) {
+    //                 billItem.setHospitalFee(billFee.getFee().getHospitalFfee());
+    //             }
+
+    //             billItem.setNetValue(billFee.getFee().getFfee());
+    //         } else {
+    //             if (billFee.getFee().getFeeType().equals(FeeType.Staff)) {
+    //                 billItem.setStaffFee(billFee.getFee().getProfessionalFee());
+    //             } else if (billFee.getFee().getFeeType().equals(FeeType.OwnInstitution)) {
+    //                 billItem.setHospitalFee(billFee.getFee().getHospitalFee());
+    //             }
+
+    //             billItem.setNetValue(billFee.getFee().getFee());
+    //         }
+
+    //         billItems.get(billItems.indexOf(billItem)).setNetValue(billItem.getNetValue());
+    //         billItems.get(billItems.indexOf(billItem)).setStaffFee(billItem.getStaffFee());
+    //         billItems.get(billItems.indexOf(billItem)).setHospitalFee(billItem.getHospitalFee());
+    //     }
+    // }
+
     private void updateBillItemValuesForForeign() {
-        List<BillFee> billFees = selectedBillSession.getBill().getBillFeesWIthoutZeroValue();
-        List<BillItem> billItems = selectedBillSession.getBill().getBillItems();
+        if (selectedBillSession.getBill().getBillItems() == null || selectedBillSession.getBill().getBillItems().isEmpty()) {
+            return;
+        }
 
-        for (BillFee billFee : billFees) {
-            BillItem billItem = billFee.getBillItem();
+        List<BillFee> billFees = getBillSession().getBill().getBillFees();
+        if (billFees == null) {
+            billFees = billBeanController.getBillFee(getBillSession().getBill());
+        }
 
-            if (isForiegn()) {
-                if (billFee.getFee().getFeeType().equals(FeeType.Staff)) {
-                    billItem.setStaffFee(billFee.getFee().getProfessionalFfee());
-                } else if (billFee.getFee().getFeeType().equals(FeeType.OwnInstitution)) {
-                    billItem.setHospitalFee(billFee.getFee().getHospitalFfee());
-                }
+        for (BillItem billItem : selectedBillSession.getBill().getBillItems()) {
+            double totalGross = 0.0;
+            double totalDiscount = 0.0;
+            double totalNet = 0.0;
+            double hosFee = 0.0;
+            double staffFee = 0.0;
 
-                billItem.setNetValue(billFee.getFee().getFfee());
-            } else {
-                if (billFee.getFee().getFeeType().equals(FeeType.Staff)) {
-                    billItem.setStaffFee(billFee.getFee().getProfessionalFee());
-                } else if (billFee.getFee().getFeeType().equals(FeeType.OwnInstitution)) {
-                    billItem.setHospitalFee(billFee.getFee().getHospitalFee());
-                }
+            for (BillFee billFee : billFees) {
+                ItemFee f = (ItemFee) billFee.getFee();
 
-                billItem.setNetValue(billFee.getFee().getFee());
+                if (f.getItem().equals(billItem.getItem())) {
+                    totalGross += billFee.getFeeGrossValue();
+                    totalDiscount += billFee.getFeeDiscount();
+                    totalNet += billFee.getFeeValue();
+
+                    if (f.getFeeType().equals(FeeType.Staff)) {
+                        staffFee += billFee.getFeeValue();
+                    }
+                    if (f.getFeeType().equals(FeeType.OwnInstitution)) {
+                        hosFee += billFee.getFeeValue();
+                    }
+                }                
             }
-
-            billItems.get(billItems.indexOf(billItem)).setNetValue(billItem.getNetValue());
-            billItems.get(billItems.indexOf(billItem)).setStaffFee(billItem.getStaffFee());
-            billItems.get(billItems.indexOf(billItem)).setHospitalFee(billItem.getHospitalFee());
+            billItem.setGrossValue(totalGross);
+            billItem.setDiscount(totalDiscount);
+            billItem.setNetValue(totalNet);
+            billItem.setStaffFee(staffFee);
+            billItem.setHospitalFee(hosFee);
         }
     }
 
@@ -9061,8 +9295,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 }
             }
         } else {
-            for (ItemFee itmf : getSelectedItemFees()) {
+            for (BillFee bf : billFees) {
 //                System.out.println("itmf = " + itmf);
+                ItemFee itmf = (ItemFee) bf.getFee();
                 if (foriegn) {
                     feeTotalForSelectedBill += itmf.getFfee();
 //                    System.out.println("itmf = " + itmf);
@@ -9081,6 +9316,51 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //        System.out.println("feeNetTotalForSelectedBill 4 = " + feeNetTotalForSelectedBill);
         getBillSession().getBill().setNetTotal(feeNetTotalForSelectedBill);
         getBillSession().getBill().setDiscount(feeDiscountForSelectedBill);
+        getBillSession().getBill().setTotal(feeTotalForSelectedBill);
+
+        // for paymentMethod.CARD set the value after total calculation
+        if (settlePaymentMethod == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(getBillSession().getBill().getNetTotal());
+        }
+    }
+
+    public void calculateSelectedBillSessionTotalForSettlingByBillFees() {
+        Category cat = getBillSession().getSessionInstance().getOriginatingSession().getCategory();
+        PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchChannellingMemberShipDiscount(settlePaymentMethod, paymentScheme, cat);
+        feeTotalForSelectedBill = 0.0;
+        feeDiscountForSelectedBill = 0.0;
+        feeNetTotalForSelectedBill = 0.0;
+
+        List<BillFee> billFees = getBillSession().getBill().getBillFees();
+        if (billFees == null) {
+            billFees = billBeanController.getBillFee(getBillSession().getBill());
+        }
+        if (paymentSchemeDiscount != null) {
+            for (BillFee bf : billFees) {
+                feeTotalForSelectedBill += bf.getFeeValue();
+
+                ItemFee itmf = (ItemFee) bf.getFee();
+                if (itmf.isDiscountAllowed()) {
+                    feeDiscountForSelectedBill += bf.getFeeValue() * (paymentSchemeDiscount.getDiscountPercent() / 100);
+                }
+            }
+        } else {
+            for (BillFee bf : billFees) {
+                feeTotalForSelectedBill += bf.getFeeGrossValue();
+                feeNetTotalForSelectedBill += bf.getFeeValue();
+                feeDiscountForSelectedBill += bf.getFeeDiscount();
+            }
+
+        }
+
+        feeNetTotalForSelectedBill = feeTotalForSelectedBill - feeDiscountForSelectedBill;
+        getBillSession().getBill().setNetTotal(feeNetTotalForSelectedBill);
+        getBillSession().getBill().setDiscount(feeDiscountForSelectedBill);
+        getBillSession().getBill().setTotal(feeTotalForSelectedBill);
+
+        if (settlePaymentMethod == PaymentMethod.Card) {
+            getPaymentMethodData().getCreditCard().setTotalValue(getBillSession().getBill().getNetTotal());
+        }
     }
 
     public SmsFacade getSmsFacade() {
@@ -9509,6 +9789,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void setStrTenderedValue(String strTenderedValue) {
         this.strTenderedValue = strTenderedValue;
+        
+        // Null check and set cash paid to 0 if the input is null or empty
+        if (strTenderedValue == null || strTenderedValue.trim().isEmpty()) {
+            cashPaid = 0.0;
+            return;
+        }
+
         try {
             cashPaid = Double.parseDouble(strTenderedValue);
         } catch (NumberFormatException e) {
@@ -9524,11 +9811,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void calculateCashBalance() {
-        if (feeTotalForSelectedBill != null) {
-            cashBalance = feeTotalForSelectedBill - cashPaid;
+        if (feeNetTotalForSelectedBill != null) {
+            cashBalance = feeNetTotalForSelectedBill - cashPaid;
         } else {
-            feeTotalForSelectedBill = 0.0;
-            cashBalance = feeTotalForSelectedBill - cashPaid;
+            feeNetTotalForSelectedBill = 0.0;
+            cashBalance = feeNetTotalForSelectedBill - cashPaid;
         }
     }
 

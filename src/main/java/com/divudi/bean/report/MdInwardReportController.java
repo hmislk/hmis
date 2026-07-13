@@ -65,6 +65,8 @@ public class MdInwardReportController implements Serializable {
     AdmissionType admissionType;
     Admission current;
     Institution institution;
+    Institution site;
+    private String dateBasis = "createdAt";
     double total = 0.0;
     List<BillFee> billfees;
     Bill bill;
@@ -131,6 +133,7 @@ public class MdInwardReportController implements Serializable {
         admissions = null;
         speciality = null;
         currentStaff = null;
+        site = null;
     }
 
     public BillsTotals getBiltot() {
@@ -253,6 +256,43 @@ public class MdInwardReportController implements Serializable {
 
     }
 
+    public void processServiceBills() {
+        makeListNull();
+        String datePath;
+        switch (dateFilterType) {
+            case "DISCHARGED":
+                datePath = "b.patientEncounter.dateOfDischarge";
+                break;
+            case "ADMITTED":
+                datePath = "b.patientEncounter.dateOfAdmission";
+                break;
+            default:
+                datePath = "b.createdAt";
+                break;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billType", BillType.InwardBill);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        StringBuilder filterSql = new StringBuilder();
+        appendOptionalFilters(filterSql, params, "b");
+
+        String sql = "select b from Bill b"
+                + " where b.billType = :billType "
+                + " and " + datePath + " between :fromDate and :toDate"
+                + " and b.retired=false "
+                + filterSql.toString()
+                + " order by b.insId desc";
+
+        bills = getBillFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
+
+        if (bills == null) {
+            bills = new ArrayList<>();
+        }
+    }
+
     public void createServiceBillsByAddedDate() {
         Date startTime = new Date();
 
@@ -278,80 +318,81 @@ public class MdInwardReportController implements Serializable {
 
     }
 
-    public void fillAdmissions() {
-        try {
-            String sql;
-            Map m = new HashMap();
+    // TODO: delete fillAdmissions() — replaced by AdmissionReportController.fillAdmissions() (Issue #19640)
+//    public void fillAdmissions() {
+//        try {
+//            String sql;
+//            Map m = new HashMap();
+//
+//            sql = "select ad from Admission ad "
+//                    + " where ad.retired=false "
+//                    + " and ad.createdAt between :fd and :td ";
+//
+//            if (speciality != null) {
+//                sql += " and ad.referringConsultant.speciality=:s ";
+//                m.put("s", speciality);
+//            }
+//
+//            if (currentStaff != null) {
+//                sql += " and ad.referringConsultant=:cs";
+//                m.put("cs", currentStaff);
+//            }
+//
+//            if (admissionType != null) {
+//                sql += " and ad.admissionType=:admTp ";
+//                m.put("admTp", admissionType);
+//            }
+//            if (paymentMethod != null) {
+//                sql += " and ad.paymentMethod=:pm";
+//                m.put("pm", paymentMethod);
+//            }
+//            if (institution != null) {
+//                sql += " and ad.creditCompany=:cd";  // was incorrectly filtering creditCompany
+//                m.put("cd", institution);
+//            }
+//
+//            sql += " order by ad.createdAt ASC ";
+//
+//            m.put("fd", fromDate);
+//            m.put("td", toDate);
+//
+//            admissions = admissionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
+//
+//        } catch (Exception e) {
+//            JsfUtil.addErrorMessage("Error loading admissions: " + e.getMessage());
+//        }
+//    }
 
-            sql = "select ad from Admission ad "
-                    + " where ad.retired=false "
-                    + " and ad.createdAt between :fd and :td ";
-
-            if (speciality != null) {
-                sql += " and ad.referringConsultant.speciality=:s ";
-                m.put("s", speciality);
-            }
-
-            if (currentStaff != null) {
-                sql += " and ad.referringConsultant=:cs";
-                m.put("cs", currentStaff);
-            }
-
-            if (admissionType != null) {
-                sql += " and ad.admissionType=:admTp ";
-                m.put("admTp", admissionType);
-            }
-            if (paymentMethod != null) {
-                sql += " and ad.paymentMethod=:pm";
-                m.put("pm", paymentMethod);
-            }
-            if (institution != null) {
-                sql += " and ad.creditCompany=:cd";
-                m.put("cd", institution);
-            }
-
-            sql += " order by ad.createdAt ASC ";
-
-            m.put("fd", fromDate);
-            m.put("td", toDate);
-
-            admissions = admissionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
-            
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage("Error loading admissions: " + e.getMessage());
-        }
-
-    }
-    
-public void fillAdmissionsByConsultants() {
-    try {
-        String sql;
-        Map m = new HashMap();
-
-        sql = "select ad from Admission ad "
-                + " where ad.retired=false "
-                + " and ad.createdAt between :fd and :td ";
-
-        if (speciality != null) {
-            sql += " and ad.referringConsultant.speciality=:s ";
-            m.put("s", speciality);
-        }
-
-        if (currentStaff != null) {
-            sql += " and ad.referringConsultant=:cs";
-            m.put("cs", currentStaff);
-        }
-
-        sql += " order by ad.createdAt ASC";
-
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-
-        admissions = admissionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP, 100);
-    } catch (Exception e) {
-        JsfUtil.addErrorMessage("Error loading admissions: " + e.getMessage());
-    }
-}
+    // TODO: delete fillAdmissionsByConsultants() — superseded by AdmissionReportController (Issue #19642)
+//    public void fillAdmissionsByConsultants() {
+//        try {
+//            String sql;
+//            Map m = new HashMap();
+//
+//            sql = "select ad from Admission ad "
+//                    + " where ad.retired=false "
+//                    + " and ad.createdAt between :fd and :td ";
+//
+//            if (speciality != null) {
+//                sql += " and ad.referringConsultant.speciality=:s ";
+//                m.put("s", speciality);
+//            }
+//
+//            if (currentStaff != null) {
+//                sql += " and ad.referringConsultant=:cs";
+//                m.put("cs", currentStaff);
+//            }
+//
+//            sql += " order by ad.createdAt ASC";
+//
+//            m.put("fd", fromDate);
+//            m.put("td", toDate);
+//
+//            admissions = admissionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP, 100);
+//        } catch (Exception e) {
+//            JsfUtil.addErrorMessage("Error loading admissions: " + e.getMessage());
+//        }
+//    }
 
     public void createServiceBillsByDischargeDate() {
         Date startTime = new Date();
@@ -387,15 +428,36 @@ public void fillAdmissionsByConsultants() {
 
         String sql;
         Map temMap = new HashMap();
+        String dateField1 = "admissionDate".equals(dateBasis) ? "b.patientEncounter.dateOfAdmission" : "b.createdAt";
         sql = "select b from Bill b where"
                 + " b.billType = :billType "
                 //                + " and b.patientEncounter.paymentFinalized=true "
-                + " and b.createdAt between :fromDate and :toDate "
+                + " and " + dateField1 + " between :fromDate and :toDate "
                 + " and b.retired=false  ";
 
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad ";
             temMap.put("ad", admissionType);
+        }
+
+        if (institution != null) {
+            sql += " and b.institution =:inst ";
+            temMap.put("inst", institution);
+        }
+
+        if (site != null) {
+            sql += " and b.department.site =:site ";
+            temMap.put("site", site);
+        }
+
+        if (dept != null) {
+            sql += " and b.department =:dept ";
+            temMap.put("dept", dept);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:paymentMethod ";
+            temMap.put("paymentMethod", paymentMethod);
         }
 
         sql += " order by b.createdAt ";
@@ -411,15 +473,36 @@ public void fillAdmissionsByConsultants() {
         }
 
         temMap = new HashMap();
+        String dateField2 = "admissionDate".equals(dateBasis) ? "b.patientEncounter.dateOfAdmission" : "b.createdAt";
         sql = "select count(distinct(b.patientEncounter)) from Bill b where"
                 + " b.billType = :billType "
                 //                + " and b.patientEncounter.paymentFinalized=true "
-                + " and b.createdAt between :fromDate and :toDate "
+                + " and " + dateField2 + " between :fromDate and :toDate "
                 + " and b.retired=false  ";
 
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad ";
             temMap.put("ad", admissionType);
+        }
+
+        if (institution != null) {
+            sql += " and b.institution =:inst ";
+            temMap.put("inst", institution);
+        }
+
+        if (site != null) {
+            sql += " and b.department.site =:site ";
+            temMap.put("site", site);
+        }
+
+        if (dept != null) {
+            sql += " and b.department =:dept ";
+            temMap.put("dept", dept);
+        }
+
+        if (paymentMethod != null) {
+            sql += " and b.paymentMethod =:paymentMethod ";
+            temMap.put("paymentMethod", paymentMethod);
         }
 
         sql += " order by b.createdAt ";
@@ -438,18 +521,32 @@ public void fillAdmissionsByConsultants() {
 
         String sql;
         Map temMap = new HashMap();
+        String dateField3 = "b.bill.createdAt";
         sql = "select b from BillItem b where "
                 + " b.bill.billType = :billType "
-                + " and b.bill.institution=:ins "
                 + " and b.bill.createdAt between :fromDate and :toDate "
                 + " and b.bill.retired=false  ";
 
+        if (institution != null) {
+            sql += " and b.bill.institution=:ins ";
+            temMap.put("ins", institution);
+        }
+
         if (reportKeyWord.getString().equals("0")) {
+            dateField3 = "admissionDate".equals(dateBasis) ? "b.patientEncounter.dateOfAdmission" : "b.bill.createdAt";
             if (admissionType != null) {
                 sql += " and b.patientEncounter.admissionType =:ad ";
                 temMap.put("ad", admissionType);
             }
             sql += " and b.patientEncounter is not null ";
+            if (site != null) {
+                sql += " and b.patientEncounter.department.site =:site ";
+                temMap.put("site", site);
+            }
+            if (dept != null) {
+                sql += " and b.patientEncounter.department =:dept ";
+                temMap.put("dept", dept);
+            }
         } else if (reportKeyWord.getString().equals("1")) {
             sql += " and b.referenceBill.billType=:refTp";
             temMap.put("refTp", BillType.OpdBill);
@@ -459,10 +556,14 @@ public void fillAdmissionsByConsultants() {
             temMap.put("refTp", Arrays.asList(new BillType[]{BillType.PharmacySale, BillType.PharmacyWholeSale}));
         }
 
+        if (paymentMethod != null) {
+            sql += " and b.bill.paymentMethod =:pm ";
+            temMap.put("pm", paymentMethod);
+        }
+
         sql += " order by b.createdAt ";
 
         temMap.put("billType", BillType.CashRecieveBill);
-        temMap.put("ins", getSessionController().getInstitution());
         temMap.put("toDate", toDate);
         temMap.put("fromDate", fromDate);
 
@@ -742,6 +843,26 @@ public void fillAdmissionsByConsultants() {
         this.institution = institution;
     }
 
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public void clearDepartment() {
+        this.dept = null;
+    }
+
+    public String getDateBasis() {
+        return dateBasis;
+    }
+
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
+    }
+
 //    public void listInwardBillItems(){
 //
 //        Map m=new HashMap();
@@ -954,12 +1075,15 @@ public void fillAdmissionsByConsultants() {
                 + " and type(b)=:class"
                 + " and b.retired=false  ";
 
-        sql += " and ((b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
-                //                + " and b.patientEncounter.paymentFinalized = true "
-                + " and b.patientEncounter.discharged = true )";
-
-        sql += " or (b.createdAt <= :toDate "
-                + " and b.patientEncounter.dateOfDischarge > :toDate ))";
+        if ("admissionDate".equals(dateBasis) || "dischargeDate".equals(dateBasis)) {
+            String dateField = resolveDepositDateField(dateBasis, "b");
+            sql += " and " + dateField + " between :fromDate and :toDate ";
+        } else {
+            sql += " and ((b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
+                    + " and b.patientEncounter.discharged = true )";
+            sql += " or (b.createdAt <= :toDate "
+                    + " and b.patientEncounter.dateOfDischarge > :toDate ))";
+        }
 
         if (creditCompany != null) {
             sql += " and b.creditCompany=:cc ";
@@ -969,10 +1093,17 @@ public void fillAdmissionsByConsultants() {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
         }
-
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad";
             temMap.put("ad", admissionType);
+        }
+        if (dept != null) {
+            sql += " and b.patientEncounter.department =:dept";
+            temMap.put("dept", dept);
+        }
+        if (site != null) {
+            sql += " and b.patientEncounter.department.site =:site";
+            temMap.put("site", site);
         }
 
         sql += " order by b.insId desc  ";
@@ -994,26 +1125,35 @@ public void fillAdmissionsByConsultants() {
                 + " and type(b)=:class "
                 + " and b.retired=false ";
 
-        sql += " and ((b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
-                //                + " and b.patientEncounter.paymentFinalized = true "
-                + " and b.patientEncounter.discharged = true )";
-
-        sql += " or (b.createdAt <= :toDate "
-                + " and b.patientEncounter.dateOfDischarge > :toDate ))";
+        if ("admissionDate".equals(dateBasis) || "dischargeDate".equals(dateBasis)) {
+            String dateField = resolveDepositDateField(dateBasis, "b");
+            sql += " and " + dateField + " between :fromDate and :toDate ";
+        } else {
+            sql += " and ((b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
+                    + " and b.patientEncounter.discharged = true )";
+            sql += " or (b.createdAt <= :toDate "
+                    + " and b.patientEncounter.dateOfDischarge > :toDate ))";
+        }
 
         if (creditCompany != null) {
             sql += " and b.creditCompany=:cc ";
             temMap.put("cc", creditCompany);
         }
-
         if (paymentMethod != null) {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
         }
-
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad";
             temMap.put("ad", admissionType);
+        }
+        if (dept != null) {
+            sql += " and b.patientEncounter.department =:dept";
+            temMap.put("dept", dept);
+        }
+        if (site != null) {
+            sql += " and b.patientEncounter.department.site =:site";
+            temMap.put("site", site);
         }
 
         sql += " order by b.insId desc  ";
@@ -1058,10 +1198,17 @@ public void fillAdmissionsByConsultants() {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
         }
-
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad";
             temMap.put("ad", admissionType);
+        }
+        if (dept != null) {
+            sql += " and b.patientEncounter.department =:dept";
+            temMap.put("dept", dept);
+        }
+        if (site != null) {
+            sql += " and b.patientEncounter.department.site =:site";
+            temMap.put("site", site);
         }
 
         sql += " order by b.insId desc  ";
@@ -1093,10 +1240,17 @@ public void fillAdmissionsByConsultants() {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
         }
-
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad";
             temMap.put("ad", admissionType);
+        }
+        if (dept != null) {
+            sql += " and b.patientEncounter.department =:dept";
+            temMap.put("dept", dept);
+        }
+        if (site != null) {
+            sql += " and b.patientEncounter.department.site =:site";
+            temMap.put("site", site);
         }
 
         sql += " order by b.insId desc  ";
@@ -1139,10 +1293,17 @@ public void fillAdmissionsByConsultants() {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
         }
-
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad";
             temMap.put("ad", admissionType);
+        }
+        if (dept != null) {
+            sql += " and b.patientEncounter.department =:dept";
+            temMap.put("dept", dept);
+        }
+        if (site != null) {
+            sql += " and b.patientEncounter.department.site =:site";
+            temMap.put("site", site);
         }
 
         sql += " order by b.patientEncounter.bhtNo,b.insId ";
@@ -1159,31 +1320,36 @@ public void fillAdmissionsByConsultants() {
         String sql;
         Map temMap = new HashMap();
 
+        String dateField = resolveDepositDateField(dateBasis, "b");
         sql = "select b from Bill b where"
                 + " b.billType = :billType "
                 + " and type(b)=:class"
-                + " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate"
-                + " and b.createdAt <= :toDate "
+                + " and " + dateField + " between :fromDate and :toDate"
                 + " and b.retired=false  ";
 
         if (creditCompany != null) {
             sql += " and b.creditCompany=:cc ";
             temMap.put("cc", creditCompany);
         }
-
         if (patientEncounter != null) {
             sql += " and b.patientEncounter=pten ";
             temMap.put("pten", patientEncounter);
         }
-
         if (paymentMethod != null) {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
         }
-
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad";
             temMap.put("ad", admissionType);
+        }
+        if (dept != null) {
+            sql += " and b.patientEncounter.department =:dept";
+            temMap.put("dept", dept);
+        }
+        if (site != null) {
+            sql += " and b.patientEncounter.department.site =:site";
+            temMap.put("site", site);
         }
 
         sql += " order by b.patientEncounter.bhtNo,b.insId ";
@@ -1200,30 +1366,36 @@ public void fillAdmissionsByConsultants() {
         String sql;
         Map temMap = new HashMap();
 
+        String dateField = resolveDepositDateField(dateBasis, "b");
         sql = "select b from Bill b where"
                 + " b.billType = :billType "
                 + " and type(b)=:class"
-                + " and b.createdAt between :fromDate and :toDate "
+                + " and " + dateField + " between :fromDate and :toDate "
                 + " and b.retired=false  ";
 
         if (creditCompany != null) {
             sql += " and b.creditCompany=:cc ";
             temMap.put("cc", creditCompany);
         }
-
         if (patientEncounter != null) {
             sql += " and b.patientEncounter=pten ";
             temMap.put("pten", patientEncounter);
         }
-
         if (paymentMethod != null) {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
         }
-
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad";
             temMap.put("ad", admissionType);
+        }
+        if (dept != null) {
+            sql += " and b.patientEncounter.department =:dept";
+            temMap.put("dept", dept);
+        }
+        if (site != null) {
+            sql += " and b.patientEncounter.department.site =:site";
+            temMap.put("site", site);
         }
 
         sql += " order by b.patientEncounter.dateOfDischarge,b.createdAt";
@@ -1240,10 +1412,11 @@ public void fillAdmissionsByConsultants() {
         String sql;
         Map temMap = new HashMap();
 
+        String dateField = resolveDepositDateField(dateBasis, "b");
         sql = "select sum(b.netTotal) from Bill b where"
                 + " b.billType = :billType "
                 + " and type(b)=:class"
-                + " and b.createdAt between :fromDate and :toDate "
+                + " and " + dateField + " between :fromDate and :toDate "
                 + " and b.retired=false  ";
 
         if (discharge) {
@@ -1257,20 +1430,25 @@ public void fillAdmissionsByConsultants() {
             sql += " and b.creditCompany=:cc ";
             temMap.put("cc", creditCompany);
         }
-
         if (patientEncounter != null) {
             sql += " and b.patientEncounter=pten ";
             temMap.put("pten", patientEncounter);
         }
-
         if (paymentMethod != null) {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
         }
-
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad";
             temMap.put("ad", admissionType);
+        }
+        if (dept != null) {
+            sql += " and b.patientEncounter.department =:dept";
+            temMap.put("dept", dept);
+        }
+        if (site != null) {
+            sql += " and b.patientEncounter.department.site =:site";
+            temMap.put("site", site);
         }
 
 //        sql += " order by b.patientEncounter.bhtNo,b.insId ";
@@ -1286,31 +1464,36 @@ public void fillAdmissionsByConsultants() {
         String sql;
         Map temMap = new HashMap();
 
+        String dateField = resolveDepositDateField(dateBasis, "b");
         sql = "select sum(b.netTotal) from Bill b where"
                 + " b.billType = :billType "
                 + " and type(b)=:class"
-                + " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
-                + " and b.createdAt <= :toDate"
+                + " and " + dateField + " between :fromDate and :toDate "
                 + " and b.retired=false  ";
 
         if (creditCompany != null) {
             sql += " and b.creditCompany=:cc ";
             temMap.put("cc", creditCompany);
         }
-
         if (patientEncounter != null) {
             sql += " and b.patientEncounter=pten ";
             temMap.put("pten", patientEncounter);
         }
-
         if (paymentMethod != null) {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
         }
-
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad";
             temMap.put("ad", admissionType);
+        }
+        if (dept != null) {
+            sql += " and b.patientEncounter.department =:dept";
+            temMap.put("dept", dept);
+        }
+        if (site != null) {
+            sql += " and b.patientEncounter.department.site =:site";
+            temMap.put("site", site);
         }
 
 //        sql += " order by b.patientEncounter.bhtNo,b.insId ";
@@ -1326,30 +1509,36 @@ public void fillAdmissionsByConsultants() {
         String sql;
         Map temMap = new HashMap();
 
+        String dateField = resolveDepositDateField(dateBasis, "b");
         sql = "select sum(b.netTotal) from Bill b where"
                 + " b.billType = :billType "
                 + " and type(b)=:class"
-                + " and b.createdAt between :fromDate and :toDate "
+                + " and " + dateField + " between :fromDate and :toDate "
                 + " and b.retired=false  ";
 
         if (creditCompany != null) {
             sql += " and b.creditCompany=:cc ";
             temMap.put("cc", creditCompany);
         }
-
         if (patientEncounter != null) {
             sql += " and b.patientEncounter=pten ";
             temMap.put("pten", patientEncounter);
         }
-
         if (paymentMethod != null) {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
         }
-
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad";
             temMap.put("ad", admissionType);
+        }
+        if (dept != null) {
+            sql += " and b.patientEncounter.department =:dept";
+            temMap.put("dept", dept);
+        }
+        if (site != null) {
+            sql += " and b.patientEncounter.department.site =:site";
+            temMap.put("site", site);
         }
 
 //        sql += " order by b.patientEncounter.bhtNo,b.insId ";
@@ -1371,6 +1560,13 @@ public void fillAdmissionsByConsultants() {
                 + " and b.retired=false  "
                 + " and b.patientEncounter.discharged=false";
 
+        if (fromDate != null && toDate != null) {
+            String dateField = resolveDepositDateField(dateBasis, "b");
+            sql += " and " + dateField + " between :fromDate and :toDate ";
+            temMap.put("fromDate", fromDate);
+            temMap.put("toDate", toDate);
+        }
+
         if (creditCompany != null) {
             sql += " and b.creditCompany=:cc ";
             temMap.put("cc", creditCompany);
@@ -1379,10 +1575,17 @@ public void fillAdmissionsByConsultants() {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
         }
-
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad";
             temMap.put("ad", admissionType);
+        }
+        if (dept != null) {
+            sql += " and b.patientEncounter.department =:dept";
+            temMap.put("dept", dept);
+        }
+        if (site != null) {
+            sql += " and b.patientEncounter.department.site =:site";
+            temMap.put("site", site);
         }
 
         sql += " order by b.insId desc  ";
@@ -1810,14 +2013,12 @@ public void fillAdmissionsByConsultants() {
         String sql;
         Map temMap = new HashMap();
 
+        String dateField = resolveDepositDateField(dateBasis, "b");
         sql = "select b from Bill b where"
                 + " b.billType = :billType "
                 + " and type(b)=:class"
-                + " and b.patientEncounter.dateOfDischarge between :fromDate and :toDate "
-                //                + " and b.createdAt between :fromDate and :toDate "
-                //                + " and b.createdAt <= :toDate"
+                + " and " + dateField + " between :fromDate and :toDate "
                 + " and b.retired = false  "
-                //                + " and b.patientEncounter.paymentFinalized = true"
                 + " and b.patientEncounter.discharged = true";
 
         if (creditCompany != null) {
@@ -1828,10 +2029,17 @@ public void fillAdmissionsByConsultants() {
             sql += " and b.patientEncounter.paymentMethod =:pm";
             temMap.put("pm", paymentMethod);
         }
-
         if (admissionType != null) {
             sql += " and b.patientEncounter.admissionType =:ad";
             temMap.put("ad", admissionType);
+        }
+        if (dept != null) {
+            sql += " and b.patientEncounter.department =:dept";
+            temMap.put("dept", dept);
+        }
+        if (site != null) {
+            sql += " and b.patientEncounter.department.site =:site";
+            temMap.put("site", site);
         }
 
         sql += " order by b.insId desc  ";
@@ -1969,31 +2177,59 @@ public void fillAdmissionsByConsultants() {
         return "bf.bill.createdAt";
     }
 
+    /**
+     * Returns a JPQL date path for deposit-report date filtering based on dateBasis.
+     * @param billAlias JPQL alias for the Bill entity (e.g. "b")
+     */
+    private String resolveDepositDateField(String basis, String billAlias) {
+        if ("admissionDate".equals(basis)) {
+            return billAlias + ".patientEncounter.dateOfAdmission";
+        } else if ("dischargeDate".equals(basis)) {
+            return billAlias + ".patientEncounter.dateOfDischarge";
+        }
+        return billAlias + ".createdAt";
+    }
+
     private void appendOptionalFilters(StringBuilder sql, Map<String, Object> params, String alias) {
         // Determine the item path and encounter path based on alias
         String itemPath;
         String encounterPath;
+        String billPath;
         if ("bi".equals(alias)) {
             itemPath = "bi.item";
             encounterPath = "bi.bill.patientEncounter";
+            billPath = "bi.bill";
+        } else if ("b".equals(alias)) {
+            itemPath = null;
+            encounterPath = "b.patientEncounter";
+            billPath = "b";
         } else {
             itemPath = "bf.billItem.item";
             encounterPath = "bf.bill.patientEncounter";
+            billPath = "bf.bill";
         }
 
         if (institution != null) {
-            sql.append(" AND ").append(itemPath).append(".institution=:ins ");
+            if (itemPath != null) {
+                sql.append(" AND ").append(itemPath).append(".institution=:ins ");
+            } else {
+                sql.append(" AND ").append(billPath).append(".toInstitution=:ins ");
+            }
             params.put("ins", institution);
         }
         if (dept != null) {
-            sql.append(" AND ").append(itemPath).append(".department=:dept ");
+            if (itemPath != null) {
+                sql.append(" AND ").append(itemPath).append(".department=:dept ");
+            } else {
+                sql.append(" AND ").append(billPath).append(".toDepartment=:dept ");
+            }
             params.put("dept", dept);
         }
-        if (category != null) {
+        if (category != null && itemPath != null) {
             sql.append(" AND ").append(itemPath).append(".category=:cat ");
             params.put("cat", category);
         }
-        if (item != null) {
+        if (item != null && itemPath != null) {
             sql.append(" AND ").append(itemPath).append("=:item ");
             params.put("item", item);
         }
@@ -2001,6 +2237,26 @@ public void fillAdmissionsByConsultants() {
             sql.append(" AND ").append(encounterPath).append(".paymentMethod=:pm ");
             params.put("pm", paymentMethod);
         }
+        if (admissionType != null) {
+            sql.append(" AND ").append(encounterPath).append(".admissionType=:admType ");
+            params.put("admType", admissionType);
+        }
+        if (site != null) {
+            sql.append(" AND ").append(billPath).append(".toDepartment.site=:site ");
+            params.put("site", site);
+        }
+    }
+
+    private String appendAdmissionTypeAndSiteFilters(String sql, Map params, String billAlias) {
+        if (admissionType != null) {
+            sql += " and " + billAlias + ".patientEncounter.admissionType=:admType ";
+            params.put("admType", admissionType);
+        }
+        if (site != null) {
+            sql += " and " + billAlias + ".toDepartment.site=:site ";
+            params.put("site", site);
+        }
+        return sql;
     }
 
     public String getDateFilterType() {
@@ -2051,6 +2307,7 @@ public void fillAdmissionsByConsultants() {
                 sql += " and  bi.item=:item ";
                 temMap.put("item", item);
             }
+            sql = appendAdmissionTypeAndSiteFilters(sql, temMap, "bi.bill");
         } else {
             sql = "select distinct(bi.item) "
                     + " FROM BillItem bi"
@@ -2073,6 +2330,7 @@ public void fillAdmissionsByConsultants() {
                 sql += " and  bi.item=:item ";
                 temMap.put("item", item);
             }
+            sql = appendAdmissionTypeAndSiteFilters(sql, temMap, "bi.bill");
 
             temMap.put("p", getPaymentMethod());
         }
@@ -2128,6 +2386,7 @@ public void fillAdmissionsByConsultants() {
                 sql += " and  bi.item=:item ";
                 temMap.put("item", item);
             }
+            sql = appendAdmissionTypeAndSiteFilters(sql, temMap, "bi.bill");
         } else {
             sql = "select distinct(bi.item) "
                     + " FROM BillItem bi"
@@ -2151,6 +2410,7 @@ public void fillAdmissionsByConsultants() {
                 sql += " and  bi.item=:item ";
                 temMap.put("item", item);
             }
+            sql = appendAdmissionTypeAndSiteFilters(sql, temMap, "bi.bill");
 
             temMap.put("p", getPaymentMethod());
         }
@@ -2206,6 +2466,7 @@ public void fillAdmissionsByConsultants() {
                 sql += " and  bi.billItem.item=:item ";
                 temMap.put("item", item);
             }
+            sql = appendAdmissionTypeAndSiteFilters(sql, temMap, "bi.bill");
         } else {
             sql = "select bi "
                     + " FROM BillFee bi"
@@ -2228,6 +2489,7 @@ public void fillAdmissionsByConsultants() {
                 sql += " and  bi.billItem.item=:item ";
                 temMap.put("item", item);
             }
+            sql = appendAdmissionTypeAndSiteFilters(sql, temMap, "bi.bill");
 
             temMap.put("p", getPaymentMethod());
         }
@@ -2340,6 +2602,7 @@ public void fillAdmissionsByConsultants() {
             sql += " and bi.bill.paymentMethod=:p ";
             m.put("p", getPaymentMethod());
         }
+        sql = appendAdmissionTypeAndSiteFilters(sql, m, "bi.bill");
 
         sql += " order by bi.bill.insId ";
 
@@ -2401,6 +2664,7 @@ public void fillAdmissionsByConsultants() {
             sql += " and bi.bill.paymentMethod=:p ";
             m.put("p", getPaymentMethod());
         }
+        sql = appendAdmissionTypeAndSiteFilters(sql, m, "bi.bill");
 
         return getBillFacade().findDoubleByJpql(sql, m, TemporalType.TIMESTAMP);
 
@@ -2498,6 +2762,7 @@ public void fillAdmissionsByConsultants() {
                 sql += " and  bi.billItem.item=:item ";
                 temMap.put("item", item);
             }
+            sql = appendAdmissionTypeAndSiteFilters(sql, temMap, "bi.bill");
         } else {
             sql = "select bi "
                     + " FROM BillFee bi"
@@ -2520,6 +2785,7 @@ public void fillAdmissionsByConsultants() {
                 sql += " and  bi.billItem.item=:item ";
                 temMap.put("item", item);
             }
+            sql = appendAdmissionTypeAndSiteFilters(sql, temMap, "bi.bill");
 
             temMap.put("p", getPaymentMethod());
         }
@@ -2575,6 +2841,7 @@ public void fillAdmissionsByConsultants() {
                 sql += " and  bi.billItem.item=:item ";
                 temMap.put("item", item);
             }
+            sql = appendAdmissionTypeAndSiteFilters(sql, temMap, "bi.bill");
         } else {
             sql = "select bi "
                     + " FROM BillFee bi"
@@ -2597,6 +2864,7 @@ public void fillAdmissionsByConsultants() {
                 sql += " and  bi.billItem.item=:item ";
                 temMap.put("item", item);
             }
+            sql = appendAdmissionTypeAndSiteFilters(sql, temMap, "bi.bill");
 
             temMap.put("p", getPaymentMethod());
         }

@@ -54,11 +54,11 @@ public class PlanController implements Serializable {
 
 
     public String navigateToManagePlans(){
-        return "/emr/admin/plans";
+        return "/emr/admin/plans?faces-redirect=true";
     }
 
     public String navigateToManageClinicaEntities(){
-        return "/emr/admin/clinical_entities";
+        return "/emr/admin/clinical_entities?faces-redirect=true";
     }
 
 
@@ -67,7 +67,7 @@ public class PlanController implements Serializable {
         try {
             // Create a new Excel workbook
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Proecdures");
+            Sheet sheet = workbook.createSheet("Manage Plans");
 
             // Create a header row
             Row headerRow = sheet.createRow(0);
@@ -79,7 +79,7 @@ public class PlanController implements Serializable {
             int rowNum = 1;
             for (ClinicalEntity sym : items) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(rowNum);
+                row.createCell(0).setCellValue(rowNum-1);
                 row.createCell(1).setCellValue(sym.getName());
             }
 
@@ -87,7 +87,7 @@ public class PlanController implements Serializable {
             FacesContext context = FacesContext.getCurrentInstance();
             HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename=\"procedures.xlsx\"");
+            response.setHeader("Content-Disposition", "attachment; filename=\"manage_plans.xlsx\"");
 
             // Write the workbook to the response output stream
             workbook.write(response.getOutputStream());
@@ -142,15 +142,23 @@ public class PlanController implements Serializable {
     }
 
     public void saveSelected() {
+        if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a Plan Name before saving.");
+            return;
+        }
+        if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a Plan Code before saving.");
+            return;
+        }
         current.setSymanticType(SymanticType.Preventive_Procedure);
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            JsfUtil.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Saved Successfully.");
         }
         recreateModel();
         getItems();

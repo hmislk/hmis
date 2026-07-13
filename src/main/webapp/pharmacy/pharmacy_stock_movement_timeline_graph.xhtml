@@ -1,0 +1,187 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <!--
+        Reusable single-graph fragment for the stock movement timeline.
+        Parameters (via ui:param):
+          chartModel  - LineChartModel for this scope
+          markers     - List<BillMarker> of stock-changing transactions
+          scopeLabel  - human readable scope (Department: X / Staff: Y)
+          graphNo     - 1, 2 or 3 (used for unique ids)
+    -->
+    <p:panel header="Graph #{graphNo} — #{scopeLabel}" styleClass="mb-4">
+
+        <span id="stockMovementTooltipData#{graphNo}" style="display:none;">
+            <h:outputText value="#{tooltipData}"/>
+        </span>
+        <script type="text/javascript">
+            //<![CDATA[
+            window.stockMovementTimelineTooltips = window.stockMovementTimelineTooltips || {};
+            (function () {
+                var tooltipDataNode = document.getElementById('stockMovementTooltipData#{graphNo}');
+                try {
+                    window.stockMovementTimelineTooltips['#{graphNo}'] = tooltipDataNode
+                            ? JSON.parse(tooltipDataNode.textContent || '[]')
+                            : [];
+                } catch (e) {
+                    window.stockMovementTimelineTooltips['#{graphNo}'] = [];
+                }
+            })();
+
+            window.stockMovementTimelineBuildTooltipCallbacks = window.stockMovementTimelineBuildTooltipCallbacks || function (tooltipRows) {
+                var dataIndex = function (item) {
+                    return item && item.dataIndex !== undefined ? item.dataIndex : item.index;
+                };
+                var datasetLabel = function (item, data) {
+                    if (item && item.dataset && item.dataset.label) {
+                        return item.dataset.label;
+                    }
+                    if (data && data.datasets && data.datasets[item.datasetIndex]) {
+                        return data.datasets[item.datasetIndex].label || '';
+                    }
+                    return '';
+                };
+                var pointValue = function (item) {
+                    if (item && item.formattedValue !== undefined) {
+                        return item.formattedValue;
+                    }
+                    if (item && item.parsed && item.parsed.y !== undefined) {
+                        return item.parsed.y;
+                    }
+                    return item && item.yLabel !== undefined ? item.yLabel : '';
+                };
+                var addLine = function (lines, label, value) {
+                    if (value !== undefined && value !== null && value !== '') {
+                        lines.push(label + ': ' + value);
+                    }
+                };
+
+                return {
+                    title: function (items) {
+                        var item = Array.isArray(items) ? items[0] : items;
+                        var row = tooltipRows[dataIndex(item)] || {};
+                        return row.movementAt || '';
+                    },
+                    label: function (item, data) {
+                        var row = tooltipRows[dataIndex(item)] || {};
+                        var lines = [];
+                        var label = datasetLabel(item, data);
+                        var value = pointValue(item);
+                        if (label || value !== '') {
+                            lines.push((label ? label + ': ' : '') + value);
+                        }
+                        addLine(lines, 'Bill No', row.billNo);
+                        addLine(lines, 'Bill Date', row.billDate);
+                        addLine(lines, 'Bill Type', row.billTypeAtomic);
+                        addLine(lines, 'From Department', row.fromDepartment);
+                        addLine(lines, 'To Department', row.toDepartment);
+                        addLine(lines, 'Porter', row.porter);
+                        addLine(lines, 'Batch', row.batch);
+                        addLine(lines, 'Batch Stock After', row.batchStock);
+                        addLine(lines, 'Item Stock After', row.itemStock);
+                        return lines;
+                    }
+                };
+            };
+
+            (function patchStockMovementTimelineChartRender() {
+                if (!window.PrimeFaces || !PrimeFaces.widget || !PrimeFaces.widget.Chart
+                        || PrimeFaces.widget.Chart.__stockMovementTimelineTooltipPatch) {
+                    return;
+                }
+                var originalRender = PrimeFaces.widget.Chart.prototype._render;
+                PrimeFaces.widget.Chart.prototype._render = function () {
+                    var widgetVar = this.widgetVar || (this.cfg ? this.cfg.widgetVar : '');
+                    if (widgetVar && widgetVar.indexOf('stockMovementChart') === 0 && this.cfg && this.cfg.config) {
+                        var graphKey = widgetVar.replace('stockMovementChart', '');
+                        var tooltipRows = window.stockMovementTimelineTooltips[graphKey] || [];
+                        var options = this.cfg.config.options = this.cfg.config.options || {};
+                        options.plugins = options.plugins || {};
+                        options.plugins.tooltip = options.plugins.tooltip || {};
+                        options.tooltips = options.tooltips || {};
+                        var callbacks = window.stockMovementTimelineBuildTooltipCallbacks(tooltipRows);
+                        options.plugins.tooltip.callbacks = callbacks;
+                        options.tooltips.callbacks = callbacks;
+                    }
+                    return originalRender.apply(this, arguments);
+                };
+                PrimeFaces.widget.Chart.__stockMovementTimelineTooltipPatch = true;
+            })();
+            //]]>
+        </script>
+
+        <div style="width:100%; height:400px;">
+            <p:lineChart model="#{chartModel}"
+                         style="width:100%; height:400px;"
+                         widgetVar="stockMovementChart#{graphNo}"/>
+        </div>
+
+        <p:dataTable value="#{markers}" var="m"
+                     styleClass="ui-datatable-sm mt-3"
+                     paginator="true" rows="10"
+                     paginatorPosition="bottom"
+                     emptyMessage="No stock movements found for this scope in the selected period.">
+
+            <f:facet name="header">
+                Bills marked on the timeline
+            </f:facet>
+
+            <p:column headerText="Date/Time">
+                <h:outputText value="#{m.movementAt}">
+                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm" timeZone="Asia/Colombo"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Bill No">
+                <h:outputText value="#{m.deptBillNo}"/>
+            </p:column>
+            <p:column headerText="Bill Type">
+                <h:outputText value="#{m.billType}"/>
+            </p:column>
+            <p:column headerText="Batch">
+                <h:panelGroup layout="block" styleClass="d-flex align-items-center gap-1">
+                    <h:outputText value="#{m.batchLabel}"/>
+                    <p:commandButton id="applyBatchFilterBtn"
+                                     icon="fa fa-filter"
+                                     title="Filter all charts by this batch"
+                                     styleClass="ui-button-secondary ui-button-flat"
+                                     rendered="#{not empty m.itemBatchId}"
+                                     action="#{pharmacyStockMovementAnalyticsController.applyBatchFilter(m.itemBatchId, m.batchNo)}"
+                                     process="@this"
+                                     update=":stockMovementForm:batchFilter :stockMovementForm:msg :stockMovementForm:resultsPanel"/>
+                </h:panelGroup>
+            </p:column>
+            <p:column headerText="Bill Qty (pbi)" styleClass="text-end">
+                <h:outputText value="#{m.pbiQty}">
+                    <f:convertNumber pattern="#,##0.##"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Free Qty" styleClass="text-end">
+                <h:outputText value="#{m.pbiFreeQty}">
+                    <f:convertNumber pattern="#,##0.##"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Qty (bifd)" styleClass="text-end">
+                <h:outputText value="#{m.bifdQty}">
+                    <f:convertNumber pattern="#,##0.##"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Batch Stock After" styleClass="text-end">
+                <h:outputText value="#{m.stockQty}">
+                    <f:convertNumber pattern="#,##0.##"/>
+                </h:outputText>
+            </p:column>
+            <p:column headerText="Item Stock After" styleClass="text-end">
+                <h:outputText value="#{m.itemStock}">
+                    <f:convertNumber pattern="#,##0.##"/>
+                </h:outputText>
+            </p:column>
+        </p:dataTable>
+
+    </p:panel>
+
+</ui:composition>

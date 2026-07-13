@@ -102,9 +102,9 @@
                     style="width: 150px"
                     class="mx-2 ui-button-info"
                     ajax="false" 
-                    value="Print"
-                    action="#{reportController.processCollectingCentreStatementReportNew()}">
-                    <p:printer target="tbl" />
+                    value="To Print"
+                    action="collection_center_statement_view?faces-redirect=true">
+      
                 </p:commandButton>
 
                 <p:commandButton 
@@ -114,7 +114,12 @@
                     ajax="false" 
                     value="Excel"
                     action="#{reportController.processCollectingCentreStatementReportNew()}">
-                    <p:dataExporter type="xlsx" target="tbl"  fileName="cc_statement.xlsx" ></p:dataExporter>
+                    <p:dataExporter 
+                        type="xlsx" 
+                        target="tbl"  
+                        fileName="cc_statement_report_#{reportController.fromDateFormatted()}_to_#{reportController.toDateFormatted()}.xlsx" 
+                        postProcessor="#{reportController.postProcessCollectionCenterStatementReportExcel}">
+                    </p:dataExporter>
                 </p:commandButton>
 
                 <p:commandButton 
@@ -123,8 +128,7 @@
                     icon="fa-solid fa-file-pdf"
                     ajax="false" 
                     value="PDF"
-                    action="#{reportController.processCollectingCentreStatementReportNew()}">
-                    <p:dataExporter type="pdf" target="tbl"  fileName="cc_statement.pdf" ></p:dataExporter>
+                    action="#{reportController.exportCollectionCenterStatementReportToPDF()}">
                 </p:commandButton>
 
                 <div  style="float: right;">
@@ -282,7 +286,8 @@
                     headerText="Hospital Fee" 
                     sortBy="#{agentHx.bill.totalHospitalFee}" 
                     filterBy="#{agentHx.bill.totalHospitalFee}">
-                    <h:outputText value="#{agentHx.companyTransactionValue}" style="text-align: right; display: block;">
+                    <h:outputText value="#{agentHx.companyTransactionValue}" style="text-align: right; display: block;"
+                                  rendered="#{agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_RECEIVED_BILL' and agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_CANCELLATION_BILL' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT'}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
@@ -293,7 +298,8 @@
                     headerText="Staff Fee" 
                     sortBy="#{agentHx.bill.totalStaffFee}" 
                     filterBy="#{agentHx.bill.totalStaffFee}">
-                    <h:outputText value="#{agentHx.staffTrasnactionValue}" style="text-align: right; display: block;">
+                    <h:outputText value="#{agentHx.staffTrasnactionValue}" style="text-align: right; display: block;"
+                                  rendered="#{agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_RECEIVED_BILL' and agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_CANCELLATION_BILL' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT'}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
@@ -304,7 +310,8 @@
                     headerText="CC Fee" 
                     sortBy="#{agentHx.bill.totalCenterFee}" 
                     filterBy="#{agentHx.bill.totalCenterFee}">
-                    <h:outputText value="#{agentHx.agentTransactionValue}" style="text-align: right; display: block;">
+                    <h:outputText value="#{agentHx.agentTransactionValue}" style="text-align: right; display: block;"
+                                  rendered="#{agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_RECEIVED_BILL' and agentHx.bill.billTypeAtomic ne 'CC_PAYMENT_CANCELLATION_BILL' and agentHx.bill.billTypeAtomic ne 'CC_AGENT_PAYMENT'}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
                 </p:column>
@@ -379,7 +386,8 @@
                 <p:column
                     width="10em"
                     style="background-color: #{reportController.getTableRowColor(agentHx)}"
-                    headerText="Developers" >
+                    headerText="Developers" 
+                    exportable="false">
                     <p:commandLink 
                         ajax="false"
                         value="Edit Balance History"

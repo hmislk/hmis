@@ -221,11 +221,8 @@
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
-                                value="PDF">
-
-                                <p:dataExporter type="pdf"
-                                                target="summaryTable"
-                                                fileName="Surgery_Survey_Summary_Report"/>
+                                value="PDF"
+                                action="#{inwardReportController.downloadSurgerySurveyPdf()}">
                             </p:commandButton>
 
                             <p:commandButton
@@ -233,11 +230,9 @@
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
-                                value="PDF">
+                                value="PDF"
+                                action="#{inwardReportController.downloadSurgerySurveyPdf()}">
 
-                                <p:dataExporter type="pdf"
-                                                target="detailWise"
-                                                fileName="Surgery_Survey_Detail_Report"/>
                             </p:commandButton>
 
                         </div>
@@ -292,7 +287,7 @@
                                     <p:column
                                         headerText="Total"
                                         styleClass="text-center"
-                                        style="background-color: #a0a0a0; color: black; font-weight: bold; width: 80px;">
+                                        style="#{row.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; color: black; font-weight: bold; width: 80px;">
 
                                         <h:outputText value="#{row.total}" />
                                     </p:column>
@@ -347,7 +342,7 @@
                                     <p:column
                                         headerText="Total"
                                         styleClass="text-center"
-                                        style="background-color: #a0a0a0; color: black; font-weight: bold; width: 80px;">
+                                        style="#{row.grandTotal ? 'font-weight:bold; background-color: #ebebef;' : ''}; color: black; font-weight: bold; width: 80px;">
 
                                         <h:outputText value="#{row.total}" />
                                     </p:column>

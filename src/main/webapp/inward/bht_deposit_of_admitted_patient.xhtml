@@ -16,7 +16,32 @@
 
                     <p:panel header="Deposit of Admission Patient" >
 
-                        <h:panelGrid columns="2">    
+                        <h:panelGrid columns="2">
+                            <p:outputLabel value="From"/>
+                            <p:calendar value="#{mdInwardReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                            <p:outputLabel value="To"/>
+                            <p:calendar value="#{mdInwardReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+
+                            <p:outputLabel value="Date Basis"/>
+                            <p:selectOneMenu value="#{mdInwardReportController.dateBasis}">
+                                <f:selectItem itemValue="createdAt"     itemLabel="Payment/Bill Date" />
+                                <f:selectItem itemValue="dischargeDate" itemLabel="Discharge Date" />
+                                <f:selectItem itemValue="admissionDate" itemLabel="Admission Date" />
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Site"/>
+                            <p:selectOneMenu value="#{mdInwardReportController.site}" filter="true">
+                                <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
+                                <f:selectItems value="#{institutionController.sites}" var="mdSite" itemLabel="#{mdSite.name}" itemValue="#{mdSite}"/>
+                            </p:selectOneMenu>
+
+                            <p:outputLabel value="Department"/>
+                            <p:selectOneMenu value="#{mdInwardReportController.dept}" filter="true" filterMatchMode="contains">
+                                <f:selectItem itemLabel="All Departments" itemValue="#{null}"/>
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite()}" var="d" itemLabel="#{d.name}" itemValue="#{d}"/>
+                            </p:selectOneMenu>
+
                             <p:outputLabel value="Admission Type"/>
                             <p:selectOneMenu value="#{mdInwardReportController.admissionType}">
                                 <f:selectItem itemLabel="Select Admission Type"/>

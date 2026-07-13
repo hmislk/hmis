@@ -120,9 +120,7 @@
                                         <div class="col-md-3">
                                             <h6 class="fw-bold text-primary">Patient Information</h6>
                                             <ul class="list-unstyled small">
-                                                <li><code>{name}</code> - Patient name with title</li>
                                                 <li><code>{patient_name}</code> - Patient name with title</li>
-                                                <li><code>{age}</code> - Patient age</li>
                                                 <li><code>{patient_age}</code> - Patient age</li>
                                                 <li><code>{sex}</code> - Patient gender</li>
                                                 <li><code>{address}</code> - Patient address</li>
@@ -213,6 +211,40 @@
                                                 <li><code>{pr-series}</code> - Pulse rate readings e.g. 78, 82, 76</li>
                                                 <li><code>{rr-series}</code> - Respiratory rate readings e.g. 18, 20, 18</li>
                                                 <li><code>{sat-series}</code> - Oxygen saturation readings e.g. 98, 97, 99</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-12">
+                                            <h6 class="fw-bold text-success">Inpatient Letter Placeholders</h6>
+                                            <p class="small text-muted">All Inpatient Diagnosis Card placeholders also apply here, plus:</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6 class="fw-bold text-secondary">Credit Company</h6>
+                                            <ul class="list-unstyled small">
+                                                <li><code>{credit_company}</code> - Credit company name</li>
+                                                <li><code>{credit_company_address}</code> - Credit company address</li>
+                                                <li><code>{policy_no}</code> - Policy number</li>
+                                                <li><code>{reference_no}</code> - Reference number</li>
+                                                <li><code>{credit_limit}</code> - Credit limit</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6 class="fw-bold text-secondary">Institution / Ward</h6>
+                                            <ul class="list-unstyled small">
+                                                <li><code>{institution}</code> - Hospital / institution name</li>
+                                                <li><code>{department}</code> - Ward / department name</li>
+                                                <li><code>{doctor}</code> - Admitting doctor name</li>
+                                                <li><code>{letter_date}</code> - Today's date (letter date)</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <h6 class="fw-bold text-secondary">Billing</h6>
+                                            <ul class="list-unstyled small">
+                                                <li><code>{final_bill}</code> - Final bill / net total value for the admission</li>
+                                                <li><code>{patient_name}</code> - Patient name (alias of {name})</li>
+                                                <li><code>{patient_age}</code> - Patient age (alias of {age})</li>
+                                                <li><code>{patient_sex}</code> - Patient sex (alias of {sex})</li>
                                             </ul>
                                         </div>
                                     </div>

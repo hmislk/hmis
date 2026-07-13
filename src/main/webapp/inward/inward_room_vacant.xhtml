@@ -1,68 +1,78 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://xmlns.jcp.org/jsf/html"
-                xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Room Vacancy Details</title>
+</h:head>
+<h:body>
+    <ui:composition template="/resources/template/template.xhtml">
+        <ui:define name="content">
+            <h:form id="frmRoomVacant">
+                <p:panel>
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between align-items-center w-100">
+                            <div class="d-flex align-items-center gap-2">
+                                <h:outputText styleClass="fas fa-bed"/>
+                                <h:outputText value="Room Vacancy Details"/>
+                            </div>
+                            <div class="d-flex gap-2 align-items-center">
+                                <p:commandButton id="btnFill"
+                                                 ajax="false"
+                                                 action="#{roomOccupancyController.createPatientRoomVacant()}"
+                                                 value="Fill"
+                                                 icon="fas fa-sync-alt"
+                                                 style="min-width:120px"
+                                                 title="Load the list of currently vacant rooms"
+                                                 styleClass="ui-button-success"/>
+                            </div>
+                        </div>
+                    </f:facet>
 
+                    <p:dataTable id="tblRoomVacant"
+                                 widgetVar="wgtRoomVacant"
+                                 value="#{roomOccupancyController.roomFacilityCharges}"
+                                 var="pr"
+                                 rowKey="#{pr.id}"
+                                 rowIndexVar="rowIndex"
+                                 summary="Vacant rooms available for admission"
+                                 paginator="true"
+                                 paginatorPosition="bottom"
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="5,10,15"
+                                 stickyHeader="true"
+                                 styleClass="p-datatable-sm mt-3"
+                                 emptyMessage="No vacant rooms found. Click Fill to load the list.">
 
-    <ui:define name="content">
-        <p:panel>
-            <f:facet name="header">
-                Room Vacancy Details
-            </f:facet>
-            <h:form>
-                <div class="row">
-                    <div class="col-md-3">
-                        <p:commandButton ajax="false" 
-                                         action="#{roomOccupancyController.createPatientRoomVacant()}"
-                                         value="Fill" class="w-50" />    
-                    </div>
-                </div>
+                        <p:column headerText="#" width="2em" styleClass="text-center">
+                            <h:outputText value="#{rowIndex + 1}"/>
+                        </p:column>
 
+                        <p:column headerText="Room" width="10em">
+                            <h:outputText value="#{pr.room.name}"/>
+                        </p:column>
 
-                <p:dataTable 
-                    value="#{roomOccupancyController.roomFacilityCharges}" 
-                    var="pr"
-                    paginator="true"
-                    paginatorPosition="bottom"
-                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                    rowsPerPageTemplate="5,10,15" class="mt-3"
-                    >
+                        <p:column headerText="Category" width="10em">
+                            <h:outputText value="#{pr.roomCategory.name}"/>
+                        </p:column>
 
+                        <p:column headerText="Department" width="12em">
+                            <h:outputText value="#{pr.department.name}"/>
+                        </p:column>
 
-                    <p:column headerText="Room">
-                        #{pr.room.name}                    
-                    </p:column>
+                        <p:column headerText="Room Charges for 24 Hrs" width="10em" styleClass="text-end">
+                            <h:outputText value="#{pr.timedItemFee != null and pr.timedItemFee.durationHours > 0 ? pr.roomCharge * (24 / pr.timedItemFee.durationHours) : 0}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </p:column>
 
-                    <p:column headerText="Category">
-                        #{pr.roomCategory.name}                   
-                    </p:column>
-
-                    <p:column headerText="Department">
-                        #{pr.department.name}                    
-                    </p:column>
-
-                    <!--                <p:column headerText="Chargers for 24">
-                    #{(pr.linenCharge)+
-                      ((pr.adminstrationCharge + pr.maintananceCharge
-                      + pr.medicalCareCharge + pr.roomCharge
-                      + pr.nursingCharge + pr.moCharge)*8)}                    
-                </p:column>-->
-
-                    <p:column headerText="Room Chargers for 24">
-                        #{pr.roomCharge*8}                    
-                    </p:column>
-
-                </p:dataTable>
-
-
-
-            </h:form> 
-        </p:panel>
-
-    </ui:define>
-
-</ui:composition>
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

@@ -21,6 +21,7 @@ public class ChargeItemTotal {
     private double discount = 0;
     private double netTotal = 0;
     private double adjustedTotal = 0.0;
+    private String comments;
     private List<PatientRoom> patientRooms;
     List<BillFee> billFees;
 
@@ -69,6 +70,14 @@ public class ChargeItemTotal {
 
     public void setAdjustedTotal(double adjustedTotal) {
         this.adjustedTotal = adjustedTotal;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 
     public List<PatientRoom> getPatientRooms() {

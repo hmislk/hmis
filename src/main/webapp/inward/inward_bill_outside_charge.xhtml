@@ -6,26 +6,30 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:print="http://xmlns.jcp.org/jsf/composite/ezcomp/prints">
 
 
     <ui:define name="content">
         <h:panelGroup>
             <h:form>
 
-                <h:panelGroup class="row" rendered="#{inwardAdditionalChargeController.current.patientEncounter eq null}"> 
-                    <p:panel >
+                <h:panelGroup class="row" rendered="#{inwardAdditionalChargeController.current.patientEncounter eq null}">
+                    <p:panel styleClass="shadow-sm">
                         <f:facet name="header">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
-                                    <p:outputLabel value="Patient Details" class="m-2"/>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <i class="fa-solid fa-address-card fa-lg text-primary me-3"></i>
+                                    <div>
+                                        <h4 class="mb-1 text-primary">Patient Selection</h4>
+                                        <p class="mb-0 text-muted small">Search and select an inpatient to add outside charges</p>
+                                    </div>
                                 </div>
-                                <div>
+                                <div class="d-flex gap-2">
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
-                                        <p:commandButton 
-                                            value="Nursing WorkBench" 
-                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}" 
+                                        <p:commandButton
+                                            value="Nursing WorkBench"
+                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
                                             ajax="false"
                                             class="ui-button-operating-theatre"
                                             icon="fa fa-arrow-left">
@@ -33,109 +37,245 @@
                                     </h:panelGroup>
                                 </div>
                             </div>
-
                         </f:facet>
-                        <div class="row">
 
-                            <div class="col-12" >
-                                <h:outputLabel value="Type Patient Name or BHT : " class="m-1"/>
-
-                                <p:autoComplete  
-                                    widgetVar="aPt" 
-                                    id="acPt" 
-                                    forceSelection="true" 
-                                    required="true" 
-                                    requiredMessage="Please select a patient"
-                                    value="#{inwardAdditionalChargeController.current.patientEncounter}"
-                                    completeMethod="#{admissionController.completePatient}" 
-                                    var="myItem" 
-                                    itemValue="#{myItem}" 
-                                    itemLabel="#{myItem.bhtNo}" 
-                                    size="30"
-                                    class="m-1">
-                                    <p:column headerText="PHN" style="padding: 6px; width: 8em;">
-                                        <h:outputLabel value="#{myItem.patient.phn}"/>
-                                    </p:column>
-                                    <p:column headerText="BHT No" style="padding: 6px; width: 8em;">
-                                        <h:outputLabel value="#{myItem.bhtNo}"/>
-                                    </p:column>
-                                    <p:column headerText="Patient" style="padding: 6px; width: 400px;;">
-                                        <h:outputLabel value="#{myItem.patient.person.nameWithTitle}"/>
-                                    </p:column>
-                                    <p:column headerText="Room" style="padding: 6px; width: 8em;">
-                                        <h:outputLabel value="#{myItem.currentPatientRoom.roomFacilityCharge.name}"/>
-                                    </p:column>
-                                    <p:column headerText="Discharged" style="padding: 6px; width: 10em;">
-                                        <div class="d-flex justify-content-center">
-                                            <span class="#{myItem.discharged ? 'discharged-badge' : 'not-discharged-badge'}">
-                                                #{myItem.discharged ? 'Discharged' : 'Not Discharged'}
-                                            </span>
+                        <div class="row justify-content-center">
+                            <div class="col-12 col-lg-10 col-xl-8">
+                                <div class="card border-0 bg-light">
+                                    <div class="card-body p-4">
+                                        <div class="text-center mb-4">
+                                            <i class="fa-solid fa-search fa-3x text-info mb-3"></i>
+                                            <h5 class="text-dark mb-2">Find Inpatient</h5>
+                                            <p class="text-muted">Search by patient name, BHT number, or PHN to add outside charges</p>
                                         </div>
-                                    </p:column>
 
-                                </p:autoComplete> 
-                                <p:commandButton 
-                                    value="Select" 
-                                    ajax="false" 
-                                    class="m-1">
-                                </p:commandButton>
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <h:outputLabel for="insSelect" styleClass="form-label fw-bold text-dark mb-2">
+                                                    <i class="fa-solid fa-hospital me-2 text-primary"></i>
+                                                    Institution
+                                                </h:outputLabel>
+                                                <p:selectOneMenu id="insSelect"
+                                                                 label="Institution"
+                                                                 value="#{inwardAdditionalChargeController.institution}"
+                                                                 style="width:100%">
+                                                    <f:selectItem itemLabel="All Institutions" itemValue="#{null}" />
+                                                    <f:selectItems value="#{sessionController.loggableInstitutions}"
+                                                                   var="ins"
+                                                                   itemLabel="#{ins.name}"
+                                                                   itemValue="#{ins}" />
+                                                    <p:ajax listener="#{inwardAdditionalChargeController.onInstitutionChange}" update="acPt pnlPatientPreview" />
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
 
-                                <style>
-                                    .discharged-badge {
-                                        background-color: #f44336;
-                                        color: white;
-                                        padding: 2px 8px;
-                                        border-radius: 12px;
-                                        font-size: 1em;
-                                        font-weight: bold;
-                                    }
+                                        <div class="row mb-3">
+                                            <div class="col-12">
+                                                <h:outputLabel for="acPt" styleClass="form-label fw-bold text-dark mb-2">
+                                                    <i class="fa-solid fa-user me-2 text-primary"></i>
+                                                    Patient Search
+                                                </h:outputLabel>
+                                                <p:autoComplete
+                                                    widgetVar="aPt"
+                                                    id="acPt"
+                                                    forceSelection="true"
+                                                    value="#{inwardAdditionalChargeController.current.patientEncounter}"
+                                                    completeMethod="#{inwardAdditionalChargeController.completePatientByInstitution}"
+                                                    var="myItem"
+                                                    itemValue="#{myItem}"
+                                                    itemLabel="#{myItem.bhtNo}"
+                                                    placeholder="Type patient name, BHT number, or PHN..."
+                                                    minQueryLength="2"
+                                                    style="width: 100%;"
+                                                    inputStyleClass="form-control form-control-lg">
+                                                    <p:ajax event="itemSelect" update="pnlPatientPreview" />
+                                                    <p:column headerText="PHN" style="padding: 8px; min-width: 100px;">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-id-card me-2 text-info"></i>
+                                                            <strong>#{myItem.patient.phn}</strong>
+                                                        </div>
+                                                    </p:column>
+                                                    <p:column headerText="BHT No" style="padding: 8px; min-width: 120px;">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-hospital me-2 text-warning"></i>
+                                                            <strong class="text-primary">#{myItem.bhtNo}</strong>
+                                                        </div>
+                                                    </p:column>
+                                                    <p:column headerText="Patient Name" style="padding: 8px; min-width: 250px;">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-user me-2 text-success"></i>
+                                                            <span class="fw-medium">#{myItem.patient.person.nameWithTitle}</span>
+                                                        </div>
+                                                    </p:column>
+                                                    <p:column headerText="Room" style="padding: 8px; min-width: 150px;">
+                                                        <h:panelGroup rendered="#{myItem.currentPatientRoom ne null}">
+                                                            <div class="d-flex align-items-center">
+                                                                <i class="fa-solid fa-bed me-2 text-secondary"></i>
+                                                                <span>#{myItem.currentPatientRoom.roomFacilityCharge.name}</span>
+                                                            </div>
+                                                        </h:panelGroup>
+                                                        <h:panelGroup rendered="#{myItem.currentPatientRoom eq null}">
+                                                            <span class="text-muted">
+                                                                <i class="fa-solid fa-question-circle me-1"></i>No room assigned
+                                                            </span>
+                                                        </h:panelGroup>
+                                                    </p:column>
+                                                    <p:column headerText="Status" style="padding: 8px; min-width: 120px;">
+                                                        <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{myItem.discharged}" />
+                                                        <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!myItem.discharged}" />
+                                                    </p:column>
+                                                </p:autoComplete>
+                                            </div>
+                                        </div>
 
-                                    .not-discharged-badge {
-                                        background-color: #2196F3;
-                                        color: white;
-                                        padding: 2px 8px;
-                                        border-radius: 12px;
-                                        font-size: 1em;
-                                        font-weight: bold;
-                                    }
-                                </style>
+                                        <h:panelGroup id="pnlPatientPreview">
+                                            <h:panelGroup rendered="#{inwardAdditionalChargeController.current.patientEncounter ne null}" layout="block">
+                                                <div class="card border-primary mt-3 mb-3">
+                                                    <div class="card-header bg-primary text-white py-2">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fa-solid fa-user-check me-2"></i>
+                                                            <strong>Selected Patient</strong>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body py-3">
+                                                        <div class="row">
+                                                            <div class="col-md-3 mb-2">
+                                                                <small class="text-muted d-block">Patient Name</small>
+                                                                <strong>#{inwardAdditionalChargeController.current.patientEncounter.patient.person.nameWithTitle}</strong>
+                                                            </div>
+                                                            <div class="col-md-2 mb-2">
+                                                                <small class="text-muted d-block">BHT No</small>
+                                                                <strong class="text-primary">#{inwardAdditionalChargeController.current.patientEncounter.bhtNo}</strong>
+                                                            </div>
+                                                            <div class="col-md-2 mb-2">
+                                                                <small class="text-muted d-block">PHN</small>
+                                                                <strong>#{inwardAdditionalChargeController.current.patientEncounter.patient.phn}</strong>
+                                                            </div>
+                                                            <div class="col-md-2 mb-2">
+                                                                <small class="text-muted d-block">Room</small>
+                                                                <h:panelGroup rendered="#{inwardAdditionalChargeController.current.patientEncounter.currentPatientRoom ne null}">
+                                                                    <strong>#{inwardAdditionalChargeController.current.patientEncounter.currentPatientRoom.roomFacilityCharge.name}</strong>
+                                                                </h:panelGroup>
+                                                                <h:panelGroup rendered="#{inwardAdditionalChargeController.current.patientEncounter.currentPatientRoom eq null}">
+                                                                    <span class="text-muted">Not assigned</span>
+                                                                </h:panelGroup>
+                                                            </div>
+                                                            <div class="col-md-3 mb-2">
+                                                                <small class="text-muted d-block">Status</small>
+                                                                <p:badge value="Discharged" styleClass="ui-badge-danger" rendered="#{inwardAdditionalChargeController.current.patientEncounter.discharged}" />
+                                                                <p:badge value="Active" styleClass="ui-badge-success" rendered="#{!inwardAdditionalChargeController.current.patientEncounter.discharged}" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+
+                                        <div class="row">
+                                            <div class="col-12 text-center">
+                                                <p:commandButton
+                                                    ajax="false"
+                                                    value="Continue"
+                                                    icon="fa-solid fa-arrow-right"
+                                                    class="ui-button-success btn-lg"
+                                                    style="min-width: 200px; height: 50px;"
+                                                    title="Continue to add outside charges" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </p:panel>
                 </h:panelGroup>
 
-                <h:panelGrid rendered="#{inwardAdditionalChargeController.current.patientEncounter ne null}">
+                <h:panelGroup layout="block" style="width:100%" rendered="#{inwardAdditionalChargeController.current.patientEncounter ne null}">
                     <p:panel>
                         <f:facet name="header">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h:outputText styleClass="fa-solid fa-address-card fa-lg"/> 
+                            <div class="d-flex justify-content-between align-items-center w-100">
+                                <!-- Left: title -->
+                                <div class="d-flex align-items-center">
+                                    <h:outputText styleClass="fa-solid fa-address-card fa-lg"/>
                                     <p:outputLabel value="Add Outside Charges" class="m-2"/>
                                 </div>
+
+                                <!-- Centre: print actions (print preview only) -->
+                                <div class="d-flex gap-2 align-items-center">
+                                    <h:panelGroup rendered="#{inwardAdditionalChargeController.printPreview}">
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton
+                                                value="Print"
+                                                class="ui-button-info"
+                                                icon="fa-solid fa-print"
+                                                ajax="false">
+                                                <p:printer target="gpOutsideBillPreview" />
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                                value="Print Configuration"
+                                                icon="fas fa-cog"
+                                                class="ui-button-secondary"
+                                                type="button"
+                                                onclick="PF('outsideChargeConfigDialog').show();" />
+                                            <p:commandButton
+                                                value="New Bill"
+                                                class="ui-button-success"
+                                                icon="fa fa-plus"
+                                                ajax="false"
+                                                action="#{inwardAdditionalChargeController.makeNull()}" />
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+
+                                <!-- Right: navigation buttons -->
                                 <div class="d-flex gap-2">
 
-                                    <p:commandButton 
-                                        class="ui-button-success" 
+                                    <p:commandButton
+                                        value="Inpatient Dashboard"
+                                        ajax="false"
+                                        icon="fa fa-id-card"
+                                        class="ui-button-secondary"
+                                        action="#{admissionController.navigateToAdmissionProfilePage}">
+                                        <f:setPropertyActionListener
+                                            value="#{inwardAdditionalChargeController.current.patientEncounter}"
+                                            target="#{admissionController.current}" />
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="ui-button-info"
+                                        id="btnSettle"
+                                        icon="fa fa-check"
+                                        value="Settle"
+                                        ajax="false"
+                                        rendered="#{!inwardAdditionalChargeController.printPreview}"
+                                        onclick="return confirm('Are you sure you want to settle this bill?');"
+                                        action="#{inwardAdditionalChargeController.settle()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="ui-button-success"
                                         id="btnNew"
                                         icon="fa fa-plus"
-                                        value="New Bill"  
-                                        ajax="false" 
+                                        value="New Bill"
+                                        ajax="false"
+                                        rendered="#{!inwardAdditionalChargeController.printPreview}"
                                         action="#{inwardAdditionalChargeController.makeNull()}">
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        class="ui-button-danger" 
+                                    <p:commandButton
+                                        class="ui-button-danger"
                                         value="Clear"
                                         icon="fa fa-ban"
-                                        ajax="false" 
+                                        ajax="false"
+                                        rendered="#{!inwardAdditionalChargeController.printPreview}"
                                         action="#{inwardAdditionalChargeController.reset()}" >
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        class="ui-button-warning " 
-                                        value="To Add Services" 
+                                    <p:commandButton
+                                        class="ui-button-warning "
+                                        value="To Add Services"
                                         icon ="fa fa-wrench"
-                                        ajax="false" 
+                                        ajax="false"
                                         action="/inward/inward_bill_service?faces-redirect=true" >
                                     </p:commandButton>
 
@@ -183,6 +323,61 @@
                             </div>
                         </f:facet>
 
+                        <h:panelGroup rendered="#{!inwardAdditionalChargeController.printPreview}">
+
+                        <!-- Bill-level: Outside Institution selection (shown until selected) -->
+                        <h:panelGroup layout="block" rendered="#{inwardAdditionalChargeController.current.fromInstitution eq null}" class="col-12 mb-2">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa fa-hospital" />
+                                    <h:outputText value="Outside Institution" class="mx-3"/>
+                                </f:facet>
+                                <div class="row m-1">
+                                    <div class="col-4 d-flex align-items-center">
+                                        <h:outputLabel value="Select Outside Institution"/>
+                                    </div>
+                                    <div class="col-8">
+                                        <p:autoComplete id="acFromIns"
+                                                        style="width:100%"
+                                                        inputStyle="width:100%"
+                                                        value="#{inwardAdditionalChargeController.current.fromInstitution}"
+                                                        completeMethod="#{institutionController.completeIns}"
+                                                        var="ins"
+                                                        itemValue="#{ins}"
+                                                        itemLabel="#{ins.name}"
+                                                        forceSelection="true"
+                                                        minQueryLength="2"
+                                                        placeholder="Type institution name...">
+                                            <p:column>#{ins.name}</p:column>
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </h:panelGroup>
+
+                        <!-- Bill-level: Institution confirmed + Bill Note (shown after institution selected) -->
+                        <h:panelGroup layout="block" rendered="#{inwardAdditionalChargeController.current.fromInstitution ne null}" class="col-12 mb-2">
+                            <p:panel>
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fa fa-hospital" />
+                                    <h:outputText value=" #{inwardAdditionalChargeController.current.fromInstitution.name}" class="mx-2 fw-bold"/>
+                                    <p:commandButton value="Change" icon="fa fa-pencil"
+                                                     class="ui-button-secondary ui-button-sm ms-3"
+                                                     ajax="false"
+                                                     action="#{inwardAdditionalChargeController.clearFromInstitution}"/>
+                                </f:facet>
+                                <div class="row m-1">
+                                    <div class="col-3 d-flex align-items-center">
+                                        <p:outputLabel value="Bill Note"/>
+                                        <small class="text-muted ms-1">(whole bill)</small>
+                                    </div>
+                                    <div class="col-9">
+                                        <p:inputTextarea value="#{inwardAdditionalChargeController.current.comments}" class="w-100" rows="2"/>
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </h:panelGroup>
+
                         <div class="col-12">
                             <h:panelGroup rendered="true" styleClass="opdPanel">
                                 <p:panel >
@@ -191,7 +386,7 @@
                                         <div class="col-5 ">
                                             <p:panel>
                                                 <f:facet name="header" >
-                                                    <h:outputText styleClass="fa fa-user-circle" /> 
+                                                    <h:outputText styleClass="fa fa-user-circle" />
                                                     <h:outputText value="Patient Details" class="mx-3"></h:outputText>
                                                 </f:facet>
                                                 <h:panelGroup id="panSearch2">
@@ -203,47 +398,29 @@
                                         <div class="col-7" >
                                             <p:panel>
                                                 <f:facet name="header" >
-                                                    <h:outputText styleClass="fa fa-money-bill-wave" /> 
+                                                    <h:outputText styleClass="fa fa-money-bill-wave" />
                                                     <h:outputText value="Charge Details" class="mx-3"></h:outputText>
                                                 </f:facet>
                                                 <div class="row">
                                                     <div class="row m-1">
                                                         <div class="col-4 d-flex align-items-center">
-                                                            <h:outputLabel value="Inward Charge Type"/>
-
+                                                            <h:outputLabel value="Item"/>
                                                         </div>
                                                         <div class="col-8">
-                                                            <div>
-                                                                <p:selectOneMenu class="w-100" value="#{inwardAdditionalChargeController.inwardChargeType}" filter="true" >
-                                                                    <f:selectItem itemLabel="Please select Charge"/>
-                                                                    <f:selectItems value="#{enumController.inwardChargeTypesForSetting}" var="i" itemLabel="#{i.label}" itemValue="#{i}"/>
-                                                                </p:selectOneMenu>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row m-1">
-                                                        <div class="col-4 d-flex align-items-center">
-                                                            <h:outputLabel value="From Institution"/>
-                                                        </div>
-                                                        <div class="col-8 ">
-<!--                                                            <p:autoComplete size="61" forceSelection="true" value="#{inwardAdditionalChargeController.current.fromInstitution}"
-                                                                            completeMethod="#{institutionController.completeIns}"
-                                                                            disabled="#{not empty inwardAdditionalChargeController.current.fromInstitution}"
-                                                                            var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" >
-                                                                <p:column>
-                                                            #{ix.name}
-                                                        </p:column>
-                                                        <p:column>
-                                                            #{ix.institutionCode}
-                                                        </p:column>
-                                                    </p:autoComplete>-->
-
-                                                            <div>
-                                                                <p:selectOneMenu autoWidth="false" class="w-100" value="#{inwardAdditionalChargeController.current.fromInstitution}" filter="true" filterMatchMode="contains">
-                                                                    <f:selectItem itemLabel="Select Institution"/>
-                                                                    <f:selectItems value="#{institutionController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                                                                </p:selectOneMenu>
-                                                            </div>
+                                                            <p:autoComplete id="acItem"
+                                                                            style="width:100%"
+                                                                            inputStyle="width:100%"
+                                                                            value="#{inwardAdditionalChargeController.selectedItem}"
+                                                                            completeMethod="#{inwardAdditionalChargeController.completeItem}"
+                                                                            var="itm"
+                                                                            itemValue="#{itm}"
+                                                                            itemLabel="#{itm.name}"
+                                                                            forceSelection="true"
+                                                                            minQueryLength="2"
+                                                                            placeholder="Type item name...">
+                                                                <p:ajax event="itemSelect" listener="#{inwardAdditionalChargeController.onItemSelect}" update="txtAmount" />
+                                                                <p:column>#{itm.name}</p:column>
+                                                            </p:autoComplete>
                                                         </div>
                                                     </div>
 
@@ -252,32 +429,34 @@
                                                             <p:outputLabel value="Amount"/>
                                                         </div>
                                                         <div class="col-8">
-                                                            <p:inputText class="w-100" autocomplete="off" value="#{inwardAdditionalChargeController.current.total}"/>
+                                                            <p:inputText id="txtAmount" class="w-100" autocomplete="off" value="#{inwardAdditionalChargeController.current.total}"/>
                                                         </div>
                                                     </div>
 
                                                     <div class="row m-1">
-                                                        <div class="col-4">
-                                                            <p:outputLabel value="Description"/>
+                                                        <div class="col-4 d-flex align-items-center">
+                                                            <p:outputLabel value="Item Note"/>
+                                                            <small class="text-muted ms-1">(per row)</small>
                                                         </div>
                                                         <div class="col-8">
-                                                            <p:inputTextarea value="#{inwardAdditionalChargeController.current.comments}" class="w-100" disabled="#{not empty inwardAdditionalChargeController.current.comments}"/>
+                                                            <p:inputTextarea id="txtItemComment" value="#{inwardAdditionalChargeController.itemComment}" class="w-100" rows="2"/>
                                                         </div>
                                                     </div>
+
                                                 </div>
-                                                <p:commandButton 
-                                                    class="m-1 ui-button-success" 
+                                                <p:commandButton
+                                                    class="m-1 ui-button-success"
                                                     id="btnAdd"
                                                     icon="fa fa-plus"
-                                                    value="Add"  
-                                                    ajax="false" 
+                                                    value="Add"
+                                                    ajax="false"
                                                     action="#{inwardAdditionalChargeController.addCharge}"/>
                                             </p:panel>
                                         </div>
                                     </div>
 
                                 </p:panel>
-                            </h:panelGroup>        
+                            </h:panelGroup>
                         </div>
 
                         <div class="row mt-2">
@@ -286,40 +465,159 @@
                                     <p:panel>
                                         <f:facet name="header">
                                             <h:outputText styleClass="fas fa-user-tie" />
-                                            <h:outputLabel class="mx-4" value="Inward OutSide Charges"/>
+                                            <h:outputLabel class="mx-4" value="Outside Charges"/>
+                                            <h:panelGroup rendered="#{inwardAdditionalChargeController.current.fromInstitution ne null}">
+                                                <span class="badge bg-secondary ms-2">
+                                                    <h:outputText value="#{inwardAdditionalChargeController.current.fromInstitution.name}" />
+                                                </span>
+                                            </h:panelGroup>
                                         </f:facet>
 
-                                        <p:dataTable rowIndexVar="rowIndex" id="bFee" value="#{inwardAdditionalChargeController.billItemList}" var="bif" >
+                                        <p:dataTable rowIndexVar="rowIndex" id="bFee"
+                                                     value="#{inwardAdditionalChargeController.billItemList}"
+                                                     var="bif"
+                                                     rowKey="#{bif.id}">
 
+                                            <p:column style="width:2.5rem">
+                                                <p:rowToggler/>
+                                            </p:column>
                                             <p:column>
                                                 <f:facet name="header">No</f:facet>
                                                 <h:outputLabel value="#{rowIndex+1}"/>
                                             </p:column>
                                             <p:column>
-                                                <f:facet name="header">Fee</f:facet>
-                                                <h:outputLabel  value="#{bif.inwardChargeType}">
-
-                                                </h:outputLabel>
+                                                <f:facet name="header">Item</f:facet>
+                                                <h:outputLabel value="#{bif.item.name}"/>
                                             </p:column>
-
                                             <p:column>
-                                                <f:facet name="header">Total</f:facet>
+                                                <f:facet name="header">Amount</f:facet>
                                                 <h:outputLabel value="#{bif.netValue}"/>
                                             </p:column>
                                             <p:column>
-                                                <f:facet name="header">Comments</f:facet>
-                                                <h:outputLabel value="#{bif.bill.comments}"/>
+                                                <f:facet name="header">Note</f:facet>
+                                                <h:outputLabel value="#{bif.descreption}"/>
                                             </p:column>
+
+                                            <p:rowExpansion>
+                                                <div class="p-3 ms-4 border-start border-primary" style="background-color:#f8f9fa;">
+                                                    <h6 class="mb-2 text-primary">
+                                                        <i class="fa fa-list me-1"/>Fee Breakdown
+                                                    </h6>
+                                                    <p:dataTable value="#{bif.billFees}" var="bf"
+                                                                 styleClass="table table-sm"
+                                                                 emptyMessage="No fees recorded">
+                                                        <p:column headerText="Fee">
+                                                            <h:outputText value="#{bf.fee.name}"/>
+                                                        </p:column>
+                                                        <p:column headerText="Fee Type">
+                                                            <h:outputText value="#{bf.fee.feeType}"/>
+                                                        </p:column>
+                                                        <p:column headerText="Amount">
+                                                            <h:outputText value="#{bf.feeValue}"/>
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </div>
+                                            </p:rowExpansion>
+
                                         </p:dataTable>
                                     </p:panel>
                                 </h:panelGroup>
                             </div>
 
                         </div>
+
+                        </h:panelGroup>
+
+                        <!-- ============================= PRINT PREVIEW ============================= -->
+                        <h:panelGroup rendered="#{inwardAdditionalChargeController.printPreview}">
+
+                            <div class="row justify-content-center">
+                                <div class="col-12 col-md-10 col-lg-7 col-xl-6">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fa-solid fa-receipt" />
+                                            <h:outputLabel value="Bill Preview" class="mx-2" />
+                                        </f:facet>
+                                        <h:panelGroup id="gpOutsideBillPreview" layout="block">
+
+                                            <h:panelGroup rendered="#{inwardAdditionalChargeController.configOptionController.getBooleanValueByKey('Inward Outside Charge Bill is POS Paper', false)}">
+                                                <print:posBill_inward_outside bill="#{inwardAdditionalChargeController.current}" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{inwardAdditionalChargeController.configOptionController.getBooleanValueByKey('Inward Outside Charge Bill is 5x5 Paper', true)}">
+                                                <print:five_five_inward_outside bill="#{inwardAdditionalChargeController.current}" />
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{inwardAdditionalChargeController.configOptionController.getBooleanValueByKey('Inward Outside Charge Bill is A4 Paper', false)}">
+                                                <print:A4_inward_outside bill="#{inwardAdditionalChargeController.current}" />
+                                            </h:panelGroup>
+
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
                     </p:panel>
-                </h:panelGrid>
+                </h:panelGroup>
 
             </h:form>
+
+            <!-- ===================== PRINT (PAPER FORMAT) CONFIGURATION ===================== -->
+            <p:dialog id="outsideChargeConfigDialog"
+                      header="Outside Charge Bill — Print Configuration"
+                      widgetVar="outsideChargeConfigDialog"
+                      modal="true"
+                      width="520"
+                      resizable="false"
+                      closeOnEscape="true">
+
+                <p:ajax event="open" listener="#{inwardAdditionalChargeController.loadPrintConfig}" update="outsideChargeConfigForm" />
+
+                <h:form id="outsideChargeConfigForm">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="m-0"><i class="fas fa-file-alt"></i> Paper Format</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted small">Select the paper format used to print outside charge bills for this department.</p>
+
+                            <div class="mb-3">
+                                <h:selectBooleanCheckbox id="cfgPos" value="#{inwardAdditionalChargeController.posPaper}" />
+                                <h:outputLabel for="cfgPos" value="POS Paper" class="ms-2 fw-bold" />
+                                <small class="form-text text-muted d-block">Thermal POS receipt format.</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <h:selectBooleanCheckbox id="cfgFiveFive" value="#{inwardAdditionalChargeController.fiveFivePaper}" />
+                                <h:outputLabel for="cfgFiveFive" value="5 x 5 inch Paper (Impact / Epson)" class="ms-2 fw-bold" />
+                                <small class="form-text text-muted d-block">5 inch x 5 inch format tuned for impact / dot-matrix printers.</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <h:selectBooleanCheckbox id="cfgA4" value="#{inwardAdditionalChargeController.a4Paper}" />
+                                <h:outputLabel for="cfgA4" value="A4 Paper" class="ms-2 fw-bold" />
+                                <small class="form-text text-muted d-block">Full-page A4 invoice format.</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <p:commandButton
+                            value="Apply &amp; Close"
+                            icon="fas fa-save"
+                            class="ui-button-success"
+                            ajax="false"
+                            action="#{inwardAdditionalChargeController.savePrintConfig}" />
+                        <p:commandButton
+                            value="Cancel"
+                            icon="fas fa-times"
+                            class="ui-button-secondary"
+                            type="button"
+                            onclick="PF('outsideChargeConfigDialog').hide(); return false;" />
+                    </div>
+                </h:form>
+            </p:dialog>
 
         </h:panelGroup>
 

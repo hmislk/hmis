@@ -341,6 +341,7 @@ public class PaymentService {
 
                 paymentFacade.create(p);
                 cashbookService.writeCashBookEntryAtPaymentCreation(p);
+                drawerService.updateDrawer(p);
                 ps.add(p);
             }
         } else {
@@ -351,28 +352,25 @@ public class PaymentService {
             p.setCreatedAt(new Date());
             p.setCreater(webUser);
             p.setPaymentMethod(pm);
-            
+            p.setPaidValue(bill.getNetTotal());
+
             switch (pm) {
                 case Cash:
-                    p.setPaidValue(bill.getNetTotal());
                     p.setComments("");
                     break;
                 case Card:
                     p.setBank(paymentMethodData.getCreditCard().getInstitution());
                     p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
-                    p.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
                     p.setComments(paymentMethodData.getCreditCard().getComment());
                     break;
                 case Cheque:
                     p.setBank(paymentMethodData.getCheque().getInstitution());
                     p.setChequeDate(paymentMethodData.getCheque().getDate());
                     p.setChequeRefNo(paymentMethodData.getCheque().getNo());
-                    p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
                     p.setComments(paymentMethodData.getCheque().getComment());
                     break;
                 case Slip:
                     p.setBank(paymentMethodData.getSlip().getInstitution());
-                    p.setPaidValue(paymentMethodData.getSlip().getTotalValue());
                     p.setRealizedAt(paymentMethodData.getSlip().getDate());
                     p.setPaymentDate(paymentMethodData.getSlip().getDate());
                     p.setChequeDate(paymentMethodData.getSlip().getDate());
@@ -385,23 +383,18 @@ public class PaymentService {
                     p.setPolicyNo(paymentMethodData.getEwallet().getReferralNo());
                     p.setReferenceNo(paymentMethodData.getEwallet().getReferenceNo());
                     p.setCreditCompany(paymentMethodData.getEwallet().getInstitution());
-                    p.setPaidValue(paymentMethodData.getEwallet().getTotalValue());
                     p.setComments(paymentMethodData.getEwallet().getComment());
                     break;
                 case PatientDeposit:
-                    double paidValue = paymentMethodData.getPatient_deposit().getTotalValue();
                     PatientDeposit currentDeposit = paymentMethodData.getPatient_deposit().getPatientDepost();
-                    p.setPaidValue(paidValue);
                     patientDepositService.updateBalance(p, currentDeposit);
                     break;
                 case OnlineSettlement:
                     p.setBank(paymentMethodData.getOnlineSettlement().getInstitution());
-                    p.setPaidValue(paymentMethodData.getOnlineSettlement().getTotalValue());
                     p.setPaymentDate(paymentMethodData.getOnlineSettlement().getDate());
                     p.setReferenceNo(paymentMethodData.getOnlineSettlement().getReferenceNo());
                     p.setComments(paymentMethodData.getOnlineSettlement().getComment());
                     break;
-
             }
 
             paymentFacade.create(p);

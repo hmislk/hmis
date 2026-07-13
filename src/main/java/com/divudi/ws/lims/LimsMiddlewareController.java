@@ -167,18 +167,20 @@ public class LimsMiddlewareController {
         String observationUnitCode = observation.optString("observationUnitCode");
         String observationValueStr = observation.optString("observationValue");
         Double observationValueDbl = null;
+        boolean isImageValue = observationValueStr != null && observationValueStr.startsWith("^Image^");
         String issuedDate = observation.optString("issuedDate");
         String password = observation.optString("password");
         String username = observation.optString("username");
 
-        // Convert observationValueStr to Double
-        try {
-            observationValueDbl = Double.valueOf(observationValueStr);
-        } catch (NumberFormatException e) {
-            // // System.out.println("Invalid observation value: " + observationValueStr);
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Invalid observation value: " + observationValueStr)
-                    .build();
+        // Convert observationValueStr to Double (skip for image values)
+        if (!isImageValue) {
+            try {
+                observationValueDbl = Double.valueOf(observationValueStr);
+            } catch (NumberFormatException e) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Invalid observation value: " + observationValueStr)
+                        .build();
+            }
         }
 
         Long sampleIdLong;
@@ -315,13 +317,36 @@ public class LimsMiddlewareController {
                 // // System.out.println("tpr = " + tpr);
 
                 for (PatientReportItemValue priv : tpr.getPatientReportItemValues()) {
-                    // // System.out.println("priv = " + priv);
-                    // // System.out.println("priv.getInvestigationItem().getValueCodeSystem() = " + priv.getInvestigationItem());
-                    if (priv.getInvestigationItem() != null
-                            && priv.getInvestigationItem().getValueCodeSystem() != null
-                            && priv.getInvestigationItem().getValueCodeSystem().equals(observationValueCodingSystem)
-                            && priv.getInvestigationItem().getValueCode() != null
-                            && priv.getInvestigationItem().getValueCode().equals(observationValueCode)) {
+                    if (priv.getInvestigationItem() == null
+                            || priv.getInvestigationItem().getValueCodeSystem() == null
+                            || !priv.getInvestigationItem().getValueCodeSystem().equals(observationValueCodingSystem)
+                            || priv.getInvestigationItem().getValueCode() == null
+                            || !priv.getInvestigationItem().getValueCode().equals(observationValueCode)) {
+                        continue;
+                    }
+
+                    if (isImageValue
+                            && priv.getInvestigationItem().getIxItemType() == InvestigationItemType.ReportImage) {
+                        byte[] imageBytes;
+                        try {
+                            imageBytes = base64TextToByteArray(observationValueStr);
+                        } catch (IllegalArgumentException e) {
+                            return Response.status(Response.Status.BAD_REQUEST)
+                                    .entity("Invalid image observation value: " + observationValueCode)
+                                    .build();
+                        }
+                        priv.setLobValue(observationValueStr);
+                        priv.setBaImage(imageBytes);
+                        String fileType = extractImageTypeFromResult(observationValueStr);
+                        priv.setFileType(fileType);
+                        priv.setFileName(observationValueCode + "_" + sampleId + "." + fileType.toLowerCase());
+                        if (priv.getId() == null) {
+                            patientReportItemValueFacade.create(priv);
+                        } else {
+                            patientReportItemValueFacade.edit(priv);
+                        }
+                        resultAdded = true;
+                    } else if (!isImageValue) {
                         priv.setStrValue(observationValueStr);
                         priv.setDoubleValue(observationValueDbl);
                         resultAdded = true;
@@ -1008,6 +1033,33 @@ public class LimsMiddlewareController {
                 }
             }
 
+            // Skip this investigation if none of its report items match the incoming test code.
+            // This prevents creating reports for unrelated tests that share the same sample
+            // (e.g., Blood Picture should not get a report when only FBC results arrive).
+            // Checks all dynamic item types consistent with PatientReportBean.addPatientReportItemValuesForReport()
+            // and excludes retired items to avoid stale codes causing false matches.
+            boolean hasMatchingItem = false;
+            for (InvestigationItem ii : ix.getReportItems()) {
+                if (ii.isRetired()) {
+                    continue;
+                }
+                if (ii.getTest() != null
+                        && (ii.getIxItemType() == InvestigationItemType.Value
+                        || ii.getIxItemType() == InvestigationItemType.ReportImage)) {
+                    String codeFromDb = ii.getResultCode();
+                    if (codeFromDb == null || codeFromDb.trim().isEmpty()) {
+                        codeFromDb = ii.getTest().getCode();
+                    }
+                    if (codeFromDb != null && codeFromDb.equalsIgnoreCase(testCodeFromUploadedDataBundle)) {
+                        hasMatchingItem = true;
+                        break;
+                    }
+                }
+            }
+            if (!hasMatchingItem) {
+                continue;
+            }
+
             List<PatientReport> prs = new ArrayList<>();
             PatientReport tpr;
             tpr = getUnapprovedPatientReport(pi);
@@ -1156,26 +1208,9 @@ public class LimsMiddlewareController {
                                     temFlag = true;
                                     valueToSave = true;
                                 } else {
-                                    // // System.out.println("3 result = " + result);
-                                    priv.setStrValue(result);
-
-                                    Double dbl = 0d;
-                                    try {
-                                        dbl = Double.parseDouble(result);
-                                        // // System.out.println("3 dbl = " + dbl);
-                                    } catch (Exception e) {
-                                    }
-                                    priv.setDoubleValue(dbl);
-                                    // // System.out.println("3 priv.getDoubleValue() = " + priv.getDoubleValue());
-                                    if (priv.getId() == null) {
-                                        // // System.out.println("3 new priv created = " + dbl);
-                                        patientReportItemValueFacade.create(priv);
-                                    } else {
-                                        // // System.out.println("3 new priv Updates = " + dbl);
-                                        patientReportItemValueFacade.edit(priv);
-                                    }
-                                    temFlag = true;
-                                    valueToSave = true;
+                                    // Both ps.investigationComponant and priv.sampleComponent are set
+                                    // but they don't match — this row belongs to a different time point.
+                                    // Skip it; the correct row will be handled in a later iteration.
                                 }
                             }
 

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -141,8 +141,8 @@
                                         <div class="d-flex gap-2">
                                             <p:commandButton 
                                                 ajax="false" icon="fa-solid fa-file-invoice" 
-                                                title="View Bill" action="/theater/inward_bill_surgery"  >
-                                                <f:setPropertyActionListener value="#{bb}" target="#{surgeryBillController.batchBill}"/>
+                                                title="View Bill" action="/theater/patient_surgery"  >
+                                                <f:setPropertyActionListener value="#{bb}" target="#{surgeryBillController.surgeryBill}"/>
                                             </p:commandButton>
                                             <p:commandButton 
                                                 ajax="false" title="Cancel" icon="fa-solid fa-ban" 

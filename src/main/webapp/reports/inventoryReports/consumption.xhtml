@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -160,7 +160,7 @@
                             <p:autoComplete value="#{pharmacyController.item}"
                                             inputStyleClass="w-100"
                                             class="w-100"
-                                            completeMethod="#{itemController.completeAmpItemAll}"
+                                            minQueryLength="3" queryDelay="300" completeMethod="#{itemController.completeAmpItemAll}"
                                             var="item" itemValue="#{item}" itemLabel="#{item.name}"
                                             forceSelection="true">
                                 <p:column headerText="Item">
@@ -208,8 +208,11 @@
                         <div class="d-flex align-items-center mt-3">
                             <p:commandButton class="ui-button-warning mx-1"
                                              icon="fas fa-cogs"
-                                             ajax="false"
                                              value="Process"
+                                             widgetVar="wBtnProcess"
+                                             update="@form :growl"
+                                             onstart="PF('wBtnProcess').disable()"
+                                             oncomplete="PF('wBtnProcess').enable()"
                                              action="#{pharmacyController.createConsumptionReportTable()}">
                             </p:commandButton>
                             <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
@@ -333,9 +336,13 @@
                             <ui:repeat value="#{pharmacyController.departmentTotals.entrySet()}" var="map"
                                        varStatus="status">
                                 <p:dataTable id="tblSummary" value="#{map.value.entrySet()}" var="entry"
-                                             rowIndexVar="n" rowKey="#{entry.key}" rows="10"
-                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">
+                                             rowIndexVar="n" rowKey="#{entry.key}" 
+                                             paginator="true"
+                                             paginatorPosition="bottom"
+                                             rows="10"
+                                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                             rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
                                     <f:facet name="header">
                                         <h:outputLabel value="Department" rendered="#{status.first}"/>
@@ -518,8 +525,8 @@
                                     width="4em"
                                     style="text-align: right;"
                                     filterMatchMode="contains"
-                                    sortBy="#{b.bill.billFinanceDetails.totalPurchaseValue}">
-                                    <h:outputText value="#{b.bill.billFinanceDetails.totalPurchaseValue}">
+                                    sortBy="#{b.consumptionPurchaseValue}">
+                                    <h:outputText value="#{b.consumptionPurchaseValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                     <f:facet name="footer">
@@ -533,8 +540,8 @@
                                     width="4em"
                                     style="text-align: right;"
                                     filterMatchMode="contains"
-                                    sortBy="#{b.bill.billFinanceDetails.totalCostValue}">
-                                    <h:outputText value="#{b.bill.billFinanceDetails.totalCostValue}">
+                                    sortBy="#{b.consumptionCostValue}">
+                                    <h:outputText value="#{b.consumptionCostValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                     <f:facet name="footer">
@@ -548,8 +555,8 @@
                                     width="4em"
                                     style="text-align: right;"
                                     filterMatchMode="contains"
-                                    sortBy="#{b.bill.billFinanceDetails.totalRetailSaleValue}">
-                                    <h:outputText value="#{b.bill.billFinanceDetails.totalRetailSaleValue}">
+                                    sortBy="#{b.consumptionRetailValue}">
+                                    <h:outputText value="#{b.consumptionRetailValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                     <f:facet name="footer">
@@ -658,9 +665,9 @@
                                     width="4em"
                                     style="text-align: right; padding-right: 20px;"
                                     filterMatchMode="contains"
-                                    sortBy="#{i.billItem.qty}"
-                                    filterBy="#{i.billItem.qty}">
-                                    <p:outputLabel value="#{i.billItem.qty}"/>
+                                    sortBy="#{i.consumptionQty}"
+                                    filterBy="#{i.consumptionQty}">
+                                    <p:outputLabel value="#{i.consumptionQty}"/>
                                 </p:column>
 
                                 <p:column headerText="Status/Links" width="10em" exportable="false">
@@ -732,9 +739,8 @@
                                     width="6em"
                                     style="text-align: right;"
                                     filterMatchMode="contains"
-                                    sortBy="#{i.billItem.billItemFinanceDetails.valueAtPurchaseRate}">
-                                    <p:outputLabel
-                                        value="#{i.billItem.billItemFinanceDetails.valueAtPurchaseRate}">
+                                    sortBy="#{i.consumptionPurchaseValue}">
+                                    <p:outputLabel value="#{i.consumptionPurchaseValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                     <f:facet name="footer">
@@ -759,8 +765,8 @@
                                     width="6em"
                                     style="text-align: right;"
                                     filterMatchMode="contains"
-                                    sortBy="#{i.billItem.billItemFinanceDetails.valueAtRetailRate}">
-                                    <p:outputLabel value="#{i.billItem.billItemFinanceDetails.valueAtRetailRate}">
+                                    sortBy="#{i.consumptionRetailValue}">
+                                    <p:outputLabel value="#{i.consumptionRetailValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                     <f:facet name="footer">
@@ -785,8 +791,8 @@
                                     width="6em"
                                     style="text-align: right;"
                                     filterMatchMode="contains"
-                                    sortBy="#{i.billItem.billItemFinanceDetails.valueAtCostRate}">
-                                    <p:outputLabel value="#{i.billItem.billItemFinanceDetails.valueAtCostRate}">
+                                    sortBy="#{i.consumptionCostValue}">
+                                    <p:outputLabel value="#{i.consumptionCostValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                     <f:facet name="footer">
@@ -829,9 +835,12 @@
                                              var="entry"
                                              rowIndexVar="n"
                                              rowKey="#{entry.key}"
+                                             paginator="true"
+                                             paginatorPosition="bottom"
                                              rows="10"
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}">
+                                             currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
+                                             rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
                                     <p:columnGroup type="header">
                                         <p:row style="background: #e5e9ec" rendered="#{status.first}">
                                             <p:column headerText="Department Unit"

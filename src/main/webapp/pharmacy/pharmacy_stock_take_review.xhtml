@@ -10,7 +10,7 @@
     <h:body>
         <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
             <ui:define name="subcontent">
-                <h:form>
+                <h:form id="frmReviewForm">
                     <!-- Print Section - shown after approval -->
                     <h:panelGroup rendered="#{pharmacyStockTakeController.printPreview}">
                         <p:panel id="printSection">
@@ -43,6 +43,13 @@
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{not empty pharmacyStockTakeController.physicalCountBill}">
+                                    <p:blockUI block="frmReviewForm" trigger="btnApprove">
+                                        <div style="text-align:center; padding: 20px; color: white;">
+                                            <i class="fa fa-spinner fa-spin fa-3x" style="margin-bottom: 12px;"></i>
+                                            <div style="font-size: 1.1em; font-weight: bold;">Approving and posting stock adjustments, please wait...</div>
+                                            <div style="font-size: 0.9em; margin-top: 6px;">This may take several minutes for large files.</div>
+                                        </div>
+                                    </p:blockUI>
                                     <p:panelGrid columns="2" styleClass="ui-panelgrid-blank" columnClasses="text-right pr-3 font-weight-bold,text-left">
                                         <h:outputText value="Institution:"/>
                                         <h:outputText value="#{pharmacyStockTakeController.physicalCountBill.institution.name}"/>
@@ -58,12 +65,14 @@
                                         <p:inputTextarea class="w-100" value="#{pharmacyStockTakeController.comments}" ></p:inputTextarea>
 
                                         <p:spacer ></p:spacer>
-                                        <p:commandButton value="Approve and Make Stock Adjustments" icon="fa fa-check"
+                                        <p:commandButton id="btnApprove"
+                                                         value="Approve and Make Stock Adjustments" icon="fa fa-check"
                                                          styleClass="ui-button-warning ui-button-lg"
-                                                         ajax="false"
                                                          rendered="#{webUserController.hasPrivilege('PharmacyStockTakeApprove')}"
                                                          onclick="return confirm('Approve this physical count and post stock adjustments?');"
-                                                         action="#{pharmacyStockTakeController.confirmUploadAndApprove}"/>
+                                                         action="#{pharmacyStockTakeController.confirmUploadAndApprove}"
+                                                         update="@form :growl"
+                                                         timeout="600000"/>
                                     </p:panelGrid>
 
                                     <p:separator/>

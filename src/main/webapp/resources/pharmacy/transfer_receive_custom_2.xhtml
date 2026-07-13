@@ -90,7 +90,7 @@
 
             <div >
 
-                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont compact-table" value="#{cc.attrs.bill.billItems}" sortBy="#{bip.searialNo}" var="bip"
+                <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont compact-table" value="#{cc.attrs.bill.activeBillItems}" sortBy="#{bip.searialNo}" var="bip"
                              style="line-height: 1.1;">
 
                     <p:column style="text-align: left;">
@@ -137,7 +137,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
                         </f:facet>
-                        <h:outputLabel value="#{0-bip.qty}"/>
+                        <h:outputLabel value="#{bip.qty}"/>
                     </p:column>                    
 
                     <p:column style="text-align: right;"
@@ -160,7 +160,7 @@
                             </p:column>
                             <p:column  style="text-align: right;">
                                 <f:facet name="footer">
-                                    <h:outputLabel value="#{-cc.attrs.bill.netTotal}">
+                                    <h:outputLabel value="#{cc.attrs.bill.netTotal}">
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                 </f:facet>

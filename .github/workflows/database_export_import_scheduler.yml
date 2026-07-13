@@ -21,6 +21,8 @@ on:
         options:
           - QA1
           - QA2
+          - QA3
+          - QA4
       date:
         description: 'Select Scheduling Date (YYYY-MM-DD)'
         required: true
@@ -62,7 +64,7 @@ jobs:
           FROM_ENV: ${{ inputs.fromEnv }}
           TO_ENV: ${{ inputs.toEnv }}
           DATE: ${{ inputs.date }}
-          RECIPIENT_EMAILS: '["imeshranawella00@gmail.com", "geeth.gsm@gmail.com", "deshanipubudu0415@gmail.com", "iranimadushika28@gmail.com"]'
+          RECIPIENT_EMAILS: '["imeshranawella00@gmail.com", "geeth.gsm@gmail.com", "deshanipubudu0415@gmail.com", "iranimadushika28@gmail.com", "pwathsara@gmail.com"]'
         run: |
           echo "$SERVER_SSH_KEY" > private_key.pem
           chmod 600 private_key.pem
@@ -88,7 +90,7 @@ jobs:
           FROM_ENV: ${{ inputs.fromEnv }}
           TO_ENV: ${{ inputs.toEnv }}
           DATE: ${{ inputs.date }}
-          RECIPIENT_EMAILS: '["imeshranawella00@gmail.com", "geeth.gsm@gmail.com", "deshanipubudu0415@gmail.com", "iranimadushika28@gmail.com"]'
+          RECIPIENT_EMAILS: '["imeshranawella00@gmail.com", "geeth.gsm@gmail.com", "deshanipubudu0415@gmail.com", "iranimadushika28@gmail.com", "pwathsara@gmail.com"]'
         run: |
           echo "$SERVER_SSH_KEY" > private_key.pem
           chmod 600 private_key.pem

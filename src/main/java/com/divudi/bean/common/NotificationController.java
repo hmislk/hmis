@@ -15,6 +15,7 @@ import com.divudi.core.data.TriggerType;
 import com.divudi.core.data.TriggerTypeParent;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Notification;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.facade.NotificationFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -110,6 +111,9 @@ public class NotificationController implements Serializable {
             case PHARMACY_ORDER_APPROVAL:
                 createPharmacyPurcheseOrderApprovelNotifications(bill);
                 break;
+            case FUND_TRANSFER_REQUEST:
+                createFloatTransferRequestNotifications(bill);
+                break;
             default:
                 throw new AssertionError();
         }
@@ -123,7 +127,38 @@ public class NotificationController implements Serializable {
             case "Discharge":
                 createInwardRoomDischargeNotifications(pr);
                 break;
+            case "Admit":
+                createInwardRoomAdmitNotifications(pr);
+                break;
+            case "Change":
+                createInwardRoomChangeNotifications(pr);
+                break;
+            case "CancelDischarge":
+                createInwardRoomDischargeCancelNotifications(pr);
+                break;
 
+            default:
+                throw new AssertionError();
+        }
+    }
+
+    public void createNotification(PatientEncounter pe, String action) {
+        if (pe == null || action == null) {
+            return;
+        }
+        switch (action) {
+            case "ClinicalDischarge":
+                createInwardClinicalDischargeNotifications(pe);
+                break;
+            case "FinalDischarge":
+                createInwardFinalDischargeNotifications(pe);
+                break;
+            case "NursingDischarge":
+                createInwardNursingDischargeNotifications(pe);
+                break;
+            case "PhysicalDischarge":
+                createInwardPhysicalDischargeNotifications(pe);
+                break;
             default:
                 throw new AssertionError();
         }
@@ -131,22 +166,164 @@ public class NotificationController implements Serializable {
 
     private void createInwardRoomDischargeNotifications(PatientRoom pr) {
         Date date = new Date();
-        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_DISCHARGED)) {
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_ROOM_DISCHARGED)) {
             Notification nn = new Notification();
             nn.setCreatedAt(date);
             nn.setPatientRoom(pr);
             nn.setTriggerType(tt);
             nn.setCreater(sessionController.getLoggedUser());
-            String msg = "You Have a Discharge Notification From " + pr.getRoomFacilityCharge().getName();
+            String roomName = pr.getRoomFacilityCharge() != null ? pr.getRoomFacilityCharge().getName() : "Unknown Room";
+            String msg = "You Have a Discharge Notification From " + roomName;
             nn.setMessage(msg);
             getFacade().create(nn);
             userNotificationController.createUserNotifications(nn);
         }
     }
 
+    private void createInwardRoomAdmitNotifications(PatientRoom pr) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_ROOM_ADDED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientRoom(pr);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            String roomName = pr.getRoomFacilityCharge() != null ? pr.getRoomFacilityCharge().getName() : "Unknown Room";
+            String patientName = "";
+            if (pr.getPatientEncounter() != null && pr.getPatientEncounter().getPatient() != null
+                    && pr.getPatientEncounter().getPatient().getPerson() != null) {
+                patientName = pr.getPatientEncounter().getPatient().getPerson().getNameWithTitle();
+            }
+            String msg = "Patient " + patientName + " admitted to " + roomName;
+            nn.setMessage(msg);
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createInwardRoomChangeNotifications(PatientRoom pr) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_ROOM_CHANGED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientRoom(pr);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            String roomName = pr.getRoomFacilityCharge() != null ? pr.getRoomFacilityCharge().getName() : "Unknown Room";
+            String msg = "Patient moved to " + roomName;
+            if (pr.getPatientEncounter() != null && pr.getPatientEncounter().getBhtNo() != null) {
+                msg = msg + " (BHT: " + pr.getPatientEncounter().getBhtNo() + ")";
+            }
+            nn.setMessage(msg);
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createInwardRoomDischargeCancelNotifications(PatientRoom pr) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_ROOM_DISCHARGED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientRoom(pr);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            String roomName = pr.getRoomFacilityCharge() != null ? pr.getRoomFacilityCharge().getName() : "Unknown Room";
+            String msg = "Room Discharge Cancelled for " + roomName;
+            nn.setMessage(msg);
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createInwardClinicalDischargeNotifications(PatientEncounter pe) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_CLINICAL_DISCHARGED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientEncounter(pe);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createDischargeMessage("Message Template for Inward Clinical Discharge Notification",
+                    "Patient clinically discharged", pe));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createInwardFinalDischargeNotifications(PatientEncounter pe) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_DISCHARGED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientEncounter(pe);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createDischargeMessage("Message Template for Inward Final Discharge Notification",
+                    "Patient discharged from the hospital", pe));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createInwardNursingDischargeNotifications(PatientEncounter pe) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_NURSING_DISCHARGED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientEncounter(pe);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createDischargeMessage("Message Template for Inward Nursing Discharge Notification",
+                    "Patient nursing discharge confirmed", pe));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createInwardPhysicalDischargeNotifications(PatientEncounter pe) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_PHYSICAL_DISCHARGED)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setPatientEncounter(pe);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createDischargeMessage("Message Template for Inward Physical Discharge Notification",
+                    "Patient has physically left the hospital", pe));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private String createDischargeMessage(String templateKey, String defaultMessage, PatientEncounter pe) {
+        String message = configOptionController.getLongTextValueByKey(templateKey, OptionScope.APPLICATION, null, null, null);
+        if (message == null || message.isEmpty()) {
+            message = defaultMessage;
+        }
+        if (pe != null && pe.getBhtNo() != null) {
+            message = message + " (BHT: " + pe.getBhtNo() + ")";
+        }
+        return message;
+    }
+
     private void createPharmacyTransferRequestNotifications(Bill bill) {
         Date date = new Date();
         for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.TRANSFER_REQUEST)) {
+            Notification nn = new Notification();
+            nn.setCreatedAt(date);
+            nn.setBill(bill);
+            nn.setTriggerType(tt);
+            nn.setCreater(sessionController.getLoggedUser());
+            nn.setMessage(createTemplateForNotificationMessage(bill.getBillTypeAtomic()));
+            getFacade().create(nn);
+            userNotificationController.createUserNotifications(nn);
+        }
+    }
+
+    private void createFloatTransferRequestNotifications(Bill bill) {
+        Date date = new Date();
+        for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.FLOAT_TRANSFER_REQUEST)) {
             Notification nn = new Notification();
             nn.setCreatedAt(date);
             nn.setBill(bill);
@@ -226,6 +403,10 @@ public class NotificationController implements Serializable {
             message = configOptionController.getLongTextValueByKey("Message Template for OPD Bill Cancellation During Batch Bill Cancellation Notification", OptionScope.APPLICATION, null, null, null);
         }
 
+        if (bt == BillTypeAtomic.FUND_TRANSFER_REQUEST) {
+            message = configOptionController.getLongTextValueByKey("Message Template for Float Transfer Request Notification", OptionScope.APPLICATION, null, null, null);
+        }
+
         if (message == null || message == "" || message.isEmpty()) {
             message = "New Request from ";
         }
@@ -256,20 +437,14 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String temId = bill.getId() + "";
-        temId = securityController.encrypt(temId);
+        String token = securityController.createBillToken(bill.getId(), c.getTime(), securityController.obtainHmacSigningKey(sessionController));
+        String encodedToken;
         try {
-            temId = URLEncoder.encode(temId, "UTF-8");
+            encodedToken = URLEncoder.encode(token, "UTF-8");
         } catch (UnsupportedEncodingException ignored) {
+            encodedToken = token;
         }
-
-        String ed = CommonFunctions.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
-        ed = securityController.encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
-        } catch (UnsupportedEncodingException ignored) {
-        }
-        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + encodedToken;
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"
@@ -332,20 +507,14 @@ public class NotificationController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, 1);
 
-        String temId = bill.getId() + "";
-        temId = securityController.encrypt(temId);
+        String token2 = securityController.createBillToken(bill.getId(), c.getTime(), securityController.obtainHmacSigningKey(sessionController));
+        String encodedToken2;
         try {
-            temId = URLEncoder.encode(temId, "UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-        }
-
-        String ed = CommonFunctions.getDateFormat(c.getTime(), sessionController.getApplicationPreference().getLongDateFormat());
-        ed = securityController.encrypt(ed);
-        try {
-            ed = URLEncoder.encode(ed, "UTF-8");
+            encodedToken2 = URLEncoder.encode(token2, "UTF-8");
         } catch (UnsupportedEncodingException ignored) {
+            encodedToken2 = token2;
         }
-        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + temId + "&user=" + ed;
+        String url = CommonFunctions.getBaseUrl() + "faces/requests/bill.xhtml?id=" + encodedToken2;
         messageBody += "<p>"
                 + "Your Report is attached"
                 + "<br/>"

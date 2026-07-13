@@ -9,6 +9,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.cashTransaction.CashBookEntryController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
@@ -46,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -92,6 +94,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     private PaymentSchemeController paymentSchemeController;
+    @Inject
+    private FinancialTransactionController financialTransactionController;
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -105,7 +109,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
     private double total;
     private Patient patient;
     private PaymentMethodData paymentMethodData;
-    
+    /** Net total of the inward final bill; populated by bhtListener for display on the co-payment page. */
+    private double finalBillTotal;
+
     // </editor-fold>
 
     public PaymentMethod[] getPaymentMethods() {
@@ -117,11 +123,84 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             JsfUtil.addErrorMessage("Select BHT");
             return;
         }
+        
+        paymentListener();
+
+    }
+    
+    public void paymentListener(){
         due = getFinalBillDue();
+        finalBillTotal = getFinalBillNetTotal();
         patient = current.getPatientEncounter().getPatient();
         paymentMethod = null;
         paymentMethodData = new PaymentMethodData();
+    }
 
+    /** Navigate to the inward patient co-payment collection page, requiring an active shift. */
+    public String navigateToInwardPatientCopayment() {
+        makeNull();
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            // Use Flash scope to preserve error message across redirect
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        return "/credit/inward_patient_copay_payment?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to the inward deposit payment page, requiring an active shift.
+     * If the logged user has no open shift start fund bill, show an error and
+     * send them to the cashier index to start a shift first.
+     */
+    public String navigateToInwardDepositPayment() {
+        makeNull();
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            // Use Flash scope to preserve error message across redirect
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        return "/inward/inward_bill_payment?faces-redirect=true";
+    }
+
+    /** CC amount committed against this admission (sum of CC commitment bills created at finalization). */
+    public double getCcCommittedAmount() {
+        if (current == null || current.getPatientEncounter() == null) {
+            return 0.0;
+        }
+        return current.getPatientEncounter().getCreditUsedAmount();
+    }
+
+    /** CC amount already received from credit companies for this admission. */
+    public double getCcPaidAmount() {
+        if (current == null || current.getPatientEncounter() == null) {
+            return 0.0;
+        }
+        return current.getPatientEncounter().getCreditPaidAmount();
+    }
+
+    public double getFinalBillTotal() {
+        return finalBillTotal;
+    }
+
+    public void setFinalBillTotal(double finalBillTotal) {
+        this.finalBillTotal = finalBillTotal;
+    }
+
+    /** Fetch only the net total of the final bill (no due calculation). */
+    private double getFinalBillNetTotal() {
+        String sql = "Select b From BilledBill b where"
+                + " b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.billType=:btp "
+                + " and b.patientEncounter=:pe "
+                + " order by b.id desc";
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardFinalBill);
+        hm.put("pe", getCurrent().getPatientEncounter());
+        Bill b = getBilledBillFacade().findFirstByJpql(sql, hm);
+        return b != null ? b.getNetTotal() : 0.0;
     }
 
     public String navigateToInpationDashbord() {
@@ -149,16 +228,11 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         if (b == null) {
             return 0;
         }
-
-        return b.getNetTotal() - (b.getPaidAmount() + getCurrent().getPatientEncounter().getCreditPaidAmount());
-
-//        double billValue = Math.abs(b.getNetTotal());
-//        double paidByPatient = Math.abs(b.getPaidAmount());
-//        double creditUsedAmount = Math.abs(getCurrent().getPatientEncounter().getCreditUsedAmount());
-//        double creditPaidAmount = Math.abs(getCurrent().getPatientEncounter().getCreditPaidAmount());
-//        double netCredit = creditUsedAmount - creditPaidAmount;
-//
-//        return billValue - (paidByPatient + netCredit);
+        // Patient portion = bill total minus the CC committed amount (not paid yet).
+        // This correctly shows patient due before the company has actually remitted.
+        PatientEncounter pe = getCurrent().getPatientEncounter();
+        double patientPortion = Math.max(0.0, b.getNetTotal() - pe.getCreditUsedAmount());
+        return Math.max(0.0, patientPortion - b.getPaidAmount());
     }
 
     private boolean errorCheck() {
@@ -540,6 +614,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
             finalBillDeptId = pe.getFinalBill().getDeptId();
         }
 
+        boolean showInwardDepositComment = configOptionApplicationController.getBooleanValueByKey("Show Comment on Inward Deposit Bill", false);
+
         String output;
         output = template
                 .replace("{dept_id}", bill.getDeptId() != null ? String.valueOf(bill.getDeptId()) : "")
@@ -575,7 +651,9 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 .replace("{bill_date}", bill.getBillDate() != null ? formatDate(bill.getBillDate(), sessionController) : "")
                 .replace("{bill_time}", bill.getBillTime() != null ? formatTime(bill.getBillTime(), sessionController) : "")
                 .replace("{time_of_admission}", pe.getDateOfAdmission() != null ? formatDate(pe.getDateOfAdmission(), sessionController) : "")
-                .replace("{time_of_discharge}", pe.getDateOfDischarge() != null ? formatTime(pe.getDateOfDischarge(), sessionController) : "");
+                .replace("{time_of_discharge}", pe.getDateOfDischarge() != null ? formatTime(pe.getDateOfDischarge(), sessionController) : "")
+                .replace("{comment}", showInwardDepositComment && bill.getComments() != null ? bill.getComments() : "")
+                .replace("{bill_comment}", showInwardDepositComment && bill.getComments() != null ? bill.getComments() : "");
 
         return output;
     }
@@ -705,6 +783,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                     }
                     PatientDeposit pd = patientDepositService.getDepositOfThePatient(patient, sessionController.getDepartment());
                     paymentMethodData.getPatient_deposit().setPatientDepost(pd);
+                    paymentMethodData.getPatient_deposit().setTotalValue(0.0);
                 }
             }
         }
@@ -782,6 +861,8 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         comment = null;
         paymentMethod = null;
         total = 0.0;
+        finalBillTotal = 0.0;
+        due = 0.0;
     }
 
     private void saveBill() {
@@ -794,6 +875,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());
+        getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
 
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
@@ -22,7 +22,7 @@
                                 <h:outputLabel value="Goods Receive with Save/Approve" />
                             </div>
                             <div class="text-end col-9">
-          /                      <p:commandButton
+                                <p:commandButton
                                     ajax="false"
                                     action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
                                     actionListener="#{searchController.makeListNull()}"
@@ -235,9 +235,27 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:inputText>
                                 </p:column>
+                                <p:column
+                                    headerText="Wholesale Rate"
+                                    width="8em"
+                                    styleClass="text-end">
+                                    <p:inputText
+                                        autocomplete="off"
+                                        id="wRate"
+                                        class="text-end text-primary w-100"
+                                        value="#{bi.billItemFinanceDetails.wholesaleRate}"
+                                        onfocus="this.select()">
+                                        <f:ajax
+                                            event="blur"
+                                            execute="wRate"
+                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total profMargin diff :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
+                                            listener="#{grnCostingController.wholesaleRateChangedListner(bi)}"></f:ajax>
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:inputText>
+                                </p:column>
 
-                                <p:column 
-                                    headerText="Line Net Total" 
+                                <p:column
+                                    headerText="Line Net Total"
                                     width="8em"
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
                                     <h:panelGroup id="total">
@@ -338,7 +356,7 @@
                                                 inputStyleClass="w-100"
                                                 value="#{grnCostingController.currentExpense.item}"
                                                 forceSelection="true"
-                                                completeMethod="#{itemController.completeExpenseItem}"
+                                                minQueryLength="3" queryDelay="300" completeMethod="#{itemController.completeExpenseItem}"
                                                 var="ex"
                                                 itemLabel="#{ex.name}"
                                                 itemValue="#{ex}">
@@ -450,7 +468,8 @@
                                         class="ui-button-success mx-1"
                                         icon="pi pi-save"
                                         ajax="false"
-                                        rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnSave')}">
+                                        rendered="#{!grnCostingController.currentGrnBillPre.completed}"
+                                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnSave')}">
                                     </p:commandButton>
                                     <p:commandButton
                                         value="Finalize"
@@ -459,7 +478,8 @@
                                         icon="fas fa-flag"
                                         ajax="false"
                                         onclick="return confirm('Are you sure you want to finalize this GRN? This action cannot be undone.');"
-                                        rendered="#{!grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnFinalize')}">
+                                        rendered="#{!grnCostingController.currentGrnBillPre.completed}"
+                                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnFinalize')}">
                                     </p:commandButton>
                                     <p:commandButton
                                         value="Approve"
@@ -468,7 +488,8 @@
                                         icon="fas fa-check"
                                         ajax="false"
                                         onclick="return confirm('Are you sure you want to approve this GRN? This action cannot be undone.');"
-                                        rendered="#{grnCostingController.currentGrnBillPre.completed and webUserController.hasPrivilege('PharmacyGrnApprove')}">
+                                        rendered="#{grnCostingController.currentGrnBillPre.completed}"
+                                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnApprove')}">
                                     </p:commandButton>
                                 </f:facet>
 

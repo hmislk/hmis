@@ -173,7 +173,6 @@
                                 <h:outputLabel value="Visit Type" for="type" class="m-3"/>
                             </h:panelGroup>
                             <p:selectOneMenu id="type" class="w-100 " value="#{reportController.reportType}">
-                                <f:selectItem itemValue="Any" itemLabel="Any" ></f:selectItem>
                                 <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)" />
                                 <f:selectItem itemValue="IP" itemLabel="In Patients (IP)" />
                             </p:selectOneMenu>
@@ -442,7 +441,7 @@
                                                 <!-- BHT Subtotal Row -->
                                                 <tr style="background-color: #fff3cd; font-weight: bold;">
                                                     <td colspan="5" style="text-align: right;">
-                                                        <h:outputText value="#{reportController.reportType eq 'OP' ? 'Bill Total:' : 'BHT Total:'}" />
+                                                        <h:outputText value="#{reportController.reportType eq 'OP' ? 'Total:' : 'BHT Total:'}" />
                                                     </td>
                                                     <td></td>
                                                     <td></td>

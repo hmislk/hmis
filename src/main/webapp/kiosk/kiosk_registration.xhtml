@@ -1,0 +1,409 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <h:head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>Patient Self-Registration — Kiosk</title>
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css"/>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+              integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous"/>
+
+        <style>
+            body {
+                background: #f0f4f8;
+                font-family: 'Segoe UI', system-ui, sans-serif;
+                min-height: 100vh;
+                display: flex;
+                align-items: flex-start;
+                justify-content: center;
+                padding: 2rem 1rem;
+            }
+            .kiosk-card {
+                background: #fff;
+                border-radius: 1.5rem;
+                box-shadow: 0 8px 40px rgba(0,0,0,0.10);
+                padding: 2.5rem 2rem;
+                width: 100%;
+                max-width: 600px;
+            }
+            .kiosk-header {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+            .kiosk-header .icon-wrap {
+                width: 72px;
+                height: 72px;
+                border-radius: 50%;
+                background: #e8f0fe;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 1rem;
+                font-size: 2rem;
+                color: #1967d2;
+            }
+            .kiosk-header h1 {
+                font-size: 1.6rem;
+                font-weight: 700;
+                color: #1a1a2e;
+                margin: 0 0 0.25rem;
+            }
+            .kiosk-header p {
+                color: #6b7280;
+                font-size: 0.95rem;
+                margin: 0;
+            }
+            .field-label {
+                font-size: 0.85rem;
+                font-weight: 600;
+                color: #374151;
+                margin-bottom: 0.35rem;
+                display: block;
+            }
+            .field-label .req {
+                color: #dc2626;
+                margin-left: 2px;
+            }
+            .field-group {
+                margin-bottom: 1.1rem;
+            }
+            .field-wrap {
+                position: relative;
+                display: flex;
+                align-items: center;
+            }
+            .f-icon {
+                position: absolute;
+                left: 0.85rem;
+                color: #9ca3af;
+                pointer-events: none;
+                z-index: 1;
+            }
+            .field-wrap input,
+            .field-wrap .ui-inputfield,
+            .field-wrap select {
+                padding-left: 2.4rem !important;
+            }
+            .kiosk-divider {
+                border: none;
+                border-top: 1px solid #e5e7eb;
+                margin: 1.5rem 0;
+            }
+            .kiosk-btn {
+                width: 100%;
+                padding: 0.85rem;
+                font-size: 1.05rem;
+                font-weight: 600;
+                border-radius: 0.75rem;
+                margin-bottom: 0.75rem;
+            }
+            .kiosk-btn-secondary {
+                background: transparent;
+                border: 1.5px solid #d1d5db;
+                color: #374151;
+            }
+            .patient-card {
+                border: 1.5px solid #e5e7eb;
+                border-radius: 0.85rem;
+                padding: 1rem 1.25rem;
+                margin-bottom: 0.75rem;
+                cursor: pointer;
+                transition: border-color 0.15s, box-shadow 0.15s;
+            }
+            .patient-card:hover {
+                border-color: #1967d2;
+                box-shadow: 0 2px 12px rgba(25,103,210,0.10);
+            }
+            .patient-card .pt-name {
+                font-weight: 600;
+                font-size: 1rem;
+                color: #1a1a2e;
+            }
+            .patient-card .pt-meta {
+                font-size: 0.82rem;
+                color: #6b7280;
+                margin-top: 0.15rem;
+            }
+            .done-icon {
+                width: 88px;
+                height: 88px;
+                border-radius: 50%;
+                background: #d1fae5;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 1.25rem;
+                font-size: 2.5rem;
+                color: #059669;
+            }
+            .age-dob-row {
+                display: flex;
+                gap: 0.5rem;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+            .age-input-wrap {
+                display: flex;
+                align-items: center;
+                gap: 0.3rem;
+            }
+            .age-input {
+                width: 60px;
+                text-align: center;
+            }
+            .age-unit {
+                font-size: 0.78rem;
+                color: #9ca3af;
+                white-space: nowrap;
+            }
+        </style>
+    </h:head>
+    <h:body>
+        <h:form id="form">
+            <p:growl id="globalMessages" showDetail="true" life="5000"/>
+
+            <div class="kiosk-card">
+
+                <!-- Step 1: Search by Phone -->
+                <h:panelGroup id="searchPanel" rendered="#{kioskController.showSearch}" layout="block">
+                    <div class="kiosk-header">
+                        <div class="icon-wrap"><i class="fas fa-hospital-user"/></div>
+                        <h1>Patient Self-Registration</h1>
+                        <p>Enter your mobile number to get started</p>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Mobile Number <span class="req">*</span></label>
+                        <div class="field-wrap">
+                            <i class="fas fa-phone f-icon"/>
+                            <p:inputText id="searchPhone"
+                                         value="#{kioskController.searchPhone}"
+                                         placeholder="e.g. 0771234567"
+                                         styleClass="form-control"
+                                         style="padding-left:2.4rem"
+                                         maxlength="15"/>
+                        </div>
+                    </div>
+
+                    <p:commandButton value="Search"
+                                     icon="fas fa-search"
+                                     action="#{kioskController.searchByPhone}"
+                                     update="form"
+                                     styleClass="kiosk-btn ui-button-primary"/>
+                </h:panelGroup>
+
+                <!-- Step 2: Search Results -->
+                <h:panelGroup id="resultsPanel" rendered="#{kioskController.showResults}" layout="block">
+                    <div class="kiosk-header">
+                        <div class="icon-wrap"><i class="fas fa-users"/></div>
+                        <h1>Select Your Profile</h1>
+                        <p>We found #{empty kioskController.searchResults ? 'no' : kioskController.searchResults.size()} profile(s) for #{kioskController.searchPhone}</p>
+                    </div>
+
+                    <h:panelGroup rendered="#{not empty kioskController.searchResults}" layout="block">
+                        <ui:repeat value="#{kioskController.searchResults}" var="pt">
+                            <div class="patient-card" style="display:flex;align-items:center;justify-content:space-between">
+                                <div>
+                                    <div class="pt-name">
+                                        <h:outputText value="#{pt.person.title.label} #{pt.person.name}"/>
+                                    </div>
+                                    <div class="pt-meta">
+                                        <h:outputText value="NIC: #{pt.person.nic}" rendered="#{not empty pt.person.nic}"/>
+                                        <h:outputText value=" · DOB: "/>
+                                        <h:outputText value="#{pt.person.dob}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                        </h:outputText>
+                                    </div>
+                                </div>
+                                <p:commandButton value="This is me"
+                                                 icon="fas fa-check"
+                                                 styleClass="ui-button-success"
+                                                 style="font-size:0.85rem;padding:0.4rem 0.85rem"
+                                                 action="#{kioskController.selectExistingPatient(pt)}"
+                                                 update="form"/>
+                            </div>
+                        </ui:repeat>
+                        <hr class="kiosk-divider"/>
+                        <p style="text-align:center;color:#6b7280;font-size:0.9rem">Not listed above? Register as a new patient.</p>
+                    </h:panelGroup>
+
+                    <p:commandButton value="Register as New Patient"
+                                     icon="fas fa-user-plus"
+                                     action="#{kioskController.startNewPatient}"
+                                     update="form"
+                                     styleClass="kiosk-btn ui-button-success"/>
+
+                    <p:commandButton value="Back"
+                                     icon="fas fa-arrow-left"
+                                     action="#{kioskController.reset}"
+                                     update="form"
+                                     styleClass="kiosk-btn kiosk-btn-secondary ui-button-secondary"/>
+                </h:panelGroup>
+
+                <!-- Step 3: New Patient Form -->
+                <h:panelGroup id="newPatientPanel" rendered="#{kioskController.showNewForm}" layout="block">
+                    <div class="kiosk-header">
+                        <div class="icon-wrap"><i class="fas fa-user-pen"/></div>
+                        <h1>New Patient Registration</h1>
+                        <p>Please fill in your details below</p>
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-5">
+                            <div class="field-group">
+                                <label class="field-label">Title <span class="req">*</span></label>
+                                <p:selectOneMenu value="#{kioskController.patient.person.title}"
+                                                 styleClass="form-control">
+                                    <f:selectItem itemLabel="Select" itemValue=""/>
+                                    <f:selectItems value="#{kioskController.titles}" var="t"
+                                                   itemLabel="#{t.label}" itemValue="#{t}"/>
+                                    <p:ajax event="change"
+                                            listener="#{kioskController.updateSexByTitle}"
+                                            update="genderGroup"/>
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+                        <div class="col-7">
+                            <div class="field-group">
+                                <label class="field-label">Full Name <span class="req">*</span></label>
+                                <div class="field-wrap">
+                                    <i class="fas fa-user f-icon"/>
+                                    <p:inputText value="#{kioskController.patient.person.name}"
+                                                 placeholder="Enter your full name"
+                                                 styleClass="form-control"
+                                                 style="padding-left:2.4rem"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Gender <span class="req">*</span></label>
+                        <h:panelGroup id="genderGroup" layout="block">
+                            <p:selectOneMenu value="#{kioskController.patient.person.sex}"
+                                             styleClass="form-control">
+                                <f:selectItem itemLabel="Select" itemValue=""/>
+                                <f:selectItems value="#{kioskController.sexValues}"/>
+                            </p:selectOneMenu>
+                        </h:panelGroup>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Age / Date of Birth <span class="req">*</span></label>
+                        <div class="age-dob-row">
+                            <div class="age-input-wrap">
+                                <p:inputText id="ageYears"
+                                             value="#{kioskController.patient.person.ageYearsComponent}"
+                                             placeholder="YY"
+                                             styleClass="form-control age-input"
+                                             maxlength="3"
+                                             oninput="ageAutoFocus(this,3,'form:ageMonths')">
+                                    <p:ajax event="blur" process="ageYears" update="newPatientDob"/>
+                                </p:inputText>
+                                <span class="age-unit">Yrs</span>
+                            </div>
+                            <div class="age-input-wrap">
+                                <p:inputText id="ageMonths"
+                                             value="#{kioskController.patient.person.ageMonthsComponent}"
+                                             placeholder="MM"
+                                             styleClass="form-control age-input"
+                                             maxlength="2"
+                                             oninput="ageAutoFocus(this,2,'form:ageDays')">
+                                    <p:ajax event="blur" process="ageMonths" update="newPatientDob"/>
+                                </p:inputText>
+                                <span class="age-unit">Mos</span>
+                            </div>
+                            <div class="age-input-wrap">
+                                <p:inputText id="ageDays"
+                                             value="#{kioskController.patient.person.ageDaysComponent}"
+                                             placeholder="DD"
+                                             styleClass="form-control age-input"
+                                             maxlength="2">
+                                    <p:ajax event="blur" process="ageDays" update="newPatientDob"/>
+                                </p:inputText>
+                                <span class="age-unit">Days</span>
+                            </div>
+                            <div style="flex:1">
+                                <p:datePicker id="newPatientDob"
+                                              value="#{kioskController.patient.person.dob}"
+                                              placeholder="DD/MM/YYYY"
+                                              pattern="dd/MM/yyyy"
+                                              monthNavigator="true"
+                                              yearNavigator="true"
+                                              styleClass="form-control">
+                                    <p:ajax event="dateSelect" process="newPatientDob"
+                                            update="ageYears ageMonths ageDays"/>
+                                </p:datePicker>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Mobile Number</label>
+                        <div class="field-wrap">
+                            <i class="fas fa-phone f-icon"/>
+                            <p:inputText value="#{kioskController.searchPhone}"
+                                         styleClass="form-control"
+                                         style="padding-left:2.4rem"
+                                         disabled="true"/>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">NIC / Passport No</label>
+                        <div class="field-wrap">
+                            <i class="fas fa-id-card f-icon"/>
+                            <p:inputText value="#{kioskController.patient.person.nic}"
+                                         placeholder="Enter NIC or Passport number"
+                                         styleClass="form-control"
+                                         style="padding-left:2.4rem"
+                                         autocomplete="off"/>
+                        </div>
+                    </div>
+
+                    <p:commandButton value="Register"
+                                     icon="fas fa-check"
+                                     action="#{kioskController.saveNewPatient}"
+                                     update="form globalMessages"
+                                     styleClass="kiosk-btn ui-button-success"/>
+
+                    <p:commandButton value="Back"
+                                     icon="fas fa-arrow-left"
+                                     action="#{kioskController.reset}"
+                                     update="form"
+                                     styleClass="kiosk-btn kiosk-btn-secondary ui-button-secondary"/>
+                </h:panelGroup>
+
+                <!-- Step 4: Done -->
+                <h:panelGroup id="donePanel" rendered="#{kioskController.showDone}" layout="block">
+                    <div class="kiosk-header">
+                        <div class="done-icon"><i class="fas fa-check"/></div>
+                        <h1>All Done!</h1>
+                        <p>Welcome, <strong><h:outputText value="#{kioskController.patient.person.name}"/></strong>.<br/>Please proceed to the reception desk.</p>
+                    </div>
+
+                    <p:commandButton value="Start Over"
+                                     icon="fas fa-rotate-left"
+                                     action="#{kioskController.reset}"
+                                     update="form"
+                                     styleClass="kiosk-btn ui-button-primary"/>
+                </h:panelGroup>
+
+            </div>
+
+            <script type="text/javascript">
+                function ageAutoFocus(el, maxLen, nextId) {
+                    if (el.value.length >= maxLen) {
+                        var next = document.getElementById(nextId);
+                        if (next) { next.focus(); next.select(); }
+                    }
+                }
+            </script>
+        </h:form>
+    </h:body>
+</html>

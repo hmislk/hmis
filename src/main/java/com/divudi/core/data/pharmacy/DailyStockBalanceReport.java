@@ -726,4 +726,49 @@ public class DailyStockBalanceReport {
         this.preBillStockMovementsBundle = preBillStockMovementsBundle;
     }
 
+    // ── Closing-stock reconciliation helpers ──────────────────────────────────
+    //
+    // Expected closing = opening
+    //                  + purchases  (always positive — stock in)
+    //                  - sales      (always positive in bundle — stock out, so subtract)
+    //                  + transfers  (net-signed: receives +, issues −)
+    //                  + adjustments (net-signed)
+    //
+    // A mismatch > 1.0 (tolerance to absorb rounding) flags a discrepancy.
+
+    private double bundleValue(PharmacyBundle bundle, java.util.function.Function<com.divudi.core.data.PharmacyRow, java.math.BigDecimal> extractor) {
+        if (bundle == null || bundle.getSummaryRow() == null) {
+            return 0.0;
+        }
+        java.math.BigDecimal v = extractor.apply(bundle.getSummaryRow());
+        return v == null ? 0.0 : v.doubleValue();
+    }
+
+    public boolean isClosingStockCostRateMismatch() {
+        double expected = openingStockValueAtCostRate
+                + bundleValue(pharmacyPurchaseByBillTypeBundle,    com.divudi.core.data.PharmacyRow::getValueOfStocksAtCostRate)
+                - bundleValue(pharmacySalesByAdmissionTypeAndDiscountSchemeBundle, com.divudi.core.data.PharmacyRow::getValueOfStocksAtCostRate)
+                + bundleValue(pharmacyTransferByBillTypeBundle,    com.divudi.core.data.PharmacyRow::getValueOfStocksAtCostRate)
+                + bundleValue(pharmacyAdjustmentsByBillTypeBundle, com.divudi.core.data.PharmacyRow::getValueOfStocksAtCostRate);
+        return Math.abs(closingStockValueAtCostRate - expected) > 1.0;
+    }
+
+    public boolean isClosingStockPurchaseRateMismatch() {
+        double expected = openingStockValueAtPurchaseRate
+                + bundleValue(pharmacyPurchaseByBillTypeBundle,    com.divudi.core.data.PharmacyRow::getValueOfStocksAtPurchaseRate)
+                - bundleValue(pharmacySalesByAdmissionTypeAndDiscountSchemeBundle, com.divudi.core.data.PharmacyRow::getValueOfStocksAtPurchaseRate)
+                + bundleValue(pharmacyTransferByBillTypeBundle,    com.divudi.core.data.PharmacyRow::getValueOfStocksAtPurchaseRate)
+                + bundleValue(pharmacyAdjustmentsByBillTypeBundle, com.divudi.core.data.PharmacyRow::getValueOfStocksAtPurchaseRate);
+        return Math.abs(closingStockValueAtPurchaseRate - expected) > 1.0;
+    }
+
+    public boolean isClosingStockRetailRateMismatch() {
+        double expected = openingStockValue
+                + bundleValue(pharmacyPurchaseByBillTypeBundle,    com.divudi.core.data.PharmacyRow::getValueOfStocksAtRetailSaleRate)
+                - bundleValue(pharmacySalesByAdmissionTypeAndDiscountSchemeBundle, com.divudi.core.data.PharmacyRow::getValueOfStocksAtRetailSaleRate)
+                + bundleValue(pharmacyTransferByBillTypeBundle,    com.divudi.core.data.PharmacyRow::getValueOfStocksAtRetailSaleRate)
+                + bundleValue(pharmacyAdjustmentsByBillTypeBundle, com.divudi.core.data.PharmacyRow::getValueOfStocksAtRetailSaleRate);
+        return Math.abs(closingStockValue - expected) > 1.0;
+    }
+
 }

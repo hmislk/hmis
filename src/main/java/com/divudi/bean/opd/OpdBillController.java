@@ -761,19 +761,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         ));
 
         // Patient Management and Security Configurations
-        metadata.addConfigOption(new ConfigOptionInfo(
-                "Enable blacklist patient management in the system",
-                "Enables global blacklist functionality for patients across the entire system",
-                "OpdBillController.java line 3022: Global blacklist check in settleOpdBill()",
-                OptionScope.APPLICATION
-        ));
-
-        metadata.addConfigOption(new ConfigOptionInfo(
-                "Enable blacklist patient management for OPD from the system",
-                "Enables blacklist validation specifically for OPD billing to prevent billing blacklisted patients",
-                "OpdBillController.java line 3023: OPD-specific blacklist check in settleOpdBill()",
-                OptionScope.APPLICATION
-        ));
 
         // Item Listing Strategy Configuration
         metadata.addConfigOption(new ConfigOptionInfo(
@@ -1452,6 +1439,54 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         JsfUtil.addSuccessMessage("Fee Changed Successfully");
     }
 
+    public void qtyChangeListener(BillEntry be) {
+        if (be == null || be.getBillItem() == null || be.getBillItem().getItem() == null) {
+            return;
+        }
+        BillItem bi = be.getBillItem();
+        Double qty = bi.getQty();
+        if (qty == null) {
+            JsfUtil.addErrorMessage("Quantity cannot be empty.");
+            return;
+        }
+        if (qty < 0) {
+            bi.setQty(null);
+            JsfUtil.addErrorMessage("Quantity cannot be negative. Please enter a positive value.");
+            return;
+        }
+        if (qty % 1 != 0) {
+            JsfUtil.addErrorMessage("Quantity cannot be a decimal value. Please enter a whole number.");
+            return;
+        }
+        bi.setNetValue(bi.getRate() * qty);
+        if (bi.getItem().isVatable()) {
+            bi.setVat(bi.getNetValue() * bi.getItem().getVatPercentage() / 100);
+        } else {
+            bi.setVat(0.0);
+        }
+        bi.setVatPlusNetValue(bi.getNetValue() + bi.getVat());
+        calTotals();
+        if (qty == 0.0) {
+            JsfUtil.addErrorMessage("Quantity is zero. Total fee has been set to 0.");
+        } else {
+            JsfUtil.addSuccessMessage("Quantity updated.");
+        }
+    }
+
+    public void baseRateChangeListener(BillFee bf) {
+        if (bf == null) {
+            return;
+        }
+        if (bf.getTmpChangedValue() == null || bf.getTmpChangedValue() < 0) {
+            JsfUtil.addErrorMessage("Invalid rate value.");
+            return;
+        }
+        lstBillItems = null;
+        getLstBillItems();
+        calTotals();
+        JsfUtil.addSuccessMessage("Base rate updated.");
+    }
+
     public void changeBillDoctorByFee(BillFee bf) {
         if (bf == null) {
             return;
@@ -2101,6 +2136,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             if (getPatient().getPhn() == null || getPatient().getPhn().trim().equals("")) {
                 getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
             }
+            
+            getPatient().getPerson().setForeigner(true);
+            
 
             getPatient().setCreatedInstitution(getSessionController().getInstitution());
             getPatient().setCreater(getSessionController().getLoggedUser());
@@ -3176,12 +3214,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             return true;
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management in the system", false)
-                && configOptionApplicationController.getBooleanValueByKey("Enable blacklist patient management for OPD from the system", false)) {
-            if (getPatient().isBlacklisted()) {
-                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
-                return true;
-            }
+        if (getPatient().isBlacklisted()) {
+            JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+            return true;
         }
 
         if (getPatient().getPerson() == null) {
@@ -3490,6 +3525,30 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 }
             }
         }
+
+        for (BillEntry be : getLstBillEntries()) {
+            if (be.getBillItem() == null || be.getBillItem().getItem() == null) {
+                continue;
+            }
+            if (!be.getBillItem().getItem().isRequestForQuentity()) {
+                continue;
+            }
+            String itemName = be.getBillItem().getItem().getName();
+            Double qty = be.getBillItem().getQty();
+            if (qty == null) {
+                JsfUtil.addErrorMessage("Quantity is missing for item: " + itemName);
+                return true;
+            }
+            if (qty <= 0) {
+                JsfUtil.addErrorMessage("Quantity must be a positive value for item: " + itemName);
+                return true;
+            }
+            if (qty % 1 != 0) {
+                JsfUtil.addErrorMessage("Quantity cannot be a decimal value for item: " + itemName);
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -3599,6 +3658,15 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             if (getCurrentBillItemQty() == null || getCurrentBillItemQty() == 0.0) {
                 setCurrentBillItemQty(null);
                 JsfUtil.addErrorMessage("Quentity is Missing ..! ");
+                return;
+            }
+            if (getCurrentBillItemQty() < 0) {
+                setCurrentBillItemQty(null);
+                JsfUtil.addErrorMessage("Quantity cannot be negative. Please enter a positive value.");
+                return;
+            }
+            if (getCurrentBillItemQty() % 1 != 0) {
+                JsfUtil.addErrorMessage("Quantity cannot be a decimal value. Please enter a whole number.");
                 return;
             }
         } else {
@@ -3844,7 +3912,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (paymentMethod == null) {
             return;
         }
-
+        
+        foreigner = getPatient().getPerson().isForeigner();
+        
         double billDiscount = 0.0;
         double billGross = 0.0;
         double billNet = 0.0;
@@ -3863,19 +3933,26 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
                 boolean needToAdd = billFeeIsThereAsSelectedInBillFeeBundle(bf);
                 if (needToAdd) {
-
+                    Institution creditCompany = null;
                     Department department = null;
                     Item item = null;
-                    PriceMatrix priceMatrix;
+                    PriceMatrix priceMatrix = null;
                     Category category = null;
 
                     if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
                         department = bf.getBillItem().getItem().getDepartment();
-
                         item = bf.getBillItem().getItem();
                     }
 
-                    priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
+                    if(paymentMethod == PaymentMethod.Credit){
+                        if(paymentMethodData != null && paymentMethodData.getCredit() != null && paymentMethodData.getCredit().getInstitution() != null){
+                            creditCompany = paymentMethodData.getCredit().getInstitution();
+                            priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, creditCompany, item);
+                        }
+                    }else{
+                        priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(paymentMethod, paymentScheme, department, item);
+                    }
+                        
                     getBillBean().setBillFees(bf, isForeigner(), paymentMethod, paymentScheme, getCreditCompany(), priceMatrix);
 
                     if (bf.getBillItem().getItem().isVatable()) {
@@ -3949,12 +4026,20 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public void markAsForeigner() {
-        setForeigner(true);
+        if(patient == null){
+            JsfUtil.addErrorMessage("Need to Add Patient first ..! ");
+            return;
+        }
+        getPatient().getPerson().setForeigner(true);
         calTotals();
     }
 
     public void markAsLocal() {
-        setForeigner(false);
+        if(patient == null){
+            JsfUtil.addErrorMessage("Need to Add Patient first ..! ");
+            return;
+        }
+        getPatient().getPerson().setForeigner(false);
         calTotals();
     }
 

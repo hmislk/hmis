@@ -1,238 +1,403 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
-      xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
+    <ui:define name="content">
 
-    <h:body>
+        <h:form styleClass="late-early-form">
 
-        <ui:composition template="/resources/template/template.xhtml">
+            <h:outputStylesheet>
+                .late-early-form {
+                    padding: 2rem 1.75rem;
+                }
 
-            <ui:define name="content">
-                <h:form >
-                    <p:panel >
-                        <f:facet name="header" >
-                            <h:outputLabel value="Attendance Report (Late In and Early Out)" />
-                        </f:facet>
-                        <h:panelGrid columns="2" >
-                            <h:outputLabel value="From : " />
-                            <p:calendar value="#{hrReportController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                            <h:outputLabel value="To : " />
-                            <p:calendar value="#{hrReportController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                            <h:outputLabel value="Institution : "/>
-                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
-                            <h:outputLabel value="Department : "/>
-                            <hr:department value="#{hrReportController.reportKeyWord.department}"/>
-                            <h:outputLabel value="Employee : "/>
-                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}"/>
-                            <h:outputLabel value="Staff Category : "/>
-                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}"/>
-                            <h:outputLabel value="Designation : "/>
-                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}"/>
-                            <h:outputLabel value="Roster : "/>
-                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}"/>
-                            <h:outputLabel value="Shift : "/>
-                            <hr:completeShift value="#{hrReportController.reportKeyWord.shift}"/>
-                            <h:outputLabel value="From Minute : "/>
-                            <p:inputText value="#{hrReportController.reportKeyWord.from}"/>
-                            <h:outputLabel value="To Minute : "/>
-                            <p:inputText value="#{hrReportController.reportKeyWord.to}"/>
+                .page-header {
+                    margin-bottom: 1.75rem;
+                }
 
-                        </h:panelGrid>
+                .page-title {
+                    font-size: 18px;
+                    font-weight: 600;
+                    margin: 0 0 4px 0;
+                }
 
-                        <p:commandButton ajax="false" value="Process" action="#{hrReportController.createStaffShiftLateInEarlyOut()}"/>
-                        <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
-                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_attendance_late_in_early_out"  />
+                .page-subtitle {
+                    font-size: 13px;
+                    color: #888;
+                    margin: 0;
+                }
+
+                .controls-panel .ui-panel-content {
+                    padding: 1.5rem 1.75rem !important;
+                }
+
+                .controls-grid {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 1.25rem;
+                }
+
+                .fields-grid {
+                    display: grid;
+                    grid-template-columns: repeat(2, 1fr);
+                    gap: 1rem 1.5rem;
+                }
+
+                .field-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
+
+                .field-label {
+                    font-size: 11.5px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                    color: #888 !important;
+                }
+
+                .controls-actions {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                }
+
+                .controls-actions-secondary {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    padding-top: 0.75rem;
+                    border-top: 1px solid #e8e8e8;
+                }
+
+                .btn-action {
+                    height: 36px !important;
+                    padding: 0 18px !important;
+                    font-size: 13px !important;
+                }
+
+                .report-panel {
+                    margin-top: 1.5rem;
+                }
+
+                .report-panel .ui-panel-content {
+                    padding: 0 !important;
+                }
+
+                .report-header-wrap {
+                    text-align: center;
+                    padding: 1.5rem 1.5rem 1rem;
+                    border-bottom: 1px solid #e8e8e8;
+                }
+
+                .report-title-label {
+                    font-size: 13px;
+                    color: #666;
+                    display: block;
+                    margin-bottom: 2px;
+                }
+
+                .report-meta {
+                    font-size: 13px;
+                    color: #555;
+                    margin-top: 4px;
+                }
+
+                .le-table .ui-datatable-tablewrapper {
+                    overflow-x: auto !important;
+                    width: 100% !important;
+                }
+
+                .le-table table {
+                    width: auto !important;
+                    table-layout: auto !important;
+                }
+
+                .le-table .ui-datatable-data td,
+                .le-table .ui-datatable-thead th {
+                    padding: 10px 14px !important;
+                    white-space: nowrap;
+                    font-size: 13px !important;
+                    width: auto !important;
+                }
+
+                .le-table .ui-datatable-thead th {
+                    font-size: 12px !important;
+                    font-weight: 600 !important;
+                    text-transform: uppercase;
+                    letter-spacing: 0.03em;
+                    color: #888 !important;
+                    background: #f9f9f9 !important;
+                    border-bottom: 1px solid #e8e8e8 !important;
+                }
+
+                .le-table .ui-datatable-data tr:hover td {
+                    background: #f5f7ff !important;
+                }
+
+                .le-table .col-text {
+                    text-align: left !important;
+                }
+
+                .le-table .col-num {
+                    text-align: right !important;
+                }
+
+                .le-table .col-num .ui-outputlabel {
+                    display: block;
+                    text-align: right;
+                }
+
+                .le-table .col-name .ui-outputlabel {
+                    font-weight: 500;
+                }
+
+                .le-table tfoot td {
+                    background: #f9f9f9 !important;
+                    font-weight: 600 !important;
+                    font-size: 13px !important;
+                    border-top: 2px solid #e0e0e0 !important;
+                    padding: 10px 14px !important;
+                }
+
+                .le-table .greenText td {
+                    color: #1a7a4a !important;
+                }
+
+                .report-table-footer {
+                    display: flex;
+                    justify-content: flex-end;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 0.85rem 1.5rem;
+                    border-top: 1px solid #e8e8e8;
+                    font-size: 12px;
+                    color: #999;
+                }
+            </h:outputStylesheet>
+
+            <div class="page-header">
+                <p class="page-title"><h:outputText value="Attendance Report — Late In and Early Out" /></p>
+                <p class="page-subtitle"><h:outputText value="Filter by date range, department, employee or shift and process to generate" /></p>
+            </div>
+
+            <p:panel styleClass="controls-panel">
+                <div class="controls-grid">
+
+                    <div class="fields-grid">
+                        <div class="field-group">
+                            <p:outputLabel for="fromDate" value="From" styleClass="field-label" />
+                            <p:calendar id="fromDate"
+                                        value="#{hrReportController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                        style="width: 100%;" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel for="toDate" value="To" styleClass="field-label" />
+                            <p:calendar id="toDate"
+                                        value="#{hrReportController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.shortDateFormat}"
+                                        style="width: 100%;" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Institution" styleClass="field-label" />
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Department" styleClass="field-label" />
+                            <hr:department value="#{hrReportController.reportKeyWord.department}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Employee" styleClass="field-label" />
+                            <hr:completeStaff value="#{hrReportController.reportKeyWord.staff}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Staff category" styleClass="field-label" />
+                            <hr:completeStaffCategory value="#{hrReportController.reportKeyWord.staffCategory}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Designation" styleClass="field-label" />
+                            <hr:completeDesignation value="#{hrReportController.reportKeyWord.designation}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Roster" styleClass="field-label" />
+                            <hr:completeRoster value="#{hrReportController.reportKeyWord.roster}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel value="Shift" styleClass="field-label" />
+                            <hr:completeShift value="#{hrReportController.reportKeyWord.shift}" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel for="fromMin" value="From minute" styleClass="field-label" />
+                            <p:inputText id="fromMin"
+                                         value="#{hrReportController.reportKeyWord.from}"
+                                         style="width: 100%;" />
+                        </div>
+
+                        <div class="field-group">
+                            <p:outputLabel for="toMin" value="To minute" styleClass="field-label" />
+                            <p:inputText id="toMin"
+                                         value="#{hrReportController.reportKeyWord.to}"
+                                         style="width: 100%;" />
+                        </div>
+                    </div>
+
+                    <div class="controls-actions">
+                        <p:commandButton value="Process"
+                                         ajax="false"
+                                         action="#{hrReportController.createStaffShiftLateInEarlyOut()}"
+                                         icon="pi pi-sync"
+                                         styleClass="btn-action" />
+                    </div>
+
+                    <div class="controls-actions-secondary">
+                        <p:commandButton value="Print"
+                                         type="button"
+                                         icon="pi pi-print"
+                                         styleClass="btn-action">
+                            <p:printer target="gpBillPreview" />
                         </p:commandButton>
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
+                        <p:commandButton value="Export Excel"
+                                         ajax="false"
+                                         icon="pi pi-file-excel"
+                                         styleClass="btn-action noPrintButton">
+                            <p:dataExporter type="xlsx" target="tb1" fileName="hr_report_attendance_late_in_early_out" />
                         </p:commandButton>
-                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder" >
-                            <p:dataTable id="tb1" value="#{hrReportController.staffShifts}" var="ss" rowStyleClass="#{ss.considerForLateIn eq true ? 'greenText':''}">
-                                <f:facet name="header">
+                    </div>
 
-                                    <h:outputLabel value="Attendance Report (Late In and Early Out)"/><br/>
-                                    <h:outputLabel value="  From : "  />
-                                    <h:outputLabel  value="#{hrReportController.fromDate}" >
-                                        <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
-                                    </h:outputLabel>
-                                    <h:outputLabel/>
-                                    <h:outputLabel/>
-                                    <h:outputLabel value="  To : "/>
-                                    <h:outputLabel  value="#{hrReportController.toDate}">
-                                        <f:convertDateTime pattern="dd MM yy HH:mm:ss "/>
-                                    </h:outputLabel><br/>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
-                                        <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
-                                        <br/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}" >
-                                        <h:outputLabel value="Department : #{hrReportController.reportKeyWord.department.name}"/>
-                                        <br/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}" >
-                                        <h:outputLabel value="Staff : #{hrReportController.reportKeyWord.staff.person.name}"/>
-                                        <br/>
-                                    </h:panelGroup>
-                                </f:facet>
-                                <p:column headerText="Emp No">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Emp No"  />
-                                    </f:facet>
-                                    <p:outputLabel value=" #{ss.staff.code}"></p:outputLabel>
+                </div>
+            </p:panel>
 
-                                </p:column>
-                                <p:column headerText="Emp Name">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Emp Name"  />
-                                    </f:facet>
-                                    <p:outputLabel value="  #{ss.staff.person.nameWithTitle}"></p:outputLabel>
+            <p:panel id="gpBillPreview" styleClass="report-panel noBorder summeryBorder">
 
-                                </p:column>
-                                <p:column headerText="Department Name">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Department Name"  />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.staff.department.name}"></p:outputLabel>
+                <f:facet name="header">
+                    <div class="report-header-wrap">
+                        <span class="report-title-label">
+                            <h:outputText value="Attendance Report — Late In and Early Out" />
+                        </span>
+                        <p class="report-meta">
+                            <h:outputText value="#{hrReportController.fromDate}">
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </h:outputText>
+                            <h:outputText value=" — " />
+                            <h:outputText value="#{hrReportController.toDate}">
+                                <f:convertDateTime pattern="dd/MM/yyyy" />
+                            </h:outputText>
+                        </p>
+                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}">
+                            <p class="report-meta">
+                                <h:outputText value="#{hrReportController.reportKeyWord.institution.name}" />
+                            </p>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.department ne null}">
+                            <p class="report-meta">
+                                <h:outputText value="Department: " />
+                                <h:outputText value="#{hrReportController.reportKeyWord.department.name}" />
+                            </p>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{hrReportController.reportKeyWord.staff ne null}">
+                            <p class="report-meta">
+                                <h:outputText value="Staff: " />
+                                <h:outputText value="#{hrReportController.reportKeyWord.staff.person.name}" />
+                            </p>
+                        </h:panelGroup>
+                    </div>
+                </f:facet>
 
-                                </p:column>
-                                <p:column headerText="In Checked ">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="In Checked"  />
-                                    </f:facet>
-                                    <h:outputLabel value="#{ss.startRecord.recordTimeStamp}">
-                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Shift In Time"  />
-                                    </f:facet>
-                                    <h:outputLabel value="#{ss.shiftStartTime}">
-                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Late In Minute Varified">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Late In Minute Varified"  />
-                                    </f:facet>
-                                    <h:outputLabel value="#{ss.lateInVarified}">
-                                        <f:converter converterId="longToTime"/>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Out Checked ">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Out Checked"  />
-                                    </f:facet>
-                                    <h:outputLabel value="#{ss.endRecord.recordTimeStamp}">
-                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Shift out Time"  />
-                                    </f:facet>
-                                    <h:outputLabel value="#{ss.shiftEndTime}">
-                                        <f:convertDateTime pattern="dd/MM/yy hh:mm:ss a"/>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Early Out Minute Varified">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Early Out Minute Varified"  />
-                                    </f:facet>
-                                    <h:outputLabel value="#{ss.earlyOutVarified}">
-                                        <f:converter converterId="longToTime"/>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Late In Minute Varified">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Late In Minute Varified"  />
-                                    </f:facet>
-                                    <h:outputLabel value="#{ss.lateInVarified}">
-                                    </h:outputLabel>
-                                </p:column>
-                                <!--                                <p:column headerText="n">
-                                                                    <f:facet name="header">
-                                                                        <h:outputLabel value="n"  />
-                                                                    </f:facet>
-                                                                    <p:outputLabel value="#{ss.startRecord.recordTimeStamp}"></p:outputLabel>
-                                                                </p:column>-->
-                                <p:column headerText="n">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="n"  />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="n">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="n"  />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.dayType}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="n">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="n"  />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.startRecord.recordTimeStamp}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="considerForLateIn">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="considerForLateIn"  />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.considerForLateIn}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="n">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="n"  />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.leaveType}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="n">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="n"  />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.autoLeave}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="n">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="n"  />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.staff}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="referenceStaffShiftLateIn">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="referenceStaffShiftLateIn"  />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.referenceStaffShiftLateIn}"></p:outputLabel>
-                                </p:column>
-                                <p:column headerText="referenceStaffShiftEarlyOut">
-                                    <f:facet name="header">
-                                        <h:outputLabel value="referenceStaffShiftEarlyOut"  />
-                                    </f:facet>
-                                    <p:outputLabel value="#{ss.referenceStaffShiftEarlyOut}"></p:outputLabel>
-                                </p:column>
-                                <f:facet name="footer">
-                                    <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
-                                    <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
-                                        <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
-                                    </p:outputLabel>
-                                </f:facet>
+                <p:dataTable id="tb1"
+                             value="#{hrReportController.staffShifts}"
+                             var="ss"
+                             rowStyleClass="#{ss.considerForLateIn eq true ? 'greenText' : ''}"
+                             styleClass="le-table">
 
-                            </p:dataTable>
-                        </p:panel>
+                    <p:column headerText="Emp no" styleClass="col-text">
+                        <p:outputLabel value="#{ss.staff.code}" />
+                    </p:column>
 
+                    <p:column headerText="Employee name" styleClass="col-text col-name" style="min-width: 180px;">
+                        <p:outputLabel value="#{not empty ss.staff.person.nameWithTitle ? ss.staff.person.nameWithTitle : ss.staff.person.name}" />
+                    </p:column>
 
-                    </p:panel>
+                    <p:column headerText="Department" styleClass="col-text">
+                        <p:outputLabel value="#{ss.staff.department.name}" />
+                    </p:column>
 
-                </h:form>
-            </ui:define>
+                    <p:column headerText="In" styleClass="col-text">
+                        <h:outputText value="#{ss.startRecord.recordTimeStamp}"
+                                      rendered="#{not empty ss.startRecord}">
+                            <f:convertDateTime pattern="dd/MM/yy HH:mm:ss" />
+                        </h:outputText>
+                        <h:outputText value="-" rendered="#{empty ss.startRecord}" />
+                    </p:column>
 
-        </ui:composition>
+                    <p:column headerText="Shift in time" styleClass="col-text">
+                        <h:outputText value="#{ss.shiftStartTime}"
+                                      rendered="#{not empty ss.shiftStartTime}">
+                            <f:convertDateTime pattern="dd/MM/yy HH:mm:ss" />
+                        </h:outputText>
+                        <h:outputText value="-" rendered="#{empty ss.shiftStartTime}" />
+                    </p:column>
 
-    </h:body>
-</html>
+                    <p:column headerText="Late in (mins)" styleClass="col-num">
+                        <h:outputText value="#{ss.lateInVarified / 60.0}">
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputText>
+                    </p:column>
+
+                    <p:column headerText="Out" styleClass="col-text">
+                        <h:outputText value="#{ss.endRecord.recordTimeStamp}"
+                                      rendered="#{not empty ss.endRecord}">
+                            <f:convertDateTime pattern="dd/MM/yy HH:mm:ss" />
+                        </h:outputText>
+                        <h:outputText value="-" rendered="#{empty ss.endRecord}" />
+                    </p:column>
+
+                    <p:column headerText="Shift out time" styleClass="col-text">
+                        <h:outputText value="#{ss.shiftEndTime}"
+                                      rendered="#{not empty ss.shiftEndTime}">
+                            <f:convertDateTime pattern="dd/MM/yy HH:mm:ss" />
+                        </h:outputText>
+                        <h:outputText value="-" rendered="#{empty ss.shiftEndTime}" />
+                    </p:column>
+
+                    <p:column headerText="Early out (mins)" styleClass="col-num">
+                        <h:outputText value="#{ss.earlyOutVarified / 60.0}">
+                            <f:convertNumber pattern="0.00" />
+                        </h:outputText>
+                    </p:column>
+
+                    <f:facet name="footer">
+                        <div class="report-table-footer">
+                            <p:outputLabel value="Print by: #{sessionController.loggedUser.webUserPerson.name}" />
+                            <span>·</span>
+                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
+                                <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
+                            </p:outputLabel>
+                        </div>
+                    </f:facet>
+
+                </p:dataTable>
+
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

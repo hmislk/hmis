@@ -11,18 +11,25 @@
 <h:body>
     <ui:composition template="/channel/channel_reports.xhtml">
         <ui:define name="subContent">
+            <h:outputStylesheet library="css" name="eight_col_filter_panel.css" />
             <h:form class="w-100">
                 <p:panel header="Agent Channel Bookings" class="w-100">
 
 
                     <div class="row">
                         <div class="col-md-12">
-                            <h:panelGrid columns="8" styleClass="w-100 form-grid"
-                                         columnClasses="label-icon-column, input-column">
-                                <h:panelGroup layout="block" styleClass="form-group">
+                            <h:panelGrid columns="8" class="ui-fluid" 
+                                        style="table-layout: fixed; width: 100%;"
+                                        columnClasses="fp-col-label1,fp-col-input1,fp-col-space1,
+                                                fp-col-label2,fp-col-input2,fp-col-space2,
+                                                fp-col-label3,fp-col-input3">
+
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
                                     <h:outputText value="&#xf073;"
-                                                  styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
-                                    <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                                                  styleClass="fa"/> <!-- FontAwesome calendar icon -->
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="From" for="fromDate"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:calendar
                                         styleClass="w-100"
@@ -34,10 +41,12 @@
 
                                 <p:spacer width="50"/>
 
-                                <h:panelGroup layout="block" styleClass="form-group">
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
                                     <h:outputText value="&#xf073;"
-                                                  styleClass="fa mr-2"/> <!-- FontAwesome calendar icon -->
-                                    <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                                                  styleClass="fa"/> <!-- FontAwesome calendar icon -->
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:calendar
                                         styleClass="w-100"
@@ -50,9 +59,11 @@
 
                                 <p:spacer/>
 
-                                <h:panelGroup layout="block" styleClass="form-group">
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
                                     <i class="fa-solid fa-user-secret"/> <!-- FontAwesome building icon -->
-                                    <h:outputLabel value="Agent" class="mx-3"/>
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="Agent" />
+                                    </div>
                                 </h:panelGroup>
                                 <p:autoComplete
                                         id="creditCom"
@@ -74,10 +85,12 @@
                                 </p:autoComplete>
 
 
-                                <h:panelGroup layout="block" styleClass="form-group">
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
                                     <h:outputText value="&#xf19c;"
-                                                  styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
-                                    <h:outputLabel value="Booked Institution" for="cmbIns" class="mx-3"/>
+                                                  styleClass="fa"/> <!-- FontAwesome building icon -->
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="Booked Institution" for="cmbIns"/>
+                                    </div>               
                                 </h:panelGroup>
                                 <p:selectOneMenu
                                         id="cmbIns"
@@ -93,10 +106,13 @@
 
                                 <p:spacer/>
 
-                                <h:panelGroup layout="block" styleClass="form-group">
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
                                     <h:outputText value="&#xf19c;"
                                                   styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
-                                    <h:outputLabel value="Booked Site" for="cmbSite" class="mx-3"/>
+
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="Booked Site" for="cmbSite"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:selectOneMenu
                                         id="cmbSite"
@@ -112,10 +128,12 @@
 
                                 <p:spacer/>
 
-                                <h:panelGroup layout="block" styleClass="form-group">
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
                                     <h:outputText value="&#xf0e8;"
-                                                  styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
-                                    <h:outputLabel value="Booked Department" for="cmbDept" class="mx-3"/>
+                                                  styleClass="fa"/> <!-- FontAwesome sitemap icon -->
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="Booked Department" for="cmbDept"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:selectOneMenu
                                         id="cmbDept"
@@ -130,9 +148,11 @@
                                 </p:selectOneMenu>
 
 
-                                <h:panelGroup layout="block" styleClass="form-group">
-                                    <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
-                                    <h:outputLabel value="Channel Institution" for="cmbToIns" class="mx-3"/>
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                    <h:outputText value="&#xf19c;" styleClass="fa"/>
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="Channel Institution" for="cmbToIns"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:selectOneMenu
                                         id="cmbToIns"
@@ -148,10 +168,12 @@
 
                                 <p:spacer/>
 
-                                <h:panelGroup layout="block" styleClass="form-group">
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
                                     <h:outputText value="&#xf19c;"
-                                                  styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
-                                    <h:outputLabel value="Channel Site" for="cmbToSite" class="mx-3"/>
+                                                  styleClass="fa"/> <!-- FontAwesome building icon -->
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="Channel Site" for="cmbToSite"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:selectOneMenu
                                         id="cmbToSite"
@@ -167,10 +189,12 @@
 
                                 <p:spacer/>
 
-                                <h:panelGroup layout="block" styleClass="form-group">
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
                                     <h:outputText value="&#xf0e8;"
-                                                  styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
-                                    <h:outputLabel value="Channel Department" for="cmbToDept" class="mx-3"/>
+                                                  styleClass="fa"/> <!-- FontAwesome sitemap icon -->
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="Channel Department" for="cmbToDept"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:selectOneMenu
                                         id="cmbToDept"
@@ -185,9 +209,11 @@
                                 </p:selectOneMenu>
 
 
-                                <h:panelGroup layout="block" styleClass="form-group">
-                                    <h:outputText styleClass="fas fa-user mr-2"/>
-                                    <h:outputLabel value="User" class="mx-3"/>
+                                <h:panelGroup layout="block" styleClass="form-group fp-label">
+                                    <h:outputText styleClass="fas fa-user"/>
+                                    <div class="fp-label-text">
+                                        <h:outputLabel value="User"/>
+                                    </div>
                                 </h:panelGroup>
                                 <p:selectOneMenu
                                         class="w-100"
@@ -198,57 +224,59 @@
                                     <f:selectItems value="#{webUserController.items}" var="st" itemLabel="#{st.name}"
                                                    itemValue="#{st}"/>
                                 </p:selectOneMenu>
-
-
                             </h:panelGrid>
 
-                            <p:commandButton
-                                    id="btnList" class="m-1 ui-button-danger"
-                                    icon="fas fa-list"
-                                    ajax="false" value="View List"
-                                    action="#{searchController.listAgentChannelBookings}"/>
+                            <div class="my-3">
+                                <p:commandButton
+                                        id="btnList" class="m-1 ui-button-danger"
+                                        icon="fas fa-list"
+                                        ajax="false" value="View List"
+                                        action="#{searchController.processAgentChannelBookings()}"/>
 
-                            <p:commandButton
-                                    id="btnPdf"
-                                    class="m-1 ui-button-info"
-                                    ajax="false"
-                                    rendered="false"
-                                    icon="fas fa-file-pdf"
-                                    value="Export as PDF">
-                                <p:dataExporter type="pdf" target="tbl" fileName="agent_channel_bookings"/>
-                            </p:commandButton>
+                                <p:commandButton
+                                        id="btnPdf"
+                                        class="m-1 ui-button-info"
+                                        ajax="false"
+                                        rendered="false"
+                                        icon="fas fa-file-pdf"
+                                        value="Export as PDF">
+                                    <p:dataExporter type="pdf" target="tbl" fileName="agent_channel_bookings"/>
+                                </p:commandButton>
 
-                            <p:commandButton
-                                    id="btnPrint"
-                                    class="m-1 ui-button-primary"
-                                    icon="fas fa-print"
-                                    ajax="false"
-                                    value="Print Table"
-                                    action="agent_channel_bookings_print?faces-redirect=true">
-                            </p:commandButton>
+                                <p:commandButton
+                                        id="btnPrint"
+                                        class="m-1 ui-button-primary"
+                                        icon="fas fa-print"
+                                        ajax="false"
+                                        value="Print Table"
+                                        action="agent_channel_bookings_print?faces-redirect=true">
+                                </p:commandButton>
 
-                            <p:commandButton
-                                    id="btnExcel"
-                                    class="m-1 ui-button-success"
-                                    icon="fas fa-file-excel"
-                                    ajax="false" value="Export to Excel">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="agent_channel_bookings"/>
-                            </p:commandButton>
+                                <p:commandButton
+                                        id="btnExcel"
+                                        class="m-1 ui-button-success"
+                                        icon="fas fa-file-excel"
+                                        ajax="false" value="Export to Excel">
+                                    <p:dataExporter type="xlsx" target="tbl" fileName="agent_channel_bookings"/>
+                                </p:commandButton>
+                            </div>
                         </div>
                     </div>
 
                     <p:dataTable
                             id="tbl"
-                            value="#{searchController.bills}"
+                            value="#{searchController.agentBookings}"
                             var="b"
                             paginator="true"
                             rows="10"
                             rowIndexVar="n"
+                            paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,20"
-                            rowKey="#{b.id}">
+                            rowKey="#{b.billId}"
+                            tableStyle="table-layout: auto;">
 
-                        <p:column width="2em">
+                        <p:column>
                             <f:facet name="header">
                                 <h:outputText value="Serial"/>
                             </f:facet>
@@ -256,59 +284,53 @@
                         </p:column>
 
 
-                        <p:column>
+                        <p:column style="min-width: 100px;">
                             <f:facet name="header">
                                 <h:outputText value="Date &amp; Time"/>
                             </f:facet>
-                            <h:outputText value="#{b.createdAt}">
+                            <h:outputText value="#{b.billedDate}">
                                 <f:convertDateTime
                                         pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                             </h:outputText>
                         </p:column>
 
-                        <p:column width="7em">
+                        <p:column style="white-space: nowrap;">
                             <f:facet name="header">
                                 <h:outputText value="Bill No"/>
                             </f:facet>
-                            <h:outputText value="#{b.deptId}"/>
+                            <h:outputText value="#{b.billDeptId}"/>
                             <p:badge value="Cancelled" severity="danger" rendered="#{b.cancelled}"/>
                             <p:badge value="Refunded" severity="warning" rendered="#{b.refunded}"/>
                         </p:column>
 
-                        <p:column rendered="#{webUserController.hasPrivilege('Developers')}">
+                        <p:column rendered="#{webUserController.hasPrivilege('Developers')}" style="overflow-wrap: break-word; ">
                             <f:facet name="header">
                                 <h:outputText value="Bill Type"/>
                             </f:facet>
                             <h:outputText value="#{b.billTypeAtomic}"/>
                         </p:column>
 
-                        <p:column>
+                        <p:column style="overflow-wrap: break-word;  min-width: 200px;">
                             <f:facet name="header">
                                 <h:outputText value="Patient"/>
                             </f:facet>
-                            <h:outputText value="#{b.patient.person.nameWithTitle}">
+                            <h:outputText value="#{b.patientNameWithTitle}">
                             </h:outputText>
                         </p:column>
 
-                        <p:column>
+                        <p:column style="overflow-wrap: break-word; min-width: 200px;">
                             <f:facet name="header">
                                 <h:outputText value="Booked From"/>
                             </f:facet>
-                            <h:outputText value="#{b.institution.name}">
-                            </h:outputText>
-                            <h:outputText value="-"/>
-                            <h:outputText value="#{b.department.name}">
+                            <h:outputText value="#{b.bookedFrom}">
                             </h:outputText>
                         </p:column>
 
-                        <p:column>
+                        <p:column style="overflow-wrap: break-word;  min-width: 200px;">
                             <f:facet name="header">
                                 <h:outputText value="Channel at"/>
                             </f:facet>
-                            <h:outputText value="#{b.toInstitution.name}">
-                            </h:outputText>
-                            <h:outputText value="-"/>
-                            <h:outputText value="#{b.toDepartment.name}">
+                            <h:outputText value="#{b.channelAt}">
                             </h:outputText>
                         </p:column>
                         
@@ -316,31 +338,31 @@
                             <f:facet name="header">
                                 <h:outputText value="Channel By"/>
                             </f:facet>
-                            <h:outputText value="#{b.creater.name}">
+                            <h:outputText value="#{b.billedBy}">
                             </h:outputText>
                         </p:column>
 
-                        <p:column filterMatchMode="contains" filterBy="#{b.creditCompany.name}">
+                        <p:column filterMatchMode="contains" filterBy="#{b.creditCompanyName}" style="overflow-wrap: break-word;">
                             <f:facet name="header">
                                 <h:outputText value="Agent"/>
                             </f:facet>
-                            <h:outputText value="#{b.creditCompany.name}" style="font-weight: bold">
+                            <h:outputText value="#{b.creditCompanyName}" style="font-weight: bold">
                             </h:outputText>
                         </p:column>
                         
-                        <p:column style="text-align: center" filterMatchMode="contains" filterBy="#{b.agentRefNo}">
+                        <p:column style="text-align: center; white-space: nowrap;" filterMatchMode="contains" filterBy="#{b.paymentReference}">
                             <f:facet name="header">
                                 <h:outputText value="Ref No"/>
                             </f:facet>
-                            <h:outputText value="#{b.agentRefNo}" style="font-weight: bold;">
+                            <h:outputText value="#{b.paymentReference}" style="font-weight: bold;">
                             </h:outputText>
                         </p:column>
 
-                        <p:column class="text-end">
+                        <p:column class="text-end" style="white-space: nowrap;">
                             <f:facet name="header">
                                 <h:outputText value="Hospital Fee"/>
                             </f:facet>
-                            <h:outputText value="#{b.hospitalFee}" style="color: #{b.cancelled ? 'red' : 'black'}">
+                            <h:outputText value="#{b.hosFee}" style="color: #{b.cancelled ? 'red' : 'black'}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                             <f:facet name="footer">
@@ -350,11 +372,11 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column class="text-end">
+                        <p:column class="text-end" style="white-space: nowrap;" >
                             <f:facet name="header">
                                 <h:outputText value="Doctor Fee"/>
                             </f:facet>
-                            <h:outputText value="#{b.staffFee}" style="color: #{b.cancelled ? 'red' : 'black'}">
+                            <h:outputText value="#{b.doctorFee}" style="color: #{b.cancelled ? 'red' : 'black'}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                             <f:facet name="footer">
@@ -364,11 +386,12 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column class="text-end">
+                        <p:column class="text-end"  style="white-space: nowrap;">
                             <f:facet name="header">
                                 <h:outputText value="Gross Total"/>
                             </f:facet>
-                            <h:outputText value="#{b.hospitalFee + b.staffFee}" style="color: #{b.cancelled ? 'red' : 'black'}">
+                            <h:outputText value="#{b.grossTotal}" style="color: #{b.cancelled ? 'red' : 'black'}">
+                                <!-- <h:outputText value="#{b.hospitalFee + b.staffFee}" style="color: #{b.cancelled ? 'red' : 'black'}"></h:outputText> -->
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                             <f:facet name="footer">
@@ -378,11 +401,11 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
+                        <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}"  style="white-space: nowrap;">
                             <f:facet name="header">
                                 <h:outputText value="Discount"/>
                             </f:facet>
-                            <h:outputText value="#{b.discount}">
+                            <h:outputText value="#{b.discount}" style="color: #{b.cancelled ? 'red' : 'black'}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                             <f:facet name="footer">
@@ -392,11 +415,11 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
+                        <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}"  style="white-space: nowrap;">
                             <f:facet name="header">
                                 <h:outputText value="Net Total"/>
                             </f:facet>
-                            <h:outputText value="#{b.netTotal}">
+                            <h:outputText value="#{b.paymentFee}" style="color: #{b.cancelled ? 'red' : 'black'}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                             <f:facet name="footer">

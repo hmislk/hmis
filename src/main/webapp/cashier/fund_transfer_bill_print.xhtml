@@ -103,6 +103,15 @@
                         </div>
 
                     </p:panel>
+                    
+                     <p:commandButton
+                            value="Print"
+                            ajax="false"
+                            icon="pi pi-print"
+                            style="margin-top: 10px; margin-bottom: 10px; margin-left: 20px">
+                        <p:printer target="panelPrint"/>
+                    </p:commandButton>
+
 
                     <h:panelGroup id="panelPrint">
                         <!-- POS Paper with header -->
@@ -136,14 +145,7 @@
                         </h:panelGroup>
                     </h:panelGroup>
 
-                    <p:commandButton
-                            value="Print"
-                            ajax="false"
-                            icon="pi pi-print"
-                            style="margin-top: 10px;">
-                        <p:printer target="panelPrint"/>
-                    </p:commandButton>
-
+                   
                     <!-- Fund Transfer Bill Configuration Dialog -->
                     <p:dialog id="fundTransferConfigDialog"
                               header="Fund Transfer Bill Printer Configuration"

@@ -26,6 +26,9 @@
                                             <h:outputText value="Department:" style="font-weight:bold; color: #6c757d;"/>
                                             <h:outputText value="#{pharmacyStockTakeController.snapshotBill.department.name}"
                                                           style="color: #495057;"/>
+                                            <h:outputText value="Department Type:" style="font-weight:bold; color: #6c757d;"/>
+                                            <h:outputText value="#{pharmacyStockTakeController.snapshotBill.departmentType}"
+                                                          style="color: #495057;"/>
                                             <h:outputText value="Cost Value:" style="font-weight:bold; color: #155724;"/>
                                             <h:outputText value="#{pharmacyStockTakeController.inMemoryCostTotal}"
                                                           style="font-weight: bold; color: #155724; font-size: 1.1rem;">
@@ -53,7 +56,7 @@
                                                              styleClass="ui-button-success mx-2"
                                                              icon="fa fa-check"
                                                              rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}"
-                                                             onclick="return confirm('Are you sure you want to record the stock counts? This action cannot be undone.');"
+                                                             onclick="if(window._stockTakeSettling) return false; if(!confirm('Are you sure you want to record the stock counts? This action cannot be undone.')) return false; window._stockTakeSettling=true;"
                                                              action="#{pharmacyStockTakeController.settleStockCount}"/>
                                         </div>
                                     </div>

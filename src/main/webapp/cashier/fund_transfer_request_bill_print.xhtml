@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="./index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel class="m-1">
+                        <f:facet name="header">
+                            <h:outputText value="Float Transfer Request Note"/>
+                            <p:commandButton
+                                class="float-end"
+                                value="Back to Cashier"
+                                action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"
+                                ajax="false"/>
+                            <p:commandButton
+                                class="float-end me-2 ui-button-secondary"
+                                value="My Requests"
+                                icon="pi pi-list"
+                                action="#{financialTransactionController.navigateToMyFundTransferRequests()}"
+                                ajax="false"/>
+                        </f:facet>
+
+                        <div class="row">
+                            <div class="col-4">
+                                <p:panelGrid
+                                    class="w-100"
+                                    layout="tabular"
+                                    columns="2"
+                                    columnClasses="text-start, text-end">
+                                    <h:outputText class="fw-medium" value="Request By"/>
+                                    <h:outputText value="#{financialTransactionController.currentBill.fromWebUser.webUserPerson.nameWithTitle}"/>
+
+                                    <h:outputText class="fw-medium" value="Requested From"/>
+                                    <h:outputText value="#{financialTransactionController.currentBill.toWebUser.webUserPerson.nameWithTitle}"/>
+
+                                    <h:outputText class="fw-medium" value="Requested At"/>
+                                    <h:outputText value="#{financialTransactionController.currentBill.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </p:panelGrid>
+                            </div>
+                            <div class="col-4">
+                                <p:panelGrid
+                                    class="w-100"
+                                    layout="tabular"
+                                    columns="2"
+                                    columnClasses="text-start, text-end">
+                                    <h:outputText class="fw-medium" value="Request No"/>
+                                    <h:outputText value="#{financialTransactionController.currentBill.deptId}"/>
+
+                                    <h:outputText class="fw-medium" value="Requested Amount"/>
+                                    <h:outputText value="#{financialTransactionController.currentBill.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+
+                                    <h:outputText class="fw-medium" value="Status"/>
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                </p:panelGrid>
+                            </div>
+                            <div class="col-4">
+                                <p:panelGrid
+                                    class="w-100"
+                                    layout="tabular"
+                                    columns="2"
+                                    columnClasses="text-start fw-medium, text-end">
+                                    <h:outputText value="Comments"/>
+                                    <h:outputText value="#{financialTransactionController.currentBill.comments}"/>
+                                </p:panelGrid>
+                            </div>
+                        </div>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

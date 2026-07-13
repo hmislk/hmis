@@ -2400,7 +2400,8 @@ public class CashierReportController implements Serializable {
         List<BillType> btpList = Arrays.asList(btpArr);
         sql = "select DISTINCT(b.creater) from "
                 + " Bill b "
-                + " where b.institution=:ins "
+                + " where b.retired=false "
+                + " and b.institution=:ins "
                 + " and b.billType in :btp "
                 + " and b.createdAt between :fromDate and :toDate";
         temMap.put("toDate", getToDate());
@@ -2567,7 +2568,7 @@ public class CashierReportController implements Serializable {
         String sql;
         Map temMap = new HashMap();
 
-        sql = "select b from Bill b  where type(b)=:bill and b.creater=:web and "
+        sql = "select b from Bill b  where b.retired=false and type(b)=:bill and b.creater=:web and "
                 + "b.paymentMethod= :pm "
                 + " and b.billType= :billTp and b.createdAt between :fromDate and :toDate";
         temMap.put("toDate", getToDate());

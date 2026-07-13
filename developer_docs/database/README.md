@@ -4,6 +4,13 @@ This directory contains comprehensive database documentation for the HMIS projec
 
 ## Documents
 
+### [Bill Investigation Guide](bill-investigation-guide.md)
+**How to investigate billing issues reported by staff**
+- "Bill MP/SALE/124491" always means `deptId`, not `id`
+- Bill lifecycle (PharmacyPre → PharmacySale)
+- Stock lock audit event interpretation
+- NETTOTAL vs billitem sum discrepancy
+
 ### [MySQL Developer Guide](mysql-developer-guide.md) 🆕
 **Primary database development reference**
 - Credential management and security
@@ -18,6 +25,14 @@ This directory contains comprehensive database documentation for the HMIS projec
 - Automated backup processes
 - Environment synchronization
 - GitHub Actions workflows
+
+### [InnoDB Space Reclamation with OPTIMIZE TABLE](innodb-space-reclamation.md)
+**Diagnose and reclaim page-level fragmentation in production InnoDB tables**
+- Why `data_free` under-reports real waste
+- Dump-and-restore comparison to predict reclaim
+- Pre-flight checks, per-table template, verification with fresh stats
+- Risk profile (locks, disk, online DDL) and safe sequencing
+- Maintenance cadence for UPDATE-heavy billing/stock tables
 
 ## Quick Reference
 

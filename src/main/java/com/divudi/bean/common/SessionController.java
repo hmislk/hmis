@@ -19,6 +19,7 @@ import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.Icon;
 import com.divudi.core.data.IconGroup;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.LoginPage;
 import com.divudi.core.data.UserIconGroup;
 import static com.divudi.core.data.LoginPage.CHANNELLING_QUEUE_PAGE;
 import static com.divudi.core.data.LoginPage.CHANNELLING_TV_DISPLAY;
@@ -41,6 +42,7 @@ import com.divudi.core.entity.UserIcon;
 import com.divudi.core.entity.UserPreference;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.WebUserDashboard;
+import com.divudi.core.entity.WebUserDefaultLoginPage;
 import com.divudi.core.entity.WebUserDepartment;
 import com.divudi.core.entity.WebUserPrivilege;
 import com.divudi.core.entity.WebUserRole;
@@ -50,6 +52,7 @@ import com.divudi.core.facade.LoginsFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.UserPreferenceFacade;
 import com.divudi.core.facade.WebUserDashboardFacade;
+import com.divudi.core.facade.WebUserDefaultLoginPageFacade;
 import com.divudi.core.facade.WebUserDepartmentFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.facade.WebUserPrivilegeFacade;
@@ -126,8 +129,10 @@ public class SessionController implements Serializable, HttpSessionListener {
     WebUserRoleFacade rFacade;
     @EJB
     private WebUserPasswordHistoryFacade webUserPasswordHistoryFacade;
+    @EJB
+    private WebUserDefaultLoginPageFacade webUserDefaultLoginPageFacade;
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private SecurityController securityController;
@@ -1153,6 +1158,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             String hashed = getSecurityController().hashAndCheck(password);
             user.setWebUserPassword(hashed);
             user.setNeedToResetPassword(false);
+            user.setLastPasswordResetAt(new Date());
             uFacade.editAndCommit(user);
             recordPasswordHistory(user, hashed);
 
@@ -1188,9 +1194,11 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         String hashed = getSecurityController().hashAndCheck(newPassword);
         user.setWebUserPassword(hashed);
+        user.setNeedToResetPassword(false);
+        user.setLastPasswordResetAt(new Date());
         uFacade.editAndCommit(user);
         recordPasswordHistory(user, hashed);
-        
+
         // Purge old password history entries beyond the configured limit
         purgeOldPasswordHistory(user);
         JsfUtil.addSuccessMessage("Password changed");
@@ -1284,6 +1292,10 @@ public class SessionController implements Serializable, HttpSessionListener {
         for (WebUser u : allUsers) {
             if ((u.getName()).equalsIgnoreCase(userName)) {
                 if (SecurityController.matchPassword(password, u.getWebUserPassword())) {
+                    if (!u.isIpAllowed(populateRequestInfo().getIpAddress())) {
+                        JsfUtil.addErrorMessage("Login not allowed from this IP address for this user.");
+                        return false;
+                    }
                     if (!canLogToDept(u, department)) {
                         JsfUtil.addErrorMessage("No privilage to Login This Department");
                         return false;
@@ -1506,6 +1518,10 @@ public class SessionController implements Serializable, HttpSessionListener {
                     passwordIsOk = SecurityController.matchPassword(password, u.getWebUserPassword());
                 }
                 if (passwordIsOk) {
+                    if (!u.isIpAllowed(populateRequestInfo().getIpAddress())) {
+                        JsfUtil.addErrorMessage("Login not allowed from this IP address for this user.");
+                        return false;
+                    }
                     System.out.println("DEBUG: Password verification successful, loading departments...");
                     long deptStartTime = System.currentTimeMillis();
                     departments = listLoggableDepts(u);
@@ -1832,14 +1848,38 @@ public class SessionController implements Serializable, HttpSessionListener {
         return true;
     }
 
+    /**
+     * Resolves the login page to navigate to: an active per-user-per-department
+     * {@link WebUserDefaultLoginPage} row takes priority, then the legacy
+     * {@link WebUser#getLoginPage()} value, then HOME.
+     */
+    private LoginPage resolveLoginPage() {
+        if (loggedUser == null) {
+            return LoginPage.HOME;
+        }
+        if (department != null) {
+            Map m = new HashMap();
+            m.put("user", loggedUser);
+            m.put("dept", department);
+            WebUserDefaultLoginPage wuLp = webUserDefaultLoginPageFacade.findFirstByJpql(
+                    "select w from WebUserDefaultLoginPage w where w.webUser=:user and w.department=:dept and w.retired=false order by w.id desc",
+                    m);
+            if (wuLp != null && wuLp.getLoginPage() != null) {
+                return wuLp.getLoginPage();
+            }
+        }
+        if (loggedUser.getLoginPage() != null) {
+            return loggedUser.getLoginPage();
+        }
+        return LoginPage.HOME;
+    }
+
     public String navigateToLoginPageByUsersDefaultLoginPage() {
         if (loggedUser == null) {
             return null;
         }
-        if (loggedUser.getLoginPage() == null) {
-            return "/home?faces-redirect=true";
-        }
-        switch (loggedUser.getLoginPage()) {
+        LoginPage resolvedLoginPage = resolveLoginPage();
+        switch (resolvedLoginPage) {
             case CHANNELLING_QUEUE_PAGE:
                 return bookingController.navigateToChannelQueueFromMenu();
             case CHANNELLING_TV_DISPLAY:

@@ -23,24 +23,29 @@
                                         <div class="m-2  align-items-center">
                                             <i class="fa fa-pencil m-2" aria-hidden="true"/>
                                             <p:outputLabel value="Edit Patient Demographic Details" />
+                                            <p:badge
+                                                rendered="#{not empty patientController.current.registrationSource}"
+                                                styleClass="m-2"
+                                                value="#{patientController.current.registrationSource.label}"
+                                                severity="info" />
                                         </div>
 
                                         <div class="">
-                                            <p:commandButton 
-                                                value="Save" 
-                                                action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
-                                                ajax="false" 
-                                                icon="pi pi-check" 
-                                                iconPos="left" 
+                                            <p:commandButton
+                                                value="Save"
+                                                action="#{patientController.checkBeforeSavePatient()}"
+                                                update="@form"
+                                                icon="pi pi-check"
+                                                iconPos="left"
                                                 class="ui-button-success m-1 " />
 
-                                            <p:commandButton 
-                                                value="Patient Profile" 
-                                                disabled="#{patientController.current eq null}" 
-                                                action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
-                                                ajax="false" 
+                                            <p:commandButton
+                                                value="Patient Profile"
+                                                disabled="#{patientController.current eq null}"
+                                                action="#{patientController.checkBeforeSavePatient()}"
+                                                update="@form"
                                                 icon="fa fa-user"
-                                                iconPos="left" 
+                                                iconPos="left"
                                                 class="ui-button-warning m-1 " />
 
                                             <p:commandButton
@@ -53,9 +58,9 @@
                                                 immediate="true" />
 
                                             <p:commandButton
-                                                value="Admission Profile"
+                                                value="Inpatient Dashboard"
                                                 rendered="#{admissionController.current ne null and admissionController.current.id ne null}"
-                                                action="#{patientController.saveAndNavigateToAdmissionProfile()}"
+                                                action="#{patientController.checkBeforeSaveAndGoToAdmission()}"
                                                 ajax="false"
                                                 icon="fa fa-hospital-o"
                                                 iconPos="left"
@@ -93,6 +98,24 @@
                                                     <f:validateRegex pattern="#{sessionController.applicationPreference.nameRegex}"/>
                                                 </c:if>
                                             </p:inputText>
+                                        </div>
+                                    </div>
+                                    <div class="row form-group mb-1">
+                                        <div class="col-md-6">
+                                            <p:outputLabel value="Full Name:" for="txtFullName" class="form-label" />
+                                            <p:inputText
+                                                id="txtFullName"
+                                                value="#{patientController.current.person.fullName}"
+                                                class="w-100 form-control"
+                                                placeholder="Full name as in official documents" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p:outputLabel value="Name with Initials:" for="txtNameWithInitials" class="form-label" />
+                                            <p:inputText
+                                                id="txtNameWithInitials"
+                                                value="#{patientController.current.person.nameWithInitials}"
+                                                class="w-100 form-control"
+                                                placeholder="e.g. A.B. Perera" />
                                         </div>
                                     </div>
                                     <div class="row form-group mb-1">
@@ -138,10 +161,9 @@
                                     <div class="row form-group mb-1">
                                         <div class="col-md-3">
                                             <p:outputLabel value="Phone Number:"  class="form-label" />
-                                            <p:inputText 
-                                                required="true"
-                                                value="#{patientController.current.phoneNumberStringTransient}" 
-                                                class="form-control" 
+                                            <p:inputText
+                                                value="#{patientController.current.phoneNumberStringTransient}"
+                                                class="form-control"
                                                 validatorMessage="Please enter Valid Phone Number."
                                                 validator="#{patientController.validateMobile}"
                                                 >
@@ -206,7 +228,7 @@
                                         </div>
                                     </div>
                                     
-                                    <div class="row form-group mb-1" style="display: #{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system') ? 'flex' : 'none'}">
+                                    <div class="row form-group mb-1">
                                         <div class="col-md-3">
                                             <p:outputLabel value="Patient Specific Status:" class="form-label" />
                                             <div class="input-group">
@@ -257,7 +279,44 @@
                                         </div>
                                     </div>
                                     <div class="row form-group mb-1">
-                                        <div class="col-md-12">
+                                        <div class="col-md-3">
+                                            <p:outputLabel value="Religion:" class="form-label" />
+                                            <p:selectOneMenu class="form-control w-100" value="#{patientController.current.person.religion}">
+                                                <f:selectItem itemLabel="Select Religion" />
+                                                <f:selectItems value="#{clinicalEntityController.religion}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <p:outputLabel value="Civil Status:" class="form-label" />
+                                            <p:selectOneMenu class="form-control w-100" value="#{patientController.current.person.civilStatus}">
+                                                <f:selectItem itemLabel="Select Civil Status" />
+                                                <f:selectItems value="#{clinicalEntityController.civilStatus}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <p:outputLabel value="Blood Group:" class="form-label" />
+                                            <p:selectOneMenu class="form-control w-100" value="#{patientController.current.person.bloodGroup}">
+                                                <f:selectItem itemLabel="Select Blood Group" />
+                                                <f:selectItems value="#{clinicalEntityController.bloodGroup}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <p:outputLabel value="Occupation:" class="form-label" />
+                                            <p:selectOneMenu class="form-control w-100" value="#{patientController.current.person.occupation}">
+                                                <f:selectItem itemLabel="Select Occupation" />
+                                                <f:selectItems value="#{clinicalEntityController.occupation}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
+                                    <div class="row form-group mb-1">
+                                        <div class="col-md-3">
+                                            <p:outputLabel value="Race:" class="form-label" />
+                                            <p:selectOneMenu class="form-control w-100" value="#{patientController.current.person.race}">
+                                                <f:selectItem itemLabel="Select Race" />
+                                                <f:selectItems value="#{clinicalEntityController.races}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <div class="col-md-9">
                                             <p:outputLabel value="Comments:"  class="form-label" />
                                             <p:inputText value="#{patientController.current.comments}" style="width: 100%;" class="form-control" />
                                         </div>
@@ -293,6 +352,76 @@
                                     </div>
                                 </div>
                             </p:panel>
+
+                            <!-- Blacklist Warning Dialog — Save and go to Patient Profile -->
+                            <p:dialog id="dlgBlacklistSaveWarning"
+                                      widgetVar="dlgBlacklistSaveWarning"
+                                      header="&#9888; Patient is Blacklisted"
+                                      modal="true"
+                                      resizable="false"
+                                      closable="true"
+                                      style="width:500px">
+                                <div style="padding:12px">
+                                    <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
+                                        &#9888; WARNING: This patient is blacklisted.
+                                    </p>
+                                    <p>
+                                        Reason: <strong>#{patientController.current.reasonForBlacklist}</strong>
+                                    </p>
+                                    <p style="font-weight:bold;">
+                                        Are you sure you want to save changes to this blacklisted patient's record?
+                                    </p>
+                                    <div class="d-flex justify-content-end gap-2 mt-3">
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fa fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('dlgBlacklistSaveWarning').hide(); return false;" />
+                                        <p:commandButton
+                                            value="Yes, Save Anyway"
+                                            icon="fa fa-exclamation-triangle"
+                                            class="ui-button-danger"
+                                            action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
+                                            ajax="false"
+                                            onclick="PF('dlgBlacklistSaveWarning').hide();" />
+                                    </div>
+                                </div>
+                            </p:dialog>
+
+                            <!-- Blacklist Warning Dialog — Save and go to Inpatient Dashboard -->
+                            <p:dialog id="dlgBlacklistSaveAdmissionWarning"
+                                      widgetVar="dlgBlacklistSaveAdmissionWarning"
+                                      header="&#9888; Patient is Blacklisted"
+                                      modal="true"
+                                      resizable="false"
+                                      closable="true"
+                                      style="width:500px">
+                                <div style="padding:12px">
+                                    <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
+                                        &#9888; WARNING: This patient is blacklisted.
+                                    </p>
+                                    <p>
+                                        Reason: <strong>#{patientController.current.reasonForBlacklist}</strong>
+                                    </p>
+                                    <p style="font-weight:bold;">
+                                        Are you sure you want to save changes to this blacklisted patient's record?
+                                    </p>
+                                    <div class="d-flex justify-content-end gap-2 mt-3">
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fa fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('dlgBlacklistSaveAdmissionWarning').hide(); return false;" />
+                                        <p:commandButton
+                                            value="Yes, Save Anyway"
+                                            icon="fa fa-exclamation-triangle"
+                                            class="ui-button-danger"
+                                            action="#{patientController.saveAndNavigateToAdmissionProfile()}"
+                                            ajax="false"
+                                            onclick="PF('dlgBlacklistSaveAdmissionWarning').hide();" />
+                                    </div>
+                                </div>
+                            </p:dialog>
 
                         </h:form>
                     </h:panelGroup>

@@ -21,7 +21,13 @@
                 <p:panel header="Manage Bank Account" >
                     <div class="row">
                         <div class="col-md-5">
-                            <p:commandButton id="btnAdd" value="Add New" 
+                            <p:selectOneMenu id="cmbFilterBank" value="#{bankAccountController.filterBank}"
+                                             styleClass="w-100 mb-2" >
+                                <f:selectItem itemLabel="All Banks" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{institutionController.banks}" var="b" itemLabel="#{b.name}" itemValue="#{b}" />
+                                <p:ajax process="cmbFilterBank" update="lstSelect" listener="#{bankAccountController.onFilterBankChange()}"/>
+                            </p:selectOneMenu>
+                            <p:commandButton id="btnAdd" value="Add New"
                                              icon="fas fa-plus"
                                              action="#{bankAccountController.prepareAdd()}" class="ui-button-success" process="btnAdd"
                                              update="lstSelect gpDetail" >
@@ -45,16 +51,6 @@
                                 <p:panelGrid id="gpDetailText" columns="2" class="w-100" layout="tabular">
                                     <h:outputText  value="Name" ></h:outputText>
                                     <p:inputText autocomplete="off"  value="#{bankAccountController.current.accountName}"  class="w-100"  ></p:inputText>
-                                    <h:outputText  value="Type" ></h:outputText>
-                                    <p:selectOneMenu value="#{bankAccountController.current.bankAccountType}" >
-                                        <f:selectItem itemLabel="Select" ></f:selectItem>
-                                        <f:selectItems 
-                                            value="#{enumController.bankAccountTypes}"
-                                            var="bankAccountType"
-                                            itemLabel="#{bankAccountType.label}"
-                                            itemValue="#{bankAccountType}"></f:selectItems>
-                                    </p:selectOneMenu>
-
                                     <h:outputText  value="Account Number" ></h:outputText>
                                     <p:inputText autocomplete="off"  value="#{bankAccountController.current.accountNo}"  class="w-100"  ></p:inputText>
 
@@ -64,8 +60,8 @@
                                     </h:panelGroup>
                                     <p:selectOneMenu
                                         id="cmbIns"
-                                        styleClass="w-100 form-control" 
-                                        value="#{searchController.institution}" 
+                                        styleClass="w-100 form-control"
+                                        value="#{bankAccountController.current.institution}"
                                         filter="true">
                                         <f:selectItem itemLabel="All Institutions" />
                                         <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
@@ -73,41 +69,39 @@
                                     </p:selectOneMenu>
                                     <h:panelGroup layout="block" styleClass="form-group">
                                         <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
-                                        <h:outputLabel value="Department"  class="mx-3"/>
+                                        <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
                                     </h:panelGroup>
                                     <h:panelGroup id="cmbDept">
 
-                                        <!-- Component 1: Without Institution and Site -->
+                                        <!-- Component 1: Without Institution -->
                                         <p:selectOneMenu
-                                            rendered="#{searchController.institution eq null}"
+                                            rendered="#{bankAccountController.current.institution eq null}"
                                             styleClass="w-100 form-control"
-                                            value="#{searchController.department}"
+                                            value="#{bankAccountController.current.department}"
                                             filterMatchMode="contains"
                                             filter="true">
                                             <f:selectItem itemLabel="All Departments" />
-                                            <f:selectItems 
+                                            <f:selectItems
                                                 value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
                                                 var="d"
                                                 itemLabel="#{d.name}"
                                                 itemValue="#{d}" />
                                         </p:selectOneMenu>
 
-                                        <!-- Component 3: With Institution Only -->
+                                        <!-- Component 2: With Institution -->
                                         <p:selectOneMenu
-                                            rendered="#{searchController.institution ne null}"
+                                            rendered="#{bankAccountController.current.institution ne null}"
                                             styleClass="w-100 form-control"
-                                            value="#{searchController.department}"
+                                            value="#{bankAccountController.current.department}"
                                             filterMatchMode="contains"
                                             filter="true">
                                             <f:selectItem itemLabel="All Departments" />
-                                            <f:selectItems 
-                                                value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(searchController.institution)}"
+                                            <f:selectItems
+                                                value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(bankAccountController.current.institution)}"
                                                 var="d"
                                                 itemLabel="#{d.name}"
                                                 itemValue="#{d}" />
                                         </p:selectOneMenu>
-
-                                        
 
                                     </h:panelGroup>
 

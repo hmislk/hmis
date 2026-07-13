@@ -19,6 +19,8 @@ public class TimedItemFee extends Fee implements Serializable {
     private double durationHours = 0;
     private double overShootHours = 0;
     private long durationDaysForMoCharge;
+    private int sortOrder = 0;
+    private boolean repeating = false;
 
     public void setDurationHours(Integer durationHours) {
         this.durationHours = durationHours;
@@ -50,5 +52,21 @@ public class TimedItemFee extends Fee implements Serializable {
 
     public void setDurationDaysForMoCharge(long durationDaysForMoCharge) {
         this.durationDaysForMoCharge = durationDaysForMoCharge;
+    }
+
+    public int getSortOrder() {
+        return sortOrder;
+    }
+
+    public void setSortOrder(int sortOrder) {
+        this.sortOrder = sortOrder;
+    }
+
+    public boolean isRepeating() {
+        return repeating;
+    }
+
+    public void setRepeating(boolean repeating) {
+        this.repeating = repeating;
     }
 }

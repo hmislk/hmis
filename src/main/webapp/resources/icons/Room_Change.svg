@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="grad13a" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0E7490;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#155E75;stop-opacity:1"/>
+    </linearGradient>
+    <filter id="shad13" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dx="1" dy="1" result="offsetblur"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="95" fill="#F0FDFA"/>
+  <g filter="url(#shad13)">
+    <!-- Bed 1 (left, smaller) -->
+    <rect x="15" y="115" width="70" height="45" rx="5" fill="url(#grad13a)" opacity="0.7"/>
+    <rect x="15" y="108" width="10" height="52" rx="4" fill="#155E75" opacity="0.7"/>
+    <rect x="77" y="115" width="8" height="45" rx="4" fill="#155E75" opacity="0.7"/>
+    <rect x="20" y="119" width="50" height="36" rx="3" fill="white" opacity="0.6"/>
+    <rect x="22" y="122" width="20" height="18" rx="4" fill="#22D3EE" opacity="0.6"/>
+    <!-- Bed 2 (right, smaller) -->
+    <rect x="115" y="115" width="70" height="45" rx="5" fill="url(#grad13a)"/>
+    <rect x="115" y="108" width="10" height="52" rx="4" fill="#155E75"/>
+    <rect x="177" y="115" width="8" height="45" rx="4" fill="#155E75"/>
+    <rect x="120" y="119" width="50" height="36" rx="3" fill="white" opacity="0.8"/>
+    <rect x="122" y="122" width="20" height="18" rx="4" fill="#22D3EE" opacity="0.8"/>
+    <!-- Transfer arrows between beds -->
+    <path d="M89 125 Q100 115 111 125" fill="none" stroke="#22D3EE" stroke-width="4" stroke-linecap="round"/>
+    <polygon points="107,118 114,125 106,129" fill="#22D3EE"/>
+    <path d="M111 143 Q100 153 89 143" fill="none" stroke="#22D3EE" stroke-width="4" stroke-linecap="round"/>
+    <polygon points="93,150 86,143 94,139" fill="#22D3EE"/>
+    <!-- Person being moved (above arrows) -->
+    <circle cx="100" cy="78" r="14" fill="url(#grad13a)"/>
+    <path d="M87 98 Q100 92 113 98 L114 112 Q114 117 110 117 L90 117 Q86 117 86 112 Z" fill="url(#grad13a)"/>
+  </g>
+</svg>

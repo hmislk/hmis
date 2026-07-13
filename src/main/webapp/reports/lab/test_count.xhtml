@@ -177,18 +177,33 @@
                         <p:commandButton
                                 ajax="false"
                                 value="Process"
-                                class="ui-button-warning m-1"
+                                class="ui-button-warning my-4 mx-2"
                                 icon="pi pi-cog"
                                 action="#{reportController.processLabTestCount()}">
                         </p:commandButton>
+                         <p:commandButton
+                            class="ui-button-info my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-print"
+                            ajax="false"
+                            value="To Print"
+                            action="test_count_view?faces-redirect=true">
+                    </p:commandButton>
 
                         <p:commandButton
                                 ajax="false"
-                                class="ui-button-success m-1"
+                                class="ui-button-success my-4 mx-2"
                                 value="Download"
                                 icon="pi pi-download"
                                 action="#{reportController.downloadLabTestCount}">
                         </p:commandButton>
+                         <p:commandButton
+                            class="ui-button-danger my-4 mx-2"
+                            style="width: 150px"
+                            icon="fas fa-file-pdf"
+                            ajax="false"
+                            value="PDF"
+                            action="#{reportController.exportTestCountReportToPDF()}"/>
                     </div>
 
                     <p:dataTable

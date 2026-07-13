@@ -72,27 +72,43 @@
                                                             <p:inputText
                                                                 value="#{webUserRoleController.current.name}" 
                                                                 id="txtRole" 
-                                                                class="w-100"
-                                                                required="true" 
-                                                                requiredMessage="Please enter a Name" >
+                                                                class="w-100">
                                                             </p:inputText>
                                                             <p:outputLabel value="Description" for="txtComments" ></p:outputLabel>
                                                             <p:inputTextarea
                                                                 class="w-100"
-                                                                value="#{webUserRoleController.current.description}" 
-                                                                id="txtComments" 
-                                                                required="true" 
-                                                                requiredMessage="Please enter a Name" >
+                                                                value="#{webUserRoleController.current.description}"
+                                                                id="txtComments">
                                                             </p:inputTextarea>
+                                                            <p:outputLabel value="Template Login Page" for="cmbLoginPage" rendered="#{webUserRoleController.current ne null}" ></p:outputLabel>
+                                                            <p:selectOneMenu
+                                                                id="cmbLoginPage"
+                                                                value="#{webUserRoleController.current.loginPage}"
+                                                                rendered="#{webUserRoleController.current ne null}"
+                                                                class="w-100"
+                                                                filter="true"
+                                                                filterMatchMode="contains">
+                                                                <f:selectItem itemLabel="None" itemValue="#{null}" ></f:selectItem>
+                                                                <f:selectItems
+                                                                    value="#{enumController.loginPages}"
+                                                                    var="lp"
+                                                                    itemLabel="#{lp.label}"
+                                                                    itemValue="#{lp}" />
+                                                            </p:selectOneMenu>
+                                                            <p:outputLabel value="Active" for="tglswt" ></p:outputLabel>
+                                                            <p:toggleSwitch id="tglswt" value="#{webUserRoleController.current.activated}" onIcon="pi pi-check" offIcon="pi pi-times" />
+                                                        
                                                         </p:panelGrid>
+                                                        
                                                         <p:commandButton
                                                             id="btnSave"
                                                             icon="fas fa-save"
                                                             class="ui-button-warning my-2"
-                                                            process="txtRole txtComments btnSave"
+                                                            process="txtRole txtComments cmbLoginPage btnSave tglswt"
                                                             update="lstItems focusForList actions growl"
                                                             value="Save" 
-                                                            action="#{webUserRoleController.saveCurrent()}" ></p:commandButton>
+                                                            action="#{webUserRoleController.saveCurrent()}" >
+                                                        </p:commandButton>
                                                     </p:panel>
                                                 </div>
                                             </div>

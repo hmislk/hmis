@@ -1,5 +1,6 @@
 package com.divudi.bean.clinical;
 
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.pharmacy.MeasurementUnitController;
 import com.divudi.bean.pharmacy.VmpController;
@@ -42,6 +43,8 @@ public class FavouriteController implements Serializable {
     MeasurementUnitController measurementUnitController;
     @Inject
     VmpController vmpController;
+    @Inject
+    ItemController itemController;
     /**
      * Properties
      */
@@ -51,6 +54,20 @@ public class FavouriteController implements Serializable {
     private List<MeasurementUnit> availableDoseUnits;
     private List<Item> availableItems;
     private boolean itemadd = false;
+
+    // Toggle buttons for medicine type filtering
+    private boolean includeVtm = true;
+    private boolean includeAtm = true;
+    private boolean includeVmp = true;
+    private boolean includeAmp = true;
+
+    // Age input helper properties
+    private Integer fromYears = 0;
+    private Integer fromMonths = 0;
+    private Integer fromDaysComponent = 0;
+    private Integer toYears = 0;
+    private Integer toMonths = 0;
+    private Integer toDaysComponent = 0;
 
     /**
      * Methods
@@ -72,18 +89,14 @@ public class FavouriteController implements Serializable {
     }
 
     public void fillFavouriteDisgnosis() {
-        System.out.println("DEBUG FILL: fillFavouriteDisgnosis() called");
-        System.out.println("DEBUG FILL: Selected item (diagnosis): " + (item != null ? item.getName() : "NULL"));
-        System.out.println("DEBUG FILL: Type: " + PrescriptionTemplateType.FavouriteDiagnosis);
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
-        System.out.println("DEBUG FILL: Found " + (items != null ? items.size() : "null") + " favourite diagnosis items");
     }
 
     public String toAddFavDig() {
         item = null;
         items = null;
         current = null;
-        return "/clinical/clinical_favourite_diagnosis";
+        return "/clinical/clinical_favourite_diagnosis?faces-redirect=true";
     }
 
     public String toAddFavItem() {
@@ -94,28 +107,7 @@ public class FavouriteController implements Serializable {
     }
 
     public void fillFavouriteItems(Item forItem, PrescriptionTemplateType type) {
-        System.out.println("DEBUG FILL: fillFavouriteItems() called");
-        System.out.println("DEBUG FILL: forItem: " + (forItem != null ? forItem.getName() : "NULL"));
-        System.out.println("DEBUG FILL: type: " + type);
         items = listFavouriteItems(forItem, type);
-        System.out.println("DEBUG FILL: listFavouriteItems returned " + (items != null ? items.size() : "null") + " items");
-        if (items != null && !items.isEmpty()) {
-            System.out.println("DEBUG FILL: Found items:");
-            for (int i = 0; i < items.size(); i++) {
-                PrescriptionTemplate template = items.get(i);
-                if (template != null && template.getItem() != null) {
-                    System.out.println("DEBUG FILL:   " + (i+1) + ". " + template.getItem().getName() +
-                                     " (Type: " + template.getType() +
-                                     ", ForItem: " + (template.getForItem() != null ? template.getForItem().getName() : "NULL") +
-                                     ", FromDays: " + template.getFromDays() +
-                                     ", ToDays: " + template.getToDays() + ")");
-                } else {
-                    System.out.println("DEBUG FILL:   " + (i+1) + ". NULL template or item");
-                }
-            }
-        } else {
-            System.out.println("DEBUG FILL: No items found");
-        }
     }
 
     public List<PrescriptionTemplate> listFavouriteItems(Item forItem, PrescriptionTemplateType type) {
@@ -131,13 +123,6 @@ public class FavouriteController implements Serializable {
     }
 
     public List<PrescriptionTemplate> listFavouriteItems(Item forItem, PrescriptionTemplateType type, Double weight, Long ageInDays) {
-        System.out.println("DEBUG QUERY: listFavouriteItems called with:");
-        System.out.println("DEBUG QUERY:   forItem: " + (forItem != null ? forItem.getName() + " (ID: " + forItem.getId() + ")" : "NULL"));
-        System.out.println("DEBUG QUERY:   type: " + type);
-        System.out.println("DEBUG QUERY:   weight: " + weight);
-        System.out.println("DEBUG QUERY:   ageInDays: " + ageInDays);
-        System.out.println("DEBUG QUERY:   currentUser: " + (sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getWebUserPerson().getNameWithTitle() : "NULL"));
-
         String j;
         Map m = new HashMap();
         j = "select i "
@@ -148,32 +133,24 @@ public class FavouriteController implements Serializable {
         if (type != null) {
             m.put("t", type);
             j += " and i.type=:t ";
-            System.out.println("DEBUG QUERY: Added type filter: " + type);
         }
 
         if(forItem!=null){
             m.put("fi", forItem);
             j += " and i.forItem=:fi ";
-            System.out.println("DEBUG QUERY: Added forItem filter: " + forItem.getName() + " (ID: " + forItem.getId() + ")");
         }
         if (weight != null) {
             j += " and ( i.fromKg < :wt and i.toKg > :wt ) ";
             m.put("wt", weight);
-            System.out.println("DEBUG QUERY: Added weight filter: " + weight);
         }
         if (ageInDays != null) {
             j += " and ( i.fromDays < :ad and i.toDays > :ad ) ";
             m.put("ad", (double)ageInDays);
-            System.out.println("DEBUG QUERY: Added age filter: " + ageInDays + " days");
         }
         j += " order by i.orderNo";
 
-        System.out.println("DEBUG QUERY: Final JPQL: " + j);
-        System.out.println("DEBUG QUERY: Parameters: " + m);
-
         m.put("wu", sessionController.getLoggedUser());
         List<PrescriptionTemplate> its = favouriteItemFacade.findByJpql(j, m);
-        System.out.println("DEBUG QUERY: Query returned " + (its != null ? its.size() : "null") + " results");
 
         if(its==null){
             its = new ArrayList<>();
@@ -235,6 +212,14 @@ public class FavouriteController implements Serializable {
             default:
         }
 
+        // Initialize age components
+        fromYears = 0;
+        fromMonths = 0;
+        fromDaysComponent = 0;
+        toYears = 0;
+        toMonths = 0;
+        toDaysComponent = 0;
+
         // Pre-populate fields from AMP/VMP properties
         onItemSelected();
     }
@@ -259,12 +244,28 @@ public class FavouriteController implements Serializable {
     }
 
     public void saveFavMedicine(){
+        System.out.println("API DEBUG SAVE: Starting saveFavMedicine()");
+        System.out.println("API DEBUG SAVE: item = " + (item != null ? item.getName() + " (ID: " + item.getId() + ")" : "NULL"));
+        System.out.println("API DEBUG SAVE: current = " + (current != null ? "exists" : "NULL"));
+        System.out.println("API DEBUG SAVE: user = " + (sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getWebUserPerson().getNameWithTitle() : "NULL"));
+
         current.setType(PrescriptionTemplateType.FavouriteMedicine);
         current.setForItem(item);
         current.setForWebUser(sessionController.getLoggedUser());
         current.setOrderNo(getItems().size() + 1.0);
+
+        System.out.println("API DEBUG SAVE: About to save - forItem=" + current.getForItem().getName() + " (ID: " + current.getForItem().getId() + ")");
+        System.out.println("API DEBUG SAVE: fromDays=" + current.getFromDays() + ", toDays=" + current.getToDays());
+        System.out.println("API DEBUG SAVE: dose=" + current.getDose());
+
         favouriteItemFacade.create(current);
+
+        System.out.println("API DEBUG SAVE: Save completed, ID=" + current.getId());
+
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteMedicine);
+
+        System.out.println("API DEBUG SAVE: After fillFavouriteItems, items.size()=" + (items != null ? items.size() : "null"));
+
         current = null;
         JsfUtil.addSuccessMessage("Saved");
     }
@@ -282,6 +283,9 @@ public class FavouriteController implements Serializable {
 
         // Populate available units based on medicine type
         prepareAvailableUnitsForEdit();
+
+        // Populate age components from existing data
+        populateAgeComponents();
     }
 
     /**
@@ -784,6 +788,243 @@ public class FavouriteController implements Serializable {
         favouriteItemFacade.edit(removingTemplate);
         fillFavouriteItems(item, PrescriptionTemplateType.FavouriteDiagnosis);
         JsfUtil.addSuccessMessage("Favourite diagnosis removed successfully");
+    }
+
+    // ========================================
+    // MEDICINE TYPE TOGGLE GETTERS AND SETTERS
+    // ========================================
+
+    public boolean isIncludeVtm() {
+        return includeVtm;
+    }
+
+    public void setIncludeVtm(boolean includeVtm) {
+        this.includeVtm = includeVtm;
+    }
+
+    public boolean isIncludeAtm() {
+        return includeAtm;
+    }
+
+    public void setIncludeAtm(boolean includeAtm) {
+        this.includeAtm = includeAtm;
+    }
+
+    public boolean isIncludeVmp() {
+        return includeVmp;
+    }
+
+    public void setIncludeVmp(boolean includeVmp) {
+        this.includeVmp = includeVmp;
+    }
+
+    public boolean isIncludeAmp() {
+        return includeAmp;
+    }
+
+    public void setIncludeAmp(boolean includeAmp) {
+        this.includeAmp = includeAmp;
+    }
+
+    /**
+     * Autocomplete method that uses the toggle filters
+     */
+    public List<Item> completeMedicineWithTypeFilter(String query) {
+        // Check if at least one type is selected
+        if (!includeVtm && !includeAtm && !includeVmp && !includeAmp) {
+            // If no types are selected, show a message and return empty list
+            JsfUtil.addErrorMessage("Please select at least one medicine type to search");
+            return new ArrayList<>();
+        }
+        return itemController.completeMedicineByTypeWithFilter(query, includeVtm, includeAtm, includeVmp, includeAmp);
+    }
+
+    /**
+     * Selects all medicine types
+     */
+    public void selectAllMedicineTypes() {
+        includeVtm = true;
+        includeAtm = true;
+        includeVmp = true;
+        includeAmp = true;
+    }
+
+    /**
+     * Deselects all medicine types
+     */
+    public void deselectAllMedicineTypes() {
+        includeVtm = false;
+        includeAtm = false;
+        includeVmp = false;
+        includeAmp = false;
+    }
+
+    /**
+     * Gets the count of selected medicine types
+     */
+    public int getSelectedMedicineTypesCount() {
+        int count = 0;
+        if (includeVtm) count++;
+        if (includeAtm) count++;
+        if (includeVmp) count++;
+        if (includeAmp) count++;
+        return count;
+    }
+
+    /**
+     * Gets a descriptive text of selected medicine types
+     */
+    public String getSelectedMedicineTypesText() {
+        List<String> selected = new ArrayList<>();
+        if (includeVtm) selected.add("VTM");
+        if (includeAtm) selected.add("ATM");
+        if (includeVmp) selected.add("VMP");
+        if (includeAmp) selected.add("AMP");
+
+        if (selected.isEmpty()) {
+            return "No types selected";
+        } else if (selected.size() == 4) {
+            return "All types selected";
+        } else {
+            return String.join(", ", selected) + " selected";
+        }
+    }
+
+    // ========================================
+    // AGE INPUT HELPER PROPERTIES AND METHODS
+    // ========================================
+
+    public Integer getFromYears() {
+        return fromYears;
+    }
+
+    public void setFromYears(Integer fromYears) {
+        this.fromYears = fromYears;
+    }
+
+    public Integer getFromMonths() {
+        return fromMonths;
+    }
+
+    public void setFromMonths(Integer fromMonths) {
+        this.fromMonths = fromMonths;
+    }
+
+    public Integer getFromDaysComponent() {
+        return fromDaysComponent;
+    }
+
+    public void setFromDaysComponent(Integer fromDaysComponent) {
+        this.fromDaysComponent = fromDaysComponent;
+    }
+
+    public Integer getToYears() {
+        return toYears;
+    }
+
+    public void setToYears(Integer toYears) {
+        this.toYears = toYears;
+    }
+
+    public Integer getToMonths() {
+        return toMonths;
+    }
+
+    public void setToMonths(Integer toMonths) {
+        this.toMonths = toMonths;
+    }
+
+    public Integer getToDaysComponent() {
+        return toDaysComponent;
+    }
+
+    public void setToDaysComponent(Integer toDaysComponent) {
+        this.toDaysComponent = toDaysComponent;
+    }
+
+    /**
+     * Calculates total days from years, months, and days components for "from" age
+     */
+    public void calculateFromDays() {
+        if (current == null) {
+            return;
+        }
+
+        int totalDays = 0;
+
+        if (fromYears != null) {
+            totalDays += fromYears * 365;
+        }
+
+        if (fromMonths != null) {
+            totalDays += fromMonths * 30;
+        }
+
+        if (fromDaysComponent != null) {
+            totalDays += fromDaysComponent;
+        }
+
+        current.setFromDays((double) totalDays);
+    }
+
+    /**
+     * Calculates total days from years, months, and days components for "to" age
+     */
+    public void calculateToDays() {
+        if (current == null) {
+            return;
+        }
+
+        int totalDays = 0;
+
+        if (toYears != null) {
+            totalDays += toYears * 365;
+        }
+
+        if (toMonths != null) {
+            totalDays += toMonths * 30;
+        }
+
+        if (toDaysComponent != null) {
+            totalDays += toDaysComponent;
+        }
+
+        current.setToDays((double) totalDays);
+    }
+
+    /**
+     * Populates the age input components from existing entity values
+     */
+    public void populateAgeComponents() {
+        if (current == null) {
+            return;
+        }
+
+        // Populate from age components
+        if (current.getFromDays() != null) {
+            int totalFromDays = current.getFromDays().intValue();
+            fromYears = totalFromDays / 365;
+            int remainingDays = totalFromDays % 365;
+            fromMonths = remainingDays / 30;
+            fromDaysComponent = remainingDays % 30;
+        } else {
+            fromYears = 0;
+            fromMonths = 0;
+            fromDaysComponent = 0;
+        }
+
+        // Populate to age components
+        if (current.getToDays() != null) {
+            int totalToDays = current.getToDays().intValue();
+            toYears = totalToDays / 365;
+            int remainingDays = totalToDays % 365;
+            toMonths = remainingDays / 30;
+            toDaysComponent = remainingDays % 30;
+        } else {
+            toYears = 0;
+            toMonths = 0;
+            toDaysComponent = 0;
+        }
     }
 
 }

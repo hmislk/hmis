@@ -54,7 +54,7 @@ public class ProcedureController implements Serializable {
     String selectText = "";
 
     public String navigateToManageProcedures() {
-        return "/emr/admin/procedures";
+        return "/emr/admin/procedures?faces-redirect=true";
     }
 
     public void downloadAsExcel() {
@@ -62,7 +62,7 @@ public class ProcedureController implements Serializable {
         try {
             // Create a new Excel workbook
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Proecdures");
+            Sheet sheet = workbook.createSheet("Proecedures");
 
             // Create a header row
             Row headerRow = sheet.createRow(0);
@@ -74,7 +74,7 @@ public class ProcedureController implements Serializable {
             int rowNum = 1;
             for (ClinicalEntity sym : items) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(rowNum);
+                row.createCell(0).setCellValue(rowNum-1);
                 row.createCell(1).setCellValue(sym.getName());
             }
 
@@ -137,18 +137,24 @@ public class ProcedureController implements Serializable {
     }
 
     public void saveSelected() {
-        if (current==null){
-            JsfUtil.addErrorMessage("Nothing to save");
+        if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Procedure Name before saving.");
+            return;
         }
+        if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Procedure Code before saving.");
+            return;
+        }
+        
         current.setSymanticType(SymanticType.Therapeutic_Procedure);
         if (getCurrent().getId() != null) {
             getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Updated");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            JsfUtil.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Saved");
         }
         recreateModel();
         getItems();

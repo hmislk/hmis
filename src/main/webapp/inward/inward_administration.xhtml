@@ -21,11 +21,16 @@
                                                              class="w-100" 
                                                              action="#{admissionTypeController.navigateToManageAdmissionTypes}"  >
                                             </p:commandButton>
-                                            <p:commandButton 
+                                            <p:commandButton
                                                 ajax="false"
-                                                value="Admission Items and Fees" 
+                                                value="Admission Items and Fees"
                                                 class="w-100"
                                                 action="#{admissionTypeController.navigateToManageAdmissionItemsAndFees()}"  ></p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="BHT Number Management"
+                                                class="w-100"
+                                                action="#{admissionNumberController.navigateToManageAdmissionNumbers()}" />
                                         </div>
                                     </p:tab>
                                     
@@ -67,6 +72,15 @@
                                             <p:commandButton ajax="false" value="Inward Price Adjustment - Investigation " class="w-100" action="/inward/inward_price_adjustment_investigation?faces-redirect=true" actionListener="#{inwardPriceAdjustmntController.preparedAdd()}"></p:commandButton>
                                             <p:commandButton ajax="false" value="Inward Price Adjustment - Pharmacy " class="w-100" action="/inward/inward_price_adjustment_pharmacy?faces-redirect=true" actionListener="#{inwardPriceAdjustmntController.preparedAdd()}"></p:commandButton>
                                             <p:commandButton ajax="false" value="Inward Price Adjustment - Store " class="w-100" action="/inward/inward_price_adjustment_store?faces-redirect=true" actionListener="#{inwardPriceAdjustmntController.preparedAdd()}"></p:commandButton>
+                                            <p:commandButton ajax="false" value="Service Charge Allowed - Fee Update " class="w-100" action="#{feeMarginAllowedController.navigateToManageFeeMarginAllowed()}"></p:commandButton>
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Discount Matrix">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false" value="Inward Discount Matrix - Services and Investigations" class="w-100" action="#{inwardDiscountMatrixController.navigateToDiscountMatrixServiceInvestigation()}"></p:commandButton>
+                                            <p:commandButton ajax="false" value="Inward Discount Matrix - Pharmacy" class="w-100" action="#{inwardDiscountMatrixController.navigateToDiscountMatrixPharmacy()}"></p:commandButton>
+                                            <p:commandButton ajax="false" value="Inward Discount Matrix - Room Facility Charges" class="w-100" action="#{inwardDiscountMatrixController.navigateToDiscountMatrixRoomCharges()}"></p:commandButton>
                                         </div>
                                     </p:tab>
 
@@ -75,21 +89,72 @@
                                             <p:commandButton ajax="false" value="Inward Prices" class="w-100" action="/inward/?faces-redirect=true" ></p:commandButton>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="Diagnosis Cards">
+                                    <p:tab title="Document Templates">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                ajax="false" 
+                                            <h:outputText value="Diagnosis Cards" styleClass="fw-bold text-muted small mt-1"/>
+                                            <p:commandButton
+                                                ajax="false"
                                                 value="Add Diagnosis Card Template"
-                                                class="w-100" 
+                                                class="w-100"
+                                                action="#{documentTemplateController.navigateToAddDiagnosisCardTemplate()}" >
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="List Diagnosis Card Templates"
+                                                class="w-100"
+                                                action="#{documentTemplateController.navigateToListDiagnosisCardTemplates()}" >
+                                            </p:commandButton>
+                                            <h:outputText value="Letters" styleClass="fw-bold text-muted small mt-2"/>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Add Letter Template"
+                                                class="w-100"
+                                                action="#{documentTemplateController.navigateToAddLetterTemplate()}" >
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="List Letter Templates"
+                                                class="w-100"
+                                                action="#{documentTemplateController.navigateToListLetterTemplates()}" >
+                                            </p:commandButton>
+                                            <h:outputText value="Legacy Uploaded Templates" styleClass="fw-bold text-muted small mt-2"/>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Add Uploaded Diagnosis Card Template"
+                                                class="w-100 ui-button-secondary"
                                                 action="#{uploadController.toAddNewDiagnosisCardTemplateUpload()}" >
-                                            </p:commandButton> 
-                                            <p:commandButton 
-                                                ajax="false" 
-                                                value="Uploaded Diagnosis Card Templates"
-                                                class="w-100" 
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="List Uploaded Diagnosis Card Templates"
+                                                class="w-100 ui-button-secondary"
                                                 action="#{uploadController.toListDiagnosisCardUploads()}" >
                                             </p:commandButton>
+                                        </div>
+                                    </p:tab>
 
+                                    <p:tab title="Appointment Schedules">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton ajax="false"
+                                                             value="Appointment Schedule Templates"
+                                                             class="w-100"
+                                                             icon="fa fa-calendar"
+                                                             action="#{appointmentScheduleTemplateController.navigateToManageTemplates()}" />
+                                            <p:commandButton ajax="false"
+                                                             value="Appointment Date Overrides"
+                                                             class="w-100"
+                                                             icon="fa fa-calendar-times-o"
+                                                             action="#{appointmentScheduleTemplateController.navigateToManageDateOverrides()}" />
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Charge Type Labels">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Manage Charge Type Labels"
+                                                class="w-100"
+                                                action="inward_charge_type_labels?faces-redirect=true"/>
                                         </div>
                                     </p:tab>
 

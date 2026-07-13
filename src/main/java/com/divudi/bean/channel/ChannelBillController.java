@@ -15,6 +15,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.MessageType;
+import com.divudi.core.data.PatientRegistrationSource;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
@@ -2219,11 +2220,24 @@ public class ChannelBillController implements Serializable {
                 getNewPatient().setCreatedAt(new Date());
                 getNewPatient().getPerson().setCreater(getSessionController().getLoggedUser());
                 getNewPatient().getPerson().setCreatedAt(new Date());
+                getNewPatient().setRegistrationSource(resolveRegistrationSource());
                 getPersonFacade().create(getNewPatient().getPerson());
                 getPatientFacade().create(getNewPatient());
                 break;
             case "tabSearchPt":
                 break;
+        }
+    }
+
+    private PatientRegistrationSource resolveRegistrationSource() {
+        if (paymentMethod == PaymentMethod.OnCall) {
+            return PatientRegistrationSource.CALL_CENTRE;
+        } else if (paymentMethod == PaymentMethod.Agent || paymentMethod == PaymentMethod.OnlineBookingAgent) {
+            return PatientRegistrationSource.THIRD_PARTY_AGENT;
+        } else if (paymentMethod == PaymentMethod.OnlineSettlement) {
+            return PatientRegistrationSource.ONLINE_SELF;
+        } else {
+            return PatientRegistrationSource.WALK_IN;
         }
     }
 

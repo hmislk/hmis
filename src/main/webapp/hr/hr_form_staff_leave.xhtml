@@ -8,61 +8,190 @@
                 xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="content">
-        <h:form>
-            <p:panel header="Leave Application Form">
-                <h:panelGrid columns="3" styleClass="alignTop" >
+
+        <style>
+            .laf-wrapper { padding: 8px 4px 24px 4px; }
+
+            .laf-toolbar {
+                display: flex;
+                gap: 16px;
+                align-items: flex-start;
+                flex-wrap: wrap;
+                margin-bottom: 20px;
+            }
+            .laf-toolbar > .ui-panel { flex: 1 1 340px; min-width: 300px; }
+            .laf-toolbar > .ui-panel.laf-links { flex: 0 0 180px; min-width: 160px; }
+
+            .laf-field {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                margin-bottom: 10px;
+            }
+            .laf-field label {
+                font-weight: 600;
+                font-size: 12px;
+                color: #555;
+            }
+
+            .laf-actions {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                margin-top: 12px;
+                padding-top: 12px;
+                border-top: 1px solid #e0e0e0;
+                align-items: center;
+            }
+            .laf-actions .ui-button { margin: 0; }
+
+            .laf-summary {
+                display: flex;
+                gap: 0;
+                margin-bottom: 10px;
+            }
+            .laf-summary .ui-panel { flex: 1; margin: 0 4px 0 0; }
+            .laf-summary .ui-panel:last-child { margin-right: 0; }
+            .laf-summary .ui-panel .ui-panel-content {
+                text-align: center;
+                padding: 8px 4px !important;
+            }
+            .laf-summary-label {
+                font-size: 11px;
+                font-weight: 600;
+                display: block;
+                margin-bottom: 2px;
+            }
+            .laf-summary-value {
+                font-size: 18px;
+                font-weight: 600;
+                display: block;
+            }
+
+            .laf-links-grid td { padding: 6px 4px !important; }
+
+            .laf-table-wrap {
+                margin-top: 16px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .laf-table-wrap .ui-datatable table {
+                min-width: 900px;
+                border-collapse: collapse;
+            }
+
+            .laf-shifts-wrap .ui-datatable table { min-width: unset; }
+        </style>
+
+        <div class="laf-wrapper">
+            <h:form id="form">
+
+                <div class="laf-toolbar">
+
+                    <!-- ═══ Leave Form Details ═══ -->
                     <p:panel header="Leave Form Details">
-                        <h:panelGrid columns="2">
-                            <h:outputLabel value="Form Number"/>
+                        
+                        <p:messages id="messages"
+                            showDetail="true"
+                            closable="true"/>
+
+                        <div class="laf-field">
+                            <label>Form Number</label>
                             <p:inputText value="#{staffLeaveApplicationFormController.currentLeaveForm.code}"/>
-                            <h:outputLabel value="Staff : "/>
+                        </div>
+
+                        <div class="laf-field">
+                            <label>Staff</label>
                             <au:completeStaff value="#{staffLeaveApplicationFormController.currentLeaveForm.staff}"/>
-                            <h:outputLabel value="Leave Type"/>
-                            <p:selectOneMenu  value="#{staffLeaveApplicationFormController.currentLeaveForm.leaveType}">
-                                <f:selectItem itemLabel="Select Day Type"/>
-                                <f:selectItems value="#{enumController.leaveType}"/>                                
-                            </p:selectOneMenu>                                                    
-                            <h:outputLabel value="From Date"/>
-                            <p:calendar id="frmDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.fromDate}"
-                                        pattern="dd MM yy">     
-                            </p:calendar>   
-                            <h:outputLabel value="To Date"/>
-                            <p:calendar id="toDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.toDate}"
-                                        pattern="dd MM yy">
-                            </p:calendar>   
-                            <p:commandButton ajax="false" value="Leave Count" action="#{staffLeaveApplicationFormController.calLeaveCount()}"/>
-                            <h:panelGrid columns="3">
-                                <h:outputLabel value="Leave Entitle || "/>
-                                <h:outputLabel value="Leave Utilized || "/>
-                                <h:outputLabel value="Balance"/>
-                                <h:outputLabel value="#{staffLeaveApplicationFormController.leaveEntitle}"/>
-                                <h:outputLabel value="#{staffLeaveApplicationFormController.leaved}"/>
-                                <h:outputLabel value="#{staffLeaveApplicationFormController.leaveEntitle - staffLeaveApplicationFormController.leaved}"/>
-                            </h:panelGrid>
-                            <p:commandButton ajax="false" value="Process  Shift" 
-                                            action="#{staffLeaveApplicationFormController.fetchStaffShift()}" />
+                        </div>
+
+                        <div class="laf-field">
+                            <label>Leave Type</label>
+                            <p:selectOneMenu value="#{staffLeaveApplicationFormController.currentLeaveForm.leaveType}">
+                                <f:selectItem itemLabel="Select Leave Type"/>
+                                <f:selectItems value="#{enumController.leaveType}"/>
+                            </p:selectOneMenu>
+                        </div>
+
+                        <div class="laf-field">
+                            <label>From Date</label>
+                            <p:calendar id="frmDate"
+                                        value="#{staffLeaveApplicationFormController.currentLeaveForm.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                        showOn="button"/>
+                        </div>
+
+                        <div class="laf-field">
+                            <label>To Date</label>
+                            <p:calendar id="toDate"
+                                        value="#{staffLeaveApplicationFormController.currentLeaveForm.toDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                        showOn="button"/>
+                        </div>
+
+                        <div class="laf-actions" style="margin-top:4px; padding-top:4px; border-top:none;">
+                            <p:commandButton value="Calculate Leave Count"
+                                             icon="ui-icon-calculator"
+                                             ajax="false"
+                                             action="#{staffLeaveApplicationFormController.calLeaveCount()}"/>
+                        </div>
+
+                        <div class="laf-summary" style="margin-top: 10px;">
+                            <p:panel header="Entitlement">
+                                <span class="laf-summary-value">
+                                    <h:outputLabel value="#{staffLeaveApplicationFormController.leaveEntitle}"/>
+                                </span>
+                            </p:panel>
+                            <p:panel header="Utilized">
+                                <span class="laf-summary-value">
+                                    <h:outputLabel value="#{staffLeaveApplicationFormController.leaved}"/>
+                                </span>
+                            </p:panel>
+                            <p:panel header="Balance">
+                                <span class="laf-summary-value">
+                                    <h:outputLabel value="#{staffLeaveApplicationFormController.leaveEntitle - staffLeaveApplicationFormController.leaved}"/>
+                                </span>
+                            </p:panel>
+                        </div>
+
+                        <div class="laf-actions" style="border-top:none; padding-top:0; margin-top:0;">
+                            <p:commandButton value="Process Shift"
+                                             icon="ui-icon-refresh"
+                                             ajax="false"
+                                             action="#{staffLeaveApplicationFormController.fetchStaffShift()}"/>
+                        </div>
+
+                        <div class="laf-shifts-wrap" style="margin-bottom: 10px;">
                             <p:dataTable value="#{staffLeaveApplicationFormController.staffShifts}" var="l">
-                                <p:column>
-                                    #{l.shift.name}
+                                <p:column headerText="Shift">
+                                    <h:outputLabel value="#{l.shift.name}"/>
                                 </p:column>
-                                <p:column>
-                                    #{l.shiftStartTime}
+                                <p:column headerText="Start">
+                                    <h:outputLabel value="#{l.shiftStartTime}"/>
                                 </p:column>
-                                <p:column>
-                                    #{l.shiftEndTime}
+                                <p:column headerText="End">
+                                    <h:outputLabel value="#{l.shiftEndTime}"/>
                                 </p:column>
                             </p:dataTable>
+                        </div>
 
-                            <p:commandButton ajax="false" value="Process Lie Shift" 
-                                            action="#{staffLeaveApplicationFormController.fetchStaffShiftLie()}" />
+                        <div class="laf-actions" style="border-top:none; padding-top:0; margin-top:0; margin-bottom:10px;">
+                            <p:commandButton value="Process Lieu Shift"
+                                             icon="ui-icon-refresh"
+                                             ajax="false"
+                                             action="#{staffLeaveApplicationFormController.fetchStaffShiftLie()}"/>
+                        </div>
+
+                        <div class="laf-field">
+                            <label>Select Lieu Shift</label>
                             <p:selectOneMenu id="s1"
                                              var="t"
                                              value="#{staffLeaveApplicationFormController.currentLeaveForm.staffShift}">
                                 <f:selectItem itemLabel="Select Staff Shift"/>
                                 <f:selectItems value="#{staffLeaveApplicationFormController.staffShiftsLie}"
-                                               var="itm" itemLabel="#{itm.shift.name}" 
-                                               itemValue="#{itm}" />
-                                <p:column  headerText="Shift Date">
+                                               var="itm" itemLabel="#{itm.shift.name}"
+                                               itemValue="#{itm}"/>
+                                <p:column headerText="Shift Date">
                                     <h:outputLabel value="#{t.shiftDate}">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
                                     </h:outputLabel>
@@ -71,116 +200,194 @@
                                     <h:outputLabel value="#{t.shift.name}"/>
                                 </p:column>
                             </p:selectOneMenu>
+                        </div>
 
-                            <h:outputLabel value="Requested Date"/>
-                            <p:calendar id="requestedDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.requestedDate}"
-                                        pattern="dd MM yy">
-                            </p:calendar>
-                            <h:outputLabel value="Leave Approved Person"/>
-                            <au:completeStaff value="#{staffLeaveApplicationFormController.currentLeaveForm.approvedStaff}"/>                            
-                            <h:outputLabel value="Leave Approved Date"/>
-                            <p:calendar id="approvedDate" value="#{staffLeaveApplicationFormController.currentLeaveForm.approvedAt}"
-                                        pattern="dd MM yy" >
-                            </p:calendar>
-                            <h:outputLabel value="Comment"/>
-                            <p:inputTextarea value="#{staffLeaveApplicationFormController.currentLeaveForm.comments}" />
+                        <div class="laf-field">
+                            <label>Requested Date</label>
+                            <p:calendar id="requestedDate"
+                                        value="#{staffLeaveApplicationFormController.currentLeaveForm.requestedDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                        showOn="button"/>
+                        </div>
 
-                            <h:panelGroup>
-                                <p:commandButton id="btnAdd" ajax="false" value="Save" 
-                                                 disabled="#{staffLeaveApplicationFormController.currentLeaveForm.id ne null}"
-                                                action="#{staffLeaveApplicationFormController.saveLeaveform()}"/>
+                        <div class="laf-field">
+                            <label>Approved By</label>
+                            <au:completeStaff value="#{staffLeaveApplicationFormController.currentLeaveForm.approvedStaff}"/>
+                        </div>
 
-                                <p:commandButton ajax="false" value="Clear" 
-                                                action="#{staffLeaveApplicationFormController.clear}"/>
-                                <p:commandButton ajax="false" value="Delete" 
-                                                action="#{staffLeaveApplicationFormController.deleteLeaveForm()}"/>
-                                <p:inputText id="recomment" value="#{staffLeaveApplicationFormController.currentLeaveForm.retireComments}"/>
-                                
-                            </h:panelGroup>                     
-                        </h:panelGrid>
-                    </p:panel> 
-                    <p:panel header="Search Leave Forms" >
-                        <p:panel>
-                            <p:panelGrid columns="2" >
-                                <h:outputLabel value="From Date"/>
-                                <p:calendar value="#{staffLeaveApplicationFormController.fromDate}"
-                                            pattern="dd MM yy">     
-                                </p:calendar>   
-                                <h:outputLabel value="To Date"/>
-                                <p:calendar value="#{staffLeaveApplicationFormController.toDate}"
-                                            pattern="dd MM yy">
-                                </p:calendar> 
-                                <h:outputLabel value="Staff : "/>
-                                <au:completeStaff value="#{staffLeaveApplicationFormController.staff}"/>                               
-                                <h:outputLabel value="Leave Type"/>
-                                <p:selectOneMenu  value="#{staffLeaveApplicationFormController.leaveType}">
-                                    <f:selectItem itemLabel="Select Day Type"/>
-                                    <f:selectItems value="#{enumController.leaveType}"/>
-                                </p:selectOneMenu> 
-                                <h:outputLabel value="Leave Approved Person"/>
-                                <au:completeStaff value="#{staffLeaveApplicationFormController.approvedStaff}"/>            
-                                <h:outputLabel value="With Out Cancel"/>
-                                <p:selectBooleanCheckbox value="#{staffLeaveApplicationFormController.withOutretRierd}"
-                                                         itemLabel="With Out Cancel"/>
-                                <p:commandButton value="Search Created Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTable()}" />
-                                <p:commandButton value="Search Approved Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableApprovedDate()}" />
-                                <p:commandButton value="Search Shift Date" ajax="false" action="#{staffLeaveApplicationFormController.createleaveTableShiftDate()}" />
-                                <p:commandButton value="Go to Leave Entitle" ajax="false" action="hr_staff_leave_entitle" />
-                            </p:panelGrid>
-                        </p:panel>
-                        <p:panel>
-                            <p:dataTable value="#{staffLeaveApplicationFormController.leaveForms}" var="l" 
-                                         rowStyleClass="#{l.retired eq true ? 'redText':''}"
-                                         scrollable="true"
-                                         scrollHeight="300" >
-                                <p:column headerText="View" >
-                                    <p:commandButton ajax="false" value="View" action="#{staffLeaveApplicationFormController.viewLeaveForm(l)}" disabled="#{l.retired}"></p:commandButton>
+                        <div class="laf-field">
+                            <label>Approved Date</label>
+                            <p:calendar id="approvedDate"
+                                        value="#{staffLeaveApplicationFormController.currentLeaveForm.approvedAt}"
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                        showOn="button"/>
+                        </div>
+
+                        <div class="laf-field">
+                            <label>Comment</label>
+                            <p:inputTextarea value="#{staffLeaveApplicationFormController.currentLeaveForm.comments}"
+                                             rows="3" style="width:100%;"/>
+                        </div>
+
+                        <div class="laf-field">
+                            <label>Cancel Reason</label>
+                            <p:inputText id="recomment"
+                                         value="#{staffLeaveApplicationFormController.currentLeaveForm.retireComments}"
+                                         style="width:100%;"/>
+                        </div>
+
+                        <div class="laf-actions">
+                            <p:commandButton id="btnAdd"
+                                             value="Save"
+                                             icon="ui-icon-disk"
+                                             styleClass="ui-button-success"
+                                             ajax="false"
+                                             disabled="#{staffLeaveApplicationFormController.currentLeaveForm.id ne null}"
+                                             action="#{staffLeaveApplicationFormController.saveLeaveform()}"/>
+                            <p:commandButton value="Clear"
+                                             icon="ui-icon-refresh"
+                                             ajax="false"
+                                             action="#{staffLeaveApplicationFormController.clear}"/>
+                            <p:commandButton value="Delete"
+                                             icon="ui-icon-trash"
+                                             styleClass="ui-button-danger"
+                                             ajax="false"
+                                             action="#{staffLeaveApplicationFormController.deleteLeaveForm()}"/>
+                        </div>
+                    </p:panel>
+
+                    <!-- ═══ Search Leave Forms ═══ -->
+                    <p:panel header="Search Leave Forms">
+
+                        <div class="laf-field">
+                            <label>From Date</label>
+                            <p:calendar id="srchFromDate"
+                                        value="#{staffLeaveApplicationFormController.fromDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                        showOn="button"/>
+                        </div>
+
+                        <div class="laf-field">
+                            <label>To Date</label>
+                            <p:calendar id="srchToDate"
+                                        value="#{staffLeaveApplicationFormController.toDate}"
+                                        pattern="#{sessionController.applicationPreference.longDateFormat}"
+                                        showOn="button"/>
+                        </div>
+
+                        <div class="laf-field">
+                            <label>Staff</label>
+                            <au:completeStaff value="#{staffLeaveApplicationFormController.staff}"/>
+                        </div>
+
+                        <div class="laf-field">
+                            <label>Leave Type</label>
+                            <p:selectOneMenu id="srchLeaveType"
+                                             value="#{staffLeaveApplicationFormController.leaveType}">
+                                <f:selectItem itemLabel="Select Leave Type"/>
+                                <f:selectItems value="#{enumController.leaveType}"/>
+                            </p:selectOneMenu>
+                        </div>
+
+                        <div class="laf-field">
+                            <label>Approved By</label>
+                            <au:completeStaff value="#{staffLeaveApplicationFormController.approvedStaff}"/>
+                        </div>
+
+                        <div class="laf-field" style="flex-direction:row; align-items:center; gap:8px;">
+                            <p:selectBooleanCheckbox id="withoutCancel"
+                                                     value="#{staffLeaveApplicationFormController.withOutretRierd}"/>
+                            <label>Without Cancelled</label>
+                        </div>
+
+                        <div class="laf-actions">
+                            <p:commandButton value="Search by Created Date"
+                                             icon="ui-icon-search"
+                                             styleClass="ui-button-info"
+                                             ajax="false"
+                                             action="#{staffLeaveApplicationFormController.createleaveTable()}"/>
+                            <p:commandButton value="Search by Approved Date"
+                                             icon="ui-icon-search"
+                                             styleClass="ui-button-info"
+                                             ajax="false"
+                                             action="#{staffLeaveApplicationFormController.createleaveTableApprovedDate()}"/>
+                            <p:commandButton value="Search by Shift Date"
+                                             icon="ui-icon-search"
+                                             styleClass="ui-button-info"
+                                             ajax="false"
+                                             action="#{staffLeaveApplicationFormController.createleaveTableShiftDate()}"/>
+                            <p:commandButton value="Leave Entitlement"
+                                             icon="ui-icon-extlink"
+                                             ajax="false"
+                                             action="hr_staff_leave_entitle"/>
+                        </div>
+
+                        <div class="laf-table-wrap">
+                            <p:dataTable value="#{staffLeaveApplicationFormController.leaveForms}"
+                                         var="l"
+                                         rowStyleClass="#{l.retired eq true ? 'redText' : null}">
+
+                                <p:column headerText="Action" style="width:70px;">
+                                    <p:commandButton value="View"
+                                                     icon="ui-icon-search"
+                                                     ajax="false"
+                                                     disabled="#{l.retired}"
+                                                     action="#{staffLeaveApplicationFormController.viewLeaveForm(l)}"/>
                                 </p:column>
-                                <p:column headerText="id">
-                                    <p:outputLabel value="#{l.id}" ></p:outputLabel>
-                                </p:column>                               
-                                   <p:column headerText="code">
-                                    <p:outputLabel value="#{l.code}" ></p:outputLabel>
-                                </p:column>                               
+                                <p:column headerText="ID" style="width:50px;">
+                                    <p:outputLabel value="#{l.id}"/>
+                                </p:column>
+                                <p:column headerText="Code" style="width:70px;">
+                                    <p:outputLabel value="#{l.code}"/>
+                                </p:column>
                                 <p:column headerText="Staff">
-                                    <p:outputLabel value="#{l.staff.person.nameWithTitle}" ></p:outputLabel>
+                                    <p:outputLabel value="#{l.staff.person.nameWithTitle}"/>
                                 </p:column>
-                                <p:column headerText="From">
-                                    <p:outputLabel value="#{l.fromDate}" >
-                                        <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                                <p:column headerText="From" style="width:150px;">
+                                    <p:outputLabel value="#{l.fromDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="To">
-                                    <p:outputLabel value="#{l.toDate}" >
-                                        <f:convertDateTime pattern="yyyy MM dd HH:mm:ss" />
+                                <p:column headerText="To" style="width:150px;">
+                                    <p:outputLabel value="#{l.toDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Aproved By">
-                                    <p:outputLabel value="#{l.approvedStaff.person.nameWithTitle}" ></p:outputLabel>
+                                <p:column headerText="Approved By">
+                                    <p:outputLabel value="#{l.approvedStaff.person.nameWithTitle}"/>
                                 </p:column>
                                 <p:column headerText="Comment">
-                                    <p:outputLabel value="#{l.comments}" ></p:outputLabel>
+                                    <p:outputLabel value="#{l.comments}"/>
                                 </p:column>
                                 <p:column headerText="Creator">
-                                    <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}" ></p:outputLabel>
-                                    <br></br>
-                                    <p:outputLabel value="Deleted By  #{l.retirer.webUserPerson.nameWithTitle}" rendered="#{l.retired}" style="color: blue;"/>
+                                    <p:outputLabel value="#{l.creater.webUserPerson.nameWithTitle}"/>
+                                    <h:outputLabel value="Deleted by #{l.retirer.webUserPerson.nameWithTitle}"
+                                                   rendered="#{l.retired}"
+                                                   style="color:#2c7be5; font-size:12px; display:block;"/>
                                 </p:column>
-                                <p:column headerText="Created AT">
-                                    <p:outputLabel value="#{l.createdAt}" ></p:outputLabel>
+                                <p:column headerText="Created At" style="width:150px;">
+                                    <p:outputLabel value="#{l.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </p:outputLabel>
+                                </p:column>
 
-                                </p:column>
                             </p:dataTable>
-                        </p:panel>
+                        </div>
                     </p:panel>
-                    <p:panel header="Links" >
-                        <h:panelGrid columns="2" >
-                            <p:commandLink ajax="false" value="Finger Print Analysis" action="/hr/hr_shift_table_finger_print_by_staff" ></p:commandLink>
+
+                    <!-- ═══ Links ═══ -->
+                    <p:panel header="Links" styleClass="laf-links">
+                        <h:panelGrid columns="1" styleClass="laf-links-grid">
+                            <p:commandLink ajax="false" value="Fingerprint Analysis"
+                                           action="/hr/hr_shift_table_finger_print_by_staff"/>
                         </h:panelGrid>
                     </p:panel>
-                </h:panelGrid>              
-            </p:panel>
-        </h:form>
-    </ui:define> 
+
+                </div>
+
+            </h:form>
+        </div>
+
+    </ui:define>
 
 </ui:composition>

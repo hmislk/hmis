@@ -46,9 +46,16 @@
                             </div>
                             <p:commandButton class="ui-button-success"
                                              icon="fas fa-search"
-                                             value="Search"
+                                             value="Search My Bills"
                                              action="#{searchController.createShiftShortageBillsTable()}"
                                              update="tb">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-warning mx-2"
+                                             icon="fas fa-users"
+                                             value="Search All Users"
+                                             action="#{searchController.createAllShiftShortageBillsTable()}"
+                                             update="tb"
+                                             rendered="#{webUserController.hasPrivilege('ViewAllShiftShortageBills')}">
                             </p:commandButton>
                         </h:panelGroup>
 
@@ -161,9 +168,28 @@
                                 </h:outputLabel>
                             </p:column>
 
+                            <p:column headerText="Status">
+                                <h:panelGroup rendered="#{bill.cancelled}">
+                                    <span class="badge bg-danger">
+                                        <h:outputText value="Cancelled"/>
+                                    </span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{!bill.cancelled and bill.paid}">
+                                    <span class="badge bg-success">
+                                        <h:outputText value="Settled"/>
+                                    </span>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{!bill.paid and !bill.cancelled}">
+                                    <span class="badge bg-warning text-dark">
+                                        <h:outputText value="Outstanding"/>
+                                    </span>
+                                </h:panelGroup>
+                            </p:column>
 
                             <p:column headerText="Actions">
-                                <p:commandButton icon="pi pi-wallet" styleClass="m-1" ajax="false" title="Manage Bill" action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                <p:commandButton icon="pi pi-wallet" styleClass="m-1" ajax="false" title="Manage Bill"
+                                                 action="#{billSearch.navigateToManageBillByAtomicBillType()}"
+                                                 rendered="#{bill.creater.id == sessionController.loggedUser.id}">
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
                                 </p:commandButton>
                                 <p:commandButton icon="pi pi-search" styleClass="m-1" ajax="false" title="View Bill" action="#{billSearch.navigateToViewBillByAtomicBillType()}">

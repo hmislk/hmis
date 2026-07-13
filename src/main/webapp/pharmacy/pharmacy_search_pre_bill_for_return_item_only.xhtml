@@ -101,19 +101,63 @@
                                             ajax="false"
                                             id="viewBill"
                                             icon="fas fa-file-invoice"
-                                            action="pharmacy_reprint_bill_sale">
-                                            <f:setPropertyActionListener value="#{searchController.loadBillById(bill.referenceBillId)}"
-                                                                         target="#{pharmacyBillSearch.bill}"/>
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(bill.referenceBillId)}">
                                         </p:commandButton>
                                         <p:tooltip for="viewBill" value="View Bill"  showDelay="0" hideDelay="0"></p:tooltip>
                                         <p:commandButton
+                                            id="btnReturnItemOnly"
                                             ajax="false"
                                             value="Return Item Only "
                                             action="#{preReturnController.navigateToReturnRetailSaleItemsOnly}"
                                             class="mx-2"
-                                            disabled="#{bill.cancelled eq true}">
+                                            disabled="#{bill.cancelled eq true or preReturnController.isReturnBlockedByDayLimit(searchController.loadBillById(bill.id))}">
                                             <f:setPropertyActionListener value="#{searchController.loadBillById(bill.id)}" target="#{preReturnController.bill}"  />
                                         </p:commandButton>
+                                        <p:commandButton
+                                            id="btnRequestReturnApproval"
+                                            type="button"
+                                            value="Request Approval"
+                                            title="Request approval to return this bill beyond the no-approval window"
+                                            icon="pi pi-send"
+                                            class="mx-2"
+                                            onclick="PF('reqApprovalDlg#{bill.id}').show();"
+                                            rendered="#{bill.cancelled ne true and preReturnController.needsReturnApproval(searchController.loadBillById(bill.id))}">
+                                        </p:commandButton>
+
+                                        <p:dialog
+                                            id="reqApprovalDlg"
+                                            widgetVar="reqApprovalDlg#{bill.id}"
+                                            header="Request Return Approval"
+                                            modal="true"
+                                            width="450px"
+                                            height="auto"
+                                            resizable="false"
+                                            rendered="#{bill.cancelled ne true and preReturnController.needsReturnApproval(searchController.loadBillById(bill.id))}">
+                                            <div class="p-2">
+                                                <p:outputLabel for="reqApprovalComment" value="Reason for Return Approval Request" class="form-label"/>
+                                                <p:inputTextarea
+                                                    id="reqApprovalComment"
+                                                    value="#{requestController.comment}"
+                                                    rows="3"
+                                                    class="w-100"
+                                                    placeholder="Explain why this return needs approval" />
+                                                <div class="d-flex justify-content-end gap-2 mt-2">
+                                                    <p:commandButton
+                                                        id="btnCancelReturnApproval"
+                                                        value="Cancel"
+                                                        type="button"
+                                                        onclick="PF('reqApprovalDlg#{bill.id}').hide();"
+                                                        class="ui-button-secondary" />
+                                                    <p:commandButton
+                                                        id="btnSubmitReturnApprovalRequest"
+                                                        value="Submit Request"
+                                                        ajax="false"
+                                                        icon="fa fa-paper-plane"
+                                                        class="ui-button-success"
+                                                        action="#{requestController.createRequestForPharmacyRetailSaleReturnById(bill.id)}" />
+                                                </div>
+                                            </div>
+                                        </p:dialog>
                                     </p:column>
 
                                     <p:column width="300px" headerText="Return Bills">

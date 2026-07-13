@@ -31,11 +31,18 @@
                                         ajax="false">
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        class="ui-button-info mx-2" 
-                                        icon="fas fa-print" 
-                                        value="Reprint" 
-                                        ajax="false" 
+                                    <p:outputLabel value="Paper Format" class="mx-2 mt-2"/>
+                                    <p:selectOneMenu value="#{sessionController.departmentPreference.inwardServiceBillPaperType}" style="width: 14em;" class="mx-1">
+                                        <f:selectItem itemLabel="Select Format" />
+                                        <f:selectItems value="#{enumController.paperTypes}" var="pt" itemLabel="#{pt.label}" itemValue="#{pt}" />
+                                    </p:selectOneMenu>
+                                    <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button mx-1" title="Apply Format"></p:commandButton>
+
+                                    <p:commandButton
+                                        class="ui-button-info mx-2"
+                                        icon="fas fa-print"
+                                        value="Reprint"
+                                        ajax="false"
                                         action="#"  >
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
@@ -58,18 +65,14 @@
                                         disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded }"  
                                         class="m-2 ui-button-danger">                           
                                     </p:commandButton>
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        value="Return" 
+                                    <p:commandButton
+                                        id="btnReturn"
+                                        ajax="false"
+                                        value="Return"
                                         icon="fa fa-undo"
-                                        actionListener="#{billSearch.recreateModel()}"
-                                        action="inward_bill_service_refund?faces-redirect=true"
-                                        disabled="#{inwardSearch.bill.cancelled}"
-                                        class="m-2 "
-                                        >    
-                                        <f:setPropertyActionListener  
-                                            value="#{inwardSearch.bill}" 
-                                            target="#{billSearch.bill}"  />
+                                        action="#{inwardServiceRefundController.navigateToRefundInwardServiceBill(inwardSearch.bill)}"
+                                        disabled="#{inwardSearch.bill.cancelled or inwardServiceRefundController.fullyReturned}"
+                                        class="m-2 ">
                                     </p:commandButton>
 
                                     <p:commandButton 
@@ -112,8 +115,8 @@
                                             <in:bhtDetail admission="#{inwardSearch.bill.patientEncounter}"/>
                                         </p:panel>
                                     </div>
-                                    <div class="col-4 ">
-                                        <p:panelGrid columns="1" class="w-100">
+                                    <div class="col-4">
+                                        <p:panelGrid columns="1" class="w-100" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                             <f:facet name = "header">
                                                 <h:outputLabel value="Bill Details"/>
                                             </f:facet>
@@ -246,54 +249,88 @@
                                 <p:dataTable rowIndexVar="rowIndex"
                                              editable="true"
                                              value="#{inwardSearch.billFees}" var="bip" >    
-                                    <p:ajax event="rowEdit" listener="#{billSearch.onEdit}" />  
-                                    <p:ajax event="rowEditCancel" listener="#{billSearch.onEdit}" /> 
                                     <p:column width="2em">
                                         <f:facet name="header" >No</f:facet>
                                         <h:outputLabel value="#{rowIndex+1}"/>
                                     </p:column>
-                                    <p:column>
+                                    <p:column style="min-width: 14em;">
                                         <f:facet name="header">Item</f:facet>
                                         <h:outputLabel value="#{bip.billItem.item.name}"/>
                                     </p:column>
 
-                                    <p:column>
-                                        <f:facet name="header">Fee</f:facet>
+                                    <p:column width="4em" class="text-end">
+                                        <f:facet name="header">Qty</f:facet>
+                                        <h:outputLabel value="#{bip.billItem.qty}">
+                                            <f:convertNumber pattern="#" />
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                        <f:facet name="header">Unit Rate</f:facet>
+                                        <h:outputLabel value="#{bip.feeUnitGrossValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                        <f:facet name="header">Total Gross</f:facet>
+                                        <h:outputLabel value="#{bip.feeGrossValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                        <f:facet name="header">Discount</f:facet>
+                                        <h:outputLabel value="#{bip.feeDiscount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                        <f:facet name="header">Service Charge</f:facet>
+                                        <h:outputLabel value="#{bip.feeMargin}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:column>
+
+                                    <p:column width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                        <f:facet name="header">Net Total</f:facet>
                                         <h:outputLabel value="#{bip.feeValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                    </p:column>  
+                                    </p:column>
+
                                     <p:column>
                                         <f:facet name="header">Fee Name</f:facet>
                                         <h:outputLabel value="#{bip.fee.name}"/>
-                                    </p:column> 
+                                    </p:column>
                                     <p:column>
                                         <f:facet name="header">Speciality</f:facet>
                                         <h:outputLabel value="#{bip.fee.speciality.name}"/>
-                                    </p:column> 
+                                    </p:column>
                                     <p:column headerText="Payee">
-                                        <p:cellEditor>  
-                                            <f:facet name="output"> 
+                                        <p:cellEditor>
+                                            <f:facet name="output">
                                                 <h:outputLabel value="#{bip.staff.person.name}"  ></h:outputLabel>
-                                            </f:facet>  
-                                            <f:facet name="input">  
+                                            </f:facet>
+                                            <f:facet name="input">
                                                 <p:selectOneMenu value="#{bip.staff}" rendered="#{bip.fee.speciality!=null}" disabled="#{bip.paidValue!=0 or !webUserController.hasPrivilege('ChangeProfessionalFee')}" >
                                                     <f:selectItem itemLabel="Select Staff" />
                                                     <f:selectItems  value="#{staffController.getSpecialityStaff(bip.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
                                                 </p:selectOneMenu>
-                                            </f:facet>  
-                                        </p:cellEditor>  
-
+                                            </f:facet>
+                                        </p:cellEditor>
                                     </p:column>
 
                                     <p:column headerText="Returned" width="8em;">
                                         <h:outputLabel  rendered="#{bip.billItem.refunded}" value="Returned" style="color: red;"/>
                                     </p:column> 
-
-                                    <p:column width="5em">  
-                                        <p:rowEditor > 
-                                        </p:rowEditor>
-                                    </p:column>                               
+                              
                                 </p:dataTable>
                             </div>
                         </div>
@@ -315,14 +352,35 @@
                             </h:panelGroup>
                             <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFiveCustom3'}" >
                                 <ui:repeat value="#{inwardSearch.bill}" var="pp">
-                                    <print:five_five_custom_3_inward bill="#{pp}" duplicate="true" payments="#{inwardSearch.bill.size()}"/>
+                                    <print:five_five_custom_3_inward bill="#{pp}" duplicate="false" payments="#{inwardSearch.bill.size()}"/>
                                     <br/>
                                 </ui:repeat>
                             </h:panelGroup>
 
                             <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveEightInchPaper'}" >
                                 <ui:repeat value="#{inwardSearch.bill}" var="pp">
-                                    <print:five_eight_opd_bill_inward bill="#{pp}" duplicate="true" payments="#{inwardSearch.bill.size()}"/>
+                                    <print:five_eight_opd_bill_inward bill="#{pp}" duplicate="false" payments="#{inwardSearch.bill.size()}"/>
+                                    <br/>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'}">
+                                <ui:repeat value="#{inwardSearch.bill}" var="pp">
+                                    <print:five_five_paper_without_headings_inward_service bill="#{pp}" dup="false"/>
+                                    <br/>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'}">
+                                <ui:repeat value="#{inwardSearch.bill}" var="pp">
+                                    <print:A4_paper_with_headings bill="#{pp}" duplicate="false"/>
+                                    <br/>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'}">
+                                <ui:repeat value="#{inwardSearch.bill}" var="pp">
+                                    <print:A4_paper_without_headings bill="#{pp}" duplicate="false"/>
                                     <br/>
                                 </ui:repeat>
                             </h:panelGroup>
@@ -344,6 +402,51 @@
                                 </ui:repeat>
                                 <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
                                     <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFivePrintedPaper'}">
+                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
+                                    <print:five_five_paper_without_headings_inward_service bill="#{bill}" dup="false"/>
+                                </ui:repeat>
+                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
+                                    <print:five_five_paper_without_headings_inward_service bill="#{bill}" dup="false"/>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4Paper'}">
+                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
+                                    <print:A4_paper_with_headings bill="#{bill}" duplicate="false"/>
+                                </ui:repeat>
+                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
+                                    <print:A4_paper_with_headings bill="#{bill}" duplicate="false"/>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'A4PrintedPaper'}">
+                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
+                                    <print:A4_paper_without_headings bill="#{bill}" duplicate="false"/>
+                                </ui:repeat>
+                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
+                                    <print:A4_paper_without_headings bill="#{bill}" duplicate="false"/>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFiveCustom3'}">
+                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
+                                    <print:five_five_custom_3_inward bill="#{bill}" duplicate="false" payments="#{inwardSearch.bill.refundBills.size()}"/>
+                                </ui:repeat>
+                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
+                                    <print:five_five_custom_3_inward bill="#{bill}" duplicate="false" payments="#{inwardSearch.bill.cancelledBill.size()}"/>
+                                </ui:repeat>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveEightInchPaper'}">
+                                <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">
+                                    <print:five_eight_opd_bill_inward bill="#{bill}" duplicate="false" payments="#{inwardSearch.bill.refundBills.size()}"/>
+                                </ui:repeat>
+                                <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill" rendered="#{inwardSearch.bill.cancelled}">
+                                    <print:five_eight_opd_bill_inward bill="#{bill}" duplicate="false" payments="#{inwardSearch.bill.cancelledBill.size()}"/>
                                 </ui:repeat>
                             </h:panelGroup>
                         </p:panel>

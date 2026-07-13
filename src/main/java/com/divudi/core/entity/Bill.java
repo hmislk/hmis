@@ -53,7 +53,7 @@ import javax.persistence.JoinColumn;
 public class Bill implements Serializable, RetirableEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     static final long serialVersionUID = 1L;
@@ -1391,6 +1391,22 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    /**
+     * Bill items excluding retired ones. Bill print templates should use
+     * this instead of getBillItems() directly, so a line item removed
+     * during draft editing (retired = true) doesn't still appear on the
+     * printed bill (issue #21856).
+     */
+    public List<BillItem> getActiveBillItems() {
+        List<BillItem> active = new ArrayList<>();
+        for (BillItem bi : getBillItems()) {
+            if (!bi.isRetired()) {
+                active.add(bi);
+            }
+        }
+        return active;
     }
 
     public Date getBillDate() {
@@ -3063,6 +3079,16 @@ public class Bill implements Serializable, RetirableEntity {
             billFinanceDetails.setBill(this);
         }
         return billFinanceDetails;
+    }
+
+    /**
+     * Null-check for billFinanceDetails that does NOT auto-vivify a new instance
+     * (unlike getBillFinanceDetails(), which lazily creates one on first call).
+     * Use this when the presence/absence of BillFinanceDetails is itself meaningful,
+     * e.g. as the fingerprint of "bill created before BFD population existed".
+     */
+    public boolean hasBillFinanceDetails() {
+        return billFinanceDetails != null;
     }
 
     public void setBillFinanceDetails(BillFinanceDetails billFinanceDetails) {

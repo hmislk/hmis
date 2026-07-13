@@ -158,9 +158,10 @@
                                                 <p:column>
                                                     <p:commandButton 
                                                         action="#{patientController.selectQuickOneFromQuickSearchPatient(opdBillController)}" 
+                                                        actionListener="#{opdBillController.calTotals()}"
                                                         id="btnSelectPt"
                                                         process="btnSelectPt tblPatients"
-                                                        update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
+                                                        update=":#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
                                                         value="select">
                                                         <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
                                                     </p:commandButton>
@@ -337,6 +338,11 @@
                                                                     offLabel="Patient is Local"
                                                                     class="w-100"
                                                                     onLabel="Patient is Forigner" >
+                                                                    <p:ajax 
+                                                                        listener="#{opdBillController.calTotals()}"
+                                                                        process="scbforigner" 
+                                                                        update=":#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('ptImp',view).clientId} :#{p:resolveFirstComponentWithId('paymentDetails',view).clientId} :#{p:resolveFirstComponentWithId('payment',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}">
+                                                                    </p:ajax>
                                                                 </p:selectBooleanButton>
                                                             </h:panelGroup>
 
@@ -403,13 +409,12 @@
                                                     <h:outputLabel value=" : " class="mx-3"/>
                                                     <h:panelGroup class="d-flex">
 
-                                                        <p:outputLabel class="ml-4" value="#{opdBillController.patient.person.nameWithTitle}" rendered="#{not empty opdBillController.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
-
-                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty opdBillController.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{opdBillController.patient.specificStatus}" severity="danger">
+                                                        
+                                                        <p:badge style="transform: translate(110%, -40%);background-color: #{opdBillController.patient.specificStatus != null and opdBillController.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{opdBillController.patient.specificStatus}" severity="danger">
                                                             <p:outputLabel value="#{opdBillController.patient.person.nameWithTitle}" rendered="#{not empty opdBillController.patient.person.nameWithTitle}" />
                                                         </p:badge> 
 
-                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system') and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management for OPD from the system', false)}" style="transform: translate(110%, -40%);background-color: #{opdBillController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{opdBillController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+                                                        <p:badge style="transform: translate(110%, -40%);background-color: #{opdBillController.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{opdBillController.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
 
                                                         </p:badge>
 
@@ -464,13 +469,15 @@
                                                     <h:outputText value="#{patientDepositController.getPatientCurrentPatientDepositeTotal(opdBillController.patient, sessionController.loggedUser.department)}" rendered="#{opdBillController.patient.hasAnAccount}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
-                                                    
-                                                    <h:outputLabel value="Registered Type" class="mx-3"/>
-                                                    <h:outputLabel value=" : " class="mx-3"/>
-                                                    <p:badge 
-                                                        value="#{opdBillController.patient.selfRegistered eq true ? 'Self Registered' : 'System Registered'}"
-                                                        severity="#{opdBillController.patient.selfRegistered eq true ? 'warning' : 'success'}">
-                                                    </p:badge>
+
+                                                    <h:panelGroup rendered="#{not empty opdBillController.patient.registrationSource}">
+                                                        <h:outputLabel value="Registration Source" class="mx-3"/>
+                                                        <h:outputLabel value=" : " class="mx-3"/>
+                                                        <p:badge
+                                                            value="#{opdBillController.patient.registrationSource.label}"
+                                                            severity="info">
+                                                        </p:badge>
+                                                    </h:panelGroup>
 
                                                     <h:outputLabel value="Area " class="mx-3"/>
                                                     <h:outputLabel value=" : " class="mx-3"/>
@@ -858,7 +865,7 @@
                                                         </p:tabView>
                                                     </p:dialog>
                                                 </p:column>
-                                                
+
                                                 <p:column  width="2em" class="text-end" >
                                                     <f:facet name="header">
                                                         <h:outputText value="Qty" />
@@ -868,12 +875,12 @@
                                                         value="#{bi.billItem.qty}" 
                                                         class="mx-1 text-end"  ></h:outputText>
                                                 </p:column>
-                                                
+
                                                 <p:column  width="10em" >
                                                     <f:facet name="header">Department</f:facet>
                                                         #{bi.billItem.item.department.name}
                                                 </p:column>
-                                                
+
                                                 <p:column width="8em" >
                                                     <f:facet name="header">Priority</f:facet>
                                                     <p:selectOneMenu  
@@ -899,20 +906,20 @@
                                                         </p:column>
                                                     </p:selectOneMenu>
                                                     <h:panelGroup rendered="#{not bi.billItem.item.allowedForBillingPriority}">
-                                                    <div class="card bg-secondary text-white">
-                                                        <h:outputText value="Not Allow" style="font-weight: 700;" class=" d-flex justify-content-center m-2"/>
-                                                    </div>
+                                                        <div class="card bg-secondary text-white">
+                                                            <h:outputText value="Not Allowed" style="font-weight: 700;" class=" d-flex justify-content-center m-2"/>
+                                                        </div>
                                                     </h:panelGroup>
-                                                    
+
                                                 </p:column>
-                                                
+
                                                 <p:column width="5em" class="text-end">
                                                     <f:facet name="header">Fee</f:facet>
                                                     <h:outputText value="#{bi.billItem.netValue}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </p:column>
-                                                
+
                                                 <p:column width="2em">
                                                     <p:commandButton 
                                                         id="btnRemove" 
@@ -1467,7 +1474,7 @@
                                                     value="Mark Foreigner" 
                                                     class="mx-2"
                                                     action="#{opdBillController.markAsForeigner}" 
-                                                    rendered="#{!opdBillController.foreigner}" 
+                                                    rendered="#{!opdBillController.patient.person.foreigner}" 
                                                     process="@this" 
                                                     update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
                                                     >
@@ -1476,7 +1483,7 @@
                                                     value="Mark Local" 
                                                     class="mx-2"
                                                     action="#{opdBillController.markAsLocal}" 
-                                                    rendered="#{opdBillController.foreigner}" 
+                                                    rendered="#{opdBillController.patient.person.foreigner}" 
                                                     process="@this" 
                                                     update="gpLocalForeign :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId} tblBillItem paymentDetails" 
                                                     >

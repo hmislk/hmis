@@ -38,7 +38,7 @@
                             </p:commandButton>
 
                             <p:commandButton 
-                                value="Back to Inpatient Profile" 
+                                value="Inpatient Dashboard"
                                 action="#{admissionController.navigateToSearchAdmissions()}" 
                                 style="float: right;"
                                 class="ui-button-secondary m-1"
@@ -322,7 +322,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Item Name" />
                                     </f:facet>
-                                    <h:outputLabel value="#{bip.item.name}" />
+                                    <h:outputLabel value="#{empty bip.item.printName ? 'Printing name is missing in '.concat(bip.item.name) : bip.item.printName}" />
                                 </p:column>
 
                                 <p:column width="2em" style="padding: 2px">

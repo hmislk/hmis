@@ -73,6 +73,14 @@
                                                 action="#{pharmacyDailyStockReportOptimizedController.navigateToDailyStockReport()}"
                                                 title="High-performance optimized report - Faster execution"/>
                                             <p:commandButton
+                                                class="w-100 ui-button-info"
+                                                ajax="false"
+                                                style="text-align: left"
+                                                icon="fa fa-search-plus"
+                                                value="F-15 Drill-Down (Level 1)"
+                                                action="#{pharmacyDailyStockDrillDownLevel1Controller.navigateToLevel1()}"
+                                                title="Date-range summary by transaction type and bill type atomics"/>
+                                            <p:commandButton
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show F 9B Report')}"
                                                 class="w-100 ui-button-success"
                                                 ajax="false"
@@ -288,13 +296,20 @@
 
                                     <p:tab title="Movement Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Movement Reports Tab')}">
                                         <div class="d-grid gap-2">
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Movement Out by Sale, Issue, and Consumption with Current Stock Report')}" 
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Movement Out by Sale, Issue, and Consumption with Current Stock Report')}"
                                                              value="Movement Out by Sale, Issue, and Consumption with Current Stock Report"
                                                              icon="fa fa-file-medical"
                                                              ajax="false"
                                                              styleClass="w-100 ui-button-primary"
                                                              style="text-align: left"
                                                              action="#{pharmacySummaryReportController.navigateToPharmacyMovementOutBySaleIssueAndConsumptionWithCurrentStockReport()}" />
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Movement Timeline (Graphical)', true)}"
+                                                             value="Stock Movement Timeline (Graphical)"
+                                                             icon="fa fa-chart-line"
+                                                             ajax="false"
+                                                             styleClass="w-100 ui-button-success"
+                                                             style="text-align: left"
+                                                             action="#{pharmacyStockMovementAnalyticsController.navigateToStockMovementTimeline()}" />
                                         </div>
                                     </p:tab>
 

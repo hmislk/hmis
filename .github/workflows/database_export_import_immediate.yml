@@ -21,6 +21,8 @@ on:
         options:
           - QA1
           - QA2
+          - QA3
+          - QA4
 
 jobs:
   immediate_export_import:
@@ -54,7 +56,7 @@ jobs:
           SERVER_SSH_KEY: ${{ secrets.OBSERVABILITY_SSH_PRIVATE_KEY }}
           FROM_ENV: ${{ inputs.fromEnv }}
           TO_ENV: ${{ inputs.toEnv }}
-          RECIPIENT_EMAILS: '["imeshranawella00@gmail.com", "geeth.gsm@gmail.com", "deshanipubudu0415@gmail.com", "iranimadushika28@gmail.com"]'
+          RECIPIENT_EMAILS: '["imeshranawella00@gmail.com", "geeth.gsm@gmail.com", "deshanipubudu0415@gmail.com", "iranimadushika28@gmail.com", "pwathsara@gmail.com"]'
         run: |
           echo "$SERVER_SSH_KEY" > private_key.pem
           chmod 600 private_key.pem
@@ -79,7 +81,7 @@ jobs:
           SERVER_SSH_KEY: ${{ secrets.OBSERVABILITY_SSH_PRIVATE_KEY }}
           FROM_ENV: ${{ inputs.fromEnv }}
           TO_ENV: ${{ inputs.toEnv }}
-          RECIPIENT_EMAILS: '["imeshranawella00@gmail.com", "geeth.gsm@gmail.com", "deshanipubudu0415@gmail.com", "iranimadushika28@gmail.com"]'
+          RECIPIENT_EMAILS: '["imeshranawella00@gmail.com", "geeth.gsm@gmail.com", "deshanipubudu0415@gmail.com", "iranimadushika28@gmail.com", "pwathsara@gmail.com"]'
         run: |
           echo "$SERVER_SSH_KEY" > private_key.pem
           chmod 600 private_key.pem

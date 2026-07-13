@@ -11,6 +11,7 @@ import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.DepartmentType;
@@ -23,6 +24,8 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Ampp;
@@ -42,6 +45,7 @@ import com.divudi.core.entity.AppEmail;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dto.PharmacyPurchaseOrderRateDTO;
 import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -91,6 +95,8 @@ public class PurchaseOrderRequestController implements Serializable {
     @Inject
     private SessionController sessionController;
     @Inject
+    private WebUserController webUserController;
+    @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     EnumController enumController;
@@ -121,6 +127,9 @@ public class PurchaseOrderRequestController implements Serializable {
     private String emailRecipient;
 
     public void removeSelected() {
+        if (!isAuthorized("SAVE", "PurchaseOrderSave")) {
+            return;
+        }
         if (selectedBillItems == null) {
             return;
         }
@@ -257,25 +266,7 @@ public class PurchaseOrderRequestController implements Serializable {
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
 
-        // PERFORMANCE: Fetch last purchase and retail rates (replaces 9-second individual calls!)
-        Long itemId = getCurrentBillItem().getItem().getId();
-        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(
-                fetchLastPurchaseRateForItem(itemId));
-        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(
-                fetchLastRetailRateForItem(itemId));
-
-        if (getCurrentBillItem().getItem() instanceof Ampp) {
-            BigDecimal unitsPerPack = BigDecimal.valueOf(getCurrentBillItem().getItem().getDblValue());
-            if (unitsPerPack == null || unitsPerPack.doubleValue() <= 0) {
-                unitsPerPack = BigDecimal.ONE;
-            }
-            getCurrentBillItem().getBillItemFinanceDetails().setUnitsPerPack(unitsPerPack);
-        } else {
-            getCurrentBillItem().getBillItemFinanceDetails().setUnitsPerPack(BigDecimal.ONE);
-        }
-
-        getCurrentBillItem().getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate()));
-        getCurrentBillItem().getBillItemFinanceDetails().setLineNetRate(getCurrentBillItem().getBillItemFinanceDetails().getLineGrossRate());
+        applyLastRatesToBillItem(getCurrentBillItem());
 
         getBillItems().add(getCurrentBillItem());
 
@@ -285,6 +276,9 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void removeItem(BillItem bi) {
+        if (!isAuthorized("SAVE", "PurchaseOrderSave")) {
+            return;
+        }
         if (currentBill == null || bi == null) {
             return;
         }
@@ -498,84 +492,321 @@ public class PurchaseOrderRequestController implements Serializable {
         this.itemHistoryVisible = itemHistoryVisible;
     }
 
-    /**
-     * PERFORMANCE OPTIMIZATION: Get last purchase rate for a single item
-     * Replaces pharmacyBean.getLastPurchaseRate() call (9 seconds!)
-     */
-    private Double fetchLastPurchaseRateForItem(Long itemId) {
-        if (itemId == null) {
-            return 0.0;
+    private void applyLastRatesToBillItem(BillItem billItem) {
+        if (billItem == null || billItem.getItem() == null) {
+            return;
         }
 
-        String jpql = "SELECT pbi.purchaseRate "
-                + "FROM PharmaceuticalBillItem pbi "
-                + "JOIN pbi.billItem bi "
-                + "WHERE bi.item.id = :itemId "
-                + "AND bi.retired = false "
-                + "AND pbi.purchaseRate > 0 "
-                + "AND bi.bill.department = :department "
-                + "AND bi.bill.billType IN :billTypes "
-                + "ORDER BY bi.bill.createdAt DESC";
+        List<Item> items = new ArrayList<>();
+        items.add(billItem.getItem());
 
-        List<BillType> purchaseBillTypes = new ArrayList<>();
-        purchaseBillTypes.add(BillType.PharmacyGrnBill);
-        purchaseBillTypes.add(BillType.PharmacyPurchaseBill);
+        Map<Long, Double> purchaseRates = fetchLastPurchaseRatesForItems(items);
+        Map<Long, Double> retailRates = fetchLastRetailRatesForItems(items);
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("itemId", itemId);
-        params.put("department", sessionController.getDepartment());
-        params.put("billTypes", purchaseBillTypes);
-
-        try {
-            @SuppressWarnings("unchecked")
-            List<Double> results = (List<Double>) itemFacade.findLightsByJpql(jpql, params, null, 1);
-            if (results != null && !results.isEmpty() && results.get(0) != null) {
-                return results.get(0);
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to fetch last purchase rate for item " + itemId, e);
-        }
-        return 0.0;
+        applyLastRatesToBillItem(
+                billItem,
+                getRateForItem(purchaseRates, billItem.getItem()),
+                getRateForItem(retailRates, billItem.getItem()));
     }
 
-    /**
-     * PERFORMANCE OPTIMIZATION: Get last retail rate for a single item Replaces
-     * pharmacyBean.getLastRetailRate() call
-     */
-    private Double fetchLastRetailRateForItem(Long itemId) {
-        if (itemId == null) {
-            return 0.0;
+    private void applyLastRatesToBillItem(BillItem billItem, double purchaseRate, double retailRate) {
+        PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
+        pharmaceuticalBillItem.setPurchaseRate(purchaseRate);
+        pharmaceuticalBillItem.setRetailRate(retailRate);
+
+        BillItemFinanceDetails financeDetails = billItem.getBillItemFinanceDetails();
+        financeDetails.setUnitsPerPack(getUnitsPerPack(billItem.getItem()));
+        financeDetails.setLineGrossRate(BigDecimal.valueOf(purchaseRate));
+        financeDetails.setLineNetRate(financeDetails.getLineGrossRate());
+        financeDetails.setRetailSaleRate(BigDecimal.valueOf(retailRate));
+    }
+
+    private BigDecimal getUnitsPerPack(Item item) {
+        if (item instanceof Ampp) {
+            BigDecimal unitsPerPack = BigDecimal.valueOf(item.getDblValue());
+            if (unitsPerPack.doubleValue() > 0) {
+                return unitsPerPack;
+            }
+        }
+        return BigDecimal.ONE;
+    }
+
+    private Map<Long, Double> fetchLastPurchaseRatesForItems(List<Item> items) {
+        Map<Long, Double> ratesByItemId = fetchLastRatesForItems(items,
+                "billItemFinanceDetails.lineGrossRate",
+                "pharmaceuticalBillItem.itemBatch.purcahseRate",
+                "purchase");
+
+        Department dept = getDepartmentLookupScope().department;
+        if (dept != null) {
+            for (Item item : getItemsMissingRates(getUniqueItemsWithIds(items), ratesByItemId)) {
+                double rate = pharmacyBean.getLastPurchaseRate(item, dept, true);
+                if (rate > 0.0) {
+                    ratesByItemId.put(item.getId(), rate);
+                }
+            }
         }
 
-        String jpql = "SELECT pbi.retailRate "
-                + "FROM PharmaceuticalBillItem pbi "
-                + "JOIN pbi.billItem bi "
-                + "WHERE bi.item.id = :itemId "
-                + "AND bi.retired = false "
-                + "AND pbi.retailRate > 0 "
-                + "AND bi.bill.department = :department "
-                + "AND bi.bill.billType IN :billTypes "
-                + "ORDER BY bi.bill.createdAt DESC";
+        return ratesByItemId;
+    }
 
+    private Map<Long, Double> fetchLastRetailRatesForItems(List<Item> items) {
+        Map<Long, Double> ratesByItemId = fetchLastRatesForItems(items,
+                "billItemFinanceDetails.retailSaleRate",
+                "pharmaceuticalBillItem.itemBatch.retailsaleRate",
+                "retail");
+
+        Department dept = getDepartmentLookupScope().department;
+        if (dept != null) {
+            for (Item item : getItemsMissingRates(getUniqueItemsWithIds(items), ratesByItemId)) {
+                double rate = pharmacyBean.getLastRetailRate(item, dept, true);
+                if (rate > 0.0) {
+                    ratesByItemId.put(item.getId(), rate);
+                }
+            }
+        }
+
+        return ratesByItemId;
+    }
+
+    private Map<Long, Double> fetchLastRatesForItems(List<Item> items, String financeRatePath, String itemBatchRatePath, String rateLabel) {
+        List<Item> lookupItems = getUniqueItemsWithIds(items);
+        Map<Long, Double> ratesByItemId = new HashMap<>();
+        if (lookupItems.isEmpty()) {
+            return ratesByItemId;
+        }
+
+        DepartmentLookupScope scope = getDepartmentLookupScope();
+
+        mergeMissingRates(ratesByItemId, fetchScopedFinanceRatesForItems(lookupItems, financeRatePath, rateLabel, "department", scope.department));
+        mergeMissingRates(ratesByItemId, fetchScopedFinanceRatesForItems(getItemsMissingRates(lookupItems, ratesByItemId), financeRatePath, rateLabel, "institution", scope.institution));
+        mergeMissingRates(ratesByItemId, fetchScopedFinanceRatesForItems(getItemsMissingRates(lookupItems, ratesByItemId), financeRatePath, rateLabel, "global", null));
+
+        mergeMissingItemBatchRates(ratesByItemId, lookupItems, itemBatchRatePath, rateLabel, "department", scope.department);
+        mergeMissingItemBatchRates(ratesByItemId, lookupItems, itemBatchRatePath, rateLabel, "institution", scope.institution);
+        mergeMissingItemBatchRates(ratesByItemId, lookupItems, itemBatchRatePath, rateLabel, "global", null);
+
+        return ratesByItemId;
+    }
+
+    private List<Item> getUniqueItemsWithIds(List<Item> items) {
+        Map<Long, Item> uniqueItems = new HashMap<>();
+        if (items == null) {
+            return new ArrayList<>();
+        }
+        for (Item item : items) {
+            if (item != null && item.getId() != null && !uniqueItems.containsKey(item.getId())) {
+                uniqueItems.put(item.getId(), item);
+            }
+        }
+        return new ArrayList<>(uniqueItems.values());
+    }
+
+    private List<Item> getItemsMissingRates(List<Item> items, Map<Long, Double> ratesByItemId) {
+        List<Item> missingItems = new ArrayList<>();
+        if (items == null) {
+            return missingItems;
+        }
+        for (Item item : items) {
+            if (item != null && item.getId() != null && getRateForItem(ratesByItemId, item) <= 0.0) {
+                missingItems.add(item);
+            }
+        }
+        return missingItems;
+    }
+
+    private void mergeMissingRates(Map<Long, Double> ratesByItemId, Map<Long, Double> newRatesByItemId) {
+        if (newRatesByItemId == null || newRatesByItemId.isEmpty()) {
+            return;
+        }
+        for (Map.Entry<Long, Double> rateEntry : newRatesByItemId.entrySet()) {
+            if (rateEntry.getKey() != null && rateEntry.getValue() != null && rateEntry.getValue() > 0.0
+                    && getRateByItemId(ratesByItemId, rateEntry.getKey()) <= 0.0) {
+                ratesByItemId.put(rateEntry.getKey(), rateEntry.getValue());
+            }
+        }
+    }
+
+    private Map<Long, Double> fetchScopedFinanceRatesForItems(List<Item> items, String ratePath, String rateLabel, String scope, Object scopeValue) {
+        Map<Long, Double> ratesByItemId = new HashMap<>();
+        if (items == null || items.isEmpty() || (scopeValue == null && !"global".equals(scope))) {
+            return ratesByItemId;
+        }
+
+        String rateExpression = "bi." + ratePath;
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderRateDTO("
+                + "bi.item.id, " + rateExpression + ", bi.id) "
+                + "FROM BillItem bi "
+                + "WHERE bi.item.id IN :itemIds "
+                + "AND bi.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.billItemFinanceDetails IS NOT NULL "
+                + "AND " + rateExpression + " IS NOT NULL "
+                + "AND " + rateExpression + " > 0 "
+                + "AND bi.bill.billType IN :billTypes "
+                + getScopeCondition(scope, "bi")
+                + "ORDER BY bi.id DESC";
+
+        Map<String, Object> params = createRateLookupParameters(items);
+        addScopeParameter(params, scope, scopeValue);
+        return fetchRateDtos(jpql, params, rateLabel);
+    }
+
+    private void mergeMissingItemBatchRates(Map<Long, Double> ratesByItemId, List<Item> originalItems, String ratePath, String rateLabel, String scope, Object scopeValue) {
+        List<Item> missingItems = getItemsMissingRates(originalItems, ratesByItemId);
+        if (missingItems.isEmpty() || (scopeValue == null && !"global".equals(scope))) {
+            return;
+        }
+
+        List<Item> batchItems = new ArrayList<>();
+        Map<Long, Long> batchItemIdByOriginalItemId = new HashMap<>();
+        for (Item item : missingItems) {
+            Item batchItem = getItemForItemBatchRate(item);
+            if (batchItem != null && batchItem.getId() != null) {
+                batchItems.add(batchItem);
+                batchItemIdByOriginalItemId.put(item.getId(), batchItem.getId());
+            }
+        }
+
+        Map<Long, Double> batchRatesByBatchItemId = fetchScopedItemBatchRatesForItems(getUniqueItemsWithIds(batchItems), ratePath, rateLabel, scope, scopeValue);
+        for (Item item : missingItems) {
+            Long batchItemId = batchItemIdByOriginalItemId.get(item.getId());
+            Double rate = batchRatesByBatchItemId.get(batchItemId);
+            if (rate != null && rate > 0.0 && getRateForItem(ratesByItemId, item) <= 0.0) {
+                ratesByItemId.put(item.getId(), rate);
+            }
+        }
+    }
+
+    private Map<Long, Double> fetchScopedItemBatchRatesForItems(List<Item> items, String ratePath, String rateLabel, String scope, Object scopeValue) {
+        Map<Long, Double> ratesByItemId = new HashMap<>();
+        if (items == null || items.isEmpty() || (scopeValue == null && !"global".equals(scope))) {
+            return ratesByItemId;
+        }
+
+        String rateExpression = "bi." + ratePath;
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyPurchaseOrderRateDTO("
+                + "bi.pharmaceuticalBillItem.itemBatch.item.id, " + rateExpression + ", bi.id) "
+                + "FROM BillItem bi "
+                + "WHERE bi.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.pharmaceuticalBillItem IS NOT NULL "
+                + "AND bi.pharmaceuticalBillItem.itemBatch IS NOT NULL "
+                + "AND bi.pharmaceuticalBillItem.itemBatch.item.id IN :itemIds "
+                + "AND " + rateExpression + " > 0 "
+                + "AND bi.bill.billType IN :billTypes "
+                + getScopeCondition(scope, "bi")
+                + "ORDER BY bi.id DESC";
+
+        Map<String, Object> params = createRateLookupParameters(items);
+        addScopeParameter(params, scope, scopeValue);
+        return fetchRateDtos(jpql, params, rateLabel);
+    }
+
+    private Map<String, Object> createRateLookupParameters(List<Item> items) {
         List<BillType> purchaseBillTypes = new ArrayList<>();
         purchaseBillTypes.add(BillType.PharmacyGrnBill);
         purchaseBillTypes.add(BillType.PharmacyPurchaseBill);
 
         Map<String, Object> params = new HashMap<>();
-        params.put("itemId", itemId);
-        params.put("department", sessionController.getDepartment());
+        params.put("itemIds", getItemIds(items));
         params.put("billTypes", purchaseBillTypes);
+        return params;
+    }
 
+    private List<Long> getItemIds(List<Item> items) {
+        List<Long> itemIds = new ArrayList<>();
+        if (items == null) {
+            return itemIds;
+        }
+        for (Item item : items) {
+            if (item != null && item.getId() != null && !itemIds.contains(item.getId())) {
+                itemIds.add(item.getId());
+            }
+        }
+        return itemIds;
+    }
+
+    private String getScopeCondition(String scope, String alias) {
+        if ("department".equals(scope)) {
+            return "AND " + alias + ".bill.department = :department ";
+        }
+        if ("institution".equals(scope)) {
+            return "AND " + alias + ".bill.department.institution = :institution ";
+        }
+        return "";
+    }
+
+    private void addScopeParameter(Map<String, Object> params, String scope, Object scopeValue) {
+        if ("department".equals(scope)) {
+            params.put("department", scopeValue);
+        } else if ("institution".equals(scope)) {
+            params.put("institution", scopeValue);
+        }
+    }
+
+    private Map<Long, Double> fetchRateDtos(String jpql, Map<String, Object> params, String rateLabel) {
+        Map<Long, Double> ratesByItemId = new HashMap<>();
         try {
             @SuppressWarnings("unchecked")
-            List<Double> results = (List<Double>) itemFacade.findLightsByJpql(jpql, params, null, 1);
-            if (results != null && !results.isEmpty() && results.get(0) != null) {
-                return results.get(0);
+            List<PharmacyPurchaseOrderRateDTO> results = (List<PharmacyPurchaseOrderRateDTO>) billItemFacade.findLightsByJpql(jpql, params);
+            if (results == null) {
+                return ratesByItemId;
+            }
+            for (PharmacyPurchaseOrderRateDTO result : results) {
+                if (result != null && result.getItemId() != null && result.getRate() != null && result.getRate() > 0.0
+                        && getRateByItemId(ratesByItemId, result.getItemId()) <= 0.0) {
+                    ratesByItemId.put(result.getItemId(), result.getRate());
+                }
             }
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to fetch last retail rate for item " + itemId, e);
+            LOGGER.log(Level.SEVERE, "Failed to fetch last " + rateLabel + " rates for purchase order request", e);
         }
-        return 0.0;
+        return ratesByItemId;
+    }
+
+    private Item getItemForItemBatchRate(Item item) {
+        if (item instanceof Ampp) {
+            return ((Ampp) item).getAmp();
+        }
+        return item;
+    }
+
+    private double getRateForItem(Map<Long, Double> ratesByItemId, Item item) {
+        if (item == null || item.getId() == null) {
+            return 0.0;
+        }
+        return getRateByItemId(ratesByItemId, item.getId());
+    }
+
+    private double getRateByItemId(Map<Long, Double> ratesByItemId, Long itemId) {
+        if (ratesByItemId == null || itemId == null) {
+            return 0.0;
+        }
+        Double rate = ratesByItemId.get(itemId);
+        if (rate == null || rate <= 0.0) {
+            return 0.0;
+        }
+        return rate;
+    }
+
+    private DepartmentLookupScope getDepartmentLookupScope() {
+        DepartmentLookupScope scope = new DepartmentLookupScope();
+        if (sessionController != null && sessionController.getDepartment() != null) {
+            scope.department = sessionController.getDepartment();
+            scope.institution = sessionController.getDepartment().getInstitution();
+        }
+        return scope;
+    }
+
+    private static class DepartmentLookupScope implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        private Department department;
+        private Institution institution;
     }
 
     public void saveBill() {
@@ -677,9 +908,8 @@ public class PurchaseOrderRequestController implements Serializable {
         boolean preventDuplicates = configOptionApplicationController.getBooleanValueByKey("Prevent Duplicate Items in Purchase Orders", false);
         int skippedCount = 0;
 
-        // Create bill items and fetch rates individually (LIMIT 1 per item)
+        List<Item> itemsToAdd = new ArrayList<>();
         for (Item i : items) {
-            // Check for duplicate items if configuration is enabled
             if (preventDuplicates) {
                 boolean isDuplicate = false;
                 for (BillItem existingItem : getBillItems()) {
@@ -695,7 +925,13 @@ public class PurchaseOrderRequestController implements Serializable {
                     continue; // Skip this item as it already exists
                 }
             }
+            itemsToAdd.add(i);
+        }
 
+        Map<Long, Double> purchaseRatesByItemId = fetchLastPurchaseRatesForItems(itemsToAdd);
+        Map<Long, Double> retailRatesByItemId = fetchLastRetailRatesForItems(itemsToAdd);
+
+        for (Item i : itemsToAdd) {
             BillItem bi = new BillItem();
             bi.setItem(i);
 
@@ -705,9 +941,10 @@ public class PurchaseOrderRequestController implements Serializable {
 
             bi.setSearialNo(serialStart++);
 
-            // PERFORMANCE: Fetch last rates individually (LIMIT 1 query per item)
-            tmp.setPurchaseRate(fetchLastPurchaseRateForItem(i.getId()));
-            tmp.setRetailRate(fetchLastRetailRateForItem(i.getId()));
+            applyLastRatesToBillItem(
+                    bi,
+                    getRateForItem(purchaseRatesByItemId, i),
+                    getRateForItem(retailRatesByItemId, i));
 
             getBillItems().add(bi);
         }
@@ -722,6 +959,7 @@ public class PurchaseOrderRequestController implements Serializable {
     public void saveBillComponent() {
         for (BillItem b : getBillItems()) {
             b.setBill(getCurrentBill());
+            resyncPharmaceuticalBillItemIfEmpty(b);
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
             } else {
@@ -730,10 +968,32 @@ public class PurchaseOrderRequestController implements Serializable {
         }
     }
 
+    // A duplicate-line removal can leave the surviving BillItem with a lazily
+    // created all-zero PharmaceuticalBillItem while its BillItemFinanceDetails
+    // still holds the real quantities; downstream approval/GRN reads the PBI,
+    // so rebuild it from the finance details before persisting (issue #21417)
+    private void resyncPharmaceuticalBillItemIfEmpty(BillItem b) {
+        if (b == null || b.isRetired() || b.getBillItemFinanceDetails() == null) {
+            return;
+        }
+        PharmaceuticalBillItem pbi = b.getPharmaceuticalBillItem();
+        if (pbi.getQty() != 0 || pbi.getFreeQty() != 0) {
+            return;
+        }
+        BigDecimal qtyByUnits = b.getBillItemFinanceDetails().getQuantityByUnits();
+        BigDecimal freeQtyByUnits = b.getBillItemFinanceDetails().getFreeQuantityByUnits();
+        boolean financeDetailsHaveQty = (qtyByUnits != null && qtyByUnits.compareTo(BigDecimal.ZERO) > 0)
+                || (freeQtyByUnits != null && freeQtyByUnits.compareTo(BigDecimal.ZERO) > 0);
+        if (financeDetailsHaveQty) {
+            calculateLineValues(b);
+        }
+    }
+
     public void finalizeBillComponent() {
         getBillItems().removeIf(BillItem::isRetired);
         for (BillItem b : getBillItems()) {
             b.setBill(getCurrentBill());
+            resyncPharmaceuticalBillItemIfEmpty(b);
             BigDecimal qUnits = (b.getBillItemFinanceDetails() != null && b.getBillItemFinanceDetails().getQuantityByUnits() != null)
                     ? b.getBillItemFinanceDetails().getQuantityByUnits() : BigDecimal.ZERO;
             BigDecimal fqUnits = (b.getBillItemFinanceDetails() != null && b.getBillItemFinanceDetails().getFreeQuantityByUnits() != null)
@@ -790,14 +1050,50 @@ public class PurchaseOrderRequestController implements Serializable {
         }
     }
 
+    /**
+     * Authorization helper method to check Purchase Order privileges and
+     * audit denied access
+     *
+     * @param action The action being attempted (SAVE, FINALIZE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, currentBill != null ? currentBill.getId() : "null"});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = currentBill != null ? currentBill.getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Purchase Order access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " purchase order requests.");
+            return false;
+        }
+
+        return true;
+    }
+
     public void saveRequest() {
+        if (!isAuthorized("SAVE", "PurchaseOrderSave")) {
+            return;
+        }
         boolean saved = saveRequestWithoutMessage();
         if (saved) {
             JsfUtil.addSuccessMessage("Request Saved");
         }
     }
 
-    private boolean saveRequestWithoutMessage() {
+    // synchronized: concurrent saves from the same session (Enter-key defaultCommand
+    // racing a button click) both saw billItem.id == null and persisted the same
+    // in-memory BillItem twice, creating duplicate rows sharing one
+    // BillItemFinanceDetails (issue #21417)
+    private synchronized boolean saveRequestWithoutMessage() {
         if (getCurrentBill().isChecked()) {
             JsfUtil.addErrorMessage("Cannot save a finalized bill");
             return false;
@@ -866,7 +1162,10 @@ public class PurchaseOrderRequestController implements Serializable {
         return allItems;
     }
 
-    public void finalizeRequest() {
+    public synchronized void finalizeRequest() {
+        if (!isAuthorized("FINALIZE", "PurchaseOrderFinalize")) {
+            return;
+        }
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill");
             return;

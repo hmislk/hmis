@@ -13,7 +13,26 @@
 
             <ui:define name="content">
                 <h:form id="form">
-                    <p:panel header="Admissions">
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fa fa-search"/>
+                                    <h:outputLabel value="Admissions" class="mx-2"/>
+                                </div>
+                                <div>
+                                    <h:panelGroup rendered="#{webUserController.hasPrivilege('NursingWorkBench')}">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Nursing WorkBench"
+                                            icon="fa fa-stethoscope"
+                                            title="Nursing WorkBench"
+                                            class="ui-button-operating-theatre me-2"
+                                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"/>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
+                        </f:facet>
                         <div class="row">
                             <div class="col-2">
                                 <p:outputLabel value="From Date"></p:outputLabel>
@@ -93,10 +112,28 @@
                                     </p:column>
                                 </p:autoComplete>
 
+                                <p:outputLabel value="Occupation" ></p:outputLabel>
+                                <p:inputText
+                                    class="w-100"
+                                    value="#{admissionController.occupationForSearch}" >
+                                </p:inputText>
+
+                                <p:outputLabel value="Insurance Company" ></p:outputLabel>
+                                <p:selectOneMenu
+                                    class="w-100"
+                                    value="#{admissionController.creditCompanyForSearch}"
+                                    filter="true"
+                                    autoWidth="false"
+                                    >
+                                    <f:selectItem itemLabel="All"></f:selectItem>
+                                    <f:selectItems value="#{institutionController.creditCompanies}" var="cc" itemLabel="#{cc.name}" itemValue="#{cc}" />
+                                </p:selectOneMenu>
+
                                 <p:outputLabel value="Status" ></p:outputLabel>
                                 <p:selectOneMenu
                                     class="w-100"
                                     value="#{admissionController.admissionStatusForSearch}" >
+                                    <f:selectItem itemLabel="Any Status"></f:selectItem>
                                     <f:selectItems value="#{enumController.admissionStatuses}"
                                                    var="status"
                                                    itemValue="#{status}" itemLabel="#{status.label}" />
@@ -120,7 +157,9 @@
                                     >
                                     <f:selectItem itemLabel="All"></f:selectItem>
                                     <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
-                                    <p:ajax process="cmbFromInstitution" update="cmbSite" />
+                                    <p:ajax process="@this"
+                                            listener="#{admissionController.onInstitutionForSearchChange}"
+                                            update=":#{p:resolveFirstComponentWithId('cmbSite',view).clientId} :#{p:resolveFirstComponentWithId('cmbFromLoggedDepartment',view).clientId}" />
                                 </p:selectOneMenu>
 
                                 <h:panelGroup  rendered="#{webUserController.hasPrivilege('InwardSearchServiceBillUnrestrictedAccess') or !configOptionApplicationController.getBooleanValueByKey('Restirct Inward Admission Search to Logged Department of the User')}" >
@@ -134,7 +173,9 @@
                                         >
                                         <f:selectItem itemLabel="All"></f:selectItem>
                                         <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
-                                        <p:ajax process="cmbSite" update="cmbFromLoggedDepartment" />
+                                        <p:ajax process="@this"
+                                                listener="#{admissionController.onSiteForSearchChange}"
+                                                update=":#{p:resolveFirstComponentWithId('cmbFromLoggedDepartment',view).clientId}" />
                                     </p:selectOneMenu>
 
                                     <p:outputLabel value="Department"></p:outputLabel>
@@ -176,6 +217,19 @@
                                         </p:column>
                                         <p:column headerText="Patient Name"  >
                                             <h:outputText value="#{a.patient.person.nameWithTitle}" ></h:outputText>
+                                            <!-- Encounter flag badge — hidden for the STANDARD default. (Issue #21182) -->
+                                            <ui:fragment rendered="#{a.encounterRegistrationFlag eq 'ON_ADMISSION_DEATH'}">
+                                                <br/>
+                                                <p:tag value="#{a.encounterRegistrationFlag.label}"
+                                                       icon="fas fa-cross"
+                                                       style="background-color:#455a64; color:#ffffff;"/>
+                                            </ui:fragment>
+                                            <ui:fragment rendered="#{a.encounterRegistrationFlag eq 'RAPID_TEMP_AE'}">
+                                                <br/>
+                                                <p:tag value="#{a.encounterRegistrationFlag.label}"
+                                                       icon="fas fa-truck-medical"
+                                                       style="background-color:#f0ad4e; color:#212529;"/>
+                                            </ui:fragment>
                                         </p:column>
                                         <p:column headerText="Phone/Mobile" >
                                             <h:outputText value="#{a.patient.person.phone}" ></h:outputText>
@@ -233,12 +287,21 @@
                                         </p:column>
                                         <p:column headerText="Actions" >
                                             <h:outputText value="#{a.currentPatientRoom.name}" ></h:outputText>
-                                            <p:commandButton 
+                                            <p:commandButton
                                                 ajax="false"
                                                 class="m-1"
                                                 icon="fa fa-fw fa-bed"
+                                                title="Inpatient Dashboard"
                                                 action="#{admissionController.navigateToAdmissionProfilePage}">
                                                 <f:setPropertyActionListener value="#{a}" target="#{admissionController.current}" />
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                class="m-1 ui-button-operating-theatre"
+                                                icon="fa fa-stethoscope"
+                                                title="Nursing WorkBench"
+                                                rendered="#{webUserController.hasPrivilege('NursingWorkBench')}"
+                                                action="#{nursingWorkBenchController.navigateToNursingWorkBenchWithAdmission(a.id)}">
                                             </p:commandButton>
 
                                             <p:commandButton 

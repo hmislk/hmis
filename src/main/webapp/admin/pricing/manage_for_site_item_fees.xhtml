@@ -106,7 +106,7 @@
                             </div>
                         </div>
 
-                        <p:dialog id="dlg"  widgetVar="dlg" modal="true" height="30em" width="50em" >
+                        <p:dialog id="dlg"  widgetVar="dlg" modal="true" height="35em" width="50em" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Adding a new Fee" class="mr-5"></p:outputLabel>
                                 <p:commandButton 
@@ -207,6 +207,13 @@
                                         <f:selectItems value="#{itemFeeManager.staffs}" var="staff" itemLabel="#{staff.person.nameWithTitle}" itemValue="#{staff}" ></f:selectItems>
                                     </p:selectOneMenu>
                                 </h:panelGroup>
+                                
+                                <h:panelGroup id="gpLblPF" rendered="#{itemFeeManager.itemFee.feeType eq 'Staff'}" >
+                                    <p:outputLabel value="Primary Fee" ></p:outputLabel>
+                                </h:panelGroup>
+                                <h:panelGroup id="gpBolPF" rendered="#{itemFeeManager.itemFee.feeType eq 'Staff'}" >
+                                    <p:toggleSwitch value="#{itemFeeManager.itemFee.primaryFee}" onIcon="pi pi-check" offIcon="pi pi-times" />
+                                </h:panelGroup>
 
                                 <p:outputLabel value="Fee" ></p:outputLabel>
                                 <p:inputText value="#{itemFeeManager.itemFee.fee}"  onfocus="this.select();"   class="w-100"></p:inputText>
@@ -218,35 +225,53 @@
 
                         <p:panel header="Current Fees" id="gpFees" class="m-1">
                             <p:dataTable id="tblFees" value="#{itemFeeManager.itemFees}" var="f" rowIndexVar="n" rowKey="#{f.id}" >
-                                <p:column headerText="Fee ID" width="5em;" >
+                                <p:column headerText="Fee ID" width="5em;"  style="padding: 6px;">
                                     <p:outputLabel id="txtFee" value="#{f}" />
                                 </p:column>
-                                <p:column headerText="Name" >
-                                    <p:inputText id="txtFeeName" value="#{f.name}" class="w-100" >
-                                        <p:ajax process="txtFeeName" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:resolveFirstComponentWithId('localFee',view).clientId} :#{p:resolveFirstComponentWithId('foreignerFee',view).clientId}" ></p:ajax>
-                                    </p:inputText>
+                                <p:column headerText="Name" width="18em;" style="padding: 6px;">
+                                    <div class="d-flex justify-content-between gap-2">
+                                        <p:inputText id="txtFeeName" value="#{f.name}" >
+                                            <p:ajax process="txtFeeName" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:resolveFirstComponentWithId('localFee',view).clientId} :#{p:resolveFirstComponentWithId('foreignerFee',view).clientId}" ></p:ajax>
+                                        </p:inputText>
+                                        <p:toggleSwitch
+                                            id="primaryFee"
+                                            value="#{f.primaryFee}"  
+                                            onIcon="pi pi-check"
+                                            rendered="#{f.feeType eq 'Staff'}"
+                                            class="mt-2"
+                                            offIcon="pi pi-times">
+                                            <p:ajax 
+                                                process="primaryFee" 
+                                                event="change" 
+                                                listener="#{itemFeeManager.updateFee(f)}" 
+                                                update=":#{p:resolveFirstComponentWithId('primaryFee',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId} :#{p:resolveFirstComponentWithId('localFee',view).clientId} :#{p:resolveFirstComponentWithId('foreignerFee',view).clientId}">
+                                            </p:ajax>
+                                            
+                                            <p:tooltip for="primaryFee" value="Primary Fee" position="bottom"/>
+                                        </p:toggleSwitch>
+                                    </div>
+                                    
                                 </p:column>
-                                <p:column headerText="Type" >
-                                    <p:outputLabel id="txtFeeType" value="#{f.feeType.label}" >
-                                    </p:outputLabel>
+                                <p:column headerText="Type" width="7em;" style="padding: 6px;" class="text-center">
+                                    <p:badge value="#{f.feeType.label}" severity="warning" styleClass="mr-2"></p:badge>
                                 </p:column>
-                                <p:column headerText="Created At" >
+                                <p:column headerText="Created At" width="9em;" style="padding: 6px;">
                                     <p:outputLabel id="txt" value="#{f.createdAt}" >
                                         <f:convertDateTime pattern="YYYY MM dd HH:mm:ss"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Discount Allowed" >
+                                <p:column headerText="Discount" width="10em;" class="text-center" style="padding: 6px;">
                                     <p:selectBooleanButton 
                                         value="#{f.discountAllowed}" 
-                                        offLabel="Discounts NOT Allowed" 
-                                        onLabel="Discounts Allowed" 
+                                        offLabel="NOT Allowed" 
+                                        onLabel="Allowed" 
                                         onIcon="pi pi-check" 
                                         offIcon="pi pi-times"
                                         styleClass="#{f.discountAllowed ? 'ui-button-success' : 'ui-button-danger'}">
                                         <p:ajax process="@this" listener="#{itemFeeManager.updateFeeForSites(f)}" />
                                     </p:selectBooleanButton>
                                 </p:column>
-                                <p:column headerText="For" >
+                                <p:column headerText="For" width="15em;" style="padding: 6px;">
                                     <h:panelGroup rendered="#{f.institution ne null}" >
                                         <p:outputLabel value="#{f.institution.name}" >
                                         </p:outputLabel>
@@ -271,23 +296,31 @@
                                         </p:outputLabel>
                                     </h:panelGroup>
                                 </p:column>
-                                <p:column headerText="Value" >
-                                    <p:inputText id="txtFeeVal" value="#{f.fee}" class="w-100" >
+                                <p:column headerText="Local Fee"  width="9em;" class="text-end" style="padding: 6px;">
+                                    <p:inputText 
+                                        id="txtFeeVal" 
+                                        onfocus="this.select();"
+                                        value="#{f.fee}" 
+                                        class="w-100 text-end" >
                                         <f:convertNumber pattern="#,##0.00" />
                                         <p:ajax process="txtFeeVal" event="blur" listener="#{itemFeeManager.updateFeeForSites(f)}" update=":#{p:resolveFirstComponentWithId('localFee',view).clientId} :#{p:resolveFirstComponentWithId('foreignerFee',view).clientId}" ></p:ajax>
                                     </p:inputText>
                                 </p:column>
-                                <p:column headerText="Value for Foreigners" >
-                                    <p:inputText id="txtFfeeVal" value="#{f.ffee}"  class="w-100" >
+                                <p:column headerText="Foreigner Fee" class="text-end" width="9em;" style="padding: 6px;">
+                                    <p:inputText 
+                                        id="txtFfeeVal" 
+                                        value="#{f.ffee}" 
+                                        onfocus="this.select();"
+                                        class="w-100 text-end" >
                                         <f:convertNumber pattern="#,##0.00" />
                                         <p:ajax process="txtFfeeVal" event="blur" listener="#{itemFeeManager.updateFeeForSites(f)}"  update=":#{p:resolveFirstComponentWithId('foreignerFee',view).clientId} :#{p:resolveFirstComponentWithId('foreignerFee',view).clientId}"></p:ajax>
                                     </p:inputText>
                                 </p:column>
-                                <p:column headerText="Actions" width="6em;" >
+                                <p:column headerText="Actions" width="3em;" class="text-center" style="padding: 6px;">
                                     <p:commandButton 
                                         id="cmdRemove" 
-                                        value="Remove" 
-                                        class="ui-button-danger"
+                                        title="Remove" 
+                                        class="ui-button-danger mx-2"
                                         icon="fas fa-trash"
                                         ajax="false" 
                                         action="#{itemFeeManager.removeFeeForSiteFees()}" >
@@ -297,7 +330,7 @@
                             </p:dataTable>
                         </p:panel>
                     </p:panel>
-                    
+
                 </h:form>
             </ui:define>
         </ui:composition>

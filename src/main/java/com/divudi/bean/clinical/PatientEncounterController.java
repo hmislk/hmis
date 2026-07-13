@@ -23,6 +23,7 @@ import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.core.data.lab.InvestigationResultForGraph;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -41,7 +42,15 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.lab.PatientReportItemValue;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.data.clinical.IssuableMedicineSuggestion;
+import com.divudi.core.entity.ConfigOption;
+import com.divudi.bean.common.ConfigOptionController;
+import com.divudi.bean.common.DepartmentController;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.ConfigOptionFacade;
+import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.ClinicalEntityFacade;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.facade.ItemUsageFacade;
@@ -51,6 +60,12 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.PrescriptionFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.bean.common.PageMetadataRegistry;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.OptionValueType;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.bean.lab.CommonReportItemController;
 import com.divudi.bean.lab.PatientReportController;
 import com.divudi.core.data.InvestigationItemType;
@@ -67,6 +82,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -134,6 +150,12 @@ public class PatientEncounterController implements Serializable {
     private PrescriptionFacade prescriptionFacade;
     @EJB
     InvestigationItemFacade investigationItemFacade;
+    @EJB
+    PharmacyBean pharmacyBean;
+    @EJB
+    DepartmentFacade departmentFacade;
+    @EJB
+    ConfigOptionFacade configOptionFacade;
 
     /**
      * Controllers
@@ -154,6 +176,54 @@ public class PatientEncounterController implements Serializable {
     private PatientReportController patientReportController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ConfigOptionController configOptionController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
+    @Inject
+    DepartmentController departmentController;
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("emr/opd_visit");
+        metadata.setPageName("OPD Visit");
+        metadata.setDescription("OPD patient encounter and prescription management");
+        metadata.setControllerClass("PatientEncounterController");
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Default Outdoor Pharmacy Department",
+                "Default pharmacy department for resolving issuable outdoor medicines during prescription",
+                OptionScope.DEPARTMENT
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Default Indoor Pharmacy Department",
+                "Default pharmacy department for resolving issuable indoor medicines during prescription",
+                OptionScope.DEPARTMENT
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Long Date Format",
+                "Date format pattern used for displaying dates",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "Admin",
+                "Administrative access to page configuration",
+                "Config button visibility"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
+    }
+
     /**
      * Properties
      */
@@ -251,6 +321,10 @@ public class PatientEncounterController implements Serializable {
     private Investigation investigation;
 
     private ClinicalFindingValue removingCfv;
+    private List<IssuableMedicineSuggestion> issuableSuggestions;
+    private Department defaultOutdoorPharmacy;
+    private Department defaultIndoorPharmacy;
+    private List<Department> pharmacyDepartments;
 
     private PatientEncounter encounterToDisplay;
     private PatientEncounter startedEncounter;
@@ -1243,6 +1317,7 @@ public class PatientEncounterController implements Serializable {
             encounterMedicines.add(cli);
 
         }
+        refreshIssuableSuggestions();
         updateOrGeneratePrescription();
     }
 
@@ -1270,6 +1345,16 @@ public class PatientEncounterController implements Serializable {
             encounterMedicines = new ArrayList<>();
         }
 
+        // The medicine selected via the "Medicine" autocomplete (acMedicine). Favourite
+        // lookups are scoped to this item so "Add Favourite" applies to the selected medicine.
+        Item selectedMedicine = getEncounterMedicine().getPrescription() != null
+                ? getEncounterMedicine().getPrescription().getItem() : null;
+
+        if (selectedMedicine == null) {
+            JsfUtil.addErrorMessage("Please select a medicine first");
+            return;
+        }
+
         List<PrescriptionTemplate> favouriteMedicines = new ArrayList<>();
         String lookupMethod = "";
 
@@ -1285,7 +1370,7 @@ public class PatientEncounterController implements Serializable {
         // Method 2: By Patient Weight Group (if weight is available)
         if (patientWeight != null && patientWeight > 0) {
             favouriteMedicines = favouriteController.listFavouriteItems(
-                    null,
+                    selectedMedicine,
                     PrescriptionTemplateType.FavouriteMedicine,
                     patientWeight,
                     null
@@ -1298,7 +1383,7 @@ public class PatientEncounterController implements Serializable {
         // Method 3: By Patient Age Group (fallback when weight is not available or no weight-based favourites found)
         if (favouriteMedicines.isEmpty() && patientAgeInDays != null && patientAgeInDays > 0) {
             favouriteMedicines = favouriteController.listFavouriteItems(
-                    null,
+                    selectedMedicine,
                     PrescriptionTemplateType.FavouriteMedicine,
                     null,
                     patientAgeInDays
@@ -1308,13 +1393,27 @@ public class PatientEncounterController implements Serializable {
             }
         }
 
+        // Method 4: No age/weight restriction — fallback when patient DOB and weight are not
+        // recorded so the doctor still gets the favourite configuration.
+        if (favouriteMedicines.isEmpty()) {
+            favouriteMedicines = favouriteController.listFavouriteItems(
+                    selectedMedicine,
+                    PrescriptionTemplateType.FavouriteMedicine,
+                    null,
+                    null
+            );
+            if (!favouriteMedicines.isEmpty()) {
+                lookupMethod = "medicine templates (no age/weight filter)";
+            }
+        }
+
         // Check if any favourites were found
         if (favouriteMedicines == null || favouriteMedicines.isEmpty()) {
-            String message = "No favourite medicines found";
+            String message = "No favourite configuration found for " + selectedMedicine.getName();
             if (patientWeight != null && patientWeight > 0) {
-                message += " for weight " + patientWeight + " kg";
+                message += " at weight " + patientWeight + " kg";
             } else if (patientAgeInDays != null && patientAgeInDays > 0) {
-                message += " for age " + (patientAgeInDays / 365) + " years";
+                message += " at age " + (patientAgeInDays / 365) + " years";
             }
             JsfUtil.addWarningMessage(message);
             return;
@@ -1327,44 +1426,51 @@ public class PatientEncounterController implements Serializable {
                 continue;
             }
 
-            // Create new prescription from template
-            Prescription prescription = new Prescription();
-            prescription.setItem(template.getItem());
-            prescription.setDose(template.getDose());
-            prescription.setDoseUnit(template.getDoseUnit());
-            prescription.setFrequencyUnit(template.getFrequencyUnit());
-            prescription.setDuration(template.getDuration());
-            prescription.setDurationUnit(template.getDurationUnit());
-            prescription.setIndoor(template.isIndoor());
+            try {
+                // Create new prescription from template
+                Prescription prescription = new Prescription();
+                prescription.setItem(template.getItem());
+                prescription.setDose(template.getDose());
+                prescription.setDoseUnit(template.getDoseUnit());
+                prescription.setFrequencyUnit(template.getFrequencyUnit());
+                prescription.setDuration(template.getDuration());
+                prescription.setDurationUnit(template.getDurationUnit());
+                prescription.setIndoor(template.isIndoor());
 
-            // Create ClinicalFindingValue wrapper
-            ClinicalFindingValue cfv = new ClinicalFindingValue();
-            cfv.setEncounter(current);
-            cfv.setPatient(patient);
-            cfv.setPerson(patient.getPerson());
-            cfv.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
-            cfv.setPrescription(prescription);
+                // Create ClinicalFindingValue wrapper
+                ClinicalFindingValue cfv = new ClinicalFindingValue();
+                cfv.setEncounter(current);
+                cfv.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
+                cfv.setPrescription(prescription);
 
-            // Persist prescription and clinical finding value
-            if (prescription.getId() == null) {
-                prescriptionFacade.create(prescription);
-            } else {
-                prescriptionFacade.edit(prescription);
+                // Persist prescription and clinical finding value
+                if (prescription.getId() == null) {
+                    prescriptionFacade.create(prescription);
+                } else {
+                    prescriptionFacade.edit(prescription);
+                }
+
+                if (cfv.getId() == null) {
+                    clinicalFindingValueFacade.create(cfv);
+                } else {
+                    clinicalFindingValueFacade.edit(cfv);
+                }
+
+                getEncounterFindingValues().add(cfv);
+                addedCount++;
+            } catch (Exception e) {
+                System.out.println("Error adding favourite medicine: " + e.getMessage());
             }
-
-            if (cfv.getId() == null) {
-                clinicalFindingValueFacade.create(cfv);
-            } else {
-                clinicalFindingValueFacade.edit(cfv);
-            }
-
-            getEncounterFindingValues().add(cfv);
-            encounterMedicines.add(cfv);
-            addedCount++;
         }
+
+        // Refresh encounter medicines list from DB
+        encounterMedicines = fillEncounterMedicines(current);
+        refreshIssuableSuggestions();
 
         // Update prescription document
         updateOrGeneratePrescription();
+
+        setEncounterMedicine(null);
 
         // Show success message
         if (addedCount > 0) {
@@ -1405,11 +1511,7 @@ public class PatientEncounterController implements Serializable {
 
         // Now find and add medicines for this diagnosis based on age group
         Patient patient = current.getPatient();
-        System.out.println("DEBUG: Starting medicine lookup for patient: " + (patient != null ? patient.getPerson().getNameWithTitle() : "NULL"));
-        System.out.println("DEBUG: Selected diagnosis: " + (selectedDiagnosis != null ? selectedDiagnosis.getName() : "NULL"));
-
         if (patient == null) {
-            System.out.println("DEBUG: Patient is null, stopping medicine lookup");
             JsfUtil.addSuccessMessage("Diagnosis added");
             return;
         }
@@ -1421,63 +1523,62 @@ public class PatientEncounterController implements Serializable {
         List<PrescriptionTemplate> favouriteMedicines = new ArrayList<>();
         String lookupMethod = "";
 
-        // Get patient weight from current encounter
         Double patientWeight = current.getWeight();
-        System.out.println("DEBUG: Patient weight: " + patientWeight);
-
-        // Get patient age in days
         Long patientAgeInDays = patient.getAgeInDays();
-        System.out.println("DEBUG: Patient age in days: " + patientAgeInDays + " (approx " + (patientAgeInDays != null ? patientAgeInDays / 365.0 : "null") + " years)");
 
         // Step 1: Find which medicines are recommended for this diagnosis (from FavouriteDiagnosis)
         List<PrescriptionTemplate> diagnosisMedicineList = new ArrayList<>();
 
         // Method 1: By Patient Weight Group (if weight is available)
         if (patientWeight != null && patientWeight > 0) {
-            System.out.println("DEBUG: Step 1 - Finding medicine list by weight group: " + patientWeight);
             diagnosisMedicineList = favouriteController.listFavouriteItems(
                     selectedDiagnosis,
                     PrescriptionTemplateType.FavouriteDiagnosis,
                     patientWeight,
                     null
             );
-            System.out.println("DEBUG: Weight-based lookup found " + (diagnosisMedicineList != null ? diagnosisMedicineList.size() : "null") + " medicine recommendations");
             if (diagnosisMedicineList != null && !diagnosisMedicineList.isEmpty()) {
                 lookupMethod = "weight group (" + patientWeight + " kg)";
             }
         }
 
         // Method 2: By Patient Age Group (fallback when weight is not available or no weight-based favourites found)
-        if (diagnosisMedicineList == null || diagnosisMedicineList.isEmpty() && patientAgeInDays != null && patientAgeInDays > 0) {
-            System.out.println("DEBUG: Step 1 - Finding medicine list by age group: " + patientAgeInDays + " days");
+        if ((diagnosisMedicineList == null || diagnosisMedicineList.isEmpty()) && patientAgeInDays != null && patientAgeInDays > 0) {
             diagnosisMedicineList = favouriteController.listFavouriteItems(
                     selectedDiagnosis,
                     PrescriptionTemplateType.FavouriteDiagnosis,
                     null,
                     patientAgeInDays
             );
-            System.out.println("DEBUG: Age-based lookup found " + (diagnosisMedicineList != null ? diagnosisMedicineList.size() : "null") + " medicine recommendations");
-            if (diagnosisMedicineList!=null && !diagnosisMedicineList.isEmpty()) {
+            if (diagnosisMedicineList != null && !diagnosisMedicineList.isEmpty()) {
                 lookupMethod = "age group (" + (patientAgeInDays / 365) + " years)";
+            }
+        }
+
+        // Method 3: No age/weight restriction — used when patient weight and DOB are not
+        // recorded (ageInDays == null or 0).  Returns all FavouriteDiagnosis templates for
+        // this diagnosis regardless of age range so the doctor still gets suggestions.
+        if (diagnosisMedicineList == null || diagnosisMedicineList.isEmpty()) {
+            diagnosisMedicineList = favouriteController.listFavouriteItems(
+                    selectedDiagnosis,
+                    PrescriptionTemplateType.FavouriteDiagnosis,
+                    null,
+                    null
+            );
+            if (diagnosisMedicineList != null && !diagnosisMedicineList.isEmpty()) {
+                lookupMethod = "diagnosis templates (no age/weight filter)";
             }
         }
 
         // Step 2: For each recommended medicine, get its detailed configuration from FavouriteMedicine
         if (diagnosisMedicineList != null && !diagnosisMedicineList.isEmpty()) {
-            System.out.println("DEBUG: Step 2 - Getting detailed configurations for " + diagnosisMedicineList.size() + " medicines");
-
             for (PrescriptionTemplate diagnosisTemplate : diagnosisMedicineList) {
                 if (diagnosisTemplate == null || diagnosisTemplate.getItem() == null) {
-                    System.out.println("DEBUG: Skipping null diagnosis template or item");
                     continue;
                 }
 
-                System.out.println("DEBUG: Looking for detailed config for medicine: " + diagnosisTemplate.getItem().getName());
-
-                // Look for this medicine's detailed configuration in FavouriteMedicine
                 List<PrescriptionTemplate> medicineConfigs = null;
 
-                // Try weight-based first if we have weight
                 if (patientWeight != null && patientWeight > 0) {
                     medicineConfigs = favouriteController.listFavouriteItems(
                             diagnosisTemplate.getItem(),
@@ -1485,10 +1586,8 @@ public class PatientEncounterController implements Serializable {
                             patientWeight,
                             null
                     );
-                    System.out.println("DEBUG: Weight-based medicine config found " + (medicineConfigs != null ? medicineConfigs.size() : "null") + " results");
                 }
 
-                // Try age-based if weight didn't work or no weight available
                 if ((medicineConfigs == null || medicineConfigs.isEmpty()) && patientAgeInDays != null && patientAgeInDays > 0) {
                     medicineConfigs = favouriteController.listFavouriteItems(
                             diagnosisTemplate.getItem(),
@@ -1496,76 +1595,35 @@ public class PatientEncounterController implements Serializable {
                             null,
                             patientAgeInDays
                     );
-                    System.out.println("DEBUG: Age-based medicine config found " + (medicineConfigs != null ? medicineConfigs.size() : "null") + " results");
                 }
 
-                // Use the first valid configuration found
+                if (medicineConfigs == null || medicineConfigs.isEmpty()) {
+                    medicineConfigs = favouriteController.listFavouriteItems(
+                            diagnosisTemplate.getItem(),
+                            PrescriptionTemplateType.FavouriteMedicine,
+                            null,
+                            null
+                    );
+                }
+
                 if (medicineConfigs != null && !medicineConfigs.isEmpty()) {
-                    PrescriptionTemplate medicineTemplate = medicineConfigs.get(0);
-                    favouriteMedicines.add(medicineTemplate);
-                    System.out.println("DEBUG: Added medicine config: " + medicineTemplate.getItem().getName() +
-                                     " with dose=" + medicineTemplate.getDose() +
-                                     ", frequency=" + (medicineTemplate.getFrequencyUnit() != null ? medicineTemplate.getFrequencyUnit().getName() : "null"));
+                    favouriteMedicines.add(medicineConfigs.get(0));
                 } else {
-                    System.out.println("DEBUG: No detailed configuration found for " + diagnosisTemplate.getItem().getName() + " - skipping");
+                    // No separate FavouriteMedicine configuration exists — fall back to the
+                    // dose/frequency/duration stored on the FavouriteDiagnosis template itself.
+                    favouriteMedicines.add(diagnosisTemplate);
                 }
             }
-        }
-
-        System.out.println("DEBUG: Final medicine list size: " + (favouriteMedicines != null ? favouriteMedicines.size() : "null"));
-        if (favouriteMedicines != null && !favouriteMedicines.isEmpty()) {
-            System.out.println("DEBUG: Found medicines:");
-            for (int i = 0; i < favouriteMedicines.size(); i++) {
-                PrescriptionTemplate template = favouriteMedicines.get(i);
-                System.out.println("DEBUG:   " + (i+1) + ". " + (template != null && template.getItem() != null ? template.getItem().getName() : "NULL TEMPLATE/ITEM"));
-            }
-        } else {
-            System.out.println("DEBUG: No medicines found - checking possible reasons:");
-            System.out.println("DEBUG:   - selectedDiagnosis: " + (selectedDiagnosis != null ? "OK" : "NULL"));
-            System.out.println("DEBUG:   - PrescriptionTemplateType.FavouriteDiagnosis: " + PrescriptionTemplateType.FavouriteDiagnosis);
-            System.out.println("DEBUG:   - Patient weight: " + patientWeight);
-            System.out.println("DEBUG:   - Patient age: " + patientAgeInDays);
         }
 
         // Add medicines if found
         int medicineCount = 0;
-        System.out.println("DEBUG: Starting to add medicines...");
         if (favouriteMedicines != null && !favouriteMedicines.isEmpty()) {
-            System.out.println("DEBUG: Processing " + favouriteMedicines.size() + " favourite medicines");
             for (PrescriptionTemplate template : favouriteMedicines) {
-                System.out.println("DEBUG: Processing template: " + (template != null ? "OK" : "NULL"));
                 if (template == null || template.getItem() == null) {
-                    System.out.println("DEBUG: Skipping null template or null item");
                     continue;
                 }
 
-                System.out.println("DEBUG: Adding medicine: " + template.getItem().getName());
-                System.out.println("DEBUG:   Dose: " + template.getDose() + " " + (template.getDoseUnit() != null ? template.getDoseUnit().getName() : "null"));
-                System.out.println("DEBUG:   Frequency: " + (template.getFrequencyUnit() != null ? template.getFrequencyUnit().getName() : "null"));
-                System.out.println("DEBUG:   Duration: " + template.getDuration() + " " + (template.getDurationUnit() != null ? template.getDurationUnit().getName() : "null"));
-                System.out.println("DEBUG:   Indoor: " + template.isIndoor());
-                System.out.println("DEBUG:   Template Type: " + template.getType());
-                System.out.println("DEBUG:   Template ForItem: " + (template.getForItem() != null ? template.getForItem().getName() : "null"));
-                System.out.println("DEBUG:   Template ID: " + template.getId());
-
-                // Check if any values are null or zero that shouldn't be
-                if (template.getDose() == null || template.getDose() == 0) {
-                    System.out.println("DEBUG: WARNING - Dose is null or zero!");
-                }
-                if (template.getDoseUnit() == null) {
-                    System.out.println("DEBUG: WARNING - DoseUnit is null!");
-                }
-                if (template.getFrequencyUnit() == null) {
-                    System.out.println("DEBUG: WARNING - FrequencyUnit is null!");
-                }
-                if (template.getDuration() == null || template.getDuration() == 0) {
-                    System.out.println("DEBUG: WARNING - Duration is null or zero!");
-                }
-                if (template.getDurationUnit() == null) {
-                    System.out.println("DEBUG: WARNING - DurationUnit is null!");
-                }
-
-                // Create ClinicalFindingValue for medicine (following addEncounterMedicine pattern)
                 ClinicalFindingValue cfv = new ClinicalFindingValue();
                 cfv.setEncounter(current);
                 cfv.setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
@@ -1581,64 +1639,32 @@ public class PatientEncounterController implements Serializable {
 
                 cfv.setPrescription(pres);
 
-                // Debug: Check what we're about to save
-                System.out.println("DEBUG: About to save prescription:");
-                System.out.println("DEBUG:   Item: " + (pres.getItem() != null ? pres.getItem().getName() : "null"));
-                System.out.println("DEBUG:   Dose: " + pres.getDose());
-                System.out.println("DEBUG:   DoseUnit: " + (pres.getDoseUnit() != null ? pres.getDoseUnit().getName() : "null"));
-                System.out.println("DEBUG:   FrequencyUnit: " + (pres.getFrequencyUnit() != null ? pres.getFrequencyUnit().getName() : "null"));
-                System.out.println("DEBUG:   Duration: " + pres.getDuration());
-                System.out.println("DEBUG:   DurationUnit: " + (pres.getDurationUnit() != null ? pres.getDurationUnit().getName() : "null"));
-                System.out.println("DEBUG:   Indoor: " + pres.isIndoor());
-
-                // Persist the prescription and clinical finding value
                 try {
                     if (pres.getId() == null) {
                         prescriptionFacade.create(pres);
-                        System.out.println("DEBUG: Created prescription with ID: " + pres.getId());
                     } else {
                         prescriptionFacade.edit(pres);
-                        System.out.println("DEBUG: Updated prescription with ID: " + pres.getId());
                     }
                     if (cfv.getId() == null) {
                         clinicalFindingValueFacade.create(cfv);
-                        System.out.println("DEBUG: Created clinical finding value with ID: " + cfv.getId());
                     } else {
                         clinicalFindingValueFacade.edit(cfv);
-                        System.out.println("DEBUG: Updated clinical finding value with ID: " + cfv.getId());
                     }
-
                     getEncounterFindingValues().add(cfv);
                     medicineCount++;
-                    System.out.println("DEBUG: Successfully added medicine #" + medicineCount);
                 } catch (Exception e) {
-                    System.out.println("DEBUG: Error adding medicine: " + e.getMessage());
-                    e.printStackTrace();
+                    // individual medicine failure should not abort the rest
                 }
             }
-            // Refresh the encounter medicines list
-            System.out.println("DEBUG: Refreshing encounter medicines list...");
             encounterMedicines = fillEncounterMedicines(current);
-            System.out.println("DEBUG: Encounter medicines list now has " + (encounterMedicines != null ? encounterMedicines.size() : "null") + " items");
-
-            // Update/generate prescription like addEncounterMedicine does
-            System.out.println("DEBUG: Updating prescription document...");
-            try {
-                updateOrGeneratePrescription();
-                System.out.println("DEBUG: Successfully updated prescription document");
-            } catch (Exception e) {
-                System.out.println("DEBUG: Error updating prescription: " + e.getMessage());
-            }
-        } else {
-            System.out.println("DEBUG: No medicines to add - list is null or empty");
+            refreshIssuableSuggestions();
+            updateOrGeneratePrescription();
         }
 
-        // Show success message
         String message = "Diagnosis added";
         if (medicineCount > 0) {
             message += " with " + medicineCount + " medicine(s) from " + lookupMethod;
         }
-        System.out.println("DEBUG: Final result - " + message);
         JsfUtil.addSuccessMessage(message);
     }
     
@@ -1797,6 +1823,10 @@ public class PatientEncounterController implements Serializable {
         encounterPrescreptions = fillEncounterPrescreptions(encounter);
         encounterPlanOfActions = fillPlanOfAction(encounter);
         encounterInvestigationResults = fillEncounterInvestigationResults(encounter);
+        defaultOutdoorPharmacy = null;
+        defaultIndoorPharmacy = null;
+        pharmacyDepartments = null;
+        refreshIssuableSuggestions();
     }
 
     public String generateDocumentFromTemplate(DocumentTemplate t, PatientEncounter e) {
@@ -2030,8 +2060,8 @@ public class PatientEncounterController implements Serializable {
             }
         }
 
-        output = input.replace("{name}", name)
-                .replace("{age}", age)
+        output = input.replace("{patient_name}", name)
+                .replace("{patient_age}", age)
                 .replace("{comments}", comments)
                 .replace("{sex}", sex)
                 .replace("{address}", address)
@@ -2056,8 +2086,6 @@ public class PatientEncounterController implements Serializable {
                 .replace("{pr}", pulseRate)
                 .replace("{pfr}", pfr)
                 .replace("{sat}", saturation)
-                .replace("{patient_name}", name)
-                .replace("{patient_age}", age)
                 .replace("{patient_phn_number}", phn)
                 .replace("{patient_nic}", nic)
                 .replace("{medical_start_date}", medicalStartDate)
@@ -2083,6 +2111,7 @@ public class PatientEncounterController implements Serializable {
         for (DocumentTemplate t : dts) {
             if (t.isDefaultTemplate()) {
                 ClinicalFindingValue cfv = new ClinicalFindingValue();
+                cfv.setClinicalFindingValueType(ClinicalFindingValueType.VisitPrescription);
                 cfv.setEncounter(encounter);
                 cfv.setDocumentTemplate(t);
                 cfv.setStringValue(t.getName());
@@ -2223,6 +2252,7 @@ public class PatientEncounterController implements Serializable {
         getEncounterFindingValues().add(getEncounterMedicine());
 
         encounterMedicines = fillEncounterMedicines(current);
+        refreshIssuableSuggestions();
 
         updateOrGeneratePrescription();
         setEncounterMedicine(null);
@@ -2240,6 +2270,9 @@ public class PatientEncounterController implements Serializable {
         }
         if (encounterPrescreption != null) {
             encounterPrescreption.setLobValue(generateDocumentFromTemplate(encounterPrescreption.getDocumentTemplate(), current));
+            if (encounterPrescreption.getClinicalFindingValueType() == null) {
+                encounterPrescreption.setClinicalFindingValueType(ClinicalFindingValueType.VisitPrescription);
+            }
             if (encounterPrescreption.getId() == null) {
                 clinicalFindingValueFacade.create(encounterPrescreption);
             } else {
@@ -2256,7 +2289,7 @@ public class PatientEncounterController implements Serializable {
             }
             if (prescTemplate != null) {
                 encounterPrescreption = new ClinicalFindingValue();
-                encounterPrescreption.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
+                encounterPrescreption.setClinicalFindingValueType(ClinicalFindingValueType.VisitPrescription);
                 encounterPrescreption.setDocumentTemplate(prescTemplate);
                 encounterPrescreption.setEncounter(current);
                 encounterPrescreption.setLobValue(generateDocumentFromTemplate(prescTemplate, current));
@@ -2403,6 +2436,7 @@ public class PatientEncounterController implements Serializable {
     public void removeEncounterMedicine() {
         removeCfv();
         encounterMedicines = fillEncounterMedicines(current);
+        refreshIssuableSuggestions();
     }
 
     public void removeEncounterDiagnosticImage() {
@@ -2937,6 +2971,207 @@ public class PatientEncounterController implements Serializable {
         getPatientFacade().edit(current.getPatient());
     }
 
+    public void refreshIssuableSuggestions() {
+        issuableSuggestions = new ArrayList<>();
+        Department outdoorPharmacy = resolveDefaultOutdoorPharmacy();
+        Department indoorPharmacy = resolveDefaultIndoorPharmacy();
+        if (outdoorPharmacy == null && indoorPharmacy == null) {
+            return;
+        }
+        if (encounterMedicines == null || encounterMedicines.isEmpty()) {
+            return;
+        }
+        for (ClinicalFindingValue cfv : encounterMedicines) {
+            if (cfv == null || cfv.getPrescription() == null || cfv.getPrescription().getItem() == null) {
+                continue;
+            }
+            Prescription rx = cfv.getPrescription();
+            boolean indoor = rx.isIndoor();
+            Department pharmacy = indoor ? indoorPharmacy : outdoorPharmacy;
+            if (pharmacy == null) {
+                continue;
+            }
+            Item prescribedItem = rx.getItem();
+            List<Amp> amps = pharmacyBean.resolveAmps(prescribedItem);
+            if (amps == null || amps.isEmpty()) {
+                continue;
+            }
+            for (Amp amp : amps) {
+                IssuableMedicineSuggestion suggestion = new IssuableMedicineSuggestion();
+                suggestion.setAmp(amp);
+                suggestion.setSourceCfv(cfv);
+                suggestion.setIssueUnit(amp.getIssueUnit());
+                double qty = pharmacyBean.calculateIssueQuantity(rx, amp);
+                suggestion.setCalculatedIssueQty(qty);
+                double stock = pharmacyBean.getItemStockQty(amp, pharmacy);
+                suggestion.setAvailableStock(stock);
+                suggestion.setInStock(stock > 0);
+                boolean sameDf = false;
+                if (prescribedItem.getDosageForm() != null && amp.getDosageForm() != null) {
+                    sameDf = prescribedItem.getDosageForm().equals(amp.getDosageForm());
+                }
+                suggestion.setSameDosageForm(sameDf);
+                String display = amp.getName();
+                if (prescribedItem.getName() != null) {
+                    display = prescribedItem.getName() + " → " + amp.getName();
+                }
+                suggestion.setDisplayText(display);
+                suggestion.setSelected(false);
+                issuableSuggestions.add(suggestion);
+            }
+        }
+        // Sort: same dosage form first, then in-stock first
+        issuableSuggestions.sort((a, b) -> {
+            if (a.isSameDosageForm() != b.isSameDosageForm()) {
+                return a.isSameDosageForm() ? -1 : 1;
+            }
+            if (a.isInStock() != b.isInStock()) {
+                return a.isInStock() ? -1 : 1;
+            }
+            return Double.compare(b.getAvailableStock(), a.getAvailableStock());
+        });
+        // Auto-select the best (first in-stock, same dosage form) per source CFV
+        java.util.Set<Long> selectedCfvIds = new java.util.HashSet<>();
+        for (IssuableMedicineSuggestion s : issuableSuggestions) {
+            if (s.getSourceCfv() != null && s.getSourceCfv().getId() != null) {
+                Long cfvId = s.getSourceCfv().getId();
+                if (!selectedCfvIds.contains(cfvId) && s.isInStock() && s.isSameDosageForm()) {
+                    s.setSelected(true);
+                    selectedCfvIds.add(cfvId);
+                }
+            }
+        }
+    }
+
+    private Department resolvePharmacyFromConfig(String configKey) {
+        Department currentDept = sessionController.getDepartment();
+        if (currentDept == null) {
+            return null;
+        }
+        ConfigOption option = configOptionController
+                .getOptionValueByKeyForDepartment(configKey, currentDept);
+        if (option != null && option.getOptionValue() != null && !option.getOptionValue().trim().isEmpty()) {
+            try {
+                Long deptId = Long.parseLong(option.getOptionValue().trim());
+                return departmentFacade.find(deptId);
+            } catch (NumberFormatException e) {
+                // Invalid config value
+            }
+        }
+        return null;
+    }
+
+    public Department resolveDefaultOutdoorPharmacy() {
+        if (defaultOutdoorPharmacy == null) {
+            defaultOutdoorPharmacy = resolvePharmacyFromConfig("Default Outdoor Pharmacy Department");
+        }
+        return defaultOutdoorPharmacy;
+    }
+
+    public Department resolveDefaultIndoorPharmacy() {
+        if (defaultIndoorPharmacy == null) {
+            defaultIndoorPharmacy = resolvePharmacyFromConfig("Default Indoor Pharmacy Department");
+        }
+        return defaultIndoorPharmacy;
+    }
+
+    public void saveDefaultOutdoorPharmacy() {
+        savePharmacyConfig("Default Outdoor Pharmacy Department", defaultOutdoorPharmacy);
+        issuableSuggestions = null;
+        refreshIssuableSuggestions();
+        JsfUtil.addSuccessMessage("Default outdoor pharmacy saved");
+        debugIssuableSuggestions();
+    }
+
+    public void saveDefaultIndoorPharmacy() {
+        savePharmacyConfig("Default Indoor Pharmacy Department", defaultIndoorPharmacy);
+        issuableSuggestions = null;
+        refreshIssuableSuggestions();
+        JsfUtil.addSuccessMessage("Default indoor pharmacy saved");
+        debugIssuableSuggestions();
+    }
+
+    private void debugIssuableSuggestions() {
+        if (encounterMedicines == null || encounterMedicines.isEmpty()) {
+            JsfUtil.addWarningMessage("Debug: No encounter medicines found");
+            return;
+        }
+        for (ClinicalFindingValue cfv : encounterMedicines) {
+            if (cfv == null || cfv.getPrescription() == null || cfv.getPrescription().getItem() == null) {
+                JsfUtil.addWarningMessage("Debug: CFV with null prescription/item");
+                continue;
+            }
+            Prescription rx = cfv.getPrescription();
+            Item item = rx.getItem();
+            List<Amp> amps = pharmacyBean.resolveAmps(item);
+            JsfUtil.addWarningMessage("Debug: " + item.getName() + " (" + item.getClass().getSimpleName()
+                    + ") indoor=" + rx.isIndoor() + " → " + (amps != null ? amps.size() : 0) + " AMPs");
+        }
+        JsfUtil.addWarningMessage("Debug: issuableSuggestions size=" + (issuableSuggestions != null ? issuableSuggestions.size() : "null"));
+    }
+
+    private void savePharmacyConfig(String configKey, Department dept) {
+        Department currentDept = sessionController.getDepartment();
+        if (currentDept == null) {
+            return;
+        }
+        ConfigOption option = configOptionController
+                .getOptionValueByKeyForDepartment(configKey, currentDept);
+        if (option == null) {
+            option = new ConfigOption();
+            option.setOptionKey(configKey);
+            option.setScope(OptionScope.DEPARTMENT);
+            option.setDepartment(currentDept);
+            option.setValueType(OptionValueType.LONG);
+            option.setCreatedAt(new java.util.Date());
+            option.setCreater(sessionController.getLoggedUser());
+        }
+        option.setOptionValue(dept != null ? String.valueOf(dept.getId()) : "");
+        if (option.getId() == null) {
+            configOptionFacade.create(option);
+        } else {
+            configOptionFacade.edit(option);
+        }
+    }
+
+    public List<Department> getPharmacyDepartments() {
+        if (pharmacyDepartments == null) {
+            pharmacyDepartments = departmentController.getInstitutionDepatrments(
+                    sessionController.getInstitution(), DepartmentType.Pharmacy);
+        }
+        return pharmacyDepartments;
+    }
+
+    public List<IssuableMedicineSuggestion> getIssuableSuggestions() {
+        return issuableSuggestions;
+    }
+
+    public void setIssuableSuggestions(List<IssuableMedicineSuggestion> issuableSuggestions) {
+        this.issuableSuggestions = issuableSuggestions;
+    }
+
+    public Department getDefaultOutdoorPharmacy() {
+        if (defaultOutdoorPharmacy == null) {
+            resolveDefaultOutdoorPharmacy();
+        }
+        return defaultOutdoorPharmacy;
+    }
+
+    public void setDefaultOutdoorPharmacy(Department defaultOutdoorPharmacy) {
+        this.defaultOutdoorPharmacy = defaultOutdoorPharmacy;
+    }
+
+    public Department getDefaultIndoorPharmacy() {
+        if (defaultIndoorPharmacy == null) {
+            resolveDefaultIndoorPharmacy();
+        }
+        return defaultIndoorPharmacy;
+    }
+
+    public void setDefaultIndoorPharmacy(Department defaultIndoorPharmacy) {
+        this.defaultIndoorPharmacy = defaultIndoorPharmacy;
+    }
+
     public String issueItems() {
         if (current == null) {
             return "";
@@ -3352,6 +3587,7 @@ public class PatientEncounterController implements Serializable {
 
     public void setPatient(Patient patient) {
         this.patient = patient;
+        clearPatientJourneyTimeline();
     }
 
     public ClinicalFindingValueFacade getClinicalFindingValueFacade() {
@@ -3557,9 +3793,31 @@ public class PatientEncounterController implements Serializable {
     }
 
     private List<ClinicalFindingValue> fillEncounterPrescreptions(PatientEncounter encounter) {
-        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
-        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitPrescription);
-        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+        List<ClinicalFindingValue> vs = new ArrayList<>();
+        if (encounterFindingValues == null) {
+            encounterFindingValues = fillEncounterFindingValues(encounter);
+        }
+        if (encounterFindingValues == null) {
+            encounterFindingValues = new ArrayList<>();
+        }
+        for (ClinicalFindingValue v : encounterFindingValues) {
+            if (v == null) {
+                continue;
+            }
+            if (v.getClinicalFindingValueType() == ClinicalFindingValueType.VisitPrescription) {
+                vs.add(v);
+                continue;
+            }
+            // Legacy prescriptions were persisted with a null or VisitDocument type;
+            // recognise them through their document template type instead.
+            boolean legacyType = v.getClinicalFindingValueType() == null
+                    || v.getClinicalFindingValueType() == ClinicalFindingValueType.VisitDocument;
+            if (legacyType && v.getDocumentTemplate() != null
+                    && v.getDocumentTemplate().getType() == DocumentTemplateType.Prescription) {
+                vs.add(v);
+            }
+        }
+        return vs;
     }
 
     private List<ClinicalFindingValue> fillPlanOfAction(PatientEncounter encounter) {
@@ -3642,6 +3900,19 @@ public class PatientEncounterController implements Serializable {
 
     public ClinicalFindingValue getEncounterReferral() {
         return encounterReferral;
+    }
+
+    public String getEncounterReferralContentForDisplay() {
+        if (encounterReferral == null || encounterReferral.getLobValue() == null) {
+            return "";
+        }
+        String content = encounterReferral.getLobValue();
+        content = content.replace("&lt;", "<")
+                .replace("&gt;", ">")
+                .replace("&amp;", "&")
+                .replace("&quot;", "\"")
+                .replace("&#39;", "'");
+        return content;
     }
 
     public void setEncounterReferral(ClinicalFindingValue encounterReferral) {
@@ -4287,6 +4558,173 @@ public class PatientEncounterController implements Serializable {
 
     public void setSelectedInvestigationItem(InvestigationItem selectedInvestigationItem) {
         this.selectedInvestigationItem = selectedInvestigationItem;
+    }
+
+    // Patient Journey Timeline data
+    private Long patientJourneyTimelinePatientId;
+    private Date patientRegistrationDate;
+    private List<Object[]> opdVisitEvents = new ArrayList<>();
+    private List<Object[]> admissionStartEvents = new ArrayList<>();
+    private List<Object[]> admissionEndEvents = new ArrayList<>();
+    private List<Object[]> labEvents = new ArrayList<>();
+    private List<Object[]> surgeryEvents = new ArrayList<>();
+
+    private void clearPatientJourneyTimeline() {
+        patientJourneyTimelinePatientId = null;
+        patientRegistrationDate = null;
+        opdVisitEvents = new ArrayList<>();
+        admissionStartEvents = new ArrayList<>();
+        admissionEndEvents = new ArrayList<>();
+        labEvents = new ArrayList<>();
+        surgeryEvents = new ArrayList<>();
+    }
+
+    public void generatePatientJourneyTimeline() {
+        clearPatientJourneyTimeline();
+
+        if (patient == null) {
+            return;
+        }
+
+        patientJourneyTimelinePatientId = patient.getId();
+        patientRegistrationDate = patient.getCreatedAt();
+
+        Map<String, Object> patientOnlyParams = new HashMap<>();
+        patientOnlyParams.put("patient", patient);
+
+        Map<String, Object> opdParams = new HashMap<>(patientOnlyParams);
+        opdParams.put("patientEncounterType", PatientEncounterType.OpdVisit);
+        String opdJpql = "SELECT e.encounterDate, e.id FROM PatientEncounter e "
+                + "WHERE e.patient = :patient AND e.patientEncounterType = :patientEncounterType "
+                + "AND e.retired = false AND e.encounterDate IS NOT NULL ORDER BY e.encounterDate ASC";
+        List<Object[]> opd = ejbFacade.findObjectArrayByJpql(opdJpql, opdParams, null);
+        if (opd != null) {
+            opdVisitEvents = opd;
+        }
+
+        String admJpql = "SELECT a.dateOfAdmission, a.timeOfAdmission, a.fromTime, "
+                + "a.dateOfDischarge, a.timeOfDischarge, a.toTime, a.bhtNo "
+                + "FROM Admission a "
+                + "WHERE a.patient = :patient AND a.retired = false "
+                + "ORDER BY coalesce(a.dateOfAdmission, a.timeOfAdmission, a.fromTime) ASC";
+        List<Object[]> admissions = ejbFacade.findObjectArrayByJpql(admJpql, patientOnlyParams, null);
+        if (admissions != null) {
+            for (Object[] row : admissions) {
+                Date startDate = firstNonNullDate((Date) row[0], (Date) row[1], (Date) row[2]);
+                Date endDate   = firstNonNullDate((Date) row[3], (Date) row[4], (Date) row[5]);
+                String bhtNo   = (String) row[6];
+                if (startDate != null) {
+                    admissionStartEvents.add(new Object[]{startDate, bhtNo});
+                }
+                if (endDate != null) {
+                    admissionEndEvents.add(new Object[]{endDate, bhtNo});
+                }
+            }
+        }
+
+        String labJpql = "SELECT pi.sampledAt, pi.orderedAt, pi.createdAt, pi.id "
+                + "FROM PatientInvestigation pi WHERE pi.patient = :patient AND pi.retired = false "
+                + "AND (pi.cancelled = false OR pi.cancelled IS NULL) "
+                + "ORDER BY coalesce(pi.sampledAt, pi.orderedAt, pi.createdAt) ASC";
+        List<Object[]> labs = ejbFacade.findObjectArrayByJpql(labJpql, patientOnlyParams, null);
+        if (labs != null) {
+            for (Object[] row : labs) {
+                Date labDate = firstNonNullDate((Date) row[0], (Date) row[1], (Date) row[2]);
+                if (labDate != null) {
+                    labEvents.add(new Object[]{labDate, row[3]});
+                }
+            }
+        }
+
+        Map<String, Object> surgeryParams = new HashMap<>(patientOnlyParams);
+        surgeryParams.put("billType", BillType.SurgeryBill);
+        String surgJpql = "SELECT b.createdAt, b.billDate, b.id FROM Bill b "
+                + "WHERE b.patient = :patient AND b.billType = :billType "
+                + "AND b.retired = false AND b.cancelled = false "
+                + "ORDER BY coalesce(b.createdAt, b.billDate) ASC";
+        List<Object[]> surgs = ejbFacade.findObjectArrayByJpql(surgJpql, surgeryParams, null);
+        if (surgs != null) {
+            for (Object[] row : surgs) {
+                Date surgeryDate = firstNonNullDate((Date) row[0], (Date) row[1]);
+                if (surgeryDate != null) {
+                    surgeryEvents.add(new Object[]{surgeryDate, row[2]});
+                }
+            }
+        }
+
+        // Registration must be the earliest point on the timeline: clamp to the
+        // earliest dated event across all categories when createdAt is missing/later.
+        Date earliestEvent = minDate(
+                earliestEventDate(opdVisitEvents),
+                earliestEventDate(admissionStartEvents),
+                earliestEventDate(admissionEndEvents),
+                earliestEventDate(labEvents),
+                earliestEventDate(surgeryEvents));
+        if (earliestEvent != null && (patientRegistrationDate == null || earliestEvent.before(patientRegistrationDate))) {
+            patientRegistrationDate = earliestEvent;
+        }
+    }
+
+    private static Date earliestEventDate(List<Object[]> events) {
+        if (events == null || events.isEmpty() || events.get(0)[0] == null) {
+            return null;
+        }
+        return (Date) events.get(0)[0];
+    }
+
+    private static Date minDate(Date... dates) {
+        Date min = null;
+        if (dates == null) {
+            return null;
+        }
+        for (Date d : dates) {
+            if (d != null && (min == null || d.before(min))) {
+                min = d;
+            }
+        }
+        return min;
+    }
+
+    private static Date firstNonNullDate(Date... dates) {
+        if (dates == null) {
+            return null;
+        }
+        for (Date d : dates) {
+            if (d != null) {
+                return d;
+            }
+        }
+        return null;
+    }
+
+    public boolean isPatientJourneyTimelineReadyForCurrentPatient() {
+        return patient != null && patient.getId() != null
+                && patient.getId().equals(patientJourneyTimelinePatientId)
+                && patientRegistrationDate != null;
+    }
+
+    public Date getPatientRegistrationDate() {
+        return patientRegistrationDate;
+    }
+
+    public List<Object[]> getOpdVisitEvents() {
+        return opdVisitEvents;
+    }
+
+    public List<Object[]> getAdmissionStartEvents() {
+        return admissionStartEvents;
+    }
+
+    public List<Object[]> getAdmissionEndEvents() {
+        return admissionEndEvents;
+    }
+
+    public List<Object[]> getLabEvents() {
+        return labEvents;
+    }
+
+    public List<Object[]> getSurgeryEvents() {
+        return surgeryEvents;
     }
 
     // Autocomplete for all InvestigationItems (not patient-specific)

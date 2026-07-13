@@ -10,9 +10,21 @@
         <h:form>
             <p:panel class="w-100">
                 <f:facet name="header">
-                    <h:outputText styleClass="fa-solid fa-prescription-bottle-medical"/>
-                    <p:outputLabel value="Select Request For Department : #{sessionController.department.name}" class="mx-4"/>      
-
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h:outputText styleClass="fa-solid fa-prescription-bottle-medical"/>
+                            <p:outputLabel value="Select Request For Department : #{sessionController.department.name}" class="mx-4"/>
+                        </div>
+                        <div>
+                            <p:commandButton
+                                value="Inpatient Dashboard"
+                                icon="fa fa-id-card"
+                                ajax="false"
+                                class="ui-button-secondary"
+                                rendered="#{admissionController.current ne null and admissionController.current.id ne null}"
+                                action="#{admissionController.navigateToAdmissionProfilePage}"/>
+                        </div>
+                    </div>
                 </f:facet>
                 <div class="row">
                     <div class="col-md-2">
@@ -140,12 +152,13 @@
                                     <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
                                 </p:commandButton>
                                 
-                                <p:commandButton 
+                                <p:commandButton
                                     id="btnNavigtateToIssueMedicine"
                                     title="Issue Medicines"
-                                    class="ui-button-success m-1" 
-                                    ajax="false" 
+                                    class="ui-button-success m-1"
+                                    ajax="false"
                                     icon="fa fa-prescription-bottle-alt"
+                                    onclick="PF('issueMedicinesProcessingDialog').show();"
                                     action="#{pharmacySaleBhtController.navigateToIssueMedicinesDirectlyForBhtRequest()}"
                                     disabled="#{p.cancelled eq true}">
                                     <f:setPropertyActionListener value="#{p}" target="#{pharmacySaleBhtController.bhtRequestBill}" />
@@ -196,7 +209,20 @@
                 </div>
 
             </p:panel>
+
+            <p:dialog widgetVar="issueMedicinesProcessingDialog"
+                      modal="true"
+                      closable="false"
+                      resizable="false"
+                      draggable="false"
+                      header="Please Wait"
+                      width="320">
+                <div class="d-flex align-items-center gap-2 py-2">
+                    <i class="fa fa-spinner fa-spin fa-2x"/>
+                    <span>Loading medicines for this request, please wait...</span>
+                </div>
+            </p:dialog>
         </h:form>
-    </ui:define>  
+    </ui:define>
 
 </ui:composition>

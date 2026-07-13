@@ -195,7 +195,7 @@
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Block', true)}" >
                             <p:panel>
                                 <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
-                                    Pharmacy Sale
+                                    #{configOptionApplicationController.getBooleanValueByKey('Pharmacy History Lists Only Department Transactions for Sales', true) ? 'Department Sale' : 'All Departments Sale'}
                                 </div>
                                 <h:panelGroup rendered="#{empty pharmacyController.salesByBillType}">
                                     <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
@@ -337,6 +337,80 @@
 
                                 </p:dataTable>
 
+                            </p:panel>
+                        </h:panelGroup>
+                        <h:panelGroup
+                            layout="block"
+                            class="col-3"
+                            id="itemDetailsBlockDepartmentSaleIssue"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Department Sale &amp; Issue Block', true)}" >
+                            <p:panel>
+                                <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
+                                    Dept. Sale &amp; Issue
+                                </div>
+                                <h:panelGroup rendered="#{empty pharmacyController.departmentSaleIssueDtos}">
+                                    <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                        <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                        No department sale or issue data available for the selected period.
+                                    </div>
+                                </h:panelGroup>
+                                <ui:fragment rendered="#{not empty pharmacyController.departmentSaleIssueDtos}">
+                                    <div class="table-responsive">
+                                    <table class="table table-striped table-bordered" style="font-size: 12px;">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Department</th>
+                                                <th class="text-end">Retail</th>
+                                                <th class="text-end">Wholesale</th>
+                                                <th class="text-end">Inpatient</th>
+                                                <th class="text-end">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat value="#{pharmacyController.departmentSaleIssueDtos}" var="dto">
+                                                <tr>
+                                                    <td>
+                                                        <h:outputText value="#{dto.department.name}"/>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{dto.retailSaleQty}">
+                                                            <f:convertNumber integerOnly="true" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{dto.wholesaleSaleQty}">
+                                                            <f:convertNumber integerOnly="true" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{dto.inpatientIssueQty}">
+                                                            <f:convertNumber integerOnly="true" />
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td class="text-end">
+                                                        <h:outputText value="#{dto.totalQty}">
+                                                            <f:convertNumber integerOnly="true" />
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                        <tfoot class="table-dark">
+                                            <tr>
+                                                <th class="fw-bold">Total</th>
+                                                <th class="text-end fw-bold"></th>
+                                                <th class="text-end fw-bold"></th>
+                                                <th class="text-end fw-bold"></th>
+                                                <th class="text-end fw-bold">
+                                                    <h:outputText value="#{pharmacyController.grantDepartmentSaleIssueTotalQty}">
+                                                        <f:convertNumber integerOnly="true" />
+                                                    </h:outputText>
+                                                </th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                    </div>
+                                </ui:fragment>
                             </p:panel>
                         </h:panelGroup>
                         <h:panelGroup
@@ -735,7 +809,7 @@
                         </p:tab>
 
                         <p:tab
-                            title="Sale"
+                            title="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy History Lists Only Department Transactions for Sales', true) ? 'Department Sale' : 'All Departments Sale'}"
                             id="itemDetailsTabSales"
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Tab', true)}">
 
@@ -877,7 +951,76 @@
                                     </p:row>
                                 </p:columnGroup>
 
-                            </p:dataTable>                
+                            </p:dataTable>
+                        </p:tab>
+
+                        <p:tab
+                            id="itemDetailsTabDepartmentSaleIssue"
+                            title="Dept. Sale &amp; Issue"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Department Sale &amp; Issue Tab', true)}">
+                            <h:panelGroup rendered="#{empty pharmacyController.departmentSaleIssueDtos}">
+                                <div class="alert alert-info text-center" style="margin: 20px 0; padding: 15px;">
+                                    <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                    No department sale or issue data available for the selected period.
+                                </div>
+                            </h:panelGroup>
+                            <ui:fragment rendered="#{not empty pharmacyController.departmentSaleIssueDtos}">
+                                <div class="table-responsive">
+                                <table class="table table-striped table-bordered" id="tblDepartmentSaleIssueHistoryInTabs">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Department</th>
+                                            <th class="text-end">Retail Sale</th>
+                                            <th class="text-end">Wholesale Sale</th>
+                                            <th class="text-end">Inpatient Issue</th>
+                                            <th class="text-end">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <ui:repeat value="#{pharmacyController.departmentSaleIssueDtos}" var="dto">
+                                            <tr>
+                                                <td>
+                                                    <h:outputText value="#{dto.department.name}"/>
+                                                </td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{dto.retailSaleQty}">
+                                                        <f:convertNumber integerOnly="true" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{dto.wholesaleSaleQty}">
+                                                        <f:convertNumber integerOnly="true" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{dto.inpatientIssueQty}">
+                                                        <f:convertNumber integerOnly="true" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td class="text-end">
+                                                    <h:outputText value="#{dto.totalQty}">
+                                                        <f:convertNumber integerOnly="true" />
+                                                    </h:outputText>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                    </tbody>
+                                    <tfoot class="table-dark">
+                                        <tr>
+                                            <th class="fw-bold">Total</th>
+                                            <th class="text-end fw-bold"></th>
+                                            <th class="text-end fw-bold"></th>
+                                            <th class="text-end fw-bold"></th>
+                                            <th class="text-end fw-bold">
+                                                <h:outputText value="#{pharmacyController.grantDepartmentSaleIssueTotalQty}">
+                                                    <f:convertNumber integerOnly="true" />
+                                                </h:outputText>
+                                            </th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                                </div>
+                            </ui:fragment>
                         </p:tab>
 
                         <p:tab
