@@ -664,11 +664,13 @@
 
             </h:panelGroup>
 
-            <p:dialog id="idiBillPaperConfigDialog"
-                      header="Direct Issue Bill - Print Format Settings"
-                      widgetVar="idiBillPaperConfigDialog"
-                      modal="true" width="500" resizable="false" closeOnEscape="true">
-                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="idiBillPaperConfigForm" />
+        </h:form>
+
+        <p:dialog id="idiBillPaperConfigDialog"
+                  header="Direct Issue Bill - Print Format Settings"
+                  widgetVar="idiBillPaperConfigDialog"
+                  modal="true" width="500" resizable="false" closeOnEscape="true">
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="idiBillPaperConfigForm" />
                 <h:form id="idiBillPaperConfigForm">
                     <div class="mb-3">
                         <h:selectBooleanCheckbox id="cbA4" value="#{pharmacyConfigController.inwardDirectIssueBillA4}" />
@@ -693,7 +695,6 @@
                 </h:form>
             </p:dialog>
 
-        </h:form>
     </ui:define>
 
 </ui:composition>

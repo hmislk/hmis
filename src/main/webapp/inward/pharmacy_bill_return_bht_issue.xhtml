@@ -386,11 +386,13 @@
 
             </p:panel>
 
-            <p:dialog id="idiReturnBillPaperConfigDialog"
-                      header="Direct Issue Bill - Print Format Settings"
-                      widgetVar="idiReturnBillPaperConfigDialog"
-                      modal="true" width="500" resizable="false" closeOnEscape="true">
-                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="idiReturnBillPaperConfigForm" />
+        </h:form>
+
+        <p:dialog id="idiReturnBillPaperConfigDialog"
+                  header="Direct Issue Bill - Print Format Settings"
+                  widgetVar="idiReturnBillPaperConfigDialog"
+                  modal="true" width="500" resizable="false" closeOnEscape="true">
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="idiReturnBillPaperConfigForm" />
                 <h:form id="idiReturnBillPaperConfigForm">
                     <div class="mb-3">
                         <h:selectBooleanCheckbox id="cbRetA4" value="#{pharmacyConfigController.inwardDirectIssueBillA4}" />
@@ -414,7 +416,6 @@
                     </div>
                 </h:form>
             </p:dialog>
-        </h:form>
     </ui:define>
 
 </ui:composition>
