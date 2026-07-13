@@ -11,6 +11,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
@@ -246,6 +247,13 @@ public class TransferReceiveCancellationController implements Serializable {
         cancellationBill.setFromInstitution(originalReceiveBill.getFromInstitution());
         cancellationBill.setToDepartment(originalReceiveBill.getToDepartment());
         cancellationBill.setToInstitution(originalReceiveBill.getToInstitution());
+        cancellationBill.setDepartmentType(originalReceiveBill.getDepartmentType());
+        if (cancellationBill.getDepartmentType() == null) {
+            // Legacy receive bills predate departmentType stamping (#22056);
+            // derive from the original items so the cancellation stays visible
+            // in department-type-filtered reports.
+            cancellationBill.setDepartmentType(singleDepartmentTypeOfItems(originalReceiveBill.getBillItems()));
+        }
 
         // Set audit fields
         cancellationBill.setCreater(sessionController.getLoggedUser());
@@ -264,6 +272,26 @@ public class TransferReceiveCancellationController implements Serializable {
 
         // Initialize collections
         cancellationBill.setBillItems(new ArrayList<>());
+    }
+
+    // Returns the department type shared by all non-null item types, or null
+    // when items are mixed/untyped — never guess from a partial match (#22056).
+    private DepartmentType singleDepartmentTypeOfItems(List<BillItem> items) {
+        if (items == null) {
+            return null;
+        }
+        DepartmentType found = null;
+        for (BillItem bi : items) {
+            if (bi.isRetired() || bi.getItem() == null || bi.getItem().getDepartmentType() == null) {
+                continue;
+            }
+            if (found == null) {
+                found = bi.getItem().getDepartmentType();
+            } else if (!found.equals(bi.getItem().getDepartmentType())) {
+                return null;
+            }
+        }
+        return found;
     }
 
     /**
