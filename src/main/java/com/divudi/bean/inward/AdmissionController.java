@@ -2414,8 +2414,34 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
 
             if (getCurrent().getInpatientPackage() != null) {
-                getInpatientPackageApplicationBean().applyPackageToAdmission(
-                        getCurrent(), currentPatientRoom, getSessionController().getLoggedUser());
+                // The admission and room above were each already committed in their
+                // own EJB transaction (this controller is a CDI bean, not itself
+                // transactional). applyPackageToAdmission runs in a further, separate
+                // transaction, so a failure here cannot be rolled back by the
+                // container - it would otherwise leave a package-linked admission
+                // with none of its locked billing rows. Compensate explicitly by
+                // retiring what was just created and surfacing a clear error instead.
+                try {
+                    getInpatientPackageApplicationBean().applyPackageToAdmission(
+                            getCurrent(), currentPatientRoom, getSessionController().getLoggedUser());
+                } catch (RuntimeException ex) {
+                    logger.log(Level.SEVERE, "Package application failed for admission " + getCurrent().getBhtNo(), ex);
+                    Date now = new Date();
+                    currentPatientRoom.setRetired(true);
+                    currentPatientRoom.setRetireComments("Auto-retired: package application failed - " + ex.getMessage());
+                    currentPatientRoom.setRetirer(getSessionController().getLoggedUser());
+                    currentPatientRoom.setRetiredAt(now);
+                    patientRoomFacade.edit(currentPatientRoom);
+
+                    getCurrent().setRetired(true);
+                    getCurrent().setRetireComments("Auto-retired: package application failed - " + ex.getMessage());
+                    getCurrent().setRetirer(getSessionController().getLoggedUser());
+                    getCurrent().setRetiredAt(now);
+                    getFacade().edit(getCurrent());
+
+                    JsfUtil.addErrorMessage("Package could not be applied to this admission and it has been cancelled. Please retry. (" + ex.getMessage() + ")");
+                    return;
+                }
             }
 
             if (!getCurrent().isRoomAdmitted() && currentPatientRoom != null && currentPatientRoom.getRoomFacilityCharge() != null) {
