@@ -115,7 +115,16 @@
 
                                         <p:column style="text-align: right;">
                                             <f:facet name="header">
-                                                <h:outputLabel value="Matrix Value"/>
+                                                <h:outputLabel value="Discount"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.discount}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column style="text-align: right;">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Service Charge"/>
                                             </f:facet>
                                             <h:outputLabel value="#{bip.marginValue}">
                                                 <f:convertNumber pattern="#0.00" />
@@ -134,7 +143,7 @@
 
                                         <p:columnGroup type="footer">
                                             <p:row>
-                                                <p:column  style="text-align: right;" colspan="4">
+                                                <p:column  style="text-align: right;" colspan="5">
                                                     <f:facet name="footer">
                                                         <h:outputLabel value="#{pharmacyBillSearch.bill.total}">
                                                             <f:convertNumber pattern="#0.00" />
