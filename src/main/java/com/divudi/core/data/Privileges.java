@@ -755,6 +755,7 @@ public enum Privileges {
     DrawerAdjustmentRequestApproval("Drawer Adjustment Request Approval"),
     DrawerAdjustmentDirect("Drawer Adjustment Direct (No Approval)"),
     PettyCashCancellationApproval("Petty-Cash Cancellation Approval"),
+    PharmacyRetailSaleReturnApproval("Pharmacy Retail Sale Return Approval"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Float Transfer">
@@ -1138,6 +1139,7 @@ public enum Privileges {
             case DrawerAdjustmentRequestApproval:
             case DrawerAdjustmentDirect:
             case PettyCashCancellationApproval:
+            case PharmacyRetailSaleReturnApproval:
                 return "Approval";
 
             case CashierHandoverStatusReport:
