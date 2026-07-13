@@ -1,0 +1,291 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form>
+
+                    <p:panel header="ROOM OCCUPANCY Print" styleClass="w-100">
+
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="ROOM OCCUPANCY Print" class="mt-2"/>
+
+                                <div class="d-flex gap-2">
+
+                                    <p:commandButton
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width:150px"
+                                        ajax="false"
+                                        value="Print">
+                                        <p:printer target="reportView"/>
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Back to Report"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="ROOM_OCCUPANCY?faces-redirect=true"/>
+                                </div>
+                            </div>
+                        </f:facet>
+
+                        <style>
+                            @media screen {
+                                .paper {
+                                    width: 420mm !important;
+                                    zoom: 1.05;
+                                }
+
+                                .room-occupancy-print-table table {
+                                    border-collapse: collapse;
+                                    table-layout: fixed;
+                                    width: 100%;
+                                    font-size: 10px !important;
+                                }
+
+                                .room-occupancy-print-table th,
+                                .room-occupancy-print-table td {
+                                    border: 1px solid #000 !important;
+                                    padding: 4px !important;
+                                    white-space: nowrap;
+                                }
+                            }
+
+                            @media print {
+                                @page {
+                                    size: A3 landscape;
+                                    margin: 10mm;
+                                }
+
+                                .paper {
+                                    width: 420mm !important;
+                                }
+
+                                .room-occupancy-print-table table {
+                                    border-collapse: collapse;
+                                    table-layout: fixed;
+                                    width: 99.9%;
+                                    font-size: 8px !important;
+                                }
+
+                                .room-occupancy-print-table th,
+                                .room-occupancy-print-table td {
+                                    border: 1px solid #000 !important;
+                                    padding: 3px !important;
+                                    white-space: nowrap;
+                                }
+                            }
+
+                            .room-occupancy-print-table th {
+                                text-align: center !important;
+                                font-weight: 700;
+                            }
+
+                            .room-occupancy-print-table td {
+                                text-align: right !important;
+                            }
+
+                            .room-occupancy-print-table .text-col {
+                                text-align: left !important;
+                                width: 92px;
+                            }
+
+                            .room-occupancy-print-table .admission-col,
+                            .room-occupancy-print-table .metric-col {
+                                width: 82px;
+                            }
+
+                            .room-occupancy-print-table .category-header {
+                                min-width: 328px;
+                            }
+                        </style>
+
+                        <h:panelGroup id="reportView" styleClass="d-flex justify-content-center">
+
+                            <div class="paper">
+
+                                <div class="header">
+
+                                    <div class="text-center" style="font-weight:700; font-size:18px;">
+                                        <h:outputText value="ROOM OCCUPANCY"/>
+                                    </div>
+
+                                    <div class="text-center" style="font-size:11px; margin-top:5px;">
+                                        From Date :
+                                        <h:outputText value="#{inwardReportController.fromDate}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
+                                        </h:outputText>
+
+                                        |
+
+                                        To Date :
+                                        <h:outputText value="#{inwardReportController.toDate}">
+                                            <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
+                                        </h:outputText>
+
+                                        <h:panelGroup rendered="#{not empty inwardReportController.institution}">
+                                            |
+                                            Institution :
+                                            <h:outputText value="#{inwardReportController.institution.name}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{not empty inwardReportController.site}">
+                                            |
+                                            Site :
+                                            <h:outputText value="#{inwardReportController.site.name}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup rendered="#{not empty inwardReportController.department}">
+                                            |
+                                            Department :
+                                            <h:outputText value="#{inwardReportController.department.name}"/>
+                                        </h:panelGroup>
+                                    </div>
+
+                                </div>
+
+                                <p:panel rendered="#{not empty inwardReportController.roomOccupancyList}">
+                                    <p:dataTable
+                                        value="#{inwardReportController.roomOccupancyList}"
+                                        var="row"
+                                        rowIndexVar="n"
+                                        paginator="false"
+                                        styleClass="table-sm room-occupancy-print-table"
+                                        rowStyleClass="#{row.grandTotal ? 'font-weight-bold' : ''}">
+
+                                        <p:columnGroup type="header">
+                                            <p:row>
+                                                <p:column rowspan="3" styleClass="text-col">
+                                                    <f:facet name="header"><h:outputText value="Year"/></f:facet>
+                                                </p:column>
+                                                <p:column rowspan="3" styleClass="text-col">
+                                                    <f:facet name="header"><h:outputText value="Month"/></f:facet>
+                                                </p:column>
+                                                <p:column rowspan="3" styleClass="admission-col">
+                                                    <f:facet name="header"><h:outputText value="No of Admission"/></f:facet>
+                                                </p:column>
+                                                <p:column colspan="#{inwardReportController.allRoomCategories.size() * 4}">
+                                                    <f:facet name="header"><h:outputText value="Rooms"/></f:facet>
+                                                </p:column>
+                                            </p:row>
+
+                                            <p:row>
+                                                <c:forEach items="#{inwardReportController.allRoomCategories}" var="rc">
+                                                    <p:column colspan="4" styleClass="category-header">
+                                                        <f:facet name="header">
+                                                            <h:outputText value="#{rc.name}"/>
+                                                        </f:facet>
+                                                    </p:column>
+                                                </c:forEach>
+                                            </p:row>
+
+                                            <p:row>
+                                                <c:forEach items="#{inwardReportController.allRoomCategories}" var="rc">
+                                                    <p:column styleClass="metric-col"><f:facet name="header"><h:outputText value="Rooms"/></f:facet></p:column>
+                                                    <p:column styleClass="metric-col"><f:facet name="header"><h:outputText value="Days"/></f:facet></p:column>
+                                                    <p:column styleClass="metric-col"><f:facet name="header"><h:outputText value="Ratio"/></f:facet></p:column>
+                                                    <p:column styleClass="metric-col"><f:facet name="header"><h:outputText value="Avg"/></f:facet></p:column>
+                                                </c:forEach>
+                                            </p:row>
+                                        </p:columnGroup>
+
+                                        <p:column styleClass="text-col">
+                                            <h:outputText value="#{row.year}" rendered="#{not row.grandTotal}"/>
+                                            <h:outputText value="Grand Total" rendered="#{row.grandTotal}"/>
+                                        </p:column>
+                                        <p:column styleClass="text-col">
+                                            <h:outputText value="#{row.monthName}"/>
+                                        </p:column>
+                                        <p:column styleClass="admission-col">
+                                            <h:outputText value="#{row.numberOfAdmissions}">
+                                                <f:convertNumber pattern="#,##0"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <c:forEach items="#{inwardReportController.allRoomCategories}" var="rc">
+                                            <p:column styleClass="metric-col">
+                                                <h:outputText value="#{row.metricFor(rc).numberOfRooms}">
+                                                    <f:convertNumber pattern="#,##0"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column styleClass="metric-col">
+                                                <h:outputText value="#{row.metricFor(rc).numberOfDays}">
+                                                    <f:convertNumber pattern="#,##0"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column styleClass="metric-col">
+                                                <h:outputText value="#{row.metricFor(rc).ratio}">
+                                                    <f:convertNumber pattern="0.00"/>
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column styleClass="metric-col">
+                                                <h:outputText value="#{row.metricFor(rc).avg}">
+                                                    <f:convertNumber pattern="0.00"/>
+                                                </h:outputText>
+                                            </p:column>
+                                        </c:forEach>
+
+                                        <p:columnGroup type="footer">
+                                            <p:row>
+                                                <p:column colspan="3">
+                                                    <f:facet name="footer"><h:outputText value="Grand Total"/></f:facet>
+                                                </p:column>
+
+                                                <c:forEach items="#{inwardReportController.allRoomCategories}" var="rc">
+                                                    <p:column>
+                                                        <f:facet name="footer">
+                                                            <h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.metricFor(rc).numberOfRooms}">
+                                                                <f:convertNumber pattern="#,##0"/>
+                                                            </h:outputText>
+                                                        </f:facet>
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="footer">
+                                                            <h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.metricFor(rc).numberOfDays}">
+                                                                <f:convertNumber pattern="#,##0"/>
+                                                            </h:outputText>
+                                                        </f:facet>
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="footer">
+                                                            <h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.metricFor(rc).ratio}">
+                                                                <f:convertNumber pattern="0.00"/>
+                                                            </h:outputText>
+                                                        </f:facet>
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="footer">
+                                                            <h:outputText value="#{inwardReportController.roomOccupancyGrandTotal.metricFor(rc).avg}">
+                                                                <f:convertNumber pattern="0.00"/>
+                                                            </h:outputText>
+                                                        </f:facet>
+                                                    </p:column>
+                                                </c:forEach>
+                                            </p:row>
+                                        </p:columnGroup>
+
+                                    </p:dataTable>
+                                </p:panel>
+
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

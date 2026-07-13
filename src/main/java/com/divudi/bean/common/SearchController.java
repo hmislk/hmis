@@ -1481,6 +1481,7 @@ public class SearchController implements Serializable {
         filterChannelBillsByBilledDate = true;
         settledBillType = null;
         total = 0.0;
+        pharmacyBillSearch.setSaleBillDtos(null);
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
@@ -2739,6 +2740,56 @@ public class SearchController implements Serializable {
                 .sum();
     }
 
+    public double getOpdSaleSummaryHospitalFeeTotal() {
+        if (opdSaleSummaryDtos == null || opdSaleSummaryDtos.isEmpty()) {
+            return 0.0;
+        }
+        return opdSaleSummaryDtos.stream()
+                .filter(dto -> dto.getHospitalFee() != null)
+                .mapToDouble(OpdSaleSummaryDTO::getHospitalFee)
+                .sum();
+    }
+
+    public double getOpdSaleSummaryProfessionalFeeTotal() {
+        if (opdSaleSummaryDtos == null || opdSaleSummaryDtos.isEmpty()) {
+            return 0.0;
+        }
+        return opdSaleSummaryDtos.stream()
+                .filter(dto -> dto.getProfessionalFee() != null)
+                .mapToDouble(OpdSaleSummaryDTO::getProfessionalFee)
+                .sum();
+    }
+
+    public double getOpdSaleSummaryGrossAmountTotal() {
+        if (opdSaleSummaryDtos == null || opdSaleSummaryDtos.isEmpty()) {
+            return 0.0;
+        }
+        return opdSaleSummaryDtos.stream()
+                .filter(dto -> dto.getGrossAmount() != null)
+                .mapToDouble(OpdSaleSummaryDTO::getGrossAmount)
+                .sum();
+    }
+
+    public double getOpdSaleSummaryDiscountTotal() {
+        if (opdSaleSummaryDtos == null || opdSaleSummaryDtos.isEmpty()) {
+            return 0.0;
+        }
+        return opdSaleSummaryDtos.stream()
+                .filter(dto -> dto.getDiscountAmount() != null)
+                .mapToDouble(OpdSaleSummaryDTO::getDiscountAmount)
+                .sum();
+    }
+
+    public double getOpdSaleSummaryServiceChargeTotal() {
+        if (opdSaleSummaryDtos == null || opdSaleSummaryDtos.isEmpty()) {
+            return 0.0;
+        }
+        return opdSaleSummaryDtos.stream()
+                .filter(dto -> dto.getServiceCharge() != null)
+                .mapToDouble(OpdSaleSummaryDTO::getServiceCharge)
+                .sum();
+    }
+
     public int getOpdAnalyticsIndex() {
         return opdAnalyticsIndex;
     }
@@ -3337,6 +3388,10 @@ public class SearchController implements Serializable {
 
     public void createPharmacyRetailBills() {
         pharmacyBillSearch.fetchSaleSearchDtosFromNativeBills(true);
+    }
+
+    public void createPharmacySaleBillItems() {
+        pharmacyBillSearch.fetchSaleBillItemSearchDtos(getMaxResult());
     }
 
     public void createPharmacyAddToStockBills() {
@@ -7353,6 +7408,11 @@ public class SearchController implements Serializable {
         createPoTable(billTypesToList, billTypesToAttachedToEachBillInTheList);
     }
 
+    private boolean isCrossDepartmentPoReceivingAllowed() {
+        return configOptionApplicationController
+                .getBooleanValueByKey("Pharmacy - Allow Cross-Department PO Receiving", false);
+    }
+
     /**
      * DTO-based version of createPoTablePharmacy for optimized performance.
      * Uses direct DTO query to avoid N+1 problem and entity graph loading. Does
@@ -7364,20 +7424,25 @@ public class SearchController implements Serializable {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
+        boolean allowCrossDepartmentPoReceiving = isCrossDepartmentPoReceivingAllowed();
+        String departmentClause = allowCrossDepartmentPoReceiving ? "" : "AND b.department = :dept ";
+
         // First, get count to verify data exists
         String countJpql = "SELECT COUNT(b) "
                 + "FROM Bill b "
                 + "WHERE b.retired = false "
                 + "AND b.billTypeAtomic = :bta "
                 + "AND b.referenceBill.institution = :ins "
-                + "AND b.department = :dept "
+                + departmentClause
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
 
         Map<String, Object> countParams = new HashMap<>();
         countParams.put("toDate", getToDate());
         countParams.put("fromDate", getFromDate());
         countParams.put("ins", getSessionController().getInstitution());
-        countParams.put("dept", sessionController.getDepartment());
+        if (!allowCrossDepartmentPoReceiving) {
+            countParams.put("dept", sessionController.getDepartment());
+        }
         countParams.put("bta", BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
 
         logger.debug("createPoTablePharmacyDto: Count JPQL = {}", countJpql);
@@ -7395,7 +7460,7 @@ public class SearchController implements Serializable {
                 + "WHERE b.retired = false "
                 + "AND b.billTypeAtomic = :bta "
                 + "AND b.referenceBill.institution = :ins "
-                + "AND b.department = :dept "
+                + departmentClause
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
 
         List testResult = getBillFacade().findByJpql(testJpql, countParams, TemporalType.TIMESTAMP);
@@ -7429,7 +7494,7 @@ public class SearchController implements Serializable {
                 + "WHERE b.retired = false "
                 + "AND b.billTypeAtomic = :bta "
                 + "AND b.referenceBill.institution = :ins "
-                + "AND b.department = :dept "
+                + departmentClause
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
 
         logger.debug("createPoTablePharmacyDto: DTO JPQL = {}", jpql);
@@ -7469,7 +7534,9 @@ public class SearchController implements Serializable {
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
         params.put("ins", getSessionController().getInstitution());
-        params.put("dept", sessionController.getDepartment());
+        if (!allowCrossDepartmentPoReceiving) {
+            params.put("dept", sessionController.getDepartment());
+        }
         params.put("bta", BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
 
         logger.info("createPoTablePharmacyDto: Executing DTO query...");
@@ -7554,11 +7621,13 @@ public class SearchController implements Serializable {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
+        boolean allowCrossDepartmentPoReceiving = isCrossDepartmentPoReceivingAllowed();
+
         jpql = "Select b From Bill b "
                 + " where b.retired = false"
                 + " and b.billTypeAtomic in :btas"
                 + " and b.referenceBill.institution = :ins "
-                + " and b.department = :dept "
+                + (allowCrossDepartmentPoReceiving ? "" : " and b.department = :dept ")
                 + " and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword() != null) {
@@ -7594,7 +7663,9 @@ public class SearchController implements Serializable {
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
         params.put("ins", getSessionController().getInstitution());
-        params.put("dept", sessionController.getDepartment());
+        if (!allowCrossDepartmentPoReceiving) {
+            params.put("dept", sessionController.getDepartment());
+        }
         params.put("btas", billTypeAtomicToList);
 
         if (getReportKeyWord() != null && getReportKeyWord().isAdditionalDetails()) {
@@ -8077,6 +8148,7 @@ public class SearchController implements Serializable {
                 //Starting of newly added code
                 //                + " and b.bill.refunded=false "
                 //Ending of newly added code
+                + " and b.fee.feeType=:feeType"
                 + " and (b.feeValue - b.paidValue) > 0"
                 //                + " and  b.bill.billTime between :fromDate and :toDate ";
                 + " and  b.bill.createdAt between :fromDate and :toDate ";
@@ -8122,6 +8194,7 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", BillType.InwardBill);
         temMap.put("btp2", BillType.InwardProfessional);
+        temMap.put("feeType", FeeType.Staff);
 
         billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
         List<BillFee> removeingBillFees = new ArrayList<>();
@@ -8154,6 +8227,7 @@ public class SearchController implements Serializable {
         temMap.put("billClass", BilledBill.class);
         temMap.put("btp", BillType.InwardBill);
         temMap.put("btp2", BillType.InwardProfessional);
+        temMap.put("feeType", FeeType.Staff);
 
         sql = "select b from BillFee b where "
                 + " b.retired=false "
@@ -8163,6 +8237,7 @@ public class SearchController implements Serializable {
                 //Starting of newly added code
                 //                + " and b.bill.refunded=false "
                 //Ending of newly added code
+                + " and b.fee.feeType=:feeType"
                 + " and (b.feeValue - b.paidValue) > 0"
                 //                + " and  b.bill.billTime between :fromDate and :toDate ";
                 + " and  b.bill.createdAt between :fromDate and :toDate ";
@@ -8233,6 +8308,7 @@ public class SearchController implements Serializable {
         sql = "select b from BillFee b where "
                 + " b.retired=false "
                 + " and (b.bill.billType=:btp or b.bill.billType=:btp2 )"
+                + " and b.fee.feeType=:feeType"
                 + " and (b.feeValue - b.paidValue) > 0"
                 + " and  b.bill.billDate between :fromDate and :toDate ";
 
@@ -8277,6 +8353,7 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", BillType.InwardBill);
         temMap.put("btp2", BillType.InwardProfessional);
+        temMap.put("feeType", FeeType.Staff);
 
         billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         calTotal();
@@ -17139,7 +17216,10 @@ public class SearchController implements Serializable {
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_REFUND);
-        opdSaleSummaryDtos = billService.fetchOpdSaleSummaryDTOs(
+        // Issue #21920: one row per billing instance (not aggregated by item) with a
+        // billed date, so re-billed/cancelled/refunded services are preserved as
+        // separate rows instead of overwriting the same record.
+        opdSaleSummaryDtos = billService.fetchItemizedServiceInstanceDTOs(
                 fromDate, toDate, institution, site, department, category, item, btas);
     }
 
@@ -21794,6 +21874,10 @@ public class SearchController implements Serializable {
             //Start - Atomic Bill Type with Cash in and cash out added for 10088-all-cashier-summary-had-calculated-fund-bills
             List<BillTypeAtomic> btas = BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN);
             btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+            // Collecting Centre Agent Payment / Cancellation are agent commission payouts, not cashier
+            // collections - exclude them (issue #21840)
+            btas.remove(BillTypeAtomic.CC_AGENT_PAYMENT);
+            btas.remove(BillTypeAtomic.CC_AGENT_PAYMENT_CANCELLATION);
             jpql += "AND bill.billTypeAtomic in :btas ";
             parameters.put("btas", btas);
             // End - Atomic Bill Type with Cash in and cash out added FOR 10088-all-cashier-summary-had-calculated-fund-bills

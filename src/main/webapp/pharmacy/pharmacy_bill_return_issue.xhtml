@@ -90,6 +90,7 @@
                                             title="Save return bill as draft"
                                             action="#{issueReturnController.saveDisposalIssueReturnBill()}"
                                             rendered="#{issueReturnController.returnBill.checkedBy eq null and not issueReturnController.returnBill.billClosed and not issueReturnController.originalBill.fullReturned}"
+                                            disabled="#{not webUserController.hasPrivilege('CreateDisposalReturn')}"
                                             ajax="false">
                                         </p:commandButton>
                                         <p:commandButton
@@ -100,6 +101,7 @@
                                             title="Finalize return bill"
                                             action="#{issueReturnController.finalizeDisposalIssueReturnBill()}"
                                             rendered="#{issueReturnController.returnBill.checkedBy eq null and not issueReturnController.returnBill.billClosed and not issueReturnController.originalBill.fullReturned}"
+                                            disabled="#{not webUserController.hasPrivilege('FinalizeDisposalReturn')}"
                                             ajax="false">
                                         </p:commandButton>
                                         <p:commandButton
@@ -109,7 +111,8 @@
                                             onclick="return confirm('Are you sure you want to approve this disposal issue? This action cannot be undone.');"
                                             title="Approve and process the return"
                                             action="#{issueReturnController.settleDisposalIssueReturnBill}"
-                                            rendered="#{issueReturnController.returnBill.checkedBy ne null and (issueReturnController.returnBill.completed eq false or issueReturnController.returnBill.completed eq null) and not issueReturnController.returnBill.billClosed and webUserController.hasPrivilege('ApproveDisposalReturn') and not issueReturnController.originalBill.fullReturned}"
+                                            rendered="#{issueReturnController.returnBill.checkedBy ne null and (issueReturnController.returnBill.completed eq false or issueReturnController.returnBill.completed eq null) and not issueReturnController.returnBill.billClosed and not issueReturnController.originalBill.fullReturned}"
+                                            disabled="#{not webUserController.hasPrivilege('ApproveDisposalReturn')}"
                                             ajax="false">
                                         </p:commandButton>
                                     </div>

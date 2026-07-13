@@ -19,6 +19,7 @@ import com.divudi.bean.store.StoreBillSearch;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaperType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -34,6 +35,8 @@ import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.PriceMatrix;
@@ -75,6 +78,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -96,6 +101,8 @@ import java.util.stream.Collectors;
 @Named
 @SessionScoped
 public class PharmacyBillSearch implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(PharmacyBillSearch.class.getName());
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -188,6 +195,7 @@ public class PharmacyBillSearch implements Serializable {
     // Bill id used when navigating directly from DTO tables
     private Long billId;
     private List<PharmacySaleSearchDTO> saleBillDtos;
+    private List<com.divudi.core.data.dto.PharmacySaleBillItemSearchDTO> saleBillItemDtos;
     private List<com.divudi.core.data.dto.PharmacyTransferRequestListDTO> transferRequestSearchDtos;
     private List<PharmacyTransferIssueSearchDTO> transferIssueSearchDtos;
     private List<com.divudi.core.data.dto.PharmacyTransferReceivedListDTO> transferReceiveSearchDtos;
@@ -291,6 +299,14 @@ public class PharmacyBillSearch implements Serializable {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Found");
             return null;
+        }
+        // Reload the bill with its billItems. When this is reached from the BHT
+        // Issue Return page, `bill` is a detached entity whose billItems were
+        // never fetched, so the reprint page's Item/QTY table renders empty
+        // (issue #22035). Fetching with items populates that table.
+        Bill reloaded = billBean.fetchBillWithItemsAndFees(bill.getId());
+        if (reloaded != null) {
+            bill = reloaded;
         }
         return "/inward/pharmacy_reprint_bill_sale_bht?faces-redirect=true";
     }
@@ -766,6 +782,36 @@ public class PharmacyBillSearch implements Serializable {
 
     }
 
+    // <editor-fold defaultstate="collapsed" desc="Reprint BHT Issue - Print Format Settings (Issue #21880)">
+    public boolean isReprintBhtIssuePosPaper() {
+        return PaperType.PosPaper == getSessionController().getDepartmentPreference().getPharmacyBillPaperType();
+    }
+
+    public void setReprintBhtIssuePosPaper(boolean value) {
+        if (value) {
+            getSessionController().getDepartmentPreference().setPharmacyBillPaperType(PaperType.PosPaper);
+        } else if (isReprintBhtIssuePosPaper()) {
+            getSessionController().getDepartmentPreference().setPharmacyBillPaperType(null);
+        }
+    }
+
+    public boolean isReprintBhtIssueFiveFivePaper() {
+        return PaperType.FiveFivePaper == getSessionController().getDepartmentPreference().getPharmacyBillPaperType();
+    }
+
+    public void setReprintBhtIssueFiveFivePaper(boolean value) {
+        if (value) {
+            getSessionController().getDepartmentPreference().setPharmacyBillPaperType(PaperType.FiveFivePaper);
+        } else if (isReprintBhtIssueFiveFivePaper()) {
+            getSessionController().getDepartmentPreference().setPharmacyBillPaperType(null);
+        }
+    }
+
+    public void saveReprintBhtIssuePaperConfig() {
+        JsfUtil.addSuccessMessage("Print format settings saved");
+    }
+    // </editor-fold>
+
     public void unitCancell() {
 
         if (bill == null) {
@@ -1096,15 +1142,32 @@ public class PharmacyBillSearch implements Serializable {
         this.priceMatrixController = priceMatrixController;
     }
 
+    /**
+     * The room category of the patient's current room, or null when the patient
+     * is not in a room (or the room has no facility charge / category). Drives the
+     * room-category dimension of the inward pharmacy-margin matrix (issue #21981);
+     * null means "wildcard row only", preserving legacy behaviour.
+     */
+    private RoomCategory resolveCurrentRoomCategory(PatientEncounter encounter) {
+        if (encounter == null
+                || encounter.getCurrentPatientRoom() == null
+                || encounter.getCurrentPatientRoom().getRoomFacilityCharge() == null) {
+            return null;
+        }
+        return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory();
+    }
+
     public void updateMargin(List<BillItem> billItems, Bill bill, Department matrixDepartment, PaymentMethod paymentMethod) {
         double total = 0;
         double netTotal = 0;
+        PatientEncounter encounter = bill != null ? bill.getPatientEncounter() : null;
         for (BillItem bi : billItems) {
 
             double rate = Math.abs(bi.getRate());
             double margin = 0;
 
-            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment, paymentMethod);
+            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bi, rate, matrixDepartment, paymentMethod, null,
+                    encounter != null ? encounter.getAdmissionType() : null, resolveCurrentRoomCategory(encounter));
 
             if (priceMatrix != null) {
                 margin = ((bi.getGrossValue() * priceMatrix.getMargin()) / 100);
@@ -1259,7 +1322,39 @@ public class PharmacyBillSearch implements Serializable {
         return false;
     }
 
+    /**
+     * Authorization helper shared by the PO / transfer-issue / GRN
+     * cancellation actions: checks the privilege and audits denied access.
+     *
+     * @param action The action being attempted (e.g. CANCEL, PHARMACY_GRN_CANCEL)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, bill != null ? bill.getId() : "null"});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = bill != null ? bill.getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase().replace('_', ' ') + ".");
+            return false;
+        }
+
+        return true;
+    }
+
     public String cancelPoBill() {
+        if (!isAuthorized("CANCEL", "PharmacyOrderCancellation")) {
+            return "";
+        }
         if (getSelectedBills() == null || getSelectedBills().isEmpty()) {
             JsfUtil.addErrorMessage("Please select Bills");
             return "";
@@ -3293,6 +3388,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyPoCancel() {
+        if (!isAuthorized("CANCEL", "PharmacyOrderCancellation")) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -3328,6 +3426,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyPoRequestCancel() {
+        if (!isAuthorized("CANCEL", "PharmacyOrderCancellation")) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (getBill().getReferenceBill() != null && !getBill().getReferenceBill().isCancelled()) {
                 JsfUtil.addErrorMessage("Sorry You cant Cancell Approved Bill");
@@ -3423,6 +3524,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyGrnCancel() {
+        if (!isAuthorized("PHARMACY_GRN_CANCEL", "PharmacyGrnCancel")) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -3518,6 +3622,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyTransferIssueCancel() {
+        if (!isAuthorized("CANCEL", "PharmacyTransferIssueCancel")) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -3559,6 +3666,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyTransferIssueInpatientCancel() {
+        if (!isAuthorized("CANCEL", "PharmacyTransferIssueCancel")) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -3656,7 +3766,11 @@ public class PharmacyBillSearch implements Serializable {
 
             CancelledBill cb = pharmacyCreateCancelBill();
             cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
-
+            
+            cb.setInvoiceDate(getBill().getInvoiceDate());
+            cb.setInvoiceNumber(getBill().getInvoiceNumber());
+            cb.setFromInstitution(getBill().getFromInstitution());
+            
             // Handle Department ID generation (independent)
             String deptId;
             if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Department Id is Prefix Dept Ins Year Count", false)) {
@@ -3724,6 +3838,9 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void pharmacyGrnReturnCancel() {
+        if (!isAuthorized("PHARMACY_GRN_RETURN_CANCEL", "PharmacyGrnReturnCancel")) {
+            return;
+        }
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
                 return;
@@ -4887,6 +5004,92 @@ public class PharmacyBillSearch implements Serializable {
     @Deprecated
     public void fetchSaleSearchDtosFromNativeBills(boolean maxNum) {
         fetchSaleSearchDtosFromNativeBills(maxNum ? 25 : 0);
+    }
+
+    public List<com.divudi.core.data.dto.PharmacySaleBillItemSearchDTO> getSaleBillItemDtos() {
+        return saleBillItemDtos;
+    }
+
+    public void setSaleBillItemDtos(List<com.divudi.core.data.dto.PharmacySaleBillItemSearchDTO> saleBillItemDtos) {
+        this.saleBillItemDtos = saleBillItemDtos;
+    }
+
+    /**
+     * Fetches pharmacy retail sale bill items (via PreBill -> BilledBill) as DTOs.
+     * Used by pharmacy_search_sale_bill_item.xhtml (issue #21792).
+     *
+     * @param maxResult the maximum number of rows to return; 0 or negative means unlimited
+     */
+    @SuppressWarnings("unchecked")
+    public void fetchSaleBillItemSearchDtos(int maxResult) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("class", com.divudi.core.entity.PreBill.class);
+        m.put("rClass", com.divudi.core.entity.BilledBill.class);
+        m.put("bType", com.divudi.core.data.BillType.PharmacyPre);
+        m.put("rBType", com.divudi.core.data.BillType.PharmacySale);
+        m.put("fromDate", searchController.getFromDate());
+        m.put("toDate", searchController.getToDate());
+        m.put("ins", sessionController.getInstitution());
+        m.put("ldep", sessionController.getLoggedUser().getDepartment());
+
+        String sql = "SELECT new com.divudi.core.data.dto.PharmacySaleBillItemSearchDTO("
+                + "rb.id, rb.deptId, rb.createdAt, "
+                + "it.id, COALESCE(it.name, ''), COALESCE(it.code, ''), "
+                + "bi.qty, bi.netValue, "
+                + "COALESCE(pp.name, ''), "
+                + "rb.cancelled, rb.refunded) "
+                + "FROM BillItem bi "
+                + "JOIN bi.bill b "
+                + "JOIN b.referenceBill rb "
+                + "LEFT JOIN bi.item it "
+                + "LEFT JOIN b.patient p "
+                + "LEFT JOIN p.person pp "
+                + "WHERE type(b) = :class "
+                + "AND type(rb) = :rClass "
+                + "AND b.institution = :ins "
+                + "AND b.department = :ldep "
+                + "AND b.billType = :bType "
+                + "AND rb.billType = :rBType "
+                + "AND rb.createdAt BETWEEN :fromDate AND :toDate";
+
+        if (searchController.getSearchKeyword().getPatientName() != null && !searchController.getSearchKeyword().getPatientName().trim().isEmpty()) {
+            sql += " AND pp.name LIKE :patientName";
+            m.put("patientName", "%" + searchController.getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
+        }
+        if (searchController.getSearchKeyword().getBillNo() != null && !searchController.getSearchKeyword().getBillNo().trim().isEmpty()) {
+            sql += " AND rb.deptId LIKE :billNo";
+            m.put("billNo", "%" + searchController.getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+        if (searchController.getSearchKeyword().getTotal() != null && !searchController.getSearchKeyword().getTotal().trim().isEmpty()) {
+            try {
+                double total = Double.parseDouble(searchController.getSearchKeyword().getTotal().trim());
+                sql += " AND bi.netValue = :total";
+                m.put("total", total);
+            } catch (NumberFormatException e) {
+                // ignore invalid numeric input, skip filter
+            }
+        }
+        if (searchController.getSearchKeyword().getItemName() != null && !searchController.getSearchKeyword().getItemName().trim().isEmpty()) {
+            sql += " AND it.name LIKE :itm";
+            m.put("itm", "%" + searchController.getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+        if (searchController.getSearchKeyword().getCode() != null && !searchController.getSearchKeyword().getCode().trim().isEmpty()) {
+            sql += " AND it.code LIKE :cde";
+            m.put("cde", "%" + searchController.getSearchKeyword().getCode().trim().toUpperCase() + "%");
+        }
+
+        sql += " ORDER BY bi.id DESC";
+
+        if (maxResult > 0) {
+            saleBillItemDtos = (List<com.divudi.core.data.dto.PharmacySaleBillItemSearchDTO>) getBillItemFacade()
+                    .findLightsByJpql(sql, m, TemporalType.TIMESTAMP, maxResult);
+        } else {
+            saleBillItemDtos = (List<com.divudi.core.data.dto.PharmacySaleBillItemSearchDTO>) getBillItemFacade()
+                    .findLightsByJpql(sql, m, TemporalType.TIMESTAMP);
+        }
+        if (saleBillItemDtos == null) {
+            saleBillItemDtos = new ArrayList<>();
+        }
     }
 
     // -----------------------------------------------------------------------

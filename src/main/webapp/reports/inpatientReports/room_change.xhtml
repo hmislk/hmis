@@ -24,7 +24,7 @@
 
                             <p:datePicker
                                 id="fromdate"
-                                value=""
+                                value="#{roomChangeReportController.fromDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 showTime="true"
                                 timeInput="true"
@@ -44,7 +44,7 @@
 
                             <p:datePicker 
                                 id ="toDate"
-                                value=""
+                                value="#{roomChangeReportController.toDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 showTime="true"
                                 timeInput="true"
@@ -59,17 +59,28 @@
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-user mr-2"/>
 
-                                <p:outputLabel value="Patient Name/MRN" for="phmIns" class="m-3"/>
+                                <p:outputLabel value="Patient Name/MRN" for="acPatient" class="m-3"/>
                             </h:panelGroup>
 
-                            <p:selectOneMenu
-                                id="phmIns"
-                                class="w-100"
-                                value=""
-                                filter="true">
-                                <f:selectItem itemLabel="All" itemValue="#{null}"/>
-
-                            </p:selectOneMenu>
+                            <p:autoComplete id="acPatient"
+                                            value="#{roomChangeReportController.selectedPatient}"
+                                            converter="#{patientEncounterDtoConverter}"
+                                            styleClass="w-100"
+                                            inputStyleClass="w-100 form-control"
+                                            placeholder="Patient Name/MRN"
+                                            completeMethod="#{admissionController.completePatientPaymentFinalizedWithPhn}"
+                                            forceSelection="true"
+                                            maxResults="10"
+                                            var="pe"
+                                            itemLabel="#{pe.patientName}"
+                                            itemValue="#{pe}">
+                                <p:column headerText="Patient Name">
+                                    <h:outputText value="#{pe.patientName}"/>
+                                </p:column>
+                                <p:column headerText="MRN">
+                                    <h:outputText value="#{pe.phn}"/>
+                                </p:column>
+                            </p:autoComplete>
 
                             <p:spacer width="20"/>
                             <!-- Visit No -->
@@ -78,14 +89,25 @@
                                 <p:outputLabel value="Visit No" class="m-3"/>
                             </h:panelGroup>
 
-                            <p:selectOneMenu
-                                id="visitNo"
-                                class="w-100"
-                                value=""
-                                filter="true">
-                                <f:selectItem itemLabel="All" itemValue="#{null}"/>
-
-                            </p:selectOneMenu>
+                            <p:autoComplete id="acPatientMRN"
+                                            value="#{roomChangeReportController.selectedBhtNo}"
+                                            converter="#{patientEncounterDtoConverter}"
+                                            styleClass="w-100"
+                                            inputStyleClass="w-100 form-control"
+                                            placeholder="Visit No"
+                                            completeMethod="#{admissionController.completePatientPaymentFinalizedWithPhn}"
+                                            forceSelection="true"
+                                            maxResults="10"
+                                            var="pe"
+                                            itemLabel="#{pe.bhtNo}"
+                                            itemValue="#{pe}">
+                                <p:column headerText="MRN">
+                                    <h:outputText value="#{pe.bhtNo}"/>
+                                </p:column>
+                                <p:column headerText="Patient Name">
+                                    <h:outputText value="#{pe.patientName}"/>
+                                </p:column>
+                            </p:autoComplete>
 
                             <p:spacer width="20"/>
                             <!-- From Ward -->
@@ -95,14 +117,18 @@
                                 <p:outputLabel value="From Ward" class="m-3"/>
                             </h:panelGroup>
 
-                            <p:selectOneMenu
-                                id="fromWard"
-                                styleClass="w-100 form-control"
-                                value=""
-                                filter="true">
-                                <f:selectItem itemLabel="All Wards" itemValue="#{null}"/>
-
-                            </p:selectOneMenu>
+                            <p:autoComplete 
+                                forceSelection="true"
+                                id="frwrd"
+                                inputStyleClass="w-100"
+                                class="m-1 w-100"
+                                value="#{roomChangeReportController.fromWard}" 
+                                completeMethod="#{roomFacilityChargeController.completeRoom}"
+                                maxResults="10"
+                                var="rf"
+                                itemLabel="#{rf.name}"
+                                itemValue="#{rf}"
+                                size="30" />
 
                             <p:spacer width="20"/>
                             <!-- To ward -->
@@ -111,13 +137,18 @@
                                 <p:outputLabel value="To Ward" class="m-3"/>
                             </h:panelGroup>
 
-                            <p:selectOneMenu
-                                id="toWard"
-                                styleClass="w-100 form-control"
-                                value=""
-                                filter="true">
-                                <f:selectItem itemLabel="All Wards" itemValue="#{null}"/>
-                            </p:selectOneMenu>
+                            <p:autoComplete 
+                                forceSelection="true"
+                                id="towrd"
+                                inputStyleClass="w-100"
+                                class="m-1 w-100"
+                                value="#{roomChangeReportController.toWard}" 
+                                completeMethod="#{roomFacilityChargeController.completeRoom}"
+                                maxResults="10"
+                                var="rf"
+                                itemLabel="#{rf.name}"
+                                itemValue="#{rf}"
+                                size="30" />
 
                         </h:panelGrid>
 
@@ -125,32 +156,38 @@
                         <div class="d-flex align-items-center my-3 mt-5 mb-5">
 
                             <p:commandButton
+                                id="prcBtn"
                                 class="ui-button-warning mx-1"
                                 icon="fas fa-cogs"
                                 ajax="false"
-                                value="Process">
-                            </p:commandButton>
-
-                            <p:commandButton class="ui-button-primary mx-1"
-                                             icon="fas fa-print"
-                                             ajax="false"
-                                             value="Print All">
-                                <p:printer target="printPanel" />
+                                value="Process"
+                                action="#{roomChangeReportController.createRoomChangeReport()}">
                             </p:commandButton>
 
                             <p:commandButton
+                                id="toPnt"
+                                class="mx-2 ui-button-info m-1"
+                                icon="fa-solid fa-print"
+                                ajax="false"
+                                action="room_change_print?faces-redirect=true"
+                                value="To Print"/>
+
+                            <p:commandButton
+                                id="exlBtn"
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
                                 value="Download">
-                                <p:dataExporter type="xlsx" target="detailWise" fileName="Room_Change_Detail.xlsx"/>
+                                <p:dataExporter type="xlsx" target="detailWise" fileName="Room_Change_Detail"/>
                             </p:commandButton>
 
                             <p:commandButton
+                                id="pdfBtn"
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
-                                value="PDF">
+                                value="PDF"
+                                action="#{roomChangeReportController.downloadRoomChangeReportPdf()}">
                             </p:commandButton>
 
                         </div>
@@ -162,7 +199,7 @@
                                 <div style="overflow-x:auto; width:100%;">
                                     <p:dataTable
                                         id="detailWise"
-                                        value=""
+                                        value="#{roomChangeReportController.roomChangeReportDtoList}"
                                         var="detail"
                                         rowIndexVar="n"
                                         paginator="true"
@@ -210,57 +247,34 @@
 
                                         </p:columnGroup>
 
-                                        <p:column>
-                                            <h:outputLabel value="" />
-                                        </p:column>
-
-                                        <p:column>
-                                            <h:outputLabel value="" />
-                                        </p:column>
-
-                                        <p:column>
-                                            <h:outputLabel value="" />
-                                        </p:column>
-
-                                        <p:column>
-                                            <h:outputLabel value="" />
-                                        </p:column>
-
-                                        <p:column>
-                                            <h:outputLabel value="">
-                                                <f:convertDateTime pattern="M/d/yyyy H:mm" />
-                                            </h:outputLabel>
-                                        </p:column>
-
-                                        <p:column>
-                                            <h:outputLabel value="" />
-                                        </p:column>
-
-                                        <p:column>
-                                            <h:outputLabel value="" />
-                                        </p:column>
-
-                                        <p:column>
-                                            <h:outputLabel value="" />
-                                        </p:column>
-
-                                        <p:column style="text-align:right">
-                                            <h:outputLabel value="">
-                                                <f:convertNumber type="number"
-                                                                 minFractionDigits="0"
-                                                                 maxFractionDigits="0"
-                                                                 groupingUsed="true" />
-                                            </h:outputLabel>
-                                        </p:column>
-
-                                        <p:column style="text-align:right">
-                                            <h:outputLabel value="">
-                                                <f:convertNumber type="number"
-                                                                 minFractionDigits="0"
-                                                                 maxFractionDigits="0"
-                                                                 groupingUsed="true" />
-                                            </h:outputLabel>
-                                        </p:column>
+                                        <p:column><h:outputLabel value="#{n+1}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.patientPhn}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.patientName}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.patientAge}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.patientSex}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.bhtNo}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.dateOfAdmission}"><f:convertDateTime pattern="M/d/yyyy" /></h:outputLabel></p:column>
+                                        <p:column><h:outputLabel value="#{detail.dateOfAdmission}"><f:convertDateTime pattern="HH:mm" /></h:outputLabel></p:column>
+                                        <p:column><h:outputLabel value="#{detail.transferRequestId}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.status}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.fromHospital}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.fromDepartment}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.fromPrimaryConsultant}" /></p:column>
+                                        <p:column><h:outputLabel value="" /></p:column> <!-- from consultant: no source field yet, see note below -->
+                                        <p:column><h:outputLabel value="#{detail.fromDepartment}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.fromWardRoomName}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.fromBedType}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.toHospital}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.toDepartment}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.toPrimaryConsultant}" /></p:column>
+                                        <p:column><h:outputLabel value="" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.toDepartment}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.toWardRoomName}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.toBedType}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.acceptedAt}"><f:convertDateTime pattern="M/d/yyyy" /></h:outputLabel></p:column>
+                                        <p:column><h:outputLabel value="#{detail.acceptedAt}"><f:convertDateTime pattern="HH:mm" /></h:outputLabel></p:column>
+                                        <p:column><h:outputLabel value="#{detail.acceptedByName}" /></p:column>
+                                        <p:column><h:outputLabel value="#{detail.notes}" /></p:column>
 
                                     </p:dataTable>
                                 </div>

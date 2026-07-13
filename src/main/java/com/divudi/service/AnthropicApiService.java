@@ -1,8 +1,12 @@
 package com.divudi.service;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.OptionValueType;
 import com.divudi.core.entity.AiMessage;
+import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.ConfigOption;
+import com.divudi.core.facade.ApiKeyFacade;
 import com.divudi.core.facade.ConfigOptionFacade;
 import java.io.Serializable;
 import java.io.StringReader;
@@ -21,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -40,6 +45,12 @@ public class AnthropicApiService implements Serializable {
 
     @EJB
     private ConfigOptionFacade configOptionFacade;
+
+    @EJB
+    private ApiKeyFacade apiKeyFacade;
+
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
 
     // -------------------------------------------------------------------------
     // Public API
@@ -308,6 +319,30 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("keyword")))
                 .build();
 
+        JsonObject manageConfigOptionTool = Json.createObjectBuilder()
+                .add("name", "manage_config_option")
+                .add("description",
+                        "Read or update a single HMIS application configuration option by its exact key. "
+                        + "Use GET to read the current value; use PUT to update it (flushes in-memory cache immediately). "
+                        + "The option must already exist — this tool does not create new keys. "
+                        + "Sensitive values (API keys, passwords, tokens) are masked on reads. "
+                        + "Use search_config_options first if you need to discover the exact key name.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("GET").add("PUT"))
+                                        .add("description", "HTTP method: GET to read, PUT to update"))
+                                .add("key", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Exact config option key (case-sensitive)"))
+                                .add("value", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "New value (required for PUT)")))
+                        .add("required", Json.createArrayBuilder().add("method").add("key")))
+                .build();
+
         JsonObject clinicalMetadataTool = Json.createObjectBuilder()
                 .add("name", "manage_clinical_metadata")
                 .add("description",
@@ -346,6 +381,55 @@ public class AnthropicApiService implements Serializable {
                                 .add("size", Json.createObjectBuilder()
                                         .add("type", "string")
                                         .add("description", "Page size for GET, default 20 (optional).")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
+        JsonObject itemRequestTool = Json.createObjectBuilder()
+                .add("name", "manage_item_requests")
+                .add("description",
+                        "Submit, look up, list, or cancel item/service requests against a patient's active BHT "
+                        + "(meals like Breakfast/Lunch/Dinner, and stock items like Water Bottle/Tea/Milk/Sugar). "
+                        + "Use POST to submit a new request. Use GET with id to poll a single request's status "
+                        + "(PENDING, APPROVED, REJECTED, CANCELLED). Use GET without id to list/search requests. "
+                        + "Use PUT to cancel a still-PENDING request. Approval/rejection happen only in-app via the "
+                        + "department's JSF approval queue and are NOT available through this tool.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("GET").add("POST").add("PUT"))
+                                        .add("description", "HTTP method: GET=fetch/list, POST=submit new request, PUT=cancel"))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Request ID as a string. Required for GET-single and PUT (cancel)."))
+                                .add("bhtNo", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Patient's active BHT number. Required for POST."))
+                                .add("targetDepartmentId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Department ID the request is routed to for approval. Required for POST; optional filter for GET-list."))
+                                .add("comments", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Optional comments for the request (POST)."))
+                                .add("linesJson", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "JSON array of request lines for POST, e.g. [{\"itemId\":123,\"qty\":2}]"))
+                                .add("reason", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Reason for cancellation. Used with PUT."))
+                                .add("status", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Filter GET-list by status: PENDING, APPROVED, REJECTED, CANCELLED (optional)."))
+                                .add("fromDate", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Filter GET-list from date, format yyyy-MM-dd (optional)."))
+                                .add("toDate", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Filter GET-list to date, format yyyy-MM-dd (optional)."))
+                                .add("limit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max rows to return for GET-list (optional).")))
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
@@ -1133,6 +1217,132 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
+        JsonObject userRoleResetTool = Json.createObjectBuilder()
+                .add("name", "user_role_reset")
+                .add("description",
+                        "Reset a user's role-template aspects (privileges/icons/subscriptions/login page) to exactly match a "
+                        + "role template for the given departments: retires records the user has that the template doesn't, "
+                        + "and adds records the template has that the user lacks. Roles are admin-time templates only — "
+                        + "this stamps user-level records; it never changes runtime behavior directly. "
+                        + "roleId is optional — omit it to reset to the user's own current role (the API 400s if the user "
+                        + "has no role). Set preview=true first to see added/retired counts per aspect without writing "
+                        + "anything, then call again with preview omitted/false to apply. Always confirm with the user "
+                        + "before applying (preview=false).")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("id", Json.createObjectBuilder().add("type", "string").add("description", "Target WebUser ID"))
+                                .add("roleId", Json.createObjectBuilder().add("type", "string").add("description", "Role template ID; omit to use the user's own role"))
+                                .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs to reset"))
+                                .add("aspects", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated aspects: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE. Default PRIVILEGES"))
+                                .add("updateUserRole", Json.createObjectBuilder().add("type", "string").add("description", "'true' or 'false' — also set WebUser.role to roleId. Default true"))
+                                .add("preview", Json.createObjectBuilder().add("type", "string").add("description", "'true' to preview counts without writing. Default false")))
+                        .add("required", Json.createArrayBuilder().add("id").add("departmentIds")))
+                .build();
+
+        JsonObject userRoleExpandTool = Json.createObjectBuilder()
+                .add("name", "user_role_expand")
+                .add("description",
+                        "Add role-template records (privileges/icons/subscriptions/login page) the user is missing, for the "
+                        + "given departments. Existing extra records the user already has beyond the template are left "
+                        + "untouched. roleId is required. Set preview=true first to see how many records would be added "
+                        + "per aspect, then call again with preview omitted/false to apply. Always confirm with the user "
+                        + "before applying.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("id", Json.createObjectBuilder().add("type", "string").add("description", "Target WebUser ID"))
+                                .add("roleId", Json.createObjectBuilder().add("type", "string").add("description", "Role template ID (required)"))
+                                .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs"))
+                                .add("aspects", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated aspects: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE. Default PRIVILEGES"))
+                                .add("preview", Json.createObjectBuilder().add("type", "string").add("description", "'true' to preview counts without writing. Default false")))
+                        .add("required", Json.createArrayBuilder().add("id").add("roleId").add("departmentIds")))
+                .build();
+
+        JsonObject userRoleNarrowTool = Json.createObjectBuilder()
+                .add("name", "user_role_narrow")
+                .add("description",
+                        "Retire the user's records (privileges/icons/subscriptions/login page) that match a role template, "
+                        + "for the given departments. Records the user has that are NOT part of the template are left "
+                        + "untouched. roleId is required. Set preview=true first to see how many records would be retired "
+                        + "per aspect, then call again with preview omitted/false to apply. Always confirm with the user "
+                        + "before applying.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("id", Json.createObjectBuilder().add("type", "string").add("description", "Target WebUser ID"))
+                                .add("roleId", Json.createObjectBuilder().add("type", "string").add("description", "Role template ID (required)"))
+                                .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs"))
+                                .add("aspects", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated aspects: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE. Default PRIVILEGES"))
+                                .add("preview", Json.createObjectBuilder().add("type", "string").add("description", "'true' to preview counts without writing. Default false")))
+                        .add("required", Json.createArrayBuilder().add("id").add("roleId").add("departmentIds")))
+                .build();
+
+        JsonObject userBulkRoleOperationsTool = Json.createObjectBuilder()
+                .add("name", "user_bulk_role_operations")
+                .add("description",
+                        "Apply RESET, EXPAND, or NARROW role-template operations to many users at once. Target users are "
+                        + "either an explicit userIds list (wins if given) or a filter by filterRoleId/filterDepartmentId "
+                        + "(users with that role and/or an active loggable department assignment). "
+                        + "Two-step safety gate mirroring the UI confirm dialog: first call with preview=true (confirm "
+                        + "omitted/false) to see the resolved user count and per-aspect totals (capped at the first 200 "
+                        + "users); only after showing this to the user and getting explicit approval, repeat the identical "
+                        + "call with confirm=true (preview omitted/false) to actually apply. Calling with neither preview "
+                        + "nor confirm set is rejected by the API.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("action", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("RESET").add("EXPAND").add("NARROW"))
+                                        .add("description", "Operation to apply to every resolved user"))
+                                .add("userIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated WebUser IDs. Wins over filterRoleId/filterDepartmentId if given"))
+                                .add("filterRoleId", Json.createObjectBuilder().add("type", "string").add("description", "Only used when userIds is omitted: match users with this role"))
+                                .add("filterDepartmentId", Json.createObjectBuilder().add("type", "string").add("description", "Only used when userIds is omitted: match users with an active loggable assignment to this department"))
+                                .add("roleId", Json.createObjectBuilder().add("type", "string").add("description", "Target template role ID. Omit to use each user's own current role"))
+                                .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs to operate on (required)"))
+                                .add("aspects", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated aspects: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE. Default PRIVILEGES"))
+                                .add("updateUserRole", Json.createObjectBuilder().add("type", "string").add("description", "'true' or 'false' — for RESET, also set each user's WebUser.role to roleId. Default true"))
+                                .add("preview", Json.createObjectBuilder().add("type", "string").add("description", "'true' for the first, read-only call"))
+                                .add("confirm", Json.createObjectBuilder().add("type", "string").add("description", "'true' for the second call that actually applies the operation")))
+                        .add("required", Json.createArrayBuilder().add("action").add("departmentIds")))
+                .build();
+
+        JsonObject listUserRolesTool = Json.createObjectBuilder()
+                .add("name", "list_user_roles")
+                .add("description",
+                        "List active user roles with their role-template summary: id, name, description, template login "
+                        + "page, and counts of active role-level privileges, template icons, and template subscriptions. "
+                        + "Use this to discover valid roleId values before calling user_role_reset/expand/narrow or "
+                        + "user_bulk_role_operations.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder())
+                        .add("required", Json.createArrayBuilder()))
+                .build();
+
+        JsonObject setUserLoginPageTool = Json.createObjectBuilder()
+                .add("name", "set_user_login_page")
+                .add("description",
+                        "Set or remove a user's default login page override for one department. This is separate from a "
+                        + "role's template login page (admin-time only) and from the legacy WebUser.loginPage fallback. "
+                        + "Runtime resolution order: this user+department override, then WebUser.loginPage, then HOME. "
+                        + "action SET (default) requires loginPage (a LoginPage enum name); action DELETE removes the "
+                        + "override for that department, falling back to the legacy behavior. Always confirm with the "
+                        + "user before calling.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("action", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("SET").add("DELETE"))
+                                        .add("description", "SET to upsert the override (default), DELETE to remove it"))
+                                .add("id", Json.createObjectBuilder().add("type", "string").add("description", "Target WebUser ID"))
+                                .add("departmentId", Json.createObjectBuilder().add("type", "string").add("description", "Department ID"))
+                                .add("loginPage", Json.createObjectBuilder().add("type", "string").add("description", "LoginPage enum name — required for action SET")))
+                        .add("required", Json.createArrayBuilder().add("id").add("departmentId")))
+                .build();
+
         JsonObject managePharmacyItemsTool = Json.createObjectBuilder()
                 .add("name", "manage_pharmacy_items")
                 .add("description",
@@ -1340,11 +1550,136 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("billNumber")))
                 .build();
 
+        JsonObject managePharmacyDiscountsTool = Json.createObjectBuilder()
+                .add("name", "manage_pharmacy_discounts")
+                .add("description",
+                        "Create, list, update, or retire pharmacy payment-scheme discount rows (PaymentSchemeDiscount). "
+                        + "Use BULK to set the same discount % across all pharmacy item categories for a payment scheme in one call (idempotent: re-running updates, never duplicates). "
+                        + "method: LIST | POST | BULK | PUT | DELETE.\n\n"
+                        + "LIST: returns non-retired discount rows; optional filters: paymentSchemeId, paymentSchemeName, billType, limit.\n"
+                        + "POST: create a single row; required: discountPercent + paymentMethod; optional: categoryId, paymentSchemeId, paymentSchemeName, billType.\n"
+                        + "BULK: upsert across ALL pharmacy item categories; required: discountPercent + paymentMethod + (paymentSchemeId or paymentSchemeName); optional: billType.\n"
+                        + "PUT: update a row; required: id + discountPercent.\n"
+                        + "DELETE: soft-retire a row; required: id.\n\n"
+                        + "Default billType is PharmacySale when omitted. Always confirm with the user before POST, BULK, PUT, or DELETE.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder()
+                                                .add("LIST").add("POST").add("BULK").add("PUT").add("DELETE")))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Discount row id — required for PUT and DELETE"))
+                                .add("paymentSchemeId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PaymentScheme id — use with POST, BULK, LIST"))
+                                .add("paymentSchemeName", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PaymentScheme name (partial match for LIST, exact-then-partial for BULK/POST) — alternative to paymentSchemeId"))
+                                .add("categoryId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Category id — optional for POST (single row)"))
+                                .add("paymentMethod", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PaymentMethod enum value, e.g. Cash, Credit, MultiplePaymentMethods — required for POST and BULK; optional for LIST"))
+                                .add("billType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "BillType enum value, e.g. PharmacySale — defaults to PharmacySale when omitted"))
+                                .add("discountPercent", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Discount percentage, e.g. '5.0'"))
+                                .add("limit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max rows for LIST (default 200)")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
+        JsonObject managePaymentSchemesTool = Json.createObjectBuilder()
+                .add("name", "manage_payment_schemes")
+                .add("description",
+                        "List or update PaymentScheme records. "
+                        + "method: LIST | UPDATE.\n\n"
+                        + "LIST: returns all non-retired payment schemes with all billing-scope flags "
+                        + "(validForInpatientBills, validForPharmacy, validForBilledBills, validForChanneling) "
+                        + "and eligibility flags. Optional filter: query (name substring).\n"
+                        + "UPDATE: partial update of a payment scheme; required: id. "
+                        + "Supply only the fields to change (name, printingName, validForInpatientBills, "
+                        + "validForPharmacy, validForBilledBills, validForChanneling, staffMemberRequired, "
+                        + "membershipRequired, staffRequired, staffOrFamilyRequired, memberRequired, "
+                        + "memberOrFamilyRequired, seniorCitizenRequired, pregnantMotherRequired, orderNo). "
+                        + "Always confirm with the user before UPDATE.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("LIST").add("UPDATE")))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "PaymentScheme id — required for UPDATE"))
+                                .add("query", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Name substring filter for LIST"))
+                                .add("limit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max rows for LIST (default 500)"))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Scheme name (UPDATE)"))
+                                .add("printingName", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Printing name (UPDATE)"))
+                                .add("validForInpatientBills", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("validForPharmacy", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("validForBilledBills", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("validForChanneling", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("staffMemberRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("membershipRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("staffRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("staffOrFamilyRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("memberRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("memberOrFamilyRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("seniorCitizenRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("pregnantMotherRequired", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "true or false (UPDATE)"))
+                                .add("orderNo", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Integer sort order (UPDATE)")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
         return Json.createArrayBuilder()
                 .add(searchCodeTool)
                 .add(fetchFileTool)
                 .add(searchConfigTool)
+                .add(manageConfigOptionTool)
                 .add(clinicalMetadataTool)
+                .add(itemRequestTool)
                 .add(collectingCentreFeesTool)
                 .add(inwardDiscountMatrixTool)
                 .add(inwardPriceAdjustmentTool)
@@ -1357,7 +1692,15 @@ public class AnthropicApiService implements Serializable {
                 .add(manageSubscriptionsTool)
                 .add(manageStaffTool)
                 .add(manageUsersTool)
+                .add(userRoleResetTool)
+                .add(userRoleExpandTool)
+                .add(userRoleNarrowTool)
+                .add(userBulkRoleOperationsTool)
+                .add(listUserRolesTool)
+                .add(setUserLoginPageTool)
                 .add(managePharmacyItemsTool)
+                .add(managePharmacyDiscountsTool)
+                .add(managePaymentSchemesTool)
                 .add(manageChannelBookingTool)
                 .add(manageInpatientTemplates)
                 .add(manageTimedItemsTool)
@@ -1393,6 +1736,12 @@ public class AnthropicApiService implements Serializable {
                     String keyword = toolInput.getString("keyword", "");
                     return searchConfigOptions(keyword);
                 }
+                case "manage_config_option": {
+                    String method = toolInput.getString("method", "GET");
+                    String key    = toolInput.containsKey("key")   ? toolInput.getString("key", "")   : "";
+                    String value  = toolInput.containsKey("value") ? toolInput.getString("value", "") : null;
+                    return manageConfigOption(method, key, value, hmisApiKey);
+                }
                 case "manage_clinical_metadata": {
                     String method = toolInput.getString("method", "GET");
                     String type   = toolInput.containsKey("type") ? toolInput.getString("type", "") : "";
@@ -1405,6 +1754,21 @@ public class AnthropicApiService implements Serializable {
                     String size   = toolInput.containsKey("size")  ? toolInput.getString("size", "20") : "20";
                     return callClinicalMetadataApi(method, type, id, name, code, desc, query, page, size,
                             hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_item_requests": {
+                    String method             = toolInput.getString("method", "GET");
+                    String id                 = toolInput.containsKey("id") ? toolInput.getString("id", "") : "";
+                    String bhtNo              = toolInput.containsKey("bhtNo") ? toolInput.getString("bhtNo", "") : "";
+                    String targetDepartmentId = toolInput.containsKey("targetDepartmentId") ? toolInput.getString("targetDepartmentId", "") : "";
+                    String comments           = toolInput.containsKey("comments") ? toolInput.getString("comments", "") : "";
+                    String linesJson          = toolInput.containsKey("linesJson") ? toolInput.getString("linesJson", "") : "";
+                    String reason             = toolInput.containsKey("reason") ? toolInput.getString("reason", "") : "";
+                    String status             = toolInput.containsKey("status") ? toolInput.getString("status", "") : "";
+                    String fromDate           = toolInput.containsKey("fromDate") ? toolInput.getString("fromDate", "") : "";
+                    String toDate             = toolInput.containsKey("toDate") ? toolInput.getString("toDate", "") : "";
+                    String limit              = toolInput.containsKey("limit") ? toolInput.getString("limit", "") : "";
+                    return callItemRequestApi(method, id, bhtNo, targetDepartmentId, comments, linesJson,
+                            reason, status, fromDate, toDate, limit, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_collecting_centre_fees": {
                     String method          = toolInput.getString("method", "GET");
@@ -1636,8 +2000,32 @@ public class AnthropicApiService implements Serializable {
                 case "manage_users": {
                     return callUsersApi(toolInput, hmisBaseUrl, hmisApiKey);
                 }
+                case "user_role_reset": {
+                    return callUserRoleOperationApi("reset", toolInput, false, hmisBaseUrl, hmisApiKey);
+                }
+                case "user_role_expand": {
+                    return callUserRoleOperationApi("expand", toolInput, true, hmisBaseUrl, hmisApiKey);
+                }
+                case "user_role_narrow": {
+                    return callUserRoleOperationApi("narrow", toolInput, true, hmisBaseUrl, hmisApiKey);
+                }
+                case "user_bulk_role_operations": {
+                    return callUserBulkRoleOperationsApi(toolInput, hmisBaseUrl, hmisApiKey);
+                }
+                case "list_user_roles": {
+                    return callListUserRolesApi(hmisBaseUrl, hmisApiKey);
+                }
+                case "set_user_login_page": {
+                    return callSetUserLoginPageApi(toolInput, hmisBaseUrl, hmisApiKey);
+                }
                 case "manage_pharmacy_items": {
                     return callPharmacyItemsApi(toolInput, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_pharmacy_discounts": {
+                    return callPharmacyDiscountsApi(toolInput, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_payment_schemes": {
+                    return callPaymentSchemeApi(toolInput, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_channel_booking": {
                     return callChannelBookingApi(toolInput, hmisBaseUrl, hmisApiKey);
@@ -1851,6 +2239,136 @@ public class AnthropicApiService implements Serializable {
         }
     }
 
+    private String manageConfigOption(String method, String key, String newValue, String hmisApiKey) {
+        if (key == null || key.trim().isEmpty()) {
+            return "Error: key is required.";
+        }
+        String normalizedMethod = method == null ? "GET" : method.trim().toUpperCase();
+        if (!"GET".equals(normalizedMethod) && !"PUT".equals(normalizedMethod)) {
+            return "Error: Unknown method '" + method + "'. Supported: GET, PUT";
+        }
+        try {
+            Map<String, Object> params = new HashMap<>();
+            params.put("scope", OptionScope.APPLICATION);
+            params.put("k", key);
+            ConfigOption option = configOptionFacade.findFirstByJpql(
+                    "SELECT o FROM ConfigOption o WHERE o.retired = false AND o.scope = :scope AND o.optionKey = :k",
+                    params);
+
+            if ("PUT".equals(normalizedMethod)) {
+                if (newValue == null) {
+                    return "Error: value is required for PUT.";
+                }
+                if (option == null) {
+                    return "Error: config option not found: " + key;
+                }
+                String oldValue = option.getOptionValue();
+                OptionValueType vt = option.getValueType();
+                String validationError = validateTypedValue(vt, newValue);
+                if (validationError != null) {
+                    return validationError;
+                }
+                applyTypedUpdate(key, newValue, option, vt);
+
+                String callerName = resolveCallerName(hmisApiKey);
+                LOG.log(Level.INFO,
+                        "CONFIG_UPDATED via AI Chat tool key=[{0}] old=[{1}] new=[{2}] by=[{3}] at=[{4}]",
+                        new Object[]{key,
+                            maskSensitiveValue(key, oldValue),
+                            maskSensitiveValue(key, newValue),
+                            callerName,
+                            new java.util.Date()});
+                return "Config option updated.\nKey: " + key
+                        + "\nOld value: " + maskSensitiveValue(key, oldValue)
+                        + "\nNew value: " + maskSensitiveValue(key, newValue)
+                        + "\nUpdated by: " + callerName;
+            }
+
+            // GET
+            if (option == null) {
+                return "Config option not found: " + key;
+            }
+            String value = maskSensitiveValue(option.getOptionKey(), option.getOptionValue());
+            if (value != null && value.length() > 500) {
+                value = value.substring(0, 500) + "... (truncated)";
+            }
+            return "Key: " + option.getOptionKey() + "\nType: " + option.getValueType()
+                    + "\nScope: " + option.getScope() + "\nValue: " + value;
+        } catch (Exception e) {
+            LOG.log(Level.WARNING, "manage_config_option failed", e);
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    private String validateTypedValue(OptionValueType vt, String newValue) {
+        if (vt == null) {
+            return null;
+        }
+        switch (vt) {
+            case BOOLEAN:
+                if (!"true".equalsIgnoreCase(newValue.trim()) && !"false".equalsIgnoreCase(newValue.trim())) {
+                    return "Error: Value '" + newValue + "' is not a valid boolean (must be true or false).";
+                }
+                break;
+            case INTEGER:
+                try {
+                    Integer.parseInt(newValue.trim());
+                } catch (NumberFormatException e) {
+                    return "Error: Value '" + newValue + "' is not a valid integer.";
+                }
+                break;
+            case LONG:
+                try {
+                    Long.parseLong(newValue.trim());
+                } catch (NumberFormatException e) {
+                    return "Error: Value '" + newValue + "' is not a valid long integer.";
+                }
+                break;
+            case DOUBLE:
+                try {
+                    Double.parseDouble(newValue.trim());
+                } catch (NumberFormatException e) {
+                    return "Error: Value '" + newValue + "' is not a valid number.";
+                }
+                break;
+            default:
+                break;
+        }
+        return null;
+    }
+
+    private void applyTypedUpdate(String key, String newValue, ConfigOption option, OptionValueType vt) {
+        if (vt == OptionValueType.LONG_TEXT) {
+            configOptionApplicationController.setLongTextValueByKey(key, newValue);
+        } else if (vt == OptionValueType.BOOLEAN) {
+            configOptionApplicationController.setBooleanValueByKey(key, Boolean.parseBoolean(newValue.trim()));
+        } else if (vt == OptionValueType.INTEGER) {
+            configOptionApplicationController.setIntegerValueByKey(key, Integer.parseInt(newValue.trim()));
+        } else {
+            option.setOptionValue(newValue);
+            configOptionFacade.edit(option);
+            configOptionApplicationController.loadApplicationOptions();
+        }
+    }
+
+    private String resolveCallerName(String hmisApiKey) {
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "AI Chat (user unknown)";
+        }
+        try {
+            Map<String, Object> p = new HashMap<>();
+            p.put("k", hmisApiKey);
+            ApiKey ak = apiKeyFacade.findFirstByJpql(
+                    "SELECT a FROM ApiKey a WHERE a.keyValue = :k AND a.retired = false", p);
+            if (ak != null && ak.getWebUser() != null) {
+                return ak.getWebUser().getName() + " (AI Chat)";
+            }
+        } catch (Exception e) {
+            LOG.log(Level.FINE, "Could not resolve caller name from hmisApiKey", e);
+        }
+        return "AI Chat (user unknown)";
+    }
+
     private String maskSensitiveValue(String key, String value) {
         if (key == null || value == null || value.isEmpty()) {
             return value;
@@ -1947,6 +2465,123 @@ public class AnthropicApiService implements Serializable {
             return "Clinical metadata API call interrupted.";
         } catch (Exception e) {
             return "Clinical metadata API error: " + e.getMessage();
+        }
+    }
+
+    private String callItemRequestApi(String method, String id, String bhtNo, String targetDepartmentId,
+            String comments, String linesJson, String reason, String status, String fromDate, String toDate,
+            String limit, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured. Cannot call item requests API.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: No active HMIS API key found for the current user.";
+        }
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+            String base = hmisBaseUrl.trim().replaceAll("/+$", "") + "/api/itemrequests";
+            String url;
+            String requestBody = null;
+            String httpMethod;
+
+            switch (method.toUpperCase()) {
+                case "POST": {
+                    if (bhtNo == null || bhtNo.trim().isEmpty()) {
+                        return "Error: bhtNo is required for POST.";
+                    }
+                    if (targetDepartmentId == null || targetDepartmentId.trim().isEmpty()) {
+                        return "Error: targetDepartmentId is required for POST.";
+                    }
+                    url = base;
+                    httpMethod = "POST";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    bodyBuilder.add("bhtNo", bhtNo);
+                    bodyBuilder.add("targetDepartmentId", Long.parseLong(targetDepartmentId.trim()));
+                    if (comments != null && !comments.isEmpty()) {
+                        bodyBuilder.add("comments", comments);
+                    }
+                    if (linesJson != null && !linesJson.trim().isEmpty()) {
+                        try (JsonReader reader = Json.createReader(new StringReader(linesJson))) {
+                            bodyBuilder.add("lines", reader.readArray());
+                        } catch (Exception e) {
+                            return "Error: linesJson is not valid JSON: " + e.getMessage();
+                        }
+                    } else {
+                        return "Error: linesJson is required for POST (JSON array of {itemId, qty}).";
+                    }
+                    requestBody = bodyBuilder.build().toString();
+                    break;
+                }
+                case "PUT": {
+                    if (id == null || id.trim().isEmpty()) {
+                        return "Error: id is required for PUT (cancel).";
+                    }
+                    url = base + "/" + id.trim() + "/cancel";
+                    httpMethod = "PUT";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    if (reason != null && !reason.isEmpty()) {
+                        bodyBuilder.add("reason", reason);
+                    }
+                    requestBody = bodyBuilder.build().toString();
+                    break;
+                }
+                case "GET": {
+                    if (id != null && !id.trim().isEmpty()) {
+                        url = base + "/" + id.trim();
+                    } else {
+                        StringBuilder urlBuilder = new StringBuilder(base).append("?");
+                        boolean first = true;
+                        if (targetDepartmentId != null && !targetDepartmentId.isEmpty()) {
+                            urlBuilder.append("targetDepartmentId=").append(URLEncoder.encode(targetDepartmentId, StandardCharsets.UTF_8));
+                            first = false;
+                        }
+                        if (status != null && !status.isEmpty()) {
+                            urlBuilder.append(first ? "" : "&").append("status=").append(URLEncoder.encode(status, StandardCharsets.UTF_8));
+                            first = false;
+                        }
+                        if (fromDate != null && !fromDate.isEmpty()) {
+                            urlBuilder.append(first ? "" : "&").append("fromDate=").append(URLEncoder.encode(fromDate, StandardCharsets.UTF_8));
+                            first = false;
+                        }
+                        if (toDate != null && !toDate.isEmpty()) {
+                            urlBuilder.append(first ? "" : "&").append("toDate=").append(URLEncoder.encode(toDate, StandardCharsets.UTF_8));
+                            first = false;
+                        }
+                        if (limit != null && !limit.isEmpty()) {
+                            urlBuilder.append(first ? "" : "&").append("limit=").append(URLEncoder.encode(limit, StandardCharsets.UTF_8));
+                        }
+                        url = urlBuilder.toString();
+                    }
+                    httpMethod = "GET";
+                    break;
+                }
+                default:
+                    return "Error: Unknown method: " + method;
+            }
+
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Finance", hmisApiKey)
+                    .header("Content-Type", "application/json");
+
+            if (requestBody != null) {
+                reqBuilder.method(httpMethod, HttpRequest.BodyPublishers.ofString(requestBody));
+            } else {
+                reqBuilder.GET();
+            }
+
+            HttpResponse<String> response = client.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + "\n" + response.body();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Item request API call interrupted.";
+        } catch (Exception e) {
+            return "Item request API error: " + e.getMessage();
         }
     }
 
@@ -3799,6 +4434,111 @@ public class AnthropicApiService implements Serializable {
         }
     }
 
+    private String callUserRoleOperationApi(String action, JsonObject input, boolean roleRequired, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String id = requireText(jsonString(input, "id"), "id");
+            String url = hmisBaseUrl.replaceAll("/$", "") + "/api/users/" + id + "/role/" + action;
+            String roleId = jsonString(input, "roleId");
+            if (roleRequired && roleId.isEmpty()) {
+                return "Error: roleId is required for role " + action + ".";
+            }
+            javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+            addLong(b, "roleId", roleId);
+            b.add("departmentIds", csvLongArray(jsonString(input, "departmentIds")));
+            String aspects = jsonString(input, "aspects");
+            if (!aspects.isEmpty()) b.add("aspects", csvArray(aspects));
+            addBoolean(b, "updateUserRole", jsonString(input, "updateUserRole"));
+            addBoolean(b, "preview", jsonString(input, "preview"));
+            return callHmisApi(url, "POST", b.build().toString(), hmisApiKey);
+        } catch (Exception e) {
+            return "User role " + action + " error: " + e.getMessage();
+        }
+    }
+
+    private String callUserBulkRoleOperationsApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String url = hmisBaseUrl.replaceAll("/$", "") + "/api/users/bulk/role-operations";
+            javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+            b.add("action", requireText(jsonString(input, "action"), "action"));
+            String userIds = jsonString(input, "userIds");
+            if (!userIds.isEmpty()) {
+                b.add("userIds", csvLongArray(userIds));
+            } else {
+                String filterRoleId = jsonString(input, "filterRoleId");
+                String filterDepartmentId = jsonString(input, "filterDepartmentId");
+                if (!filterRoleId.isEmpty() || !filterDepartmentId.isEmpty()) {
+                    javax.json.JsonObjectBuilder filter = Json.createObjectBuilder();
+                    addLong(filter, "roleId", filterRoleId);
+                    addLong(filter, "departmentId", filterDepartmentId);
+                    b.add("filter", filter);
+                }
+            }
+            addLong(b, "roleId", jsonString(input, "roleId"));
+            b.add("departmentIds", csvLongArray(jsonString(input, "departmentIds")));
+            String aspects = jsonString(input, "aspects");
+            if (!aspects.isEmpty()) b.add("aspects", csvArray(aspects));
+            addBoolean(b, "updateUserRole", jsonString(input, "updateUserRole"));
+            addBoolean(b, "preview", jsonString(input, "preview"));
+            addBoolean(b, "confirm", jsonString(input, "confirm"));
+            return callHmisApi(url, "POST", b.build().toString(), hmisApiKey);
+        } catch (Exception e) {
+            return "Bulk role operations error: " + e.getMessage();
+        }
+    }
+
+    private String callListUserRolesApi(String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String url = hmisBaseUrl.replaceAll("/$", "") + "/api/users/roles";
+            return callHmisApi(url, "GET", null, hmisApiKey);
+        } catch (Exception e) {
+            return "List user roles error: " + e.getMessage();
+        }
+    }
+
+    private String callSetUserLoginPageApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String id = requireText(jsonString(input, "id"), "id");
+            String departmentId = requireText(jsonString(input, "departmentId"), "departmentId");
+            String action = input.containsKey("action") ? input.getString("action", "SET").toUpperCase() : "SET";
+            String base = hmisBaseUrl.replaceAll("/$", "") + "/api/users/" + id + "/login-page";
+            if ("DELETE".equals(action)) {
+                return callHmisApi(base + "/" + departmentId, "DELETE", null, hmisApiKey);
+            }
+            String loginPage = requireText(jsonString(input, "loginPage"), "loginPage");
+            String body = Json.createObjectBuilder()
+                    .add("departmentId", Long.parseLong(departmentId))
+                    .add("loginPage", loginPage)
+                    .build().toString();
+            return callHmisApi(base, "PUT", body, hmisApiKey);
+        } catch (Exception e) {
+            return "Set user login page error: " + e.getMessage();
+        }
+    }
+
     private String callPharmacyItemsApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
         if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
             return "Error: HMIS base URL is not configured.";
@@ -3913,6 +4653,124 @@ public class AnthropicApiService implements Serializable {
             throw new IllegalArgumentException("password is required for POST");
         }
         return body.build().toString();
+    }
+
+    private String callPharmacyDiscountsApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        String method = input.getString("method", "LIST").toUpperCase();
+        String id = jsonString(input, "id");
+        String base = hmisBaseUrl.replaceAll("/$", "") + "/api/pharmacy/discounts";
+        try {
+            String url = base;
+            String httpMethod;
+            String body = null;
+            switch (method) {
+                case "LIST":
+                    httpMethod = "GET";
+                    url = base + "?" + queryParam("paymentSchemeId", jsonString(input, "paymentSchemeId"))
+                            + "&" + queryParam("paymentSchemeName", jsonString(input, "paymentSchemeName"))
+                            + "&" + queryParam("billType", jsonString(input, "billType"))
+                            + "&" + queryParam("limit", defaultString(jsonString(input, "limit"), "200"));
+                    break;
+                case "POST": {
+                    httpMethod = "POST";
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    addLong(b, "categoryId", jsonString(input, "categoryId"));
+                    addLong(b, "paymentSchemeId", jsonString(input, "paymentSchemeId"));
+                    addString(b, "paymentSchemeName", jsonString(input, "paymentSchemeName"));
+                    addString(b, "paymentMethod", jsonString(input, "paymentMethod"));
+                    addString(b, "billType", jsonString(input, "billType"));
+                    addDouble(b, "discountPercent", jsonString(input, "discountPercent"));
+                    body = b.build().toString();
+                    break;
+                }
+                case "BULK": {
+                    httpMethod = "POST";
+                    url = base + "/bulk";
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    addLong(b, "paymentSchemeId", jsonString(input, "paymentSchemeId"));
+                    addString(b, "paymentSchemeName", jsonString(input, "paymentSchemeName"));
+                    addString(b, "paymentMethod", jsonString(input, "paymentMethod"));
+                    addString(b, "billType", jsonString(input, "billType"));
+                    addDouble(b, "discountPercent", jsonString(input, "discountPercent"));
+                    body = b.build().toString();
+                    break;
+                }
+                case "PUT": {
+                    httpMethod = "PUT";
+                    url = base + "/" + requireText(id, "id");
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    addDouble(b, "discountPercent", jsonString(input, "discountPercent"));
+                    body = b.build().toString();
+                    break;
+                }
+                case "DELETE":
+                    httpMethod = "DELETE";
+                    url = base + "/" + requireText(id, "id");
+                    break;
+                default:
+                    return "Unknown method: " + method + ". Use LIST, POST, BULK, PUT, or DELETE.";
+            }
+            return callHmisApi(url, httpMethod, body, hmisApiKey);
+        } catch (Exception e) {
+            return "Pharmacy discounts API error: " + e.getMessage();
+        }
+    }
+
+    private String callPaymentSchemeApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        String method = input.getString("method", "LIST").toUpperCase();
+        String id = jsonString(input, "id");
+        String base = hmisBaseUrl.replaceAll("/$", "") + "/api/payment-scheme";
+        try {
+            String url;
+            String httpMethod;
+            String body = null;
+            switch (method) {
+                case "LIST":
+                    httpMethod = "GET";
+                    url = base + "?" + queryParam("query", jsonString(input, "query"))
+                            + "&" + queryParam("limit", defaultString(jsonString(input, "limit"), "500"));
+                    break;
+                case "UPDATE": {
+                    httpMethod = "PUT";
+                    url = base + "/" + requireText(id, "id");
+                    javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+                    addString(b, "name", jsonString(input, "name"));
+                    addString(b, "printingName", jsonString(input, "printingName"));
+                    addBoolean(b, "validForInpatientBills", jsonString(input, "validForInpatientBills"));
+                    addBoolean(b, "validForPharmacy", jsonString(input, "validForPharmacy"));
+                    addBoolean(b, "validForBilledBills", jsonString(input, "validForBilledBills"));
+                    addBoolean(b, "validForChanneling", jsonString(input, "validForChanneling"));
+                    addBoolean(b, "staffMemberRequired", jsonString(input, "staffMemberRequired"));
+                    addBoolean(b, "membershipRequired", jsonString(input, "membershipRequired"));
+                    addBoolean(b, "staffRequired", jsonString(input, "staffRequired"));
+                    addBoolean(b, "staffOrFamilyRequired", jsonString(input, "staffOrFamilyRequired"));
+                    addBoolean(b, "memberRequired", jsonString(input, "memberRequired"));
+                    addBoolean(b, "memberOrFamilyRequired", jsonString(input, "memberOrFamilyRequired"));
+                    addBoolean(b, "seniorCitizenRequired", jsonString(input, "seniorCitizenRequired"));
+                    addBoolean(b, "pregnantMotherRequired", jsonString(input, "pregnantMotherRequired"));
+                    addLong(b, "orderNo", jsonString(input, "orderNo"));
+                    body = b.build().toString();
+                    break;
+                }
+                default:
+                    return "Unknown method: " + method + ". Use LIST or UPDATE.";
+            }
+            return callHmisApi(url, httpMethod, body, hmisApiKey);
+        } catch (Exception e) {
+            return "Payment scheme API error: " + e.getMessage();
+        }
     }
 
     private String pharmacyItemBody(JsonObject input, boolean create) {
@@ -4351,6 +5209,11 @@ public class AnthropicApiService implements Serializable {
           .append("({name} {age} {sex} {bht} {doa} {dod} {dx} {past-dx} {allergies} {rx} {drx} {ix} {procedures} {routine-medicines} vitals). ")
           .append("If an admission has multiple credit companies, the user picks one on the inward_letters page before generating. ")
           .append("Always confirm with the user before POST, PUT, or DELETE — these templates appear on the inpatient dashboard Documents page.\n\n");
+        sb.append("### manage_payment_schemes\n");
+        sb.append("List or update PaymentScheme records (billing-scope flags: validForInpatientBills, validForPharmacy, validForBilledBills, validForChanneling). ")
+          .append("Use method=LIST to retrieve all active schemes. Optionally filter by query (name substring). ")
+          .append("Use method=UPDATE (with id) for a partial update — only include the fields you want to change. ")
+          .append("Always confirm with the user before UPDATE — changes affect live inward and billing flows.\n\n");
 
         sb.append("## How to Use the Tools\n");
         sb.append("- When a user describes a problem or asks why something behaves a certain way, search the source code first.\n");
@@ -4370,7 +5233,8 @@ public class AnthropicApiService implements Serializable {
                     {"POST", "/pharmacy_adjustments/stock_quantity", "Adjust quantity of a stock batch"},
                     {"POST", "/pharmacy_adjustments/retail_rate",    "Adjust retail sale rate of a stock batch"},
                     {"POST", "/pharmacy_adjustments/purchase_rate",  "Adjust purchase rate of a stock batch"},
-                    {"POST", "/pharmacy_adjustments/expiry_date",    "Adjust expiry date of a stock batch"}
+                    {"POST", "/pharmacy_adjustments/expiry_date",    "Adjust expiry date of a stock batch"},
+                    {"POST", "/pharmacy_adjustments/backfill_finance_details", "Admin-only: backfill BillFinanceDetails for pre-fix adjustment bills (dry-run by default)"}
                 });
 
         appendModule(sb, "Pharmacy - Search", "/pharmacy_adjustments/search",
@@ -4419,6 +5283,32 @@ public class AnthropicApiService implements Serializable {
                     {"PATCH",  "/pharmaceutical_items/{type}/{id}/deactivate",     "Deactivate a pharmaceutical item"}
                 });
 
+        appendModule(sb, "Pharmacy Discounts", "/pharmacy/discounts",
+                "Manage PaymentSchemeDiscount rows that control per-category discount percentages applied during pharmacy billing for a given payment scheme. "
+                + "Use BULK to set the same discount % across all pharmacy item categories at once (idempotent — re-running updates existing rows, never duplicates). "
+                + "Default billType is PharmacySale. Always confirm with the user before POST, BULK, PUT, or DELETE.",
+                githubUrl(branch, "developer_docs/api/pharmacy-discount-api.md"),
+                new String[][]{
+                    {"GET",    "/pharmacy/discounts",       "List non-retired discount rows. Filters: paymentSchemeId, paymentSchemeName, billType, limit"},
+                    {"POST",   "/pharmacy/discounts",       "Create a single discount row. Body: discountPercent + paymentMethod (required), categoryId, paymentSchemeId, paymentSchemeName, billType"},
+                    {"POST",   "/pharmacy/discounts/bulk",  "Bulk upsert: set discountPercent for ALL pharmacy item categories under a payment scheme. Body: discountPercent, paymentMethod (required), paymentSchemeId or paymentSchemeName, optional billType"},
+                    {"PUT",    "/pharmacy/discounts/{id}",  "Update a discount row (discountPercent)"},
+                    {"DELETE", "/pharmacy/discounts/{id}",  "Soft-retire a discount row"}
+                });
+
+        appendModule(sb, "Payment Schemes", "/payment-scheme",
+                "List and update PaymentScheme records. "
+                + "Use LIST to retrieve all active payment schemes with their billing-scope flags "
+                + "(validForInpatientBills, validForPharmacy, validForBilledBills, validForChanneling) "
+                + "and eligibility flags (staffMemberRequired, membershipRequired, etc.). "
+                + "Use UPDATE (method=UPDATE, id required) for a partial update — only fields supplied in the body are changed. "
+                + "Always confirm with the user before UPDATE — changes affect live inward and billing flows.",
+                null,
+                new String[][]{
+                    {"GET", "/payment-scheme",      "List all active payment schemes. Optional: query (name filter), limit"},
+                    {"PUT", "/payment-scheme/{id}", "Partial update: supply only fields to change (e.g. validForInpatientBills, name)"}
+                });
+
         appendModule(sb, "Pharmacy Items", "/pharmacy/items",
                 "Manage dispensable pharmacy PharmaceuticalItem records used by billing and dispensing. This is separate from the pharmaceutical hierarchy API.",
                 null,
@@ -4449,7 +5339,8 @@ public class AnthropicApiService implements Serializable {
                 githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
                 new String[][]{
                     {"POST", "/pharmacy/backfill_bfd",      "Backfill missing BFD records for historical pharmacy adjustment bills"},
-                    {"POST", "/pharmacy/backfill_grn_bifd", "Backfill missing BIFD/BFD records for historical Pharmacy GRN bills"}
+                    {"POST", "/pharmacy/backfill_grn_bifd", "Backfill missing BIFD/BFD records for historical Pharmacy GRN bills"},
+                    {"POST", "/pharmacy/backfill_transfer_department_type", "Backfill missing departmentType on historical pharmacy transfer bills (issue/receive/cancellations/returns). Dry-run by default (apply=false); resolution: unanimous item types, then backwardReferenceBill, then billedBill"}
                 });
 
         // ── Institution / Department / Sites ──────────────────────────────────
@@ -4547,7 +5438,19 @@ public class AnthropicApiService implements Serializable {
                 + "DELETE /{id}/departments/{assignmentId} removes one loggable department. "
                 + "DELETE /{id}/departments/{deptId}/privileges bulk-revokes all privileges for a department. "
                 + "POST /{id}/departments/{deptId}/privileges/all grants every privilege for a department. "
-                + "POST /{id}/privileges/all with optional body {departmentIds:[...]} grants every privilege across multiple departments at once.",
+                + "POST /{id}/privileges/all with optional body {departmentIds:[...]} grants every privilege across multiple departments at once.\n\n"
+                + "Role-template operations: roles (WebUserRole) are admin-time templates only — runtime behavior "
+                + "(privilege checks, login-page resolution, icons, subscriptions) reads user-level records exclusively. "
+                + "These endpoints stamp/reset a user's own records FROM a role template; they never change runtime behavior directly. "
+                + "aspects (default [\"PRIVILEGES\"]): PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE. "
+                + "RESET converges the user's records to exactly the template (retires extras, adds missing); roleId omitted defaults to the "
+                + "user's own WebUser.role and 400s if the user has none. EXPAND adds template records the user lacks, leaving extras untouched "
+                + "(roleId required). NARROW retires the user's records that match the template, leaving non-template records untouched "
+                + "(roleId required). Any single-user call with preview=true returns counts (added/retired per aspect) without writing. "
+                + "Bulk operations (POST /users/bulk/role-operations) target either explicit userIds or a {roleId?, departmentId?} filter "
+                + "(userIds wins) and use a two-step safety gate: call once with preview=true to see the resolved user count and per-aspect "
+                + "totals (capped at first 200 users), then repeat the identical call with confirm=true to actually apply — calling with "
+                + "neither preview nor confirm is rejected. GET /users/roles lists active roles with template summary counts.",
                 githubUrl(branch, "developer_docs/API_USER_MANAGEMENT.md"),
                 new String[][]{
                     {"GET",    "/users",                          "List users. Filters: query, departmentId, page, size"},
@@ -4569,7 +5472,14 @@ public class AnthropicApiService implements Serializable {
                     {"DELETE", "/users/{id}/departments/{departmentId}/privileges",  "Bulk-revoke all active privileges for a user scoped to a department"},
                     {"POST",   "/users/{id}/departments/{departmentId}/privileges/all", "Assign every Privileges enum value to a user for a department (skips duplicates)"},
                     {"PUT",    "/users/{id}/staff",               "Link an existing Staff record to the user (body: {staffId})"},
-                    {"POST",   "/users/{id}/privileges/all",      "Assign every privilege across supplied departmentIds (or all loggable depts). Returns per-dept summary"}
+                    {"POST",   "/users/{id}/privileges/all",      "Assign every privilege across supplied departmentIds (or all loggable depts). Returns per-dept summary"},
+                    {"POST",   "/users/{id}/role/reset",          "Reset a user's aspects to a role template (roleId optional; defaults to the user's own role)"},
+                    {"POST",   "/users/{id}/role/expand",         "Add role-template records the user lacks (roleId required)"},
+                    {"POST",   "/users/{id}/role/narrow",         "Retire the user's records that match a role template (roleId required)"},
+                    {"POST",   "/users/bulk/role-operations",     "Bulk RESET/EXPAND/NARROW for many users; preview=true then confirm=true"},
+                    {"GET",    "/users/roles",                    "List active roles with template summary counts (privileges/icons/subscriptions, template login page)"},
+                    {"PUT",    "/users/{id}/login-page",          "Upsert the user's default login page for a department (body: {departmentId, loginPage})"},
+                    {"DELETE", "/users/{id}/login-page/{departmentId}", "Retire the user's default login-page override for a department"}
                 });
 
         appendModule(sb, "User Roles", "/user-roles",
@@ -4882,6 +5792,22 @@ public class AnthropicApiService implements Serializable {
                     {"POST",   "/inward/room-facility-charges",    "Create room facility charge. Body: name (required), roomId, roomCategoryId, departmentId, charge fields, timedItemFee fields"},
                     {"PUT",    "/inward/room-facility-charges/{id}", "Update room facility charge"},
                     {"DELETE", "/inward/room-facility-charges/{id}", "Soft-retire room facility charge"}
+                });
+
+        appendModule(sb, "Inward - Item Requests", "/itemrequests",
+                "External systems submit item/service requests (meals like Breakfast/Lunch/Dinner as InwardService "
+                + "items, and stock items like Water Bottle/Tea/Milk/Sugar) against a patient's active BHT. Requests "
+                + "are saved Pending (no charge, no stock movement) and routed to a target department's in-app "
+                + "approval queue. A department user approves (charges the BHT and deducts stock atomically, failing "
+                + "the whole approval if any line has insufficient stock) or rejects (records a reason) the request "
+                + "via a JSF approval page — approval/rejection is in-app only and is NOT exposed by this API. "
+                + "External systems poll GET /{id} for status: PENDING, APPROVED, REJECTED, CANCELLED.",
+                null,
+                new String[][]{
+                    {"POST", "/itemrequests",           "Submit a new item/service request. Body: {bhtNo, targetDepartmentId, comments, lines:[{itemId, qty}]}"},
+                    {"GET",  "/itemrequests/{id}",      "Get a single item/service request by ID, including status and lines. Poll this for status changes"},
+                    {"GET",  "/itemrequests",           "List/search item/service requests. Query params: targetDepartmentId, status, fromDate, toDate (yyyy-MM-dd), limit"},
+                    {"PUT",  "/itemrequests/{id}/cancel", "Cancel a still-PENDING request. Body: {reason}"}
                 });
 
         appendModule(sb, "Timed Items", "/timed-items",

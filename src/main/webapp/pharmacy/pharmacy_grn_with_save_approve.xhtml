@@ -30,6 +30,7 @@
                         class="ui-button-success"
                         icon="fas fa-check"
                         ajax="false"
+                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnApprove')}"
                         style="float: right; margin-right: 0.5em;">
                     </p:commandButton>
                     <p:commandButton
@@ -38,6 +39,7 @@
                         class="ui-button-info"
                         icon="pi pi-save"
                         ajax="false"
+                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnSave')}"
                         style="float: right; margin-right: 0.5em;">
                     </p:commandButton>
                 </f:facet>

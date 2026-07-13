@@ -49,7 +49,7 @@
                                         <p:commandButton ajax="false" value="Discount Report" icon="fa fa-fw fa-percentage" action="inward_report_discount?faces-redirect=true" />
                                         <p:commandButton ajax="false" value="BHT VAT Report" icon="fa fa-fw fa-receipt" action="inward_report_bht_inward_vat?faces-redirect=true" />
                                         <p:commandButton ajax="false" value="BHT Break Down (TAB Format)" icon="fa fa-fw fa-table" action="inward_bill_intrim_finalized?faces-redirect=true" actionListener="#{bhtSummeryFinalizedController.makeNull()}" />
-                                        <p:commandButton ajax="false" value="BHT Break Down (Table Format)" icon="fa fa-fw fa-list-alt" action="inward_bill_final_break_down?faces-redirect=true" />
+                                        <p:commandButton ajax="false" value="BHT Break Down (Table Format)" icon="fa fa-fw fa-list-alt" action="inward_bill_final_break_down?faces-redirect=true" actionListener="#{bhtSummeryFinalizedController.makeNull()}" />
                                         <p:commandButton
                                             value="Inpatient Invoice Journal"
                                             icon="fa fa-fw fa-book"
