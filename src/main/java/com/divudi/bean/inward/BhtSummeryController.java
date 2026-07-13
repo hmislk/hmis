@@ -1562,9 +1562,15 @@ public class BhtSummeryController implements Serializable {
             getPatientRoomFacade().create(patientRoom);
         }
 
-        patientRoom.setCurrentRoomCharge(patientRoom.getRoomFacilityCharge().getRoomCharge());
-
-        calCulateRoomCharge(patientRoom);
+        if (patientRoom.isFromPackage() && !isPackageRoomDurationExceeded(patientRoom)) {
+            // Package-locked room: currentRoomCharge already holds the package's fixed
+            // total, not a per-block rate - do not overwrite it with the facility rate
+            // while still within the included duration.
+            patientRoom.setCalculatedRoomCharge(patientRoom.getCurrentRoomCharge() + patientRoom.getAddedRoomCharge());
+        } else {
+            patientRoom.setCurrentRoomCharge(patientRoom.getRoomFacilityCharge().getRoomCharge());
+            calCulateRoomCharge(patientRoom);
+        }
 
         updatePaitentRoomAdjustedTotal();
     }
@@ -1616,18 +1622,24 @@ public class BhtSummeryController implements Serializable {
         if (pr == null || !pr.isFromPackage() || !isPackageRoomDurationExceeded(pr) || pr.getRoomFacilityCharge() == null) {
             return 0.0;
         }
-        calCulateRoomCharge(pr);
-        double liveEquivalent = pr.getCalculatedRoomCharge();
+        // currentRoomCharge holds the package's locked TOTAL for this room, not a
+        // per-block rate, so it must not be used as the multiplicand here (that was
+        // the bug: reusing calCulateRoomCharge(pr), which multiplies
+        // pr.getCurrentRoomCharge() by elapsed blocks). Both sides of this variance
+        // must be derived from the room's real per-block rate, RoomFacilityCharge.roomCharge.
+        Double facilityRoomCharge = pr.getRoomFacilityCharge().getRoomCharge();
+        if (facilityRoomCharge == null) {
+            return 0.0;
+        }
+        TimedItemFee timedFee = pr.getRoomFacilityCharge().getTimedItemFee();
+        double liveEquivalent = facilityRoomCharge * getInwardBean().calCount(timedFee, pr.getAdmittedAt(), pr.getDischargedAt());
         // RoomFacilityCharge.roomCharge is a rate per TimedItemFee.durationHours block (see
         // InwardBeanController.calCount: charge = roomCharge * count, where count is the number
         // of durationHours-sized blocks between admittedAt/dischargedAt). Room-charge TimedItemFee
         // configs are conventionally 24-hour ("per day") blocks, so we use the actual configured
         // durationHours here (falling back to 24.0 if unset) rather than hardcoding 24.
-        TimedItemFee timedFee = pr.getRoomFacilityCharge().getTimedItemFee();
         double blockHours = (timedFee != null && timedFee.getDurationHours() > 0) ? timedFee.getDurationHours() : 24.0;
-        double includedEquivalent = pr.getRoomFacilityCharge().getRoomCharge() != null
-                ? pr.getRoomFacilityCharge().getRoomCharge() * (pr.getIncludedRoomDurationHours() / blockHours)
-                : 0.0;
+        double includedEquivalent = facilityRoomCharge * (pr.getIncludedRoomDurationHours() / blockHours);
         return Math.max(0.0, liveEquivalent - includedEquivalent);
     }
 
