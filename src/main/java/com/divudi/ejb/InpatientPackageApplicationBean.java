@@ -210,6 +210,7 @@ public class InpatientPackageApplicationBean {
         BillItem billItem = new BillItem();
         billItem.setBill(bill);
         billItem.setItem(component.getItem());
+        billItem.setInwardChargeType(component.getItem() != null ? component.getItem().getInwardChargeType() : null);
         billItem.setPatientEncounter(admission);
         billItem.setDescreption(component.getItem() != null ? component.getItem().getName() : component.getRoleLabel());
         billItem.setGrossValue(component.getFixedPrice());

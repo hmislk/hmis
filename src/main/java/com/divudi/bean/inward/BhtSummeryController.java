@@ -3318,6 +3318,14 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
+        if (p.isFromPackage() && !isPackageRoomDurationExceeded(p)) {
+            // Package-locked room: currentRoomCharge already holds the package's
+            // fixed total for the room, not a per-block rate — do not multiply
+            // it by elapsed TimedItemFee blocks while within the included duration.
+            p.setCalculatedRoomCharge(p.getCurrentRoomCharge() + p.getAddedRoomCharge());
+            return;
+        }
+
         double roomCharge = p.getCurrentRoomCharge();
         ////System.out.println("roomCharge = " + roomCharge);
         double calculated = getCharge(p, roomCharge) + p.getAddedRoomCharge();
