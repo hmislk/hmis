@@ -88,6 +88,8 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
     private com.divudi.core.facade.BillItemFacade billItemFacade;
     @EJB
     private com.divudi.core.facade.InpatientPackageItemFacade inpatientPackageItemFacade;
+    @EJB
+    private com.divudi.core.facade.RoomFacilityChargeFacade roomFacilityChargeFacade;
 
     // ---- Working state ----
     private PatientEncounter patientEncounter;
@@ -247,7 +249,25 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
                 return sessionController.getDepartment();
             }
             if (patientEncounter.getCurrentPatientRoom().getRoomFacilityCharge() != null) {
-                return patientEncounter.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+                com.divudi.core.entity.inward.RoomFacilityCharge rfc = patientEncounter.getCurrentPatientRoom().getRoomFacilityCharge();
+                Department dept = rfc.getDepartment();
+                if (dept == null) {
+                    // The shared L2 cache can hold a RoomFacilityCharge whose
+                    // department association was still unset when it was first
+                    // cached (e.g. the room-to-department link was added later,
+                    // via a path that didn't go through this persistence unit).
+                    // Force a fresh read before giving up.
+                    com.divudi.core.entity.inward.RoomFacilityCharge fresh = roomFacilityChargeFacade.findFreshByJpql(
+                            "select r from RoomFacilityCharge r where r.id = :id",
+                            java.util.Collections.singletonMap("id", rfc.getId()));
+                    dept = fresh != null ? fresh.getDepartment() : null;
+                    if (dept != null) {
+                        LOGGER.log(Level.WARNING, "RoomFacilityCharge id={0} had a stale null department in cache; "
+                                + "resolved to department id={1} after a fresh read.",
+                                new Object[]{rfc.getId(), dept.getId()});
+                    }
+                }
+                return dept;
             }
         } else if (matrixByIssuingDept) {
             return sessionController.getDepartment();
