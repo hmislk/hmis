@@ -266,21 +266,23 @@
                             #{ti.item.name}
                         </p:column>
                         <p:column headerText="Start Time">
-                            <p:datePicker 
+                            <p:datePicker
                                 showTime="true"
-                                timeInput="true" 
-                                value="#{ti.fromTime}" 
+                                timeInput="true"
+                                value="#{ti.fromTime}"
+                                disabled="#{ti.billItem.fromPackage}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                            </p:datePicker>      
+                            </p:datePicker>
 
-                        </p:column>                               
+                        </p:column>
                         <p:column headerText="Stopped Time">
-                            <p:datePicker 
+                            <p:datePicker
                                 showTime="true"
-                                timeInput="true"  
-                                value="#{ti.toTime}" 
+                                timeInput="true"
+                                value="#{ti.toTime}"
+                                disabled="#{ti.billItem.fromPackage}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                            </p:datePicker> 
+                            </p:datePicker>
                         </p:column>
                         <p:column headerText="Total" styleClass="averageNumericColumn" rendered="#{webUserController.hasPrivilege('ShowTimeServiceCharges')}">
                             <h:outputLabel  value="#{ti.serviceValue}">
@@ -298,12 +300,13 @@
                         </p:column>     
                         <p:column headerText="Action" >
                             <div class="d-flex gap-2">
-                                <p:commandButton 
-                                    value="Update" 
+                                <p:commandButton
+                                    value="Update"
                                     class="ui-button-warning"
                                     icon="fa fa-pencil"
-                                    ajax="false" 
-                                    action="#{inwardTimedItemController.finalizeService(ti)}" >                                                                    
+                                    ajax="false"
+                                    action="#{inwardTimedItemController.finalizeService(ti)}"
+                                    rendered="#{not ti.billItem.fromPackage}" >
                                 </p:commandButton>
                                 <p:commandButton
                                     icon="fa-solid fa-trash"

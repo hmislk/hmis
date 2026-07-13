@@ -645,6 +645,10 @@ public class InwardTimedItemController implements Serializable {
     }
 
     public void finalizeService(PatientItem pic) {
+        if (pic != null && pic.getBillItem() != null && pic.getBillItem().isFromPackage()) {
+            JsfUtil.addErrorMessage("This item is included in the admission's package and its charge cannot be changed.");
+            return;
+        }
         PatientItem temPi;
         if (pic.getToTime() != null && pic.getFromTime() != null) {
             if (pic.getToTime().before(pic.getFromTime())) {
