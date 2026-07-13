@@ -25,6 +25,9 @@ public class SiteCreateRequestDTO implements Serializable {
     private String email; // Optional
     private String fax; // Optional
     private Long parentInstitutionId; // Optional - main institution this site belongs to
+    // Bed-board SVG fields (issue #21592). Optional; additive only.
+    private String svgParentView; // Optional - bed-board floor-plan canvas
+    private String svgChildView; // Optional - bed-board child tile shape
 
     public SiteCreateRequestDTO() {
     }
@@ -113,6 +116,22 @@ public class SiteCreateRequestDTO implements Serializable {
 
     public void setParentInstitutionId(Long parentInstitutionId) {
         this.parentInstitutionId = parentInstitutionId;
+    }
+
+    public String getSvgParentView() {
+        return svgParentView;
+    }
+
+    public void setSvgParentView(String svgParentView) {
+        this.svgParentView = svgParentView;
+    }
+
+    public String getSvgChildView() {
+        return svgChildView;
+    }
+
+    public void setSvgChildView(String svgChildView) {
+        this.svgChildView = svgChildView;
     }
 
     @Override

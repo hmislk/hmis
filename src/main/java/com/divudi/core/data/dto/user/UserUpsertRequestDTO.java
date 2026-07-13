@@ -13,6 +13,7 @@ public class UserUpsertRequestDTO {
     private Long roleId;
     private Boolean activated;
     private String password;
+    private String loginPage;
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getCode() { return code; }
@@ -37,4 +38,10 @@ public class UserUpsertRequestDTO {
     public void setActivated(Boolean activated) { this.activated = activated; }
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+    public String getLoginPage() { return loginPage; }
+    public void setLoginPage(String loginPage) { this.loginPage = loginPage; }
+
+    private Long staffId;
+    public Long getStaffId() { return staffId; }
+    public void setStaffId(Long staffId) { this.staffId = staffId; }
 }

@@ -12,73 +12,134 @@
 
                 <h:form class="w-100">
                     <p:panel header="Surgery Status Report" >
-                        <h:panelGrid columns="3" class="w-100" >
-                           
+                        <h:panelGrid columns="5" class="w-100" >
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="From Date" for="fromDate" styleClass="m-3"/>
+                            </h:panelGroup>
+
+                            <p:datePicker
+                                id="fromDate"
+                                value="#{surgeryReportController.fromDate}"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
+
+                            <p:spacer width="40"/>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2"/>
+                                <p:outputLabel value="To Date" for="toDate" styleClass="m-3"/>
+                            </h:panelGroup>
+
+                            <p:datePicker
+                                id="toDate"
+                                value="#{surgeryReportController.toDate}"
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                pattern="dd/MM/yyyy HH:mm:ss"   
+                                showTime="true"                                                         
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
+
+
                             <p:outputLabel value="OT Room" >
                             </p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.currentSpeciality}" class=" w-50">
-                                <f:selectItem itemLabel="Select OT Room"/>
-                            </p:selectOneMenu>
+                            <p:autoComplete
+                                id="acTheatreRoom"
+                                widgetVar="wTheatreRoom"
+                                forceSelection="true"
+                                value="#{surgeryReportController.operationTheatreRoom}"
+                                completeMethod="#{roomFacilityChargeController.completeTheatreRoom}"
+                                var="tr"
+                                itemLabel="#{tr.name}"
+                                itemValue="#{tr}"
+                                placeholder="Type theatre room name..."
+                                minQueryLength="1"
+                                maxResults="10"
+                                style="width:100%">
+                                <p:column headerText="Room">
+                                    <h:outputText value="#{tr.name}"/>
+                                </p:column>
+                                <p:column headerText="Department">
+                                    <h:outputText value="#{tr.department.name}"/>
+                                </p:column>
+                            </p:autoComplete>
 
                             <p:spacer width="20"/>
                             <p:outputLabel value="Proposed Surgery" >
                             </p:outputLabel>
-                            <p:selectOneMenu  class=" w-50" >
-                                <f:selectItem itemLabel="Select Surgery"/>
-                            </p:selectOneMenu>   
+                            <p:autoComplete id="surgeryNameAC" forceSelection="true"
+                                            value="#{surgeryReportController.procedure}"
+                                            completeMethod="#{procedureController.completeProcedures}"
+                                            var="apt2" itemLabel="#{apt2.name}" itemValue="#{apt2}"
+                                            class="w-50" 
+                                            maxResults="10"
+                                            minQueryLength="1">
+                            </p:autoComplete>
                         </h:panelGrid>
                         <p:spacer width="20"/>
-                         <h:panelGrid columns="6" class="my-3">
-                            <p:commandButton ajax="false" value="Process" icon="fas fa-cogs" class="ui-button-warning" action="#" >
+                        <h:panelGrid columns="6" class="my-3">
+                            <p:commandButton 
+                                id="btnProcess"
+                                ajax="false" 
+                                value="Process" 
+                                icon="fas fa-cogs" 
+                                class="ui-button-warning" 
+                                action="#{surgeryReportController.processSurgeryStatusReport()}" >
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Print" icon="fas fa-print" class="ui-button-info mx-1"  >
-                                <p:printer target=""/>
+                            <p:commandButton
+                                id="btnPrint"
+                                ajax="false" 
+                                value="Print" 
+                                icon="fas fa-print" 
+                                class="ui-button-info mx-1"  >
+                                <p:printer target="tb"/>
                             </p:commandButton>
-                            <p:commandButton ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success" >
-                                <p:dataExporter fileName="Surgery_Report" type="xlsx" target="" />
-                            </p:commandButton>
-                            <p:commandButton ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" >
-                                <p:dataExporter fileName="Surgery_Report" type="pdf" target="" />
-                            </p:commandButton>
+                            <p:commandButton 
+                                id="btnExcel"
+                                ajax="false" 
+                                value="Excel" 
+                                icon="fas fa-file-excel" 
+                                class="ui-button-success" 
+                                action="#{surgeryReportController.downloadExcelReport()}" />
+                            <p:commandButton 
+                                id="btnPdf"
+                                ajax="false" 
+                                value="PDF" 
+                                icon="fas fa-file-pdf" 
+                                class="ui-button-danger mx-1" 
+                                action="#{surgeryReportController.downloadPdfReport()}" />
                         </h:panelGrid>
-                        
 
-
-                        <p:dataTable value="null" var="c">
-                            
-                            <p:column headerText="SL No." style="width: 100px" >
-                                <h:outputText value="null" ></h:outputText>
+                        <p:dataTable 
+                            id="tb"
+                            value="#{surgeryReportController.reportList}" 
+                            var="c" 
+                            rowIndexVar="i">
+                            <p:column headerText="SL No." style="width: 100px">
+                                <h:outputText value="#{i+1}"/>
                             </p:column>
-                            <p:column headerText="MRN" >
-                                <h:outputText value="null" ></h:outputText>
+                            <p:column headerText="MRN"><h:outputText value="#{c.mrn}"/></p:column>
+                            <p:column headerText="Patient Name"><h:outputText value="#{c.patientName}"/></p:column>
+                            <p:column headerText="Admission Date">
+                                <h:outputText value="#{c.admissionDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
                             </p:column>
-                            <p:column headerText="Patient Name" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Admission Date" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Propose Surgery" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="OT Room" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Ward" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Surgeon" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="OT Status" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="Consultant" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                           
-                            
-
+                            <p:column headerText="Proposed Surgery"><h:outputText value="#{c.procedureName}"/></p:column>
+                            <p:column headerText="OT Room"><h:outputText value="#{c.otRoomName}"/></p:column>
+                            <p:column headerText="Ward"><h:outputText value="#{c.wardName}"/></p:column>
+                            <p:column headerText="Surgeon"><h:outputText value="#{c.surgeonName}"/></p:column>
+                            <p:column headerText="OT Status"><h:outputText value="#{c.otStatus}"/></p:column>
+                            <p:column headerText="Consultant"><h:outputText value="#{c.consultantName}"/></p:column>
                         </p:dataTable>
 
                     </p:panel>

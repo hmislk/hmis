@@ -30,6 +30,10 @@ public class InstitutionCreateRequestDTO implements Serializable {
     private String contactPersonName; // Optional
     private String ownerName; // Optional
     private String ownerEmail; // Optional
+    // Bed-board SVG fields (issue #21592). Optional; additive only — not part of
+    // any existing constructor signature.
+    private String svgParentView; // Optional - bed-board floor-plan canvas
+    private String svgChildView; // Optional - bed-board child tile shape
 
     public InstitutionCreateRequestDTO() {
     }
@@ -165,6 +169,22 @@ public class InstitutionCreateRequestDTO implements Serializable {
 
     public void setOwnerEmail(String ownerEmail) {
         this.ownerEmail = ownerEmail;
+    }
+
+    public String getSvgParentView() {
+        return svgParentView;
+    }
+
+    public void setSvgParentView(String svgParentView) {
+        this.svgParentView = svgParentView;
+    }
+
+    public String getSvgChildView() {
+        return svgChildView;
+    }
+
+    public void setSvgChildView(String svgChildView) {
+        this.svgChildView = svgChildView;
     }
 
     @Override

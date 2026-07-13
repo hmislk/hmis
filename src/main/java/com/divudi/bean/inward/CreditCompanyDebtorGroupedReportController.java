@@ -163,7 +163,10 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
                 BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
-                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
         );
         List<BillTypeAtomic> ccPaymentTypes = Arrays.asList(
                 BillTypeAtomic.CREDIT_COMPANY_INPATIENT_PAYMENT,

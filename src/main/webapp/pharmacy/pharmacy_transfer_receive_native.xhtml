@@ -35,7 +35,8 @@
                             style="float: right;"
                             class="ui-button-success mx-2"
                             action="#{transferReceiveNativeSqlController.settle}"
-                            ajax="false">
+                            ajax="false"
+                            disabled="#{not webUserController.hasPrivilege('PharmacyReceiveFinalize')}">
                         </p:commandButton>
 
                         <h:panelGroup rendered="#{transferReceiveNativeSqlController.issuedBill.comments ne null and not empty transferReceiveNativeSqlController.issuedBill.comments}">

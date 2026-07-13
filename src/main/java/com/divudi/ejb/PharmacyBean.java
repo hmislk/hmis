@@ -924,6 +924,14 @@ public class PharmacyBean {
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
             s.setStock(qty);
             ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            // The ItemBatch may be a minimal DTO-constructed object (id set, but no item/dateOfExpire).
+            // Load the full entity so metadata fields on the Staff Stock row are populated correctly.
+            if (ib != null && ib.getItem() == null && ib.getId() != null) {
+                ItemBatch full = itemBatchFacade.find(ib.getId());
+                if (full != null) {
+                    ib = full;
+                }
+            }
             Item i = null;
             if (ib != null) {
                 i = ib.getItem();
@@ -1061,6 +1069,12 @@ public class PharmacyBean {
             s.setStaff(staff);
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
             ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            if (ib != null && ib.getItem() == null && ib.getId() != null) {
+                ItemBatch full = itemBatchFacade.find(ib.getId());
+                if (full != null) {
+                    ib = full;
+                }
+            }
             Item i = null;
             if (ib != null) {
                 i = ib.getItem();
@@ -1269,7 +1283,17 @@ public class PharmacyBean {
     }
 
     /**
-     * Resolve the underlying AMP records for any pharmacy Item subclass.
+     * Resolve the underlying AMP records for any pharmacy Item subclass,
+     * <b>exactly</b> — an AMP (or Ampp) resolves to itself only. This preserves
+     * brand-faithful stock lookup for prescription / discharge-dispensing flows
+     * (e.g. {@code PharmacySaleBhtController.findFefoStockDtosForItem},
+     * {@code PatientEncounterController}), where the prescribed brand must not be
+     * silently swapped for a sibling. VMP/VMPP/VTM/ATM still resolve to every AMP
+     * under that node, as those are inherently generic.
+     *
+     * <p>For the on-demand "Alternatives" substitute panel, which deliberately
+     * offers sibling brands of the same VMP for the cashier to choose, use
+     * {@link #resolveSubstituteAmps(Item)} instead.
      *
      * @param item item to resolve
      * @return list of AMP objects, or an empty list if none found
@@ -1321,6 +1345,62 @@ public class PharmacyBean {
         return new ArrayList<>();
     }
 
+    /**
+     * Resolve the candidate AMPs for the on-demand "Alternatives" substitute
+     * panel (issue #21697). Unlike {@link #resolveAmps(Item)} this expands an
+     * AMP / Ampp to itself <b>plus its sibling AMPs sharing the same VMP</b>
+     * (alternative brands of the same virtual product), so the cashier can pick
+     * a different brand. For VMP/VMPP/VTM/ATM the result is identical to
+     * {@code resolveAmps} (those are already generic and cover every brand).
+     *
+     * <p>This is intentionally separate from {@code resolveAmps} so that
+     * brand-faithful prescription / dispensing flows are never affected — only
+     * the explicit substitute path opts into sibling expansion.
+     *
+     * @param item item to resolve substitute candidates for
+     * @return AMP list including sibling brands, or empty if none found
+     */
+    public List<Amp> resolveSubstituteAmps(Item item) {
+        if (item == null) {
+            return new ArrayList<>();
+        }
+        if (item instanceof Amp) {
+            return resolveAmpWithVmpSiblings((Amp) item);
+        }
+        if (item instanceof Ampp) {
+            return resolveAmpWithVmpSiblings(((Ampp) item).getAmp());
+        }
+        // VMP / VMPP / VTM / ATM are already generic — same as exact resolution.
+        return resolveAmps(item);
+    }
+
+    /**
+     * Resolve an AMP to itself plus its sibling AMPs that share the same VMP
+     * (true alternative brands of the same virtual product). The original AMP
+     * is always included even if its VMP is null or has no siblings.
+     */
+    private List<Amp> resolveAmpWithVmpSiblings(Amp amp) {
+        List<Amp> list = new ArrayList<>();
+        if (amp == null) {
+            return list;
+        }
+        list.add(amp);
+        Vmp vmp = amp.getVmp();
+        if (vmp == null) {
+            return list;
+        }
+        List<Amp> siblings = findAmpsForVmp(vmp);
+        if (siblings != null) {
+            for (Amp sibling : siblings) {
+                if (sibling != null && sibling.getId() != null
+                        && !sibling.getId().equals(amp.getId())) {
+                    list.add(sibling);
+                }
+            }
+        }
+        return list;
+    }
+
     public List<Amp> findAmpsForVtm(Vtm vtm) {
         if (vtm == null) {
             return new ArrayList<>();
@@ -1328,9 +1408,11 @@ public class PharmacyBean {
         Map<String, Object> m = new HashMap<>();
         m.put("vtm", vtm);
         m.put("ret", false);
-        String jpql = "select vpi from VirtualProductIngredient vpi "
+
+        // Primary path: VirtualProductIngredient join table
+        String vpiJpql = "select vpi from VirtualProductIngredient vpi "
                 + " where vpi.retired=:ret and vpi.vtm=:vtm";
-        List<VirtualProductIngredient> vpis = virtualProductIngredientFacade.findByJpql(jpql, m);
+        List<VirtualProductIngredient> vpis = virtualProductIngredientFacade.findByJpql(vpiJpql, m);
         List<Amp> allAmps = new ArrayList<>();
         if (vpis != null) {
             for (VirtualProductIngredient vpi : vpis) {
@@ -1339,6 +1421,22 @@ public class PharmacyBean {
                     if (amps != null) {
                         allAmps.addAll(amps);
                     }
+                }
+            }
+        }
+        if (!allAmps.isEmpty()) {
+            return allAmps;
+        }
+
+        // Fallback: VirtualProductIngredient table is unpopulated on many deployments.
+        // VMPs carry a direct vtm reference (VMP.VTM_ID) — use that instead.
+        String vmpJpql = "select vmp from Vmp vmp where vmp.retired=:ret and vmp.vtm=:vtm";
+        List<Vmp> vmps = vmpFacade.findByJpql(vmpJpql, m);
+        if (vmps != null) {
+            for (Vmp vmp : vmps) {
+                List<Amp> amps = findAmpsForVmp(vmp);
+                if (amps != null) {
+                    allAmps.addAll(amps);
                 }
             }
         }

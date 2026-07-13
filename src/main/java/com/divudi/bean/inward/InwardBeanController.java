@@ -40,7 +40,11 @@ import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.entity.inward.TimedItemFee;
 import com.divudi.core.entity.inward.AdmissionNumber;
+import com.divudi.core.entity.inward.PatientRoomTimedItemCharge;
+import com.divudi.core.entity.inward.RoomFacilityTimedItem;
 import com.divudi.core.facade.AdmissionFacade;
+import com.divudi.core.facade.PatientRoomTimedItemChargeFacade;
+import com.divudi.core.facade.RoomFacilityTimedItemFacade;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.facade.BillFeeFacade;
@@ -102,6 +106,10 @@ public class InwardBeanController implements Serializable {
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
     @EJB
+    private RoomFacilityTimedItemFacade roomFacilityTimedItemFacade;
+    @EJB
+    private PatientRoomTimedItemChargeFacade patientRoomTimedItemChargeFacade;
+    @EJB
     private ItemFeeFacade itemFeeFacade;
     @EJB
     private PriceMatrixFacade priceMatrixFacade;
@@ -111,6 +119,8 @@ public class InwardBeanController implements Serializable {
     private PatientEncounterFacade encounterFacade;
     @EJB
     BillNumberGenerator billNumberGenerator;
+    @EJB
+    private com.divudi.core.facade.EncounterCreditCompanyFacade encounterCreditCompanyFacade;
 
     @Inject
     BillBeanController billBean;
@@ -713,6 +723,32 @@ public class InwardBeanController implements Serializable {
         getBillFeeFacade().updateByJpql(sql, hm);
     }
 
+    /**
+     * Mirror of {@link #setProfesionallFeeAdjusted} for assisting fees
+     * (non-Consultant staff). Keeps the adjusted fee equal to the fee value for
+     * assistant doctors on every navigation, so the Professional Fee and
+     * Adjusted Fee columns always match - exactly as they do for consultants.
+     */
+    public void setAssistingFeeAdjusted(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        HashMap hm = new HashMap();
+        String sql = "UPDATE BillFee bt SET bt.feeAdjusted = bt.feeValue"
+                + " WHERE bt.retired=false"
+                + " AND type(bt.staff)!=:class"
+                + " AND bt.fee.feeType=:ftp"
+                + " AND bt.bill.billType=:btp"
+                + " AND bt.bill.patientEncounter IN :pe";
+        hm.put("class", Consultant.class);
+        hm.put("ftp", FeeType.Staff);
+        hm.put("btp", BillType.InwardProfessional);
+        hm.put("pe", pts);
+        getBillFeeFacade().updateByJpql(sql, hm);
+    }
+
     public void bulkClearServiceBillFeesWithOutMatrix(InwardChargeType inwardChargeType, PatientEncounter patientEncounter) {
         String sql = "UPDATE BillFee s SET s.feeDiscount = 0.0, s.feeValue = s.feeGrossValue + s.feeMargin"
                 + " WHERE s.retired = false"
@@ -1249,6 +1285,10 @@ public class InwardBeanController implements Serializable {
                 result.put(InwardChargeType.LinenCharges,         toDoubleOrZero(arr[6]));
             }
         }
+        Map<InwardChargeType, Double> timedItemSums = getTimedItemChargeSumsBulk(patientEncounter, cpts);
+        for (Map.Entry<InwardChargeType, Double> entry : timedItemSums.entrySet()) {
+            result.merge(entry.getKey(), entry.getValue(), Double::sum);
+        }
         return result;
     }
 
@@ -1289,6 +1329,7 @@ public class InwardBeanController implements Serializable {
         }
 
         sql += " and Type(b.item)!=TimedItem "
+                + " and b.bill.toDepartment is not null "
                 + " and b.bill.patientEncounter in :pe ";
 
         hm.put("btp", BillType.InwardBill);
@@ -1763,6 +1804,11 @@ public class InwardBeanController implements Serializable {
         System.out.println("Found " + deptList.size() + " departments");
 
         for (Department dep : deptList) {
+            // A bill item with a null toDepartment can make the DISTINCT query above
+            // return a null element; skip it rather than NPE on dep.getName().
+            if (dep == null) {
+                continue;
+            }
             long deptStartTime = System.currentTimeMillis();
             DepartmentBillItems table = new DepartmentBillItems();
 
@@ -1824,6 +1870,11 @@ public class InwardBeanController implements Serializable {
         }
 
         for (Department dep : deptList) {
+            // A bill item with a null toDepartment can make the DISTINCT query above
+            // return a null element; skip it rather than NPE on dep.getName().
+            if (dep == null) {
+                continue;
+            }
             long deptStartTime = System.currentTimeMillis();
             DepartmentBillItems table = new DepartmentBillItems();
 
@@ -1947,6 +1998,48 @@ public class InwardBeanController implements Serializable {
         }
 
         return countMap;
+    }
+
+    /**
+     * Bulk query returning the most recently checked inward BillItem for each
+     * item of the given patient encounter. Used by the Service Details tab to
+     * display "Checked By" / "Checked At" per aggregated item row without adding
+     * transient fields to the shared Item entity.
+     *
+     * @return map of itemId -> latest checked BillItem
+     */
+    public Map<Long, BillItem> getLatestCheckedBillItemsByItem(PatientEncounter patientEncounter) {
+        Map<Long, BillItem> map = new HashMap<>();
+        if (patientEncounter == null) {
+            return map;
+        }
+
+        HashMap hm = new HashMap();
+        String sql = "SELECT b FROM BillItem b "
+                + " WHERE b.retired=false "
+                + " and b.bill.billType=:btp "
+                + " and b.bill.patientEncounter=:pe "
+                + " and type(b.bill)=:cls "
+                + " and b.bill.checkedBy is not null "
+                + " and b.bill.checkeAt is not null "
+                + " and b.bill.cancelled=false "
+                + " order by b.bill.checkeAt desc ";
+
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", patientEncounter);
+        hm.put("cls", BilledBill.class);
+
+        List<BillItem> results = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+        if (results != null) {
+            // Ordered by checkeAt desc, so the first row seen per item is the latest.
+            for (BillItem bi : results) {
+                if (bi.getItem() != null && bi.getItem().getId() != null
+                        && !map.containsKey(bi.getItem().getId())) {
+                    map.put(bi.getItem().getId(), bi);
+                }
+            }
+        }
+        return map;
     }
 
     public Fee getStaffFeeForInward(WebUser webUser) {
@@ -2130,6 +2223,7 @@ public class InwardBeanController implements Serializable {
         } else {
             getPatientRoomFacade().edit(patientRoom);
         }
+        snapshotTimedItems(patientRoom, newRoomFacilityCharge);
 
         return patientRoom;
     }
@@ -2176,6 +2270,7 @@ public class InwardBeanController implements Serializable {
         } else {
             getPatientRoomFacade().edit(patientRoom);
         }
+        snapshotTimedItems(patientRoom, newRoomFacilityCharge);
 
         return patientRoom;
     }
@@ -2240,8 +2335,81 @@ public class InwardBeanController implements Serializable {
         } else {
             getPatientRoomFacade().edit(patientRoom);
         }
+        snapshotTimedItems(patientRoom, newRoomFacilityCharge);
 
         return patientRoom;
+    }
+
+    public void snapshotTimedItems(PatientRoom patientRoom, RoomFacilityCharge rfc) {
+        if (patientRoom == null || rfc == null) {
+            return;
+        }
+        String jpql = "SELECT r FROM RoomFacilityTimedItem r WHERE r.roomFacilityCharge = :rfc AND r.retired = false";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("rfc", rfc);
+        List<RoomFacilityTimedItem> links = roomFacilityTimedItemFacade.findByJpql(jpql, params);
+        if (links == null || links.isEmpty()) {
+            return;
+        }
+        for (RoomFacilityTimedItem link : links) {
+            if (link.getTimedItem() == null) {
+                continue;
+            }
+            HashMap<String, Object> existsParams = new HashMap<>();
+            existsParams.put("pr", patientRoom);
+            existsParams.put("ti", link.getTimedItem());
+            PatientRoomTimedItemCharge existing = patientRoomTimedItemChargeFacade.findFirstByJpql(
+                    "SELECT t FROM PatientRoomTimedItemCharge t WHERE t.patientRoom = :pr AND t.timedItem = :ti",
+                    existsParams);
+            if (existing != null) {
+                continue;
+            }
+            PatientRoomTimedItemCharge snapshot = new PatientRoomTimedItemCharge();
+            snapshot.setPatientRoom(patientRoom);
+            snapshot.setTimedItem(link.getTimedItem());
+            patientRoomTimedItemChargeFacade.create(snapshot);
+        }
+    }
+
+    public List<PatientRoomTimedItemCharge> fetchTimedItemCharges(PatientRoom patientRoom) {
+        if (patientRoom == null || patientRoom.getId() == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT t FROM PatientRoomTimedItemCharge t WHERE t.patientRoom = :pr";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("pr", patientRoom);
+        List result = patientRoomTimedItemChargeFacade.findByJpql(jpql, params);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    public Map<InwardChargeType, Double> getTimedItemChargeSumsBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        Map<InwardChargeType, Double> result = new EnumMap<>(InwardChargeType.class);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        String jpql = "SELECT t.timedItem.inwardChargeType, SUM(t.calculatedCharge - t.discountCharge)"
+                + " FROM PatientRoomTimedItemCharge t"
+                + " WHERE t.patientRoom.retired = false"
+                + " AND t.patientRoom.patientEncounter IN :pe"
+                + " GROUP BY t.timedItem.inwardChargeType";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("pe", pts);
+        List<Object> rows = patientRoomTimedItemChargeFacade.findObjectByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (rows != null) {
+            for (Object row : rows) {
+                if (row instanceof Object[]) {
+                    Object[] arr = (Object[]) row;
+                    if (arr[0] instanceof InwardChargeType && arr[1] instanceof Number) {
+                        InwardChargeType ict = (InwardChargeType) arr[0];
+                        double val = ((Number) arr[1]).doubleValue();
+                        result.merge(ict, val, Double::sum);
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     // Add business logic below. (Right-click in editor and choose
@@ -2435,30 +2603,7 @@ public class InwardBeanController implements Serializable {
     }
 
     public void setBillFeeMargin(BillFee billFee, Item item, PriceMatrix priceMatrix, PatientEncounter patientEncounter) {
-        if (billFee == null || item.isMarginNotAllowed()
-                || billFee.getFee() == null
-                || Boolean.FALSE.equals(billFee.getFee().getMarginAllowed())) {
-            // Fix C: clear stale discount and recompute net so calTotals() sees correct feeValue
-            if (billFee != null) {
-                billFee.setFeeDiscount(0.0);
-                billFee.setFeeUnitDiscount(0.0);
-                double gross = billFee.getFeeGrossValue() != null ? billFee.getFeeGrossValue() : 0.0;
-                double uQty = (billFee.getBillItem() != null && billFee.getBillItem().getQty() != null && billFee.getBillItem().getQty() > 0)
-                        ? billFee.getBillItem().getQty() : 1.0;
-                billFee.setFeeUnitValue(gross / uQty);
-                billFee.setFeeValue(gross);
-            }
-            return;
-        }
-        if (patientEncounter == null || patientEncounter.getAdmissionType() == null) {
-            // Fix C: clear stale discount and recompute net so calTotals() sees correct feeValue
-            billFee.setFeeDiscount(0.0);
-            billFee.setFeeUnitDiscount(0.0);
-            double gross = billFee.getFeeGrossValue() != null ? billFee.getFeeGrossValue() : 0.0;
-            double uQty = (billFee.getBillItem() != null && billFee.getBillItem().getQty() != null && billFee.getBillItem().getQty() > 0)
-                    ? billFee.getBillItem().getQty() : 1.0;
-            billFee.setFeeUnitValue(gross / uQty);
-            billFee.setFeeValue(gross);
+        if (billFee == null || item == null || billFee.getFee() == null) {
             return;
         }
 
@@ -2468,27 +2613,84 @@ public class InwardBeanController implements Serializable {
                 ? billFee.getFeeUnitGrossValue()
                 : (billFee.getFeeGrossValue() != null ? billFee.getFeeGrossValue() / qty : 0.0);
 
+        // Margin and discount are independent — a fee that disallows margin can still receive a discount.
+        boolean marginEligible = !item.isMarginNotAllowed()
+                && !Boolean.FALSE.equals(billFee.getFee().getMarginAllowed())
+                && billFee.getFee().getFeeType() != FeeType.Staff
+                && patientEncounter != null
+                && patientEncounter.getAdmissionType() != null
+                && patientEncounter.getAdmissionType().isAllowToCalculateMargin();
+
         double unitMargin = 0;
-        if (patientEncounter.getAdmissionType().isAllowToCalculateMargin()) {
-            if (billFee.getFee().getFeeType() != FeeType.Staff && priceMatrix != null) {
-                unitMargin = (unitGross * priceMatrix.getMargin()) / 100;
+        if (marginEligible) {
+            // Try CC-specific priceMatrix first; fall back to the caller-provided one.
+            PriceMatrix effectivePriceMatrix = priceMatrix;
+            com.divudi.core.entity.Institution cc = resolveSingleCreditCompany(patientEncounter);
+            if (cc != null && billFee.getBillItem() != null) {
+                BillItem bi = billFee.getBillItem();
+                double svcValue = bi.getRate() != 0.0 ? Math.abs(bi.getRate()) : unitGross;
+                Department dept = item.getDepartment() != null ? item.getDepartment()
+                        : (bi.getBill() != null ? bi.getBill().getDepartment() : null);
+                PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(bi, svcValue, dept,
+                        patientEncounter.getPaymentMethod(), cc, patientEncounter.getAdmissionType(), resolveCurrentRoomCategory(patientEncounter));
+                if (ccMatrix != null) {
+                    effectivePriceMatrix = ccMatrix;
+                }
+            }
+            if (effectivePriceMatrix != null) {
+                unitMargin = (unitGross * effectivePriceMatrix.getMargin()) / 100;
                 billFee.setFeeUnitMargin(unitMargin);
                 billFee.setFeeMargin(unitMargin * qty);
                 billFeeFacade.edit(billFee);
             }
         }
 
-        // Fix A: reset discount before applyInwardDiscountToBillFee so stale values
-        // don't survive if that method exits early without setting a new discount
+        // Reset discount fields before applying so stale values don't survive.
         billFee.setFeeUnitDiscount(0.0);
         billFee.setFeeDiscount(0.0);
 
-        applyInwardDiscountToBillFee(billFee, item, patientEncounter);
+        // Apply discount (has its own eligibility guards inside).
+        if (patientEncounter != null && patientEncounter.getAdmissionType() != null) {
+            applyInwardDiscountToBillFee(billFee, item, patientEncounter);
+        } else {
+            billFee.setFeeUnitValue(unitGross);
+            billFee.setFeeValue(unitGross * qty);
+            return;
+        }
 
         double unitDiscount = (billFee.getFeeUnitDiscount() != null) ? billFee.getFeeUnitDiscount() : 0.0;
         double unitNet = (unitGross + unitMargin) - unitDiscount;
         billFee.setFeeUnitValue(unitNet);
         billFee.setFeeValue(unitNet * qty);
+    }
+
+    private com.divudi.core.entity.Institution resolveSingleCreditCompany(PatientEncounter encounter) {
+        if (encounter == null) {
+            return null;
+        }
+        String jpql = "select e from EncounterCreditCompany e where e.retired = false and e.patientEncounter = :enc";
+        java.util.HashMap<String, Object> hm = new java.util.HashMap<>();
+        hm.put("enc", encounter);
+        List<com.divudi.core.entity.EncounterCreditCompany> list = encounterCreditCompanyFacade.findByJpql(jpql, hm, 2);
+        if (list != null && list.size() == 1) {
+            return list.get(0).getInstitution();
+        }
+        return null;
+    }
+
+    /**
+     * Room category of the encounter's current room, or null when the patient is
+     * not in a room (or the room has no facility charge / category). Drives the
+     * room-category dimension of the inward margin matrix (issue #21977); null
+     * means "wildcard row only", preserving legacy behaviour.
+     */
+    private com.divudi.core.entity.inward.RoomCategory resolveCurrentRoomCategory(PatientEncounter encounter) {
+        if (encounter == null
+                || encounter.getCurrentPatientRoom() == null
+                || encounter.getCurrentPatientRoom().getRoomFacilityCharge() == null) {
+            return null;
+        }
+        return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory();
     }
 
     /**
@@ -2498,6 +2700,8 @@ public class InwardBeanController implements Serializable {
      * item does not allow discount or the fee does not allow discount.
      * The discount scheme is taken from the admission/encounter itself
      * (set at admission time). BHT type is the encounter's paymentMethod.
+     * When exactly one credit company is on the encounter, a credit-company-
+     * specific matrix row is tried first before falling back to generic rows.
      * When no matrix row matches the discount is 0, so existing behaviour is
      * preserved for sites that have not configured the matrix.
      */
@@ -2517,12 +2721,14 @@ public class InwardBeanController implements Serializable {
         if (matrixDept == null && billFee.getBillItem() != null && billFee.getBillItem().getBill() != null) {
             matrixDept = billFee.getBillItem().getBill().getDepartment();
         }
+        com.divudi.core.entity.Institution creditCompany = resolveSingleCreditCompany(patientEncounter);
         double pct = priceMatrixController.getInwardDiscountPercent(
                 patientEncounter.getPaymentMethod(),
                 patientEncounter.getPaymentScheme(),
                 patientEncounter.getAdmissionType(),
                 matrixDept,
-                item);
+                item,
+                creditCompany);
         double qty = (billFee.getBillItem() != null && billFee.getBillItem().getQty() != null && billFee.getBillItem().getQty() > 0)
                 ? billFee.getBillItem().getQty() : 1.0;
         double unitGross = (billFee.getFeeUnitGrossValue() != null)
@@ -2534,14 +2740,25 @@ public class InwardBeanController implements Serializable {
     }
 
     public void updateBillItemMargin(BillItem billItem, double serviceValue, PatientEncounter patientEncounter, Department matrixDepartment, PriceMatrix priceMatrix) {
+        PriceMatrix effectivePriceMatrix = priceMatrix;
+        if (patientEncounter != null) {
+            com.divudi.core.entity.Institution creditCompany = resolveSingleCreditCompany(patientEncounter);
+            if (creditCompany != null) {
+                PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(billItem, serviceValue, matrixDepartment,
+                        patientEncounter.getPaymentMethod(), creditCompany, patientEncounter.getAdmissionType(), resolveCurrentRoomCategory(patientEncounter));
+                if (ccMatrix != null) {
+                    effectivePriceMatrix = ccMatrix;
+                }
+            }
+        }
 
         List<BillFee> billFees = getBillBean().getBillFee(billItem);
 
         for (BillFee billFee : billFees) {
             if (patientEncounter != null && patientEncounter.getAdmissionType() != null) {
-                setBillFeeMargin(billFee, billItem.getItem(), priceMatrix, patientEncounter);
+                setBillFeeMargin(billFee, billItem.getItem(), effectivePriceMatrix, patientEncounter);
             } else {
-                setBillFeeMargin(billFee, billItem.getItem(), priceMatrix);
+                setBillFeeMargin(billFee, billItem.getItem(), effectivePriceMatrix);
             }
 
             if (billFee.getId() != null) {
@@ -2552,11 +2769,22 @@ public class InwardBeanController implements Serializable {
     }
 
     public void updateBillItemMargin(BillFee billFee, double serviceValue, PatientEncounter patientEncounter, Department matrixDepartment, PriceMatrix priceMatrix) {
+        PriceMatrix effectivePriceMatrix = priceMatrix;
+        if (patientEncounter != null && billFee.getBillItem() != null) {
+            com.divudi.core.entity.Institution creditCompany = resolveSingleCreditCompany(patientEncounter);
+            if (creditCompany != null) {
+                PriceMatrix ccMatrix = priceMatrixController.fetchInwardMargin(billFee.getBillItem(), serviceValue,
+                        matrixDepartment, patientEncounter.getPaymentMethod(), creditCompany, patientEncounter.getAdmissionType(), resolveCurrentRoomCategory(patientEncounter));
+                if (ccMatrix != null) {
+                    effectivePriceMatrix = ccMatrix;
+                }
+            }
+        }
 
         if (patientEncounter != null && patientEncounter.getAdmissionType() != null) {
-            setBillFeeMargin(billFee, billFee.getBillItem().getItem(), priceMatrix, patientEncounter);
+            setBillFeeMargin(billFee, billFee.getBillItem().getItem(), effectivePriceMatrix, patientEncounter);
         } else {
-            setBillFeeMargin(billFee, billFee.getBillItem().getItem(), priceMatrix);
+            setBillFeeMargin(billFee, billFee.getBillItem().getItem(), effectivePriceMatrix);
         }
 
         if (billFee.getId() != null) {
@@ -2653,6 +2881,56 @@ public class InwardBeanController implements Serializable {
         return tmp;
     }
 
+    public List<TimedItemFee> getAllTimedItemFees(TimedItem ti) {
+        if (ti == null || ti.getId() == null) {
+            return new ArrayList<>();
+        }
+        HashMap hm = new HashMap();
+        hm.put("id", ti.getId());
+        String sql = "SELECT tif FROM TimedItemFee tif WHERE tif.retired=false AND tif.item.id=:id ORDER BY tif.sortOrder ASC";
+        List<TimedItemFee> fees = getTimedItemFeeFacade().findByJpql(sql, hm);
+        return fees != null ? fees : new ArrayList<>();
+    }
+
+    public TimedItemFee getFeeForBlock(List<TimedItemFee> fees, int blockNumber) {
+        if (fees == null || fees.isEmpty()) {
+            return null;
+        }
+        if (blockNumber <= fees.size()) {
+            return fees.get(blockNumber - 1);
+        }
+        TimedItemFee lastFee = fees.get(fees.size() - 1);
+        if (lastFee.isRepeating() || fees.size() == 1) {
+            return lastFee;
+        }
+        return null;
+    }
+
+    public double calTotalTimedChargeForItem(TimedItem ti, Date fromTime, Date toTime, boolean foreigner) {
+        List<TimedItemFee> fees = getAllTimedItemFees(ti);
+        if (fees.isEmpty()) {
+            return 0.0;
+        }
+        TimedItemFee firstFee = fees.get(0);
+        double count = calCount(firstFee, fromTime, toTime);
+        int wholeBlocks = (int) count;
+        double total = 0.0;
+        for (int b = 1; b <= wholeBlocks; b++) {
+            TimedItemFee fee = getFeeForBlock(fees, b);
+            if (fee != null) {
+                total += foreigner ? fee.getFfee() : fee.getFee();
+            }
+        }
+        double remainder = count - wholeBlocks;
+        if (remainder > 0) {
+            TimedItemFee fee = getFeeForBlock(fees, wholeBlocks + 1);
+            if (fee != null) {
+                total += (foreigner ? fee.getFfee() : fee.getFee()) * remainder;
+            }
+        }
+        return total;
+    }
+
     public TimedItemFeeFacade getTimedItemFeeFacade() {
         return timedItemFeeFacade;
     }
@@ -2727,6 +3005,9 @@ public class InwardBeanController implements Serializable {
         BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
         BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
         BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+        BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+        BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
+        BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
         BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
         BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
         BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION

@@ -103,11 +103,11 @@
                         <td><h:outputLabel value=":" /></td>
                         <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.nameWithTitle}" /></td>
                     </tr>
-                    <h:panelGroup rendered="#{cc.attrs.comment ne null and cc.attrs.comment ne ''}">
+                    <h:panelGroup rendered="#{(cc.attrs.comment ne null and cc.attrs.comment ne '') or (cc.attrs.bill.comments ne null and cc.attrs.bill.comments ne '')}">
                         <tr>
                             <td><h:outputLabel value="Comments" styleClass="label" /></td>
                             <td><h:outputLabel value=":" /></td>
-                            <td colspan="4"><h:outputLabel value="#{cc.attrs.comment}" /></td>
+                            <td colspan="4"><h:outputLabel value="#{(cc.attrs.comment ne null and cc.attrs.comment ne '') ? cc.attrs.comment : cc.attrs.bill.comments}" /></td>
                         </tr>
                     </h:panelGroup>
                 </table>
@@ -136,6 +136,8 @@
                                     </h:outputLabel>
                                 </td>
                                 <td class="item-name">
+                                    <!-- The prescription comment is already appended to descreption
+                                         when the bill item is built, so it is not repeated here. -->
                                     <h:outputLabel value="#{bip.descreption}" />
                                 </td>
                             </tr>

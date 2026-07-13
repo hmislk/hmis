@@ -64,6 +64,7 @@
                                     <h:outputLabel value="Select Payment Method" />
                                     <p:selectOneMenu class="w-100" id="cmbPs" value="#{bhtEditController.current.paymentMethod}">
                                         <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                                        <p:ajax event="change" listener="#{bhtEditController.listnerForPaymentMethodChange()}" update="cmbClaimable" />
                                     </p:selectOneMenu>
 
                                     <h:outputLabel value="Discount Scheme" />
@@ -74,7 +75,7 @@
                                     </p:selectOneMenu>
 
                                     <h:outputLabel value="Claimable/Non-Claimable" />
-                                    <p:selectBooleanCheckbox
+                                    <p:selectBooleanCheckbox id="cmbClaimable"
                                         value="#{bhtEditController.current.claimable}"
                                         itemLabel="Claimable">
                                     </p:selectBooleanCheckbox>

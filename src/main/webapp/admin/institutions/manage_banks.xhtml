@@ -33,17 +33,33 @@
                             </p:selectOneListbox>
                         </div>
                         <div class="col-md-7">
-                            <p:panel id="gpDetail" class="w-100" header="Details of the Bank">
-                                <h:panelGrid id="gpDetailText" columns="2" class="w-100">
+                            <p:panel id="gpDetail" styleClass="w-100" header="Details of the Bank">
+
+                                <!-- Form Fields -->
+                                <h:panelGrid id="gpDetailText" columns="2" styleClass="w-100 mb-3">
                                     <h:outputText value="Name"/>
-                                    <p:inputText autocomplete="off" value="#{bankController.current.name}" class="w-100 p-1"/>
+                                    <p:inputText id="txtName"
+                                                 value="#{bankController.current.name}"
+                                                 autocomplete="off"
+                                                 styleClass="w-100 p-1"
+                                                 required="true"
+                                                 requiredMessage="Bank name is required."/>
                                 </h:panelGrid>
-                                <p:commandButton id="btnSave" value="Save"
-                                                 icon="fas fa-save"
-                                                 action="#{bankController.saveSelected()}" process="btnSave gpDetail"
-                                                 update="lstSelect msg" class=" m-1 ui-button-warning w-25">
-                                </p:commandButton>
+
+                                <!-- Button Section -->
+                                <div style="display: flex; justify-content: flex-end;">
+                                    <p:commandButton id="btnSave"
+                                                     value="Save"
+                                                     icon="fas fa-save"
+                                                     action="#{bankController.saveSelected()}"
+                                                     process="gpDetail btnSave"
+                                                     update="lstSelect msg"
+                                                     styleClass="ui-button-warning"/>
+                                    
+                                </div>
+
                                 <p:defaultCommand target="btnSave"/>
+
                             </p:panel>
                         </div>
                     </div>

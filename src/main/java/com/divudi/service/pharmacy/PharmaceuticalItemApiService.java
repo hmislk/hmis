@@ -951,6 +951,16 @@ public class PharmaceuticalItemApiService implements Serializable {
         if (request.getRefundsAllowed() != null) {
             item.setRefundsAllowed(request.getRefundsAllowed());
         }
+        if (request.getStrengthOfAnIssueUnit() != null) {
+            item.setStrengthOfAnIssueUnit(request.getStrengthOfAnIssueUnit());
+        }
+        if (request.getStrengthUnitId() != null) {
+            MeasurementUnit strengthUnit = measurementUnitFacade.find(request.getStrengthUnitId());
+            if (strengthUnit == null) {
+                throw new Exception("Measurement unit not found with ID: " + request.getStrengthUnitId());
+            }
+            item.setStrengthUnit(strengthUnit);
+        }
     }
 
     private void applyAmpSpecificFieldsIfProvided(Amp item, AmpRequestDTO request) throws Exception {

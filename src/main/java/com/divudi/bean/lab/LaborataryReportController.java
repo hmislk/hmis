@@ -1,6 +1,9 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.DepartmentController;
+import com.divudi.bean.common.ItemFeeManager;
+import com.divudi.core.data.ItemLight;
 import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.RouteController;
 import com.divudi.bean.common.SessionController;
@@ -107,6 +110,10 @@ public class LaborataryReportController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
+    private ItemFeeManager itemFeeManager;
+    @Inject
+    private DepartmentController departmentController;
+    @Inject
     private BillSearch billSearch;
     @Inject
     ConfigOptionApplicationController configController;
@@ -185,6 +192,7 @@ public class LaborataryReportController implements Serializable {
     private Department department;
     private Department fromDepartment;
     private Department toDepartment;
+    private List<ItemLight> investigationPriceList;
 
     // Healthcare-specific entities
     private Patient patient;
@@ -336,6 +344,12 @@ public class LaborataryReportController implements Serializable {
         creditCompany = null;
         billLights = new ArrayList<>();
         return "/reportLab/credit_company_bill_item_list?faces-redirect=true";
+    }
+
+    public String navigateToInvestigationPriceListFromLabAnalytics() {
+        department = null;
+        investigationPriceList = null;
+        return "/reportLab/investigation_price_list?faces-redirect=true";
     }
 
     // </editor-fold>
@@ -702,7 +716,15 @@ public class LaborataryReportController implements Serializable {
             bundle.getRows().add(billIncomeRow);
             boolean checkInInvestigationBillItem = false;
             billService.reloadBill(bill);
+            BillTypeAtomic bta = bill.getBillTypeAtomic();
+            boolean isRefundBill = bta == BillTypeAtomic.OPD_BILL_REFUND
+                    || bta == BillTypeAtomic.INWARD_SERVICE_BILL_REFUND
+                    || bta == BillTypeAtomic.CC_BILL_REFUND
+                    || bta == BillTypeAtomic.PACKAGE_OPD_BILL_REFUND;
             for (BillItem billItem : bill.getBillItems()) {
+                if (billItem.isRefunded() || isRefundBill) {
+                    continue;
+                }
                 if (billItem.getItem() instanceof Investigation) {
                     IncomeRow billItemIncomeRow = new IncomeRow(billItem);
                     bundle.getRows().add(billItemIncomeRow);
@@ -3017,6 +3039,147 @@ public class LaborataryReportController implements Serializable {
 
     public void setCancelledLabBillsProcessedBy(String cancelledLabBillsProcessedBy) {
         this.cancelledLabBillsProcessedBy = cancelledLabBillsProcessedBy;
+    }
+
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Investigation Price List">
+
+    public void generateInvestigationPriceList() {
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department.");
+            return;
+        }
+        investigationPriceList = itemFeeManager.fillItemLightsForDepartment(department);
+    }
+
+    public void downloadInvestigationPriceListExcel() {
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department.");
+            return;
+        }
+        List<ItemLight> exportList = itemFeeManager.fillItemLightsForDepartment(department);
+        if (exportList == null || exportList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export for the selected department.");
+            return;
+        }
+
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Investigation Price List");
+
+            org.apache.poi.ss.usermodel.Font boldFont = workbook.createFont();
+            boldFont.setBold(true);
+
+            org.apache.poi.ss.usermodel.Font titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 14);
+
+            CellStyle titleStyle = workbook.createCellStyle();
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle subtitleStyle = workbook.createCellStyle();
+            subtitleStyle.setFont(boldFont);
+            subtitleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            CellStyle headerStyle = workbook.createCellStyle();
+            headerStyle.setFont(boldFont);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle dataStyle = workbook.createCellStyle();
+            dataStyle.setBorderBottom(BorderStyle.THIN);
+            dataStyle.setBorderTop(BorderStyle.THIN);
+            dataStyle.setBorderLeft(BorderStyle.THIN);
+            dataStyle.setBorderRight(BorderStyle.THIN);
+
+            DataFormat format = workbook.createDataFormat();
+            CellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.cloneStyleFrom(dataStyle);
+            numberStyle.setDataFormat(format.getFormat("#,##0.00"));
+
+            int colCount = 4;
+            int rowIndex = 0;
+
+            Row instRow = sheet.createRow(rowIndex++);
+            Cell instCell = instRow.createCell(0);
+            instCell.setCellValue(sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "");
+            instCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, colCount - 1));
+
+            Row titleRow = sheet.createRow(rowIndex++);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Investigation & Service Price List");
+            titleCell.setCellStyle(subtitleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, colCount - 1));
+
+            Row deptRow = sheet.createRow(rowIndex++);
+            Cell deptCell = deptRow.createCell(0);
+            deptCell.setCellValue("Department: " + (department != null ? department.getName() : "All"));
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, colCount - 1));
+
+            rowIndex++;
+
+            Row headerRow = sheet.createRow(rowIndex++);
+            String[] headers = {"#", "Name", "Code", "Price"};
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            int serial = 1;
+            for (ItemLight il : exportList) {
+                Row row = sheet.createRow(rowIndex++);
+                Cell c0 = row.createCell(0);
+                c0.setCellValue(serial++);
+                c0.setCellStyle(dataStyle);
+
+                Cell c1 = row.createCell(1);
+                c1.setCellValue(il.getName() != null ? il.getName() : "");
+                c1.setCellStyle(dataStyle);
+
+                Cell c2 = row.createCell(2);
+                c2.setCellValue(il.getCode() != null ? il.getCode() : "");
+                c2.setCellStyle(dataStyle);
+
+                Cell c3 = row.createCell(3);
+                c3.setCellValue(il.getTotal() != null ? il.getTotal() : 0.0);
+                c3.setCellStyle(numberStyle);
+            }
+
+            for (int i = 0; i < colCount; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            String filename = "investigation_price_list_"
+                    + (department != null ? department.getName().replaceAll("\\s+", "_") : "all")
+                    + ".xlsx";
+
+            response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+
+            try (OutputStream out = response.getOutputStream()) {
+                workbook.write(out);
+            }
+            facesContext.responseComplete();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to export: " + e.getMessage());
+        }
+    }
+
+    public List<ItemLight> getInvestigationPriceList() {
+        return investigationPriceList;
+    }
+
+    public void setInvestigationPriceList(List<ItemLight> investigationPriceList) {
+        this.investigationPriceList = investigationPriceList;
     }
 
     // </editor-fold>

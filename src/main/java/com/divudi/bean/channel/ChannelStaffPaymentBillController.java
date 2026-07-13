@@ -14,6 +14,8 @@ import com.divudi.core.data.FeeType;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.PersonInstitutionType;
+import com.divudi.core.data.ProfessionalPaymentVoucherGroup;
+import com.divudi.service.ProfessionalPaymentService;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.core.entity.Sms;
@@ -77,6 +79,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
     private ServiceSessionFacade serviceSessionFacade;
     @EJB
     private PaymentFacade paymentFacade;
+    @EJB
+    private ProfessionalPaymentService professionalPaymentService;
     /////////////////
 
     @EJB
@@ -111,6 +115,8 @@ public class ChannelStaffPaymentBillController implements Serializable {
     private Date toDate;
     private Date date;
     private Bill current;
+    private List<ProfessionalPaymentVoucherGroup> individualVoucherGroups;
+    private Bill individualVoucherGroupsBill;
     Staff currentStaff;
     Institution institution;
     double totalDue;
@@ -1383,6 +1389,15 @@ public class ChannelStaffPaymentBillController implements Serializable {
             current = new BilledBill();
         }
         return current;
+    }
+
+    public List<ProfessionalPaymentVoucherGroup> getIndividualVoucherGroups() {
+        if (individualVoucherGroups == null || individualVoucherGroupsBill != current) {
+            individualVoucherGroups = professionalPaymentService
+                    .groupPaymentBillItemsByPatientOrBht(current);
+            individualVoucherGroupsBill = current;
+        }
+        return individualVoucherGroups;
     }
 
     public void setCurrent(Bill current) {

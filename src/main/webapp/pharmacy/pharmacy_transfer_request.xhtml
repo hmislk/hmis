@@ -118,17 +118,19 @@
                                         value="Save"
                                         action="#{transferRequestController.saveTranserRequestPreBill()}"
                                         ajax="false"
-                                        icon="pi pi-save"
-                                        class="mx-1 ui-button-success"
+                                        icon="fas fa-floppy-disk"
+                                        styleClass="mx-1 ui-button-stage-save"
+                                        disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementRequest')}"
                                         />
                                     <p:commandButton
                                         id="btnFinalize"
                                         value="Finalize"
                                         action="#{transferRequestController.finalizeTranserRequestPreBill()}"
                                         ajax="false"
-                                        icon="pi pi-check"
-                                        class="mx-1 ui-button-success"
+                                        icon="fas fa-lock"
+                                        styleClass="mx-1 ui-button-stage-finalize"
                                         onclick="return confirm('Are you sure you want to finalize this transfer request? This action cannot be undone.');"
+                                        disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}"
                                         />
                                 </div>
                             </div>
@@ -153,6 +155,8 @@
                                             class="w-100"
                                             inputStyleClass="w-100"
                                             minQueryLength="3" queryDelay="300"
+                                            maxResults="10"
+                                            onkeydown="if (event.keyCode === 13) { var pnl = document.getElementById(this.id.replace(/_input$/, '_panel')); var panelOpen = pnl &amp;&amp; pnl.style.display !== 'none'; event.preventDefault(); if (!panelOpen) { return false; } }"
                                             completeMethod="#{transferRequestController.completeAmpAmppVmpVmppItemsForRequestingDepartment}"
                                             var="vt"
                                             itemLabel="#{vt.name}"
@@ -182,7 +186,9 @@
                                         <p:outputLabel value="Quantity" for="txtQty"/>
                                         <p:inputText id="txtQty" autocomplete="off" class="w-100"
                                                      value="#{transferRequestController.currentBillItem.qty}"
-                                                     onfocus="this.select();">
+                                                     onfocus="this.select();"
+                                                     onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                                     onkeyup="if (event.keyCode === 13) { event.preventDefault(); var addBtnId = '#{p:resolveFirstComponentWithId('btnAddItem',view).clientId}'; setTimeout(function () { document.getElementById(addBtnId).click(); }, 350); }">
                                             <p:ajax event="keyup" listener="#{transferRequestController.onCurrentQtyChange}" update="panelValueInput requestTotals" />
                                         </p:inputText>
                                     </div>
@@ -209,6 +215,7 @@
                                     <div class="col-1">
                                         <p:outputLabel value="&nbsp;"/>
                                         <p:commandButton
+                                            id="btnAddItem"
                                             value="Add Item"
                                             icon="fas fa-plus"
                                             class="ui-button-success w-100"

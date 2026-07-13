@@ -10,6 +10,7 @@ import com.divudi.core.entity.ApiKey;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.clinical.ClinicalEntity;
 import com.divudi.core.entity.clinical.PrescriptionTemplate;
 import com.divudi.core.entity.pharmacy.MeasurementUnit;
 import com.divudi.service.clinical.FavouriteMedicineApiService;
@@ -504,6 +505,56 @@ public class FavouriteMedicineApi {
     }
 
     /**
+     * Search diagnoses (ClinicalEntity with SymanticType.Disease_or_Syndrome)
+     * GET /api/clinical/favourite_medicines/entities/diagnoses?query=respiratory&limit=20
+     *
+     * Use this to resolve the "forItemName" value when creating a
+     * FavouriteDiagnosis entry (POST /api/clinical/favourite_medicines with type=FavouriteDiagnosis)
+     */
+    @GET
+    @Path("/entities/diagnoses")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchDiagnoses() {
+        try {
+            WebUser user = validateApiKey();
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+
+            // Get query parameters
+            String query = uriInfo.getQueryParameters().getFirst("query");
+            String limitStr = uriInfo.getQueryParameters().getFirst("limit");
+
+            if (query == null || query.trim().isEmpty()) {
+                return errorResponse("Query parameter is required", 400);
+            }
+
+            Integer limit = null;
+            if (limitStr != null && !limitStr.trim().isEmpty()) {
+                try {
+                    limit = Integer.parseInt(limitStr.trim());
+                } catch (NumberFormatException e) {
+                    return errorResponse("Invalid limit format", 400);
+                }
+            }
+
+            // Search diagnoses
+            List<ClinicalEntity> diagnoses = favouriteMedicineService.searchDiagnoses(query.trim(), limit);
+
+            // Convert to DTOs
+            List<Map<String, Object>> responseData = new ArrayList<>();
+            for (ClinicalEntity diagnosis : diagnoses) {
+                responseData.add(convertItemToMap(diagnosis));
+            }
+
+            return successResponse(responseData);
+
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
+    }
+
+    /**
      * Search measurement units
      * GET /api/clinical/favourite_medicines/entities/units?query=ml&unitType=DoseUnit&limit=20
      */
@@ -812,6 +863,7 @@ public class FavouriteMedicineApi {
         }
 
         map.put("id", template.getId());
+        map.put("type", template.getType() != null ? template.getType().toString() : null);
 
         // Item information
         if (template.getItem() != null) {
@@ -824,6 +876,10 @@ public class FavouriteMedicineApi {
         // Age range (convert days back to years)
         map.put("fromYears", favouriteMedicineService.convertDaysToYears(template.getFromDays()));
         map.put("toYears", favouriteMedicineService.convertDaysToYears(template.getToDays()));
+
+        // Weight range
+        map.put("fromKg", template.getFromKg());
+        map.put("toKg", template.getToKg());
 
         // Category
         if (template.getCategory() != null) {
@@ -863,9 +919,10 @@ public class FavouriteMedicineApi {
         map.put("indoor", template.isIndoor());
         map.put("sex", template.getSex() != null ? template.getSex().toString() : null);
 
-        // For item
+        // For item (the medicine itself for FavouriteMedicine; the diagnosis for FavouriteDiagnosis)
         if (template.getForItem() != null) {
             map.put("forItem", template.getForItem().getName());
+            map.put("forItemId", template.getForItem().getId());
         }
 
         // Audit information
@@ -946,6 +1003,12 @@ public class FavouriteMedicineApi {
         String forItemName = uriInfo.getQueryParameters().getFirst("forItemName");
         if (forItemName != null && !forItemName.trim().isEmpty()) {
             searchCriteria.put("forItemName", forItemName.trim());
+        }
+
+        // Template type: FavouriteMedicine (default) or FavouriteDiagnosis
+        String type = uriInfo.getQueryParameters().getFirst("type");
+        if (type != null && !type.trim().isEmpty()) {
+            searchCriteria.put("type", type.trim());
         }
 
         // Pagination and ordering
