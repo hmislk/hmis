@@ -268,6 +268,55 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Title is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's title (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Name is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's name (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian NIC is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's NIC/Passport (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Address is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's address (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Mobile Number is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's mobile number (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Home Phone Number is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's home phone number (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Relationship is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's relationship to the patient (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
                 "Patient Admit - Enable Referred From in Patient Admission",
                 "Show the Referred From field during admission (default false)",
                 "inward/inward_admission",
@@ -1664,10 +1713,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         Person person = getPatient().getPerson();
         // DON'T set to null - keep reference throughout
-        
-        if(patientForiegner){
-            getPatient().getPerson().setForeigner(true);
-        }
+
+        // Persist the "Mark as Foreigner" checkbox state onto the patient. This
+        // marks a new (or existing) patient as a foreigner when checked, and
+        // clears the flag when unchecked, keeping the record in sync with the UI.
+        getPatient().getPerson().setForeigner(patientForiegner);
 
         // Save Person first (no flush yet)
         if (person != null) {
@@ -2035,7 +2085,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     return true;
                 }
             }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian Home Phone Number is Required in Patient Admission", true)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Home Phone Number is Required in Patient Admission", false)) {
                 if (getCurrent().getGuardian().getPhone() == null || getCurrent().getGuardian().getPhone().isEmpty()) {
                     JsfUtil.addErrorMessage("Guardian Home Phone Number is Required");
                     return true;
@@ -2787,6 +2837,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (current != null) {
             current.setPatient(patient);
             patientAllergies = clinicalFindingValueController.findClinicalFindingValues(patient, ClinicalFindingValueType.PatientAllergy);
+        }
+        // When a patient is searched/selected, reflect their foreigner status on the
+        // "Mark as Foreigner" checkbox so it is ticked automatically for foreigners.
+        if (patient != null && patient.getPerson() != null) {
+            patientForiegner = patient.getPerson().isForeigner();
+        } else {
+            patientForiegner = false;
         }
         selectPaymentSchemeAsPerPatientMembership();
     }

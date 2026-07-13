@@ -973,6 +973,47 @@ public class ItemFeeManager implements Serializable {
         return fs;
     }
 
+    /**
+     * Sums the configured item-fee value per item for a batch of items, used to
+     * display the correct billing price in inward item lists. When
+     * {@code forInstitution} is not null, only site fees (fees scoped to that
+     * institution) are summed; when it is null, only base fees
+     * (fees with {@code forInstitution IS NULL}) are summed. The {@code foreigner}
+     * flag selects the foreigner fee column instead of the local fee.
+     *
+     * @return map of item id to summed fee value (items with no matching fee are absent)
+     */
+    public Map<Long, Double> fetchInwardFeeTotalsByItemIds(List<Long> itemIds, Institution forInstitution, boolean foreigner) {
+        Map<Long, Double> result = new HashMap<>();
+        if (itemIds == null || itemIds.isEmpty()) {
+            return result;
+        }
+        String feeColumn = foreigner ? "f.ffee" : "f.fee";
+        String jpql = "SELECT new com.divudi.core.data.ItemLight("
+                + "f.item.id, f.item.name, f.item.code, sum(" + feeColumn + ")) "
+                + "FROM ItemFee f "
+                + "WHERE f.retired=:ret "
+                + "AND f.item.id IN :ids "
+                + "AND f.forCategory IS NULL ";
+        Map<String, Object> m = new HashMap<>();
+        m.put("ret", false);
+        m.put("ids", itemIds);
+        if (forInstitution != null) {
+            jpql += "AND f.forInstitution=:ins ";
+            m.put("ins", forInstitution);
+        } else {
+            jpql += "AND f.forInstitution IS NULL ";
+        }
+        jpql += "GROUP BY f.item";
+        List<ItemLight> rows = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, m);
+        if (rows != null) {
+            for (ItemLight il : rows) {
+                result.put(il.getId(), il.getTotal() != null ? il.getTotal() : 0.0);
+            }
+        }
+        return result;
+    }
+
     public List<ItemLight> fillItemLightsForDepartment(Department dept) {
         if (dept == null) {
             return new ArrayList<>();

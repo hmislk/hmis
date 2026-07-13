@@ -1308,9 +1308,11 @@ public class BillService {
                 + " b.discount, "
                 + " b.margin, "
                 + " b.serviceCharge, "
-                + " coalesce(bfd.totalCostValue, 0.0), "
-                + " coalesce(bfd.totalPurchaseValue, 0.0), "
-                + " coalesce(bfd.totalRetailSaleValue, 0.0), "
+                // NOTE: select the BigDecimal columns directly (no coalesce) — see
+                // fetchBillLightsWithFinanceDetailsCompleted for why coalesce(bfd.x, 0.0) breaks binding.
+                + " bfd.totalCostValue, "
+                + " bfd.totalPurchaseValue, "
+                + " bfd.totalRetailSaleValue, "
                 + " b.paymentMethod, "
                 + " b.patientEncounter "
                 + ") "
@@ -1392,9 +1394,14 @@ public class BillService {
                 + " b.discount, "
                 + " b.margin, "
                 + " b.serviceCharge, "
-                + " coalesce(bfd.totalCostValue, 0.0), "
-                + " coalesce(bfd.totalPurchaseValue, 0.0), "
-                + " coalesce(bfd.totalRetailSaleValue, 0.0), "
+                // NOTE: select the BigDecimal columns directly (no coalesce). coalesce(bfd.totalCostValue, 0.0)
+                // promotes the result to Double because of the 0.0 literal, which then fails to bind to the
+                // BillLight constructor's BigDecimal parameters with "argument type mismatch". findByJpql
+                // swallows that exception and returns an empty list, so F15 adjustment rows silently showed 0.00
+                // (issues #18774 / #17598 / #18767). The constructor and PharmacyBundle already null-guard these.
+                + " bfd.totalCostValue, "
+                + " bfd.totalPurchaseValue, "
+                + " bfd.totalRetailSaleValue, "
                 + " b.paymentMethod, "
                 + " b.patientEncounter, "
                 + " bfd.grossTotal, "
@@ -1472,9 +1479,14 @@ public class BillService {
                 + " b.discount, "
                 + " b.margin, "
                 + " b.serviceCharge, "
-                + " coalesce(bfd.totalCostValue, 0.0), "
-                + " coalesce(bfd.totalPurchaseValue, 0.0), "
-                + " coalesce(bfd.totalRetailSaleValue, 0.0), "
+                // NOTE: select the BigDecimal columns directly (no coalesce). coalesce(bfd.totalCostValue, 0.0)
+                // promotes the result to Double because of the 0.0 literal, which then fails to bind to the
+                // BillLight constructor's BigDecimal parameters with "argument type mismatch". findLightsByJpqlWithoutCache
+                // swallows that exception and returns an empty list, so F15 purchase rows silently showed 0.00.
+                // The constructor and PharmacyBundle already null-guard these.
+                + " bfd.totalCostValue, "
+                + " bfd.totalPurchaseValue, "
+                + " bfd.totalRetailSaleValue, "
                 + " b.paymentMethod, "
                 + " b.patientEncounter "
                 + ") "
@@ -1548,9 +1560,11 @@ public class BillService {
                 + " b.discount, "
                 + " b.margin, "
                 + " b.serviceCharge, "
-                + " coalesce(bfd.totalCostValue, 0.0), "
-                + " coalesce(bfd.totalPurchaseValue, 0.0), "
-                + " coalesce(bfd.totalRetailSaleValue, 0.0), "
+                // NOTE: select the BigDecimal columns directly (no coalesce) — see
+                // fetchBillLightsWithFinanceDetailsCompleted for why coalesce(bfd.x, 0.0) breaks binding.
+                + " bfd.totalCostValue, "
+                + " bfd.totalPurchaseValue, "
+                + " bfd.totalRetailSaleValue, "
                 + " b.paymentMethod, "
                 + " pe.admissionType, "
                 + " ps.name "
@@ -1708,7 +1722,9 @@ public class BillService {
         String jpql = "select new com.divudi.core.data.dto.PharmacyIncomeCostBillDTO("
                 + " b.id, b.deptId, b.billTypeAtomic, "
                 + " coalesce(pers.name,'N/A'), coalesce(pe.bhtNo,''), b.createdAt, "
-                + " coalesce(bfd.totalRetailSaleValue,0), coalesce(bfd.totalPurchaseValue,0)) "
+                // NOTE: select the BigDecimal columns directly (no coalesce) — see
+                // fetchBillLightsWithFinanceDetailsCompleted for why coalesce(bfd.x, 0) breaks binding.
+                + " bfd.totalRetailSaleValue, bfd.totalPurchaseValue) "
                 + " from Bill b "
                 + " left join b.billFinanceDetails bfd "
                 + " left join b.patient pat "
@@ -1775,7 +1791,9 @@ public class BillService {
         jpql = "select new com.divudi.core.data.dto.PharmacyIncomeBillDTO("
                 + " b.id, b.deptId, coalesce(pers.name,'N/A'), b.billTypeAtomic, b.createdAt, coalesce(b.netTotal, 0.0), b.paymentMethod, coalesce(b.total, 0.0), "
                 + " b.patientEncounter, coalesce(b.discount, 0.0), coalesce(b.margin, 0.0), coalesce(b.serviceCharge, 0.0), b.paymentScheme, "
-                + " coalesce(bfd.totalRetailSaleValue, 0.0), coalesce(bfd.totalPurchaseValue, 0.0), coalesce(bfd.totalCostValue, 0.0) ) "
+                // NOTE: select the BigDecimal columns directly (no coalesce) — see
+                // fetchBillLightsWithFinanceDetailsCompleted for why coalesce(bfd.x, 0.0) breaks binding.
+                + " bfd.totalRetailSaleValue, bfd.totalPurchaseValue, bfd.totalCostValue ) "
                 + " from Bill b "
                 + " left join b.billFinanceDetails bfd "
                 + " left join b.patient pat "
@@ -1877,7 +1895,9 @@ public class BillService {
         jpql = "select new com.divudi.core.data.dto.PharmacyIncomeBillDTO("
                 + " b.id, b.deptId, coalesce(pers.name,'N/A'), b.billTypeAtomic, b.createdAt, coalesce(b.netTotal, 0.0), b.paymentMethod, coalesce(b.total, 0.0), "
                 + " b.patientEncounter, coalesce(b.discount, 0.0), coalesce(b.margin, 0.0), coalesce(b.serviceCharge, 0.0), b.paymentScheme, "
-                + " coalesce(bfd.totalRetailSaleValue, 0.0), coalesce(bfd.totalPurchaseValue, 0.0), coalesce(bfd.totalCostValue, 0.0) ) "
+                // NOTE: select the BigDecimal columns directly (no coalesce) — see
+                // fetchBillLightsWithFinanceDetailsCompleted for why coalesce(bfd.x, 0.0) breaks binding.
+                + " bfd.totalRetailSaleValue, bfd.totalPurchaseValue, bfd.totalCostValue ) "
                 + " from Bill b "
                 + " left join b.billFinanceDetails bfd "
                 + " left join b.patient pat "
@@ -3223,6 +3243,158 @@ public class BillService {
         List<Object[]> staffRows = billItemFacade.findObjectArrayByJpql(staffJpql, staffParams, TemporalType.TIMESTAMP);
 
         // Step 3: Build itemId → first staff name found, then set on each DTO
+        Map<Long, String> staffByItem = new HashMap<>();
+        for (Object[] row : staffRows) {
+            Long rowItemId = (Long) row[0];
+            String staffName = row[1] != null ? (String) row[1] : "";
+            staffByItem.putIfAbsent(rowItemId, staffName);
+        }
+        for (OpdSaleSummaryDTO dto : dtos) {
+            dto.setStaffName(staffByItem.getOrDefault(dto.getItemId(), ""));
+        }
+
+        return dtos;
+    }
+
+    /**
+     * Itemized Service Summary (combined OPD + Inward) — issue #21920.
+     *
+     * Unlike {@link #fetchOpdSaleSummaryDTOs}, this returns ONE ROW PER BillItem
+     * (no group-by aggregation), so re-billing the same service, cancellations and
+     * refunds are preserved as separate rows instead of being overwritten. Each row
+     * carries its bill's date (billed date) and the patient (BHT + name) when the bill
+     * is an inpatient (Inward) bill. Cancellation/refund bill items are negated so
+     * they show as negative rows and net out correctly in the totals.
+     *
+     * The staff (Doctor/Technician) name is populated best-effort per item (staff is
+     * assigned per item, not per billing instance) reusing the same second query as
+     * {@link #fetchOpdSaleSummaryDTOs}, to keep the existing Doctor column non-empty.
+     */
+    public List<OpdSaleSummaryDTO> fetchItemizedServiceInstanceDTOs(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            Category category,
+            Item item,
+            List<BillTypeAtomic> billTypeAtomics) {
+
+        // Step 1: One row per BillItem — no group by, so nothing is aggregated/overwritten.
+        String jpql = "select new com.divudi.core.data.dto.OpdSaleSummaryDTO("
+                + " cat.id," // Category ID for navigation
+                + " coalesce(cat.name, 'No Category')," // Category name for display
+                + " itm.id," // Item ID for navigation
+                + " coalesce(itm.name, 'No Item')," // Item name for display
+                + " bi.id," // BillItem ID — stable per-row key
+                + " b.createdAt," // Billed date
+                + " pe.bhtNo," // BHT (null for OPD bills — LEFT JOIN so OPD rows are kept)
+                + " per.name," // Patient name (null for anonymous/OPD bills — LEFT JOIN)
+                + " case when b.billClassType in (:cancel, :refund) then -1L else 1L end," // Count (no stored sign)
+                // Fee/value columns are ALREADY stored negative on cancellation/refund bill
+                // items, so they are used as-is. Negating them here would double-negate and
+                // make cancellations show as positive (the fee-doubling bug of issue #21918).
+                + " bi.hospitalFee,"
+                + " bi.staffFee,"
+                + " bi.grossValue,"
+                + " bi.discount,"
+                + " bi.netValue,"
+                + " bi.marginValue" // Service charge (issue #22050) — inverted on cancellation items like the other values
+                + ") "
+                // All LEFT JOINs: item/category and patientEncounter/patient may be null on
+                // some rows. A path expression (e.g. bi.item.category.id or b.patientEncounter.bhtNo)
+                // would generate an implicit INNER JOIN that silently drops those BillItem rows
+                // before coalesce() runs — the opposite of this report's "keep every billing" intent.
+                + " from BillItem bi join bi.bill b "
+                + " left join bi.item itm "
+                + " left join itm.category cat "
+                + " left join b.patientEncounter pe "
+                + " left join b.patient pat "
+                + " left join pat.person per "
+                + " where b.retired=:ret "
+                + " and (bi.retired is null or bi.retired=false) " // exclude voided bill items
+                + " and b.billTypeAtomic in :bts "
+                + " and b.createdAt between :fd and :td ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bts", billTypeAtomics);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("cancel", BillClassType.CancelledBill);
+        params.put("refund", BillClassType.RefundBill);
+
+        if (institution != null) {
+            jpql += " and b.department.institution=:ins";
+            params.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += " and b.department=:dep";
+            params.put("dep", department);
+        }
+        if (site != null) {
+            jpql += " and b.department.site=:site";
+            params.put("site", site);
+        }
+        if (category != null) {
+            jpql += " and cat=:cat";
+            params.put("cat", category);
+        }
+        if (item != null) {
+            jpql += " and itm=:itm";
+            params.put("itm", item);
+        }
+
+        // Chronological billing history
+        jpql += " order by b.createdAt, bi.id";
+
+        List<OpdSaleSummaryDTO> dtos = (List<OpdSaleSummaryDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        // Step 2: Per-item staff (doctor/technician) name — same approach as
+        // fetchOpdSaleSummaryDTOs. Staff is assigned per item, so this is a best-effort
+        // fill to keep the existing Doctor column populated. Explicit join on the item and
+        // a bi2.retired guard, mirroring the main query above.
+        String staffJpql = "select itm2.id, stf.person.name"
+                + " from BillFee bf"
+                + " join bf.billItem bi2"
+                + " join bi2.bill b2"
+                + " join bi2.item itm2"
+                + " join bf.staff stf"
+                + " where b2.retired = false"
+                + " and (bi2.retired is null or bi2.retired=false)"
+                + " and b2.billTypeAtomic in :bts"
+                + " and b2.createdAt between :fd and :td"
+                + " and bf.retired = false";
+
+        Map<String, Object> staffParams = new HashMap<>();
+        staffParams.put("bts", billTypeAtomics);
+        staffParams.put("fd", fromDate);
+        staffParams.put("td", toDate);
+
+        if (institution != null) {
+            staffJpql += " and b2.department.institution=:ins";
+            staffParams.put("ins", institution);
+        }
+        if (department != null) {
+            staffJpql += " and b2.department=:dep";
+            staffParams.put("dep", department);
+        }
+        if (site != null) {
+            staffJpql += " and b2.department.site=:site";
+            staffParams.put("site", site);
+        }
+        if (category != null) {
+            staffJpql += " and itm2.category=:cat";
+            staffParams.put("cat", category);
+        }
+        if (item != null) {
+            staffJpql += " and itm2=:itm";
+            staffParams.put("itm", item);
+        }
+
+        staffJpql += " group by itm2.id, stf.id, stf.person.name";
+
+        List<Object[]> staffRows = billItemFacade.findObjectArrayByJpql(staffJpql, staffParams, TemporalType.TIMESTAMP);
+
         Map<Long, String> staffByItem = new HashMap<>();
         for (Object[] row : staffRows) {
             Long rowItemId = (Long) row[0];

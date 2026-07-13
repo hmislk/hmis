@@ -1,46 +1,46 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/resources/template/template.xhtml"
-                xmlns:h="http://xmlns.jcp.org/jsf/html"
-                xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://xmlns.jcp.org/jsf/core">
-    <ui:define name="content">
-        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}">You are NOT authorized</h:panelGroup>
-        <p:panel
-            id="gpDisposalIssueFinalize"
-            rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}">
-            <f:facet name="header">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-tasks text-warning me-2"></i>
-                    <h:outputText value="Disposal Issues — List to Finalize" styleClass="mb-0 text-warning"/>
-                </div>
-            </f:facet>
-            <h:form onkeypress="if (event.key === 'Enter' || event.keyCode === 13) { return false; }">
-                <div class="row g-3">
-                    <div class="col-lg-3 col-md-4">
-                        <p:panel header="Search Filters" styleClass="h-100 shadow-sm">
-                            <div class="mb-3">
-                                <h:panelGroup styleClass="form-label fw-bold text-secondary d-block">
-                                    <i class="fas fa-calendar-alt me-1"></i>
-                                    <h:outputText value="From Date"/>
-                                </h:panelGroup>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+<h:head>
+    <title>Disposal Issues — List to Finalize</title>
+</h:head>
+<h:body>
+    <ui:composition template="/resources/template/template.xhtml">
+        <ui:define name="content">
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}">
+                <h:outputText value="You are NOT authorized"/>
+            </h:panelGroup>
+            <p:panel
+                id="gpDisposalIssueFinalize"
+                rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}">
+                <f:facet name="header">
+                    <div class="d-flex align-items-center">
+                        <h:outputText styleClass="fas fa-tasks text-warning me-2"/>
+                        <h:outputText value="Disposal Issues — List to Finalize" styleClass="mb-0 text-warning"/>
+                    </div>
+                </f:facet>
+                <h:form>
+                    <div class="row g-3">
+                        <div class="col-lg-2 col-md-3 d-flex flex-column gap-2">
+                            <div>
+                                <p:outputLabel for="fromDate" value="From Date"/>
                                 <p:calendar
                                     id="fromDate"
-                                    class="w-100"
+                                    styleClass="w-100"
                                     inputStyleClass="form-control"
                                     value="#{searchController.fromDate}"
                                     navigator="false"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </div>
-                            <div class="mb-3">
-                                <h:panelGroup styleClass="form-label fw-bold text-secondary d-block">
-                                    <i class="fas fa-calendar-alt me-1"></i>
-                                    <h:outputText value="To Date"/>
-                                </h:panelGroup>
+                            <div>
+                                <p:outputLabel for="toDate" value="To Date"/>
                                 <p:calendar
                                     id="toDate"
-                                    class="w-100"
+                                    styleClass="w-100"
                                     inputStyleClass="form-control"
                                     value="#{searchController.toDate}"
                                     navigator="false"
@@ -48,72 +48,71 @@
                             </div>
                             <p:commandButton
                                 id="btnSearch"
-                                class="ui-button-warning w-100"
+                                styleClass="ui-button-warning w-100"
                                 icon="fas fa-search"
                                 ajax="false"
                                 value="Search"
-                                action="#{searchController.createDisposalIssueTableToFinalize}"
-                                style="min-height: 45px;"/>
-                        </p:panel>
+                                action="#{searchController.createDisposalIssueTableToFinalize}"/>
+                        </div>
+                        <div class="col-lg-10 col-md-9">
+                            <p:dataTable
+                                id="tblDisposalIssueFinalize"
+                                value="#{searchController.bills}"
+                                var="g"
+                                paginator="true"
+                                rows="15"
+                                paginatorPosition="both"
+                                paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="10,15,25,50"
+                                emptyMessage="No saved disposal issues found matching your criteria"
+                                sortMode="multiple"
+                                resizableColumns="true"
+                                reflow="true"
+                                styleClass="p-datatable-sm">
+                                <p:column headerText="Created" width="7em" sortBy="#{g.createdAt}" styleClass="text-center">
+                                    <h:outputText value="#{g.createdAt}" styleClass="text-muted small">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="From Dept" width="8em" sortBy="#{g.fromDepartment.name}">
+                                    <h:outputText value="#{g.fromDepartment.name}" title="#{g.fromDepartment.name}" styleClass="text-truncate d-block"/>
+                                </p:column>
+                                <p:column headerText="To Dept" width="8em" sortBy="#{g.toDepartment.name}">
+                                    <h:outputText value="#{g.toDepartment.name}" title="#{g.toDepartment.name}" styleClass="text-truncate d-block"/>
+                                </p:column>
+                                <p:column headerText="Req. No." width="6em">
+                                    <h:outputText value="#{g.invoiceNumber}" styleClass="text-truncate d-block small"/>
+                                </p:column>
+                                <p:column headerText="Created By" width="8em" sortBy="#{g.creater.webUserPerson.name}">
+                                    <h:outputText value="#{g.creater.webUserPerson.name}" styleClass="text-truncate d-block small"/>
+                                </p:column>
+                                <p:column headerText="Action" styleClass="text-center" exportable="false" width="10em">
+                                    <p:commandButton
+                                        id="btnFinalize"
+                                        styleClass="ui-button-stage-finalize"
+                                        icon="fas fa-lock"
+                                        value="View / Finalize"
+                                        title="View and Finalize Disposal Issue #{g.id}"
+                                        ajax="false"
+                                        onclick="return confirm('Open disposal issue ##{g.id} for finalization?');"
+                                        action="#{pharmacyIssueController.loadDraftForEdit(g.id)}"/>
+                                    <p:commandButton
+                                        id="btnCancel"
+                                        styleClass="ui-button-danger ui-button-outlined ms-1"
+                                        icon="fas fa-times"
+                                        value="Cancel"
+                                        title="Cancel this saved disposal issue"
+                                        ajax="false"
+                                        onclick="return confirm('Cancel this disposal issue draft? This cannot be undone.');"
+                                        action="#{pharmacyIssueController.cancelPendingDisposalIssue(g.id)}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
                     </div>
-                    <div class="col-lg-9 col-md-8">
-                        <p:dataTable
-                            id="tblDisposalIssueFinalize"
-                            value="#{searchController.bills}"
-                            var="g"
-                            paginator="true"
-                            rows="15"
-                            paginatorPosition="both"
-                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="10,15,25,50"
-                            emptyMessage="No saved disposal issues found matching your criteria"
-                            sortMode="multiple"
-                            resizableColumns="true"
-                            reflow="true"
-                            size="small"
-                            style="font-size: 0.9em;">
-                            <p:column headerText="Created" width="80px" sortBy="#{g.createdAt}" styleClass="text-center">
-                                <h:outputLabel value="#{g.createdAt}" styleClass="text-muted small">
-                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="dd/MM/yy"/>
-                                </h:outputLabel>
-                            </p:column>
-                            <p:column headerText="From Dept" width="110px" sortBy="#{g.fromDepartment.name}">
-                                <h:outputLabel value="#{g.fromDepartment.name}" title="#{g.fromDepartment.name}" styleClass="text-truncate d-block"/>
-                            </p:column>
-                            <p:column headerText="To Dept" width="110px" sortBy="#{g.toDepartment.name}">
-                                <h:outputLabel value="#{g.toDepartment.name}" title="#{g.toDepartment.name}" styleClass="text-truncate d-block"/>
-                            </p:column>
-                            <p:column headerText="Req. No." width="100px">
-                                <h:outputLabel value="#{g.invoiceNumber}" styleClass="text-truncate d-block small"/>
-                            </p:column>
-                            <p:column headerText="Created By" width="130px" sortBy="#{g.creater.webUserPerson.name}">
-                                <h:outputLabel value="#{g.creater.webUserPerson.name}" styleClass="text-truncate d-block small"/>
-                            </p:column>
-                            <p:column headerText="Action" styleClass="text-center" exportable="false" width="140px">
-                                <p:commandButton
-                                    id="btnFinalize"
-                                    styleClass="ui-button ui-button-warning ui-button-sm"
-                                    icon="fas fa-eye"
-                                    value="View / Finalize"
-                                    title="View and Finalize Disposal Issue #{g.id}"
-                                    ajax="false"
-                                    action="#{pharmacyIssueController.loadDraftForEdit(g.id)}"
-                                    style="font-size: 0.85em; padding: 0.375rem 0.75rem;"/>
-                                <p:commandButton
-                                    id="btnCancel"
-                                    styleClass="ui-button ui-button-danger ui-button-sm ms-1"
-                                    icon="fas fa-times"
-                                    value="Cancel"
-                                    title="Cancel this saved disposal issue"
-                                    ajax="false"
-                                    onclick="if(!confirm('Cancel this disposal issue draft? This cannot be undone.')) return false;"
-                                    action="#{pharmacyIssueController.cancelPendingDisposalIssue(g.id)}"
-                                    style="font-size: 0.85em; padding: 0.375rem 0.75rem;"/>
-                            </p:column>
-                        </p:dataTable>
-                    </div>
-                </div>
-            </h:form>
-        </p:panel>
-    </ui:define>
-</ui:composition>
+                </h:form>
+
+            </p:panel>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>

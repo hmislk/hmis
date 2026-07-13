@@ -115,8 +115,8 @@
                                             <in:bhtDetail admission="#{inwardSearch.bill.patientEncounter}"/>
                                         </p:panel>
                                     </div>
-                                    <div class="col-4 ">
-                                        <p:panelGrid columns="1" class="w-100">
+                                    <div class="col-4">
+                                        <p:panelGrid columns="1" class="w-100" rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                             <f:facet name = "header">
                                                 <h:outputLabel value="Bill Details"/>
                                             </f:facet>
@@ -265,35 +265,40 @@
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column width="8em" class="text-end">
+                                    <p:column width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                         <f:facet name="header">Unit Rate</f:facet>
                                         <h:outputLabel value="#{bip.feeUnitGrossValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column width="8em" class="text-end">
+                                    <p:column width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                         <f:facet name="header">Total Gross</f:facet>
                                         <h:outputLabel value="#{bip.feeGrossValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column width="8em" class="text-end">
+                                    <p:column width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                         <f:facet name="header">Discount</f:facet>
                                         <h:outputLabel value="#{bip.feeDiscount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column width="8em" class="text-end">
+                                    <p:column width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                         <f:facet name="header">Service Charge</f:facet>
                                         <h:outputLabel value="#{bip.feeMargin}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column width="8em" class="text-end">
+                                    <p:column width="8em" class="text-end"
+                                              rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                         <f:facet name="header">Net Total</f:facet>
                                         <h:outputLabel value="#{bip.feeValue}">
                                             <f:convertNumber pattern="#,##0.00"/>

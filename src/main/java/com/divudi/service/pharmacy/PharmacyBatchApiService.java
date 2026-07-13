@@ -319,7 +319,7 @@ public class PharmacyBatchApiService implements Serializable {
             ib.setWholesaleRate(wholesaleRate);
         }
 
-        itemBatchFacade.create(ib);
+        itemBatchFacade.createAndFlush(ib); // flush so getId() below is guaranteed populated
         return ib;
     }
 
@@ -328,7 +328,7 @@ public class PharmacyBatchApiService implements Serializable {
         stock.setItemBatch(itemBatch);
         stock.setDepartment(department);
         stock.setStock(0.0); // Always start with 0 quantity
-        stockFacade.create(stock);
+        stockFacade.createAndFlush(stock); // flush so getId() below is guaranteed populated
         return stock;
     }
 

@@ -78,12 +78,30 @@
                         </td>
                         <td>:</td>
                         <td style="width: 30%;">
-                            <h:outputLabel value="#{cc.attrs.bill.paymentMethodLabel}" class="billDetails"/>
+                            <h:outputLabel value="#{empty cc.attrs.bill.payments ? cc.attrs.bill.paymentMethodLabel : 'Multiple'}" class="billDetails"/>
                         </td>
                         <td style="width: 10%;"/>
                         <td style="width: 15%;"/>
                         <td style="width: 30%;"/>
                     </tr>
+                    <ui:repeat value="#{cc.attrs.bill.payments}" var="ps">
+                        <tr>
+                            <td style="width: 15%; text-align: left;">
+                                <h:outputLabel value="#{ps.paymentMethodLabel}" class="billDetails"/>
+                            </td>
+                            <td>:</td>
+                            <td style="width: 30%;">
+                                <h:outputLabel value="#{ps.value}" class="billDetails">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{ps.reference ne null and ps.reference ne ''}"
+                                               value=" (#{ps.reference})" class="billDetails"/>
+                            </td>
+                            <td style="width: 10%;"/>
+                            <td style="width: 15%;"/>
+                            <td style="width: 30%;"/>
+                        </tr>
+                    </ui:repeat>
                     <h:panelGroup rendered="#{cc.attrs.bill.patientName ne null}">
                         <tr>
                             <td style="width: 15%; text-align: left;">

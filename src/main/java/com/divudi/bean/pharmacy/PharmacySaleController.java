@@ -175,6 +175,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     @EJB
     private PharmacyBean pharmacyBean;
     @EJB
+    private com.divudi.service.pharmacy.PharmacySubstituteService pharmacySubstituteService;
+    @EJB
     private PersonFacade personFacade;
     @EJB
     private PatientFacade patientFacade;
@@ -1734,6 +1736,61 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void calTotal() {
         calculateBillItemsAndBillTotalsOfPreBill();
+    }
+
+    // ===================================================================
+    // On-demand substitute (alternative) medicines (issue #21697)
+    // ===================================================================
+    private BillItem itemForSubstitution;
+    private com.divudi.core.data.dto.StockDTO selectedSubstituteStock;
+    private List<com.divudi.core.data.dto.StockDTO> substituteStocks;
+
+    public void prepareSubstitute(BillItem bi) {
+        itemForSubstitution = bi;
+        selectedSubstituteStock = null;
+        substituteStocks = new ArrayList<>();
+        if (bi == null || bi.getItem() == null) {
+            return;
+        }
+        double requiredQty = bi.getQty() == null ? 0d : bi.getQty();
+        substituteStocks = pharmacySubstituteService.findSubstituteStocks(bi.getItem(), sessionController.getDepartment(), requiredQty);
+    }
+
+    public void replaceSelectedSubstitute() {
+        if (itemForSubstitution == null || selectedSubstituteStock == null) {
+            JsfUtil.addErrorMessage("Please select a substitute stock.");
+            return;
+        }
+        if (pharmacySubstituteService.swapStockIntoBillItem(itemForSubstitution, selectedSubstituteStock)) {
+            calculateBillItemsAndBillTotalsOfPreBill();
+            JsfUtil.addSuccessMessage("Stock replaced successfully.");
+        } else {
+            JsfUtil.addErrorMessage("Could not replace the stock — the selected substitute may no longer be available. Please try again.");
+        }
+    }
+
+    public BillItem getItemForSubstitution() {
+        return itemForSubstitution;
+    }
+
+    public void setItemForSubstitution(BillItem itemForSubstitution) {
+        this.itemForSubstitution = itemForSubstitution;
+    }
+
+    public com.divudi.core.data.dto.StockDTO getSelectedSubstituteStock() {
+        return selectedSubstituteStock;
+    }
+
+    public void setSelectedSubstituteStock(com.divudi.core.data.dto.StockDTO selectedSubstituteStock) {
+        this.selectedSubstituteStock = selectedSubstituteStock;
+    }
+
+    public List<com.divudi.core.data.dto.StockDTO> getSubstituteStocks() {
+        return substituteStocks;
+    }
+
+    public void setSubstituteStocks(List<com.divudi.core.data.dto.StockDTO> substituteStocks) {
+        this.substituteStocks = substituteStocks;
     }
 
     public double addBillItemSingleItem() {
