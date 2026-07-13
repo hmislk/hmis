@@ -1,12 +1,19 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.entity.inward.InpatientPackage;
+import com.divudi.core.entity.inward.InpatientPackageItem;
 import com.divudi.core.facade.InpatientPackageFacade;
+import com.divudi.core.facade.InpatientPackageItemFacade;
+import com.divudi.core.util.InpatientPackagePricing;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -25,8 +32,14 @@ public class InpatientPackageController implements Serializable {
     @Inject
     private SessionController sessionController;
 
+    @Inject
+    private WebUserController webUserController;
+
     @EJB
     private InpatientPackageFacade ejbFacade;
+
+    @EJB
+    private InpatientPackageItemFacade inpatientPackageItemFacade;
 
     private InpatientPackage current;
     private List<InpatientPackage> items;
@@ -37,6 +50,10 @@ public class InpatientPackageController implements Serializable {
     }
 
     public void delete() {
+        if (!webUserController.hasPrivilege("InwardPackageAdministration")) {
+            JsfUtil.addErrorMessage("You are not authorized to manage Inpatient Packages.");
+            return;
+        }
         if (current == null || current.getId() == null) {
             JsfUtil.addErrorMessage("Nothing to delete");
             return;
@@ -52,6 +69,10 @@ public class InpatientPackageController implements Serializable {
     }
 
     public void saveSelected() {
+        if (!webUserController.hasPrivilege("InwardPackageAdministration")) {
+            JsfUtil.addErrorMessage("You are not authorized to manage Inpatient Packages.");
+            return;
+        }
         if (current == null || current.getName() == null || current.getName().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a package name");
             return;
@@ -64,6 +85,16 @@ public class InpatientPackageController implements Serializable {
             JsfUtil.addErrorMessage("Please select a Room Category");
             return;
         }
+        double fixedRoomCharge = current.getFixedRoomCharge() != null ? current.getFixedRoomCharge() : 0.0;
+        List<InpatientPackageItem> components = new ArrayList<>();
+        if (current.getId() != null) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("pkg", current);
+            components = inpatientPackageItemFacade.findByJpql(
+                    "SELECT i FROM InpatientPackageItem i WHERE i.retired = false AND i.inpatientPackage = :pkg",
+                    params);
+        }
+        current.setTotalPrice(InpatientPackagePricing.calculateTotalPrice(fixedRoomCharge, components));
         if (current.getId() != null) {
             ejbFacade.edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");

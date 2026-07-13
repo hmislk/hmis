@@ -5,9 +5,16 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui">
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:na="http://xmlns.jcp.org/jsf/composite/template">
 
     <ui:define name="subcontent">
+
+        <h:panelGroup rendered="#{not webUserController.hasPrivilege('InwardPackageAdministration')}">
+            <na:not_authorize />
+        </h:panelGroup>
+
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardPackageAdministration')}" layout="block">
 
         <h:form id="formInpatientPackage">
             <p:growl/>
@@ -103,11 +110,11 @@
 
                                 <h:outputText value="Included Room Duration (Hours)"></h:outputText>
                                 <p:outputLabel value=": " style="width: 30px; text-align: center;"></p:outputLabel>
-                                <p:inputNumber id="txtIncludedDuration" value="#{inpatientPackageController.current.includedRoomDurationHours}" class="w-100"/>
+                                <p:inputNumber id="txtIncludedDuration" value="#{inpatientPackageController.current.includedRoomDurationHours}" class="w-100" minValue="0"/>
 
                                 <h:outputText value="Fixed Room Charge"></h:outputText>
                                 <p:outputLabel value=": " style="width: 30px; text-align: center;"></p:outputLabel>
-                                <p:inputNumber id="txtFixedRoomCharge" value="#{inpatientPackageController.current.fixedRoomCharge}" class="w-100"/>
+                                <p:inputNumber id="txtFixedRoomCharge" value="#{inpatientPackageController.current.fixedRoomCharge}" class="w-100" minValue="0"/>
 
                                 <h:outputText value="Total Package Price"></h:outputText>
                                 <p:outputLabel value=": " style="width: 30px; text-align: center;"></p:outputLabel>
@@ -129,5 +136,7 @@
                 </div>
             </p:panel>
         </h:form>
+
+        </h:panelGroup>
     </ui:define>
 </ui:composition>

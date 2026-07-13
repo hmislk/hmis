@@ -1,6 +1,7 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.inward.InpatientPackageComponentType;
 import com.divudi.core.entity.inward.InpatientPackage;
 import com.divudi.core.entity.inward.InpatientPackageItem;
@@ -27,6 +28,9 @@ public class InpatientPackageItemController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+
+    @Inject
+    private WebUserController webUserController;
 
     @EJB
     private InpatientPackageItemFacade ejbFacade;
@@ -65,6 +69,10 @@ public class InpatientPackageItemController implements Serializable {
     }
 
     public void saveSelected() {
+        if (!webUserController.hasPrivilege("InwardPackageAdministration")) {
+            JsfUtil.addErrorMessage("You are not authorized to manage Inpatient Packages.");
+            return;
+        }
         if (current == null || current.getComponentType() == null) {
             JsfUtil.addErrorMessage("Please select a component type");
             return;
@@ -102,6 +110,10 @@ public class InpatientPackageItemController implements Serializable {
     }
 
     public void delete() {
+        if (!webUserController.hasPrivilege("InwardPackageAdministration")) {
+            JsfUtil.addErrorMessage("You are not authorized to manage Inpatient Packages.");
+            return;
+        }
         if (current == null || current.getId() == null) {
             JsfUtil.addErrorMessage("Nothing to delete");
             return;
