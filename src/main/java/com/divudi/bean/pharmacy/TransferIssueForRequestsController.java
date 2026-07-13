@@ -15,6 +15,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
@@ -466,6 +467,7 @@ public class TransferIssueForRequestsController implements Serializable {
         if (getIssuedBill().getDepartmentType() == null && getRequestedBill() != null) {
             getIssuedBill().setDepartmentType(getRequestedBill().getDepartmentType());
         }
+        stampDepartmentTypeFromItemsIfMissing();
 
         saveBill();
         for (BillItem billItemsInIssue : getBillItems()) {
@@ -1115,6 +1117,30 @@ public class TransferIssueForRequestsController implements Serializable {
             getBillFacade().create(getIssuedBill());
         } else {
             getBillFacade().edit(getIssuedBill());
+        }
+    }
+
+    // Fallback when the request bill carries no departmentType (e.g. legacy
+    // requests): department-type-filtered reports drop bills left NULL (#22056).
+    // Stamps only when all non-null item types agree; mixed legacy data is left
+    // unset rather than misclassifying the whole bill.
+    private void stampDepartmentTypeFromItemsIfMissing() {
+        if (getIssuedBill().getDepartmentType() != null) {
+            return;
+        }
+        DepartmentType found = null;
+        for (BillItem bi : getBillItems()) {
+            if (bi.getItem() == null || bi.getItem().getDepartmentType() == null) {
+                continue;
+            }
+            if (found == null) {
+                found = bi.getItem().getDepartmentType();
+            } else if (!found.equals(bi.getItem().getDepartmentType())) {
+                return;
+            }
+        }
+        if (found != null) {
+            getIssuedBill().setDepartmentType(found);
         }
     }
 

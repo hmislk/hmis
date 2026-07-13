@@ -19,6 +19,7 @@ import java.util.Objects;
 import javax.persistence.TemporalType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
@@ -973,6 +974,10 @@ public class TransferReceiveController implements Serializable {
         getReceivedBill().setBillType(BillType.PharmacyTransferReceive);
         getReceivedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE);
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
+        if (getIssuedBill().getDepartmentType() != null) {
+            getReceivedBill().setDepartmentType(getIssuedBill().getDepartmentType());
+        }
+        stampDepartmentTypeFromItemsIfMissing();
         List<BillItem> itemsToAdd = new ArrayList<>();
 
         for (BillItem i : getReceivedBill().getBillItems()) {
@@ -1097,6 +1102,10 @@ public class TransferReceiveController implements Serializable {
         getReceivedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE);
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
         getReceivedBill().setFromStaff(getIssuedBill().getToStaff());
+        if (getIssuedBill().getDepartmentType() != null) {
+            getReceivedBill().setDepartmentType(getIssuedBill().getDepartmentType());
+        }
+        stampDepartmentTypeFromItemsIfMissing();
         if (getReceivedBill().getId() == null) {
             getReceivedBill().setCreatedAt(new Date());
             getReceivedBill().setCreater(sessionController.getLoggedUser());
@@ -1113,6 +1122,30 @@ public class TransferReceiveController implements Serializable {
             }
         } else {
             getBillFacade().edit(getReceivedBill());
+        }
+    }
+
+    // Fallback when the issued bill carries no departmentType (legacy issues):
+    // department-type-filtered reports drop bills left NULL (#22056).
+    // Stamps only when all non-null item types agree; mixed legacy data is left
+    // unset rather than misclassifying the whole bill.
+    private void stampDepartmentTypeFromItemsIfMissing() {
+        if (getReceivedBill().getDepartmentType() != null) {
+            return;
+        }
+        DepartmentType found = null;
+        for (BillItem bi : getReceivedBill().getBillItems()) {
+            if (bi.getItem() == null || bi.getItem().getDepartmentType() == null) {
+                continue;
+            }
+            if (found == null) {
+                found = bi.getItem().getDepartmentType();
+            } else if (!found.equals(bi.getItem().getDepartmentType())) {
+                return;
+            }
+        }
+        if (found != null) {
+            getReceivedBill().setDepartmentType(found);
         }
     }
 
