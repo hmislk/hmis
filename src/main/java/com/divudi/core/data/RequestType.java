@@ -24,7 +24,8 @@ public enum RequestType {
     DRAWER_ADJUSTMENT("Drawer Adjustment", RequestCategory.ADJUSTMENT, "DRADJ"),
     
     PETTYCASH_APROVEL("Petty Cash Request" ,RequestCategory.APROVEL, "PTY-CH"),
-    PETTYCASH_CANCELLATION("Cancel Petty Cash" ,RequestCategory.APROVEL, "CAN-PTY-CH");
+    PETTYCASH_CANCELLATION("Cancel Petty Cash" ,RequestCategory.APROVEL, "CAN-PTY-CH"),
+    PHARMACY_RETAIL_SALE_RETURN_APPROVAL("Pharmacy Retail Sale Return Approval", RequestCategory.APROVEL, "PH-RET-APV");
     
     private final String displayName;
     private final RequestCategory category;

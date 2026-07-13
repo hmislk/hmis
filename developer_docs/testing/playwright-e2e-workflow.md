@@ -597,6 +597,23 @@ double-negates them to positive — this is the "fee doubling after cancellation
 (which has no stored value). Verify by summing `bi.netValue` directly in SQL and matching
 the report's Grand Total.
 
+## 26. Editing a `ConfigOption` via raw SQL is invisible to the running app — use the admin UI
+
+`ConfigOptionApplicationController.getApplicationOption(key)` reads through EclipseLink's
+shared L2 entity cache. A direct `UPDATE configoption SET optionvalue=... WHERE optionkey=...`
+via the `mysql` CLI changes the DB row but the already-cached `ConfigOption` entity in the
+running Payara instance keeps serving the old value — `getLongValueByKey`/`getBooleanValueByKey`
+never see the change, with no error or log entry. This wasted a full test cycle while verifying
+a day-limit config for issue #22055 (two `UPDATE` statements had zero effect on rendered button
+state).
+
+**Fix:** edit config values through `admin/institutions/admin_mange_application_options.xhtml`
+(List Application Options → filter by Key → **Edit Option** → Save). That path goes through
+the entity manager and correctly invalidates the cache, and the change is visible on the very
+next page load — no redeploy or Payara restart needed. Reserve raw SQL for *reading* config
+state (e.g. confirming a key auto-created with the right default on first access), never for
+writing it mid-test.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
