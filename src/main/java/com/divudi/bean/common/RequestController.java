@@ -594,9 +594,9 @@ public class RequestController implements Serializable {
             return;
         }
 
-        Request existing = requestService.findApprovedRequestByBillAndType(saleBill, RequestType.PHARMACY_RETAIL_SALE_RETURN_APPROVAL);
+        Request existing = requestService.findActiveRequestByBillAndType(saleBill, RequestType.PHARMACY_RETAIL_SALE_RETURN_APPROVAL);
         if (existing != null) {
-            JsfUtil.addErrorMessage("There is already an approved return request for this bill.");
+            JsfUtil.addErrorMessage("There is already a pending or approved return request for this bill.");
             return;
         }
 
@@ -847,13 +847,13 @@ public class RequestController implements Serializable {
             return;
         }
 
-        if (currentRequest.getStatus() == RequestStatus.APPROVED) {
-            JsfUtil.addErrorMessage("This Request is Already Approved");
+        if (currentRequest.getRequestType() != RequestType.PHARMACY_RETAIL_SALE_RETURN_APPROVAL) {
+            JsfUtil.addErrorMessage("Invalid request type for pharmacy retail sale return approval.");
             return;
         }
 
-        if (currentRequest.getStatus() == RequestStatus.REJECTED) {
-            JsfUtil.addErrorMessage("This Request is Already Rejected");
+        if (currentRequest.getStatus() != RequestStatus.PENDING && currentRequest.getStatus() != RequestStatus.UNDER_REVIEW) {
+            JsfUtil.addErrorMessage("Only pending or under-review requests can be approved.");
             return;
         }
 

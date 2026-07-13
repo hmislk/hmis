@@ -25,12 +25,17 @@ public class PharmacyRetailSaleReturnPolicyService {
     @Inject
     RequestService requestService;
 
+    private static final long DEFAULT_NO_APPROVAL_DAY_LIMIT = 3L;
+    private static final long DEFAULT_WITH_APPROVAL_DAY_LIMIT = 7L;
+
     public Long getNoApprovalDayLimit() {
-        return configOptionApplicationController.getLongValueByKey("Pharmacy Retail Sale Return - Days Allowed Without Approval", 3L);
+        Long value = configOptionApplicationController.getLongValueByKey("Pharmacy Retail Sale Return - Days Allowed Without Approval", DEFAULT_NO_APPROVAL_DAY_LIMIT);
+        return value != null ? value : DEFAULT_NO_APPROVAL_DAY_LIMIT;
     }
 
     public Long getWithApprovalDayLimit() {
-        return configOptionApplicationController.getLongValueByKey("Pharmacy Retail Sale Return - Days Allowed With Approval", 7L);
+        Long value = configOptionApplicationController.getLongValueByKey("Pharmacy Retail Sale Return - Days Allowed With Approval", DEFAULT_WITH_APPROVAL_DAY_LIMIT);
+        return value != null ? value : DEFAULT_WITH_APPROVAL_DAY_LIMIT;
     }
 
     public long daysSinceBillCreation(Bill saleBill) {
@@ -42,6 +47,10 @@ public class PharmacyRetailSaleReturnPolicyService {
 
     public boolean hasApprovedReturnRequest(Bill saleBill) {
         return requestService.findApprovedRequestByBillAndType(saleBill, RequestType.PHARMACY_RETAIL_SALE_RETURN_APPROVAL) != null;
+    }
+
+    public boolean hasActiveReturnRequest(Bill saleBill) {
+        return requestService.findActiveRequestByBillAndType(saleBill, RequestType.PHARMACY_RETAIL_SALE_RETURN_APPROVAL) != null;
     }
 
     public String checkReturnAllowed(Bill saleBill) {

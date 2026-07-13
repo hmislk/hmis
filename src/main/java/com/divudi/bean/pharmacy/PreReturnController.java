@@ -255,7 +255,8 @@ public class PreReturnController implements Serializable {
      */
     public boolean needsReturnApproval(Bill saleBill) {
         return pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(saleBill) != null
-                && !isReturnBlockedByDayLimit(saleBill);
+                && !isReturnBlockedByDayLimit(saleBill)
+                && !pharmacyRetailSaleReturnPolicyService.hasActiveReturnRequest(saleBill);
     }
 
     @Inject

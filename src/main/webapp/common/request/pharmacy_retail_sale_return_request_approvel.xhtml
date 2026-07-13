@@ -11,7 +11,7 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form>
+                <h:form onkeypress="if (event.keyCode === 13) { event.preventDefault(); return false; }">
                     <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyRetailSaleReturnApproval')}">
                         <na:not_authorize />
                     </h:panelGroup>
