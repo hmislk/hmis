@@ -1800,15 +1800,25 @@ public class TransferIssueController implements Serializable {
 
     // Fallback when neither the request bill nor addToBill stamped a
     // departmentType: department-type-filtered reports drop NULL bills (#22056).
+    // Stamps only when all non-null item types agree; mixed legacy data is left
+    // unset rather than misclassifying the whole bill.
     private void stampDepartmentTypeFromItemsIfMissing() {
         if (getIssuedBill().getDepartmentType() != null) {
             return;
         }
+        DepartmentType found = null;
         for (BillItem bi : getBillItems()) {
-            if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
-                getIssuedBill().setDepartmentType(bi.getItem().getDepartmentType());
+            if (bi.getItem() == null || bi.getItem().getDepartmentType() == null) {
+                continue;
+            }
+            if (found == null) {
+                found = bi.getItem().getDepartmentType();
+            } else if (!found.equals(bi.getItem().getDepartmentType())) {
                 return;
             }
+        }
+        if (found != null) {
+            getIssuedBill().setDepartmentType(found);
         }
     }
 
