@@ -917,6 +917,30 @@ public class LaborataryReportController implements Serializable {
             jpql += " and bi.bill.department.site=:site ";
             params.put("site", site);
         }
+        if (toInstitution != null) {
+            jpql += " and bi.bill.toInstitution=:toIns ";
+            params.put("toIns", toInstitution);
+        }
+        if (toDepartment != null) {
+            jpql += " and bi.bill.toDepartment=:toDep ";
+            params.put("toDep", toDepartment);
+        }
+        if (webUser != null) {
+            jpql += " and bi.bill.creater=:user ";
+            params.put("user", webUser);
+        }
+        if (admissionType != null) {
+            jpql += " and bi.bill.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+        if (paymentScheme != null) {
+            jpql += " and bi.bill.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+        if (visitType != null && !visitType.trim().isEmpty()) {
+            jpql += " and bi.bill.ipOpOrCc = :type ";
+            params.put("type", visitType.trim());
+        }
 
         jpql += " group by bi.item.id, bi.item.code, bi.item.name";
 
