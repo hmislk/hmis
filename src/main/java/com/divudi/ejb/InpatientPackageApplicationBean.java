@@ -7,6 +7,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.Admission;
@@ -113,7 +114,7 @@ public class InpatientPackageApplicationBean {
         patientRoomFacade.edit(patientRoom);
     }
 
-    private BilledBill createLockedBill(Admission admission, BillType billType, BillTypeAtomic billTypeAtomic, BillNumberSuffix suffix, WebUser loggedUser) {
+    private BilledBill createLockedBill(Admission admission, BillType billType, BillTypeAtomic billTypeAtomic, BillNumberSuffix suffix, Department toDepartment, WebUser loggedUser) {
         BilledBill bill = new BilledBill();
         bill.setBillType(billType);
         bill.setBillTypeAtomic(billTypeAtomic);
@@ -127,6 +128,10 @@ public class InpatientPackageApplicationBean {
         bill.setBillTime(new Date());
         bill.setCreatedAt(new Date());
         bill.setCreater(loggedUser);
+        if (toDepartment != null) {
+            bill.setToDepartment(toDepartment);
+            bill.setToInstitution(toDepartment.getInstitution());
+        }
         bill.setDeptId(billNumberBean.departmentBillNumberGenerator(bill.getDepartment(), billType, BillClassType.BilledBill, suffix));
         bill.setInsId(billNumberBean.institutionBillNumberGenerator(bill.getInstitution(), billType, BillClassType.BilledBill, suffix));
         billFacade.create(bill);
@@ -134,7 +139,8 @@ public class InpatientPackageApplicationBean {
     }
 
     private void createLockedServiceBillItem(Admission admission, InpatientPackageItem component, WebUser loggedUser) {
-        BilledBill bill = createLockedBill(admission, BillType.InwardBill, BillTypeAtomic.INWARD_SERVICE_BILL, BillNumberSuffix.INWSER, loggedUser);
+        Department toDepartment = component.getItem() != null ? component.getItem().getDepartment() : null;
+        BilledBill bill = createLockedBill(admission, BillType.InwardBill, BillTypeAtomic.INWARD_SERVICE_BILL, BillNumberSuffix.INWSER, toDepartment, loggedUser);
         BillItem billItem = new BillItem();
         billItem.setBill(bill);
         billItem.setItem(component.getItem());
@@ -152,7 +158,8 @@ public class InpatientPackageApplicationBean {
     }
 
     private void createLockedTimedItem(Admission admission, InpatientPackageItem component, WebUser loggedUser) {
-        BilledBill bill = createLockedBill(admission, BillType.InwardBill, BillTypeAtomic.INWARD_SERVICE_BILL, BillNumberSuffix.INWSER, loggedUser);
+        Department toDepartment = component.getItem() != null ? component.getItem().getDepartment() : null;
+        BilledBill bill = createLockedBill(admission, BillType.InwardBill, BillTypeAtomic.INWARD_SERVICE_BILL, BillNumberSuffix.INWSER, toDepartment, loggedUser);
         BillItem billItem = new BillItem();
         billItem.setBill(bill);
         billItem.setItem(component.getItem());
@@ -181,7 +188,7 @@ public class InpatientPackageApplicationBean {
     }
 
     private void createLockedProfessionalFee(Admission admission, InpatientPackageItem component, WebUser loggedUser) {
-        BilledBill bill = createLockedBill(admission, BillType.InwardProfessional, BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL, BillNumberSuffix.NONE, loggedUser);
+        BilledBill bill = createLockedBill(admission, BillType.InwardProfessional, BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL, BillNumberSuffix.NONE, null, loggedUser);
         BillFee billFee = new BillFee();
         billFee.setBill(bill);
         billFee.setPatienEncounter(admission);
@@ -199,7 +206,7 @@ public class InpatientPackageApplicationBean {
     }
 
     private void createLockedOutsideCharge(Admission admission, InpatientPackageItem component, WebUser loggedUser) {
-        BilledBill bill = createLockedBill(admission, BillType.InwardOutSideBill, BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL, BillNumberSuffix.NONE, loggedUser);
+        BilledBill bill = createLockedBill(admission, BillType.InwardOutSideBill, BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL, BillNumberSuffix.NONE, null, loggedUser);
         BillItem billItem = new BillItem();
         billItem.setBill(bill);
         billItem.setItem(component.getItem());

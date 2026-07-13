@@ -3173,6 +3173,25 @@ public class BhtSummeryController implements Serializable {
     private void applyRoomChargeDiscounts(PatientRoom p,
             double roomPct, double maintainPct, double linenPct, double nursingPct,
             double moPct, double adminPct, double medicalCarePct) {
+        if (p.isFromPackage() && !isPackageRoomDurationExceeded(p)) {
+            // Package-locked room: the price is fixed by the package, not subject
+            // to PriceMatrix discount percentages while within the included duration.
+            p.setDiscountRoomCharge(0.0);
+            p.setDiscountMaintainCharge(0.0);
+            p.setDiscountLinenCharge(0.0);
+            p.setDiscountNursingCharge(0.0);
+            p.setDiscountMoCharge(0.0);
+            p.setDiscountAdministrationCharge(0.0);
+            p.setDiscountMedicalCareCharge(0.0);
+            p.setAdjustedRoomCharge(p.getCalculatedRoomCharge());
+            p.setAdjustedMaintainCharge(p.getCalculatedMaintainCharge());
+            p.setAjdustedLinenCharge(p.getCalculatedLinenCharge());
+            p.setAjdustedNursingCharge(p.getCalculatedNursingCharge());
+            p.setAdjustedMoCharge(p.getCalculatedMoCharge());
+            p.setAjdustedAdministrationCharge(p.getCalculatedAdministrationCharge());
+            p.setAjdustedMedicalCareCharge(p.getCalculatedMedicalCareCharge());
+            return;
+        }
         double roomDisc = (roomPct / 100.0) * p.getCalculatedRoomCharge();
         double maintainDisc = (maintainPct / 100.0) * p.getCalculatedMaintainCharge();
         double linenDisc = (linenPct / 100.0) * p.getCalculatedLinenCharge();
