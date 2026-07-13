@@ -61,6 +61,7 @@ public class LabVmpController implements Serializable {
     // DTO properties
     private VmpDto selectedVmpDto;
     private List<VmpDto> vmpDtos;
+    private List<VmpDto> labVmpListDtos;
 
     // Audit properties
     private List<AuditEvent> vmpAuditEvents;
@@ -374,6 +375,7 @@ public class LabVmpController implements Serializable {
     public void refreshData() {
         items = null;
         vmpDtos = null;
+        labVmpListDtos = null;
 
         if (current != null) {
             boolean shouldKeepSelection = false;
@@ -420,6 +422,43 @@ public class LabVmpController implements Serializable {
             default:
                 return "Active Lab VMPs";
         }
+    }
+
+    // ===================== List Page Methods =====================
+
+    public List<VmpDto> getLabVmpListDtos() {
+        if (labVmpListDtos == null) {
+            String jpql = "SELECT new com.divudi.core.data.dto.VmpDto("
+                    + "a.id, a.name, a.code, a.descreption, "
+                    + "a.retired, a.inactive, v.id, v.name, "
+                    + "df.id, df.name) "
+                    + "FROM Vmp a "
+                    + "LEFT JOIN a.vtm v "
+                    + "LEFT JOIN a.dosageForm df "
+                    + "WHERE a.retired=false AND a.departmentType=:dep ";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("dep", DepartmentType.Lab);
+
+            if ("active".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", false);
+            } else if ("inactive".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", true);
+            }
+
+            jpql += "ORDER BY a.name";
+
+            labVmpListDtos = (List<VmpDto>) getFacade().findLightsByJpql(jpql, params);
+        }
+        return labVmpListDtos;
+    }
+
+    public String navigateToLabVmpList() {
+        labVmpListDtos = null;
+        getLabVmpListDtos();
+        return "/pharmacy/admin/lab_vmp_list?faces-redirect=true";
     }
 
     // ===================== Toggle Status Methods =====================

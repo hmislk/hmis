@@ -83,24 +83,40 @@
                                         action="#{searchController.navigateToListAllDrawers()}"
                                         value="4. All Drawers" >
                                     </p:commandButton>
-                                    <p:commandButton  
-                                        class="w-100"  
-                                        ajax="false" 
-                                        action="#{financialTransactionController.navigateToUserHandovers()}"
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        action="#{searchController.navigateToAllCashierHandovers()}"
                                         value="5. Shifts" >
                                     </p:commandButton>
-                                    <p:commandButton  
-                                        class="w-100"  
-                                        ajax="false" 
-                                        action="#{searchController.navigateToAllCashierHandovers()}"
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToHandoverStatusReport()}"
                                         value="6. Handovers" >
                                     </p:commandButton>
-                                    <p:commandButton  
-                                        class="w-100"  
-                                        ajax="false" 
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
                                         action="#{searchController.navigateToShiftEndCash()}"
                                         value="7. Shift End Cash" >
                                     </p:commandButton>
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        action="#{financialTransactionController.navigateToActiveShiftsReport()}"
+                                        value="8. Active Shifts" >
+                                    </p:commandButton>
+                                    <p:commandButton class="w-100" ajax="false"
+                                        value="9. IOU Conversion Bills"
+                                        action="#{iouBillController.navigateToIouConversionBillReport()}" />
+                                    <p:commandButton class="w-100" ajax="false"
+                                        value="10. IOU Conversion Payments"
+                                        action="#{iouBillController.navigateToIouConversionPaymentReport()}" />
+                                    <p:commandButton class="w-100" ajax="false"
+                                        value="11. Float Transfer Report"
+                                        rendered="#{webUserController.hasPrivilege('ViewFundTransferReports')}"
+                                        action="#{financialTransactionController.navigateToFundTransferReport()}" />
 
                                 </div>
                             </p:tab>
@@ -264,7 +280,8 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="24. Debtor Analysis" />
                                     <p:commandButton   class="w-100"  ajax="false" value="25. Drawer History By User" action="/reports/financialReports/drawer_history?faces-redirect=true"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="26. Drawer History" action="/reports/financialReports/all_users_drawer_history?faces-redirect=true"/>
-                                    <p:commandButton  
+                                    <p:commandButton   class="w-100"  ajax="false" value="26 A. Drawer Adjustments" action="/reports/financialReports/drawer_adjustments?faces-redirect=true"/>
+                                    <p:commandButton
                                         action="#{searchController.navigatToDepartmentRevenueReport}"
                                         class="w-100"  
                                         ajax="false" 
@@ -422,7 +439,8 @@
                                         ajax="false" 
                                         value="1. Closing Stock" 
                                         action="#{reportController.navigateToClosingStockReport()}"/>
-                                    <p:commandButton   class="w-100"  ajax="false" value="2. Consumption" action="#{reportController.navigateToconsumption()}"  />
+                                    <p:commandButton class="w-100 ui-button-secondary" ajax="false" value="2. Consumption (Legacy)" action="#{reportController.navigateToconsumption()}" title="Legacy entity-based report (deprecated)"/>
+                                    <p:commandButton class="w-100 ui-button-success" ajax="false" value="2. Consumption" action="#{reportController.navigateToConsumptionDto()}" icon="fa fa-rocket" title="High-performance DTO-based Consumption report"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="3. Stock Transfers"  action="#{reportController.navigateToStockTransferReport()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="4. Cost Of Good Sold" action="#{reportController.navigateToCostOfGoodsSold()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="5. Good in Transit" action="#{reportController.navigateToGoodInTransit()}" />
@@ -454,7 +472,7 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="Lab Bill Item List" action="#{patientInvestigationController.navigateToLabBillItemList()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="Turn Around Time Details" action="#{reportController.navigateToTurnAroundTimeDetails()}" />
                                     <p:commandButton   class="w-100"  ajax="false" value="Turn Around Time(Hourly)" action="#{reportController.navigateToTurnAroundTimeHourly}"/>
-                                    <p:commandButton   class="w-100"  ajax="false" value="Peak Hour Statistics" action="#{repStatisticortController.navigateToLabPeakHourStatistics()}"/>
+                                    <p:commandButton   class="w-100"  ajax="false" value="Peak Hour Statistics" action="#{reportController.navigateToLabPeakHourStatistics()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Sample Carrier" action="#{reportController.navigateToSampleCarrierReport()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Organism Antibiotic Sensitivity" action="#{reportController.navigateToLabOrganismAntibioticSensitivityReport()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="Investigation Wise Research" action="#{reportController.navigateToLabInvetigationWiseReport()}"/>
@@ -490,6 +508,7 @@
                                     <p:commandButton   class="w-100"  ajax="false" value="15. ROOM OCCUPANCY" action="#{reportController.navigateToROOMOCCUPANCY()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="16. OPD Weekly Report" action="#{reportController.navigateToOpdWeeklyReport()}"/>
                                     <p:commandButton   class="w-100"  ajax="false" value="17. Speciality/Doctor Wise Income Report" action="#{reportController.navigateToSpecialityDoctorWiseIncome()}"/>
+                                    <p:commandButton   class="w-100"  ajax="false" value="18. All Department Sale Report" action="/reports/managementReports/all_department_sale_report?faces-redirect=true"/>
                                 </div>
                             </p:tab>
 

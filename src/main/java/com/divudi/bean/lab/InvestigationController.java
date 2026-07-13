@@ -9,7 +9,9 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemApplicationController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
@@ -111,6 +113,10 @@ public class InvestigationController implements Serializable {
     ItemForItemController itemForItemController;
     @Inject
     ItemApplicationController itemApplicationController;
+    @Inject
+    private ItemController itemController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
     /**
      * EJBs
      */
@@ -155,6 +161,7 @@ public class InvestigationController implements Serializable {
 
     List<InvestigationDTO> investigationDtos;
     List<InvestigationDTO> selectedInvestigationDtos;
+    List<InvestigationDTO> investigationListDtos;
 
     private List<Investigation> investigationWithSelectedFormat;
     private Category categoryForFormat;
@@ -235,7 +242,7 @@ public class InvestigationController implements Serializable {
         try {
             // Create a new Excel workbook
             Workbook workbook = new XSSFWorkbook();
-            Sheet sheet = workbook.createSheet("Diagnoses");
+            Sheet sheet = workbook.createSheet("Manage Investigations");
 
             // Create a header row
             Row headerRow = sheet.createRow(0);
@@ -247,7 +254,7 @@ public class InvestigationController implements Serializable {
             int rowNum = 1;
             for (Investigation diag : items) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(rowNum);
+                row.createCell(0).setCellValue(rowNum-1);
                 row.createCell(1).setCellValue(diag.getName());
             }
 
@@ -255,7 +262,7 @@ public class InvestigationController implements Serializable {
             FacesContext context = FacesContext.getCurrentInstance();
             HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
             response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-            response.setHeader("Content-Disposition", "attachment; filename=\"diagnoses.xlsx\"");
+            response.setHeader("Content-Disposition", "attachment; filename=\"manage_investigations.xlsx\"");
 
             // Write the workbook to the response output stream
             workbook.write(response.getOutputStream());
@@ -292,9 +299,25 @@ public class InvestigationController implements Serializable {
         return "/admin/lims/investigation_single?faces-redirect=true";
     }
 
+    public String navigateToManageInvestigation(Long investigationId) {
+        if (investigationId == null) {
+            JsfUtil.addErrorMessage("Error in Selected Investigation");
+            return "";
+        }
+        
+        current = ejbFacade.findWithoutCache(investigationId);
+        
+        if(current == null){
+            JsfUtil.addErrorMessage("Not Found Investigation");
+            return "";
+        }
+        
+        return "/admin/lims/investigation?faces-redirect=true";
+    }
+    
     public String navigateToManageInvestigation() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("Nothing to delete");
+        if(current == null){
+            JsfUtil.addErrorMessage("Not Found Investigation");
             return "";
         }
         return "/admin/lims/investigation?faces-redirect=true";
@@ -1383,7 +1406,7 @@ public class InvestigationController implements Serializable {
     }
 
     public String navigateToListInvestigation() {
-        listAllIxs();
+        fillInvestigationListDtos();
         return "/admin/lims/investigation_list?faces-redirect=true";
     }
 
@@ -1507,12 +1530,36 @@ public class InvestigationController implements Serializable {
         getItems();
     }
 
-    public void saveSelected() {
+    public void generateCode() {
+        String code = itemController.generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
+        getCurrent().setCode(code);
+    }
 
-        if (getCurrent() == null) {
+    public void saveSelected() {
+        if (getCurrent() == null){
+            JsfUtil.addErrorMessage("Please add investigation");
             return;
         }
-
+        if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Investigation Name before saving");
+            return;
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Item Codes Generate - Automatically create Item Codes by Department.", false)) {
+            if (getCurrent().getId() == null) {
+                if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()) {
+                    String code = itemController.generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
+                    getCurrent().setCode(code);
+                }
+            }
+        }
+        if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Investigation Code before saving");
+            return;
+        }
+        if (itemController.isItemCodeDuplicate(getCurrent().getCode(), getCurrent().getId())) {
+            JsfUtil.addErrorMessage("Item code is already used");
+            return;
+        }
         getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);
         if (getCurrent().getInwardChargeType() == null) {
             getCurrent().setInwardChargeType(InwardChargeType.Laboratory);
@@ -1869,6 +1916,24 @@ public class InvestigationController implements Serializable {
         getCurrent();
     }
 
+    public void deleteInvestigationById(Long id) {
+        if (id == null) {
+            JsfUtil.addErrorMessage("Nothing to Delete");
+            return;
+        }
+        Investigation ix = getFacade().find(id);
+        if (ix == null) {
+            JsfUtil.addErrorMessage("Investigation not found");
+            return;
+        }
+        ix.setRetired(true);
+        ix.setRetiredAt(new Date());
+        ix.setRetirer(getSessionController().getLoggedUser());
+        getFacade().edit(ix);
+        JsfUtil.addSuccessMessage("Deleted Successfully");
+        fillInvestigationListDtos();
+    }
+
     private InvestigationFacade getFacade() {
         return ejbFacade;
     }
@@ -1921,6 +1986,25 @@ public class InvestigationController implements Serializable {
                 + "ORDER BY i.name";
 
         investigationDtos = (List<InvestigationDTO>) getFacade().findLightsByJpql(jpql);
+    }
+
+    public void fillInvestigationListDtos() {
+        String jpql = "SELECT new com.divudi.core.data.dto.InvestigationDTO("
+                + "i.id, "
+                + "i.code, "
+                + "i.name, "
+                + "cat.name, "
+                + "ins.name, "
+                + "dep.name, "
+                + "i.retired) "
+                + "FROM Investigation i "
+                + "LEFT JOIN i.category cat "
+                + "LEFT JOIN i.institution ins "
+                + "LEFT JOIN i.department dep "
+                + "WHERE i.retired = false "
+                + "ORDER BY i.name";
+
+        investigationListDtos = (List<InvestigationDTO>) getFacade().findLightsByJpql(jpql);
     }
     
     public List<InvestigationDTO> fillInvestigationNamesDtos() {
@@ -2143,6 +2227,15 @@ public class InvestigationController implements Serializable {
 
     public void setSelectedInvestigationDtos(List<InvestigationDTO> selectedInvestigationDtos) {
         this.selectedInvestigationDtos = selectedInvestigationDtos;
+    }
+
+    public List<InvestigationDTO> getInvestigationListDtos() {
+        fillInvestigationListDtos();
+        return investigationListDtos;
+    }
+
+    public void setInvestigationListDtos(List<InvestigationDTO> investigationListDtos) {
+        this.investigationListDtos = investigationListDtos;
     }
 
 }

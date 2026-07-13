@@ -21,7 +21,10 @@ public class CorsResponseFilter implements ContainerResponseFilter{
         responseContext.getHeaders().add("Access-Control-Allow-Origin", "*");
         responseContext.getHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         responseContext.getHeaders().add("Access-Control-Allow-Headers", "Content-Type, Authorization, Finance");
-        responseContext.getHeaders().add("Access-Control-Allow-Credentials", "true");
         responseContext.getHeaders().add("Access-Control-Max-Age", "3600");
+        // Access-Control-Allow-Credentials is intentionally omitted: the REST API
+        // authenticates via the custom Finance header (API key), not cookies. Sending
+        // Allow-Credentials: true alongside Allow-Origin: * is invalid per the CORS
+        // spec and was rejected by browsers anyway (issue #19867).
     }
 }

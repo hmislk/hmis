@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/pharmacy/admin/index.xhtml"
@@ -70,7 +70,7 @@
                                     class="w-100 ampp-autocomplete"
                                     inputStyleClass="w-100"
                                     value="#{amppController.selectedAmppDto}"
-                                    completeMethod="#{amppController.completeAmppDto}"
+                                    queryDelay="300" completeMethod="#{amppController.completeAmppDto}"
                                     var="dto"
                                     itemLabel="#{dto.name}"
                                     itemValue="#{dto}"
@@ -169,6 +169,14 @@
                                         ajax="false"
                                         disabled="#{amppController.current.id eq null}"
                                         title="View audit history for this AMPP record"/>
+                                    <p:commandButton
+                                        id="btnViewList"
+                                        value="All AMPPs List"
+                                        action="#{amppController.navigateToAmppList()}"
+                                        class="m-1 ui-button-secondary"
+                                        ajax="false"
+                                        icon="fas fa-list"
+                                        title="View and download the full list of AMPPs"/>
                                 </div>
                             </div>
                         </h:panelGroup>
@@ -217,7 +225,7 @@
                                 <p:outputLabel for="acAmp" value="Select AMP" styleClass="fw-bold"/>
                                 <p:autoComplete
                                     id="acAmp"
-                                    completeMethod="#{ampController.completeAmp}"
+                                    queryDelay="300" completeMethod="#{ampController.completeAmp}"
                                     var="pta"
                                     styleClass="w-100"
                                     inputStyleClass="w-100"

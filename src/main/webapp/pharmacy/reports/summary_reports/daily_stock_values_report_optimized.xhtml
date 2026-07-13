@@ -277,6 +277,7 @@
                                                     <tr>
                                                         <th colspan="5">Description</th>
                                                         <th class="text-end">Cost Rate</th>
+                                                        <th class="text-end">Purchase Rate</th>
                                                         <th class="text-end">Retail Rate</th>
                                                     </tr>
                                                 </thead>
@@ -287,6 +288,11 @@
                                                         </td>
                                                         <td class="text-end">
                                                             <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.openingStockValueAtCostRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.openingStockValueAtPurchaseRate}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
@@ -303,9 +309,18 @@
 
                                     <!-- Sales Section Card -->
                                     <div class="card mb-3">
-                                        <div class="card-header bg-success text-white">
-                                            <h:outputText value="&#xf788;" styleClass="fas me-2" /> <!-- fa-cash-register icon -->
-                                            <h:outputText value="Sales Transactions" styleClass="fw-bold"/>
+                                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <h:outputText value="&#xf788;" styleClass="fas me-2" /> <!-- fa-cash-register icon -->
+                                                <h:outputText value="Sales Transactions" styleClass="fw-bold"/>
+                                            </span>
+                                            <p:commandButton
+                                                value="Drill Down"
+                                                icon="fa fa-search-plus"
+                                                ajax="false"
+                                                styleClass="ui-button-info ui-button-sm"
+                                                action="#{pharmacyDailyStockReportOptimizedController.drillDownAllForSection('SALES')}"
+                                                title="Drill down to Level 1 with all sales atomics ticked"/>
                                         </div>
                                         <div class="card-body p-0">
                                             <table class="table table-sm table-hover mb-0">
@@ -317,7 +332,9 @@
                                                         <th class="text-end value-column">Service Charge</th>
                                                         <th class="text-end value-column">Net Value</th>
                                                         <th class="text-end value-column">Stock Value (Cost)</th>
+                                                        <th class="text-end value-column">Stock Value (Purchase)</th>
                                                         <th class="text-end value-column">Stock Value (Retail)</th>
+                                                        <th class="text-center" style="width: 60px;">Drill</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -352,9 +369,22 @@
                                                                 </h:outputText>
                                                             </td>
                                                             <td class="text-end value-column">
+                                                                <h:outputText value="#{sale.valueOfStocksAtPurchaseRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
                                                                 <h:outputText value="#{sale.valueOfStocksAtRetailSaleRate}">
                                                                     <f:convertNumber pattern="#,##0.00"/>
                                                                 </h:outputText>
+                                                            </td>
+                                                            <td class="text-center" style="width: 60px;">
+                                                                <p:commandLink
+                                                                    action="#{pharmacyDailyStockReportOptimizedController.drillDownSingleAtomic('SALES', sale)}"
+                                                                    title="Drill down to Level 1 for this atomic only"
+                                                                    ajax="false">
+                                                                    <h:outputText styleClass="fa fa-search-plus"/>
+                                                                </p:commandLink>
                                                             </td>
                                                         </tr>
                                                     </ui:repeat>
@@ -388,10 +418,16 @@
                                                             </h:outputText>
                                                         </td>
                                                         <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.valueOfStocksAtPurchaseRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
                                                             <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacySalesByAdmissionTypeAndDiscountSchemeBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
+                                                        <td class="text-center" style="width: 60px;"></td>
                                                     </tr>
                                                 </tfoot>
                                             </table>
@@ -400,9 +436,18 @@
 
                                     <!-- Purchases Section Card -->
                                     <div class="card mb-3">
-                                        <div class="card-header bg-warning text-dark">
-                                            <h:outputText value="&#xf07a;" styleClass="fas me-2" /> <!-- fa-shopping-cart icon -->
-                                            <h:outputText value="Purchase Transactions" styleClass="fw-bold"/>
+                                        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <h:outputText value="&#xf07a;" styleClass="fas me-2" /> <!-- fa-shopping-cart icon -->
+                                                <h:outputText value="Purchase Transactions" styleClass="fw-bold"/>
+                                            </span>
+                                            <p:commandButton
+                                                value="Drill Down"
+                                                icon="fa fa-search-plus"
+                                                ajax="false"
+                                                styleClass="ui-button-info ui-button-sm"
+                                                action="#{pharmacyDailyStockReportOptimizedController.drillDownAllForSection('PURCHASES')}"
+                                                title="Drill down to Level 1 with all purchase atomics ticked"/>
                                         </div>
                                         <div class="card-body p-0">
                                             <table class="table table-sm table-hover mb-0">
@@ -414,7 +459,9 @@
                                                         <th class="text-end value-column hide-column">Service Charge</th>
                                                         <th class="text-end value-column">Net Value</th>
                                                         <th class="text-end value-column">Stock Value (Cost)</th>
+                                                        <th class="text-end value-column">Stock Value (Purchase)</th>
                                                         <th class="text-end value-column">Stock Value (Retail)</th>
+                                                        <th class="text-center" style="width: 60px;">Drill</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -449,9 +496,22 @@
                                                                 </h:outputText>
                                                             </td>
                                                             <td class="text-end value-column">
+                                                                <h:outputText value="#{purchase.valueOfStocksAtPurchaseRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
                                                                 <h:outputText value="#{purchase.valueOfStocksAtRetailSaleRate}">
                                                                     <f:convertNumber pattern="#,##0.00"/>
                                                                 </h:outputText>
+                                                            </td>
+                                                            <td class="text-center" style="width: 60px;">
+                                                                <p:commandLink
+                                                                    action="#{pharmacyDailyStockReportOptimizedController.drillDownSingleAtomic('PURCHASES', purchase)}"
+                                                                    title="Drill down to Level 1 for this atomic only"
+                                                                    ajax="false">
+                                                                    <h:outputText styleClass="fa fa-search-plus"/>
+                                                                </p:commandLink>
                                                             </td>
                                                         </tr>
                                                     </ui:repeat>
@@ -485,10 +545,16 @@
                                                             </h:outputText>
                                                         </td>
                                                         <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.summaryRow.valueOfStocksAtPurchaseRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
                                                             <h:outputText id="lblPurchaseBillsTotalAtRetailRate" value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyPurchaseByBillTypeBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
+                                                        <td class="text-center" style="width: 60px;"></td>
                                                     </tr>
                                                 </tfoot>
                                             </table>
@@ -497,9 +563,18 @@
 
                                     <!-- Transfers Section Card -->
                                     <div class="card mb-3">
-                                        <div class="card-header bg-info text-white">
-                                            <h:outputText value="&#xf362;" styleClass="fas me-2" /> <!-- fa-exchange-alt icon -->
-                                            <h:outputText value="Transfer Transactions" styleClass="fw-bold"/>
+                                        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <h:outputText value="&#xf362;" styleClass="fas me-2" /> <!-- fa-exchange-alt icon -->
+                                                <h:outputText value="Transfer Transactions" styleClass="fw-bold"/>
+                                            </span>
+                                            <p:commandButton
+                                                value="Drill Down"
+                                                icon="fa fa-search-plus"
+                                                ajax="false"
+                                                styleClass="ui-button-info ui-button-sm"
+                                                action="#{pharmacyDailyStockReportOptimizedController.drillDownAllForSection('TRANSFERS')}"
+                                                title="Drill down to Level 1 with all transfer atomics ticked"/>
                                         </div>
                                         <div class="card-body p-0">
                                             <table class="table table-sm table-hover mb-0">
@@ -511,7 +586,9 @@
                                                         <th class="text-end value-column hide-column">Service Charge</th>
                                                         <th class="text-end value-column">Net Value</th>
                                                         <th class="text-end value-column">Stock Value (Cost)</th>
+                                                        <th class="text-end value-column">Stock Value (Purchase)</th>
                                                         <th class="text-end value-column">Stock Value (Retail)</th>
+                                                        <th class="text-center" style="width: 60px;">Drill</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -546,9 +623,22 @@
                                                                 </h:outputText>
                                                             </td>
                                                             <td class="text-end value-column">
+                                                                <h:outputText value="#{transfer.valueOfStocksAtPurchaseRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
                                                                 <h:outputText value="#{transfer.valueOfStocksAtRetailSaleRate}">
                                                                     <f:convertNumber pattern="#,##0.00"/>
                                                                 </h:outputText>
+                                                            </td>
+                                                            <td class="text-center" style="width: 60px;">
+                                                                <p:commandLink
+                                                                    action="#{pharmacyDailyStockReportOptimizedController.drillDownSingleAtomic('TRANSFERS', transfer)}"
+                                                                    title="Drill down to Level 1 for this atomic only"
+                                                                    ajax="false">
+                                                                    <h:outputText styleClass="fa fa-search-plus"/>
+                                                                </p:commandLink>
                                                             </td>
                                                         </tr>
                                                     </ui:repeat>
@@ -582,10 +672,16 @@
                                                             </h:outputText>
                                                         </td>
                                                         <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.summaryRow.valueOfStocksAtPurchaseRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
                                                             <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyTransferByBillTypeBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
+                                                        <td class="text-center" style="width: 60px;"></td>
                                                     </tr>
                                                 </tfoot>
                                             </table>
@@ -594,9 +690,18 @@
 
                                     <!-- Adjustments Section Card -->
                                     <div class="card mb-3">
-                                        <div class="card-header bg-danger text-white">
-                                            <h:outputText value="&#xf044;" styleClass="fas me-2" /> <!-- fa-edit icon -->
-                                            <h:outputText value="Adjustment Transactions" styleClass="fw-bold"/>
+                                        <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                                            <span>
+                                                <h:outputText value="&#xf044;" styleClass="fas me-2" /> <!-- fa-edit icon -->
+                                                <h:outputText value="Adjustment Transactions" styleClass="fw-bold"/>
+                                            </span>
+                                            <p:commandButton
+                                                value="Drill Down"
+                                                icon="fa fa-search-plus"
+                                                ajax="false"
+                                                styleClass="ui-button-info ui-button-sm"
+                                                action="#{pharmacyDailyStockReportOptimizedController.drillDownAllForSection('ADJUSTMENTS')}"
+                                                title="Drill down to Level 1 with all adjustment atomics ticked"/>
                                         </div>
                                         <div class="card-body p-0">
                                             <table class="table table-sm table-hover mb-0">
@@ -608,7 +713,9 @@
                                                         <th class="text-end value-column hide-column">Service Charge</th>
                                                         <th class="text-end value-column">Net Value</th>
                                                         <th class="text-end value-column">Stock Value (Cost)</th>
+                                                        <th class="text-end value-column">Stock Value (Purchase)</th>
                                                         <th class="text-end value-column">Stock Value (Retail)</th>
+                                                        <th class="text-center" style="width: 60px;">Drill</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -643,9 +750,22 @@
                                                                 </h:outputText>
                                                             </td>
                                                             <td class="text-end value-column">
+                                                                <h:outputText value="#{adjustment.valueOfStocksAtPurchaseRate}">
+                                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                                </h:outputText>
+                                                            </td>
+                                                            <td class="text-end value-column">
                                                                 <h:outputText value="#{adjustment.valueOfStocksAtRetailSaleRate}">
                                                                     <f:convertNumber pattern="#,##0.00"/>
                                                                 </h:outputText>
+                                                            </td>
+                                                            <td class="text-center" style="width: 60px;">
+                                                                <p:commandLink
+                                                                    action="#{pharmacyDailyStockReportOptimizedController.drillDownSingleAtomic('ADJUSTMENTS', adjustment)}"
+                                                                    title="Drill down to Level 1 for this atomic only"
+                                                                    ajax="false">
+                                                                    <h:outputText styleClass="fa fa-search-plus"/>
+                                                                </p:commandLink>
                                                             </td>
                                                         </tr>
                                                     </ui:repeat>
@@ -679,10 +799,16 @@
                                                             </h:outputText>
                                                         </td>
                                                         <td class="text-end value-column">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.summaryRow.valueOfStocksAtPurchaseRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end value-column">
                                                             <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.pharmacyAdjustmentsByBillTypeBundle.summaryRow.valueOfStocksAtRetailSaleRate}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
+                                                        <td class="text-center" style="width: 60px;"></td>
                                                     </tr>
                                                 </tfoot>
                                             </table>
@@ -701,6 +827,7 @@
                                                     <tr>
                                                         <th colspan="5">Description</th>
                                                         <th class="text-end">Cost Rate</th>
+                                                        <th class="text-end">Purchase Rate</th>
                                                         <th class="text-end">Retail Rate</th>
                                                     </tr>
                                                 </thead>
@@ -709,12 +836,20 @@
                                                         <td colspan="5">
                                                             <h:outputText value="Closing Stock Value"/>
                                                         </td>
-                                                        <td class="text-end">
+                                                        <td class="text-end"
+                                                            style="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockCostRateMismatch ? 'background-color:#ffdddd;color:#cc0000;font-weight:bold;' : ''}">
                                                             <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockValueAtCostRate}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
-                                                        <td class="text-end">
+                                                        <td class="text-end"
+                                                            style="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockPurchaseRateMismatch ? 'background-color:#ffdddd;color:#cc0000;font-weight:bold;' : ''}">
+                                                            <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockValueAtPurchaseRate}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td class="text-end"
+                                                            style="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockRetailRateMismatch ? 'background-color:#ffdddd;color:#cc0000;font-weight:bold;' : ''}">
                                                             <h:outputText value="#{pharmacyDailyStockReportOptimizedController.dailyStockBalanceReport.closingStockValue}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>

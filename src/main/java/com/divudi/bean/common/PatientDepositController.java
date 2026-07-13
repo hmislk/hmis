@@ -9,6 +9,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.report.ReportController;
@@ -75,6 +76,8 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     OpdBillController opdBillController;
+    @Inject
+    private FinancialTransactionController financialTransactionController;
 
     @EJB
     PatientFacade patientFacade;
@@ -111,7 +114,24 @@ public class PatientDepositController implements Serializable, ControllerWithPat
 
     public String navigateToAddNewPatientDeposit() {
         clearDataForPatientDeposit();
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            // Use Flash scope to preserve error message across redirect
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
         return "/patient_deposit/receive?faces-redirect=true";
+    }
+
+    public String navigateToReturnPatientDeposit() {
+        clearDataForPatientDeposit();
+        financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+        if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+            // Use Flash scope to preserve error message across redirect
+            JsfUtil.addErrorMessage("Start Your Shift First !");
+            return "/cashier/index?faces-redirect=true";
+        }
+        return "/patient_deposit/pay?faces-redirect=true";
     }
 
     public String navigateToPatientDepositRefundFromOPDBill(Patient p) {
@@ -295,6 +315,10 @@ public class PatientDepositController implements Serializable, ControllerWithPat
     }
 
     public void settlePatientDeposit() {
+        if (printPreview) {
+            JsfUtil.addErrorMessage("Bill already settled");
+            return;
+        }
         if (patient == null) {
             JsfUtil.addErrorMessage("Please Select a Patient");
             return;

@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/payments/pay_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+
+    <ui:define name="admin">
+        <h:panelGroup>
+            <h:form>
+                <p:panel rendered="#{!iouBillController.printPreview}">
+                    <f:facet name="header">
+                        <div class="d-flex align-items-center">
+                            <h:outputText value="Convert IOU to Cash" style="margin-right: 20px;" />
+                            <div class="d-flex" style="margin-left: auto">
+                                <p:commandButton
+                                    value="Convert to Cash"
+                                    icon="pi pi-check"
+                                    class="mx-3 ui-button-success"
+                                    action="#{iouBillController.convertSelectedIousToCash()}"
+                                    ajax="false"
+                                    style="min-width: 150px;">
+                                </p:commandButton>
+                                <p:commandButton
+                                    value="Refresh"
+                                    ajax="false"
+                                    styleClass="ui-button-warning"
+                                    icon="pi pi-refresh"
+                                    action="#{iouBillController.navigateToConvertIouToCash()}"
+                                    style="min-width: 150px;">
+                                </p:commandButton>
+                            </div>
+                        </div>
+                    </f:facet>
+
+                    <div class="row">
+                        <div class="col-8">
+                            <p:panel header="My IOUs">
+                                <p:dataTable
+                                    value="#{iouBillController.myIousToSettle}"
+                                    selectionMode="multiple"
+                                    rowKey="#{mi.id}"
+                                    selection="#{iouBillController.settlingIuos}"
+                                    var="mi">
+                                    <p:column selectionBox="true" width="30"></p:column>
+                                    <p:column headerText="Ref. No" width="4rem">
+                                        <h:outputLabel value="#{mi.bill.referenceNumber}"></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Bill Type" width="4rem">
+                                        <h:outputLabel value="#{mi.bill.billTypeAtomic.label}"></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Debtor" width="4rem">
+                                        <h:outputLabel value="#{mi.bill.staff.person.nameWithTitle}"></h:outputLabel>
+                                        <h:outputLabel value="#{mi.bill.person.nameWithTitle}"></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Created at" width="4rem">
+                                        <h:outputLabel value="#{mi.bill.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}">
+                                            </f:convertDateTime>
+                                        </h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Value" width="4rem">
+                                        <h:outputLabel value="#{mi.paidValue}">
+                                            <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                        </h:outputLabel>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:panel>
+                        </div>
+
+                        <div class="col-4">
+                            <p:panel header="Comment">
+                                <p:inputTextarea
+                                    value="#{iouBillController.comment}"
+                                    rows="5"
+                                    style="width: 100%;"
+                                    placeholder="Enter a comment (required)">
+                                </p:inputTextarea>
+                            </p:panel>
+                        </div>
+                    </div>
+                </p:panel>
+
+                <p:panel rendered="#{iouBillController.printPreview}">
+                    <f:facet name="header">
+                        <div class="d-flex justify-content-between">
+                            <h:outputLabel value="IOU to Cash Conversion Bill"></h:outputLabel>
+                            <p:commandButton
+                                value="Convert More IOUs"
+                                ajax="false"
+                                class="ui-button-warning"
+                                icon="pi pi-refresh"
+                                action="#{iouBillController.navigateToConvertIouToCash()}">
+                            </p:commandButton>
+                        </div>
+                    </f:facet>
+                    <div class="d-flex justify-content-end">
+                        <p:commandButton value="Print"
+                                         class="ui-button-info m-1"
+                                         icon="fa fa-print"
+                                         ajax="false">
+                            <p:printer target="gpBillPreview" />
+                        </p:commandButton>
+                    </div>
+
+                    <h:panelGroup id="gpBillPreview">
+                        <bi:iou_settle_bill bill="#{iouBillController.current}" billController="#{iouBillController}" dup="false"/>
+                    </h:panelGroup>
+                </p:panel>
+
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

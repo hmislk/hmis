@@ -7,16 +7,21 @@ package com.divudi.service.institution;
 
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.ItemListingStrategy;
+import com.divudi.core.data.dto.bedboard.BedBoardSvgDTO;
 import com.divudi.core.data.dto.department.DepartmentCreateRequestDTO;
+import com.divudi.core.data.dto.department.DepartmentPreferenceDTO;
 import com.divudi.core.data.dto.department.DepartmentRelationshipUpdateDTO;
 import com.divudi.core.data.dto.department.DepartmentResponseDTO;
 import com.divudi.core.data.dto.department.DepartmentUpdateRequestDTO;
 import com.divudi.core.data.dto.search.DepartmentDTO;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.UserPreference;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.UserPreferenceFacade;
 import com.divudi.core.util.CommonFunctions;
 
 import javax.ejb.EJB;
@@ -44,24 +49,34 @@ public class DepartmentApiService implements Serializable {
     @EJB
     private InstitutionFacade institutionFacade;
 
+    @EJB
+    private UserPreferenceFacade userPreferenceFacade;
+
     /**
      * Search departments by name or code with optional type and institution filtering
      * Uses DTO constructor queries for optimal performance
      */
     public List<DepartmentDTO> searchDepartments(String query, DepartmentType type, Long institutionId, Integer limit) throws Exception {
-        if (query == null || query.trim().isEmpty()) {
-            throw new Exception("Department search query is required");
+        boolean hasQuery = query != null && !query.trim().isEmpty();
+
+        // At least one filter (query or institutionId) must be provided so we
+        // don't return the entire department table. Either alone is sufficient.
+        if (!hasQuery && institutionId == null) {
+            throw new Exception("Either query or institutionId is required");
         }
 
         Map<String, Object> params = new HashMap<>();
-        params.put("query", "%" + query.toUpperCase() + "%");
 
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT new com.divudi.core.data.dto.search.DepartmentDTO(")
             .append("d.id, d.name, d.code) ")
             .append("FROM Department d ")
-            .append("WHERE d.retired = false ")
-            .append("AND (upper(d.name) LIKE :query OR upper(d.code) LIKE :query) ");
+            .append("WHERE d.retired = false ");
+
+        if (hasQuery) {
+            jpql.append("AND (upper(d.name) LIKE :query OR upper(d.code) LIKE :query) ");
+            params.put("query", "%" + query.toUpperCase() + "%");
+        }
 
         // Add type filter if provided
         if (type != null) {
@@ -137,6 +152,15 @@ public class DepartmentApiService implements Serializable {
         department.setFax(request.getFax());
         department.setEmail(request.getEmail());
 
+        // Bed-board SVG fields (issue #21592) — stored verbatim; sanitised at
+        // render time by BedBoardController.sanitizeSvg().
+        if (request.getSvgParentView() != null) {
+            department.setSvgParentView(request.getSvgParentView());
+        }
+        if (request.getSvgChildView() != null) {
+            department.setSvgChildView(request.getSvgChildView());
+        }
+
         // Set site if provided
         if (request.getSiteId() != null) {
             Institution site = loadAndValidateSite(request.getSiteId());
@@ -163,8 +187,9 @@ public class DepartmentApiService implements Serializable {
         department.setCreatedAt(Calendar.getInstance().getTime());
         department.setRetired(false);
 
-        // Save department
-        departmentFacade.create(department);
+        // Save department and flush so the IDENTITY-generated id is populated
+        // before we build the response DTO (issue #20276)
+        departmentFacade.createAndFlush(department);
 
         return buildDepartmentResponseDTO(department, "Department created successfully");
     }
@@ -237,8 +262,16 @@ public class DepartmentApiService implements Serializable {
             department.setPharmacyMarginFromPurchaseRate(request.getPharmacyMarginFromPurchaseRate());
         }
 
-        // Save updated department
-        departmentFacade.edit(department);
+        // Bed-board SVG fields (issue #21592) — stored verbatim.
+        if (request.getSvgParentView() != null) {
+            department.setSvgParentView(request.getSvgParentView());
+        }
+        if (request.getSvgChildView() != null) {
+            department.setSvgChildView(request.getSvgChildView());
+        }
+
+        // Save updated department and flush so response reflects persisted state
+        departmentFacade.editAndFlush(department);
 
         return buildDepartmentResponseDTO(department, "Department updated successfully");
     }
@@ -268,8 +301,8 @@ public class DepartmentApiService implements Serializable {
         department.setRetiredAt(Calendar.getInstance().getTime());
         department.setRetireComments(retireComments);
 
-        // Save retired department
-        departmentFacade.edit(department);
+        // Save retired department and flush so response reflects persisted state
+        departmentFacade.editAndFlush(department);
 
         return buildDepartmentResponseDTO(department, "Department retired successfully");
     }
@@ -321,10 +354,118 @@ public class DepartmentApiService implements Serializable {
             department.setSuperDepartment(superDepartment);
         }
 
-        // Save updated department
-        departmentFacade.edit(department);
+        // Save updated department and flush so response reflects persisted state
+        departmentFacade.editAndFlush(department);
 
         return buildDepartmentResponseDTO(department, "Department relationships updated successfully");
+    }
+
+    /**
+     * Read the department-scoped UserPreference settings.
+     * Returns entity defaults (with preferenceExists=false) when the department
+     * has no persisted UserPreference yet.
+     */
+    public DepartmentPreferenceDTO getDepartmentPreferences(Long id) throws Exception {
+        Department department = loadAndValidateDepartment(id);
+
+        UserPreference preference = findDepartmentPreference(department);
+        boolean exists = preference != null;
+        if (!exists) {
+            // Transient instance so the getters supply the entity defaults
+            // without persisting anything.
+            preference = new UserPreference();
+        }
+
+        return buildDepartmentPreferenceDTO(department, preference, exists);
+    }
+
+    /**
+     * Update the department-scoped UserPreference settings.
+     * Only the fields present (non-null) in the request are changed; the
+     * UserPreference record is created if the department does not have one yet.
+     */
+    public DepartmentPreferenceDTO updateDepartmentPreferences(Long id, DepartmentPreferenceDTO request, WebUser user) throws Exception {
+        if (request == null) {
+            throw new Exception("Request body is required");
+        }
+        if (user == null) {
+            throw new Exception("User is required for updating department preferences");
+        }
+
+        Department department = loadAndValidateDepartment(id);
+
+        UserPreference preference = findDepartmentPreference(department);
+        boolean creating = preference == null;
+        if (creating) {
+            preference = new UserPreference();
+            preference.setDepartment(department);
+            // Leave institution null: SessionController's institution-preference
+            // fallback query (`where p.institution=:ins`) does not exclude
+            // department-scoped rows, so setting institution here would let this
+            // department preference shadow the real institution-wide preference
+            // for every other department in the same institution. This matches
+            // the admin department-preference UI flow.
+        }
+
+        // Partial update: apply only the strategy fields supplied in the body.
+        if (request.getOpdItemListingStrategy() != null) {
+            preference.setOpdItemListingStrategy(parseItemListingStrategy(request.getOpdItemListingStrategy(), "opdItemListingStrategy"));
+        }
+        if (request.getCcItemListingStrategy() != null) {
+            preference.setCcItemListingStrategy(parseItemListingStrategy(request.getCcItemListingStrategy(), "ccItemListingStrategy"));
+        }
+        if (request.getInwardItemListingStrategy() != null) {
+            preference.setInwardItemListingStrategy(parseItemListingStrategy(request.getInwardItemListingStrategy(), "inwardItemListingStrategy"));
+        }
+
+        if (creating) {
+            userPreferenceFacade.createAndFlush(preference);
+        } else {
+            userPreferenceFacade.editAndFlush(preference);
+        }
+
+        return buildDepartmentPreferenceDTO(department, preference, true);
+    }
+
+    /**
+     * Find the most recent UserPreference scoped to the given department, or
+     * null if the department has none. Mirrors the lookup used by
+     * SessionController.
+     */
+    private UserPreference findDepartmentPreference(Department department) {
+        Map<String, Object> params = new HashMap<>();
+        params.put("dep", department);
+        return userPreferenceFacade.findFirstByJpql(
+                "select p from UserPreference p where p.department=:dep order by p.id desc",
+                params);
+    }
+
+    /**
+     * Parse an ItemListingStrategy enum name, throwing a descriptive exception
+     * for an unknown value so the API can return HTTP 400.
+     */
+    private ItemListingStrategy parseItemListingStrategy(String value, String fieldName) throws Exception {
+        try {
+            return ItemListingStrategy.valueOf(value.trim());
+        } catch (IllegalArgumentException e) {
+            throw new Exception("Invalid " + fieldName + " value: " + value);
+        }
+    }
+
+    /**
+     * Build a DepartmentPreferenceDTO from a (possibly transient) UserPreference.
+     * The getters apply the entity defaults when a value is unset.
+     */
+    private DepartmentPreferenceDTO buildDepartmentPreferenceDTO(Department department, UserPreference preference, boolean exists) {
+        DepartmentPreferenceDTO dto = new DepartmentPreferenceDTO();
+        dto.setId(preference.getId());
+        dto.setDepartmentId(department.getId());
+        dto.setDepartmentName(department.getName());
+        dto.setPreferenceExists(exists);
+        dto.setOpdItemListingStrategy(preference.getOpdItemListingStrategy().name());
+        dto.setCcItemListingStrategy(preference.getCcItemListingStrategy().name());
+        dto.setInwardItemListingStrategy(preference.getInwardItemListingStrategy().name());
+        return dto;
     }
 
     // Private helper methods
@@ -461,6 +602,9 @@ public class DepartmentApiService implements Serializable {
         response.setPharmacyMarginFromPurchaseRate(department.getPharmacyMarginFromPurchaseRate());
         response.setActive(!department.isRetired());
         response.setCreatedAt(department.getCreatedAt());
+        // Bed-board SVG fields (issue #21592) — returned verbatim.
+        response.setSvgParentView(department.getSvgParentView());
+        response.setSvgChildView(department.getSvgChildView());
 
         // Set institution details
         if (department.getInstitution() != null) {
@@ -482,5 +626,39 @@ public class DepartmentApiService implements Serializable {
 
         response.setMessage(message);
         return response;
+    }
+
+    /**
+     * Read just the bed-board SVG fields of a department (issue #21592).
+     * Returned verbatim — sanitisation happens at render time on the bed board.
+     */
+    public BedBoardSvgDTO getDepartmentSvg(Long id) throws Exception {
+        Department department = loadAndValidateDepartment(id);
+        return new BedBoardSvgDTO(department.getId(), department.getName(),
+                department.getSvgParentView(), department.getSvgChildView());
+    }
+
+    /**
+     * Update just the bed-board SVG fields of a department (issue #21592).
+     * Only the fields present (non-null) in the request are changed; pass an
+     * empty string to clear a drawing. SVG is stored verbatim.
+     */
+    public BedBoardSvgDTO updateDepartmentSvg(Long id, BedBoardSvgDTO request, WebUser user) throws Exception {
+        if (request == null) {
+            throw new Exception("Request body is required");
+        }
+        if (user == null) {
+            throw new Exception("User is required for updating department SVG");
+        }
+        Department department = loadAndValidateDepartment(id);
+        if (request.getSvgParentView() != null) {
+            department.setSvgParentView(request.getSvgParentView());
+        }
+        if (request.getSvgChildView() != null) {
+            department.setSvgChildView(request.getSvgChildView());
+        }
+        departmentFacade.editAndFlush(department);
+        return new BedBoardSvgDTO(department.getId(), department.getName(),
+                department.getSvgParentView(), department.getSvgChildView());
     }
 }

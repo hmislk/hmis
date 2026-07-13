@@ -8,6 +8,8 @@
  */
 package com.divudi.bean.common;
 
+import com.divudi.core.data.BankAccountType;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.hr.BankAccount;
 import com.divudi.core.facade.BankAccountFacade;
@@ -41,6 +43,7 @@ public class BankAccountController implements Serializable {
     private BankAccountFacade ejbFacade;
     private BankAccount current;
     private List<BankAccount> items = null;
+    private Institution filterBank;
 
     public String manageBankAccounts() {
         current = new BankAccount();
@@ -68,7 +71,7 @@ public class BankAccountController implements Serializable {
         HashMap params = new HashMap();
         jpql = "select b from BankAccount b "
                 + " where b.retired=false "
-                + " and (b.accountNo like :q or b.accountName like :q ) "
+                + " and (UPPER(b.accountNo) like :q or UPPER(b.accountName) like :q ) "
                 + " order by b.accountName";
         params.put("q", "%" + qry.toUpperCase() + "%");
         list = getFacade().findByJpql(jpql, params);
@@ -81,6 +84,7 @@ public class BankAccountController implements Serializable {
 
     public void prepareAdd() {
         current = new BankAccount();
+        current.setBankAccountType(BankAccountType.BANK_ACCOUNT);
     }
 
     public void recreateModel() {
@@ -88,10 +92,23 @@ public class BankAccountController implements Serializable {
     }
 
     public void saveSelected() {
-        if (getCurrent().getAccountNo().isEmpty() || getCurrent().getAccountNo() == null) {
+        if (getCurrent().getInstitution() == null) {
+            JsfUtil.addErrorMessage("Please select an Institution");
+            return;
+        }
+        if (getCurrent().getBank() == null) {
+            JsfUtil.addErrorMessage("Please select a Bank");
+            return;
+        }
+        if (getCurrent().getBankBranch() == null) {
+            JsfUtil.addErrorMessage("Please select a Bank Branch");
+            return;
+        }
+        if (getCurrent().getAccountNo() == null || getCurrent().getAccountNo().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter Account Number");
             return;
         }
+        getCurrent().setBankAccountType(BankAccountType.BANK_ACCOUNT);
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -157,10 +174,29 @@ public class BankAccountController implements Serializable {
         return ejbFacade;
     }
 
+    public void onFilterBankChange() {
+        recreateModel();
+    }
+
+    public Institution getFilterBank() {
+        return filterBank;
+    }
+
+    public void setFilterBank(Institution filterBank) {
+        this.filterBank = filterBank;
+    }
+
     public List<BankAccount> getItems() {
         if (items == null || items.isEmpty()) {
-            String j = "SELECT ba FROM BankAccount ba WHERE ba.retired = false ORDER BY ba.accountNo";
-            items = getFacade().findByJpql(j);
+            String j;
+            HashMap params = new HashMap();
+            if (filterBank != null) {
+                j = "SELECT ba FROM BankAccount ba WHERE ba.retired = false AND ba.bank = :bank ORDER BY ba.accountNo";
+                params.put("bank", filterBank);
+            } else {
+                j = "SELECT ba FROM BankAccount ba WHERE ba.retired = false ORDER BY ba.accountNo";
+            }
+            items = getFacade().findByJpql(j, params);
             if (items == null) {
                 items = new ArrayList<>();
             }

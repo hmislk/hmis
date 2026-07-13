@@ -83,6 +83,9 @@ public class VtmController implements Serializable {
     boolean reportedAs;
     private boolean editable;
 
+    // List page DTO cache
+    private List<VtmDto> pharmacyVtmListDtos;
+
     // Filter state for active/inactive VTMs
     private String filterStatus = "active"; // "active", "inactive", "all"
 
@@ -823,6 +826,7 @@ public class VtmController implements Serializable {
     public void refreshData() {
         items = null;
         clearDtoCache();
+        pharmacyVtmListDtos = null;
 
         // Clear selection if current item doesn't match new filter
         if (current != null) {
@@ -870,6 +874,40 @@ public class VtmController implements Serializable {
             default:
                 return "Active VTMs";
         }
+    }
+
+    // ===================== List Page Methods =====================
+
+    public List<VtmDto> getPharmacyVtmListDtos() {
+        if (pharmacyVtmListDtos == null) {
+            String jpql = "SELECT new com.divudi.core.data.dto.VtmDto("
+                    + "a.id, a.name, a.code, a.descreption, "
+                    + "a.instructions, a.retired, a.inactive) "
+                    + "FROM Vtm a "
+                    + "WHERE a.retired=false AND a.departmentType=:dep ";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("dep", DepartmentType.Pharmacy);
+
+            if ("active".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", false);
+            } else if ("inactive".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", true);
+            }
+
+            jpql += "ORDER BY a.name";
+
+            pharmacyVtmListDtos = (List<VtmDto>) getFacade().findLightsByJpql(jpql, params);
+        }
+        return pharmacyVtmListDtos;
+    }
+
+    public String navigateToVtmList() {
+        pharmacyVtmListDtos = null;
+        getPharmacyVtmListDtos();
+        return "/pharmacy/admin/vtm_list?faces-redirect=true";
     }
 
     // ===================== Toggle Status Methods =====================

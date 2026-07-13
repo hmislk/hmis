@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -70,7 +70,7 @@
                                         class="w-100"
                                         inputStyleClass="w-100"
                                         value="#{storeAmpController.selectedAmpDto}"
-                                        completeMethod="#{storeAmpController.completeAmpDto}"
+                                        queryDelay="300" completeMethod="#{storeAmpController.completeAmpDto}"
                                         var="dto"
                                         itemLabel="#{dto.name}"
                                         itemValue="#{dto}"
@@ -343,6 +343,51 @@
                                                         class="form-control"
                                                         disabled="#{not storeAmpController.editable}"/>
                                                 </h:panelGroup>
+                                            </div>
+                                        </div>
+
+                                        <!-- Strength & Dispensing Section -->
+                                        <h:outputText value="Strength &amp; Dispensing" styleClass="section-header d-block"/>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-4">
+                                                <p:outputLabel for="txtStrength" value="Strength"/>
+                                                <p:inputText id="txtStrength"
+                                                             value="#{storeAmpController.current.strengthOfAnIssueUnit}"
+                                                             class="form-control"
+                                                             disabled="#{not storeAmpController.editable}"
+                                                             placeholder="Enter strength value"/>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p:outputLabel for="selStrengthUnit" value="Strength Unit"/>
+                                                <p:selectOneMenu
+                                                    id="selStrengthUnit"
+                                                    value="#{storeAmpController.current.strengthUnit}"
+                                                    styleClass="form-control"
+                                                    filter="true"
+                                                    disabled="#{not storeAmpController.editable}">
+                                                    <f:selectItem itemLabel="-- Select Strength Unit --" itemValue="#{null}"/>
+                                                    <f:selectItems
+                                                        value="#{measurementUnitController.items}"
+                                                        var="m"
+                                                        itemValue="#{m}"
+                                                        itemLabel="#{m.name}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <p:outputLabel for="selIssueUnit" value="Issue Unit"/>
+                                                <p:selectOneMenu
+                                                    id="selIssueUnit"
+                                                    value="#{storeAmpController.current.issueUnit}"
+                                                    styleClass="form-control"
+                                                    filter="true"
+                                                    disabled="#{not storeAmpController.editable}">
+                                                    <f:selectItem itemLabel="-- Select Issue Unit --" itemValue="#{null}"/>
+                                                    <f:selectItems
+                                                        value="#{measurementUnitController.issueUnits}"
+                                                        var="m"
+                                                        itemValue="#{m}"
+                                                        itemLabel="#{m.name}"/>
+                                                </p:selectOneMenu>
                                             </div>
                                         </div>
 

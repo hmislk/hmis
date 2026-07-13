@@ -163,6 +163,15 @@
                                     disabled="#{vmpController.current.id eq null}"
                                     title="View audit history for this VMP record"/>
 
+                                <p:commandButton
+                                    id="btnViewList"
+                                    value="All VMPs List"
+                                    action="#{vmpController.navigateToVmpList()}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary"
+                                    icon="fas fa-list"
+                                    title="View and download the full list of VMPs"/>
+
                             </div>
                         </div>
 
@@ -212,7 +221,6 @@
                                     maxlength="255"
                                     disabled="#{!vmpController.editable}"/>
 
-                                <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
                                 <p:outputLabel for="acVtm" value="Generic Name" styleClass="fw-bold"/>
                                 <p:autoComplete 
                                     id="acVtm"
@@ -289,22 +297,8 @@
                                         itemLabel="#{m.name}"/>
                                 </p:selectOneMenu>
 
-                                <p:outputLabel for="selDoseUnit" value="Dose Unit" styleClass="fw-bold"/>
-                                <p:selectOneMenu
-                                    id="selDoseUnit"
-                                    value="#{vmpController.current.measurementUnit}"
-                                    styleClass="w-100"
-                                    filter="true"
-                                    disabled="#{!vmpController.editable}">
-                                    <f:selectItem itemLabel="-- Select Dose Unit --" itemValue="#{null}"/>
-                                    <f:selectItems
-                                        value="#{measurementUnitController.items}"
-                                        var="m"
-                                        itemValue="#{m}"
-                                        itemLabel="#{m.name}"/>
-                                </p:selectOneMenu>
 
-                                <p:outputLabel for="selIssueUnit" value="Dispensing Unit" styleClass="fw-bold"/>
+                                <p:outputLabel for="selIssueUnit" value="Issue Unit" styleClass="fw-bold"/>
                                 <p:selectOneMenu 
                                     id="selIssueUnit"
                                     value="#{vmpController.current.issueUnit}"

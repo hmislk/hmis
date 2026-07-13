@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
@@ -17,14 +17,17 @@
                             <p:outputLabel value="From Date" for="fromDate" class="m-3">
                             </p:outputLabel>
                         </h:panelGroup>
-                        <p:calendar
+                        <p:datePicker
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="fromDate"
                                 value="#{pharmacyReportController.fromDate}"
-                                navigator="false"
-                                pattern="#{sessionController.applicationPreference.longDateFormat}"
-                        />
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                showTime="true"                                                           
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
 
                         <p:spacer width="20"/>
 
@@ -33,14 +36,17 @@
                             <p:outputLabel value="To Date" for="toDate" class="m-3">
                             </p:outputLabel>
                         </h:panelGroup>
-                        <p:calendar
+                        <p:datePicker
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="toDate"
                                 value="#{pharmacyReportController.toDate}"
-                                navigator="false"
-                                pattern="#{sessionController.applicationPreference.longDateFormat}"
-                        />
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                showTime="true"                                                           
+                                monthNavigator="true"           
+                                yearNavigator="true"                              
+                                timeInput="true"                
+                                />
 
                         <p:spacer width="20"/>
 
@@ -241,7 +247,7 @@
                         <p:autoComplete
                                 id="phmItem"
                                 value="#{pharmacyReportController.selectedAmpDto}"
-                                completeMethod="#{itemController.completeAmpItemDto}"
+                                queryDelay="300" completeMethod="#{itemController.completeAmpItemDto}"
                                 converter="ampDtoConverter"
                                 var="item"
                                 class="w-100"

@@ -341,29 +341,47 @@ public class DisposalReturnWorkflowController implements Serializable {
      * @param returnBillToClose The return bill to close
      */
     public void closeDisposalReturn(Bill returnBillToClose) {
-        if (returnBillToClose == null) {
+        if (returnBillToClose == null || returnBillToClose.getId() == null) {
             JsfUtil.addErrorMessage("No disposal return selected to close");
             return;
         }
 
+        // The row passed in comes from a list loaded earlier in the session and can
+        // be STALE - the return may have been settled after the list was loaded.
+        // Validating and merging the stale entity reverted settled bills back to
+        // drafts (completed/completedAt/deptId/insId cleared) while their items and
+        // stock movements remained - the #21266 RC5 orphan-return corruption
+        // (Ruhunu bills 4336218 / 4337297, 2026-03-25). Always validate and edit
+        // the CURRENT row, bypassing the L2 cache (another app server may have
+        // written it under dual-version operation).
+        Bill freshBill = billFacade.findWithoutCache(returnBillToClose.getId());
+        if (freshBill == null) {
+            JsfUtil.addErrorMessage("Disposal return not found");
+            return;
+        }
+
         // Verify the bill is not already completed
-        if (returnBillToClose.isCompleted()) {
+        if (freshBill.isCompleted()) {
             JsfUtil.addErrorMessage("Cannot close a completed disposal return");
+            fillDisposalReturnsToFinalize();
+            fillDisposalReturnsToApprove();
             return;
         }
 
         // Verify the bill is not already closed
-        if (returnBillToClose.isBillClosed()) {
+        if (freshBill.isBillClosed()) {
             JsfUtil.addErrorMessage("This disposal return is already closed");
+            fillDisposalReturnsToFinalize();
+            fillDisposalReturnsToApprove();
             return;
         }
 
         try {
             // Mark the bill as closed
-            returnBillToClose.setBillClosed(true);
+            freshBill.setBillClosed(true);
 
             // Save the changes
-            billFacade.edit(returnBillToClose);
+            billFacade.edit(freshBill);
 
             // Refresh the lists
             fillDisposalReturnsToFinalize();

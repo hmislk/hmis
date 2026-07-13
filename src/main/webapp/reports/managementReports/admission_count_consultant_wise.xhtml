@@ -10,7 +10,11 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
 
-                <h:form >
+                <h:form id="admissionCountForm">
+                    <h:inputHidden id="specialtyLineChartImg" value="#{inwardReportController.specialtyLineChartImage}"/>
+                    <h:inputHidden id="specialtyBarChartImg"  value="#{inwardReportController.specialtyBarChartImage}"/>
+                    <h:inputHidden id="doctorLineChartImg"    value="#{inwardReportController.doctorLineChartImage}"/>
+                    <h:inputHidden id="doctorBarChartImg"     value="#{inwardReportController.doctorBarChartImage}"/>
                     <p:panel header="Doctor Wise Admission Count" >
                         <h:panelGrid columns="8" class="w-100" >
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -76,21 +80,23 @@
                                 action="/reports/managementReports/admission_count_consultant_wise_print?faces-redirect=true">
                             </p:commandButton>
 
-                            <p:commandButton 
+                            <p:commandButton
+                                id="downloadBtn"
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
-                                value="Download" >
-                                <p:dataExporter type="xlsx" target="countTable" fileName="Admission_Count_Doctor_Wise.xlsx"/>
+                                value="Download"
+                                onclick="captureChartsForDownload();">
+                                <p:fileDownload value="#{inwardReportController.admissionCountExcelWithCharts}"/>
                             </p:commandButton>
 
-                            <p:commandButton 
+                            <p:commandButton
                                 class="ui-button-danger mx-1"
-                                rendered="false"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
-                                value="PDF" >
-                                <p:dataExporter type="pdf" target="countTable" fileName="Admission_Count_Doctor_Wise.pdf"/>
+                                value="PDF"
+                                onclick="captureChartsForDownload();">
+                                <p:fileDownload value="#{inwardReportController.admissionCountPdf}"/>
                             </p:commandButton>
 
                         </div>
@@ -199,7 +205,7 @@
                                 </p:column>
 
                                 <p:column headerText="Total" styleClass="text-center" 
-                                          style="background-color: #a0a0a0; color: black; font-weight: bold;">
+                                          style="background-color: #adacac; color: black; font-weight: bold;">
                                     <h:outputText value="#{item.totalAdmissions}"/>
                                 </p:column>
                             </p:dataTable>
@@ -226,23 +232,23 @@
                                     <f:convertDateTime pattern="dd/MMM/yyyy" />
                                 </h:outputText>
                             </f:facet>
-                            <p:tabView id="chartTabs" dynamic="true" cache="true">
-                                <p:tab title="Specialty-wise Line Chart" onTabShow="PF('specialtyLineWV').reinit();">
+                            <p:tabView id="chartTabs">
+                                <p:tab title="Specialty-wise Line Chart">
                                     <p:panel header="Specialty Wise Admission Trend">
                                         <p:chart value="#{inwardReportController.specialtyLineChartModel}" widgetVar="specialtyLineWV" style="width:100%; height:500px;" />
                                     </p:panel>
                                 </p:tab>
-                                <p:tab title="Specialty-wise Bar Chart" onTabShow="PF('specialtyBarWV').reinit();">
+                                <p:tab title="Specialty-wise Bar Chart">
                                     <p:panel header="Specialty Wise Admission Count">
                                         <p:chart value="#{inwardReportController.specialtyBarChartModel}" widgetVar="specialtyBarWV" style="width:100%; height:500px;" />
                                     </p:panel>
                                 </p:tab>
-                                <p:tab title="Doctor-wise Line Chart" onTabShow="PF('doctorLineWV').reinit();">
+                                <p:tab title="Doctor-wise Line Chart">
                                     <p:panel header="Doctor Wise Admission Trend">
                                         <p:chart value="#{inwardReportController.lineChartModel}" widgetVar="doctorLineWV" style="width:100%; height:500px;" />
                                     </p:panel>
                                 </p:tab>
-                                <p:tab title="Doctor-wise Bar Chart" onTabShow="PF('doctorBarWV').reinit();">
+                                <p:tab title="Doctor-wise Bar Chart">
                                     <p:panel header="Doctor Wise Admission Count">
                                         <p:chart value="#{inwardReportController.barChartModel}" widgetVar="doctorBarWV" style="width:100%; height:500px;" />
                                     </p:panel>
@@ -250,8 +256,61 @@
                             </p:tabView>
                         </p:panel>
 
-                    </p:panel>
+                        <!-- Off-screen charts used only for Excel export.
+                             These are NOT inside a display:none container, so Chart.js
+                             initialises them at full 900x450 px on every page load. -->
+                        <h:panelGroup layout="block"
+                                      style="position:fixed; left:-9999px; top:0; width:900px;"
+                                      rendered="#{not empty inwardReportController.list}">
+                            <div style="width:900px; height:450px;">
+                                <p:chart value="#{inwardReportController.specialtyLineChartModel}"
+                                         widgetVar="expSpecialtyLineWV"
+                                         style="width:100%; height:450px;"/>
+                            </div>
+                            <div style="width:900px; height:450px;">
+                                <p:chart value="#{inwardReportController.specialtyBarChartModel}"
+                                         widgetVar="expSpecialtyBarWV"
+                                         style="width:100%; height:450px;"/>
+                            </div>
+                            <div style="width:900px; height:450px;">
+                                <p:chart value="#{inwardReportController.lineChartModel}"
+                                         widgetVar="expDoctorLineWV"
+                                         style="width:100%; height:450px;"/>
+                            </div>
+                            <div style="width:900px; height:450px;">
+                                <p:chart value="#{inwardReportController.barChartModel}"
+                                         widgetVar="expDoctorBarWV"
+                                         style="width:100%; height:450px;"/>
+                            </div>
+                        </h:panelGroup>
 
+                    </p:panel>
+                    <h:outputScript>
+                        function captureChartsForDownload() {
+                        // Capture from the off-screen 900x450 export charts — these are
+                        // always visible to Chart.js (just off-screen), so toBase64Image()
+                        // works without any resize tricks.
+                        var pairs = [
+                        { wv: 'expSpecialtyLineWV', id: 'admissionCountForm:specialtyLineChartImg' },
+                        { wv: 'expSpecialtyBarWV',  id: 'admissionCountForm:specialtyBarChartImg'  },
+                        { wv: 'expDoctorLineWV',    id: 'admissionCountForm:doctorLineChartImg'    },
+                        { wv: 'expDoctorBarWV',     id: 'admissionCountForm:doctorBarChartImg'     }
+                        ];
+                        pairs.forEach(function(pair) {
+                        try {
+                        var widget = PF(pair.wv);
+                        if (widget &amp;&amp; widget.chart) {
+                        var input = document.getElementById(pair.id);
+                        if (input) {
+                        input.value = widget.chart.toBase64Image('image/png', 1);
+                        }
+                        }
+                        } catch(e) {
+                        console.warn('Chart export capture failed: ' + pair.wv, e);
+                        }
+                        });
+                        }
+                    </h:outputScript>
                 </h:form>
 
             </ui:define>

@@ -189,6 +189,7 @@ public class DrawerService {
         drawerEntry.setBill(payment.getBill());
         drawerEntry.setDrawer(currentDrawer);
         drawerEntry.setWebUser(user);
+        drawerEntry.setTransactionValue(payment.getPaidValue());
         Double beforeInHandValue = 0.0;
 
         if (payment.getPaymentMethod() != null) {
@@ -573,6 +574,18 @@ public class DrawerService {
         return drawer;
     }
 
+    public Drawer findUsersDrawerWithoutCreate(WebUser webUser) {
+        if (webUser == null) {
+            return null;
+        }
+        HashMap m = new HashMap();
+        String jpql = "select d from Drawer d "
+                + " where d.retired=false "
+                + " and d.drawerUser=:user";
+        m.put("user", webUser);
+        return drawerFacade.findFirstByJpql(jpql, m);
+    }
+
     /**
      * Applies a drawer adjustment by creating a DrawerEntry and updating the
      * appropriate balance fields on the drawer for the given payment method.
@@ -588,7 +601,14 @@ public class DrawerService {
             return;
         }
         synchronized (drawer) {
-            drawerEntryUpdate(bill, drawer, paymentMethod, user, delta);
+            // The drawer history filters by webUser, so the entry must be tagged with the
+            // drawer owner (cashier whose drawer changed), not the actor approving/applying it.
+            WebUser drawerOwner = drawer.getDrawerUser() != null ? drawer.getDrawerUser() : user;
+            drawerEntryUpdate(bill, drawer, paymentMethod, drawerOwner, delta);
+            if (drawerEntry != null) {
+                drawerEntry.setCreater(user);
+                save(drawerEntry);
+            }
             switch (paymentMethod) {
                 case OnCall:
                     drawer.setOnCallInHandValue(safeAdd(drawer.getOnCallInHandValue(), delta));

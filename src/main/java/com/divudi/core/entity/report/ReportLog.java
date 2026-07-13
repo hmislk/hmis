@@ -10,7 +10,7 @@ import java.util.Date;
 @Entity
 public class ReportLog implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     static final long serialVersionUID = 1L;

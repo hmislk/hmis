@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block announce %}
+  <span style="opacity:0.85">
+    Documentation auto-generated from the
+    <a href="https://github.com/hmislk/hmis/wiki" style="color:inherit;text-decoration:underline">GitHub Wiki</a>.
+    Found an issue?
+    <a href="https://github.com/hmislk/hmis/wiki" style="color:inherit;text-decoration:underline">Edit on Wiki</a>.
+  </span>
+{% endblock %}
+
+{% block styles %}
+  {{ super() }}
+  <style>
+    /* Images: ensure they are responsive and don't overflow */
+    .md-content img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid var(--md-default-fg-color--lightest);
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin: 1rem 0;
+    }
+
+    /* Wider content area since we hide the sidebar */
+    .md-content__inner {
+      max-width: 960px;
+    }
+
+    /* Better table styling */
+    .md-content table {
+      display: table;
+      width: 100%;
+    }
+
+    .md-content table th {
+      background: var(--md-primary-fg-color);
+      color: var(--md-primary-bg-color);
+    }
+
+    /* Code block improvements */
+    .md-content pre {
+      border-radius: 6px;
+    }
+
+    /* Make admonitions more visible */
+    .md-typeset .admonition {
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+  </style>
+{% endblock %}

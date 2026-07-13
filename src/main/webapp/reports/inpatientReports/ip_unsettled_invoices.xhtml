@@ -228,11 +228,21 @@
                                 <h:outputText styleClass="fa fa-user-md mr-2"/>
                                 <p:outputLabel value="Consultant" class="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu value="#{inwardReportController.consultant}" filter="true" class="w-100">
-                                <f:selectItem itemLabel="All Consultants"/>
-                                <f:selectItems value="#{bookingController.consultants}" var="mys" itemLabel="#{mys.person.nameWithTitle}" itemValue="#{mys}" />
 
-                            </p:selectOneMenu>
+                            <p:autoComplete 
+                                forceSelection="true" 
+                                value="#{inwardReportController.consultant}" 
+                                requiredMessage="Please select referring consultant"
+                                completeMethod="#{consultantController.completeConsultant}" 
+                                var="mysp"
+                                itemLabel="#{mysp.person.nameWithTitle}" 
+                                itemValue="#{mysp}"
+                                styleClass="form-control w-100"
+                                class="w-100" 
+                                placeholder="Consultant"
+                                maxResults="15"
+                                inputStyleClass="w-100">
+                            </p:autoComplete>
 
                             <!-- Service Centre -->
                             <h:panelGroup>
@@ -257,8 +267,8 @@
                             </h:panelGroup>
                             <p:selectOneMenu value="#{inwardReportController.sponsor}" filter="true" class="w-100">
                                 <f:selectItem itemLabel="All Sponsors"/>
-                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="cc" 
-                                                itemValue="#{cc.attrs}" ></f:selectItems>
+                                <f:selectItems  value="#{creditCompanyController.creditCompanies}" var="s" 
+                                                itemValue="#{s}" itemLabel="#{s.name}" ></f:selectItems>
                             </p:selectOneMenu>
 
                             <!--Discharge Type--> 
@@ -341,21 +351,26 @@
                             <p:commandButton class="ui-button-success mx-1"
                                              icon="fas fa-file-excel"
                                              ajax="false"
-                                             value="Download Excel" />
+                                             value="Download Excel">
+                                <p:fileDownload value="#{inwardReportController.ipUnsettledInvoicesExcel}" />
+                            </p:commandButton>
 
                             <p:commandButton class="ui-button-primary mx-1"
                                              icon="fas fa-print"
                                              ajax="false"
-                                             value="Print" />
+                                             value="Print" onclick="hidePaginatorBeforePrint()">
+                                <p:printer target="printPanel"/>
+                            </p:commandButton>
 
                             <p:commandButton class="ui-button-danger mx-1"
                                              icon="fas fa-file-pdf"
                                              ajax="false"
-                                             value="PDF" />
+                                             value="PDF"
+                                             action="#{inwardReportController.downloadIpUnsettledInvoicesPdf}" />
 
                         </div>
 
-                        <p:panel header="Discharged Patients Without Active Final Invoice">
+                        <p:panel header="Discharged Patients Without Active Final Invoice" id='printPanel'>
 
                             <h:outputText value="Criteria:" style="font-weight: bold; font-size: 16px;" />
                             <!-- Summary Table -->
@@ -495,6 +510,20 @@
                             </div>
                         </p:panel>
                     </p:panel>
+                    <h:outputScript>
+                        function hidePaginatorBeforePrint() {
+                        let paginators = document.querySelectorAll('.ui-paginator');
+                        paginators.forEach(el => el.style.display = 'none');
+                        }
+
+                        function restorePaginatorAfterPrint() {
+                        let paginators = document.querySelectorAll('.ui-paginator');
+                        paginators.forEach(el => el.style.display = '');
+                        }
+
+                        window.addEventListener('afterprint', restorePaginatorAfterPrint);
+                        window.addEventListener('beforeprint', hidePaginatorBeforePrint);
+                    </h:outputScript>
                 </h:form>
             </ui:define>
         </ui:composition>

@@ -24,6 +24,7 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.service.StaffService;
 import com.divudi.service.PaymentService;
+import com.divudi.service.PharmacyRetailSaleReturnPolicyService;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.BillFee;
@@ -104,6 +105,8 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     PaymentService paymentService;
     @Inject
     PageMetadataRegistry pageMetadataRegistry;
+    @Inject
+    private PharmacyRetailSaleReturnPolicyService pharmacyRetailSaleReturnPolicyService;
 
     PaymentMethodData paymentMethodData;
 
@@ -204,6 +207,20 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             OptionScope.APPLICATION
         ));
 
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Return - Days Allowed Without Approval",
+            "Number of days after the original sale a return is allowed without needing an approval request (default 3)",
+            "PharmacyRetailSaleReturnPolicyService.getNoApprovalDayLimit()",
+            OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+            "Pharmacy Retail Sale Return - Days Allowed With Approval",
+            "Number of days after the original sale a return remains possible with an approved request, beyond which it is hard-blocked (default 7)",
+            "PharmacyRetailSaleReturnPolicyService.getWithApprovalDayLimit()",
+            OptionScope.APPLICATION
+        ));
+
         // Privileges
         metadata.addPrivilege(new PrivilegeInfo(
             "Admin",
@@ -215,6 +232,12 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             "ChangeReceiptPrintingPaperTypes",
             "Ability to change receipt printing paper format settings",
             "Lines 332, 392 (XHTML): Settings button visibility for paper format configuration"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+            "PharmacyRetailSaleReturnApproval",
+            "Ability to approve or reject a pharmacy retail sale return approval request",
+            "RequestController.approvePharmacyRetailSaleReturnRequest() / navigateToApproveRequest()"
         ));
 
         // Register the metadata
@@ -237,7 +260,13 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
                 return null;
             }
         }
-        
+
+        String returnBlockReason = pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(bill);
+        if (returnBlockReason != null) {
+            JsfUtil.addErrorMessage(returnBlockReason);
+            return null;
+        }
+
         returnBill = null;
         finalReturnBill = null;
         printPreview = false;
@@ -758,6 +787,12 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
     }
 
     public void settle() {
+        String returnBlockReason = pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(bill);
+        if (returnBlockReason != null) {
+            JsfUtil.addErrorMessage(returnBlockReason);
+            return;
+        }
+
         // Check if credit has been partially or fully settled
         if (bill.getPaymentMethod() == PaymentMethod.Credit){
             if (bill != null && bill.getPaidAmount() > 0) {
@@ -911,6 +946,9 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
      * @param returnAmount The absolute value of the return amount
      */
     private void updateBillFinancialFields(Bill billToUpdate, double returnAmount) {
+        if (billToUpdate == null) {
+            return;
+        }
         // Update refundAmount - add the return amount
         double currentRefundAmount = billToUpdate.getRefundAmount();
         billToUpdate.setRefundAmount(currentRefundAmount + returnAmount);
@@ -927,6 +965,8 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
         if (currentBalance > 0) {
             billToUpdate.setBalance(Math.max(0d, currentBalance - returnAmount));
         }
+
+        billToUpdate.setRefunded(true);
 
         // Save the updated bill
         getBillFacade().edit(billToUpdate);
@@ -1400,6 +1440,27 @@ public class SaleReturnController implements Serializable, com.divudi.bean.commo
             return false;
         }
         return paymentBill.getPaymentMethod() == PaymentMethod.Credit;
+    }
+
+    /**
+     * @param saleBill the original retail sale bill being returned
+     * @return true if the return is hard-blocked because the bill is older
+     * than the "with approval" day limit, with no possible override
+     */
+    public boolean isReturnBlockedByDayLimit(Bill saleBill) {
+        return pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(saleBill) != null
+                && pharmacyRetailSaleReturnPolicyService.daysSinceBillCreation(saleBill) > pharmacyRetailSaleReturnPolicyService.getWithApprovalDayLimit();
+    }
+
+    /**
+     * @param saleBill the original retail sale bill being returned
+     * @return true if the return is still possible but requires an approved
+     * Request because the bill is older than the "no approval" day limit
+     */
+    public boolean needsReturnApproval(Bill saleBill) {
+        return pharmacyRetailSaleReturnPolicyService.checkReturnAllowed(saleBill) != null
+                && !isReturnBlockedByDayLimit(saleBill)
+                && !pharmacyRetailSaleReturnPolicyService.hasActiveReturnRequest(saleBill);
     }
 
     /**

@@ -1,0 +1,267 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="content">
+        <h:form id="schedForm">
+
+            <!-- ============================================================ -->
+            <!-- Header                                                         -->
+            <!-- ============================================================ -->
+            <p:panel class="my-3">
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <i class="fa fa-calendar-alt fa-lg text-warning me-2"/>
+                            <span class="fw-bold" style="font-size:1.15em;">Theatre Schedule</span>
+                            <span class="text-muted ms-2 small">— #{sessionController.institution.name}</span>
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <p:commandButton
+                                id="btnMakeAppt"
+                                value="Make Theatre Appointment"
+                                icon="fa fa-plus"
+                                ajax="false"
+                                class="ui-button-success"
+                                rendered="#{webUserController.hasPrivilege('AddInwardAppointment')}"
+                                action="#{appointmentController.navigateToInwardAppointmentFromMenu()}"/>
+                            <p:commandButton
+                                id="btnDashboard"
+                                value="Theatre Dashboard"
+                                icon="fa fa-procedures"
+                                ajax="false"
+                                class="ui-button-warning"
+                                rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient') or webUserController.hasPrivilege('TheatreSendPatient')}"
+                                action="#{theatreDashboardController.navigateToTheatreDashboard()}"/>
+                            <p:commandButton
+                                id="btnReservationCal"
+                                value="All Reservations"
+                                icon="fa fa-calendar"
+                                ajax="false"
+                                class="ui-button-secondary"
+                                action="#{inwardReservationController.navigateToReservationCalendarFromMenu()}"/>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <!-- Filter controls -->
+                <div class="d-flex flex-wrap gap-2 mb-3 align-items-end">
+                    <h:panelGroup layout="block">
+                        <p:outputLabel value="From" for="fromDate" styleClass="d-block mb-1 small fw-bold"/>
+                        <p:calendar
+                            id="fromDate"
+                            value="#{inwardReservationController.fromDate}"
+                            navigator="true"
+                            style="width:240px;"
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                            styleClass="dateTimePicker"
+                            inputStyleClass="form-control"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block">
+                        <p:outputLabel value="To" for="toDate" styleClass="d-block mb-1 small fw-bold"/>
+                        <p:calendar
+                            id="toDate"
+                            value="#{inwardReservationController.toDate}"
+                            navigator="true"
+                            style="width:240px;"
+                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                            styleClass="dateTimePicker"
+                            inputStyleClass="form-control"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup layout="block">
+                        <p:outputLabel value="Status" for="cmbStatus" styleClass="d-block mb-1 small fw-bold"/>
+                        <p:selectOneMenu
+                            id="cmbStatus"
+                            value="#{inwardReservationController.calanderStatus}"
+                            style="width:180px;"
+                            autoWidth="false">
+                            <f:selectItem itemLabel="Any Status" itemValue="#{null}"/>
+                            <f:selectItems
+                                value="#{enumController.getAppointmentStatus()}"
+                                var="rs"
+                                itemLabel="#{rs.name}"
+                                itemValue="#{rs}"/>
+                        </p:selectOneMenu>
+                    </h:panelGroup>
+
+                    <p:commandButton
+                        id="btnSearch"
+                        value="Search"
+                        icon="fa fa-search"
+                        ajax="false"
+                        class="ui-button-warning"
+                        action="#{inwardReservationController.findTheatreReservations()}"/>
+                </div>
+
+                <!-- PrimeFaces Schedule component -->
+                <div style="margin: 0 2%;" class="mb-3">
+                    <p:schedule
+                        id="theatreSchedule"
+                        value="#{inwardReservationController.theatreScheduleModel}"
+                        widgetVar="theatreScheduleWV"
+                        timeZone="#{inwardReservationController.serverTimeZone}"
+                        clientTimeZone="#{inwardReservationController.serverTimeZone}">
+                        <p:ajax
+                            event="eventSelect"
+                            listener="#{inwardReservationController.onEventSelectCal}"
+                            update="dlgEventDetails"
+                            oncomplete="PF('theatreEventDlg').show();"/>
+                    </p:schedule>
+                </div>
+
+                <!-- Booking detail dialog — opens on calendar event click -->
+                <p:dialog
+                    id="dlgTheatreEvent"
+                    widgetVar="theatreEventDlg"
+                    header="Theatre Booking Details"
+                    modal="true"
+                    resizable="false"
+                    closable="true"
+                    width="650">
+                    <h:panelGroup id="dlgEventDetails">
+                        <h:panelGrid columns="2" cellpadding="7"
+                                     rendered="#{inwardReservationController.currentReservationDTO ne null}">
+
+                            <p:outputLabel value="Patient" styleClass="fw-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.patientNameWithTitle}"/>
+
+                            <p:outputLabel value="Age / Gender" styleClass="fw-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.ageAndGender}"/>
+
+                            <p:outputLabel value="Mobile" styleClass="fw-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.patientMobile}"/>
+
+                            <p:outputLabel value="Theatre Room" styleClass="fw-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.roomNo}"/>
+
+                            <p:outputLabel value="Appointment No" styleClass="fw-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.appointmentNumber}"/>
+
+                            <p:outputLabel value="Scheduled From" styleClass="fw-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.reservedFrom}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                   timeZone="Asia/Colombo"/>
+                            </h:outputLabel>
+
+                            <p:outputLabel value="Scheduled To" styleClass="fw-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.reservedTo}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                   timeZone="Asia/Colombo"/>
+                            </h:outputLabel>
+
+                            <p:outputLabel value="Referring Doctor" styleClass="fw-bold"/>
+                            <h:outputLabel value="#{inwardReservationController.currentReservationDTO.refDoctorNameWithTitle}"/>
+
+                            <p:outputLabel value="Status" styleClass="fw-bold"/>
+                            <h:panelGroup>
+                                <p:badge rendered="#{inwardReservationController.currentReservationDTO.status eq 'PENDING'}"
+                                         severity="warning"
+                                         value="#{inwardReservationController.currentReservationDTO.status.name}"/>
+                                <p:badge rendered="#{inwardReservationController.currentReservationDTO.status eq 'COMPLETE'}"
+                                         severity="success"
+                                         value="#{inwardReservationController.currentReservationDTO.status.name}"/>
+                                <p:badge rendered="#{inwardReservationController.currentReservationDTO.status eq 'CANCEL'}"
+                                         severity="danger"
+                                         value="#{inwardReservationController.currentReservationDTO.status.name}"/>
+                            </h:panelGroup>
+                        </h:panelGrid>
+
+                        <div class="d-flex justify-content-end gap-2 mt-3">
+                            <p:commandButton
+                                id="btnTheatreCalAdmit"
+                                value="Admit"
+                                icon="fa fa-check-circle"
+                                ajax="false"
+                                class="ui-button-success"
+                                rendered="#{webUserController.hasPrivilege('InwardAppointmentAdmission')}"
+                                disabled="#{inwardReservationController.currentReservationDTO.status eq 'CANCEL'
+                                            or inwardReservationController.currentReservationDTO.status eq 'COMPLETE'}"
+                                action="#{appointmentController.navigatePatientAdmit(inwardReservationController.currentReservationDTO.id)}"/>
+                            <p:commandButton
+                                id="btnTheatreCalClose"
+                                value="Close"
+                                icon="fa fa-times"
+                                class="ui-button-secondary"
+                                onclick="PF('theatreEventDlg').hide(); return false;"/>
+                        </div>
+                    </h:panelGroup>
+                </p:dialog>
+            </p:panel>
+
+            <!-- ============================================================ -->
+            <!-- Theatre Bookings List (datatable)                              -->
+            <!-- ============================================================ -->
+            <p:panel class="my-3">
+                <f:facet name="header">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa fa-list-ol text-warning me-1"/>
+                        <span class="fw-bold">Theatre Bookings List</span>
+                        <span class="badge bg-warning text-dark ms-2">
+                            <h:outputText value="#{inwardReservationController.theatreReservations.size()}"/>
+                        </span>
+                    </div>
+                </f:facet>
+
+                <p:dataTable
+                    id="tblTheatreBookings"
+                    value="#{inwardReservationController.theatreReservations}"
+                    var="res"
+                    emptyMessage="No theatre bookings found for the selected period."
+                    styleClass="w-100"
+                    paginator="true"
+                    rows="20"
+                    paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                    rowsPerPageTemplate="10,20,50">
+
+                    <p:column headerText="Patient">
+                        <h:outputText value="#{res.patient.person.nameWithTitle}"/>
+                    </p:column>
+                    <p:column headerText="Theatre Room" style="width:130px">
+                        <h:outputText value="#{res.room.name}"/>
+                    </p:column>
+                    <p:column headerText="Scheduled From" style="width:155px">
+                        <h:outputText value="#{res.reservedFrom}">
+                            <f:convertDateTime pattern="HH:mm dd MMM yyyy" timeZone="Asia/Colombo"/>
+                        </h:outputText>
+                    </p:column>
+                    <p:column headerText="Scheduled To" style="width:155px">
+                        <h:outputText value="#{res.reservedTo}" rendered="#{res.reservedTo ne null}">
+                            <f:convertDateTime pattern="HH:mm dd MMM yyyy" timeZone="Asia/Colombo"/>
+                        </h:outputText>
+                        <h:outputText value="—" rendered="#{res.reservedTo eq null}"/>
+                    </p:column>
+                    <p:column headerText="Status" style="width:110px">
+                        <span class="badge #{res.appointment.status.name() == 'COMPLETE' ? 'bg-success'
+                                         : (res.appointment.status.name() == 'CANCEL' ? 'bg-danger' : 'bg-warning text-dark')}">
+                            <h:outputText value="#{res.appointment.status}"/>
+                        </span>
+                    </p:column>
+                    <p:column headerText="Appointment No" style="width:130px">
+                        <h:outputText value="#{res.appointment.appointmentNumber}"/>
+                    </p:column>
+                    <p:column headerText="Actions" style="width:140px"
+                              rendered="#{webUserController.hasPrivilege('InwardAppointmentAdmission')}">
+                        <p:commandButton
+                            id="btnAdmit"
+                            value="Admit"
+                            icon="fa fa-check-circle"
+                            ajax="false"
+                            class="ui-button-success ui-button-sm"
+                            title="Admit patient from this reservation"
+                            disabled="#{res.appointment.status.name() == 'CANCEL' or res.appointment.status.name() == 'COMPLETE'}"
+                            action="#{appointmentController.navigatePatientAdmit(res.id)}"/>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+
+        </h:form>
+    </ui:define>
+
+</ui:composition>

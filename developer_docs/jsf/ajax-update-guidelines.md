@@ -5,7 +5,7 @@
 **🚨 These rules MUST be followed when working on JSF/XHTML:**
 
 1. **AJAX UPDATE RULE**: NEVER use plain HTML elements (div, span, etc.) with id attributes for AJAX updates - use JSF components (h:panelGroup, p:outputPanel, etc.) instead
-2. **RENDERED ATTRIBUTE RULE**: NEVER use `rendered` attribute on plain HTML elements - JSF ignores it; use JSF components like `h:panelGroup` with `layout="block"` instead
+2. **RENDERED ATTRIBUTE RULE**: NEVER use `rendered` attribute on plain HTML elements - JSF ignores it; use `h:panelGroup` with `layout="block"` instead. **Do NOT use `ui:fragment` for this purpose** — `ui:fragment` has known rendering issues in this project; always prefer `h:panelGroup layout="block"`
 3. **PRIMEFACES COMPONENT REFERENCES**: Use PrimeFaces `p:resolveFirstComponentWithId` function for component updates: `update=":#{p:resolveFirstComponentWithId('componentId',view).clientId}"`
 4. **AJAX SELECTORS**: NEVER use PrimeFaces CSS/jQuery selectors like `@(.class)`, `@(#id)`, `@parent`, etc. in `update` or `process` attributes. Use `@this`, `@form`, explicit component IDs, or `:#{p:resolveFirstComponentWithId('id',view).clientId}`
 
@@ -68,6 +68,34 @@ When using JSF AJAX updates (like `update="someId"` in PrimeFaces components), t
     <!-- your content -->
 </h:div>
 ```
+
+---
+
+## Conditional Rendering: Use h:panelGroup, NOT ui:fragment
+
+### ❌ WRONG — ui:fragment (has rendering issues in this project)
+```xhtml
+<ui:fragment rendered="#{bean.showSection}">
+    <div class="row">
+        <!-- content -->
+    </div>
+</ui:fragment>
+```
+
+### ✅ CORRECT — h:panelGroup with layout="block"
+```xhtml
+<h:panelGroup layout="block" rendered="#{bean.showSection}">
+    <div class="row">
+        <!-- content -->
+    </div>
+</h:panelGroup>
+```
+
+**Why `layout="block"`?**
+Without `layout="block"`, `h:panelGroup` renders as a `<span>`, which is an inline element wrapping block content — invalid HTML. Using `layout="block"` renders a `<div>` wrapper.
+
+**Why not `ui:fragment`?**
+`ui:fragment` has exhibited rendering issues in this project. Always use `h:panelGroup layout="block"` for conditional blocks.
 
 ## Common JSF Components for AJAX Updates
 
@@ -152,6 +180,113 @@ update="lstItems focusForList actions growl"
 <!-- From ward_pharmacy_bht_issue_request_bill.xhtml -->
 update="growl :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}"
 ```
+
+---
+
+## Critical Rule: Never Use `this.disabled=true` on Submit Buttons
+
+### The Problem
+
+When a `p:commandButton` (or any submit button) has `ajax="false"`, the browser submits the form synchronously. If `onclick` calls `this.disabled=true`, the button is disabled **before** the POST is sent. Disabled form fields are excluded from the request payload by the browser — JSF never sees which button was clicked, so no action fires.
+
+### ❌ WRONG — disabling the button before submit
+
+```xhtml
+<p:commandButton
+    value="Settle"
+    ajax="false"
+    onclick="if (!confirm('Are you sure?')) { return false; }
+             this.disabled=true;"
+    action="#{bean.settle()}" />
+```
+
+### ✅ CORRECT — only return false to cancel; never disable
+
+```xhtml
+<p:commandButton
+    value="Settle"
+    ajax="false"
+    onclick="return confirm('Are you sure?');"
+    action="#{bean.settle()}" />
+```
+
+**Why it matters**: `this.disabled=true` is a common copy-paste pattern meant to prevent double-clicks, but it silently breaks JSF action dispatch. The confirmation dialog alone is sufficient to prevent accidental double-submission.
+
+**Root cause of issue #20731**: The Settle button on `inward_bill_outside_charge.xhtml` used this pattern, causing the `settle()` action to never fire.
+
+---
+
+## Critical Rule: Conditional `oncomplete` EL Expressions Are Frozen at Initial Render
+
+### The Problem
+
+`p:ajax oncomplete="..."` (and other client-behavior attributes like `onclick`,
+`onstart`) are plain HTML attributes. Any `#{bean.property}` EL inside them is
+evaluated **once, when the enclosing component is rendered** — not on every
+AJAX response. If the component that owns the `p:ajax` (e.g. `p:timeline`,
+`p:dataTable`) is **not** part of the AJAX `update=` target, it never
+re-renders, so the `oncomplete` string is permanently baked-in using whatever
+the bean properties were at **initial page load** (often `null`).
+
+### ❌ WRONG — conditional JS frozen with stale/initial values
+
+```xhtml
+<p:timeline value="#{bean.timelineModel}" ...>
+    <p:ajax event="select"
+            listener="#{bean.onTimelineSelect}"
+            update="panelA panelB"
+            oncomplete="if (#{bean.selectedA ne null}) { PF('dlgA').show(); }
+                        else if (#{bean.selectedB ne null}) { PF('dlgB').show(); }" />
+</p:timeline>
+```
+
+Symptom: the AJAX POST returns 200 OK, `panelA`/`panelB` are updated with the
+correct data server-side, but **no dialog ever opens** — because
+`#{bean.selectedA ne null}` was evaluated as `false` at page load and is now
+permanently part of the rendered `oncomplete` JS string.
+
+### ✅ CORRECT — dispatch from the listener with `PrimeFaces.current().executeScript(...)`
+
+```java
+import org.primefaces.PrimeFaces;
+
+public void onTimelineSelect(TimelineSelectEvent<MyEntry> e) {
+    MyEntry entry = e.getTimelineEvent().getData();
+    if (entry.isTypeA()) {
+        selectedA = entry.getA();
+        selectedB = null;
+        PrimeFaces.current().executeScript("PF('dlgA').show();");
+    } else {
+        selectedB = entry.getB();
+        selectedA = null;
+        PrimeFaces.current().executeScript("PF('dlgB').show();");
+    }
+}
+```
+
+```xhtml
+<p:ajax event="select"
+        listener="#{bean.onTimelineSelect}"
+        update="panelA panelB" />
+```
+
+`PrimeFaces.current().executeScript(...)` queues JavaScript to run as part of
+the **current** AJAX response — it always reflects this request's state, with
+no EL-in-attribute timing issue.
+
+**When this applies**: any client-behavior attribute (`oncomplete`, `onstart`,
+`onerror`) on a component whose own id is **not** in `update=`, where the
+attribute's EL references a bean property set by the same listener. Existing
+correct usages of this pattern: `AdmissionController.java` (~line 2226),
+`SurgeryBillController.java` (~line 948).
+
+**Root cause of a regression during #21488**: the Ward Medicines Timeline
+detail dialogs (Prescription / Medicine Administration) silently stopped
+opening after adding a conditional `oncomplete` to `p:timeline`'s `select`
+event — fixed by switching to `PrimeFaces.current().executeScript(...)` in
+`InpatientClinicalDataController.onTimelineSelect()`.
+
+---
 
 ## Related JSF Concepts
 

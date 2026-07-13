@@ -37,7 +37,7 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     // NOTE: No UNIQUE constraint on institutionCode - different institution types
     // (suppliers, labs, hospitals) can legitimately have the same codes (e.g., RH2003)
@@ -83,6 +83,10 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String opdBillHeading;
     @Lob
     String cashierBillHeading;
+    @Lob
+    private String svgParentView;
+    @Lob
+    private String svgChildView;
     @Enumerated(EnumType.STRING)
     InstitutionType institutionType;
     @Enumerated(EnumType.STRING)
@@ -810,6 +814,22 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     public void setAgentBalance(double agentBalance) {
         this.agentBalance = agentBalance;
+    }
+
+    public String getSvgParentView() {
+        return svgParentView;
+    }
+
+    public void setSvgParentView(String svgParentView) {
+        this.svgParentView = svgParentView;
+    }
+
+    public String getSvgChildView() {
+        return svgChildView;
+    }
+
+    public void setSvgChildView(String svgChildView) {
+        this.svgChildView = svgChildView;
     }
 
 }

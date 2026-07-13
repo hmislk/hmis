@@ -13,7 +13,9 @@ import com.divudi.core.data.FeeType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -153,9 +155,17 @@ public class ServiceFeeEdit implements Serializable {
 
         getBillFeeFacade().edit(billFee);
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), billItem.getBill().getFromDepartment(),billItem.getBill().getPatientEncounter().getPaymentMethod());
+        PatientEncounter encounter = billItem.getBill().getPatientEncounter();
+        // Room category of the patient's current room drives the room-category
+        // dimension of the inward margin matrix (issue #21977); null = wildcard.
+        RoomCategory roomCategory = (encounter != null
+                && encounter.getCurrentPatientRoom() != null
+                && encounter.getCurrentPatientRoom().getRoomFacilityCharge() != null)
+                ? encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory()
+                : null;
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), billItem.getBill().getFromDepartment(), encounter.getPaymentMethod(), null, encounter.getAdmissionType(), roomCategory);
 
-        getInwardBean().updateBillItemMargin(billItem, billFee.getFeeGrossValue(), billItem.getBill().getPatientEncounter(), billItem.getBill().getFromDepartment(), priceMatrix);
+        getInwardBean().updateBillItemMargin(billItem, billFee.getFeeGrossValue(), encounter, billItem.getBill().getFromDepartment(), priceMatrix);
 
         getBillBean().updateBillItemByBillFee(billItem);
         getBillBean().updateBillByBillFee(billItem.getBill());

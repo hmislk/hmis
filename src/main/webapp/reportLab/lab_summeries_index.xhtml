@@ -38,13 +38,18 @@
                                             <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Reported Institution" action="report_lab_by_reported_institution?faces-redirect=true"/>
                                             <p:commandButton actionListener="#{investigationMonthSummeryOwnControllerSession.clearList}" ajax="false" value="By Reported Department" action="report_lab_by_reported_department?faces-redirect=true"/>
 
-                                            <p:commandButton 
-                                                actionListener="#{laborataryReportController.resetAllFiltersExceptDateRange()}" 
-                                                ajax="false" 
+                                            <p:commandButton
+                                                actionListener="#{laborataryReportController.resetAllFiltersExceptDateRange()}"
+                                                ajax="false"
                                                 class="w-100 ui-button-success mt-1"
-                                                value="OPD Bill Items For Credit Companies" 
+                                                value="OPD Bill Items For Credit Companies"
                                                 action="#{laborataryReportController.navigateToBillItemListForCreditCompany()}">
                                             </p:commandButton>
+
+                                            <p:commandButton ajax="false"
+                                                             class="w-100 ui-button-danger mt-1"
+                                                             value="List of Cancelled Lab Bills"
+                                                             action="#{laborataryReportController.navigateToLabCancelledBillListFromLabAnalytics()}"/>
                                         </div>
                                     </h:form>
                                 </p:tab>
@@ -187,10 +192,22 @@
                                 <p:tab title="Clinical" >
                                     <h:form>
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Test Results - Single" action="test_results_single?faces-redirect=true"/> 
-                                            <p:commandButton ajax="false" value="Test Results" action="/lab/clinical_result_values?faces-redirect=true"/> 
+                                            <p:commandButton ajax="false" value="Test Results - Single" action="test_results_single?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="Test Results" action="/lab/clinical_result_values?faces-redirect=true"/>
 
                                         </div>>
+                                    </h:form>
+                                </p:tab>
+
+                                <p:tab title="Reference" >
+                                    <h:form>
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Price List"
+                                                icon="fa fa-tags"
+                                                action="#{laborataryReportController.navigateToInvestigationPriceListFromLabAnalytics()}"/>
+                                        </div>
                                     </h:form>
                                 </p:tab>
 

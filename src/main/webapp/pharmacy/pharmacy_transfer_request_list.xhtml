@@ -72,30 +72,27 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
                             paginatorPosition="bottom">
-                            <p:column headerText="Request No" width="100px">                      
-                                <h:outputLabel value="#{p.deptId}"/>                         
+                            <p:column headerText="Request No">
+                                <h:outputLabel value="#{p.deptId}"/>
                             </p:column>
-                            <p:column headerText="From Department" width="150px">
+                            <p:column headerText="From Department">
                                 <h:outputLabel value="#{p.fromDepartmentName}"/>
                             </p:column>
-                            <p:column headerText="Requested At" width="100px" >
-
-                                <h:outputLabel value="#{p.createdAt}" >
-                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            <p:column headerText="Requested At">
+                                <h:outputLabel value="#{p.createdAt}">
+                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputLabel>
-
-                            </p:column>                 
-                            <p:column headerText="Requested By" width="100px" >                      
-                                <h:outputLabel value="#{p.creatorName}" >
-                                </h:outputLabel>
-                            </p:column>  
-                            <p:column width="100px" headerText="Action" >
+                            </p:column>
+                            <p:column headerText="Requested By">
+                                <h:outputLabel value="#{p.creatorName}"/>
+                            </p:column>
+                            <p:column headerText="Action">
                                 <p:commandButton
                                     id="btnViewTransferRequest"
                                     ajax="false"
                                     title="View Request"
                                     icon="far fa-eye"
-                                    class="ui-button-info "
+                                    class="ui-button-info mx-1"
                                     action="#{pharmacyBillSearch.navigateToViewPharmacyTransferRequestById}">
                                     <f:setPropertyActionListener value="#{p.billId}" target="#{pharmacyBillSearch.billId}"/>
                                 </p:commandButton>
@@ -105,58 +102,39 @@
                                     ajax="false"
                                     icon="fas fa-check"
                                     title="Issue"
-                                    class="ui-button-success mx-2"
+                                    class="ui-button-success mx-1"
                                     actionListener="#{pharmacyController.clearItemHistory()}"
                                     action="#{transferIssueForRequestsController.navigateToPharmacyIssueForRequestsById}"
+                                    onclick="if(#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Issue for Requests', false)} &amp;&amp; !confirm('Start issuing for this request? A pending draft will block this if one already exists.')) return false;"
                                     disabled="#{p.cancelled eq true or p.fullyIssued eq true}">
                                     <f:setPropertyActionListener target="#{transferIssueForRequestsController.requestedBillId}" value="#{p.billId}"/>
                                 </p:commandButton>
+
+                                <p:commandButton
+                                    id="btnToIssueFast"
+                                    ajax="false"
+                                    value="Fast Issue"
+                                    icon="fas fa-bolt"
+                                    class="ui-button-warning mx-1"
+                                    action="#{transferIssueNativeSqlController.navigateToIssueRequestNative()}"
+                                    onclick="if(#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Issue for Requests', false)} &amp;&amp; !confirm('Start issuing for this request? A pending draft will block this if one already exists.')) return false;"
+                                    disabled="#{p.cancelled eq true or p.fullyIssued eq true}">
+                                    <f:setPropertyActionListener target="#{transferIssueNativeSqlController.requestedBillId}" value="#{p.billId}"/>
+                                </p:commandButton>
                             </p:column>
 
-                            <p:column headerText="Issued" style="text-align: center;" >
-                                <p:dataTable var="b" value="#{p.issuedBills}" rowKey="#{b.billId}">
-                                    <p:column headerText="Issue No." >
+                            <p:column headerText="Issued">
+                                <div class="d-flex flex-wrap gap-1">
+                                    <ui:repeat value="#{p.issuedBills}" var="b" varStatus="loop">
                                         <p:commandButton
-                                            id="btnViewIssueBill"
                                             ajax="false"
                                             value="#{b.deptId}"
-                                            class="ui-button-success ui-button-sm"
-                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeBySelectedId}"
-                                            process="@this">
+                                            styleClass="#{b.cancelled ? 'ui-button-danger' : 'ui-button-secondary'}"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeBySelectedId}">
                                             <f:setPropertyActionListener value="#{b.billId}" target="#{billSearch.selectedBillId}"/>
                                         </p:commandButton>
-                                    </p:column>
-                                    <p:column headerText="Date/Time" >
-                                        <h:outputLabel value="#{b.createdAt}" >
-                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>
-                                        <br/>
-                                        <h:panelGroup rendered="#{b.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
-                                                           value="#{b.cancelledAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                        </h:panelGroup>
-                                    </p:column>                             
-                                    <p:column headerText="Issued By" >
-                                        <h:outputLabel value="#{b.creatorName}"/>
-                                        <br/>
-                                        <h:panelGroup rendered="#{b.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" rendered="#{b.cancelled}" value="#{b.cancellerName}" />
-                                        </h:panelGroup>
-                                    </p:column>
-                                    <p:column headerText="Issued To"  >                              
-                                        <h:outputLabel value="#{b.toStaffName}"/>                                   
-                                    </p:column> 
-                                    <p:column headerText="Total" >
-                                        <h:outputLabel value="#{b.netTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>                                  
-                                    </p:column>
-
-                                </p:dataTable>
+                                    </ui:repeat>
+                                </div>
                             </p:column>
                         </p:dataTable>
                     </div>

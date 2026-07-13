@@ -12,6 +12,10 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyDisposalSearchIssueBill')}" >
+                    You are NOT authorized
+                </h:panelGroup>
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueBill')}" >
                 <h:form>
                     <p:panel>
                         <f:facet name="header">
@@ -55,6 +59,16 @@
                                         styleClass="w-100"
                                         value="#{searchController.searchKeyword.billNo}"
                                         title="Enter bill number to search"/>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <p:outputLabel for="requestNo" value="Request No"/>
+                                    <p:inputText
+                                        id="requestNo"
+                                        autocomplete="off"
+                                        styleClass="w-100"
+                                        value="#{searchController.searchKeyword.requestNo}"
+                                        title="Enter request number to search"/>
                                 </div>
 
                                 <div class="mb-3">
@@ -168,6 +182,7 @@
                     </p:panel>
 
                 </h:form>
+                </h:panelGroup>
             </ui:define>
 
 

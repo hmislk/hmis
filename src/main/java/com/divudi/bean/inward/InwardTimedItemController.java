@@ -10,6 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -20,6 +21,8 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PatientItem;
@@ -60,6 +63,8 @@ public class InwardTimedItemController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     //////////////////////
     private List<PatientItem> items;
     private PatientItem current;
@@ -92,6 +97,9 @@ public class InwardTimedItemController implements Serializable {
     Date toDate;
     double total;
     double totalMins;
+    private Institution institution;
+    private Institution site;
+    private Department department;
 
     public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
@@ -178,9 +186,23 @@ public class InwardTimedItemController implements Serializable {
                 + " and i.retired=false ";
 
         if (getCurrent().getItem() != null) {
-
             sql += " and i.item=:item";
             m.put("item", getCurrent().getItem());
+        }
+
+        if (institution != null) {
+            sql += " and i.patientEncounter.institution=:ins";
+            m.put("ins", institution);
+        }
+
+        if (site != null) {
+            sql += " and i.patientEncounter.department.site=:site";
+            m.put("site", site);
+        }
+
+        if (department != null) {
+            sql += " and i.patientEncounter.department=:dept";
+            m.put("dept", department);
         }
 
         m.put("fd", frmDate);
@@ -217,6 +239,12 @@ public class InwardTimedItemController implements Serializable {
             return true;
         }
 
+        if (getBatchBill().getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
+            return true;
+        }
+
         return false;
 
     }
@@ -231,6 +259,18 @@ public class InwardTimedItemController implements Serializable {
             return;
         }
 
+        PatientItem newPatientItem = getTimedEncounterComponent().getBillFee().getPatientItem();
+        if (newPatientItem.getToTime() != null && newPatientItem.getFromTime() != null) {
+            if (newPatientItem.getToTime().before(newPatientItem.getFromTime())) {
+                JsfUtil.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
+                return;
+            }
+            if (newPatientItem.getToTime().getTime() == newPatientItem.getFromTime().getTime()) {
+                JsfUtil.addErrorMessage("Service Start Time & End Time Can't Be Equal");
+                return;
+            }
+        }
+
         timedEncounterComponent.setPatientEncounter(getBatchBill().getPatientEncounter());
         timedEncounterComponent.setChildEncounter(getBatchBill().getProcedure());
         timedEncounterComponent.setOrderNo(getTimedEncounterComponents().size());
@@ -242,10 +282,12 @@ public class InwardTimedItemController implements Serializable {
     }
 
     private double savePatientItem(PatientItem patientItem) {
-        TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) patientItem.getItem());
-        double count = getInwardBean().calCount(timedItemFee, patientItem.getFromTime(), patientItem.getToTime());
-
-        patientItem.setServiceValue(count * timedItemFee.getFee());
+        double value = getInwardBean().calTotalTimedChargeForItem(
+                (TimedItem) patientItem.getItem(),
+                patientItem.getFromTime(),
+                patientItem.getToTime(),
+                patientItem.getPatientEncounter() != null && patientItem.getPatientEncounter().isForiegner());
+        patientItem.setServiceValue(value);
         patientItem.setPatientEncounter(getBatchBill().getPatientEncounter());
         if (patientItem.getId() == null) {
             patientItem.setCreater(getSessionController().getLoggedUser());
@@ -283,7 +325,7 @@ public class InwardTimedItemController implements Serializable {
         if (generalChecking()) {
             return;
         }
-        if (bf.getPatientItem().getToTime() != null) {
+        if (bf.getPatientItem().getToTime() != null && bf.getPatientItem().getFromTime() != null) {
             if (bf.getPatientItem().getToTime().before(bf.getPatientItem().getFromTime())) {
                 JsfUtil.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
                 return;
@@ -538,6 +580,13 @@ public class InwardTimedItemController implements Serializable {
         return "/theater/inward_timed_service_consume_surgery?faces-redirect=true";
     }
 
+    public String navigateToSurgeryTimedServices(Bill surgeryBill) {
+        makeNull();
+        batchBill = surgeryBill;
+        selectSurgeryBillListener();
+        return "/theater/inward_timed_service_consume_surgery?faces-redirect=true";
+    }
+
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("Please Select BHT");
@@ -547,6 +596,11 @@ public class InwardTimedItemController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Service");
             return true;
         }
+        if (getCurrent().getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
+            return true;
+        }
         return false;
     }
 
@@ -554,18 +608,15 @@ public class InwardTimedItemController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) getCurrent().getItem());
         if (getCurrent().getToTime() == null) {
             getCurrent().setToTime(new Date());
         }
-        double count = getInwardBean().calCount(timedItemFee, getCurrent().getPatientEncounter().getDateOfAdmission(), getCurrent().getToTime());
-
-
-        if (getCurrent().getPatientEncounter().isForiegner()) {
-            getCurrent().setServiceValue(count * timedItemFee.getFfee());
-        } else {
-            getCurrent().setServiceValue(count * timedItemFee.getFee());
-        }
+        double value = getInwardBean().calTotalTimedChargeForItem(
+                (TimedItem) getCurrent().getItem(),
+                getCurrent().getPatientEncounter().getDateOfAdmission(),
+                getCurrent().getToTime(),
+                getCurrent().getPatientEncounter().isForiegner());
+        getCurrent().setServiceValue(value);
 
         getCurrent().setCreater(getSessionController().getLoggedUser());
         getCurrent().setCreatedAt(Calendar.getInstance().getTime());
@@ -587,7 +638,7 @@ public class InwardTimedItemController implements Serializable {
 
     public void finalizeService(PatientItem pic) {
         PatientItem temPi;
-        if (pic.getToTime() != null) {
+        if (pic.getToTime() != null && pic.getFromTime() != null) {
             if (pic.getToTime().before(pic.getFromTime())) {
                 JsfUtil.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
                 return;
@@ -611,16 +662,12 @@ public class InwardTimedItemController implements Serializable {
             temPi = pic;
         }
 
-        TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) temPi.getItem());
-        double count = getInwardBean().calCount(timedItemFee, temPi.getFromTime(), temPi.getToTime());
-
-        System.out.println("pic.getPatientEncounter().isForiegner() = " + pic.getPatientEncounter().isForiegner());
-
-        if (pic.getPatientEncounter().isForiegner()) {
-            pic.setServiceValue(count * timedItemFee.getFfee());
-        } else {
-            pic.setServiceValue(count * timedItemFee.getFee());
-        }
+        double value = getInwardBean().calTotalTimedChargeForItem(
+                (TimedItem) temPi.getItem(),
+                temPi.getFromTime(),
+                temPi.getToTime(),
+                pic.getPatientEncounter().isForiegner());
+        pic.setServiceValue(value);
 
         getPatientItemFacade().edit(pic);
 
@@ -642,14 +689,12 @@ public class InwardTimedItemController implements Serializable {
         }
 
         for (PatientItem pi : items) {
-            TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) pi.getItem());
-            double count = getInwardBean().calCount(timedItemFee, pi.getFromTime(), pi.getToTime());
-            if (getCurrent().getPatientEncounter().isForiegner()) {
-                pi.setServiceValue(count * timedItemFee.getFfee());
-            } else {
-                pi.setServiceValue(count * timedItemFee.getFee());
-            }
-
+            double value = getInwardBean().calTotalTimedChargeForItem(
+                    (TimedItem) pi.getItem(),
+                    pi.getFromTime(),
+                    pi.getToTime(),
+                    getCurrent().getPatientEncounter().isForiegner());
+            pi.setServiceValue(value);
         }
     }
 
@@ -738,6 +783,34 @@ public class InwardTimedItemController implements Serializable {
 
     public void setTotalMins(double totalMins) {
         this.totalMins = totalMins;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public void clearDepartment() {
+        department = null;
     }
 
 }

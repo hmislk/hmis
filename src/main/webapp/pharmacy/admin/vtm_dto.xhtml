@@ -159,6 +159,15 @@
                                                 ajax="false"
                                                 disabled="#{vtmController.selectedVtmDto eq null}">
                                             </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnViewList"
+                                                value="All VTMs List"
+                                                action="#{vtmController.navigateToVtmList()}"
+                                                ajax="false"
+                                                class="m-1 ui-button-secondary"
+                                                icon="fas fa-list"
+                                                title="View and download the full list of VTMs"/>
                                         </div>
                                     </div>
                                 </h:panelGroup>

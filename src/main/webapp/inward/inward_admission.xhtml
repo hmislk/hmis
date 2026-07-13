@@ -17,51 +17,82 @@
             <h:panelGroup id="gpDetail" rendered="#{!admissionController.printPreview}" >
                 <p:panel >
                     <f:facet name="header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
+                        <!--
+                            Three-zone panel header layout (see UI guidelines § Panel Header Three-Zone Layout):
+                            LEFT  : panel title + contextual config button (admin-only, next to the label it configures)
+                            CENTER: entity-level navigation buttons (Patient Lookup, Patient Profile)
+                            RIGHT : page actions ordered left→right by ascending importance; primary action rightmost
+                        -->
+                        <div class="d-flex justify-content-between align-items-center w-100">
+
+                            <!-- LEFT: title + config -->
+                            <div class="d-flex align-items-center gap-2">
                                 <h:outputText styleClass="fa fa-hospital" />
-                                <h:outputText class="mx-4" value="Admit a Patient"/>
-                            </div>
-                            <div>
-                                <p:commandButton 
-                                    id="admt" 
-                                    action="#{admissionController.saveSelected}" 
-                                    ajax="false" 
-                                    class="ui-button-success mx-1"
-                                    value="Admit">
-                                </p:commandButton>
-
-                                <p:commandButton 
-                                    ajax="false" 
-                                    immediate="true"
-                                    value="Patient Lookup" 
-                                    class="ui-button-warning mx-1" 
-                                    action="#{patientController.navigateToSearchPatients()}" 
-                                    icon="fa fa-search" >
-                                </p:commandButton>
-
-                                <p:commandButton
-                                    ajax="false"
-                                    immediate="true"
-                                    class="ui-button-warning mx-1"
-                                    value="Patient Profile"
-                                    action="#{patientController.navigateToOpdPatientProfile()}"
-                                    icon="fa fa-user" > <!-- Font Awesome icon for user -->
-                                    <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" />
-                                </p:commandButton>
-
+                                <h:outputText value="Admit a Patient"/>
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                     <p:commandButton
                                         value="Config"
                                         icon="fa fa-cog"
                                         immediate="true"
-                                        title="Page Configuration Management"
-                                        action="#{pageAdminController.navigateToPageAdmin('inward/inward_admission')}"
+                                        title="Configure Admission Settings"
+                                        action="#{admissionController.navigateToAdmissionConfig()}"
                                         ajax="false"
-                                        styleClass="ui-button-secondary ms-5">
+                                        styleClass="ui-button-secondary ui-button-outlined">
                                     </p:commandButton>
                                 </h:panelGroup>
                             </div>
+
+                            <!-- CENTER: navigation (page-to-page, entity-related) -->
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    ajax="false"
+                                    immediate="true"
+                                    value="Patient Lookup"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    action="#{patientController.navigateToSearchPatients()}"
+                                    icon="fa fa-search">
+                                </p:commandButton>
+                                <p:commandButton
+                                    ajax="false"
+                                    immediate="true"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    value="Patient Profile"
+                                    action="#{patientController.navigateToOpdPatientProfile()}"
+                                    icon="fa fa-user">
+                                    <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" />
+                                </p:commandButton>
+                            </div>
+
+                            <!-- RIGHT: actions — left=least important, right=primary -->
+                            <div class="d-flex gap-2 align-items-center">
+                                <!-- Rarely used, least prominent — leftmost in the action zone -->
+                                <p:commandButton
+                                    type="button"
+                                    value="On Admission Death"
+                                    icon="fas fa-cross"
+                                    title="Record this admission as an On Admission Death (patient arrived dead, or died before registration was completed)"
+                                    styleClass="ui-button-secondary"
+                                    onclick="PF('dlgOnAdmissionDeath').show();"/>
+                                <!-- Warning / dangerous fast-path — middle -->
+                                <p:commandButton
+                                    type="button"
+                                    value="Provisional Emergency Admit"
+                                    icon="fas fa-truck-medical"
+                                    title="Admit an emergency patient with incomplete demographics. Blank name/address are filled with placeholders and demographic checks are skipped; complete the details later."
+                                    styleClass="ui-button-warning"
+                                    onclick="PF('dlgRapidTempAe').show();"/>
+                                <!-- Primary action — rightmost, widened, with icon -->
+                                <p:commandButton
+                                    id="admt"
+                                    action="#{admissionController.checkBeforeAdmit}"
+                                    ajax="false"
+                                    styleClass="ui-button-success"
+                                    icon="pi pi-check-circle"
+                                    style="min-width:120px"
+                                    value="Admit">
+                                </p:commandButton>
+                            </div>
+
                         </div>
                     </f:facet>
 
@@ -70,10 +101,7 @@
                             id="messages" 
                             showDetail="true" 
                             closable="true"
-                            class="w-100"
-                            role="alert" 
-                            aria-live="assertive" 
-                            aria-atomic="true">
+                            class="w-100">
                             <p:autoUpdate/>
                         </p:messages>
                         <div class="col-md-3 p-2">
@@ -131,7 +159,8 @@
                     <div class="row">
                         <div class="col-5">
                             <h:panelGroup id="ptd">
-                                <common:patient_details_for_addmission editable="true" controller="#{admissionController}"/>
+                                <common:patient_details_for_addmission editable="true" controller="#{admissionController}"
+                                                                       extraUpdateIds=":#{p:resolveFirstComponentWithId('pg1',view).clientId}"/>
                             </h:panelGroup>
                         </div>
 
@@ -155,13 +184,11 @@
                                         </p:datePicker>     
 
                                         <p:outputLabel value="Consultant*" />
-                                        <p:autoComplete 
-                                            forceSelection="true" 
-                                            value="#{admissionController.current.referringConsultant}" 
+                                        <p:autoComplete
+                                            forceSelection="true"
+                                            value="#{admissionController.current.referringConsultant}"
                                             id="refCon"
-                                            required="true" 
-                                            requiredMessage="Please select referring consultant"
-                                            completeMethod="#{consultantController.completeConsultant}" 
+                                            completeMethod="#{consultantController.completeConsultant}"
                                             var="mysp"
                                             itemLabel="#{mysp.person.nameWithTitle}" 
                                             itemValue="#{mysp}"
@@ -173,11 +200,9 @@
                                         </p:autoComplete>
 
                                         <p:outputLabel value="Medical Officer*"/>
-                                        <p:autoComplete 
-                                            required="true" 
-                                            requiredMessage="Please select referring doctor"
-                                            forceSelection="true" 
-                                            id="scStaff" 
+                                        <p:autoComplete
+                                            forceSelection="true"
+                                            id="scStaff"
                                             maxResults="15"
                                             placeholder="OPD Doctor"
                                             value="#{admissionController.current.opdDoctor}" 
@@ -376,17 +401,15 @@
                                                 inputStyleClass="w-100"
                                                 itemValue="#{myItem}" itemLabel="#{myItem.name}" />
                                             <h:outputLabel for="acRefMeth" value="Referred From" rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Enable Referred From in Patient Admission',false)}"/>
-                                            <p:selectOneMenu 
-                                                id="acRefMeth" 
-                                                value="#{admissionController.current.referringMethod}" 
-                                                editable="false" 
-                                                filter="true" 
-                                                placeholder="Search &amp; select a Referring Method" 
-                                                filterMatchMode="contains" 
-                                                styleClass="w-100" 
-                                                required="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Require Referred From in Patient Admission')}" 
-                                                requiredMessage="Need a Referring Method " 
-                                                class="w-100 form-control" 
+                                            <p:selectOneMenu
+                                                id="acRefMeth"
+                                                value="#{admissionController.current.referringMethod}"
+                                                editable="false"
+                                                filter="true"
+                                                placeholder="Search &amp; select a Referring Method"
+                                                filterMatchMode="contains"
+                                                styleClass="w-100"
+                                                class="w-100 form-control"
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Patient Admit - Enable Referred From in Patient Admission',false)}">
                                                 <f:selectItem itemLabel="Search &amp; select a Method" itemValue="" noSelectionOption="true"/>
                                                 <f:selectItems 
@@ -404,47 +427,273 @@
                     </div>
                     <div class="col-12">
                         <p:panel header="Payment Details" style="margin-top: 10px;">
-
-                            <div class="row">
-                                <div class="col-12">
-                                    <h:panelGrid id="pg1" columns="2" class="my-2 w-100" >
-                                        <p:outputLabel value="Nationality"/>
-                                        <p:selectBooleanCheckbox 
-                                            value="#{admissionController.current.foriegner}"
-                                            styleClass="form-control w-100"
-                                            class="w-100"
-                                            itemLabel="Mark as Foreigner"/>
-
-                                        <p:outputLabel value="Claimable Status"/>
-                                        <p:selectBooleanCheckbox 
-                                            value="#{admissionController.current.claimable}"
-                                            styleClass="form-control w-100"
-                                            class="w-100"
-                                            itemLabel="Claimable" />
-
-                                        <p:outputLabel value="Last Used Credit Company" rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"/>
-                                        <p:badge value="#{admissionController.lastCreditCompany.name}"
-                                                 rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}"
-                                                 />
-
-                                        <p:outputLabel value="Payment Method*"/>
-                                        <p:selectOneMenu  class="mx-1  w-100" styleClass="form-control w-100" id="cmbPs" value="#{admissionController.current.paymentMethod}"  >
-                                            <f:selectItem itemLabel="Select" />
-                                            <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                            <p:ajax process="@this" update="crd pg1" event="change" listener="#{admissionController.findLastUsedCreditCompanies()}" />
-                                        </p:selectOneMenu>
-                                    </h:panelGrid>
+                            <div class="row align-items-start">
+                                <!-- Left: payment method controls -->
+                                <div class="col-md-3">
+                                    <h:panelGroup id="pg1">
+                                        <div class="mb-2">
+                                            <p:selectBooleanCheckbox
+                                                value="#{admissionController.patientForiegner}"
+                                                itemLabel="Mark as Foreigner"/>
+                                        </div>
+                                        <div class="mb-2">
+                                            <p:selectBooleanCheckbox id="claimableCheckbox"
+                                                value="#{admissionController.current.claimable}"
+                                                itemLabel="Claimable"
+                                                disabled="#{!admissionController.claimableAllowed}"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Admission - Show Claimable Field', true)}" />
+                                        </div>
+                                        <h:panelGroup rendered="#{admissionController.isPatientHaveALastUsedCreditCompany(admissionController.current.patient)}">
+                                            <p:outputLabel value="Last Used Credit Company" styleClass="d-block text-muted small mb-1"/>
+                                            <p:badge value="#{admissionController.lastCreditCompany.name}" severity="info"/>
+                                        </h:panelGroup>
+                                        <div class="mb-1 mt-2">
+                                            <p:outputLabel value="Payment Method*" styleClass="d-block"/>
+                                            <p:selectOneMenu class="w-100" styleClass="form-control w-100" id="cmbPs" value="#{admissionController.current.paymentMethod}">
+                                                <f:selectItem itemLabel="Select" />
+                                                <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                                                <p:ajax process="@this" update="crd pg1" event="change" listener="#{admissionController.findLastUsedCreditCompanies()}" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <div class="mb-1 mt-2">
+                                            <p:outputLabel value="Discount Scheme" styleClass="d-block"/>
+                                            <p:selectOneMenu class="w-100" styleClass="form-control w-100" value="#{admissionController.paymentScheme}">
+                                                <f:selectItem itemLabel="No Discount Scheme" itemValue="#{null}"/>
+                                                <f:selectItems value="#{paymentSchemeController.paymentSchemesForInward}"
+                                                               var="ps" itemLabel="#{ps.name}" itemValue="#{ps}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </h:panelGroup>
+                                </div>
+                                <!-- Right: credit company form + table (always visible) -->
+                                <div class="col-md-9">
+                                    <h:panelGroup id="crd">
+                                        <div class="row my-2">
+                                            <!-- Add Credit Company form — only for Credit payment method -->
+                                            <div class="col-6">
+                                                <h:panelGroup id="gpCreditDetails"
+                                                              rendered="#{admissionController.current.paymentMethod eq 'Credit'}">
+                                                    <div class="mb-2">
+                                                        <h:outputLabel value="Company Name" styleClass="form-label"/>
+                                                        <p:autoComplete class="w-100" inputStyleClass="w-100" id="acCreditCompany" forceSelection="true"
+                                                                        value="#{admissionController.encounterCreditCompany.institution}"
+                                                                        completeMethod="#{creditCompanyController.completeCredit}"
+                                                                        var="ix" itemLabel="#{ix.name}"
+                                                                        itemValue="#{ix}" size="30">
+                                                            <p:ajax event="itemSelect" process="@this" update="txtCompanyDesc"/>
+                                                        </p:autoComplete>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <h:outputLabel value="Credit Limit" styleClass="form-label"/>
+                                                        <p:inputText class="w-100 form-control" id="txtCreditLimit" autocomplete="off"
+                                                                     onclick="this.select();"
+                                                                     value="#{admissionController.encounterCreditCompany.creditLimit}"/>
+                                                        <p:message for="txtCreditLimit" style="color: red;" />
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <h:outputLabel value="Description" styleClass="form-label"/>
+                                                        <p:inputText class="w-100 form-control" id="txtCompanyDesc" autocomplete="off"
+                                                                     onclick="this.select();"
+                                                                     value="#{admissionController.encounterCreditCompany.descreption}"/>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <h:outputLabel value="Policy Number" styleClass="form-label"/>
+                                                        <p:inputText class="w-100 form-control" id="txtPolicyNo" autocomplete="off"
+                                                                     value="#{admissionController.encounterCreditCompany.policyNo}"/>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <h:outputLabel value="Reference Number" styleClass="form-label"/>
+                                                        <p:inputText class="w-100 form-control" id="txtReferanceNo" autocomplete="off"
+                                                                     value="#{admissionController.encounterCreditCompany.referanceNo}"/>
+                                                    </div>
+                                                    <p:growl id="growlCredit" showDetail="false" showSummary="true" />
+                                                    <p:commandButton
+                                                        id="btnAddCredit"
+                                                        process="gpCreditDetails"
+                                                        update="tblCreditCompanies gpCreditDetails"
+                                                        value="Add Credit Company"
+                                                        class="w-100 ui-button-success"
+                                                        action="#{admissionController.addCreditCompnay}"
+                                                        />
+                                                </h:panelGroup>
+                                                <!-- For non-Credit admissions: patient responsibility note -->
+                                                <h:panelGroup rendered="#{not empty admissionController.current.paymentMethod and admissionController.current.paymentMethod ne 'Credit'}">
+                                                    <div class="alert alert-info p-2 mt-2" style="font-size:0.9em;">
+                                                        <h:outputText styleClass="pi pi-info-circle me-1"/>
+                                                        <h:outputText value="Patient is responsible for the full bill amount. No credit company assigned."/>
+                                                    </div>
+                                                </h:panelGroup>
+                                            </div>
+                                            <!-- Companies table — always shown -->
+                                            <div class="col-6">
+                                                <p:dataTable id="tblCreditCompanies"
+                                                             rendered="#{admissionController.current.paymentMethod eq 'Credit'}"
+                                                             value="#{admissionController.encounterCreditCompanies}" var="ecc"
+                                                             rowIndexVar="index"
+                                                             emptyMessage="No credit companies added. Patient is responsible for the full amount.">
+                                                    <f:facet name="header">
+                                                        <h:outputText value="Payment Responsibility"/>
+                                                    </f:facet>
+                                                    <p:column width="2em">
+                                                        <h:outputText value="#{index + 1}" />
+                                                    </p:column>
+                                                    <p:column style="font-weight:bolder;" width="10em">
+                                                        <h:outputText value="#{ecc.institution.name}" />
+                                                    </p:column>
+                                                    <p:column styleClass="text-end" headerText="Credit Limit" width="5em">
+                                                        <h:outputText value="#{ecc.creditLimit}">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </p:column>
+                                                    <p:column headerText="Policy No" width="5em">
+                                                        <h:outputText value="#{ecc.policyNo}" />
+                                                    </p:column>
+                                                    <p:column headerText="Reference No" width="5em">
+                                                        <h:outputText value="#{ecc.referanceNo}" />
+                                                    </p:column>
+                                                    <p:column style="text-align: right;font-weight: bolder" width="2em"
+                                                              rendered="#{admissionController.current.paymentMethod eq 'Credit'}">
+                                                        <p:commandButton
+                                                            id="btnRemoveCredit"
+                                                            process="@this"
+                                                            update="tblCreditCompanies"
+                                                            icon="pi pi-times"
+                                                            styleClass="rounded-button ui-button-danger"
+                                                            action="#{admissionController.removeCreditCompany(ecc)}"
+                                                            />
+                                                    </p:column>
+                                                </p:dataTable>
+                                                <!-- Patient balance note -->
+                                                <h:panelGroup rendered="#{admissionController.current.paymentMethod eq 'Credit' and not empty admissionController.encounterCreditCompanies}">
+                                                    <div class="alert alert-warning p-2 mt-2" style="font-size:0.9em;">
+                                                        <h:outputText styleClass="pi pi-exclamation-triangle me-1"/>
+                                                        <h:outputText value="Patient is responsible for any balance above the credit limits. Exact patient portion is determined at discharge."/>
+                                                    </div>
+                                                </h:panelGroup>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
                                 </div>
                             </div>
-                            <h:panelGroup id="crd" style="display: #{admissionController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ; ">
-                                <credit:inputCredit_admit  patientEncounter="#{admissionController.current}"/>
-                            </h:panelGroup>
                         </p:panel>
                     </div>
 
                 </p:panel>
 
             </h:panelGroup>
+
+            <!-- Active Admission Warning Dialog -->
+            <p:dialog id="dlgActiveAdmission"
+                      widgetVar="dlgActiveAdmission"
+                      header="&#9888; Patient Already Admitted Warning"
+                      modal="true"
+                      resizable="false"
+                      closable="true"
+                      style="width:500px">
+                <div style="padding:12px">
+                    <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
+                        &#9888; WARNING: This patient already has an active admission.
+                    </p>
+                    <p>
+                        This patient is currently admitted and has not yet been discharged.
+                        Admitting the same patient again is <strong>highly unusual</strong> and may indicate a data-entry error.
+                    </p>
+                    <p style="font-weight:bold;">
+                        Are you sure you want to proceed with this new admission?
+                    </p>
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <p:commandButton
+                            value="Cancel — Do Not Admit"
+                            icon="fa fa-times"
+                            class="ui-button-secondary"
+                            onclick="PF('dlgActiveAdmission').hide(); return false;"/>
+                        <p:commandButton
+                            value="Yes, Proceed with Admission"
+                            icon="fa fa-exclamation-triangle"
+                            class="ui-button-danger"
+                            action="#{admissionController.saveSelected}"
+                            update="@form"
+                            onclick="PF('dlgActiveAdmission').hide();"/>
+                    </div>
+                </div>
+            </p:dialog>
+
+            <!-- On Admission Death confirmation dialog (Issue #21182) -->
+            <p:dialog id="dlgOnAdmissionDeath"
+                      widgetVar="dlgOnAdmissionDeath"
+                      header="Confirm On Admission Death"
+                      modal="true"
+                      resizable="false"
+                      closable="true"
+                      style="width:500px">
+                <div style="padding:12px">
+                    <p style="font-weight:bold; font-size:1.05em;">
+                        Record this admission as an <strong>On Admission Death</strong>?
+                    </p>
+                    <p>
+                        Use this only when the patient arrived dead, or died before
+                        registration was completed. The admission will be saved with the
+                        <strong>On Admission Death</strong> flag.
+                    </p>
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <p:commandButton
+                            value="Cancel"
+                            icon="fa fa-times"
+                            type="button"
+                            class="ui-button-secondary"
+                            onclick="PF('dlgOnAdmissionDeath').hide(); return false;"/>
+                        <p:commandButton
+                            value="Confirm — Save as On Admission Death"
+                            icon="fas fa-cross"
+                            class="ui-button-secondary"
+                            action="#{admissionController.checkBeforeAdmitOnAdmissionDeath}"
+                            update="@form"
+                            onclick="PF('dlgOnAdmissionDeath').hide();"/>
+                    </div>
+                </div>
+            </p:dialog>
+
+            <!-- Rapid / Temp A&E confirmation dialog (Issue #21183) -->
+            <p:dialog id="dlgRapidTempAe"
+                      widgetVar="dlgRapidTempAe"
+                      header="Confirm Provisional Emergency Admission"
+                      modal="true"
+                      resizable="false"
+                      closable="true"
+                      style="width:520px">
+                <div style="padding:12px">
+                    <p style="font-weight:bold; font-size:1.05em;">
+                        Admit this patient as a <strong>Provisional Emergency</strong> admission?
+                    </p>
+                    <p>
+                        Use this for emergency admissions where full demographics are not
+                        yet available. Any blank <strong>Name</strong> or
+                        <strong>Address</strong> will be filled with placeholders, and the
+                        usual demographic checks are skipped so the patient can be admitted
+                        immediately.
+                    </p>
+                    <p class="text-muted">
+                        The admission will be flagged <strong>Provisional Emergency</strong>.
+                        Please complete the patient details later from the Inpatient Dashboard.
+                    </p>
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <p:commandButton
+                            value="Cancel"
+                            icon="fa fa-times"
+                            type="button"
+                            class="ui-button-secondary"
+                            onclick="PF('dlgRapidTempAe').hide(); return false;"/>
+                        <p:commandButton
+                            value="Confirm — Provisional Emergency Admit"
+                            icon="fas fa-truck-medical"
+                            class="ui-button-warning"
+                            action="#{admissionController.checkBeforeAdmitRapidTempAe}"
+                            update="@form"
+                            onclick="PF('dlgRapidTempAe').hide();"/>
+                    </div>
+                </div>
+            </p:dialog>
+
             <p:panel rendered="#{admissionController.printPreview}">
                 <f:facet name="header">
                     <div class="d-flex justify-content-between">
@@ -471,15 +720,14 @@
                                 <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" />
                             </p:commandButton>
 
-                            <p:commandButton 
-                                ajax="false" 
+                            <p:commandButton
+                                ajax="false"
                                 immediate="true"
-                                class="ui-button-warning " 
-                                value="Inpatient Profile" 
-                                action="#{admissionController.navigateToAdmissionProfilePage}" 
-                                icon="fa fa-fw fa-bed" > 
-                                <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" />
-                            </p:commandButton>
+                                class="ui-button-warning "
+                                value="Inpatient Dashboard"
+                                action="#{admissionController.navigateToAdmissionProfilePage}"
+                                icon="fa fa-fw fa-bed" />
+
                         </div>
 
                     </div>

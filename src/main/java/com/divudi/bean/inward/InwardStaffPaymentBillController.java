@@ -21,6 +21,7 @@ import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFeePayment;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.Speciality;
@@ -37,6 +38,7 @@ import com.divudi.core.facade.CancelledBillFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.RefundBillFacade;
 import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.data.ProfessionalPaymentVoucherGroup;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.DrawerService;
 import com.divudi.service.ProfessionalPaymentService;
@@ -108,6 +110,8 @@ public class InwardStaffPaymentBillController implements Serializable {
     private Date toDate;
 
     private Bill current;
+    private List<ProfessionalPaymentVoucherGroup> individualVoucherGroups;
+    private Bill individualVoucherGroupsBill;
     private List<Bill> items = null;
     private List<Bill> bills;
     private List<Bill> billsCan;
@@ -163,6 +167,9 @@ public class InwardStaffPaymentBillController implements Serializable {
     private SearchKeyword searchKeyword;
     private AdmissionType admissionType;
     private Institution institution;
+    private Institution site;
+    private Department department;
+    private String dateBasis = "createdAt";
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -1571,6 +1578,15 @@ public class InwardStaffPaymentBillController implements Serializable {
         return current;
     }
 
+    public List<ProfessionalPaymentVoucherGroup> getIndividualVoucherGroups() {
+        if (individualVoucherGroups == null || individualVoucherGroupsBill != current) {
+            individualVoucherGroups = professionalPaymentService
+                    .groupPaymentBillItemsByPatientOrBht(current);
+            individualVoucherGroupsBill = current;
+        }
+        return individualVoucherGroups;
+    }
+
     public void setCurrent(Bill current) {
         this.current = current;
     }
@@ -1755,6 +1771,30 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public void setInstitution(Institution institution) {
         this.institution = institution;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public String getDateBasis() {
+        return dateBasis;
+    }
+
+    public void setDateBasis(String dateBasis) {
+        this.dateBasis = dateBasis;
     }
 
     public List<BillItem> getBillItems1() {
@@ -2063,6 +2103,10 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public void setBundle(IncomeBundle bundle) {
         this.bundle = bundle;
+    }
+    
+    public String convertToWord(double d) {
+        return CommonFunctions.convertToWord(Math.abs(d));
     }
 
 }

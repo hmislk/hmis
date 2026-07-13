@@ -14,7 +14,6 @@ import com.divudi.core.facade.AdmissionFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.dto.PatientRoomDTO;
-import com.divudi.core.entity.inward.Room;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,8 +42,6 @@ public class NursingWorkBenchController implements Serializable {
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
 
-    @Inject
-    RoomController roomController;
     @Inject
     AdmissionController admissionController;
     @Inject
@@ -104,84 +101,65 @@ public class NursingWorkBenchController implements Serializable {
         return admissionController.navigateToAdmissionProfilePage();
     }
 
+    public void selectAdmission(Long admissionId) {
+        PatientEncounter encounter = patientEncounterFacade.find(admissionId);
+        if (encounter == null || !(encounter instanceof Admission)) {
+            JsfUtil.addErrorMessage("No Admission Found");
+            return;
+        }
+        admissionController.setCurrent((Admission) encounter);
+    }
+
+    public String navigateToNursingWorkBenchWithAdmission(Long admissionId) {
+        PatientEncounter encounter = patientEncounterFacade.find(admissionId);
+        if (encounter == null || !(encounter instanceof Admission)) {
+            JsfUtil.addErrorMessage("No Admission Found");
+            return "";
+        }
+        clearData();
+        admissionController.setCurrent((Admission) encounter);
+        loadLists();
+        return "/nurse/index?faces-redirect=true";
+    }
+
     public String navigatetoNursingWorkBench() {
-        clearData(); // clear data
-        getPatientRooms(); // Load Room Details
-        getPatientEncounter(); // Load BHT Details
+        clearData();
+        loadLists();
         return "/nurse/index?faces-redirect=true";
     }
 
     public String navigateToBackNursingWorkBench() {
+        Admission savedCurrent = admissionController.getCurrent();
         clearData();
+        admissionController.setCurrent(savedCurrent);
+        loadLists();
         return "/nurse/index?faces-redirect=true";
     }
 
-    public List<PatientRoomDTO> getPatientRooms() {
-
+    private void loadLists() {
+        bhtList = new ArrayList<>();
         roomList = new ArrayList<>();
-        List<Room> rooms = roomController.getItems();
-        if (rooms == null) {
-            return roomList;
+        if (sessionController.getDepartment() == null) {
+            return;
         }
-
-        for (Room r : rooms) {
-            PatientEncounter p = null;
-            PatientRoomDTO prDTO = new PatientRoomDTO();
-            p = getPatientEncounterFromRoom(r);
-
-            if (p != null) {
-                prDTO.setAdmissionId(p.getId());
-                prDTO.setBhtNo(p.getBhtNo());
-                prDTO.setCurrentRoomNo(r.getName());
-                prDTO.setInPatient(Boolean.TRUE);
-            } else {
-                prDTO.setAdmissionId(null);
-                prDTO.setBhtNo("N/A");
-                prDTO.setCurrentRoomNo(r.getName());
-                prDTO.setInPatient(Boolean.FALSE);
-            }
-            roomList.add(prDTO);
-        }
-        return roomList;
-    }
-
-    public PatientEncounter getPatientEncounterFromRoom(Room patientRoom) {
-        String jpql = "select p from "
-                + " PatientEncounter p "
-                + " where p.discharged =:discharged "
-                + " and p.currentPatientRoom.roomFacilityCharge.room =:room ";
-
+        String baseCondition = "from PatientEncounter p "
+                + "where p.discharged = false "
+                + "and p.paymentFinalized = false "
+                + "and p.currentPatientRoom.roomFacilityCharge.department =:department ";
         HashMap params = new HashMap();
-        params.put("discharged", false);
-        params.put("room", patientRoom);
+        params.put("department", sessionController.getDepartment());
 
-        PatientEncounter current = patientEncounterFacade.findFirstByJpql(jpql, params);
+        bhtList = patientEncounterFacade.findLightsByJpql(
+                "select new com.divudi.core.data.dto.PatientRoomDTO( p.id, p.bhtNo, p.currentPatientRoom.roomFacilityCharge.room.name ) "
+                + baseCondition + "order by p.bhtNo asc", params);
 
-        return current;
+        roomList = patientEncounterFacade.findLightsByJpql(
+                "select new com.divudi.core.data.dto.PatientRoomDTO( p.id, p.bhtNo, p.currentPatientRoom.roomFacilityCharge.room.name ) "
+                + baseCondition + "order by p.currentPatientRoom.roomFacilityCharge.room.name asc, p.bhtNo asc", params);
     }
 
     public List<PatientRoomDTO> getPatientEncounter() {
-        bhtList = new ArrayList<>();
-
-        String jpql = "select new com.divudi.core.data.dto.PatientRoomDTO( p.id, p.bhtNo, p.currentPatientRoom.roomFacilityCharge.room.name ) "
-                + "from PatientEncounter p "
-                + " where p.discharged =:discharged "
-                + " order by p.bhtNo asc";
-
-        HashMap params = new HashMap();
-        params.put("discharged", false);
-
-        bhtList = patientEncounterFacade.findLightsByJpql(jpql, params);
-
         return bhtList;
-    }
-
-    public List<PatientRoomDTO> getRoomList() {
-        return roomList;
-    }
-
-    public void setRoomList(List<PatientRoomDTO> roomList) {
-        this.roomList = roomList;
     }
 
     public List<PatientRoomDTO> getBhtList() {
@@ -190,6 +168,14 @@ public class NursingWorkBenchController implements Serializable {
 
     public void setBhtList(List<PatientRoomDTO> bhtList) {
         this.bhtList = bhtList;
+    }
+
+    public List<PatientRoomDTO> getRoomList() {
+        return roomList;
+    }
+
+    public void setRoomList(List<PatientRoomDTO> roomList) {
+        this.roomList = roomList;
     }
 
     /**

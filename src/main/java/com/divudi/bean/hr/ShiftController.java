@@ -9,6 +9,7 @@ import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.entity.hr.Roster;
 import com.divudi.core.entity.hr.Shift;
+import com.divudi.core.entity.hr.ShiftStaffRequirement;
 import com.divudi.core.facade.RosterFacade;
 import com.divudi.core.facade.ShiftFacade;
 import com.divudi.core.util.JsfUtil;
@@ -24,6 +25,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -51,13 +53,32 @@ public class ShiftController implements Serializable {
             return true;
         }
 
-        if (getCurrent().getName().trim().isEmpty() && getCurrent().getName().isEmpty()) {
+        String name = getCurrent().getName();
+        if (name == null || name.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Enter Name");
             return true;
         }
 
         if (getCurrent().getDayType() == null) {
             JsfUtil.addErrorMessage("Select Day Type");
+            return true;
+        }
+
+        ShiftStaffRequirement sr = getCurrent().getStaffRequirement();
+
+        if (sr != null && (
+                isNegative(sr.getMondayCount()) ||
+                isNegative(sr.getTuesdayCount()) ||
+                isNegative(sr.getWednesdayCount()) ||
+                isNegative(sr.getThursdayCount()) ||
+                isNegative(sr.getFridayCount()) ||
+                isNegative(sr.getSaturdayCount()) ||
+                isNegative(sr.getSundayCount()) ||
+                isNegative(sr.getPoyaDayCount()) ||
+                isNegative(sr.getPublicHolidayCount()) ||
+                isNegative(sr.getMercantileHolidayCount())
+        )) {
+            JsfUtil.addErrorMessage("Staff count cannot be negative.");
             return true;
         }
 
@@ -127,11 +148,48 @@ public class ShiftController implements Serializable {
 
         return shifts;
     }
+    
+    public List<Shift> getAvailableShifts() {
+        if (shiftList == null) {
+            return null;
+        }
+
+        if (current == null || current.getId() == null) {
+            return shiftList;
+        }
+
+        return shiftList.stream()
+                .filter(s -> s != null
+                        && s.getId() != null
+                        && !s.getId().equals(current.getId()))
+                .collect(Collectors.toList());
+    }
 
     public void saveSelected() {
         if (errorCheck()) {
             return;
         }
+        
+        if (
+                getCurrent().getPreviousShift() != null && 
+                getCurrent().getId() != null && 
+                getCurrent().getPreviousShift().getId() != null && 
+                getCurrent().getPreviousShift().getId().equals(getCurrent().getId())
+        ) {
+            JsfUtil.addErrorMessage("A shift cannot be its own previous shift.");
+            return;
+        }
+
+        if (
+                getCurrent().getNextShift() != null && 
+                getCurrent().getId() != null && 
+                getCurrent().getNextShift().getId() != null && 
+                getCurrent().getNextShift().getId().equals(getCurrent().getId())
+        ) {
+            JsfUtil.addErrorMessage("A shift cannot be its own next shift.");
+            return;
+        }
+        
         if (getCurrent().getId() != null) {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");
@@ -145,11 +203,17 @@ public class ShiftController implements Serializable {
         current = null;
     }
 
+    private boolean isNegative(Integer value) {
+        return value != null && value < 0;
+    }
+
     public ShiftController() {
     }
 
     public void prepareAdd() {
-        current = null;
+        current = new Shift();
+        current.setRoster(getCurrentRoster());
+        current.setStaffRequirement(new ShiftStaffRequirement());
     }
 
     private void recreateModel() {
@@ -157,26 +221,35 @@ public class ShiftController implements Serializable {
     }
 
     public void delete() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("Nothing Seleced");
+        if (current == null || current.getId() == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
             return;
-        } else {
-            current.setRetired(true);
-            current.setRetiredAt(new Date());
-            current.setRetirer(getSessionController().getLoggedUser());
-            getFacade().edit(current);
-            getCurrentRoster().getShiftList().remove(getCurrent());
-            getRosterFacade().edit(getCurrentRoster());
-            JsfUtil.addSuccessMessage("Deleted Successfully");
         }
-        createShiftList();
+
+        Shift toDelete = current;
+
+        toDelete.setRetired(true);
+        toDelete.setRetiredAt(new Date());
+        toDelete.setRetirer(getSessionController().getLoggedUser());
+        getFacade().edit(toDelete);
+
+        if (getCurrentRoster() != null && getCurrentRoster().getShiftList() != null) {
+            getCurrentRoster().getShiftList().remove(toDelete);
+            getRosterFacade().edit(getCurrentRoster());
+        }
+
+        JsfUtil.addSuccessMessage("Deleted Successfully");
         current = null;
+        createShiftList();
     }
 
     public Shift getCurrent() {
         if (current == null) {
             current = new Shift();
             current.setRoster(getCurrentRoster());
+            current.setStaffRequirement(new ShiftStaffRequirement());
+        } else if (current.getStaffRequirement() == null) {
+            current.setStaffRequirement(new ShiftStaffRequirement());
         }
         return current;
     }
@@ -207,8 +280,13 @@ public class ShiftController implements Serializable {
     }
 
     public void setCurrentRoster(Roster currentRoster) {
-        current = null;
         this.currentRoster = currentRoster;
+
+        if (current != null) {
+            current.setRoster(currentRoster);
+            current.setPreviousShift(null);
+            current.setNextShift(null);
+        }
     }
 
     public RosterFacade getRosterFacade() {
@@ -228,14 +306,17 @@ public class ShiftController implements Serializable {
     }
 
     public void createShiftList() {
-        String jpql = "Select s "
-                + " From Shift s "
-                + " where s.retired=false "
-                + " and s.roster=:rs ";
+        if (current != null && current.getRoster() != null) {
+            currentRoster = current.getRoster();
+        }
+        if (currentRoster == null) {
+            shiftList = null;
+            return;
+        }
+        String jpql = "Select s From Shift s where s.retired=false and s.roster=:rs";
         HashMap m = new HashMap();
-        m.put("rs", getCurrentRoster());
+        m.put("rs", currentRoster);
         shiftList = getFacade().findByJpql(jpql, m);
-        JsfUtil.addSuccessMessage("Listed");
     }
 
     public void createShiftListReport() {

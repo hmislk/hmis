@@ -26,6 +26,10 @@
                                                          return false;"
                                              action="#{atmController.delete()}" class=" m-1 ui-button-danger w-25"
                                              update="lstSelect gpDetail msg" process="btnDelete" disabled="#{atmController.editable}" />
+                            <p:commandButton id="btnViewList" value="All ATMs List"
+                                             action="#{atmController.navigateToAtmList()}" ajax="false"
+                                             class="m-1 ui-button-secondary w-25" icon="fas fa-list"
+                                             title="View and download the full list of ATMs"/>
                             <p:selectOneListbox id="lstSelect" value="#{atmController.current}" filter="true" filterMatchMode="contains"
                                                 class="w-100" disabled="#{atmController.editable}">
                                 <f:selectItems value="#{atmController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />

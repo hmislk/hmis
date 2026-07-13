@@ -19,7 +19,7 @@ public class PaymentHandoverItem implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne
@@ -60,6 +60,13 @@ public class PaymentHandoverItem implements Serializable {
     private Bill handoverAcceptBill;
     @ManyToOne
     private Bill handoverAcceptComponantBill;
+
+    //Proof Missing
+    private boolean handoverProofMissing;
+    @ManyToOne
+    private Bill proofMissingBill;
+    @ManyToOne
+    private Bill proofMissingSettlement;
 
     public PaymentHandoverItem() {
     }
@@ -213,6 +220,30 @@ public class PaymentHandoverItem implements Serializable {
 
     public void setHandoverAcceptComponantBill(Bill handoverAcceptComponantBill) {
         this.handoverAcceptComponantBill = handoverAcceptComponantBill;
+    }
+
+    public boolean isHandoverProofMissing() {
+        return handoverProofMissing;
+    }
+
+    public void setHandoverProofMissing(boolean handoverProofMissing) {
+        this.handoverProofMissing = handoverProofMissing;
+    }
+
+    public Bill getProofMissingBill() {
+        return proofMissingBill;
+    }
+
+    public void setProofMissingBill(Bill proofMissingBill) {
+        this.proofMissingBill = proofMissingBill;
+    }
+
+    public Bill getProofMissingSettlement() {
+        return proofMissingSettlement;
+    }
+
+    public void setProofMissingSettlement(Bill proofMissingSettlement) {
+        this.proofMissingSettlement = proofMissingSettlement;
     }
 
 }

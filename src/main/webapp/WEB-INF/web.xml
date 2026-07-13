@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
+<web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
 
     <!-- This configuration was done by Dr M H B Ariyaratne -->
     <!-- Special thanks to ChatGPT from OpenAI for assistance -->
@@ -58,7 +58,7 @@
 
     <!-- Session Configuration -->
     <session-config>
-        <session-timeout>180</session-timeout> <!-- minutes -->
+        <session-timeout>60</session-timeout> <!-- minutes (reduced from 180 for patient data security, issue #19867) -->
     </session-config>
 
 
@@ -88,6 +88,10 @@
         <location>/faces/errorPages/generalError.xhtml</location>
     </error-page>
     
+    <context-param>
+        <param-name>org.omnifaces.SOCKET_ENDPOINT_ENABLED</param-name>
+        <param-value>true</param-value>
+    </context-param>
     <context-param>
         <param-name>javax.faces.STATE_SAVING_METHOD</param-name>
         <param-value>server</param-value>

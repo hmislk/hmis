@@ -68,6 +68,9 @@ public class StoreAmppController implements Serializable {
     private AmppDto selectedAmppDto;
     private List<AmppDto> amppDtos;
 
+    // List page DTO cache
+    private List<AmppDto> storeAmppListDtos;
+
     // Audit properties
     private List<AuditEvent> amppAuditEvents;
 
@@ -397,6 +400,7 @@ public class StoreAmppController implements Serializable {
     public void refreshData() {
         items = null;
         amppDtos = null;
+        storeAmppListDtos = null;
 
         if (current != null) {
             boolean shouldKeepSelection = false;
@@ -443,6 +447,43 @@ public class StoreAmppController implements Serializable {
             default:
                 return "Active Store AMPPs";
         }
+    }
+
+    // ===================== List Page Methods =====================
+
+    public List<AmppDto> getStoreAmppListDtos() {
+        if (storeAmppListDtos == null) {
+            String jpql = "SELECT new com.divudi.core.data.dto.AmppDto("
+                    + "a.id, a.name, a.code, "
+                    + "a.retired, a.inactive, a.dblValue, "
+                    + "pu.name, amp.id, amp.name) "
+                    + "FROM Ampp a "
+                    + "LEFT JOIN a.amp amp "
+                    + "LEFT JOIN a.packUnit pu "
+                    + "WHERE a.retired=false AND a.departmentType=:dep ";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("dep", DepartmentType.Store);
+
+            if ("active".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", false);
+            } else if ("inactive".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", true);
+            }
+
+            jpql += "ORDER BY a.name";
+
+            storeAmppListDtos = (List<AmppDto>) getFacade().findLightsByJpql(jpql, params);
+        }
+        return storeAmppListDtos;
+    }
+
+    public String navigateToStoreAmppList() {
+        setFilterToAll();
+        getStoreAmppListDtos();
+        return "/pharmacy/admin/store_ampp_list?faces-redirect=true";
     }
 
     // ===================== Toggle Status Methods =====================

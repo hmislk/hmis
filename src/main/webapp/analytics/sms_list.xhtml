@@ -74,6 +74,10 @@
                             <p:column headerText="#" style="padding: 6px; width :4em">
                                 #{i+1}
                             </p:column>
+                            
+                            <p:column headerText="#ID" style="padding: 6px; width :5em">
+                                <h:outputLabel value="#{sms.smsId}"/>
+                            </p:column>
 
                             <p:column headerText="Create At" style="padding: 6px; width :8em">
                                 <h:outputLabel value="#{sms.createdAt}">
@@ -83,20 +87,20 @@
 
                             <p:column 
                                 headerText="SMS Type" 
-                                style="padding: 6px; width :8em"
+                                style="padding: 6px; width :6em"
                                 sortBy="#{sms.smsType}" 
                                 filterBy="#{sms.smsType}" 
                                 filterMatchMode="contains" >
                                 <h:outputLabel value="#{sms.smsType}"/>
                             </p:column>
 
-                            <p:column 
+<!--                            <p:column 
                                 filterBy="#{sms.patientNameWithTitle}" 
                                 style="padding: 6px; width :20em"
                                 filterMatchMode="contains"
                                 headerText="Patient"  >
                                 <h:outputLabel value="#{sms.patientNameWithTitle}"/>
-                            </p:column>
+                            </p:column>-->
 
                             <p:column headerText="Message" style="padding: 6px;" >
                                 <h:outputLabel value="#{sms.message}"/>
@@ -104,7 +108,7 @@
 
                             <p:column 
                                 headerText="Phone Number"
-                                style="padding: 6px; width :10em"
+                                style="padding: 6px; width :7em"
                                 filterBy="#{sms.recipient}" 
                                 filterMatchMode="contains"
                                 styleClass="alignTop" >

@@ -61,6 +61,7 @@ public class StoreVmpController implements Serializable {
     // DTO properties
     private VmpDto selectedVmpDto;
     private List<VmpDto> vmpDtos;
+    private List<VmpDto> storeVmpListDtos;
 
     // Audit properties
     private List<AuditEvent> vmpAuditEvents;
@@ -374,6 +375,7 @@ public class StoreVmpController implements Serializable {
     public void refreshData() {
         items = null;
         vmpDtos = null;
+        storeVmpListDtos = null;
 
         if (current != null) {
             boolean shouldKeepSelection = false;
@@ -420,6 +422,43 @@ public class StoreVmpController implements Serializable {
             default:
                 return "Active Store VMPs";
         }
+    }
+
+    // ===================== List View Methods =====================
+
+    public List<VmpDto> getStoreVmpListDtos() {
+        if (storeVmpListDtos == null) {
+            String jpql = "SELECT new com.divudi.core.data.dto.VmpDto("
+                    + "a.id, a.name, a.code, a.descreption, "
+                    + "a.retired, a.inactive, v.id, v.name, "
+                    + "df.id, df.name) "
+                    + "FROM Vmp a "
+                    + "LEFT JOIN a.vtm v "
+                    + "LEFT JOIN a.dosageForm df "
+                    + "WHERE a.retired=false AND a.departmentType=:dep ";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("dep", DepartmentType.Store);
+
+            if ("active".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", false);
+            } else if ("inactive".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", true);
+            }
+
+            jpql += "ORDER BY a.name";
+
+            storeVmpListDtos = (List<VmpDto>) getFacade().findLightsByJpql(jpql, params);
+        }
+        return storeVmpListDtos;
+    }
+
+    public String navigateToStoreVmpList() {
+        storeVmpListDtos = null;
+        getStoreVmpListDtos();
+        return "/pharmacy/admin/store_vmp_list?faces-redirect=true";
     }
 
     // ===================== Toggle Status Methods =====================

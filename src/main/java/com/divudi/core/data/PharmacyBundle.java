@@ -24,6 +24,7 @@ import static com.divudi.core.data.PaymentMethod.Voucher;
 import static com.divudi.core.data.PaymentMethod.YouOweMe;
 import static com.divudi.core.data.PaymentMethod.ewallet;
 import com.divudi.core.entity.*;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.light.common.BillLight;
@@ -290,6 +291,15 @@ public class PharmacyBundle implements Serializable {
                         PharmaceuticalBillItem pbi = (PharmaceuticalBillItem) obj;
                         PharmacyRow ir = new PharmacyRow(pbi);
                         rows.add(ir);
+                    }
+                }
+            } else if (firstElement instanceof com.divudi.core.data.dto.PharmacyMovementOutByItemDTO) {
+                // Process list as movement-out-by-item DTOs (already aggregated per item in DB)
+                for (Object obj : entries) {
+                    if (obj instanceof com.divudi.core.data.dto.PharmacyMovementOutByItemDTO) {
+                        com.divudi.core.data.dto.PharmacyMovementOutByItemDTO dto
+                                = (com.divudi.core.data.dto.PharmacyMovementOutByItemDTO) obj;
+                        rows.add(new PharmacyRow(dto));
                     }
                 }
             } else if (firstElement instanceof PharmacyRow) {
@@ -567,6 +577,45 @@ public class PharmacyBundle implements Serializable {
         List<PharmacyRow> grouped = new ArrayList<>(itemRowMap.values());
         grouped.sort(Comparator.comparing(r -> r.getItem().getName(), Comparator.nullsLast(String::compareToIgnoreCase)));
         setRows(grouped);
+        summaryRow = new PharmacyRow();
+        summaryRow.setGrossSaleValue(grossSaleValue);
+        summaryRow.setMarginValue(marginValue);
+        summaryRow.setDiscountValue(discountValue);
+        summaryRow.setNetSaleValue(netSaleValue);
+        summaryRow.setQuantity(quantity);
+    }
+
+    /**
+     * Builds the summary (footer) row for the BY_ITEM movement-out view when
+     * the rows are already aggregated per item by the database (DTO path).
+     * Rows are NOT regrouped here; we only total them and build the summary row,
+     * matching the footer values produced by {@code groupSaleDetailsByItems()}.
+     */
+    public void summarizeMovementOutByItem() {
+        grossSaleValue = BigDecimal.ZERO;
+        marginValue = BigDecimal.ZERO;
+        discountValue = BigDecimal.ZERO;
+        netSaleValue = BigDecimal.ZERO;
+        quantity = 0.0;
+
+        for (PharmacyRow r : getRows()) {
+            if (r.getQuantity() != null) {
+                quantity += r.getQuantity();
+            }
+            if (r.getGrossSaleValue() != null) {
+                grossSaleValue = grossSaleValue.add(r.getGrossSaleValue());
+            }
+            if (r.getMarginValue() != null) {
+                marginValue = marginValue.add(r.getMarginValue());
+            }
+            if (r.getDiscountValue() != null) {
+                discountValue = discountValue.add(r.getDiscountValue());
+            }
+            if (r.getNetSaleValue() != null) {
+                netSaleValue = netSaleValue.add(r.getNetSaleValue());
+            }
+        }
+
         summaryRow = new PharmacyRow();
         summaryRow.setGrossSaleValue(grossSaleValue);
         summaryRow.setMarginValue(marginValue);
@@ -870,40 +919,34 @@ public class PharmacyBundle implements Serializable {
     public void generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionTypeDto() {
 
         Map<String, PharmacyRow> grouped = new LinkedHashMap<>();
-        int processedCount = 0;
-        int skippedNullBillLight = 0;
-        int skippedNullBillType = 0;
-
         for (PharmacyRow r : getRows()) {
             BillLight b = r.getBillLight();
             if (b == null) {
-                skippedNullBillLight++;
                 continue;
             }
             if (b.getBillTypeAtomic() == null) {
-                skippedNullBillType++;
                 continue;
             }
-            processedCount++;
 
             populateRowFromBill(r, b);
 
             BillTypeAtomic bta = b.getBillTypeAtomic();
             String detail;
-            if (b.getPatientEncounter() != null) {
-                r.setAdmissionType(b.getPatientEncounter().getAdmissionType());
-                if (b.getPatientEncounter().getAdmissionType() == null) {
-                    detail = "No Admission Type";
-                } else {
-                    detail = b.getPatientEncounter().getAdmissionType().getName();
-                }
+            // Support both entity-based (legacy) and scalar-based (new) BillLight construction
+            AdmissionType admissionType = (b.getPatientEncounter() != null)
+                    ? b.getPatientEncounter().getAdmissionType()
+                    : b.getAdmissionType();
+            String schemeName = (b.getPaymentScheme() != null)
+                    ? b.getPaymentScheme().getName()
+                    : b.getPaymentSchemeName();
+            if (admissionType != null) {
+                r.setAdmissionType(admissionType);
+                detail = admissionType.getName();
+            } else if (b.getPatientEncounter() != null || b.getAdmissionType() != null) {
+                // encounter present but admissionType is null
+                detail = "No Admission Type";
             } else {
-                r.setPaymentScheme(b.getPaymentScheme());
-                if (b.getPaymentScheme() == null) {
-                    detail = "No Discount Scheme";
-                } else {
-                    detail = b.getPaymentScheme().getName();
-                }
+                detail = (schemeName != null) ? schemeName : "No Discount Scheme";
             }
 
             String groupKey = bta.name() + " - " + detail;
@@ -948,6 +991,11 @@ public class PharmacyBundle implements Serializable {
                     groupRow.getValueOfStocksAtCostRate().add(r.getValueOfStocksAtCostRate())
                 );
             }
+            if (r.getValueOfStocksAtPurchaseRate() != null) {
+                groupRow.setValueOfStocksAtPurchaseRate(
+                    groupRow.getValueOfStocksAtPurchaseRate().add(r.getValueOfStocksAtPurchaseRate())
+                );
+            }
             if (r.getValueOfStocksAtRetailSaleRate() != null) {
                 groupRow.setValueOfStocksAtRetailSaleRate(
                     groupRow.getValueOfStocksAtRetailSaleRate().add(r.getValueOfStocksAtRetailSaleRate())
@@ -960,10 +1008,6 @@ public class PharmacyBundle implements Serializable {
         grouped.values().stream()
                 .sorted(Comparator.comparing(PharmacyRow::getRowType, Comparator.nullsLast(String::compareToIgnoreCase)))
                 .forEachOrdered(getRows()::add);
-
-        for (String key : grouped.keySet()) {
-            PharmacyRow gr = grouped.get(key);
-        }
 
         populateSummaryRow();
     }

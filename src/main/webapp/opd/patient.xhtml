@@ -60,11 +60,11 @@
                                         <p:commandButton
                                             icon="fa fa-hospital-o"
                                             ajax="false"
-                                            value="Admission Profile"
+                                            value="Inpatient Dashboard"
                                             rendered="#{admissionController.current ne null and admissionController.current.id ne null}"
                                             action="#{admissionController.navigateToAdmissionProfilePage()}"
                                             styleClass="ui-button-info"
-                                            title="Back to Admission Profile">
+                                            title="Inpatient Dashboard">
                                         </p:commandButton>
                                     </div>
                                 </div>
@@ -83,13 +83,11 @@
 
                                                     <h:panelGroup rendered="#{not empty patientController.current.person.nameWithTitle}" layout="block" styleClass="mb-3">
                                                         <strong class="text-muted">Name:</strong><br/>
-                                                        <p:outputLabel class="ml-4" value="#{patientController.current.person.nameWithTitle}" rendered="#{not empty patientController.current.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
-
-                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty patientController.current.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{patientController.current.specificStatus}" severity="danger">
+                                                        <p:badge style="transform: translate(110%, -40%);background-color: #{patientController.current.specificStatus != null and patientController.current.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{patientController.current.specificStatus != null and patientController.current.specificStatus.name() != 'NORMAL' ? patientController.current.specificStatus : ''}" severity="danger">
                                                             <p:outputLabel value="#{patientController.current.person.nameWithTitle}" rendered="#{not empty patientController.current.person.nameWithTitle}" />
-                                                        </p:badge> 
+                                                        </p:badge>
 
-                                                        <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system')}" style="transform: translate(110%, -40%);background-color: #{patientController.current.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{patientController.current.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+                                                        <p:badge style="transform: translate(110%, -40%);background-color: #{patientController.current.blacklisted ? '#dc3545' : 'white'} ; font-style: italic; font-size: 15px" value="#{patientController.current.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
 
                                                         </p:badge>
                                                     </h:panelGroup>
@@ -178,6 +176,16 @@
                                         <div class="card-body">
                                             <div class="row">
                                                 <div class="col-md-6">
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}" layout="block" styleClass="mb-3">
+                                                        <strong class="text-muted">Residency Status:</strong><br/>
+                                                        <p:badge 
+                                                            value="#{patientController.current.person.foreigner?'Foreigner':'Local'}"
+                                                            severity="#{patientController.current.person.foreigner?'warning':'info'}"
+                                                            size="large"
+                                                            style="width: 8em;">
+                                                        </p:badge>
+                                                    </h:panelGroup>
+
                                                     <h:panelGroup rendered="#{not empty patientController.current.person.nic}" layout="block" styleClass="mb-3">
                                                         <strong class="text-muted">NIC / Passport:</strong><br/>
                                                         <h:outputText value="#{patientController.current.person.nic}" styleClass="fw-bold"/>
@@ -215,7 +223,7 @@
                                         </div>
                                         <div class="card-body">
                                             <div class="row">
-                                                <div class="col-md-6">
+                                                <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <strong class="text-muted">Account Status:</strong><br/>
                                                         <p:badge value="#{patientDepositController.checkDepositOfThePatient(patientController.current, sessionController.getDepartment()) ne null ?'Has Account':'No Account'}"
@@ -229,22 +237,93 @@
                                                         </h:outputText>
                                                     </h:panelGroup>
                                                 </div>
-                                                <div class="col-md-6">
+                                                <div class="col-md-4">
                                                     <div class="mb-3">
                                                         <strong class="text-muted">Patient Status:</strong><br/>
                                                         <p:badge value="#{patientController.current.blacklisted eq true ? 'Blacklisted' : 'Active'}"
                                                                  severity="#{patientController.current.blacklisted eq true ? 'danger' : 'success'}"/>
                                                     </div>
-
-                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}" layout="block" styleClass="mb-3">
-                                                        <strong class="text-muted">Residency Status:</strong><br/>
-                                                        <p:badge value="#{patientController.current.person.foreigner?'Foreigner':'Local'}"
-                                                                 severity="#{patientController.current.person.foreigner?'warning':'info'}"/>
+                                                    <h:panelGroup rendered="#{patientController.current.blacklisted}" layout="block">
+                                                        <div class="alert alert-danger p-2 mt-1" style="font-size:0.85em;">
+                                                            <strong>Reason:</strong> #{patientController.current.reasonForBlacklist}<br/>
+                                                            <h:panelGroup rendered="#{not empty patientController.current.blacklistedBy}" layout="block">
+                                                                <strong>By:</strong> <h:outputText value="#{patientController.current.blacklistedBy.name}"/><br/>
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{not empty patientController.current.blacklistedAt}">
+                                                                <strong>On:</strong> <h:outputText value="#{patientController.current.blacklistedAt}"><f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" /></h:outputText>
+                                                            </h:panelGroup>
+                                                        </div>
                                                     </h:panelGroup>
+
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <h:panelGroup layout="block" styleClass="mb-3" rendered="#{not empty patientController.current.registrationSource}">
+                                                        <strong class="text-muted">Registration Source</strong><br/>
+                                                        <p:badge
+                                                            value="#{patientController.current.registrationSource.label}"
+                                                            severity="info">
+                                                        </p:badge>
+                                                    </h:panelGroup>
+
                                                 </div>
                                             </div>
                                         </div>
-                                    </div> 
+                                    </div>
+
+                                    <!-- Patient Relationships -->
+                                    <h:panelGroup id="relPanel" layout="block">
+                                    <div class="card mb-3">
+                                        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                                            <h:outputText value="Patient Relationships" styleClass="fw-bold"/>
+                                            <p:commandButton
+                                                value="Add Relationship"
+                                                icon="pi pi-user-plus"
+                                                styleClass="ui-button-success"
+                                                style="font-size:0.8em;"
+                                                ajax="true"
+                                                process="@this"
+                                                action="#{personRelationshipController.prepareAdd(patientController.current)}"
+                                                oncomplete="PF('addRelationshipDlg').show()"
+                                                rendered="#{webUserController.hasPrivilege('OpdBilling')}"/>
+
+                                        </div>
+                                        <div class="card-body p-2">
+                                            <p:dataTable
+                                                value="#{personRelationshipController.patientRelationships}"
+                                                var="rel"
+                                                emptyMessage="No relationships recorded"
+                                                styleClass="w-100"
+                                                style="table-layout:auto;">
+                                                <p:column headerText="Related Person">
+                                                    <h:outputText value="#{personRelationshipController.getOtherPerson(rel).nameWithTitle}"
+                                                                  rendered="#{personRelationshipController.getOtherPerson(rel) ne null}"/>
+                                                </p:column>
+                                                <p:column headerText="Relationship">
+                                                    <p:badge value="#{personRelationshipController.getRelationshipLabel(rel)}" severity="info"/>
+                                                </p:column>
+                                                <p:column headerText="Contact">
+                                                    <h:outputText value="#{personRelationshipController.getOtherPerson(rel).mobile}"
+                                                                  rendered="#{personRelationshipController.getOtherPerson(rel) ne null and not empty personRelationshipController.getOtherPerson(rel).mobile}"/>
+                                                    <h:outputText value="#{personRelationshipController.getOtherPerson(rel).phone}"
+                                                                  rendered="#{personRelationshipController.getOtherPerson(rel) ne null and empty personRelationshipController.getOtherPerson(rel).mobile and not empty personRelationshipController.getOtherPerson(rel).phone}"/>
+                                                </p:column>
+                                                <p:column headerText="Action" rendered="#{webUserController.hasPrivilege('OpdBilling')}">
+                                                    <p:commandButton
+                                                        value="Remove"
+                                                        icon="pi pi-trash"
+                                                        styleClass="ui-button-danger"
+                                                        style="font-size:0.8em;"
+                                                        ajax="true"
+                                                        update="relPanel"
+                                                        onclick="return confirm('Remove this relationship?')"
+                                                        action="#{personRelationshipController.deleteRelationship(rel)}"/>
+                                                </p:column>
+                                            </p:dataTable>
+                                        </div>
+                                    </div>
+                                    </h:panelGroup>
+
                                     <div style="transform: scale(2.0); transform-origin: top left; width: 10.0cm; height:5.0cm" >
                                         <h:panelGroup id="groupPatientCard" style="text-align: center; width: 5cm;" layout="block">
                                             <div style="line-height: 0.5; padding: 0; margin: 0;">
@@ -431,7 +510,7 @@
                                         <p:commandButton
                                             value="Blacklist Patient"
                                             ajax="true"
-                                            rendered="#{!patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system', false)}"
+                                            rendered="#{!patientController.current.blacklisted and webUserController.hasPrivilege('ClinicalPatientBlacklist')}"
                                             styleClass="ui-button-danger"
                                             style="min-width: 180px"
                                             icon="pi pi-ban"
@@ -442,7 +521,7 @@
                                         <p:commandButton
                                             value="Revert Blacklist"
                                             ajax="true"
-                                            rendered="#{patientController.current.blacklisted and configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system', false)}"
+                                            rendered="#{patientController.current.blacklisted and webUserController.hasPrivilege('ClinicalPatientBlacklist')}"
                                             styleClass="ui-button-warning"
                                             style="min-width: 180px"
                                             icon="pi pi-ban"
@@ -459,6 +538,20 @@
                                             icon="pi pi-trash"
                                             title="Delete patient record"
                                             onclick="return confirm('Are you sure you want to delete this patient?');">
+                                        </p:commandButton>
+                                    </div>
+                                    
+                                    <!-- Patient Portal &amp; SMS -->
+                                    <h:outputText value="Patient Portal &amp; SMS" styleClass="h6 fw-bold text-muted mb-2 d-block"/>
+                                    <div class="d-flex flex-column gap-2 mb-3">
+                                        <p:commandButton
+                                            value="Send Portal SMS"
+                                            action="#{patientPortalController.sendPortalLinkToPatinet(patientController.current)}"
+                                            ajax="false"
+                                            class="ui-button-inpatients"
+                                            style="min-width: 180px"
+                                            icon="fa fa-commenting"
+                                            title="Send Portal SMS">
                                         </p:commandButton>
                                     </div>
 
@@ -526,9 +619,76 @@
                                 </div>
 
 
-                            </div>  
+                            </div>
 
                         </p:panel>
+
+                        <!-- Load patient relationships on page render -->
+                        <p:remoteCommand
+                            name="loadPatientRelationships"
+                            autoRun="true"
+                            action="#{personRelationshipController.loadRelationshipsForPatient(patientController.current)}"
+                            update="relPanel"/>
+
+                        <!-- Add Relationship Dialog -->
+                        <p:dialog
+                            header="Add Patient Relationship"
+                            widgetVar="addRelationshipDlg"
+                            id="addRelationshipDlg"
+                            width="550"
+                            modal="true"
+                            closeOnEscape="true"
+                            resizable="false">
+                            <div class="p-3">
+                                <h:panelGrid columns="2" styleClass="w-100" columnClasses="col-5,col-7" cellpadding="6">
+                                    <p:outputLabel value="Related Patient:" styleClass="fw-bold"/>
+                                    <p:autoComplete
+                                        id="relatedPatientAc"
+                                        value="#{personRelationshipController.relatedPatient}"
+                                        completeMethod="#{personRelationshipController.completeRelatedPatient}"
+                                        var="rp"
+                                        itemLabel="#{rp.person.nameWithTitle} (#{rp.phn})"
+                                        itemValue="#{rp}"
+                                        minQueryLength="2"
+                                        styleClass="w-100"
+                                        forceSelection="true"
+                                        dropdown="false">
+                                        <p:ajax event="itemSelect" update="addRelationshipDlg"/>
+                                    </p:autoComplete>
+
+                                    <p:outputLabel value="Relationship Type:" styleClass="fw-bold"/>
+                                    <p:selectOneMenu
+                                        id="relType"
+                                        value="#{personRelationshipController.current.apToBpRelationship}"
+                                        rendered="#{personRelationshipController.current ne null}"
+                                        styleClass="w-100">
+                                        <f:selectItem itemLabel="-- Select --" itemValue="#{null}" noSelectionOption="true"/>
+                                        <f:selectItems
+                                            value="#{personRelationshipController.allRelationshipTypes}"
+                                            var="rt"
+                                            itemLabel="#{rt.label}"
+                                            itemValue="#{rt}"/>
+                                    </p:selectOneMenu>
+                                </h:panelGrid>
+
+                                <div class="d-flex gap-2 justify-content-end mt-3">
+                                    <p:commandButton
+                                        value="Save"
+                                        icon="pi pi-save"
+                                        styleClass="ui-button-success"
+                                        process="addRelationshipDlg"
+                                        action="#{personRelationshipController.saveRelationship()}"
+                                        oncomplete="if (!args.validationFailed) PF('addRelationshipDlg').hide();"
+                                        update="relPanel addRelationshipDlg"/>
+                                    <p:commandButton
+                                        value="Cancel"
+                                        icon="pi pi-times"
+                                        styleClass="ui-button-secondary"
+                                        onclick="PF('addRelationshipDlg').hide()"
+                                        type="button"/>
+                                </div>
+                            </div>
+                        </p:dialog>
 
                     </h:form>
 

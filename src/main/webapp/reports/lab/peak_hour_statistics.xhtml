@@ -10,177 +10,350 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
 
-                <h:form >
+                <h:form>
+                    <p:panel header="Peak Hour Statistics">
 
+                        <div class="container-fluid px-0">
 
+                            <!-- Date Range -->
+                            <div class="row align-items-center mb-2">
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-calendar-alt"></i>&#160;
+                                    <p:outputLabel value="From Date" for="dpFrom"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:datePicker id="dpFrom"
+                                                  styleClass="d-block w-100"
+                                                  inputStyleClass="form-control"
+                                                  placeholder="From Date"
+                                                  pattern="dd/MM/yyyy"/>
+                                </div>
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-calendar-alt"></i>&#160;
+                                    <p:outputLabel value="To Date" for="dpTo"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:datePicker id="dpTo"
+                                                  styleClass="d-block w-100"
+                                                  inputStyleClass="form-control"
+                                                  placeholder="To Date"
+                                                  pattern="dd/MM/yyyy"/>
+                                </div>
+                            </div>
 
-                    <p:panel header="Peak Hour Statistic Report" >
-                        <h:panelGrid columns="5" >
-                            <p:outputLabel value="From (Billed) Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.fromDate}" 
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
-                            <p:spacer width="20"></p:spacer>
-                            <p:outputLabel value="To (Billed) Date" >
-                            </p:outputLabel>
-                            <p:datePicker value="#{reportController.toDate}"
-                                          pattern="#{sessionController.applicationPreference.longDateFormat}"></p:datePicker>
+                            <!-- Institution & Site -->
+                            <div class="row align-items-center mb-2">
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-hospital"></i>&#160;
+                                    <p:outputLabel value="Institution" for="cmdInstitution"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu id="cmdInstitution"
+                                                     style="width:100%"
+                                                     title="Filter by institution"
+                                                     filter="true">
+                                        <f:selectItem itemLabel="All Institutions" itemValue=""/>
+                                        <f:selectItem itemLabel="Institution 1"    itemValue="INS1"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-map-marker-alt"></i>&#160;
+                                    <p:outputLabel value="Site" for="cmdSite"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu id="cmdSite"
+                                                     style="width:100%"
+                                                     title="Filter by site"
+                                                     filter="true">
+                                        <f:selectItem itemLabel="All Sites" itemValue=""/>
+                                        <f:selectItem itemLabel="Site 1"    itemValue="ST1"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
 
+                            <!-- Department & Visit Type -->
+                            <div class="row align-items-center mb-2">
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-sitemap"></i>&#160;
+                                    <p:outputLabel value="Department" for="cmdDepartment"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu id="cmdDepartment"
+                                                     style="width:100%"
+                                                     title="Filter by department"
+                                                     filter="true">
+                                        <f:selectItem itemLabel="All Departments" itemValue=""/>
+                                        <f:selectItem itemLabel="Biochemistry"    itemValue="BIO"/>
+                                        <f:selectItem itemLabel="Pathology"       itemValue="PATH"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-stethoscope"></i>&#160;
+                                    <p:outputLabel value="Visit Type" for="cmdVisitType"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu id="cmdVisitType"
+                                                     style="width:100%"
+                                                     title="Filter by visit type">
+                                        <f:selectItem itemLabel="All" itemValue=""/>
+                                        <f:selectItem itemLabel="OP"  itemValue="OP"/>
+                                        <f:selectItem itemLabel="IP"  itemValue="IP"/>
+                                        <f:selectItem itemLabel="CC"  itemValue="CC"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
 
+                            <!-- Process By & CC Name -->
+                            <div class="row align-items-center mb-2">
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-cogs"></i>&#160;
+                                    <p:outputLabel value="Process By" for="cmdProcessBy"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:selectOneMenu id="cmdProcessBy"
+                                                     style="width:100%"
+                                                     title="Filter by process time">
+                                        <f:selectItem itemLabel="Invoice Time"          itemValue="INVOICE"/>
+                                        <f:selectItem itemLabel="Sample Generated Time" itemValue="GEN"/>
+                                        <f:selectItem itemLabel="Sample Collected Time" itemValue="COL"/>
+                                        <f:selectItem itemLabel="Sample Sent Time"      itemValue="SENT"/>
+                                        <f:selectItem itemLabel="Sample Accepted Time"  itemValue="ACC"/>
+                                        <f:selectItem itemLabel="Result Entered"        itemValue="ENTERED"/>
+                                        <f:selectItem itemLabel="Result Interfaced"     itemValue="INTERFACED"/>
+                                        <f:selectItem itemLabel="Result Certified"      itemValue="CERTIFIED"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-user-circle"></i>&#160;
+                                    <p:outputLabel value="CC Name" for="txtCcName"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:inputText id="txtCcName"
+                                                 styleClass="form-control w-100"
+                                                 placeholder="Enter CC Name"/>
+                                </div>
+                            </div>
 
-                            <p:outputLabel value="Institution/Branch" >
-                            </p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmdInstitution"
-                                value="#{reportController.institution}"
-                                filter="true"
-                                >
-                                <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{institutionController.items}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}"></f:selectItems>
-                                <p:ajax process="@this" update="cmdDepartment"></p:ajax>
-                            </p:selectOneMenu>
+                            <!-- CC Route -->
+                            <div class="row align-items-center mb-2">
+                                <div class="col-md-2 text-right font-weight-bold">
+                                    <i class="fas fa-road"></i>&#160;
+                                    <p:outputLabel value="CC Route" for="txtCcRoute"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <p:inputText id="txtCcRoute"
+                                                 styleClass="form-control w-100"
+                                                 placeholder="Enter CC Route"/>
+                                </div>
+                            </div>
 
-                            <p:spacer></p:spacer>
+                            <!-- Action Buttons -->
+                            <div class="row mb-3">
+                                <div class="col-md-12 d-flex justify-content-start" style="gap:8px">
+                                    <p:commandButton ajax="false"
+                                                     value="Process"
+                                                     action="null"
+                                                     icon="fas fa-cog"
+                                                     styleClass="ui-button-warning"/>
+                                    <p:commandButton ajax="false"
+                                                     value="Print"
+                                                     action="null"
+                                                     icon="fas fa-print"
+                                                     styleClass="ui-button-info">
+                                        <p:printer target="tbl"/>
+                                    </p:commandButton>
+                                    <p:commandButton ajax="false"
+                                                     value="Export Excel"
+                                                     action="null"
+                                                     icon="fas fa-file-excel"
+                                                     styleClass="ui-button-success">
+                                        <p:dataExporter fileName="peak_hour_statistics" target="tbl" type="xlsx"/>
+                                    </p:commandButton>
+                                    <p:commandButton ajax="false"
+                                                     value="Export PDF"
+                                                     action="null"
+                                                     icon="fas fa-file-pdf"
+                                                     styleClass="ui-button-danger">
+                                        <p:dataExporter type="pdf" target="tbl" fileName="peak_hour_statistics"/>
+                                    </p:commandButton>
+                                </div>
+                            </div>
 
-                            <p:outputLabel value="Laboratary Department">
-                            </p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmdDepartment"
-                                value="#{reportController.department}" 
-                                filter="true"
-                                >
-                                <f:selectItem itemLabel="All"></f:selectItem>
-                                <f:selectItems value="#{departmentController.listAllDepatrments()}"
-                                               var="d"
-                                               itemLabel="#{d.name}"
-                                               itemValue="#{d}"></f:selectItems>
-                            </p:selectOneMenu>
+                        </div>
+                    </p:panel>
 
-                            <p:outputLabel value="Visit"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.visitType}">
-                                <f:selectItem itemLabel="All visits"/>
-                            </p:selectOneMenu>
+                    <!-- ============================================================ -->
+                    <!-- FILTER RESULTS SUMMARY                                        -->
+                    <!-- ============================================================ -->
+                    <p:panel header="Report Results" styleClass="mt-3">
 
-                            <p:spacer></p:spacer>
-                            
-                            <p:outputLabel value="Process By"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.processBy}">
-                                <f:selectItem itemLabel="Invoice Time"/>
-                            </p:selectOneMenu>
-                            
-                            <p:outputLabel value="Collecting Center Name"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.ccName}">
-                                <f:selectItems value="#{collectingCentreController.items}"
-                                               var="i"
-                                               itemLabel="#{i.name}"
-                                               itemValue="#{i}" ></f:selectItems>
-                            </p:selectOneMenu>
-                            
-                            <p:spacer></p:spacer>
-                            
-                            <p:outputLabel value="Collecting Centre Route"></p:outputLabel>
-                            <p:selectOneMenu value="#{reportController.ccRoute}"
-                                             filter="true"
-                                             filterMatchMode="contains">
-                                <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{routeController.items}"
-                                               var="r"
-                                               itemLabel="#{r.name}"
-                                               itemValue="#{r}"
-                                              />
-                            </p:selectOneMenu>
-                            
+                        <h:panelGrid columns="4"
+                                     styleClass="table table-bordered table-sm table-striped w-100"
+                                     columnClasses="font-weight-bold w-15,w-35,font-weight-bold w-15,w-35">
 
-                            <p:commandButton ajax="false" value="Process" action="null" >
-                            </p:commandButton>
+                            <h:outputText value="From Date"/>
+                            <h:outputText value=""/>
+                            <h:outputText value="To Date"/>
+                            <h:outputText value=""/>
+
+                            <h:outputText value="Institution"/>
+                            <h:outputText value=""/>
+                            <h:outputText value="Site"/>
+                            <h:outputText value=""/>
+
+                            <h:outputText value="Department"/>
+                            <h:outputText value=""/>
+                            <h:outputText value="Visit Type"/>
+                            <h:outputText value=""/>
+
+                            <h:outputText value="Process By"/>
+                            <h:outputText value=""/>
+                            <h:outputText value="CC Name"/>
+                            <h:outputText value=""/>
+
+                            <h:outputText value="CC Route"/>
+                            <h:outputText value=""/>
+                            <h:outputText value=""/>
+                            <h:outputText value=""/>
 
                         </h:panelGrid>
-                        
-                        <h:panelGrid columns="2">
-                            <h:outputLabel value="From Date :  "/>
-                            <h:outputLabel value="#{reportController.fromDate}"  >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel>
-                            
-                            <h:outputLabel value="To Date :  "/>
-                            <h:outputLabel value="#{reportController.toDate}"  >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
-                            </h:outputLabel>
-                            
-                            <h:outputLabel value="Institution/Branch :  "/>
-                            <h:outputLabel value="#{reportController.institution}"  >
-                                        
-                            </h:outputLabel>
-                        </h:panelGrid>
 
+                        <!-- ============================================================ -->
+                        <!-- RESULT TABLE                                                  -->
+                        <!-- ============================================================ -->
+                        <div style="overflow-x: auto; width: 100%;">
+                            <p:dataTable id="tbl"
+                                         value="null"
+                                         var="row"
+                                         paginator="false"
+                                         style="width:200em; min-width:200em;"
+                                         styleClass="table table-sm tbl-header">
 
-                        <p:dataTable value="null" var="c">
-                            <p:column headerText="Date" >
-                                <h:outputText value="" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="0:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="4:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="5:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="6:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="0:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="4:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="5:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="6:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="7:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="8:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="9:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="10:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="11:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="12:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="13:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="14:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="15:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="16:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            <p:column headerText="17:00" >
-                                <h:outputText value="null" ></h:outputText>
-                            </p:column>
-                            
+                                <p:column headerText="Date">
+                                    <h:outputText value="11-Aug-23"/>
+                                    <f:facet name="footer">
+                                        <span class="font-weight-bold">Grand Total</span>
+                                    </f:facet>
+                                </p:column>
 
-                        </p:dataTable>
+                                <p:column headerText="0:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="1:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="2:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="3:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="4:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="5:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="6:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="7:00">
+                                    <h:outputText value="1"/>
+                                    <f:facet name="footer"><h:outputText value="1"/></f:facet>
+                                </p:column>
+                                <p:column headerText="8:00">
+                                    <h:outputText value="7"/>
+                                    <f:facet name="footer"><h:outputText value="7"/></f:facet>
+                                </p:column>
+                                <p:column headerText="9:00">
+                                    <h:outputText value="17"/>
+                                    <f:facet name="footer"><h:outputText value="17"/></f:facet>
+                                </p:column>
+                                <p:column headerText="10:00">
+                                    <h:outputText value="16"/>
+                                    <f:facet name="footer"><h:outputText value="16"/></f:facet>
+                                </p:column>
+                                <p:column headerText="11:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="12:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="13:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="14:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="15:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="16:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="17:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="18:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="19:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="20:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="21:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="22:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+                                <p:column headerText="23:00">
+                                    <h:outputText value=""/>
+                                    <f:facet name="footer"><h:outputText value=""/></f:facet>
+                                </p:column>
+
+                                <p:column headerText="Total Stats">
+                                    <h:outputText value="42"/>
+                                    <f:facet name="footer">
+                                        <h:outputText value="42"/>
+                                    </f:facet>
+                                </p:column>
+
+                            </p:dataTable>
+                        </div>
+
+                        <!-- Generated By / Generated On OUTSIDE the dataTable -->
+                        <div class="d-flex justify-content-between align-items-center mt-2 px-2">
+                            <div>
+                                <span class="font-weight-bold mr-1">Generated By:</span>
+                                <h:outputText value=""/>
+                            </div>
+                            <div>
+                                <span class="font-weight-bold mr-1">Generated On:</span>
+                                <h:outputText value=""/>
+                            </div>
+                        </div>
 
                     </p:panel>
 
@@ -188,6 +361,5 @@
 
             </ui:define>
         </ui:composition>
-
     </h:body>
 </html>

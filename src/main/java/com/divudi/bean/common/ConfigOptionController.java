@@ -178,6 +178,24 @@ public class ConfigOptionController implements Serializable {
         return "/admin/institutions/admin_mange_application_options?faces-redirect=true";
     }
 
+    public String navigateToApplicationOptionsWithFilter(String filterKeyword) {
+        institution = null;
+        department = null;
+        webUser = null;
+        if (filterKeyword != null && !filterKeyword.trim().isEmpty()) {
+            options = searchApplicationOptions(filterKeyword);
+        } else {
+            options = getApplicationOptions();
+        }
+        return "/admin/institutions/admin_mange_application_options?faces-redirect=true";
+    }
+
+    private List<ConfigOption> searchApplicationOptions(String filterKeyword) {
+        List<ConfigOption> results = searchOptions(filterKeyword);
+        results.removeIf(o -> o.getDepartment() != null || o.getInstitution() != null || o.getWebUser() != null);
+        return results;
+    }
+
     public String navigateToInstitutionOptions() {
         institution = sessionController.getInstitution();
         department = sessionController.getDepartment();

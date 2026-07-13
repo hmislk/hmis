@@ -16,6 +16,7 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:outputStylesheet library="css" name="pharmacyLetter.css"/>
+        <style>.hidden { display: none !important; } @media print { .hidden { display: none !important; } }</style>
         <div style="width: 212mm; padding-left: 0px">
 
             <div class="institutionName">
@@ -126,7 +127,7 @@
 
                         <tbody style="font-size: 14px;">
                             <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" varStatus="st">
-                                <tr>
+                                <tr style="#{bip.retired ? 'display:none;' : ''}">
                                     <td style="text-align: center; border: 1px solid black;">#{st.index + 1}</td>
                                     <td style="text-align: left; border: 1px solid black; padding-left: 4px">#{bip.item.name}</td>
                                     <td style="text-align: right; border: 1px solid black; padding-right: 4px">
@@ -138,20 +139,20 @@
 
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity', false)}">
                                         <td style="text-align: right; border: 1px solid black; padding-right: 4px">
-                                            <h:outputText value="#{bip.billItemFinanceDetails.quantity + bip.billItemFinanceDetails.freeQuantity}">
+                                            <h:outputText value="#{bip.qty + (bip.billItemFinanceDetails.freeQuantity != null ? 0 - bip.billItemFinanceDetails.freeQuantity : 0)}">
                                                 <f:convertNumber />
-                                            </h:outputText>                
+                                            </h:outputText>
                                         </td>
                                     </h:panelGroup>
 
                                     <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity', false)}">
                                         <td style="text-align: right; border: 1px solid black; padding-right: 4px">
-                                            <h:outputText value="#{bip.billItemFinanceDetails.quantity}">
+                                            <h:outputText value="#{bip.qty}">
                                                 <f:convertNumber />
-                                            </h:outputText>         
+                                            </h:outputText>
                                         </td>
                                         <td style="text-align: right; border: 1px solid black; padding-right: 4px">
-                                            <h:outputText value="#{bip.billItemFinanceDetails.freeQuantity}">
+                                            <h:outputText value="#{bip.billItemFinanceDetails.freeQuantity != null ? 0 - bip.billItemFinanceDetails.freeQuantity : 0}">
                                                 <f:convertNumber />
                                             </h:outputText>
                                         </td>
@@ -163,7 +164,7 @@
                                         </h:outputText>
                                     </td>
                                     <td style="text-align: right; border: 1px solid black;">
-                                        <h:outputText value="#{bip.billItemFinanceDetails.lineGrossRate * (bip.billItemFinanceDetails.quantity + bip.billItemFinanceDetails.freeQuantity)}">
+                                        <h:outputText value="#{bip.netValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </td>
@@ -177,7 +178,7 @@
                                     <h:outputText value="Total"/>
                                 </td> 
                                 <td style="text-align: right; border: 1px solid black;">
-                                    <h:outputText value="#{0-cc.attrs.bill.total}">
+                                    <h:outputText value="#{cc.attrs.bill.total}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </td>

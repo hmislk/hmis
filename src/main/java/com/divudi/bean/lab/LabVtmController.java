@@ -62,6 +62,7 @@ public class LabVtmController implements Serializable {
     // DTO properties
     private List<VtmDto> vtmDtoList;
     private VtmDto selectedVtmDto;
+    private List<VtmDto> labVtmListDtos;
 
     // Audit properties
     private List<AuditEvent> vtmAuditEvents;
@@ -411,6 +412,7 @@ public class LabVtmController implements Serializable {
     public void refreshData() {
         items = null;
         clearDtoCache();
+        labVtmListDtos = null;
 
         if (current != null) {
             boolean shouldKeepSelection = false;
@@ -457,6 +459,40 @@ public class LabVtmController implements Serializable {
             default:
                 return "Active Lab VTMs";
         }
+    }
+
+    // ===================== List Page Methods =====================
+
+    public List<VtmDto> getLabVtmListDtos() {
+        if (labVtmListDtos == null) {
+            String jpql = "SELECT new com.divudi.core.data.dto.VtmDto("
+                    + "a.id, a.name, a.code, a.descreption, "
+                    + "a.instructions, a.retired, a.inactive) "
+                    + "FROM Vtm a "
+                    + "WHERE a.retired=false AND a.departmentType=:dep ";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("dep", DepartmentType.Lab);
+
+            if ("active".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", false);
+            } else if ("inactive".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", true);
+            }
+
+            jpql += "ORDER BY a.name";
+
+            labVtmListDtos = (List<VtmDto>) getFacade().findLightsByJpql(jpql, params);
+        }
+        return labVtmListDtos;
+    }
+
+    public String navigateToLabVtmList() {
+        labVtmListDtos = null;
+        getLabVtmListDtos();
+        return "/pharmacy/admin/lab_vtm_list?faces-redirect=true";
     }
 
     // ===================== Toggle Status Methods =====================

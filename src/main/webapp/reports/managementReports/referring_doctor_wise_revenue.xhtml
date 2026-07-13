@@ -358,13 +358,17 @@
                                 class="mx-2 ui-button-warning"/>
 
                             <p:commandButton
+                                value="To Print"
+                                styleClass="ui-button-info m-1"
                                 icon="fa-solid fa-print"
-                                class="mx-2 ui-button-info"
-                                style="width: 150px"
-                                ajax="false"
-                                value="Print">
-                                <p:printer target="printPanel"/>
-                            </p:commandButton>
+                                action="referring_doctor_wise_revenue_detailed_view?faces-redirect=true"
+                                rendered="#{reportController.reportType eq 'Detail'}"/>
+                        <p:commandButton
+                                value="To Print"
+                                styleClass="ui-button-info m-1"
+                                icon="fa-solid fa-print"
+                                action="referring_doctor_wise_revenue_summary_view?faces-redirect=true"
+                                rendered="#{reportController.reportType eq 'Summary'}"/>
 
                             <p:commandButton
                                 ajax="false"
@@ -372,21 +376,28 @@
                                 style="width: 150px"
                                 icon="fas fa-file-excel"
                                 class="ui-button-success mx-2">
-                                <p:dataExporter fileName="referring_doctor_wise_revenue"
+                                <p:dataExporter fileName="referring_doctor_wise_revenue_#{reportController.reportType}_report_#{reportController.fromDateFormatted()}_to_#{reportController.toDateFormatted()}"
                                                 target="#{reportController.reportType eq 'Summary' ? 'tblSummary' : 'tblDetail'}"
-                                                type="xlsx"/>
+                                                type="xlsx"
+                                                postProcessor="#{reportController.postProcessExcel}"/>
                             </p:commandButton>
 
-                            <p:commandButton
-                                class="mx-2 ui-button-danger"
-                                style="width: 150px"
-                                icon="fa-solid fa-file-pdf"
+                            <p:commandButton 
+                                value="PDF"
+                                icon="pi pi-file-pdf"
                                 ajax="false"
-                                value="PDF">
-                                <p:dataExporter type="pdf"
-                                                target="#{reportController.reportType eq 'Summary' ? 'tblSummary' : 'tblDetail'}"
-                                                fileName="referring_doctor_wise_revenue"/>
-                            </p:commandButton>
+                                styleClass="ui-button-danger m-1"
+                                action="#{reportController.exportReferringDoctorWiseRevenueDetailPDF()}"
+                                rendered="#{reportController.reportType eq 'Detail'}"
+                                />
+                            <p:commandButton 
+                                value="PDF"
+                                icon="pi pi-file-pdf"
+                                ajax="false"
+                                styleClass="ui-button-danger m-1"
+                                action="#{reportController.referringDoctorWiseRevenueSummaryReportPDF()}"
+                                rendered="#{reportController.reportType eq 'Summary'}"
+                                />
                         </div>
                     </p:panel>
                 </h:form>
@@ -394,42 +405,6 @@
                 <h:panelGroup id="printPanel">
                     <p:panel header="Referring Doctor Summary Report "
                              rendered="#{reportController.reportType eq 'Summary'}">
-                        <h:outputText value="From Date: " style="font-weight:bold; width:100px; display:inline-block;"/>
-                        <h:outputText value="#{reportController.fromDate}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                        </h:outputText>
-                        <br/>
-                        <h:outputText value="To Date: " style="font-weight:bold; width:100px; display:inline-block;"/>
-                        <h:outputText value="#{reportController.toDate}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                        </h:outputText>
-                        <br/>
-                        <h:panelGroup rendered="#{reportController.collectingCentre ne null}">
-                            <h:outputText value="C. Center: "
-                                          style="font-weight:bold; width:100px; display:inline-block;"/>
-                            <h:outputLabel value="#{reportController.collectingCentre.name}"/>
-                            <br/>
-                        </h:panelGroup>
-                        <h:panelGroup rendered="#{reportController.department ne null}">
-                            <h:outputText value="Department: "
-                                          style="font-weight:bold; width:100px; display:inline-block;"/>
-                            <h:outputLabel value="#{reportController.department.name}"/>
-                            <br/>
-                        </h:panelGroup>
-                        <h:panelGroup rendered="#{reportController.institution ne null}">
-                            <h:outputText value="Institution: "
-                                          style="font-weight:bold; width:100px; display:inline-block;"/>
-                            <h:outputLabel value="#{reportController.institution.name}"/>
-                            <br/>
-                        </h:panelGroup>
-
-                        <h:panelGroup rendered="#{reportController.site ne null}">
-                            <h:outputText value="Site: "
-                                          style="font-weight:bold; width:100px; display:inline-block;"/>
-                            <h:outputLabel value="#{reportController.site.name}"/>
-                            <br/>
-                        </h:panelGroup>
-
                         <p:dataTable
                             id="tblSummary"
                             value="#{reportController.testWiseCounts}"
@@ -533,45 +508,9 @@
                         </p:dataTable>
                     </p:panel>
 
-                    <p:panel header="Referring Doctor Detail Report "
+                    <p:panel 
+                            header="Referring Doctor Detailed Report "
                              rendered="#{reportController.reportType eq 'Detail'}">
-                        <h:panelGroup>
-                            <h:outputText value="From Date: " style="font-weight:bold; width:100px; display:inline-block;"/>
-                            <h:outputText value="#{reportController.fromDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                            <br/>
-                            <h:outputText value="To Date: " style="font-weight:bold; width:100px; display:inline-block;"/>
-                            <h:outputText value="#{reportController.toDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                            <br/>
-                            <h:panelGroup rendered="#{reportController.collectingCentre ne null}">
-                                <h:outputText value="C. Center: "
-                                              style="font-weight:bold; width:100px; display:inline-block;"/>
-                                <h:outputLabel value="#{reportController.collectingCentre.name}"/>
-                                <br/>
-                            </h:panelGroup>
-                            <h:panelGroup rendered="#{reportController.department ne null}">
-                                <h:outputText value="Department: "
-                                              style="font-weight:bold; width:100px; display:inline-block;"/>
-                                <h:outputLabel value="#{reportController.department.name}"/>
-                                <br/>
-                            </h:panelGroup>
-                            <h:panelGroup rendered="#{reportController.institution ne null}">
-                                <h:outputText value="Institution: "
-                                              style="font-weight:bold; width:100px; display:inline-block;"/>
-                                <h:outputLabel value="#{reportController.institution.name}"/>
-                                <br/>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{reportController.site ne null}">
-                                <h:outputText value="Site: "
-                                              style="font-weight:bold; width:100px; display:inline-block;"/>
-                                <h:outputLabel value="#{reportController.site.name}"/>
-                                <br/>
-                            </h:panelGroup>
-                        </h:panelGroup>
 
                         <p:dataTable id="tblDetail" value="#{reportController.billItems}" var="bi" rowIndexVar="rowIndex"
                                      paginator="true"

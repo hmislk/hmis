@@ -102,7 +102,7 @@
                                     update="acVmp detailPanel btnAdd btnEdit btnDelete btnSave btnCancel"
                                     icon="fas fa-plus"
                                     process="@this"
-                                    disabled="#{labVmpController.editable}"
+                                    disabled="#{labVmpController.editable or !webUserController.hasPrivilege('PharmacyItemNameEdit')}"
                                     title="Add a new Lab VMP record">
                                 </p:commandButton>
 
@@ -114,7 +114,7 @@
                                     update="detailPanel btnAdd btnEdit btnDelete btnSave btnCancel acVmp"
                                     process="@this"
                                     styleClass="ui-button-warning m-1"
-                                    disabled="#{labVmpController.editable or labVmpController.current.id eq null}"
+                                    disabled="#{labVmpController.editable or labVmpController.current.id eq null or !webUserController.hasPrivilege('PharmacyItemNameEdit')}"
                                     title="Edit selected Lab VMP record">
                                 </p:commandButton>
 
@@ -162,6 +162,15 @@
                                     styleClass="ui-button-info"
                                     disabled="#{labVmpController.current.id eq null}"
                                     title="View audit history for this Lab VMP record"/>
+
+                                <p:commandButton
+                                    id="btnViewList"
+                                    value="All VMPs List"
+                                    action="#{labVmpController.navigateToLabVmpList()}"
+                                    ajax="false"
+                                    styleClass="ui-button-secondary"
+                                    icon="fas fa-list"
+                                    title="View and download the full list of Lab VMPs"/>
 
                             </div>
                         </div>
@@ -272,7 +281,22 @@
                                         itemLabel="#{m.name}"/>
                                 </p:selectOneMenu>
 
-                                
+                                <p:outputLabel for="selIssueUnit" value="Issue Unit" styleClass="fw-bold"/>
+                                <p:selectOneMenu
+                                    id="selIssueUnit"
+                                    value="#{labVmpController.current.issueUnit}"
+                                    styleClass="w-100"
+                                    filter="true"
+                                    required="true"
+                                    requiredMessage="Dispensing Unit is required"
+                                    disabled="#{!labVmpController.editable}">
+                                    <f:selectItem itemLabel="-- Select Dispensing Unit --" itemValue="#{null}"/>
+                                    <f:selectItems
+                                        value="#{measurementUnitController.issueUnits}"
+                                        var="m"
+                                        itemValue="#{m}"
+                                        itemLabel="#{m.name}"/>
+                                </p:selectOneMenu>
 
                                 <!-- Department Type automatically set to Lab - not displayed -->
 
@@ -308,7 +332,7 @@
                                     process="@form"
                                     styleClass="ui-button-success"
                                     icon="fas fa-save"
-                                    disabled="#{!labVmpController.editable}"
+                                    disabled="#{!labVmpController.editable or !webUserController.hasPrivilege('PharmacyItemNameEdit')}"
                                     title="Save Lab VMP record"/>
 
                                 <p:commandButton

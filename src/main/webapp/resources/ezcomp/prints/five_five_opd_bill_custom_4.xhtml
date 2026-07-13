@@ -119,7 +119,10 @@
                         <tr>
                             <td style="padding: 2px; font-size: 12px;font-weight: 700;">Patient Name </td>
                             <td style="padding: 2px; font-size: 14px; font-weight: 700;" colspan="4">
-                                <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/>
+                                <div class="d-flex">
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}" rendered="#{sessionController.applicationPreference.changeTextCasesPatientName ne 'UPPERCASE'}"/>
+                        <h:outputLabel value="#{cc.attrs.bill.patient.person.capitalNameWithTitle}" rendered="#{sessionController.applicationPreference.changeTextCasesPatientName eq 'UPPERCASE'}"/>
+                    </div>
                             </td>
                         </tr>
                     </h:panelGroup>

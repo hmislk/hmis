@@ -4,8 +4,30 @@
 
 **🚨 DEVELOPMENT vs DEPLOYMENT:**
 
-1. **DEVELOPMENT**: Use hardcoded JNDI names (`jdbc/rhDS`, `jdbc/rhAuditDS`) for local environment
-2. **PRE-COMMIT**: Only before creating PR, change to environment variables (`${JDBC_DATASOURCE}`, `${JDBC_AUDIT_DATASOURCE}`)
+1. **DEVELOPMENT**: Use hardcoded JNDI names (e.g. `jdbc/ruhunu`, `jdbc/ruhunuAudit`) for local environment
+2. **PRE-PUSH**: Before committing/pushing, restore to environment variables (`${JDBC_DATASOURCE}`, `${JDBC_AUDIT_DATASOURCE}`)
+3. **POST-PUSH**: After pushing, immediately revert `persistence.xml` back to the local hardcoded names so local testing can continue uninterrupted
+
+### Full Push Workflow for persistence.xml
+
+```
+[Local dev]  jdbc/ruhunu  →  [pre-push] restore to ${JDBC_DATASOURCE}  →  git push  →  [post-push] revert back to jdbc/ruhunu
+```
+
+**Pre-push** (restore placeholders):
+```bash
+git checkout origin/development -- src/main/resources/META-INF/persistence.xml
+git add src/main/resources/META-INF/persistence.xml
+# include in commit, then push
+```
+
+**Post-push** (restore local names for continued testing):
+```bash
+# Edit persistence.xml and set your local JNDI names again, e.g.:
+#   <jta-data-source>jdbc/ruhunu</jta-data-source>
+#   <jta-data-source>jdbc/ruhunuAudit</jta-data-source>
+# Do NOT stage or commit this change — keep it as a local-only modification
+```
 
 **File**: `src/main/resources/META-INF/persistence.xml`
 
@@ -119,6 +141,24 @@ If you found hardcoded values in Steps 3 or 4:
 5. Save the file
 6. Verify again with Step 2 and Step 4
 7. Now you can safely commit and push
+
+### Step 6: Preserve "Do NOT Remove" Properties
+
+When reverting or editing `persistence.xml`, ensure the following properties marked `Do NOT Remove` are **always present**:
+
+```xml
+<!-- EclipseLink concurrency manager tuning (issue #19397) - Do NOT Remove -->
+<property name="eclipselink.concurrency.manager.waittime" value="10000"/>
+<property name="eclipselink.concurrency.manager.allow.concurrencyexception" value="true"/>
+<property name="eclipselink.concurrency.manager.maxfrequencytodumptinymessage" value="5000"/>
+
+<!-- Sequence pre-allocation fix for SEQUENCE table lock contention (issue #19626) - Do NOT Remove -->
+<property name="eclipselink.sequence.default-sequence-preallocation-size" value="50"/>
+```
+
+These are production-critical tuning properties. Removing them causes:
+- **Concurrency manager properties**: cache lock waits of up to 900 seconds, silent hangs instead of fast-fail errors
+- **Sequence preallocation**: each ID allocation acquires a table-level lock on the SEQUENCE table, causing severe slowness under load (retail sales affected)
 
 ## Why This Matters
 

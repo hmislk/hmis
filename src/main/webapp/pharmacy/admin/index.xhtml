@@ -45,11 +45,11 @@
                                                 ajax="false" 
                                                 value="Manage Units" 
                                                 action="#{measurementUnitController.navigateToManageMeasurementUnit()}"  ></p:commandButton>
-                                            <p:commandButton class="w-100" ajax="false" value="Discard Categories" action="#{pharmacyController.navigateToDiscardCategory()}" ></p:commandButton>
+                                            <p:commandButton class="w-100" ajax="false" value="Discard Categories" action="#{pharmacyController.navigateToDiscardCategory()}" rendered="#{webUserController.hasPrivilege('PharmacyDiscardCategoryManage')}" ></p:commandButton>
                                             <p:commandButton class="w-100" ajax="false" value="Adjustment Categories" action="/pharmacy/pharmacy_adjustment_category" ></p:commandButton>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="Pharmaceutical Component Management">
+                                    <p:tab title="Pharmacy Item Management">
                                         <div class="d-grid gap-2">
                                             <!--                                            <p:commandButton
                                                                                             class="w-100"
@@ -260,6 +260,7 @@
                                             <p:commandButton class="w-100" ajax="false" value="Error Detection By Date" icon="fa fa-calendar-check" action="#{pharmacyController.navigateToErrorCheckingByDate()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Error Detection Report" icon="fa fa-file-alt" action="#{pharmacyController.navigateToDepartmentErrorReport()}" />
                                             <p:commandButton class="w-100" ajax="false" value="Department Stock By Batch minus" icon="fa fa-minus-circle" action="#{pharmacyController.navigateToDepartmentStockByBatchMinus()}" />
+                                            <p:commandButton id="btnPossibleDuplicateItems" class="w-100" ajax="false" value="Possible Duplicate Items" icon="fa fa-clone" action="#{duplicatePharmaceuticalItemController.navigateToPossibleDuplicateItems()}" />
                                             <p:commandButton   class="w-100" ajax="false" value="Remove Duplicates" action="#{pharmacyItemExcelManager.removeDuplicateAmpps()}" />
                                         </div>
                                     </p:tab>

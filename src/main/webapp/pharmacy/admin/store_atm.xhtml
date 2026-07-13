@@ -72,7 +72,7 @@
                                                 class="m-1 ui-button-success"
                                                 update="acAtm gpDetail actionButtons statusFilterPanel atmDetails"
                                                 process="@this"
-                                                disabled="#{storeAtmController.editable}">
+                                                disabled="#{storeAtmController.editable or !webUserController.hasPrivilege('PharmacyItemNameEdit')}">
                                                 <f:setPropertyActionListener target="#{storeAtmController.selectedAtmDto}" value="#{null}" />
                                             </p:commandButton>
 
@@ -84,7 +84,7 @@
                                                 class="m-1 ui-button-info"
                                                 update="atmDetails acAtm actionButtons statusFilterPanel"
                                                 process="@this"
-                                                disabled="#{storeAtmController.editable or storeAtmController.selectedAtmDto eq null}">
+                                                disabled="#{storeAtmController.editable or storeAtmController.selectedAtmDto eq null or !webUserController.hasPrivilege('PharmacyItemNameEdit')}">
                                             </p:commandButton>
 
                                             <p:commandButton
@@ -128,6 +128,15 @@
                                                 ajax="false"
                                                 disabled="#{storeAtmController.selectedAtmDto eq null}">
                                             </p:commandButton>
+
+                                            <p:commandButton
+                                                id="btnViewList"
+                                                value="All ATMs List"
+                                                action="#{storeAtmController.navigateToStoreAtmList()}"
+                                                ajax="false"
+                                                styleClass="ui-button-secondary m-1"
+                                                icon="fas fa-list"
+                                                title="View and download the full list of Store ATMs"/>
                                         </div>
                                     </div>
                                 </h:panelGroup>
@@ -238,7 +247,7 @@
                                                 class="m-1 ui-button-warning w-25"
                                                 process="btnSave gpDetail"
                                                 update="acAtm gpDetail form:msg actionButtons atmDetails statusFilterPanel"
-                                                disabled="#{!storeAtmController.editable}"
+                                                disabled="#{!storeAtmController.editable or !webUserController.hasPrivilege('PharmacyItemNameEdit')}"
                                                 oncomplete="try { if (PF('acAtm')) { PF('acAtm').cache = {}; } } catch(e) {}">
                                             </p:commandButton>
                                             <p:commandButton

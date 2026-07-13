@@ -1,5 +1,6 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.IncomeBundle;
 import java.util.Date;
 import java.util.List;
 
@@ -15,6 +16,8 @@ public class ChannelServiceCategorywiseDetailsWrapperDTO {
     private Date billingStartDate;
     private Date billingEndDate;
     private List<ChannelServiceCategorywiseDetailsDTO> dtoList;
+    private IncomeBundle opdBundle;
+    private IncomeBundle pharmacyBundle;
 
     public ChannelServiceCategorywiseDetailsWrapperDTO(Long shiftStartBillId, Long shiftEndBillId, String cashierUserName, Date billingStartDate, Date billingEndDate, List<ChannelServiceCategorywiseDetailsDTO> dtoList) {
         this.shiftStartBillId = shiftStartBillId;
@@ -27,6 +30,24 @@ public class ChannelServiceCategorywiseDetailsWrapperDTO {
 
     public ChannelServiceCategorywiseDetailsWrapperDTO() {
     }
+
+    public IncomeBundle getOpdBundle() {
+        return opdBundle;
+    }
+
+    public void setOpdBundle(IncomeBundle opdBundle) {
+        this.opdBundle = opdBundle;
+    }
+
+    public IncomeBundle getPharmacyBundle() {
+        return pharmacyBundle;
+    }
+
+    public void setPharmacyBundle(IncomeBundle pharmacyBundle) {
+        this.pharmacyBundle = pharmacyBundle;
+    }
+    
+    
 
     public Long getShiftStartBillId() {
         return shiftStartBillId;

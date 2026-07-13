@@ -50,11 +50,7 @@ public class LaboratoryDoctorDashboardController implements Serializable {
 
     }
 
-    // <editor-fold defaultstate="collapsed" desc="EJBs">
-    @EJB
-    private BillFacade billFacade;
-    @EJB
-    private PatientSampleFacade patientSampleFacade;
+    // <editor-fold defaultstate="collapsed" desc="EJBs">;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
     @EJB
@@ -67,18 +63,9 @@ public class LaboratoryDoctorDashboardController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
-    PatientReportController patientReportController;
-    @Inject
     PatientReportUploadController patientReportUploadController;
     @Inject
-    ConfigOptionApplicationController configOptionApplicationController;
-    @Inject
     SessionController sessionController;
-    @Inject
-    PatientInvestigationController patientInvestigationController;
-    @Inject
-    ReportTimerController reportTimerController;
-
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Variables">
@@ -111,7 +98,7 @@ public class LaboratoryDoctorDashboardController implements Serializable {
     
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToDoctorDashboard() {
-        items = null;
+        items = new ArrayList<>();
         return "/lab/laboratory_doctor_dashboard?faces-redirect=true";
     }
 
@@ -123,7 +110,6 @@ public class LaboratoryDoctorDashboardController implements Serializable {
         PatientInvestigation pi = patientInvestigationFacade.find(patientInvestigation.getId());
         items.add(pi);
         listingEntity = ListingEntity.PATIENT_REPORTS;
-
     }
     
     // </editor-fold>

@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- POS (thermal) receipt for Inward Outside Charge bills -->
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" required="true" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean" default="false" />
+    </cc:interface>
+
+    <cc:implementation>
+        <div style="width: 7.4cm; margin: 0 auto; font-family: Arial, Helvetica, sans-serif; color: #000;">
+
+            <div style="text-align: center; font-weight: bold; font-size: 16px;">
+                <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
+            </div>
+            <div style="text-align: center; font-size: 11px; line-height: 1.3;">
+                <div><h:outputLabel value="#{cc.attrs.bill.department.address}" /></div>
+                <div>
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone1}" />
+                    <h:outputLabel value=" / " rendered="#{cc.attrs.bill.department.telephone2 ne null}" />
+                    <h:outputLabel value="#{cc.attrs.bill.department.telephone2}" />
+                </div>
+            </div>
+
+            <div style="text-align: center; font-weight: bold; font-size: 13px; margin-top: 4px;">
+                <h:outputLabel value="OUTSIDE CHARGE BILL" />
+                <h:outputLabel value=" **Duplicate**" rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value=" **Cancelled**" rendered="#{cc.attrs.bill.cancelled eq true}" />
+            </div>
+
+            <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+
+            <table style="width: 100%; font-size: 11px;">
+                <tr>
+                    <td style="width: 35%; text-align: left;">Bill No</td>
+                    <td style="width: 5%;">:</td>
+                    <td style="text-align: left;"><h:outputLabel value="#{cc.attrs.bill.deptId}" /></td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">Date</td>
+                    <td>:</td>
+                    <td style="text-align: left;">
+                        <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <f:convertDateTime pattern="dd/MM/yyyy hh:mm a" timeZone="Asia/Colombo" />
+                        </h:outputLabel>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">Name</td>
+                    <td>:</td>
+                    <td style="text-align: left;"><h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" /></td>
+                </tr>
+                <tr>
+                    <td style="text-align: left;">BHT No</td>
+                    <td>:</td>
+                    <td style="text-align: left;"><h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" /></td>
+                </tr>
+                <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom ne null}">
+                    <tr>
+                        <td style="text-align: left;">Room</td>
+                        <td>:</td>
+                        <td style="text-align: left;"><h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" /></td>
+                    </tr>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{cc.attrs.bill.fromInstitution ne null}">
+                    <tr>
+                        <td style="text-align: left;">From</td>
+                        <td>:</td>
+                        <td style="text-align: left;"><h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" /></td>
+                    </tr>
+                </h:panelGroup>
+            </table>
+
+            <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+
+            <table style="width: 100%; font-size: 11px;">
+                <tr style="font-weight: bold;">
+                    <td style="text-align: left;">Charge</td>
+                    <td style="text-align: right;">Value</td>
+                </tr>
+                <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
+                    <tr>
+                        <td style="text-align: left; text-transform: capitalize;">
+                            <h:outputLabel value="#{bip.inwardChargeType.label}" />
+                        </td>
+                        <td style="text-align: right;">
+                            <h:outputLabel value="#{bip.netValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </ui:repeat>
+            </table>
+
+            <div style="border-top: 1px dashed #000; margin: 4px 0;"></div>
+
+            <table style="width: 100%; font-size: 12px; font-weight: bold;">
+                <tr>
+                    <td style="text-align: left;">Net Total</td>
+                    <td style="text-align: right;">
+                        <h:outputLabel value="#{cc.attrs.bill.netTotal}">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </td>
+                </tr>
+            </table>
+
+            <h:panelGroup rendered="#{cc.attrs.bill.comments ne null and not empty cc.attrs.bill.comments}">
+                <div style="font-size: 10px; margin-top: 4px;">
+                    <h:outputLabel value="Note: #{cc.attrs.bill.comments}" />
+                </div>
+            </h:panelGroup>
+
+            <div style="font-size: 10px; margin-top: 6px;">
+                <h:outputLabel value="Billed by : #{cc.attrs.bill.creater.name}" />
+            </div>
+            <div style="font-size: 10px; margin-top: 10px;">
+                Signature : ____________________
+            </div>
+
+        </div>
+    </cc:implementation>
+</html>

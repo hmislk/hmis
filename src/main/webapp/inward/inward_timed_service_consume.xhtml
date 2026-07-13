@@ -10,7 +10,7 @@
 
 
     <ui:define name="content">
-        <h:form>    
+        <h:form id="formTimedServiceConsume" onkeypress="if(event.keyCode == 13 &amp;&amp; event.target.type != 'textarea') { return false; }">
             <h:panelGroup class="row" rendered="#{inwardTimedItemController.current.patientEncounter eq null}"> 
                 <div class="col-12">
                     <h:panelGroup>
@@ -112,10 +112,21 @@
                         </div>
                         <div class="d-flex gap-2">
 
-                            <p:commandButton 
+                            <p:commandButton
+                                value="Inpatient Dashboard"
+                                ajax="false"
+                                icon="fa fa-id-card"
+                                class="ui-button-secondary"
+                                action="#{admissionController.navigateToAdmissionProfilePage}">
+                                <f:setPropertyActionListener
+                                    value="#{inwardTimedItemController.current.patientEncounter}"
+                                    target="#{admissionController.current}" />
+                            </p:commandButton>
+
+                            <p:commandButton
                                 class="ui-button-success "
                                 icon="fa fa-plus"
-                                ajax="false" 
+                                ajax="false"
                                 value="New Bill"
                                 actionListener="#{inwardTimedItemController.makeNull()}" >
                             </p:commandButton>
@@ -229,10 +240,12 @@
 
                                 <div class="row">
                                     <div class="col-4">
-                                        <p:commandButton 
-                                            class="mx-2 ui-button-success" 
-                                            value="Add Service" 
+                                        <p:commandButton
+                                            id="btnAddTimedService"
+                                            class="mx-2 ui-button-success"
+                                            value="Add Service"
                                             ajax="false"
+                                            onclick="if(this.alreadyClicked) return false; this.alreadyClicked=true; var btn=this; setTimeout(function(){ btn.alreadyClicked=false; }, 5000);"
                                             action="#{inwardTimedItemController.save}">
                                         </p:commandButton>
                                     </div>
@@ -269,7 +282,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                             </p:datePicker> 
                         </p:column>
-                        <p:column headerText="Total" styleClass="averageNumericColumn">
+                        <p:column headerText="Total" styleClass="averageNumericColumn" rendered="#{webUserController.hasPrivilege('ShowTimeServiceCharges')}">
                             <h:outputLabel  value="#{ti.serviceValue}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>

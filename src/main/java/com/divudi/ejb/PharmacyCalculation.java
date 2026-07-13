@@ -858,6 +858,8 @@ public class PharmacyCalculation implements Serializable {
 
             purchaseRatePerUnit = prPerUnit.doubleValue();
             retailRatePerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
+            BigDecimal wholesaleRatePerUnit = inputBillItem.getBillItemFinanceDetails().getWholesaleRatePerUnit();
+            wholesaleRate = wholesaleRatePerUnit != null ? wholesaleRatePerUnit.doubleValue() : 0.0;
             costRatePerUnit = inputBillItem.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
 
             System.out.println("@@@ PharmacyCalculation.saveItemBatchWithCosting @@@");
@@ -894,6 +896,8 @@ public class PharmacyCalculation implements Serializable {
 
             getItemBatchFacade().create(itemBatch);
         } else {
+            itemBatch.setWholesaleRate(wholesaleRate);
+            getItemBatchFacade().edit(itemBatch);
         }
 
         return itemBatch;

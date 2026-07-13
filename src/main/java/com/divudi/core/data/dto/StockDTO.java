@@ -56,6 +56,62 @@ public class StockDTO implements Serializable {
         this.dateOfExpire = dateOfExpire;
     }
 
+    // Constructor for optimized direct-issue autocomplete: includes stock/itemBatch/item IDs
+    // Double variant (EclipseLink autoboxes primitive double entity fields to Double)
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, Double retailRate, Double stockQty, Date dateOfExpire) {
+        this.id = stockId;
+        this.stockId = stockId;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+    }
+
+    // Primitive double variant for strict EclipseLink type matching
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, double retailRate, double stockQty, Date dateOfExpire) {
+        this(stockId, itemBatchId, itemId, itemName, code, genericName, (Double) retailRate, (Double) stockQty, dateOfExpire);
+    }
+
+    // Constructor for optimized wholesale sale autocomplete (mirrors the retail one, populates wholesaleRate).
+    // The trailing batchNo param disambiguates this overload's erasure from the retail 9-arg constructor above.
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, Double wholesaleRate, Double stockQty, Date dateOfExpire, String batchNo) {
+        this.id = stockId;
+        this.stockId = stockId;
+        this.itemBatchId = itemBatchId;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.code = code;
+        this.genericName = genericName;
+        this.wholesaleRate = wholesaleRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.batchNo = batchNo;
+    }
+
+    // Primitive double variant of the wholesale autocomplete constructor above, for strict
+    // EclipseLink type matching (ItemBatch.wholesaleRate is a primitive double on the entity).
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, double wholesaleRate, double stockQty, Date dateOfExpire, String batchNo) {
+        this(stockId, itemBatchId, itemId, itemName, code, genericName, (Double) wholesaleRate, (Double) stockQty, dateOfExpire, batchNo);
+    }
+
+    // Optimized FEFO discharge-issue projection: ids + name/code/generic + retail
+    // AND purchase rate (for COGS) + stock + expiry. (issue #21334)
+    // ItemBatch.purcahseRate is primitive double on the entity, so EclipseLink
+    // requires an exact-type constructor parameter for the projection.
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId, String itemName, String code,
+                    String genericName, double retailRate, double purchaseRate, double stockQty, Date dateOfExpire) {
+        this(stockId, itemBatchId, itemId, itemName, code, genericName, (Double) retailRate, (Double) stockQty, dateOfExpire);
+        this.purchaseRate = purchaseRate;
+    }
+
     // Same as above, with allowFractions
     public StockDTO(Long id, String itemName, String code, String genericName,
                     Double retailRate, Double stockQty, Date dateOfExpire,
@@ -227,6 +283,25 @@ public class StockDTO implements Serializable {
         this.dateOfExpire = dateOfExpire;
         this.stockQty = stockQty;
         this.costRate = costRate;
+    }
+
+    // Constructor for stock count bill generation with purchase and retail rates
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId,
+                    String categoryName, String itemName, String batchNo,
+                    Date dateOfExpire, Double stockQty, Double costRate,
+                    double purchaseRate, double retailRate) {
+        this(stockId, itemBatchId, itemId, categoryName, itemName, batchNo, dateOfExpire, stockQty, costRate);
+        this.purchaseRate = purchaseRate;
+        this.retailRate = retailRate;
+    }
+
+    // Constructor for stock count bill generation with purchase, retail rates and dosage form
+    public StockDTO(Long stockId, Long itemBatchId, Long itemId,
+                    String categoryName, String itemName, String batchNo,
+                    Date dateOfExpire, Double stockQty, Double costRate,
+                    double purchaseRate, double retailRate, String dosageFormName) {
+        this(stockId, itemBatchId, itemId, categoryName, itemName, batchNo, dateOfExpire, stockQty, costRate, purchaseRate, retailRate);
+        this.dosageFormName = dosageFormName;
     }
 
 

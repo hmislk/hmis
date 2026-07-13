@@ -2,6 +2,7 @@ package com.divudi.bean.pharmacy;
 
 // <editor-fold defaultstate="collapsed" desc="Import Statements">
 import com.divudi.bean.common.*;
+import com.divudi.bean.pharmacy.PharmacyController;
 import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
@@ -9,6 +10,7 @@ import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
+import com.divudi.core.data.dto.PharmacyMovementOutByItemDTO;
 import com.divudi.core.data.reports.SummaryReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
@@ -129,6 +131,18 @@ import com.divudi.core.entity.Upload;
 import com.divudi.core.facade.UploadFacade;
 import java.io.ByteArrayInputStream;
 import java.text.SimpleDateFormat;
+import java.util.LinkedHashMap;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.DefaultStreamedContent;
 
 import org.primefaces.model.StreamedContent;
@@ -229,6 +243,8 @@ public class PharmacySummaryReportController implements Serializable {
     BillController billController;
     @Inject
     DataAdministrationController dataAdministrationController;
+     @Inject
+    PharmacyController pharmacyController;
     // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
@@ -310,6 +326,8 @@ public class PharmacySummaryReportController implements Serializable {
     private int maxResult = 50;
 
     private List<HistoricalRecord> historicalRecords;
+
+    private boolean includeArchived = false;
 
     //transferOuts;
     //adjustments;
@@ -454,6 +472,9 @@ public class PharmacySummaryReportController implements Serializable {
      * @return The total stock value at retail rate, or 0.0 if calculation fails
      */
     private double calculateStockValueAtRetailRate(Date date, Department dept) {
+        if (includeArchived) {
+            return stockHistoryFacade.calculateStockValueAtRetailRateOptimized(date, dept != null ? dept.getId() : null, true);
+        }
         try {
             Map<String, Object> params = new HashMap<>();
             StringBuilder jpql = new StringBuilder();
@@ -567,6 +588,9 @@ public class PharmacySummaryReportController implements Serializable {
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
 
             btas.add(BillTypeAtomic.PHARMACY_GRN);
             btas.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
@@ -771,8 +795,7 @@ public class PharmacySummaryReportController implements Serializable {
                     processMovementOutWithStockReportByBillType();
                     break;
                 case BY_ITEM:
-                    processMovementOutWithStockReportByItem();
-                    addCurrentItemStock(pharmacyBundle);
+                    processMovementOutWithStockReportByItemDto();
                     break;
                 default:
                     JsfUtil.addErrorMessage("Unsupported report view type: " + reportViewType.getLabel());
@@ -937,6 +960,9 @@ public class PharmacySummaryReportController implements Serializable {
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
@@ -962,7 +988,6 @@ public class PharmacySummaryReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
-                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
                 BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK,
                 BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED,
                 BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND,
@@ -973,6 +998,9 @@ public class PharmacySummaryReportController implements Serializable {
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
@@ -1060,7 +1088,8 @@ public class PharmacySummaryReportController implements Serializable {
         );
         List<BillTypeAtomic> floatOutTypes = Arrays.asList(
                 BillTypeAtomic.FUND_TRANSFER_BILL,
-                BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED
+                BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED,
+                BillTypeAtomic.FUND_TRANSFER_BILL_DECLINED
         );
 
         floatInRow = fetchFloatSummaryRow(floatInTypes);
@@ -1196,6 +1225,164 @@ public class PharmacySummaryReportController implements Serializable {
                "   |   Discount Scheme: " + (paymentScheme == null ? "All discount schemes" : paymentScheme.getName()) +
                "   |   Report Type: " + (reportViewType == null ? "" : reportViewType.getLabel());
     }
+     public Map<String, Object> getFiltersForPharmacyIncomeReport() {
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        Map<String, Object> filters = new LinkedHashMap<>();
+
+        filters.put("From Date", fromDate != null ? sdf.format(fromDate) : "None");
+        filters.put("To Date", toDate != null ? sdf.format(toDate) : "None");
+      
+        filters.put("Institution", institution != null ? institution.getName() : "All");
+        filters.put("Site", site != null ? site.getName() : "All");
+        filters.put("Department", department != null ? department.getName() : "All");
+        filters.put("Admission Type", admissionType != null ? admissionType.getName() : "All");
+        filters.put("Discount Scheme", paymentScheme != null ? paymentScheme.getName() : "All");
+        filters.put("Report Type", reportViewType != null ? reportViewType.getLabel() : "All");
+
+        return filters;
+    }
+     
+     public void postProcessExcel(Object document) {
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+
+        // --- Build filter map ---
+        Map<String, Object> filters = getFiltersForPharmacyIncomeReport();
+
+        // --- Calculate how many param rows needed (4 label-value pairs per row) ---
+        int PAIRS_PER_ROW = 4;
+        int COLS_PER_ROW  = PAIRS_PER_ROW * 2; // 8 columns (label + value alternating)
+        int paramRowCount = (int) Math.ceil((double) filters.size() / PAIRS_PER_ROW);
+
+        // Total header rows: title + date + blank + param rows
+        int headerRows = 3 + paramRowCount;
+        sheet.shiftRows(0, sheet.getLastRowNum(), headerRows);
+
+        // --- Calculate actual max columns AFTER shifting ---
+        int lastCol = COLS_PER_ROW - 1; // minimum needed for param table
+        for (Row row : sheet) {
+            if (row.getRowNum() < headerRows) continue;
+            short cellNum = row.getLastCellNum();
+            if (cellNum - 1 > lastCol) lastCol = cellNum - 1;
+        }
+
+        // ================================================================
+        // STYLES
+        // ================================================================
+        XSSFCellStyle titleStyle = workbook.createCellStyle();
+        XSSFFont titleFont = workbook.createFont();
+        titleFont.setBold(true);
+        titleFont.setFontHeightInPoints((short) 14);
+        titleStyle.setFont(titleFont);
+        titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        titleStyle.setAlignment(HorizontalAlignment.LEFT);
+
+        XSSFCellStyle dateStyle = workbook.createCellStyle();
+        XSSFFont dateFont = workbook.createFont();
+        dateFont.setFontHeightInPoints((short) 10);
+        dateStyle.setFont(dateFont);
+        dateStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        dateStyle.setAlignment(HorizontalAlignment.LEFT);
+
+        XSSFCellStyle labelStyle = workbook.createCellStyle();
+        XSSFFont labelFont = workbook.createFont();
+        labelFont.setBold(true);
+        labelFont.setFontHeightInPoints((short) 10);
+        labelStyle.setFont(labelFont);
+        applyThinBorders(labelStyle);
+        labelStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        labelStyle.setAlignment(HorizontalAlignment.LEFT);
+
+        XSSFCellStyle valueStyle = workbook.createCellStyle();
+        XSSFFont valueFont = workbook.createFont();
+        valueFont.setFontHeightInPoints((short) 10);
+        valueStyle.setFont(valueFont);
+        applyThinBorders(valueStyle);
+        valueStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+        valueStyle.setAlignment(HorizontalAlignment.LEFT);
+
+        // Empty bordered cell style (fills unused slots in last row)
+        XSSFCellStyle emptyStyle = workbook.createCellStyle();
+        applyThinBorders(emptyStyle);
+
+        // ================================================================
+        // ROW 0 — Main Title
+        // ================================================================
+        XSSFRow titleRow = sheet.createRow(0);
+        titleRow.setHeightInPoints(28);
+        XSSFCell titleCell = titleRow.createCell(0);
+        String institutionName = sessionController.getInstitution()!=null ? sessionController.getInstitution().getName(): "No Logged Institution";
+        String createString = institutionName + "-- Pharmacy Income Report";
+        titleCell.setCellValue(createString);
+        titleCell.setCellStyle(titleStyle);
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, lastCol));
+
+        // ================================================================
+        // ROW 1 — Date subtitle
+        // ================================================================
+        XSSFRow subRow = sheet.createRow(1);
+        subRow.setHeightInPoints(18);
+        XSSFCell subCell = subRow.createCell(0);
+        java.text.SimpleDateFormat sdf =
+            new java.text.SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        subCell.setCellValue("Date: " + sdf.format(new java.util.Date()));
+        subCell.setCellStyle(dateStyle);
+        sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, lastCol));
+
+        // ================================================================
+        // ROW 2 — Blank spacer
+        // ================================================================
+        sheet.createRow(2).setHeightInPoints(8);
+
+        // ================================================================
+        // ROWS 3..N — Dynamic parameter table from filter map
+        // ================================================================
+        List<Map.Entry<String, Object>> entries = new ArrayList<>(filters.entrySet());
+        int totalEntries = entries.size();
+
+        for (int rowIdx = 0; rowIdx < paramRowCount; rowIdx++) {
+            XSSFRow paramRow = sheet.createRow(3 + rowIdx);
+            paramRow.setHeightInPoints(18);
+
+            for (int pairIdx = 0; pairIdx < PAIRS_PER_ROW; pairIdx++) {
+                int entryIndex = rowIdx * PAIRS_PER_ROW + pairIdx;
+                int labelCol   = pairIdx * 2;
+                int valueCol   = pairIdx * 2 + 1;
+
+                if (entryIndex < totalEntries) {
+                    // Populate label and value from map
+                    Map.Entry<String, Object> entry = entries.get(entryIndex);
+
+                    XSSFCell lCell = paramRow.createCell(labelCol);
+                    lCell.setCellValue(entry.getKey());
+                    lCell.setCellStyle(labelStyle);
+
+                    XSSFCell vCell = paramRow.createCell(valueCol);
+                    vCell.setCellValue(entry.getValue() != null
+                        ? entry.getValue().toString() : "");
+                    vCell.setCellStyle(valueStyle);
+                } else {
+                    // Fill unused trailing cells with empty bordered cells
+                    XSSFCell lCell = paramRow.createCell(labelCol);
+                    lCell.setCellStyle(emptyStyle);
+
+                    XSSFCell vCell = paramRow.createCell(valueCol);
+                    vCell.setCellStyle(emptyStyle);
+                }
+            }
+        }
+    }
+
+    // ================================================================
+    // HELPER: Apply thin borders on all 4 sides
+    // ================================================================
+    private void applyThinBorders(XSSFCellStyle style) {
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
+    }
+
     
     private String fmt(Object v) {
         if (v == null) return "-";
@@ -1242,21 +1429,24 @@ public class PharmacySummaryReportController implements Serializable {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
         try (OutputStream out = response.getOutputStream()) {
             // Landscape + small margins for wide tables
             Document document = new Document(PageSize.A4.rotate(), 10f, 10f, 12f, 12f);
             PdfWriter.getInstance(document, out);
             document.open();
-            String reportHeader = getReportHeader();
-            document.add(new Paragraph(fileName,
-                FontFactory.getFont(FontFactory.HELVETICA, 8)));
-            document.add(new Paragraph(reportHeader,
-                FontFactory.getFont(FontFactory.HELVETICA, 8)));
-            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
-                FontFactory.getFont(FontFactory.HELVETICA, 8)));
+            String intitutionName=sessionController.getInstitution()!= null ? sessionController.getInstitution().getName() : "No Logged Institution";
+            document.add(new Paragraph(intitutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Pharmacy Income Report - By Bill", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
+            
+            Map<String, Object> filters = getFiltersForPharmacyIncomeReport();
+            PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
             PdfPTable table = new PdfPTable(21);
             table.setWidthPercentage(100);
             float[] columnWidths = {2f, 3f, 3f, 2f, 2f, 2f, 2f,2f,2f, 2f, 2f, 2f,2f, 2f, 2f, 2f, 2f, 2f, 2f,2f,2f};
@@ -1365,21 +1555,25 @@ public class PharmacySummaryReportController implements Serializable {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
         try (OutputStream out = response.getOutputStream()) {
             // Landscape + small margins for wide tables
             Document document = new Document(PageSize.A4.rotate(), 10f, 10f, 12f, 12f);
             PdfWriter.getInstance(document, out);
             document.open();
-            String reportHeader = getReportHeader();
-            document.add(new Paragraph(fileName,
-                FontFactory.getFont(FontFactory.HELVETICA, 8)));
-            document.add(new Paragraph(reportHeader,
-                FontFactory.getFont(FontFactory.HELVETICA, 8)));
-            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
-                FontFactory.getFont(FontFactory.HELVETICA, 8)));
+            String institutionName= sessionController.getInstitution()!=null ? sessionController.getInstitution().getName() : "No Logged Institution";
+            document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Pharmacy Income Report - By Biil Type", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
+            
+            Map<String, Object> filters = getFiltersForPharmacyIncomeReport();
+            PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+            
             PdfPTable table = new PdfPTable(18);
             table.setWidthPercentage(100);
             float[] columnWidths = { 3f, 2f, 2f, 2f,2f,2f, 2f, 2f, 2f,2f, 2f, 2f, 2f, 2f, 2f, 2f,2f,2f};
@@ -1493,21 +1687,28 @@ public class PharmacySummaryReportController implements Serializable {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
         try (OutputStream out = response.getOutputStream()) {
             // Landscape + small margins for wide tables
             Document document = new Document(PageSize.A4.rotate(), 10f, 10f, 12f, 12f);
             PdfWriter.getInstance(document, out);
             document.open();
-            String reportHeader = getReportHeader();
-            document.add(new Paragraph(fileName,
-                FontFactory.getFont(FontFactory.HELVETICA, 8)));
-            document.add(new Paragraph(reportHeader,
-                FontFactory.getFont(FontFactory.HELVETICA, 8)));
-            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
-                FontFactory.getFont(FontFactory.HELVETICA, 8)));
+            String institutionName=sessionController.getInstitution()!= null ? sessionController.getInstitution().getName() : "No Logger Institution" ;
+            document.add(new Paragraph(institutionName, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            String reportTitle = reportViewType == BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE
+                    ? "Pharmacy Income Report - By Discount and Admission"
+                    : "Pharmacy Income Report - By Bill Type, Discount and Admission";
+            document.add(new Paragraph(reportTitle, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
+            
+             Map<String, Object> filters = getFiltersForPharmacyIncomeReport();
+            PdfPTable infoTable = pharmacyController.createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+            
             PdfPTable table = new PdfPTable(18);
             table.setWidthPercentage(100);
             float[] columnWidths = { 3f, 2f, 2f, 2f,2f,2f, 2f, 2f, 2f,2f, 2f, 2f, 2f, 2f, 2f, 2f,2f,2f};
@@ -1652,6 +1853,55 @@ public class PharmacySummaryReportController implements Serializable {
             pharmacyBundle = new PharmacyBundle(pbis);
             pharmacyBundle.groupSaleDetailsByItems();
         }, SummaryReports.PHARMACY_MOVEMENT_OUT_REPORT, sessionController.getLoggedUser());
+    }
+
+    /**
+     * DTO-based BY_ITEM movement-out report. Aggregates per item in the database,
+     * then fills current stock and the last supplier in one batched query each
+     * (no per-item N+1).
+     */
+    public void processMovementOutWithStockReportByItemDto() {
+        reportTimerController.trackReportExecution(() -> {
+            List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
+            List<PharmacyMovementOutByItemDTO> dtos = billService.fetchPharmacyMovementOutByItemDTOs(
+                    fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+            pharmacyBundle = new PharmacyBundle(dtos);
+            addCurrentStockAndSuppliers(pharmacyBundle);
+            pharmacyBundle.summarizeMovementOutByItem();
+        }, SummaryReports.PHARMACY_MOVEMENT_OUT_REPORT, sessionController.getLoggedUser());
+    }
+
+    /**
+     * Fills each row's current stock and last supplier using one batched query
+     * each, keyed by item id (no per-item N+1).
+     */
+    private void addCurrentStockAndSuppliers(PharmacyBundle bundle) {
+        if (bundle == null || bundle.getRows() == null || bundle.getRows().isEmpty()) {
+            return;
+        }
+        List<Long> itemIds = new ArrayList<>();
+        for (PharmacyRow pr : bundle.getRows()) {
+            if (pr.getItem() != null && pr.getItem().getId() != null) {
+                itemIds.add(pr.getItem().getId());
+            }
+        }
+        if (itemIds.isEmpty()) {
+            return;
+        }
+
+        Map<Long, Double> stockByItem = billService.fetchCurrentStockByItemIds(itemIds, institution, site, department);
+        Map<Long, String> lastSupplierByItem = billService.fetchLastSupplierByItemIds(itemIds);
+
+        for (PharmacyRow pr : bundle.getRows()) {
+            if (pr.getItem() == null || pr.getItem().getId() == null) {
+                continue;
+            }
+            Long itemId = pr.getItem().getId();
+            Double stock = stockByItem.get(itemId);
+            pr.setStockQty(stock != null ? stock : 0.0);
+            String supplier = lastSupplierByItem.get(itemId);
+            pr.setSuppliers(supplier != null ? supplier : "");
+        }
     }
 
     public void processPharmacyIncomeAndCostReportByBill() {
@@ -3763,6 +4013,14 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void setFloatRows(List<IncomeRow> floatRows) {
         this.floatRows = floatRows;
+    }
+
+    public boolean isIncludeArchived() {
+        return includeArchived;
+    }
+
+    public void setIncludeArchived(boolean includeArchived) {
+        this.includeArchived = includeArchived;
     }
 
     public void retireHistoricalRecord(HistoricalRecord hr) {

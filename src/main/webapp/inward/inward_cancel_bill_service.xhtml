@@ -11,155 +11,239 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form>
-                    <h:panelGroup rendered="#{!inwardSearch.printPreview}" styleClass="alignTop" >
-                        <p:panel  header="Service Cancellation">                            
+                <h:form id="inwardCancelBillServiceForm">
+
+                    <p:growl id="growl" life="4000"/>
+
+                    <p:confirmDialog
+                        global="true"
+                        responsive="true"
+                        width="780"
+                        showEffect="fade"
+                        hideEffect="fade">
+                        <p:commandButton
+                            style="width: 150px;"
+                            value="Yes"
+                            type="button"
+                            styleClass="ui-confirmdialog-yes ui-button-danger"
+                            icon="fa fa-check"/>
+                        <p:commandButton
+                            style="width: 150px;"
+                            value="No"
+                            type="button"
+                            styleClass="ui-confirmdialog-no ui-button-secondary ui-button-outlined"
+                            icon="fa fa-times"/>
+                    </p:confirmDialog>
+
+                    <h:panelGroup rendered="#{!inwardSearch.printPreview}" styleClass="alignTop">
+                        <p:panel>
                             <f:facet name="header">
-                                <div class="d-flex justify-content-between">
-                                    <h:outputLabel value="Service Cancellation" class="mt-2"/>
-                                    <div class="d-flex gap-4">
-                                        <h:outputLabel value="Reason for cancellation" class="mt-2" style="font-weight: 600;"/>
-                                        <p:inputText 
-                                            disabled="#{configOptionApplicationController.getBooleanValueByKey('Mandatory permission to cancel bills.', false)}"
-                                            placeholder="Enter a Reason to Cancel" 
-                                            value="#{inwardSearch.comment}"
-                                            style="float: right; width: 450px;">
-                                        </p:inputText>
-
-                                        <p:commandButton 
-                                            class="ui-button-danger mx-2" 
-                                            icon="fas fa-ban" 
-                                            ajax="false" 
-                                            value="Cancel Service Bill" 
-                                            action="#{inwardSearch.cancelBillService()}" >
-                                        </p:commandButton>
-                                    </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <p:outputLabel value="Service Cancellation"
+                                                   styleClass="fs-5 fw-semibold m-0"/>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Back to List"
+                                        icon="fa fa-long-arrow-left"
+                                        action="/lab/inward_search_service?faces-redirect=true"
+                                        title="Return to the inward bill search list"
+                                        styleClass="ui-button-warning"/>
                                 </div>
-                            </f:facet>   
+                            </f:facet>
 
-                            <p:panelGrid columns="2" style="width: 100%;">
-                                <p:panel header="Patient Details">
-                                    <h:panelGrid columns="3" class="w-100" style="font-size: 12pt">
-                                        <h:outputLabel value="Patient ​Name" ></h:outputLabel>
-                                        <h:outputLabel value=":" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle}" ></h:outputLabel>
-                                        <h:outputLabel value="BHT No" ></h:outputLabel>
-                                        <h:outputLabel value=":" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.patientEncounter.bhtNo}" ></h:outputLabel>
-                                        <h:outputLabel value="Age" />
-                                        <h:outputLabel value=":" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.patient.age}"  />
-                                        <h:outputLabel value="Sex" >
-                                        </h:outputLabel>
-                                        <h:outputLabel value=":" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.patient.person.sex}" >
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Phone" >
-                                        </h:outputLabel>
-                                        <h:outputLabel value=":" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.patient.person.phone}" >
-                                        </h:outputLabel>
-                                    </h:panelGrid>
-                                </p:panel>
-                                <p:panel header="Bill Details">
-                                    <h:panelGrid columns="3" class="w-100" style="font-size: 12pt" >
-                                        <h:outputLabel value="Bill No" ></h:outputLabel>
-                                        <h:outputLabel value=":" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.deptId}" ></h:outputLabel>
-                                        <h:outputLabel value="Total" ></h:outputLabel>
-                                        <h:outputLabel value=":" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Discount" ></h:outputLabel>
-                                        <h:outputLabel value=":" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.discount}" >
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Net Total" ></h:outputLabel>
-                                        <h:outputLabel value=":" ></h:outputLabel>
-                                        <h:outputLabel value="#{inwardSearch.bill.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
-                                        <h:outputLabel value="" ></h:outputLabel>
-                                    </h:panelGrid>
-                                </p:panel>
-                            </p:panelGrid>
-                            <p:panel header="Bill Item Details" class="my-2">
-                                <p:dataTable rowIndexVar="rowIndex" value="#{inwardSearch.billItems}" var="bip" >
-                                    <p:column>
-                                        <f:facet name="header">No</f:facet>
-                                        <h:outputLabel value="#{rowIndex+1}"/>                                
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Item</f:facet>
-                                        <h:outputLabel value="#{bip.item.name}"/>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="header">Fee</f:facet>
-                                        <h:outputLabel value="#{bip.netValue}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </p:column>
-                                </p:dataTable>
-                            </p:panel>
+                            <!-- Reason + Cancel row -->
+                            <div class="d-flex justify-content-end">
+                                <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                                    <p:outputLabel for="cancelReason"
+                                                   value="Reason for Cancellation"
+                                                   styleClass="fw-semibold m-0"/>
+                                    <p:inputText id="cancelReason"
+                                                 disabled="#{inwardSearch.bill.currentRequest ne null}"
+                                                 placeholder="Enter a reason to cancel"
+                                                 value="#{inwardSearch.comment}"
+                                                 style="width: 450px;"
+                                                 title="Reason for cancellation"/>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Cancel Service Bill"
+                                        icon="fas fa-ban"
+                                        styleClass="ui-button-danger"
+                                        title="Cancel this inward service bill"
+                                        action="#{inwardSearch.cancelBillService()}">
+                                        <p:confirm header="Confirm Service Bill Cancellation"
+                                                   message="Cancel this inward service bill? This action cannot be undone."
+                                                   icon="fa fa-exclamation-triangle"/>
+                                    </p:commandButton>
+                                </div>
+                            </div>
+
+                            <!-- Patient Details and Bill Details Panels -->
+                            <div class="row g-3">
+                                <div class="col-12 col-lg-6">
+                                    <p:panel styleClass="h-100">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-id-card-alt me-2"/>
+                                            <h:outputText value="Patient Details" styleClass="fw-semibold"/>
+                                        </f:facet>
+                                        <p:panelGrid columns="2" layout="tabular" styleClass="w-100"
+                                                     columnClasses="fw-semibold,text-end">
+                                            <h:outputLabel value="Patient Name"/>
+                                            <h:outputText value="#{inwardSearch.bill.patient.person.nameWithTitle}"
+                                                          style="display:block; text-align:right;"/>
+
+                                            <h:outputLabel value="BHT No"/>
+                                            <h:outputText value="#{inwardSearch.bill.patientEncounter.bhtNo}"
+                                                          style="display:block; text-align:right;"/>
+
+                                            <h:outputLabel value="Age"/>
+                                            <h:outputText value="#{inwardSearch.bill.patient.age}"
+                                                          style="display:block; text-align:right;"/>
+
+                                            <h:outputLabel value="Sex"/>
+                                            <h:outputText value="#{inwardSearch.bill.patient.person.sex}"
+                                                          style="display:block; text-align:right;"/>
+
+                                            <h:outputLabel value="Phone"/>
+                                            <h:outputText value="#{inwardSearch.bill.patient.person.phone}"
+                                                          style="display:block; text-align:right;"/>
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </div>
+                                <div class="col-12 col-lg-6">
+                                    <p:panel styleClass="h-100">
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-file-invoice me-2"/>
+                                            <h:outputText value="Bill Details" styleClass="fw-semibold"/>
+                                        </f:facet>
+                                        <p:panelGrid columns="2" layout="tabular" styleClass="w-100"
+                                                     columnClasses="fw-semibold,text-end">
+                                            <h:outputLabel value="Bill No"/>
+                                            <h:outputText value="#{inwardSearch.bill.deptId}"
+                                                          style="display:block; text-align:right;"/>
+
+                                            <h:outputLabel value="Total"/>
+                                            <h:outputText value="#{inwardSearch.bill.netTotal}"
+                                                          style="display:block; text-align:right;">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+
+                                            <h:outputLabel value="Discount"/>
+                                            <h:outputText value="#{inwardSearch.bill.discount}"
+                                                          style="display:block; text-align:right;">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+
+                                            <h:outputLabel value="Net Total"/>
+                                            <h:outputText value="#{inwardSearch.bill.netTotal}"
+                                                          style="display:block; text-align:right; font-weight:600;">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </div>
+                            </div>
+
+                            <!-- Bill Item Details -->
+                            <div class="row g-3 mt-1">
+                                <div class="col-12">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <h:outputText styleClass="fas fa-list-alt me-2"/>
+                                            <h:outputText value="Bill Item Details" styleClass="fw-semibold"/>
+                                        </f:facet>
+                                        <p:dataTable id="billItemsTable"
+                                                     rowIndexVar="rowIndex"
+                                                     value="#{inwardSearch.billItems}"
+                                                     var="bip"
+                                                     emptyMessage="No bill items available."
+                                                     styleClass="w-100"
+                                                     stripedRows="true">
+                                            <p:column headerText="#"
+                                                      style="width: 4rem; text-align:center;">
+                                                <h:outputText value="#{rowIndex + 1}"/>
+                                            </p:column>
+                                            <p:column headerText="Item">
+                                                <h:outputText value="#{bip.item.name}"/>
+                                            </p:column>
+                                            <p:column headerText="Fee"
+                                                      style="text-align:right; width: 12rem;">
+                                                <h:outputText value="#{bip.netValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:panel>
+                                </div>
+                            </div>
                         </p:panel>
-
                     </h:panelGroup>
 
 
-                    <p:panel rendered="#{inwardSearch.printPreview}" header="Service Cancellation Bill">
-                        <div >
-                            <p:commandButton 
-                                value="Print" 
-                                ajax="false"
-                                style="float: right;"
-                                icon="fa fa-print"
-                                class="ui-button-info">
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                        </div>
+                    <!-- Print Preview Panel -->
+                    <h:panelGroup rendered="#{inwardSearch.printPreview}">
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <p:outputLabel value="Service Cancellation Bill"
+                                                   styleClass="fs-5 fw-semibold m-0"/>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Print"
+                                            icon="fa fa-print"
+                                            styleClass="ui-button-success"
+                                            title="Print this service cancellation bill">
+                                            <p:printer target="gpBillPreview"/>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Back to List"
+                                            icon="fa fa-long-arrow-left"
+                                            action="/lab/inward_search_service?faces-redirect=true"
+                                            title="Return to the inward bill search list"
+                                            styleClass="ui-button-warning"/>
+                                    </div>
+                                </div>
+                            </f:facet>
 
-                        <div>
-                            <h:panelGroup id="gpBillPreview">
+                            <div class="d-flex justify-content-center">
+                                <h:panelGroup id="gpBillPreview">
 
-                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is POS Paper')}">
-                                    <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill">
-                                        <bi:inwardBillPrintPos bill="#{bill}" duplicate="false" cancelled="true"/>
-                                    </ui:repeat>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is POS Paper')}">
+                                        <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="bill">
+                                            <bi:inwardBillPrintPos bill="#{bill}" duplicate="false" cancelled="true"/>
+                                        </ui:repeat>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFive paper',true)}">
+                                        <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="ffb">
+                                            <div style="page-break-after: always;">
+                                                <print:five_five_paper_with_headings_inward_service bill="#{ffb}" cancelled="true"/>
+                                            </div>
+                                            <br/>
+                                        </ui:repeat>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFiveCustom3 Paper')}">
+                                        <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="pp">
+                                            <print:five_five_custom_3_inward bill="#{pp}" duplicate="false" payments="#{inwardSearch.bill.cancelledBill.size()}" cancelled="true"/>
+                                            <br/>
+                                        </ui:repeat>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')}">
+                                        <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="pp">
+                                            <print:five_eight_opd_bill_inward bill="#{pp}" duplicate="false" payments="#{inwardSearch.bill.cancelledBill.size()}"/>
+                                            <br/>
+                                        </ui:repeat>
+                                    </h:panelGroup>
+
                                 </h:panelGroup>
+                            </div>
+                        </p:panel>
+                    </h:panelGroup>
 
-                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFive paper',true)}">
-                                    <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="ffb">
-                                        <div style="page-break-after: always;">
-                                            <print:five_five_paper_with_headings_inward_service bill="#{ffb}" cancelled="true"/>
-                                        </div>
-                                        <br/>
-                                    </ui:repeat>
-                                </h:panelGroup>
-
-                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is FiveFiveCustom3 Paper')}">
-                                    <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="pp">
-                                        <print:five_five_custom_3_inward bill="#{pp}" duplicate="false" payments="#{inwardSearch.bill.cancelledBill.size()}" cancelled="true"/>
-                                        <br/>
-                                    </ui:repeat>
-                                </h:panelGroup>
-
-                                <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Servise Bill size is 5x8 inch Paper')}" >
-                                    <ui:repeat value="#{inwardSearch.bill.cancelledBill}" var="pp">
-                                        <print:five_eight_opd_bill_inward bill="#{pp}" duplicate="false" payments="#{inwardSearch.bill.cancelledBill.size()}"/>
-                                        <br/>
-                                    </ui:repeat>
-                                </h:panelGroup>
-
-                            </h:panelGroup>
-                        </div>
-                    </p:panel>
-
-
-                </h:form>                
+                </h:form>
             </ui:define>
         </ui:composition>
     </h:body>

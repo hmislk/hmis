@@ -22,7 +22,15 @@
                         <div class="row">
                             <div class="col-9">
 
-                                <p:dataTable 
+                                <h:panelGroup id="itemHistoryAboveWrapper" layout="block">
+                                    <h:panelGroup rendered="#{purchaseOrderRequestController.itemHistoryVisible and configOptionApplicationController.getBooleanValueByKey('Pharmacy PO - Show Item History Above Items', false)}" layout="block">
+                                        <ph:history id="itemHistoryAbove"
+                                            closeActionListener="#{purchaseOrderRequestController.closeItemHistory()}"
+                                            updateOnClose=":form:itemHistoryAboveWrapper"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <p:dataTable
                                     styleClass="noBorder" 
                                     rowIndexVar="i" 
                                     style="padding: 0;"
@@ -34,11 +42,23 @@
                                     selection="#{purchaseOrderRequestController.selectedBillItems}"
                                     id="itemList" >  
 
-                                    <f:facet name="header">  
+                                    <f:facet name="header">
                                         <div class="d-flex justify-content-between">
                                             <h:outputLabel  value="Purchase Order Items"/>
-                                            <p:commandButton ajax="false" class="ui-button-danger" value="Remove Selected" 
-                                                             action="#{purchaseOrderRequestController.removeSelected()}"/>
+                                            <div class="d-flex gap-1">
+                                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                                    <p:commandButton
+                                                        value="Config"
+                                                        icon="fa fa-cog"
+                                                        title="Page Configuration Management"
+                                                        action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_purhcase_order_request')}"
+                                                        ajax="false"
+                                                        styleClass="ui-button-secondary"/>
+                                                </h:panelGroup>
+                                                <p:commandButton ajax="false" class="ui-button-danger" value="Remove Selected"
+                                                                 disabled="#{not webUserController.hasPrivilege('PurchaseOrderSave')}"
+                                                                 action="#{purchaseOrderRequestController.removeSelected()}"/>
+                                            </div>
                                         </div>
                                     </f:facet>  
 
@@ -57,7 +77,7 @@
                                             id="btnViewSelectedItemDetails"
                                             title="View Item Details"
                                             action="#{purchaseOrderRequestController.displayItemDetails(bi)}"
-                                            update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                            update=":form:itemHistoryAboveWrapper :form:itemHistoryBelowWrapper"
                                             process="@this"
                                             class="ui-button-icon-only mx-3"/>
                                     </p:column>
@@ -67,14 +87,16 @@
                                         width="6em"
                                         class="text-end px-1"
                                         style="padding: 0px;"> 
-                                        <p:inputText 
-                                            autocomplete="off"  
-                                            id="qty" 
-                                            value="#{bi.billItemFinanceDetails.quantity}" 
-                                            style="padding: 0;" 
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="qty"
+                                            value="#{bi.billItemFinanceDetails.quantity}"
+                                            style="padding: 0;"
                                             label="Qty"
                                             class="text-end w-100"
-                                            onfocus="this.select()">  
+                                            onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                            onkeyup="if (event.keyCode === 13) { event.preventDefault(); this.blur(); }"
+                                            onfocus="this.select()">
                                             <f:convertNumber pattern="0.#" ></f:convertNumber>
                                             <p:ajax 
                                                 event="blur" 
@@ -89,14 +111,16 @@
                                         headerText="Free Qty"
                                         class="text-end px-1"
                                         style="padding: 0px;"> 
-                                        <p:inputText 
-                                            autocomplete="off" 
-                                            id="freeQty" 
+                                        <p:inputText
+                                            autocomplete="off"
+                                            id="freeQty"
                                             onfocus="this.select()"
                                             class="text-end w-100"
-                                            value="#{bi.billItemFinanceDetails.freeQuantity}" 
-                                            style="padding: 0;" 
-                                            label="Qty">  
+                                            onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                            onkeyup="if (event.keyCode === 13) { event.preventDefault(); this.blur(); }"
+                                            value="#{bi.billItemFinanceDetails.freeQuantity}"
+                                            style="padding: 0;"
+                                            label="Qty">
                                             <f:convertNumber pattern="0.#" ></f:convertNumber>
                                             <f:ajax 
                                                 event="blur" 
@@ -116,9 +140,11 @@
                                             <p:inputText
                                                 id="txtRetailRate"
                                                 onfocus="this.select()"
-                                                autocomplete="off" 
-                                                style="padding: 0;" 
-                                                value="#{bi.billItemFinanceDetails.lineGrossRate}" 
+                                                autocomplete="off"
+                                                style="padding: 0;"
+                                                onkeydown="if (event.keyCode === 13) { event.preventDefault(); }"
+                                                onkeyup="if (event.keyCode === 13) { event.preventDefault(); this.blur(); }"
+                                                value="#{bi.billItemFinanceDetails.lineGrossRate}"
                                                 class="w-100 text-end">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                                 <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty" listener="#{purchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
@@ -176,17 +202,22 @@
                                             class="ui-button-danger" 
                                             icon="fas fa-trash"
                                             process="itemList"
-                                            update="itemList :#{p:resolveFirstComponentWithId('tot',view).clientId}"
+                                            update="itemList :#{p:resolveFirstComponentWithId('tot',view).clientId} :form:itemHistoryAboveWrapper :form:itemHistoryBelowWrapper"
                                             tabindex="-1"
                                             style="padding: 0;"
+                                            disabled="#{not webUserController.hasPrivilege('PurchaseOrderSave')}"
                                             action="#{purchaseOrderRequestController.removeItem(bi)}"/>
                                     </p:column>
 
                                 </p:dataTable> 
 
-                                <div >
-                                    <ph:history id="itemHistory"/>
-                                </div>
+                                <h:panelGroup id="itemHistoryBelowWrapper" layout="block">
+                                    <h:panelGroup rendered="#{purchaseOrderRequestController.itemHistoryVisible and !configOptionApplicationController.getBooleanValueByKey('Pharmacy PO - Show Item History Above Items', false)}" layout="block">
+                                        <ph:history id="itemHistoryBelow"
+                                            closeActionListener="#{purchaseOrderRequestController.closeItemHistory()}"
+                                            updateOnClose=":form:itemHistoryBelowWrapper"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
 
 
                             </div>
@@ -197,11 +228,12 @@
                                     <p:outputLabel value="Supplier"
                                                    class="form-label"
                                                    for="acSupplier"></p:outputLabel>
-                                    <p:autoComplete 
+                                    <p:autoComplete
                                         id="acSupplier"
-                                        converter="deal" 
-                                        value="#{purchaseOrderRequestController.currentBill.toInstitution}"  
+                                        converter="deal"
+                                        value="#{purchaseOrderRequestController.currentBill.toInstitution}"
                                         forceSelection="true"
+                                        onkeydown="if (event.keyCode === 13) { var pnl = document.getElementById(this.id.replace(/_input$/, '_panel')); var panelOpen = pnl &amp;&amp; pnl.style.display !== 'none'; event.preventDefault(); if (!panelOpen) { return false; } }"
                                         class="w-100"
                                         inputStyleClass="w-100"
                                         completeMethod="#{dealerController.completeActiveDealor}"
@@ -268,7 +300,7 @@
                                                        var="dt"
                                                        itemLabel="#{dt.label}"
                                                        itemValue="#{dt}"/>
-                                        <p:ajax process="@this" update="po exDItem exItem" event="change"/>
+                                        <p:ajax process="po" update="po exDItem exItem" event="change"/>
                                     </p:selectOneMenu>
 
                                     <p:outputLabel 
@@ -286,18 +318,18 @@
                                         ajax="false" 
                                         value="Save" 
                                         action="#{purchaseOrderRequestController.saveRequest}"
-                                        icon="pi pi-save" 
+                                        icon="pi pi-save"
                                         class="ui-button-success m-1"
-                                        disabled="#{purchaseOrderRequestController.currentBill.checked}"/>
-                                    <p:commandButton 
+                                        disabled="#{purchaseOrderRequestController.currentBill.checked or not webUserController.hasPrivilege('PurchaseOrderSave')}"/>
+                                    <p:commandButton
                                         id="btnFinalize"
-                                        ajax="false" 
-                                        value="Finalize" 
+                                        ajax="false"
+                                        value="Finalize"
                                         action="#{purchaseOrderRequestController.finalizeRequest()}"
-                                        icon="pi pi-check" 
+                                        icon="pi pi-check"
                                         class="ui-button-warning m-1"
                                         onclick="return confirm('Are you sure you want to finalize this purchase order? This action cannot be undone.');"
-                                        disabled="#{purchaseOrderRequestController.currentBill.checked}"/>
+                                        disabled="#{purchaseOrderRequestController.currentBill.checked or not webUserController.hasPrivilege('PurchaseOrderFinalize')}"/>
                                     <p:commandButton 
                                         ajax="false"  
                                         value="New Order" 
@@ -365,6 +397,7 @@
                                         id="exItem"
                                         value="#{purchaseOrderRequestController.currentBillItem.item}"
                                         forceSelection="true"
+                                        onkeydown="if (event.keyCode === 13) { var pnl = document.getElementById(this.id.replace(/_input$/, '_panel')); var panelOpen = pnl &amp;&amp; pnl.style.display !== 'none'; event.preventDefault(); if (!panelOpen) { return false; } }"
                                         class="w-75"
                                         maxResults="50"
                                         scrollHeight="600"

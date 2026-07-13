@@ -89,6 +89,7 @@ public class LabAmpController implements Serializable {
     // DTO Management fields
     private AmpDto selectedAmpDto;
     private List<AmpDto> ampDtos;
+    private List<AmpDto> labAmpListDtos;
     private List<AuditEvent> ampAuditEvents;
 
     // Filter state for active/inactive AMPs.
@@ -731,6 +732,7 @@ public class LabAmpController implements Serializable {
     public void refreshData() {
         recreateModel();
         ampDtos = null;
+        labAmpListDtos = null;
 
         if (current != null) {
             boolean shouldKeepSelection = false;
@@ -902,6 +904,46 @@ public class LabAmpController implements Serializable {
     public void refreshAuditEvents() {
         ampAuditEvents = null;
         fillAmpAuditEvents();
+    }
+
+    // ===================== List Page Methods =====================
+
+    public List<AmpDto> getLabAmpListDtos() {
+        if (labAmpListDtos == null) {
+            String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
+                    + "a.id, a.name, a.code, a.barcode, a.inactive, "
+                    + "v.name, df.name, cat.name, "
+                    + "a.numberOfDaysToMarkAsShortExpiary, "
+                    + "a.discountAllowed, a.refundsAllowed, "
+                    + "a.consumptionAllowed, a.allowFractions) "
+                    + "FROM Amp a "
+                    + "LEFT JOIN a.vmp v "
+                    + "LEFT JOIN a.dosageForm df "
+                    + "LEFT JOIN a.category cat "
+                    + "WHERE a.retired=false AND a.departmentType=:dep ";
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("dep", DepartmentType.Lab);
+
+            if ("active".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", false);
+            } else if ("inactive".equals(filterStatus)) {
+                jpql += "AND a.inactive=:inact ";
+                params.put("inact", true);
+            }
+
+            jpql += "ORDER BY a.name";
+
+            labAmpListDtos = (List<AmpDto>) getFacade().findLightsByJpql(jpql, params);
+        }
+        return labAmpListDtos;
+    }
+
+    public String navigateToLabAmpList() {
+        labAmpListDtos = null;
+        getLabAmpListDtos();
+        return "/pharmacy/admin/lab_amp_list?faces-redirect=true";
     }
 
     // ===================== JSF AmpDto Converter =====================

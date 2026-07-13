@@ -39,6 +39,14 @@
                                     action="#{vmppController.delete()}"  
                                     value="Delete"  >
                                 </p:commandButton>
+                                <p:commandButton
+                                    id="btnViewList"
+                                    value="All VMPPs List"
+                                    action="#{vmppController.navigateToVmppList()}"
+                                    ajax="false"
+                                    class="ui-button-secondary"
+                                    icon="fas fa-list"
+                                    title="View and download the full list of VMPPs"/>
                             </h:panelGrid>
 
                             <p:autoComplete

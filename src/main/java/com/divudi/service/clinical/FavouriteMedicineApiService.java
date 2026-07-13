@@ -10,13 +10,23 @@ import com.divudi.bean.common.ItemController;
 import com.divudi.bean.pharmacy.MeasurementUnitController;
 import com.divudi.bean.pharmacy.VmpController;
 import com.divudi.core.data.ItemType;
+import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.clinical.PrescriptionTemplateType;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.clinical.ClinicalEntity;
 import com.divudi.core.entity.clinical.PrescriptionTemplate;
+import com.divudi.core.entity.lab.Antibiotic;
 import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.Atm;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.entity.pharmacy.Vtm;
 import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.ClinicalEntityFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.MeasurementUnitFacade;
 import com.divudi.core.facade.PrescriptionTemplateFacade;
@@ -26,6 +36,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +66,9 @@ public class FavouriteMedicineApiService implements Serializable {
     @EJB
     private MeasurementUnitFacade measurementUnitFacade;
 
+    @EJB
+    private ClinicalEntityFacade clinicalEntityFacade;
+
     // =================== CONTROLLER INJECTIONS ===================
 
     @Inject
@@ -76,18 +90,38 @@ public class FavouriteMedicineApiService implements Serializable {
      */
     public PrescriptionTemplate createFavouriteMedicine(WebUser user, Map<String, Object> requestData) {
         try {
+            // Determine whether this is a FavouriteMedicine or a FavouriteDiagnosis entry
+            PrescriptionTemplateType templateType = parseTemplateType((String) requestData.get("type"));
+
             // Extract required fields
             String itemName = (String) requestData.get("itemName");
             String itemType = (String) requestData.get("itemType");
             Double fromYears = getDoubleValue(requestData.get("fromYears"));
             Double toYears = getDoubleValue(requestData.get("toYears"));
+            Double fromKg = getDoubleValue(requestData.get("fromKg"));
+            Double toKg = getDoubleValue(requestData.get("toKg"));
 
-            if (itemName == null || itemType == null || fromYears == null || toYears == null) {
-                throw new IllegalArgumentException("Required fields missing: itemName, itemType, fromYears, toYears");
+            if (itemName == null || itemType == null) {
+                throw new IllegalArgumentException("Required fields missing: itemName, itemType");
             }
 
-            if (fromYears < 0 || toYears < 0 || fromYears >= toYears) {
-                throw new IllegalArgumentException("Invalid age range: fromYears must be less than toYears and both must be >= 0");
+            boolean hasAgeRange = fromYears != null && toYears != null;
+            boolean hasWeightRange = fromKg != null && toKg != null;
+
+            if (!hasAgeRange && !hasWeightRange) {
+                throw new IllegalArgumentException("Required fields missing: provide either fromYears+toYears (age range) or fromKg+toKg (weight range)");
+            }
+
+            if (hasAgeRange) {
+                if (fromYears < 0 || toYears < 0 || fromYears >= toYears) {
+                    throw new IllegalArgumentException("Invalid age range: fromYears must be less than toYears and both must be >= 0");
+                }
+            }
+
+            if (hasWeightRange) {
+                if (fromKg < 0 || toKg < 0 || fromKg >= toKg) {
+                    throw new IllegalArgumentException("Invalid weight range: fromKg must be less than toKg and both must be >= 0");
+                }
             }
 
             // Find or create the item based on type
@@ -100,19 +134,81 @@ public class FavouriteMedicineApiService implements Serializable {
             }
 
             if (item == null) {
-                throw new IllegalArgumentException("Item not found: " + itemName + " (type: " + itemType + ")");
+                // Enhanced error message with subclass awareness
+                StringBuilder errorMessage = new StringBuilder();
+                errorMessage.append("Item not found: ").append(itemName).append(" (type: ").append(itemType).append(")");
+
+                // Provide specific guidance based on item type
+                switch (itemTypeEnum) {
+                    case Vtm:
+                        errorMessage.append(". Note: VTM searches include Antibiotic subclasses. ")
+                                  .append("Check if '").append(itemName).append("' exists as either VTM or Antibiotic entity.");
+                        break;
+                    case Vmp:
+                        errorMessage.append(". Note: VMP searches include Vmpp subclasses. ")
+                                  .append("Check if '").append(itemName).append("' exists as either VMP or VMPP entity.");
+                        break;
+                    case Amp:
+                        errorMessage.append(". Note: AMP searches include Ampp subclasses. ")
+                                  .append("Check if '").append(itemName).append("' exists as either AMP or AMPP entity.");
+                        break;
+                    default:
+                        errorMessage.append(". Please verify the entity name and type are correct.");
+                        break;
+                }
+
+                throw new IllegalArgumentException(errorMessage.toString());
             }
 
             // Create the prescription template
             PrescriptionTemplate template = new PrescriptionTemplate();
-            template.setType(PrescriptionTemplateType.FavouriteMedicine);
+            template.setType(templateType);
             template.setForWebUser(user);
             template.setItem(item);
-            template.setForItem(item); // Default to same item
 
-            // Set age range (convert years to days)
-            template.setFromDays(convertYearsToDays(fromYears));
-            template.setToDays(convertYearsToDays(toYears));
+            if (templateType == PrescriptionTemplateType.FavouriteDiagnosis) {
+                // forItem = the diagnosis this medicine is being suggested for
+                String forItemName = (String) requestData.get("forItemName");
+                if (forItemName == null || forItemName.trim().isEmpty()) {
+                    throw new IllegalArgumentException("forItemName (the diagnosis name) is required for type=FavouriteDiagnosis");
+                }
+
+                ClinicalEntity diagnosis = findClinicalEntityByName(forItemName.trim());
+                if (diagnosis == null) {
+                    StringBuilder errorMessage = new StringBuilder();
+                    errorMessage.append("Diagnosis not found: ").append(forItemName);
+
+                    List<ClinicalEntity> similarDiagnoses = searchDiagnoses(forItemName.trim(), 5);
+                    if (!similarDiagnoses.isEmpty()) {
+                        errorMessage.append(". Did you mean: ");
+                        for (int i = 0; i < similarDiagnoses.size(); i++) {
+                            if (i > 0) {
+                                errorMessage.append(", ");
+                            }
+                            errorMessage.append(similarDiagnoses.get(i).getName());
+                        }
+                        errorMessage.append("?");
+                    }
+
+                    throw new IllegalArgumentException(errorMessage.toString());
+                }
+
+                template.setForItem(diagnosis);
+            } else {
+                template.setForItem(item); // Default to same item
+            }
+
+            // Set age range (convert years to days); default to 0-120 yr when only weight range given
+            template.setFromDays(convertYearsToDays(fromYears != null ? fromYears : 0.0));
+            template.setToDays(convertYearsToDays(toYears != null ? toYears : 120.0));
+
+            // Set weight range when provided
+            if (fromKg != null) {
+                template.setFromKg(fromKg);
+            }
+            if (toKg != null) {
+                template.setToKg(toKg);
+            }
 
             // Set optional fields
             setOptionalFields(template, requestData);
@@ -121,7 +217,7 @@ public class FavouriteMedicineApiService implements Serializable {
             Double orderNo = getDoubleValue(requestData.get("orderNo"));
             if (orderNo == null) {
                 // Auto-generate order number
-                orderNo = getNextOrderNumber(user);
+                orderNo = getNextOrderNumber(user, templateType);
             }
             template.setOrderNo(orderNo);
 
@@ -150,7 +246,9 @@ public class FavouriteMedicineApiService implements Serializable {
 
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("user", user);
-            parameters.put("type", PrescriptionTemplateType.FavouriteMedicine);
+            // Defaults to FavouriteMedicine for backward compatibility; pass type=FavouriteDiagnosis
+            // to search favourite-diagnosis entries instead
+            parameters.put("type", parseTemplateType((String) searchCriteria.get("type")));
 
             // Add filters based on search criteria
             String query = (String) searchCriteria.get("query");
@@ -271,12 +369,14 @@ public class FavouriteMedicineApiService implements Serializable {
 
         String jpql = "SELECT p FROM PrescriptionTemplate p " +
                      "WHERE p.id = :id AND p.retired = false " +
-                     "AND p.forWebUser = :user AND p.type = :type";
+                     "AND p.forWebUser = :user " +
+                     "AND p.type IN (:favouriteMedicine, :favouriteDiagnosis)";
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("id", id);
         parameters.put("user", user);
-        parameters.put("type", PrescriptionTemplateType.FavouriteMedicine);
+        parameters.put("favouriteMedicine", PrescriptionTemplateType.FavouriteMedicine);
+        parameters.put("favouriteDiagnosis", PrescriptionTemplateType.FavouriteDiagnosis);
 
         PrescriptionTemplate template = prescriptionTemplateFacade.findFirstByJpql(jpql, parameters);
 
@@ -319,6 +419,26 @@ public class FavouriteMedicineApiService implements Serializable {
                 }
             }
 
+            // Update weight range if provided
+            Double fromKg = getDoubleValue(updateData.get("fromKg"));
+            Double toKg = getDoubleValue(updateData.get("toKg"));
+            if (fromKg != null) {
+                if (fromKg < 0) {
+                    throw new IllegalArgumentException("fromKg must be >= 0");
+                }
+                template.setFromKg(fromKg);
+            }
+            if (toKg != null) {
+                if (toKg < 0) {
+                    throw new IllegalArgumentException("toKg must be >= 0");
+                }
+                template.setToKg(toKg);
+            }
+            if (template.getFromKg() != null && template.getToKg() != null
+                    && template.getFromKg() >= template.getToKg()) {
+                throw new IllegalArgumentException("fromKg must be less than toKg");
+            }
+
             // Update other optional fields
             setOptionalFields(template, updateData);
 
@@ -359,6 +479,7 @@ public class FavouriteMedicineApiService implements Serializable {
 
     /**
      * Search VTMs by name with optional limit
+     * Includes Antibiotic entities (which extend VTM)
      */
     public List<Item> searchVtms(String query, Integer limit) {
         if (query == null || query.trim().isEmpty()) {
@@ -366,12 +487,13 @@ public class FavouriteMedicineApiService implements Serializable {
         }
 
         String jpql = "SELECT i FROM Item i WHERE i.retired = false " +
-                     "AND i.itemType = :itemType " +
+                     "AND type(i) in :types " +
                      "AND (UPPER(i.name) LIKE :query OR UPPER(i.code) LIKE :query) " +
                      "ORDER BY i.name";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("itemType", ItemType.Vtm);
+        Class[] types = getPolymorphicClasses(ItemType.Vtm);
+        parameters.put("types", Arrays.asList(types));
         parameters.put("query", "%" + query.trim().toUpperCase() + "%");
 
         if (limit != null && limit > 0) {
@@ -395,6 +517,7 @@ public class FavouriteMedicineApiService implements Serializable {
 
     /**
      * Search ATMs by name with optional limit
+     * ATM has no subclasses but uses polymorphic pattern for consistency
      */
     public List<Item> searchAtms(String query, Integer limit) {
         if (query == null || query.trim().isEmpty()) {
@@ -402,12 +525,13 @@ public class FavouriteMedicineApiService implements Serializable {
         }
 
         String jpql = "SELECT i FROM Item i WHERE i.retired = false " +
-                     "AND i.itemType = :itemType " +
+                     "AND type(i) in :types " +
                      "AND (UPPER(i.name) LIKE :query OR UPPER(i.code) LIKE :query) " +
                      "ORDER BY i.name";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("itemType", ItemType.Atm);
+        Class[] types = getPolymorphicClasses(ItemType.Atm);
+        parameters.put("types", Arrays.asList(types));
         parameters.put("query", "%" + query.trim().toUpperCase() + "%");
 
         if (limit != null && limit > 0) {
@@ -430,6 +554,7 @@ public class FavouriteMedicineApiService implements Serializable {
 
     /**
      * Search VMPs by name with optional limit
+     * Includes Vmpp entities (which extend VMP)
      */
     public List<Item> searchVmps(String query, Integer limit) {
         if (query == null || query.trim().isEmpty()) {
@@ -437,12 +562,13 @@ public class FavouriteMedicineApiService implements Serializable {
         }
 
         String jpql = "SELECT i FROM Item i WHERE i.retired = false " +
-                     "AND i.itemType = :itemType " +
+                     "AND type(i) in :types " +
                      "AND (UPPER(i.name) LIKE :query OR UPPER(i.code) LIKE :query) " +
                      "ORDER BY i.name";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("itemType", ItemType.Vmp);
+        Class[] types = getPolymorphicClasses(ItemType.Vmp);
+        parameters.put("types", Arrays.asList(types));
         parameters.put("query", "%" + query.trim().toUpperCase() + "%");
 
         if (limit != null && limit > 0) {
@@ -465,6 +591,7 @@ public class FavouriteMedicineApiService implements Serializable {
 
     /**
      * Search AMPs by name with optional limit
+     * Includes Ampp entities (which extend AMP)
      */
     public List<Item> searchAmps(String query, Integer limit) {
         if (query == null || query.trim().isEmpty()) {
@@ -472,12 +599,13 @@ public class FavouriteMedicineApiService implements Serializable {
         }
 
         String jpql = "SELECT i FROM Item i WHERE i.retired = false " +
-                     "AND i.itemType = :itemType " +
+                     "AND type(i) in :types " +
                      "AND (UPPER(i.name) LIKE :query OR UPPER(i.code) LIKE :query) " +
                      "ORDER BY i.name";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("itemType", ItemType.Amp);
+        Class[] types = getPolymorphicClasses(ItemType.Amp);
+        parameters.put("types", Arrays.asList(types));
         parameters.put("query", "%" + query.trim().toUpperCase() + "%");
 
         if (limit != null && limit > 0) {
@@ -653,15 +781,20 @@ public class FavouriteMedicineApiService implements Serializable {
                     if (vtm != null) {
                         result.put("exists", true);
                         result.put("entityId", vtm.getId());
-                        result.put("message", "VTM found");
+                        String entityType = vtm instanceof Antibiotic ? "Antibiotic (VTM subclass)" : "VTM";
+                        result.put("message", entityType + " found");
                     } else {
-                        result.put("message", "VTM not found");
+                        result.put("message", "VTM not found (searched VTM and Antibiotic entities)");
                         result.put("canCreate", true);
-                        // Add suggestions for similar VTMs
+                        // Add suggestions for similar VTMs (includes Antibiotic entities)
                         List<Item> similarVtms = searchVtms(name.trim(), 5);
                         List<String> suggestions = new ArrayList<>();
                         for (Item item : similarVtms) {
-                            suggestions.add(item.getName());
+                            String suggestion = item.getName();
+                            if (item instanceof Antibiotic) {
+                                suggestion += " (Antibiotic)";
+                            }
+                            suggestions.add(suggestion);
                         }
                         result.put("suggestions", suggestions);
                     }
@@ -684,9 +817,10 @@ public class FavouriteMedicineApiService implements Serializable {
                     if (vmp != null) {
                         result.put("exists", true);
                         result.put("entityId", vmp.getId());
-                        result.put("message", "VMP found");
+                        String entityType = vmp instanceof Vmpp ? "Vmpp (VMP subclass)" : "VMP";
+                        result.put("message", entityType + " found");
                     } else {
-                        result.put("message", "VMP not found");
+                        result.put("message", "VMP not found (searched VMP and Vmpp entities)");
                         result.put("canCreate", true);
                     }
                     break;
@@ -696,9 +830,10 @@ public class FavouriteMedicineApiService implements Serializable {
                     if (amp != null) {
                         result.put("exists", true);
                         result.put("entityId", amp.getId());
-                        result.put("message", "AMP found");
+                        String entityType = amp instanceof Ampp ? "Ampp (AMP subclass)" : "AMP";
+                        result.put("message", entityType + " found");
                     } else {
-                        result.put("message", "AMP not found");
+                        result.put("message", "AMP not found (searched AMP and Ampp entities)");
                         result.put("canCreate", true);
                     }
                     break;
@@ -795,6 +930,7 @@ public class FavouriteMedicineApiService implements Serializable {
 
     /**
      * Find entity by name and type with case-insensitive search
+     * Uses polymorphic query to include subclasses (e.g., Antibiotic when searching for VTM)
      */
     public Item findItemByNameAndType(String name, ItemType itemType) {
         if (name == null || name.trim().isEmpty() || itemType == null) {
@@ -802,11 +938,12 @@ public class FavouriteMedicineApiService implements Serializable {
         }
 
         String jpql = "SELECT i FROM Item i WHERE i.retired = false " +
-                     "AND i.itemType = :itemType " +
+                     "AND type(i) in :types " +
                      "AND UPPER(i.name) = :name";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("itemType", itemType);
+        Class[] types = getPolymorphicClasses(itemType);
+        parameters.put("types", Arrays.asList(types));
         parameters.put("name", name.trim().toUpperCase());
 
         return itemFacade.findFirstByJpql(jpql, parameters);
@@ -865,6 +1002,29 @@ public class FavouriteMedicineApiService implements Serializable {
                 return ItemType.Amp;
             default:
                 throw new IllegalArgumentException("Invalid item type: " + itemType + ". Must be one of: Vtm, Atm, Vmp, Amp");
+        }
+    }
+
+    /**
+     * Map ItemType enums to polymorphic entity class hierarchies
+     * This enables searching for subclasses (e.g., Antibiotic when searching for VTM)
+     */
+    private Class[] getPolymorphicClasses(ItemType itemType) {
+        switch (itemType) {
+            case Vtm:
+                // Include both Vtm and Antibiotic (Antibiotic extends Vtm)
+                return new Class[]{Vtm.class, Antibiotic.class};
+            case Vmp:
+                // Include both Vmp and Vmpp
+                return new Class[]{Vmp.class, Vmpp.class};
+            case Amp:
+                // Include both Amp and Ampp
+                return new Class[]{Amp.class, Ampp.class};
+            case Atm:
+                // ATM has no subclasses
+                return new Class[]{Atm.class};
+            default:
+                throw new IllegalArgumentException("Unsupported item type: " + itemType);
         }
     }
 
@@ -979,26 +1139,87 @@ public class FavouriteMedicineApiService implements Serializable {
         if (sex != null && !sex.trim().isEmpty()) {
             // TODO: Set sex enum if needed
         }
-
-        String forItemName = (String) requestData.get("forItemName");
-        if (forItemName != null && !forItemName.trim().isEmpty()) {
-            // TODO: Find and set forItem if different from main item
-        }
     }
 
     /**
-     * Get next order number for user's favourite medicines
+     * Get next order number for user's favourite medicines (or favourite diagnoses)
      */
-    private Double getNextOrderNumber(WebUser user) {
+    private Double getNextOrderNumber(WebUser user, PrescriptionTemplateType type) {
         String jpql = "SELECT MAX(p.orderNo) FROM PrescriptionTemplate p " +
                      "WHERE p.retired = false AND p.forWebUser = :user " +
                      "AND p.type = :type";
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("user", user);
-        parameters.put("type", PrescriptionTemplateType.FavouriteMedicine);
+        parameters.put("type", type);
 
         Double maxOrder = prescriptionTemplateFacade.findDoubleByJpql(jpql, parameters);
         return (maxOrder != null ? maxOrder + 1.0 : 1.0);
+    }
+
+    /**
+     * Parse the "type" request field to a PrescriptionTemplateType.
+     * Defaults to FavouriteMedicine when not provided, for backward compatibility.
+     * Only FavouriteMedicine and FavouriteDiagnosis are accepted via the API.
+     */
+    private PrescriptionTemplateType parseTemplateType(String type) {
+        if (type == null || type.trim().isEmpty()) {
+            return PrescriptionTemplateType.FavouriteMedicine;
+        }
+
+        switch (type.trim().toLowerCase()) {
+            case "favouritemedicine":
+                return PrescriptionTemplateType.FavouriteMedicine;
+            case "favouritediagnosis":
+                return PrescriptionTemplateType.FavouriteDiagnosis;
+            default:
+                throw new IllegalArgumentException("Invalid type: " + type + ". Must be one of: FavouriteMedicine, FavouriteDiagnosis");
+        }
+    }
+
+    // =================== DIAGNOSIS (CLINICAL ENTITY) OPERATIONS ===================
+
+    /**
+     * Search diagnoses (ClinicalEntity with SymanticType.Disease_or_Syndrome) by name
+     * Used to resolve forItemName when creating FavouriteDiagnosis entries
+     */
+    public List<ClinicalEntity> searchDiagnoses(String query, Integer limit) {
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String jpql = "SELECT c FROM ClinicalEntity c WHERE c.retired = false " +
+                     "AND c.symanticType = :symanticType " +
+                     "AND UPPER(c.name) LIKE :query " +
+                     "ORDER BY c.name";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("symanticType", SymanticType.Disease_or_Syndrome);
+        parameters.put("query", "%" + query.trim().toUpperCase() + "%");
+
+        if (limit != null && limit > 0) {
+            return clinicalEntityFacade.findByJpql(jpql, parameters, limit);
+        } else {
+            return clinicalEntityFacade.findByJpql(jpql, parameters);
+        }
+    }
+
+    /**
+     * Find a diagnosis (ClinicalEntity with SymanticType.Disease_or_Syndrome) by exact name
+     */
+    public ClinicalEntity findClinicalEntityByName(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return null;
+        }
+
+        String jpql = "SELECT c FROM ClinicalEntity c WHERE c.retired = false " +
+                     "AND c.symanticType = :symanticType " +
+                     "AND UPPER(c.name) = :name";
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("symanticType", SymanticType.Disease_or_Syndrome);
+        parameters.put("name", name.trim().toUpperCase());
+
+        return clinicalEntityFacade.findFirstByJpql(jpql, parameters);
     }
 }

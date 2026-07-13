@@ -1,0 +1,142 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Archive Old StockHistory Records</title>
+    </h:head>
+    <h:body>
+        <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
+            <ui:define name="subcontent">
+                <h:form id="archiveForm" rendered="#{webUserController.hasPrivilege('ArchiveOldStockHistory')}">
+                    <p:poll interval="3" update="@form" globalStatus="false"
+                            active="#{stockHistoryArchivalController.tracker.running}" />
+
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Archive Old StockHistory Records" />
+                        </f:facet>
+
+                        <p:messages id="messages" showDetail="true" closable="true" />
+
+                        <div class="row">
+                            <div class="col-md-7">
+                                <p:panel header="Archive Settings">
+                                    <p:panelGrid columns="2" layout="tabular" class="w-100">
+                                        <p:outputLabel for="retDays" value="Retention Period (days)" />
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center">
+                                            <p:inputNumber id="retDays" value="#{stockHistoryArchivalController.retentionDays}"
+                                                           minValue="1" maxValue="36500" decimalPlaces="0" thousandSeparator=""
+                                                           inputStyleClass="w-100" style="flex:1" />
+                                            <p:commandButton value="Apply" icon="fa fa-sync" class="ui-button-secondary mx-1"
+                                                             action="#{stockHistoryArchivalController.recalculateCutoff}"
+                                                             update="cutoff messages" process="@form"
+                                                             title="Recalculate cutoff date from retention days" />
+                                        </h:panelGroup>
+
+                                        <p:outputLabel for="cutoff" value="Cutoff Date (archive rows created before this)" />
+                                        <p:calendar id="cutoff" value="#{stockHistoryArchivalController.cutoffDate}"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    navigator="true" showOn="button" class="w-100" inputStyleClass="w-100" />
+
+                                        <p:outputLabel for="batch" value="Batch Size (rows per transaction)" />
+                                        <p:inputNumber id="batch" value="#{stockHistoryArchivalController.batchSize}"
+                                                       minValue="1" maxValue="50000" decimalPlaces="0" thousandSeparator=""
+                                                       class="w-100" />
+
+                                        <p:outputLabel for="maxBatches" value="Max Batches Per Run" />
+                                        <p:inputNumber id="maxBatches" value="#{stockHistoryArchivalController.maxBatches}"
+                                                       minValue="1" maxValue="1000" decimalPlaces="0" thousandSeparator=""
+                                                       class="w-100" />
+
+                                        <p:outputLabel for="dry" value="Dry Run (count only, do not move rows)" />
+                                        <p:selectBooleanCheckbox id="dry" value="#{stockHistoryArchivalController.dryRun}" />
+                                    </p:panelGrid>
+
+                                    <f:facet name="footer">
+                                        <p:commandButton id="previewBtn" value="Preview Count" icon="fa fa-search"
+                                                         class="ui-button-info m-1"
+                                                         action="#{stockHistoryArchivalController.preview}"
+                                                         update="archiveForm"
+                                                         disabled="#{stockHistoryArchivalController.tracker.running}" />
+                                        <p:commandButton id="runBtn" value="Run" icon="fa fa-play"
+                                                         class="ui-button-success m-1"
+                                                         action="#{stockHistoryArchivalController.run}"
+                                                         update="archiveForm"
+                                                         disabled="#{stockHistoryArchivalController.tracker.running}"
+                                                         onclick="if(#{stockHistoryArchivalController.tracker.running}) return false; return confirm('Run archive now? Non-dry-run moves rows out of STOCKHISTORY.');" />
+                                    </f:facet>
+                                </p:panel>
+                            </div>
+
+                            <div class="col-md-5">
+                                <p:panel header="Archival in Progress"
+                                         rendered="#{stockHistoryArchivalController.tracker.running}">
+                                    <p:progressBar value="#{stockHistoryArchivalController.tracker.progressPercent}"
+                                                   displayOnly="true" labelTemplate="{value}%"
+                                                   style="margin-bottom:0.75em" />
+                                    <p:panelGrid columns="2" layout="tabular" class="w-100">
+                                        <h:outputLabel value="Rows archived" />
+                                        <h:outputText value="#{stockHistoryArchivalController.tracker.archivedSoFar} / #{stockHistoryArchivalController.tracker.candidates}" />
+
+                                        <h:outputLabel value="Batches done" />
+                                        <h:outputText value="#{stockHistoryArchivalController.tracker.batchesDone} / #{stockHistoryArchivalController.tracker.maxBatches}" />
+                                    </p:panelGrid>
+                                </p:panel>
+
+                                <p:panel header="Last Result"
+                                         rendered="#{stockHistoryArchivalController.lastResult ne null and not stockHistoryArchivalController.tracker.running}">
+                                    <p:panelGrid columns="2" layout="tabular" class="w-100">
+                                        <h:outputLabel value="Mode" />
+                                        <h:outputText value="#{stockHistoryArchivalController.lastResult.dryRun ? 'Dry run' : 'Live run'}" />
+
+                                        <h:outputLabel value="Candidates" />
+                                        <h:outputText value="#{stockHistoryArchivalController.lastResult.candidateCount}" />
+
+                                        <h:outputLabel value="Archived" />
+                                        <h:outputText value="#{stockHistoryArchivalController.lastResult.archivedCount}" />
+
+                                        <h:outputLabel value="Batches Run" />
+                                        <h:outputText value="#{stockHistoryArchivalController.lastResult.batchesRun}" />
+
+                                        <h:outputLabel value="Reached Batch Limit" />
+                                        <h:outputText value="#{stockHistoryArchivalController.lastResult.reachedBatchLimit ? 'Yes' : 'No'}" />
+
+                                        <h:outputLabel value="Started" />
+                                        <h:outputText value="#{stockHistoryArchivalController.lastResult.startedAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+
+                                        <h:outputLabel value="Ended" />
+                                        <h:outputText value="#{stockHistoryArchivalController.lastResult.endedAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+
+                                        <h:outputLabel value="Duration (ms)" />
+                                        <h:outputText value="#{stockHistoryArchivalController.lastResult.durationMillis}" />
+
+                                        <h:outputLabel value="Message" />
+                                        <h:outputText value="#{stockHistoryArchivalController.lastResult.message}" />
+                                    </p:panelGrid>
+                                </p:panel>
+
+                                <p:panel header="Preview"
+                                         rendered="#{stockHistoryArchivalController.candidateCount ne null and stockHistoryArchivalController.lastResult eq null}">
+                                    <h:outputText value="#{stockHistoryArchivalController.candidateCount} row(s) eligible for archival" />
+                                </p:panel>
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:form>
+
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('ArchiveOldStockHistory')}">
+                    <p:messages />
+                    <h:outputText value="You do not have permission to access this page." />
+                </h:panelGroup>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
