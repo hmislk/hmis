@@ -622,12 +622,21 @@ connects to whoever owns 4848 — which can be the *other user's* server. Tells 
 wrong DAS: `redeploy` fails with **"Cannot determine the path of application"**, `deploy` fails with
 **"File not found"** for a WAR that clearly exists (the other user's Payara process can't traverse
 your 750-mode home directory), and `list-applications` shows an app list that doesn't match your
-domain. An `undeploy` in this state removes the app from the *other* server — verify with
-`ss -tlnp | grep 4848` + `ps -o user= -p <pid>` before any state-changing asadmin call, and always
-pass the explicit admin port (`asadmin --port 9048 ...` for the local `rh` domain). Recovery: stage
-the WAR in a world-readable path (`/tmp`) — rewriting `WEB-INF/classes/META-INF/persistence.xml`
-inside the copy to that domain's JNDI names via `unzip`/`sed`/`zip` — and deploy it back with
-`--name`/`--contextroot` matching what was removed. (Hit while deploying for issue #14863.)
+domain. An `undeploy` in this state removes the app from the *other* server — before any
+state-changing asadmin call, confirm which process owns the admin port you're about to use
+(`ss -tlnp | grep <port>` + `ps -o user= -p <pid>`), run `asadmin --port <port> list-applications`
+on that same endpoint to confirm the expected app list, and always pass the explicit admin port on
+**every** command (`asadmin --port 9048 redeploy/undeploy/deploy ...` for the local `rh` domain —
+never the bare default).
+
+Recovery after removing the wrong domain's app: copy the WAR to a path the *target* domain's user
+can read (its Payara can't traverse your `0750` home directory) — keep permissions as tight as that
+allows (e.g. a dedicated directory rather than bare `/tmp`, no wider than `0644` on the file),
+rewrite `WEB-INF/classes/META-INF/persistence.xml` inside the copy to that domain's JNDI names via
+`unzip`/`sed`/`zip`, **verify the rewritten `<jta-data-source>` values before deploying**, deploy
+with `--port <that domain's admin port>` and `--name`/`--contextroot` matching what was removed,
+and **delete the staged copy immediately after** the deploy succeeds. (Hit while deploying for
+issue #14863.)
 
 ## 28. Claude-in-Chrome on heavy non-AJAX report pages (full-submit + long query)
 
