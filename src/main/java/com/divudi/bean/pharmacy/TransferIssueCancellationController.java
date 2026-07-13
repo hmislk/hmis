@@ -259,6 +259,7 @@ public class TransferIssueCancellationController implements Serializable {
         cancellationBill.setToDepartment(originalBill.getToDepartment());
         cancellationBill.setToInstitution(originalBill.getToInstitution());
         cancellationBill.setToStaff(originalBill.getToStaff());
+        cancellationBill.setDepartmentType(originalBill.getDepartmentType());
 
         // Set audit fields
         cancellationBill.setCreater(sessionController.getLoggedUser());

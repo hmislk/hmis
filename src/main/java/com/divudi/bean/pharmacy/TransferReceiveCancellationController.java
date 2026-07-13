@@ -246,6 +246,7 @@ public class TransferReceiveCancellationController implements Serializable {
         cancellationBill.setFromInstitution(originalReceiveBill.getFromInstitution());
         cancellationBill.setToDepartment(originalReceiveBill.getToDepartment());
         cancellationBill.setToInstitution(originalReceiveBill.getToInstitution());
+        cancellationBill.setDepartmentType(originalReceiveBill.getDepartmentType());
 
         // Set audit fields
         cancellationBill.setCreater(sessionController.getLoggedUser());

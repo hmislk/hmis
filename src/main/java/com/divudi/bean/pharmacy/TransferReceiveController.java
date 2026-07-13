@@ -1022,6 +1022,7 @@ public class TransferReceiveController implements Serializable {
         if (getIssuedBill().getDepartmentType() != null) {
             getReceivedBill().setDepartmentType(getIssuedBill().getDepartmentType());
         }
+        stampDepartmentTypeFromItemsIfMissing();
         List<BillItem> itemsToAdd = new ArrayList<>();
 
         for (BillItem i : getReceivedBill().getBillItems()) {
@@ -1149,6 +1150,7 @@ public class TransferReceiveController implements Serializable {
         if (getIssuedBill().getDepartmentType() != null) {
             getReceivedBill().setDepartmentType(getIssuedBill().getDepartmentType());
         }
+        stampDepartmentTypeFromItemsIfMissing();
         if (getReceivedBill().getId() == null) {
             getReceivedBill().setCreatedAt(new Date());
             getReceivedBill().setCreater(sessionController.getLoggedUser());
@@ -1165,6 +1167,20 @@ public class TransferReceiveController implements Serializable {
             }
         } else {
             getBillFacade().edit(getReceivedBill());
+        }
+    }
+
+    // Fallback when the issued bill carries no departmentType (legacy issues):
+    // department-type-filtered reports drop bills left NULL (#22056).
+    private void stampDepartmentTypeFromItemsIfMissing() {
+        if (getReceivedBill().getDepartmentType() != null) {
+            return;
+        }
+        for (BillItem bi : getReceivedBill().getBillItems()) {
+            if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
+                getReceivedBill().setDepartmentType(bi.getItem().getDepartmentType());
+                return;
+            }
         }
     }
 

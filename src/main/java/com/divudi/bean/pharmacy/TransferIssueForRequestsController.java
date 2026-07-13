@@ -515,6 +515,7 @@ public class TransferIssueForRequestsController implements Serializable {
             getIssuedBill().setToDepartment(requestedBill.getFromDepartment());
             getIssuedBill().setDepartmentType(requestedBill.getDepartmentType());
         }
+        stampDepartmentTypeFromItemsIfMissing();
         getIssuedBill().setCreater(sessionController.getLoggedUser());
         getIssuedBill().setCreatedAt(Calendar.getInstance().getTime());
         getIssuedBill().setCompleted(false);
@@ -877,6 +878,7 @@ public class TransferIssueForRequestsController implements Serializable {
         if (getIssuedBill().getDepartmentType() == null && getRequestedBill() != null) {
             getIssuedBill().setDepartmentType(getRequestedBill().getDepartmentType());
         }
+        stampDepartmentTypeFromItemsIfMissing();
 
         saveBill();
         for (BillItem billItemsInIssue : getBillItems()) {
@@ -1520,6 +1522,20 @@ public class TransferIssueForRequestsController implements Serializable {
             getBillFacade().create(getIssuedBill());
         } else {
             getBillFacade().edit(getIssuedBill());
+        }
+    }
+
+    // Fallback when the request bill carries no departmentType (e.g. legacy
+    // requests): department-type-filtered reports drop bills left NULL (#22056).
+    private void stampDepartmentTypeFromItemsIfMissing() {
+        if (getIssuedBill().getDepartmentType() != null) {
+            return;
+        }
+        for (BillItem bi : getBillItems()) {
+            if (bi.getItem() != null && bi.getItem().getDepartmentType() != null) {
+                getIssuedBill().setDepartmentType(bi.getItem().getDepartmentType());
+                return;
+            }
         }
     }
 
