@@ -47,6 +47,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import com.divudi.bean.common.ConfigOptionController;
 import javax.ejb.EJB;
 import com.divudi.bean.inward.SurgeryBillController;
@@ -115,7 +116,7 @@ public class InwardProfessionalBillController implements Serializable {
     private String ageText;
     private Speciality speciality;
     private Staff staff;
-    private Staff pendingPackageStaff;
+    private Map<Long, Staff> pendingPackageStaffByFeeId = new HashMap<>();
     private Bill current;
     private Institution institution;
     BillEntry removeBillEntry;
@@ -753,6 +754,12 @@ public class InwardProfessionalBillController implements Serializable {
             JsfUtil.addErrorMessage("Please select a Staff");
             return;
         }
+        if (billFee.getSpeciality() != null
+                && (staff.getSpeciality() == null || !staff.getSpeciality().equals(billFee.getSpeciality()))) {
+            JsfUtil.addErrorMessage("Selected staff's speciality does not match this fee role's required speciality ("
+                    + billFee.getSpeciality().getName() + ").");
+            return;
+        }
         double lockedFee = billFee.getOverriddenRate() != null ? billFee.getOverriddenRate() : billFee.getFeeValue();
         billFee.setStaff(staff);
         billFee.setFeeValue(lockedFee);
@@ -1030,6 +1037,7 @@ public class InwardProfessionalBillController implements Serializable {
         totalProfessionalFeesForEncounter = 0.0;
         savedEstimatedProfessionalFees = null;
         totalSavedEstimatedProfessionalFeesForEncounter = 0.0;
+        pendingPackageStaffByFeeId.clear();
     }
 
     private void fetchEncounterProfessionalFees() {
@@ -1367,12 +1375,11 @@ public class InwardProfessionalBillController implements Serializable {
         this.staff = staff;
     }
 
-    public Staff getPendingPackageStaff() {
-        return pendingPackageStaff;
-    }
-
-    public void setPendingPackageStaff(Staff pendingPackageStaff) {
-        this.pendingPackageStaff = pendingPackageStaff;
+    public Map<Long, Staff> getPendingPackageStaffByFeeId() {
+        if (pendingPackageStaffByFeeId == null) {
+            pendingPackageStaffByFeeId = new HashMap<>();
+        }
+        return pendingPackageStaffByFeeId;
     }
 
     public BillFee getCurrentBillFee() {

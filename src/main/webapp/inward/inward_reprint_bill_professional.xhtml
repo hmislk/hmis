@@ -129,7 +129,8 @@
                                             <p:autoComplete value="#{bip.staff}"
                                                             disabled="#{bip.paidValue!=0 or bip.fromPackage or !webUserController.hasPrivilege('ChangeProfessionalFee')}"
                                                             completeMethod="#{inwardProfessionalBillController.completeStaff}"
-                                                            var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" 
+                                                            var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}"
+                                                            maxResults="20"
                                                             forceSelection="true"/>
 
                                         </f:facet>  

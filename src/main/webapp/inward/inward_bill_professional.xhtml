@@ -446,7 +446,7 @@
                                                         id="acAssignPackageStaff"
                                                         styleClass="w-100"
                                                         inputStyleClass="w-100"
-                                                        value="#{inwardProfessionalBillController.pendingPackageStaff}"
+                                                        value="#{inwardProfessionalBillController.pendingPackageStaffByFeeId[bif.id]}"
                                                         completeMethod="#{inwardProfessionalBillController.completeStaff}"
                                                         var="st"
                                                         maxResults="20"
@@ -459,11 +459,12 @@
                                                         </p:column>
                                                     </p:autoComplete>
                                                     <p:commandButton
+                                                        id="btnAssignPackageStaff"
                                                         title="Assign staff for package fee role #{bif.id}"
                                                         value="Assign"
                                                         icon="fa fa-user-check"
                                                         styleClass="mt-1 ui-button-secondary"
-                                                        actionListener="#{inwardProfessionalBillController.assignStaffToPackageFee(bif, inwardProfessionalBillController.pendingPackageStaff)}"
+                                                        actionListener="#{inwardProfessionalBillController.assignStaffToPackageFee(bif, inwardProfessionalBillController.pendingPackageStaffByFeeId[bif.id])}"
                                                         process="@this acAssignPackageStaff"
                                                         update="@form" />
                                                 </h:panelGroup>
