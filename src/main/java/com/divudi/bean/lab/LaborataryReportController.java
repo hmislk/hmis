@@ -971,15 +971,74 @@ public class LaborataryReportController implements Serializable {
         params.put("td", toDate);
         params.put("invType", Investigation.class);
 
-        List<BillTypeAtomic> bTypes = Arrays.asList(
+        // Positive (paid) bills
+        params.put("bType", Arrays.asList(
                 BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
                 BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
                 BillTypeAtomic.CC_BILL,
                 BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT,
-                BillTypeAtomic.INWARD_SERVICE_BILL);
-        params.put("bType", bTypes);
+                BillTypeAtomic.INWARD_SERVICE_BILL));
+        List<TestCountDTO> positiveResults = (List<TestCountDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
-        testWiseCountDtos = (List<TestCountDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        // Cancellation bills
+        params.put("bType", Arrays.asList(
+                BillTypeAtomic.OPD_BILL_CANCELLATION,
+                BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION,
+                BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.CC_BILL_CANCELLATION,
+                BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION,
+                BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION));
+        List<TestCountDTO> cancelResults = (List<TestCountDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        // Refund bills
+        params.put("bType", Arrays.asList(
+                BillTypeAtomic.OPD_BILL_REFUND,
+                BillTypeAtomic.PACKAGE_OPD_BILL_REFUND,
+                BillTypeAtomic.CC_BILL_REFUND,
+                BillTypeAtomic.INWARD_SERVICE_BILL_REFUND));
+        List<TestCountDTO> refundResults = (List<TestCountDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        // Index positive results by test id
+        Map<Long, TestCountDTO> resultMap = new HashMap<>();
+        if (positiveResults != null) {
+            for (TestCountDTO pos : positiveResults) {
+                resultMap.put(pos.getTestId(), pos);
+            }
+        }
+
+        // Subtract cancellations (count and all fees)
+        if (cancelResults != null) {
+            for (TestCountDTO cancel : cancelResults) {
+                TestCountDTO pos = resultMap.get(cancel.getTestId());
+                if (pos != null) {
+                    pos.setCount(pos.getCount() - Math.abs(cancel.getCount()));
+                    pos.setHosFee(safeDouble(pos.getHosFee()) - Math.abs(safeDouble(cancel.getHosFee())));
+                    pos.setCcFee(safeDouble(pos.getCcFee()) - Math.abs(safeDouble(cancel.getCcFee())));
+                    pos.setProFee(safeDouble(pos.getProFee()) - Math.abs(safeDouble(cancel.getProFee())));
+                    pos.setReagentFee(safeDouble(pos.getReagentFee()) - Math.abs(safeDouble(cancel.getReagentFee())));
+                    pos.setOtherFee(safeDouble(pos.getOtherFee()) - Math.abs(safeDouble(cancel.getOtherFee())));
+                    pos.setDiscount(safeDouble(pos.getDiscount()) - Math.abs(safeDouble(cancel.getDiscount())));
+                    pos.setTotal(safeDouble(pos.getTotal()) - Math.abs(safeDouble(cancel.getTotal())));
+                }
+            }
+        }
+
+        // Subtract refunds (fees only, count is not reduced by a refund)
+        if (refundResults != null) {
+            for (TestCountDTO refund : refundResults) {
+                TestCountDTO pos = resultMap.get(refund.getTestId());
+                if (pos != null) {
+                    pos.setHosFee(safeDouble(pos.getHosFee()) - Math.abs(safeDouble(refund.getHosFee())));
+                    pos.setCcFee(safeDouble(pos.getCcFee()) - Math.abs(safeDouble(refund.getCcFee())));
+                    pos.setProFee(safeDouble(pos.getProFee()) - Math.abs(safeDouble(refund.getProFee())));
+                    pos.setReagentFee(safeDouble(pos.getReagentFee()) - Math.abs(safeDouble(refund.getReagentFee())));
+                    pos.setOtherFee(safeDouble(pos.getOtherFee()) - Math.abs(safeDouble(refund.getOtherFee())));
+                    pos.setDiscount(safeDouble(pos.getDiscount()) - Math.abs(safeDouble(refund.getDiscount())));
+                    pos.setTotal(safeDouble(pos.getTotal()) - Math.abs(safeDouble(refund.getTotal())));
+                }
+            }
+        }
 
         totalCount = 0.0;
         totalHosFee = 0.0;
@@ -991,19 +1050,28 @@ public class LaborataryReportController implements Serializable {
         totalDiscount = 0.0;
         totalNetHosFee = 0.0;
 
-        if (testWiseCountDtos != null) {
-            for (TestCountDTO dto : testWiseCountDtos) {
+        // Keep only tests with a positive net count and accumulate totals
+        List<TestCountDTO> netResults = new ArrayList<>();
+        for (TestCountDTO dto : resultMap.values()) {
+            if (dto.getCount() != null && dto.getCount() > 0) {
+                netResults.add(dto);
                 totalCount += dto.getCount();
-                totalHosFee += dto.getHosFee();
-                totalCCFee += dto.getCcFee();
-                totalProFee += dto.getProFee();
-                totalReagentFee += dto.getReagentFee();
-                totalAdditionalFee += dto.getOtherFee();
-                totalNetTotal += dto.getTotal();
-                totalDiscount += dto.getDiscount();
-                totalNetHosFee += dto.getHosFee() - dto.getDiscount();
+                totalHosFee += safeDouble(dto.getHosFee());
+                totalCCFee += safeDouble(dto.getCcFee());
+                totalProFee += safeDouble(dto.getProFee());
+                totalReagentFee += safeDouble(dto.getReagentFee());
+                totalAdditionalFee += safeDouble(dto.getOtherFee());
+                totalNetTotal += safeDouble(dto.getTotal());
+                totalDiscount += safeDouble(dto.getDiscount());
+                totalNetHosFee += safeDouble(dto.getHosFee()) - safeDouble(dto.getDiscount());
             }
         }
+
+        testWiseCountDtos = setAlphabetList(netResults);
+    }
+
+    private double safeDouble(Double value) {
+        return value == null ? 0.0 : value;
     }
 
     public void processLabTestWiseReagentCostReportDto() {
