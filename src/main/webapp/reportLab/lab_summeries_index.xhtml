@@ -18,8 +18,18 @@
                                     <h:form>
 
                                         <div class="d-grid gap-2">
-                                            <p:commandButton ajax="false" value="Investigation List" action="investigation_counts?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="Bill List" action="/reportLab/bill_list?faces-redirect=true"/> 
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                class="w-100 ui-button-success"
+                                                value="Investigation List" 
+                                                action="investigation_counts?faces-redirect=true">
+                                            </p:commandButton>
+                                            
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Bill List" 
+                                                action="/reportLab/bill_list?faces-redirect=true">
+                                            </p:commandButton>
                                             
                                             <p:commandButton 
                                                 ajax="false"
