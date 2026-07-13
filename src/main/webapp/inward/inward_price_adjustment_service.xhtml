@@ -12,7 +12,7 @@
         <ui:composition template="/inward/inward_administration.xhtml">
 
             <ui:define name="subcontent">
-                <h:form>
+                <h:form id="mainForm">
                     <p:panel header="Inward Price Adjustment Matrix - Service" id="reportPrint" class="row w-100">
                         <p:panel>
                             <f:facet name="header">
@@ -96,6 +96,38 @@
 
                                 <div class="row mt-1">
                                     <div class="col-2">
+                                        <h:outputLabel value="Admission Type" class="mt-2"/>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:selectOneMenu
+                                            class="w-100"
+                                            id="cmbAdmissionType"
+                                            value="#{inwardPriceAdjustmntController.admissionType}">
+                                            <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" />
+                                            <f:selectItems value="#{admissionTypeController.items}" var="at"
+                                                           itemValue="#{at}" itemLabel="#{at.name}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2">
+                                        <h:outputLabel value="Room Category" class="mt-2"/>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:selectOneMenu
+                                            class="w-100"
+                                            id="cmbRoomCategory"
+                                            value="#{inwardPriceAdjustmntController.roomCategory}">
+                                            <f:selectItem itemLabel="All Room Categories" itemValue="#{null}" />
+                                            <f:selectItems value="#{roomCategoryController.items}" var="rc"
+                                                           itemValue="#{rc}" itemLabel="#{rc.name}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2">
                                         <h:outputLabel value="From" class="mt-2"></h:outputLabel>
                                     </div>
                                     <div class="col-4">
@@ -127,6 +159,28 @@
                                             class="w-100"
                                             autocomplete="off"
                                             value="#{inwardPriceAdjustmntController.margin}" />
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2">
+                                        <h:outputLabel value="Credit Company" class="mt-2"/>
+                                    </div>
+                                    <div class="col-10">
+                                        <p:autoComplete
+                                            value="#{inwardPriceAdjustmntController.creditCompany}"
+                                            forceSelection="true"
+                                            completeMethod="#{institutionController.completeCreditCompany}"
+                                            var="ins"
+                                            inputStyleClass="form-control"
+                                            class="w-100"
+                                            itemLabel="#{ins.name}"
+                                            itemValue="#{ins}"
+                                            placeholder="Leave blank to apply to all companies"
+                                            maxResults="20"
+                                            onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }">
+                                            <p:column headerText="Name">#{ins.name}</p:column>
+                                        </p:autoComplete>
                                     </div>
                                 </div>
                             </div>
@@ -187,22 +241,6 @@
                                     filterMatchMode="contains"
                                     headerText="Department Name"
                                     exportable="false">
-                                    <p:autoComplete
-                                        inputStyleClass="form-control"
-                                        class="w-100 "
-                                        forceSelection="true"
-                                        value="#{a.department}"
-                                        completeMethod="#{departmentController.completeDept}"
-                                        var="dep"
-                                        itemLabel="#{dep.name}"
-                                        itemValue="#{dep}" >
-                                        <p:column>
-                                            <h:outputLabel value="#{dep.name}"/>
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputLabel value="#{dep.institution.name}"/>
-                                        </p:column>
-                                    </p:autoComplete>
                                     <p:outputLabel value="#{a.department.name}"/>
                                 </p:column>
 
@@ -221,57 +259,59 @@
                                     headerText="Category Name"
 
                                     exportable="false">
-                                    <p:autoComplete
-                                        inputStyleClass="form-control"
-                                        class="w-100 "
-                                        forceSelection="true"
-                                        value="#{a.category}"
-                                        completeMethod="#{categoryController.completeCategoryService}"
-                                        var="cat"
-                                        itemLabel="#{cat.name} #{cat.parentCategory}"
-                                        itemValue="#{cat}" >
-                                        <p:column>
-                                            <h:outputLabel value="#{cat.name}"/>
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputLabel value="#{cat.parentCategory.name}"/>
-                                        </p:column>
-                                        <p:column headerText="TYPE">
-                                            <h:outputLabel value="Parent Category"
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceCategory'}"/>
-                                            <h:outputLabel value="Child Category"
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceSubCategory'}"/>
-                                            <h:outputLabel value="Investigation Category"
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.InventoryCategory'}"/>
-                                        </p:column>
-
-                                    </p:autoComplete>
                                     <p:outputLabel value="#{a.category.name}"/>
                                 </p:column>
 
                                 <p:column headerText="From Price" width="8%">
-                                    <h:inputText autocomplete="off" value="#{a.fromPrice}" style="width: 5em;" >
+                                    <h:outputText value="#{a.fromPrice}">
                                         <f:convertNumber pattern="#,##0.00"/>
-                                    </h:inputText>
+                                    </h:outputText>
                                 </p:column>
                                 <p:column  headerText="To Price" width="8%">
-                                    <h:inputText autocomplete="off" value="#{a.toPrice}" style="width: 5em;">
+                                    <h:outputText value="#{a.toPrice}">
                                         <f:convertNumber pattern="#,##0.00"/>
-                                    </h:inputText>
+                                    </h:outputText>
                                 </p:column>
                                 <p:column  headerText="Margin" width="8%">
-                                    <h:inputText autocomplete="off" value="#{a.margin}" style="width: 5em;">
+                                    <h:outputText value="#{a.margin}">
                                         <f:convertNumber pattern="#,##0.00"/>
-                                    </h:inputText>
+                                    </h:outputText>
                                 </p:column>
+
+                                <p:column
+                                    headerText="Credit Company"
+                                    filterBy="#{empty a.creditCompany ? '' : a.creditCompany.name}"
+                                    filterMatchMode="contains"
+                                    exportValue="#{empty a.creditCompany ? 'All Companies' : a.creditCompany.name}">
+                                    <h:outputText value="#{empty a.creditCompany ? 'All Companies' : a.creditCompany.name}"/>
+                                </p:column>
+
+                                <p:column
+                                    headerText="Admission Type"
+                                    filterBy="#{empty a.admissionType ? '' : a.admissionType.name}"
+                                    filterMatchMode="contains"
+                                    exportValue="#{empty a.admissionType ? 'All Admission Types' : a.admissionType.name}">
+                                    <h:outputText value="#{empty a.admissionType ? 'All Admission Types' : a.admissionType.name}"/>
+                                </p:column>
+
+                                <p:column
+                                    headerText="Room Category"
+                                    filterBy="#{empty a.roomCategory ? '' : a.roomCategory.name}"
+                                    filterMatchMode="contains"
+                                    exportValue="#{empty a.roomCategory ? 'All Room Categories' : a.roomCategory.name}">
+                                    <h:outputText value="#{empty a.roomCategory ? 'All Room Categories' : a.roomCategory.name}"/>
+                                </p:column>
+
                                 <p:column headerText="Action" width="12%" >
                                     <div class="d-flex">
                                         <p:commandButton
                                             id="edit"
-                                            ajax="false"
                                             icon="fa fa-pencil"
                                             class="ui-button-success mx-1"
-                                            action="#{inwardPriceAdjustmntController.onEdit(a)}" >
+                                            process="@this"
+                                            update=":dlgEditForm"
+                                            oncomplete="PF('dlgEdit').show()"
+                                            action="#{inwardPriceAdjustmntController.prepareEdit(a)}" >
                                         </p:commandButton>
                                         <p:commandButton
                                             id="delete"
@@ -291,6 +331,81 @@
                         </p:panel>
                     </p:panel>
                 </h:form>
+
+                <p:dialog header="Edit Price Adjustment" widgetVar="dlgEdit" modal="true"
+                          resizable="false" width="480" id="dlgEdit">
+                    <h:form id="dlgEditForm">
+                        <h:panelGrid columns="2" cellpadding="5" rendered="#{not empty inwardPriceAdjustmntController.current}">
+                            <h:outputLabel value="Department"/>
+                            <h:outputText value="#{inwardPriceAdjustmntController.current.department.name}"/>
+
+                            <h:outputLabel value="Category"/>
+                            <h:outputText value="#{inwardPriceAdjustmntController.current.category.name}"/>
+
+                            <h:outputLabel value="Payment Method"/>
+                            <h:outputText value="#{inwardPriceAdjustmntController.current.paymentMethod}"/>
+
+                            <h:outputLabel value="From Price"/>
+                            <h:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.current.fromPrice}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:inputText>
+
+                            <h:outputLabel value="To Price"/>
+                            <h:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.current.toPrice}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:inputText>
+
+                            <h:outputLabel value="Margin"/>
+                            <h:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.current.margin}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:inputText>
+
+                            <h:outputLabel value="Credit Company"/>
+                            <p:autoComplete
+                                inputStyleClass="form-control"
+                                class="w-100"
+                                forceSelection="true"
+                                value="#{inwardPriceAdjustmntController.current.creditCompany}"
+                                completeMethod="#{institutionController.completeCreditCompany}"
+                                var="ins"
+                                itemLabel="#{ins.name}"
+                                itemValue="#{ins}"
+                                placeholder="All companies"
+                                maxResults="20"
+                                onkeydown="if (event.key === 'Enter') { event.preventDefault(); return false; }">
+                                <p:column>
+                                    <h:outputText value="#{ins.name}"/>
+                                </p:column>
+                            </p:autoComplete>
+
+                            <h:outputLabel value="Admission Type"/>
+                            <p:selectOneMenu value="#{inwardPriceAdjustmntController.current.admissionType}" class="w-100">
+                                <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" />
+                                <f:selectItems value="#{admissionTypeController.items}" var="at"
+                                               itemValue="#{at}" itemLabel="#{at.name}" />
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="Room Category"/>
+                            <p:selectOneMenu value="#{inwardPriceAdjustmntController.current.roomCategory}" class="w-100">
+                                <f:selectItem itemLabel="All Room Categories" itemValue="#{null}" />
+                                <f:selectItems value="#{roomCategoryController.items}" var="rc"
+                                               itemValue="#{rc}" itemLabel="#{rc.name}" />
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+
+                        <div class="d-flex justify-content-end mt-3">
+                            <p:commandButton id="dlgSave" value="Save" icon="fa fa-save"
+                                             class="ui-button-success mx-1"
+                                             action="#{inwardPriceAdjustmntController.saveEdit}"
+                                             update=":dlgEditForm :mainForm:inwd"
+                                             oncomplete="PF('dlgEdit').hide()"/>
+                            <p:commandButton id="dlgCancel" value="Cancel" icon="fa fa-times"
+                                             class="ui-button-secondary mx-1"
+                                             type="button"
+                                             onclick="PF('dlgEdit').hide()"/>
+                        </div>
+                    </h:form>
+                </p:dialog>
             </ui:define>
         </ui:composition>
     </h:body>

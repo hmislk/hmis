@@ -8,7 +8,10 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.hr.StaffController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.MessageType;
+import com.divudi.core.data.PatientRegistrationSource;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.core.entity.Bill;
@@ -231,7 +234,7 @@ public class PatientPortalController implements Serializable {
         patient.setPatientMobileNumber(phoneAsLong);
         patient.getPerson().setPhone(patientphoneNumber);
         patient.getPerson().setMobile(patientphoneNumber);
-        patient.setSelfRegistered(true);
+        patient.setRegistrationSource(PatientRegistrationSource.ONLINE_SELF);
         patientController.save(patient);
         addNewPatient = false;
         patientSelected = true;
@@ -327,6 +330,33 @@ public class PatientPortalController implements Serializable {
     public void GoBackfromPatientAddAction() {
         addNewPatient = false;
         patient = null;
+    }
+
+    public void updateSexByTitle() {
+        if (patient == null || patient.getPerson() == null) {
+            return;
+        }
+        Title title = patient.getPerson().getTitle();
+        if (title == null) {
+            return;
+        }
+        switch (title) {
+            case Mrs:
+            case Ms:
+            case Miss:
+            case DrMrs:
+            case DrMs:
+            case DrMiss:
+            case ProfMrs:
+                patient.getPerson().setSex(Sex.Female);
+                break;
+            case Mr:
+            case Master:
+                patient.getPerson().setSex(Sex.Male);
+                break;
+            default:
+                break;
+        }
     }
 
 //    public void addNewPatientAction() {
@@ -435,16 +465,16 @@ public class PatientPortalController implements Serializable {
         }
         return smsBody;
     }
-    
+
     public String smsBody(Patient pt) {
         String smsBody = "";
         String linkSendingTemplate = configOptionApplicationController.getLongTextValueByKey("Patient Portal - Custom SMS Body Massage for Send Link");
         String baseURL = CommonFunctions.getBaseUrl() + "faces/patient_portal/portal_login.xhtml";
-        
+
         if (!linkSendingTemplate.equalsIgnoreCase("")) {
             smsBody = replaceOTPSMSBody(linkSendingTemplate, pt, baseURL);
         } else {
-            smsBody = "Hi "+ pt.getPerson().getNameWithTitle() +",\nUse the following link for Loging your Patient portal.\n Link : " + baseURL;
+            smsBody = "Hi " + pt.getPerson().getNameWithTitle() + ",\nUse the following link for Loging your Patient portal.\n Link : " + baseURL;
         }
         return smsBody;
     }
@@ -486,7 +516,7 @@ public class PatientPortalController implements Serializable {
         output = processedTemplate.replace("{otp}", otp);
         return output;
     }
-    
+
     public String replaceOTPSMSBody(String template, Patient pt, String baseUrl) {
         String output;
         String processedTemplate = template.replace("\\n", "\n");
@@ -805,6 +835,14 @@ public class PatientPortalController implements Serializable {
 
     public void setPatientEnteredOtp(String patientEnteredOtp) {
         this.patientEnteredOtp = patientEnteredOtp;
+    }
+
+    public int getOtpLength() {
+        Long configured = configOptionApplicationController.getLongValueByKey("Patient Portal - OTP Length", 6L);
+        if (configured == null || configured < 1L || configured > 12L) {
+            return 6;
+        }
+        return configured.intValue();
     }
 
     public boolean isOtpVerify() {

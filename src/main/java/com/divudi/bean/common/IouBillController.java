@@ -84,6 +84,7 @@ public class IouBillController implements Serializable {
     private List<Payment> settlingIuos;
     private List<Payment> paymentsForsettlingIuos;
     private Payment currentPayment;
+    private Payment removingPayment;
     private boolean printPreview = false;
     private Person newPerson;
     private PaymentMethodData paymentMethodData;
@@ -394,7 +395,10 @@ public class IouBillController implements Serializable {
         List<Payment> iouReversals = new ArrayList<>();
         List<Payment> cashPayments = new ArrayList<>();
         for (Payment iouPayment : settlingIuos) {
-            // Create a reversed IOU payment (negative value) to balance out
+            // Create a reversed IOU payment (negative value) to balance out.
+            // This is a pure accounting offset — not a physical payment to hand over.
+            // Mark it handingOverStarted=true and cashbookEntryStated=true so it never
+            // surfaces in the shift handover or cashbook pages.
             Payment iouReversal = new Payment();
             iouReversal.setBill(current);
             iouReversal.setPaymentMethod(PaymentMethod.IOU);
@@ -404,6 +408,8 @@ public class IouBillController implements Serializable {
             iouReversal.setCreatedAt(new Date());
             iouReversal.setCreater(sessionController.getLoggedUser());
             iouReversal.setCurrentHolder(sessionController.getLoggedUser());
+            iouReversal.setHandingOverStarted(true);
+            iouReversal.setCashbookEntryStated(true);
             paymentController.save(iouReversal);
             iouReversals.add(iouReversal);
 
@@ -424,11 +430,14 @@ public class IouBillController implements Serializable {
         drawerController.updateDrawerForOuts(iouReversals);
         drawerController.updateDrawerForIns(cashPayments);
 
-        // Mark original IOU payments as processed by linking to the conversion bill
-        // Using cancelledBill reference (without setting cancelled=true) to indicate
-        // this IOU has been converted, keeping it visible in cashier summaries
+        // Mark original IOU payments as processed. The conversion bill takes over their
+        // accounting role: the -500 IOU reversal and +500 Cash handle the cashbook entry.
+        // Setting handingOverStarted=true and cashbookEntryStated=true prevents the original
+        // IOU from double-appearing in handover alongside the +500 Cash payment.
         for (Payment iouPayment : settlingIuos) {
             iouPayment.setCancelledBill(current);
+            iouPayment.setHandingOverStarted(true);
+            iouPayment.setCashbookEntryStated(true);
             paymentController.save(iouPayment);
         }
 
@@ -508,6 +517,27 @@ public class IouBillController implements Serializable {
         getCurrentPayment();
     }
 
+    public void removePayment() {
+        if (removingPayment == null) {
+            JsfUtil.addErrorMessage("No payment selected to remove");
+            return;
+        }
+        getPaymentsForsettlingIuos().remove(removingPayment);
+        if (!getPaymentsForsettlingIuos().isEmpty()) {
+            calculateTotalsForSettlingIouBill();
+        } else {
+            settlingIouTotal = 0.0;
+            if (settlingIuos != null) {
+                for (Payment pout : settlingIuos) {
+                    settlingIouTotal += pout.getPaidValue();
+                }
+            }
+            paymentTotal = 0.0;
+            getCurrent().setTotal(0.0);
+            getCurrent().setNetTotal(0.0);
+        }
+    }
+
     public void settleIouSettlingBill() {
         if (errorInSettlingIouBill()) {
             return;
@@ -532,8 +562,8 @@ public class IouBillController implements Serializable {
         drawerController.updateDrawerForOuts(getSettlingIuos());
         drawerController.updateDrawerForIns(getPaymentsForsettlingIuos());
         JsfUtil.addSuccessMessage("IOU Settled Successfully");
-        settlingIuos=null;
-        myIousToSettle=null;
+        settlingIuos = null;
+        myIousToSettle = null;
         printPreview = true;
 
     }
@@ -586,9 +616,9 @@ public class IouBillController implements Serializable {
                 pmd);
         drawerController.updateDrawerForOuts(paymentOuts);
         drawerController.updateDrawerForIns(paymentsIn);
-        paymentsForsettlingIuos=null;
-        myIousToSettle=null;
-        settlingIuos=null;
+        paymentsForsettlingIuos = null;
+        myIousToSettle = null;
+        settlingIuos = null;
         JsfUtil.addSuccessMessage("IOU Created");
         printPreview = true;
 
@@ -962,7 +992,7 @@ public class IouBillController implements Serializable {
         params.put("pm", PaymentMethod.IOU);
         params.put("user", sessionController.getLoggedUser());
         myIousToSettle = paymentFacade.findByJpql(jpql, params);
-        paymentsForsettlingIuos=new ArrayList<>();
+        paymentsForsettlingIuos = new ArrayList<>();
         settlingIuos = new ArrayList<>();
         if (myIousToSettle == null) {
             JsfUtil.addErrorMessage("You do not have any IOUs to settle");
@@ -1167,6 +1197,14 @@ public class IouBillController implements Serializable {
 
     public void setCurrentPayment(Payment currentPayment) {
         this.currentPayment = currentPayment;
+    }
+
+    public Payment getRemovingPayment() {
+        return removingPayment;
+    }
+
+    public void setRemovingPayment(Payment removingPayment) {
+        this.removingPayment = removingPayment;
     }
 
     public double getSettlingIouTotal() {

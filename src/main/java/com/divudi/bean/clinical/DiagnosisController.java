@@ -53,7 +53,7 @@ public class DiagnosisController implements Serializable {
     String selectText = "";
 
     public String navigateToManageDiagnoses() {
-        return "/emr/admin/diagnoses";
+        return "/emr/admin/diagnoses?faces-redirect=true";
     }
 
     // Method to generate the Excel file and initiate the download
@@ -161,14 +161,23 @@ public class DiagnosisController implements Serializable {
 
     public void saveSelected() {
         current.setSymanticType(SymanticType.Disease_or_Syndrome);
+        if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Diagnosis Name before saving.");
+            return;
+        }
+        if(getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()){
+            JsfUtil.addErrorMessage("Please enter a Diagnosis Code before saving.");
+            return;
+        }
+        
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Saved");
+            JsfUtil.addSuccessMessage("Updated");
         } else {
             current.setCreatedAt(new Date());
             current.setCreater(getSessionController().getLoggedUser());
             getFacade().create(current);
-            JsfUtil.addSuccessMessage("Updated");
+            JsfUtil.addSuccessMessage("Saved");
         }
         recreateModel();
         fillItems();

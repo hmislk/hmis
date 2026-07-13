@@ -2,9 +2,10 @@
  * Open Hospital Management Information System
  *
  * Dr M H B Ariyaratne
- * Acting Consultant (Health Informatics)
+ * Consultant (Health Informatics)
  * (94) 71 5812399
- * (94) 71 5812399
+ * buddhika.ari@gmail.com
+ *
  */
 package com.divudi.bean.pharmacy;
 
@@ -29,6 +30,10 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.dataStructure.CategoryWithItem;
 import com.divudi.core.data.dataStructure.PharmacySummery;
 import com.divudi.core.data.dto.AmpDto;
+import com.divudi.core.data.dto.ConsumptionBillDto;
+import com.divudi.core.data.dto.ConsumptionBillItemDto;
+import com.divudi.core.data.dto.ConsumptionCategoryItemDto;
+import com.divudi.core.data.dto.DepartmentSaleIssueDTO;
 import com.divudi.core.data.dto.PharmacyGrnItemDTO;
 import com.divudi.core.data.dto.BeforeStockTakingDTO;
 import com.divudi.core.data.dto.PharmacyGrnReturnItemDTO;
@@ -40,13 +45,20 @@ import com.divudi.core.light.pharmacy.PharmaceuticalItemLight;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyService;
 import com.divudi.service.BillService;
-import com.itextpdf.text.*;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+//import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -59,7 +71,6 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.List;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -79,6 +90,8 @@ import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.core.data.admin.ConfigOptionInfo;
 import com.divudi.core.data.admin.PageMetadata;
 import com.divudi.core.data.admin.PrivilegeInfo;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 
 /**
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
@@ -1168,6 +1181,7 @@ public class PharmacyController implements Serializable {
         createDepartmentSaleDto();
         createBatchDetailsDto();  // Add batch details with expiry information
         createInstitutionBhtIssue(); // TODO: Fix this
+        createDepartmentSaleIssueDto();
         createDepartmentTransferIssueDto();
         createDepartmentTransferReceiveDto();
         createDepartmentDisposeIssueDto();
@@ -1217,7 +1231,7 @@ public class PharmacyController implements Serializable {
      * avoid loading full entity graph
      */
     public void fillAmpsDto() {
-        String jpql = "SELECT new com.divudi.core.data.dto.AmpDTO("
+        String jpql = "SELECT new com.divudi.core.data.dto.AmpDto("
                 + "a.id, "
                 + "a.name, "
                 + "a.category.id, "
@@ -2110,7 +2124,7 @@ public class PharmacyController implements Serializable {
         grantIssueQty = 0.00;
         grantIssueValue = 0.00;
 
-        fromDate = CommonFunctions.addDaysToDate(new Date(), -30L);
+        fromDate = CommonFunctions.getStartOfDay(CommonFunctions.addDaysToDate(new Date(), -30L));
         toDate = CommonFunctions.getEndOfDay(new Date());
 
         pharmacyItem = null;
@@ -2120,6 +2134,8 @@ public class PharmacyController implements Serializable {
         transferIssuesByDepartment = null;
         transferReceivesByDepartment = null;
         disposeIssuesByDepartment = null;
+        departmentSaleIssueDtos = null;
+        grantDepartmentSaleIssueTotalQty = 0.0;
         grns = null;
         pendingGrns = null;
         institutionWholeSales = null;
@@ -2307,6 +2323,25 @@ public class PharmacyController implements Serializable {
                 bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
             } catch (Exception e) {
                 JsfUtil.addErrorMessage(e, " Something Went Worng!");
+            }
+
+            // For detailReport, eagerly fetch billItems and their associations to avoid
+            // LazyInitializationException when the JSF view iterates row.billItems
+            if ("detailReport".equals(reportType) && bills != null && !bills.isEmpty()) {
+                List<Long> ids = bills.stream().map(Bill::getId).collect(Collectors.toList());
+                String fetchJpql = "SELECT DISTINCT b FROM Bill b"
+                        + " LEFT JOIN FETCH b.billItems bi"
+                        + " LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi"
+                        + " LEFT JOIN FETCH pbi.itemBatch"
+                        + " WHERE b.id IN :ids"
+                        + " ORDER BY b.id DESC";
+                Map<String, Object> fetchParams = new HashMap<>();
+                fetchParams.put("ids", ids);
+                try {
+                    bills = getBillFacade().findByJpql(fetchJpql, fetchParams);
+                } catch (Exception e) {
+                    Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error eagerly fetching bill items for detail report", e);
+                }
             }
 
             // Use simplified calculation for detailReport and summeryReport, standard for others
@@ -3663,6 +3698,7 @@ public class PharmacyController implements Serializable {
         }
     }
 
+    @Deprecated
     public void createConsumptionReportTable() {
         reportTimerController.trackReportExecution(() -> {
             resetFields();
@@ -3697,6 +3733,448 @@ public class PharmacyController implements Serializable {
                     throw new IllegalArgumentException("Invalid report type: " + reportType);
             }
         }, InventoryReports.CONSUMPTION_REPORT, sessionController.getLoggedUser());
+    }
+
+    public void createConsumptionReportTableDto() {
+        reportTimerController.trackReportExecution(() -> {
+            resetConsumptionDtoFields();
+            List<BillTypeAtomic> disposalBillTypes = new ArrayList<>();
+            disposalBillTypes.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE);
+            disposalBillTypes.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_RETURN);
+            disposalBillTypes.add(BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_CANCELLED);
+
+            switch (reportType) {
+                case "byBill":
+                    if (item != null) {
+                        JsfUtil.addErrorMessage("You can not use List By Bill when an item is selected");
+                        return;
+                    }
+                    if (category != null) {
+                        JsfUtil.addErrorMessage("You can not use List By Bill when a category is selected");
+                        return;
+                    }
+                    generateConsumptionByBillDto(disposalBillTypes);
+                    break;
+                case "byBillItem":
+                    generateConsumptionByBillItemDto(disposalBillTypes);
+                    break;
+                case "summeryReport":
+                case "categoryWise":
+                    generateConsumptionSummaryAndCategoryDto(disposalBillTypes);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid report type: " + reportType);
+            }
+        }, InventoryReports.CONSUMPTION_REPORT, sessionController.getLoggedUser());
+    }
+
+    private void resetConsumptionDtoFields() {
+        consumptionBillDtos = new ArrayList<>();
+        consumptionBillItemDtos = new ArrayList<>();
+        consumptionCategoryDtoMap = new HashMap<>();
+        totalPurchase = 0.0;
+        totalCostValue = 0.0;
+        totalRetailValue = 0.0;
+        totalSaleValue = 0.0;
+        departmentTotals = new HashMap<>();
+    }
+
+    public void generateConsumptionByBillDto(List<BillTypeAtomic> billTypeAtomics) {
+        try {
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("SELECT b.id, b.deptId, b.invoiceNumber, ");
+            jpql.append("toDept.name, ");
+            jpql.append("b.cancelled, b.fullReturned, ");
+            jpql.append("cb.id, cb.deptId, ");
+            jpql.append("rb.id, rb.deptId, ");
+            jpql.append("obb.id, obb.deptId, ");
+            jpql.append("bfd.totalPurchaseValue, bfd.totalCostValue, bfd.totalRetailSaleValue, ");
+            jpql.append("b.createdAt, wu.name, b.comments, b.billTypeAtomic ");
+            jpql.append("FROM Bill b ");
+            jpql.append("LEFT JOIN b.toDepartment toDept ");
+            jpql.append("LEFT JOIN b.cancelledBill cb ");
+            jpql.append("LEFT JOIN b.refundedBill rb ");
+            jpql.append("LEFT JOIN b.billedBill obb ");
+            jpql.append("LEFT JOIN b.billFinanceDetails bfd ");
+            jpql.append("LEFT JOIN b.creater cr ");
+            jpql.append("LEFT JOIN cr.webUserPerson wu ");
+            jpql.append("WHERE (b.retired = false OR b.retired IS NULL) ");
+            jpql.append("AND b.completed = true ");
+            jpql.append("AND b.billTypeAtomic IN :billTypeAtomics ");
+            jpql.append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("billTypeAtomics", billTypeAtomics);
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            if (institution != null) {
+                jpql.append("AND b.institution = :institution ");
+                params.put("institution", institution);
+            }
+            if (site != null) {
+                jpql.append("AND b.department.site = :site ");
+                params.put("site", site);
+            }
+            if (dept != null) {
+                jpql.append("AND b.department = :dept ");
+                params.put("dept", dept);
+            }
+            if (dosageForm != null) {
+                jpql.append("AND EXISTS (SELECT bi2 FROM BillItem bi2 WHERE bi2.bill = b AND bi2.item.dosageForm = :df) ");
+                params.put("df", dosageForm);
+            }
+            if (toDepartment != null) {
+                jpql.append("AND b.toDepartment = :toDept2 ");
+                params.put("toDept2", toDepartment);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND b.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
+            jpql.append("ORDER BY b.createdAt ASC");
+
+            List<Object[]> rows = getBillFacade().findObjectsArrayByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            consumptionBillDtos = new ArrayList<>();
+            totalPurchase = 0.0;
+            totalCostValue = 0.0;
+            totalRetailValue = 0.0;
+
+            for (Object[] row : rows) {
+                BillTypeAtomic bta = row[18] != null ? (BillTypeAtomic) row[18] : null;
+                double valueSign = consumptionValueSign(bta);
+
+                double rawPurchase = row[12] != null ? ((Number) row[12]).doubleValue() : 0.0;
+                double rawCost = row[13] != null ? ((Number) row[13]).doubleValue() : 0.0;
+                double rawRetail = row[14] != null ? ((Number) row[14]).doubleValue() : 0.0;
+
+                double purchase = valueSign * rawPurchase;
+                double cost = valueSign * rawCost;
+                double retail = valueSign * rawRetail;
+
+                ConsumptionBillDto dto = new ConsumptionBillDto(
+                        row[0] != null ? ((Number) row[0]).longValue() : null,
+                        (String) row[1],
+                        (String) row[2],
+                        (String) row[3],
+                        row[4] != null ? (Boolean) row[4] : false,
+                        row[5] != null ? (Boolean) row[5] : false,
+                        row[6] != null ? ((Number) row[6]).longValue() : null,
+                        (String) row[7],
+                        row[8] != null ? ((Number) row[8]).longValue() : null,
+                        (String) row[9],
+                        row[10] != null ? ((Number) row[10]).longValue() : null,
+                        (String) row[11],
+                        purchase, cost, retail,
+                        (java.util.Date) row[15],
+                        (String) row[16],
+                        (String) row[17]
+                );
+
+                consumptionBillDtos.add(dto);
+                totalPurchase += purchase;
+                totalCostValue += cost;
+                totalRetailValue += retail;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating consumption by bill DTO", e);
+            JsfUtil.addErrorMessage(e, "Failed to generate Consumption By Bill report.");
+        }
+    }
+
+    public void generateConsumptionByBillItemDto(List<BillTypeAtomic> billTypeAtomics) {
+        try {
+            StringBuilder jpql = new StringBuilder();
+            jpql.append("SELECT bi.id, b.id, b.deptId, b.invoiceNumber, ");
+            jpql.append("toDept.name, ");
+            jpql.append("i.name, cat.name, df.name, ");
+            jpql.append("bi.qty, ");
+            jpql.append("b.cancelled, b.fullReturned, ");
+            jpql.append("cb.id, cb.deptId, ");
+            jpql.append("rb.id, rb.deptId, ");
+            jpql.append("obb.id, obb.deptId, ");
+            jpql.append("bifd.purchaseRate, bifd.valueAtPurchaseRate, ");
+            jpql.append("bifd.retailSaleRate, bifd.valueAtRetailRate, ");
+            jpql.append("bifd.costRate, bifd.valueAtCostRate, ");
+            jpql.append("b.createdAt, wu.name, b.comments, b.billTypeAtomic ");
+            jpql.append("FROM BillItem bi ");
+            jpql.append("JOIN bi.bill b ");
+            jpql.append("LEFT JOIN b.toDepartment toDept ");
+            jpql.append("LEFT JOIN bi.item i ");
+            jpql.append("LEFT JOIN i.category cat ");
+            jpql.append("LEFT JOIN i.dosageForm df ");
+            jpql.append("LEFT JOIN b.cancelledBill cb ");
+            jpql.append("LEFT JOIN b.refundedBill rb ");
+            jpql.append("LEFT JOIN b.billedBill obb ");
+            jpql.append("LEFT JOIN bi.billItemFinanceDetails bifd ");
+            jpql.append("LEFT JOIN b.creater cr ");
+            jpql.append("LEFT JOIN cr.webUserPerson wu ");
+            jpql.append("WHERE (bi.retired = false OR bi.retired IS NULL) ");
+            jpql.append("AND (b.retired = false OR b.retired IS NULL) ");
+            jpql.append("AND b.completed = true ");
+            jpql.append("AND b.billTypeAtomic IN :billTypeAtomics ");
+            jpql.append("AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("billTypeAtomics", billTypeAtomics);
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            if (institution != null) {
+                jpql.append("AND b.institution = :institution ");
+                params.put("institution", institution);
+            }
+            if (site != null) {
+                jpql.append("AND b.department.site = :site ");
+                params.put("site", site);
+            }
+            if (dept != null) {
+                jpql.append("AND b.department = :department ");
+                params.put("department", dept);
+            }
+            if (category != null) {
+                jpql.append("AND i.category = :category ");
+                params.put("category", category);
+            }
+            if (dosageForm != null) {
+                jpql.append("AND i.dosageForm = :df ");
+                params.put("df", dosageForm);
+            }
+            if (item != null) {
+                jpql.append("AND bi.item = :item ");
+                params.put("item", item);
+            }
+            if (toDepartment != null) {
+                jpql.append("AND b.toDepartment = :toDepartment ");
+                params.put("toDepartment", toDepartment);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql.append("AND b.departmentType IN :departmentTypes ");
+                params.put("departmentTypes", selectedDepartmentTypes);
+            }
+            jpql.append("ORDER BY b.createdAt ASC");
+
+            List<Object[]> rows = getBillItemFacade().findObjectsArrayByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            consumptionBillItemDtos = new ArrayList<>();
+            totalPurchase = 0.0;
+            totalCostValue = 0.0;
+            totalRetailValue = 0.0;
+
+            for (Object[] row : rows) {
+                BillTypeAtomic bta = row[26] != null ? (BillTypeAtomic) row[26] : null;
+                double valueSign = consumptionValueSign(bta);
+                double qtySign = consumptionQtySign(bta);
+
+                double rawPurchaseVal = row[18] != null ? ((Number) row[18]).doubleValue() : 0.0;
+                double rawRetailVal = row[20] != null ? ((Number) row[20]).doubleValue() : 0.0;
+                double rawCostVal = row[22] != null ? ((Number) row[22]).doubleValue() : 0.0;
+                double rawQty = row[8] != null ? ((Number) row[8]).doubleValue() : 0.0;
+
+                double purchaseVal = valueSign * rawPurchaseVal;
+                double retailVal = valueSign * rawRetailVal;
+                double costVal = valueSign * rawCostVal;
+                double qty = qtySign * rawQty;
+
+                ConsumptionBillItemDto dto = new ConsumptionBillItemDto(
+                        row[0] != null ? ((Number) row[0]).longValue() : null,
+                        row[1] != null ? ((Number) row[1]).longValue() : null,
+                        (String) row[2],
+                        (String) row[3],
+                        (String) row[4],
+                        (String) row[5],
+                        (String) row[6],
+                        (String) row[7],
+                        qty,
+                        row[9] != null ? (Boolean) row[9] : false,
+                        row[10] != null ? (Boolean) row[10] : false,
+                        row[11] != null ? ((Number) row[11]).longValue() : null,
+                        (String) row[12],
+                        row[13] != null ? ((Number) row[13]).longValue() : null,
+                        (String) row[14],
+                        row[15] != null ? ((Number) row[15]).longValue() : null,
+                        (String) row[16],
+                        row[17] != null ? ((Number) row[17]).doubleValue() : 0.0,
+                        purchaseVal,
+                        row[19] != null ? ((Number) row[19]).doubleValue() : 0.0,
+                        retailVal,
+                        row[21] != null ? ((Number) row[21]).doubleValue() : 0.0,
+                        costVal,
+                        (java.util.Date) row[23],
+                        (String) row[24],
+                        (String) row[25]
+                );
+
+                consumptionBillItemDtos.add(dto);
+                totalPurchase += purchaseVal;
+                totalCostValue += costVal;
+                totalRetailValue += retailVal;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating consumption by bill item DTO", e);
+            JsfUtil.addErrorMessage(e, "Failed to generate Consumption By Bill Item report.");
+        }
+    }
+
+    public void generateConsumptionSummaryAndCategoryDto(List<BillTypeAtomic> billTypeAtomics) {
+        totalSaleValue = 0.0;
+        totalCostValue = 0.0;
+        totalPurchase = 0.0;
+        totalRetailValue = 0.0;
+
+        List<ConsumptionCategoryItemDto> allItems = new ArrayList<>();
+
+        for (BillTypeAtomic billType : billTypeAtomics) {
+            Map<String, Object> parameters = new HashMap<>();
+            // [0]=sourceDept [1]=consumptionDept [2]=category [3]=item
+            // [4]=purchaseVal [5]=costVal [6]=retailVal [7]=netTotal [8]=qty
+            String jpql = "SELECT "
+                    + "b.department.name, "
+                    + "b.toDepartment.name, "
+                    + "bi.item.category.name, "
+                    + "bi.item.name, "
+                    + "SUM(COALESCE(bi.billItemFinanceDetails.valueAtPurchaseRate, 0.0)), "
+                    + "SUM(COALESCE(bi.billItemFinanceDetails.valueAtCostRate, 0.0)), "
+                    + "SUM(COALESCE(bi.billItemFinanceDetails.valueAtRetailRate, 0.0)), "
+                    + "SUM(COALESCE(bi.billItemFinanceDetails.netTotal, 0.0)), "
+                    + "SUM(bi.qty) "
+                    + "FROM BillItem bi "
+                    + "JOIN bi.bill b "
+                    + "WHERE (bi.retired = false OR bi.retired IS NULL) "
+                    + "AND (b.retired = false OR b.retired IS NULL) "
+                    + "AND b.completed = true "
+                    + "AND bi.billItemFinanceDetails IS NOT NULL "
+                    + "AND b.createdAt BETWEEN :fromDate AND :toDate "
+                    + "AND b.billTypeAtomic = :billTypeAtomic ";
+
+            parameters.put("fromDate", fromDate);
+            parameters.put("toDate", toDate);
+            parameters.put("billTypeAtomic", billType);
+
+            if (institution != null) {
+                jpql += "AND b.institution = :institution ";
+                parameters.put("institution", institution);
+            }
+            if (site != null) {
+                jpql += "AND b.department.site = :site ";
+                parameters.put("site", site);
+            }
+            if (dept != null) {
+                jpql += "AND b.department = :department ";
+                parameters.put("department", dept);
+            }
+            if (category != null) {
+                jpql += "AND bi.item.category = :category ";
+                parameters.put("category", category);
+            }
+            if (dosageForm != null) {
+                jpql += "AND bi.item.dosageForm = :df ";
+                parameters.put("df", dosageForm);
+            }
+            if (item != null) {
+                jpql += "AND bi.item = :item ";
+                parameters.put("item", item);
+            }
+            if (toDepartment != null) {
+                jpql += "AND b.toDepartment = :toDepartment ";
+                parameters.put("toDepartment", toDepartment);
+            }
+            if (selectedDepartmentTypes != null && !selectedDepartmentTypes.isEmpty()) {
+                jpql += "AND b.departmentType IN :departmentTypes ";
+                parameters.put("departmentTypes", selectedDepartmentTypes);
+            }
+
+            jpql += "GROUP BY b.department.name, b.toDepartment.name, bi.item.category.name, bi.item.name "
+                    + "ORDER BY b.department.name, b.toDepartment.name, bi.item.category.name, bi.item.name";
+
+            try {
+                List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+                double valueSign = consumptionValueSign(billType);
+                double qtySign = consumptionQtySign(billType);
+
+                for (Object[] row : results) {
+                    String sourceDeptName = (String) row[0];
+                    String deptName = (String) row[1];
+                    String catName = (String) row[2];
+                    String iName = (String) row[3];
+                    Double purchase = row[4] != null ? valueSign * ((Number) row[4]).doubleValue() : 0.0;
+                    Double cost = row[5] != null ? valueSign * ((Number) row[5]).doubleValue() : 0.0;
+                    Double retail = row[6] != null ? valueSign * ((Number) row[6]).doubleValue() : 0.0;
+                    Double net = row[7] != null ? ((Number) row[7]).doubleValue() : 0.0;
+                    Double qty = row[8] != null ? qtySign * ((Number) row[8]).doubleValue() : 0.0;
+
+                    ConsumptionCategoryItemDto dto = new ConsumptionCategoryItemDto(
+                            sourceDeptName, deptName, catName, iName, qty, purchase, cost, retail, net);
+                    allItems.add(dto);
+                }
+            } catch (Exception e) {
+                Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating consumption summary/category DTO for " + billType, e);
+            }
+        }
+
+        // Aggregate by sourceDept + consumptionDept + category + item
+        Map<String, ConsumptionCategoryItemDto> aggregated = new LinkedHashMap<>();
+        for (ConsumptionCategoryItemDto dto : allItems) {
+            String key = dto.getSourceDepartmentName() + "||" + dto.getDepartmentName() + "||" + dto.getCategoryName() + "||" + dto.getItemName();
+            ConsumptionCategoryItemDto existing = aggregated.get(key);
+            if (existing == null) {
+                aggregated.put(key, new ConsumptionCategoryItemDto(
+                        dto.getSourceDepartmentName(), dto.getDepartmentName(), dto.getCategoryName(), dto.getItemName(),
+                        dto.getQty(), dto.getTotalPurchaseValue(), dto.getTotalCostValue(),
+                        dto.getTotalRetailValue(), dto.getNetTotal()));
+            } else {
+                existing.setQty(existing.getQty() + dto.getQty());
+                existing.setTotalPurchaseValue(existing.getTotalPurchaseValue() + dto.getTotalPurchaseValue());
+                existing.setTotalCostValue(existing.getTotalCostValue() + dto.getTotalCostValue());
+                existing.setTotalRetailValue(existing.getTotalRetailValue() + dto.getTotalRetailValue());
+                existing.setNetTotal(existing.getNetTotal() + dto.getNetTotal());
+            }
+        }
+
+        List<ConsumptionCategoryItemDto> aggregatedList = new ArrayList<>(aggregated.values());
+
+        // consumptionCategoryDtoMap: consumptionDept -> category -> items (for categoryWise view)
+        Map<String, Map<String, List<ConsumptionCategoryItemDto>>> catMap = new TreeMap<>();
+        // departmentTotals: sourceDept -> consumptionDept -> [purchase,cost,retail,net] (mirrors legacy summary)
+        Map<String, Map<String, Double[]>> deptTotals = new TreeMap<>();
+        // pharmacyTotals: sourceDept -> [purchase,cost,retail,net] (for excel/pdf export)
+        Map<String, Double[]> pharmTotals = new TreeMap<>();
+
+        for (ConsumptionCategoryItemDto dto : aggregatedList) {
+            String sourceDeptName = dto.getSourceDepartmentName();
+            String deptName = dto.getDepartmentName();
+            String catName = dto.getCategoryName();
+            if (deptName == null || deptName.trim().isEmpty()) continue;
+            if (catName == null || catName.trim().isEmpty()) continue;
+            if (dto.getQty() == 0.0) continue;
+
+            // Category map: consumptionDept -> category -> items
+            catMap.computeIfAbsent(deptName, k -> new TreeMap<>())
+                    .computeIfAbsent(catName, k -> new ArrayList<>())
+                    .add(dto);
+
+            if (sourceDeptName != null && !sourceDeptName.trim().isEmpty()) {
+                // Summary map: sourceDept -> consumptionDept -> [values]
+                deptTotals.computeIfAbsent(sourceDeptName, k -> new TreeMap<>())
+                        .merge(deptName,
+                                new Double[]{dto.getTotalPurchaseValue(), dto.getTotalCostValue(), dto.getTotalRetailValue(), dto.getNetTotal()},
+                                (ex, nv) -> new Double[]{ex[0] + nv[0], ex[1] + nv[1], ex[2] + nv[2], ex[3] + nv[3]});
+                // Export totals: sourceDept -> [values]
+                pharmTotals.merge(sourceDeptName,
+                        new Double[]{dto.getTotalPurchaseValue(), dto.getTotalCostValue(), dto.getTotalRetailValue(), dto.getNetTotal()},
+                        (ex, nv) -> new Double[]{ex[0] + nv[0], ex[1] + nv[1], ex[2] + nv[2], ex[3] + nv[3]});
+            }
+
+            totalPurchase += dto.getTotalPurchaseValue();
+            totalCostValue += dto.getTotalCostValue();
+            totalRetailValue += dto.getTotalRetailValue();
+            totalSaleValue += dto.getNetTotal();
+        }
+
+        consumptionCategoryDtoMap = catMap;
+        setDepartmentTotals(deptTotals);
+        setPharmacyTotals(pharmTotals);
     }
 
     private void resetFields() {
@@ -3827,6 +4305,50 @@ public class PharmacyController implements Serializable {
         }
     }
 
+    /**
+     * Multiplier to convert a stored {@code valueAt*Rate} into consumption-direction value.
+     *
+     * <p>Stored {@code billItemFinanceDetails.valueAt*Rate} (and the matching
+     * {@code billFinanceDetails.total*Value}) use a stock-direction sign: negative when
+     * stock leaves the source department, positive when it comes back. Consumption
+     * accounting is the inverse — an issue adds to consumption, a return/cancel subtracts.
+     * For every disposal-issue bill in this convention the contribution to consumption
+     * value is therefore {@code -valueAt*Rate}.</p>
+     *
+     * <p>See {@code DataAdministrationController.isFinanceValueNegative} for the canonical
+     * sign rules.</p>
+     */
+    private static double consumptionValueSign(BillTypeAtomic bta) {
+        if (bta == null) {
+            return 1.0;
+        }
+        switch (bta) {
+            case PHARMACY_DISPOSAL_ISSUE:
+            case PHARMACY_DISPOSAL_ISSUE_RETURN:
+            case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
+                return -1.0;
+            default:
+                return 1.0;
+        }
+    }
+
+    /**
+     * Multiplier to convert a stored {@code billItem.qty} into consumption-direction qty.
+     * Issues add to consumption (+1); returns and cancellations subtract (-1).
+     */
+    private static double consumptionQtySign(BillTypeAtomic bta) {
+        if (bta == null) {
+            return 1.0;
+        }
+        switch (bta) {
+            case PHARMACY_DISPOSAL_ISSUE_RETURN:
+            case PHARMACY_DISPOSAL_ISSUE_CANCELLED:
+                return -1.0;
+            default:
+                return 1.0;
+        }
+    }
+
     public void generateConsumptionReportTableByBill(List<BillTypeAtomic> billTypeAtomics) {
         try {
             bills = new ArrayList<>();
@@ -3897,10 +4419,26 @@ public class PharmacyController implements Serializable {
                 PharmacyRow row = new PharmacyRow();
                 row.setBill(b);
 
-                // Simply aggregate the values displayed in the columns without manipulation
-                totalPurchase += b.getBillFinanceDetails().getTotalPurchaseValue() != null ? b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue() : 0.0;
-                totalCostValue += b.getBillFinanceDetails().getTotalCostValue() != null ? b.getBillFinanceDetails().getTotalCostValue().doubleValue() : 0.0;
-                totalRetailValue += b.getBillFinanceDetails().getTotalRetailSaleValue() != null ? b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0;
+                // Apply consumption-direction sign so returns/cancellations subtract
+                // from net consumption rather than adding (issue #21025).
+                if (b.getBillFinanceDetails() != null) {
+                    double sign = consumptionValueSign(b.getBillTypeAtomic());
+
+                    double rowPurchase = b.getBillFinanceDetails().getTotalPurchaseValue() != null
+                            ? sign * b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue() : 0.0;
+                    double rowCost = b.getBillFinanceDetails().getTotalCostValue() != null
+                            ? sign * b.getBillFinanceDetails().getTotalCostValue().doubleValue() : 0.0;
+                    double rowRetail = b.getBillFinanceDetails().getTotalRetailSaleValue() != null
+                            ? sign * b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() : 0.0;
+
+                    row.setConsumptionPurchaseValue(rowPurchase);
+                    row.setConsumptionCostValue(rowCost);
+                    row.setConsumptionRetailValue(rowRetail);
+
+                    totalPurchase += rowPurchase;
+                    totalCostValue += rowCost;
+                    totalRetailValue += rowRetail;
+                }
 
                 pharmacyRows.add(row);
 
@@ -4083,23 +4621,32 @@ public class PharmacyController implements Serializable {
             totalRetailValue = 0.0;
 
             for (PharmacyRow row : pharmacyRows) {
-                // Simply aggregate the values displayed in the columns without manipulation
+                // Apply consumption-direction sign so returns/cancellations subtract
+                // from net consumption rather than adding (issue #21025).
                 if (row.getBillItem() != null && row.getBillItem().getBillItemFinanceDetails() != null) {
                     BigDecimal valueAtPurchase = row.getBillItem().getBillItemFinanceDetails().getValueAtPurchaseRate();
                     BigDecimal valueAtCost = row.getBillItem().getBillItemFinanceDetails().getValueAtCostRate();
                     BigDecimal valueAtRetail = row.getBillItem().getBillItemFinanceDetails().getValueAtRetailRate();
 
-                    if (valueAtPurchase != null) {
-                        totalPurchase += valueAtPurchase.doubleValue();
-                    }
+                    BillTypeAtomic bta = row.getBillItem().getBill() != null
+                            ? row.getBillItem().getBill().getBillTypeAtomic()
+                            : null;
+                    double valueSign = consumptionValueSign(bta);
+                    double qtySign = consumptionQtySign(bta);
 
-                    if (valueAtCost != null) {
-                        totalCostValue += valueAtCost.doubleValue();
-                    }
+                    double rowPurchase = valueAtPurchase != null ? valueSign * valueAtPurchase.doubleValue() : 0.0;
+                    double rowCost = valueAtCost != null ? valueSign * valueAtCost.doubleValue() : 0.0;
+                    double rowRetail = valueAtRetail != null ? valueSign * valueAtRetail.doubleValue() : 0.0;
+                    double rowQty = qtySign * (row.getBillItem().getQty() != null ? row.getBillItem().getQty() : 0.0);
 
-                    if (valueAtRetail != null) {
-                        totalRetailValue += valueAtRetail.doubleValue();
-                    }
+                    row.setConsumptionPurchaseValue(rowPurchase);
+                    row.setConsumptionCostValue(rowCost);
+                    row.setConsumptionRetailValue(rowRetail);
+                    row.setConsumptionQty(rowQty);
+
+                    totalPurchase += rowPurchase;
+                    totalCostValue += rowCost;
+                    totalRetailValue += rowRetail;
                 }
             }
 
@@ -4489,17 +5036,23 @@ public class PharmacyController implements Serializable {
             try {
                 List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
+                // Apply consumption-direction sign so returns/cancellations subtract
+                // from net consumption rather than adding (issue #21025). netTotal is
+                // already stored with the correct sign, so it does not need flipping.
+                double valueSign = consumptionValueSign(billType);
+                double qtySign = consumptionQtySign(billType);
+
                 // Convert Object[] to DepartmentCategoryWiseItems
                 for (Object[] row : results) {
                     Department mainDept = (Department) row[0];
                     Department consumptionDept = (Department) row[1];
                     Item item = (Item) row[2];
                     Category category = (item != null) ? item.getCategory() : null;
-                    Double purchaseValue = row[3] != null ? ((Number) row[3]).doubleValue() : 0.0;
-                    Double costValue = row[4] != null ? ((Number) row[4]).doubleValue() : 0.0;
-                    Double retailValue = row[5] != null ? ((Number) row[5]).doubleValue() : 0.0;
+                    Double purchaseValue = row[3] != null ? valueSign * ((Number) row[3]).doubleValue() : 0.0;
+                    Double costValue = row[4] != null ? valueSign * ((Number) row[4]).doubleValue() : 0.0;
+                    Double retailValue = row[5] != null ? valueSign * ((Number) row[5]).doubleValue() : 0.0;
                     Double netTotal = row[6] != null ? ((Number) row[6]).doubleValue() : 0.0;
-                    Double qty = row[7] != null ? ((Number) row[7]).doubleValue() : 0.0;
+                    Double qty = row[7] != null ? qtySign * ((Number) row[7]).doubleValue() : 0.0;
 
                     DepartmentCategoryWiseItems dtoItem = new DepartmentCategoryWiseItems(
                             mainDept, consumptionDept, item, category,
@@ -4729,6 +5282,64 @@ public class PharmacyController implements Serializable {
     private String formatNumber(double value) {
         DecimalFormat df = new DecimalFormat("#,##0.00");
         return df.format(value);
+    }
+
+    // DTO-aware helpers that read directly from consumptionCategoryDtoMap
+    // (outer key = consumptionDept, inner key = category)
+    public String getDtoDeptPurchaseTotalForConsumptionReport(final String deptName) {
+        double total = consumptionCategoryDtoMap.getOrDefault(deptName, Collections.emptyMap())
+                .values().stream().flatMap(List::stream)
+                .mapToDouble(dto -> dto.getTotalPurchaseValue() != null ? dto.getTotalPurchaseValue() : 0.0).sum();
+        return formatNumber(total);
+    }
+
+    public String getDtoDeptCostTotalForConsumptionReport(final String deptName) {
+        double total = consumptionCategoryDtoMap.getOrDefault(deptName, Collections.emptyMap())
+                .values().stream().flatMap(List::stream)
+                .mapToDouble(dto -> dto.getTotalCostValue() != null ? dto.getTotalCostValue() : 0.0).sum();
+        return formatNumber(total);
+    }
+
+    public String getDtoDeptRetailTotalForConsumptionReport(final String deptName) {
+        double total = consumptionCategoryDtoMap.getOrDefault(deptName, Collections.emptyMap())
+                .values().stream().flatMap(List::stream)
+                .mapToDouble(dto -> dto.getTotalRetailValue() != null ? dto.getTotalRetailValue() : 0.0).sum();
+        return formatNumber(total);
+    }
+
+    public String getDtoDeptNetTotalForConsumptionReport(final String deptName) {
+        double total = consumptionCategoryDtoMap.getOrDefault(deptName, Collections.emptyMap())
+                .values().stream().flatMap(List::stream)
+                .mapToDouble(dto -> dto.getNetTotal() != null ? dto.getNetTotal() : 0.0).sum();
+        return formatNumber(total);
+    }
+
+    public String getDtoCategoryPurchaseTotalForConsumptionReport(final String deptName, final String catName) {
+        double total = consumptionCategoryDtoMap.getOrDefault(deptName, Collections.emptyMap())
+                .getOrDefault(catName, Collections.emptyList()).stream()
+                .mapToDouble(dto -> dto.getTotalPurchaseValue() != null ? dto.getTotalPurchaseValue() : 0.0).sum();
+        return formatNumber(total);
+    }
+
+    public String getDtoCategoryCostTotalForConsumptionReport(final String deptName, final String catName) {
+        double total = consumptionCategoryDtoMap.getOrDefault(deptName, Collections.emptyMap())
+                .getOrDefault(catName, Collections.emptyList()).stream()
+                .mapToDouble(dto -> dto.getTotalCostValue() != null ? dto.getTotalCostValue() : 0.0).sum();
+        return formatNumber(total);
+    }
+
+    public String getDtoCategoryRetailTotalForConsumptionReport(final String deptName, final String catName) {
+        double total = consumptionCategoryDtoMap.getOrDefault(deptName, Collections.emptyMap())
+                .getOrDefault(catName, Collections.emptyList()).stream()
+                .mapToDouble(dto -> dto.getTotalRetailValue() != null ? dto.getTotalRetailValue() : 0.0).sum();
+        return formatNumber(total);
+    }
+
+    public String getDtoCategoryNetTotalForConsumptionReport(final String deptName, final String catName) {
+        double total = consumptionCategoryDtoMap.getOrDefault(deptName, Collections.emptyMap())
+                .getOrDefault(catName, Collections.emptyList()).stream()
+                .mapToDouble(dto -> dto.getNetTotal() != null ? dto.getNetTotal() : 0.0).sum();
+        return formatNumber(total);
     }
 
     public void generateConsumptionReportTableAsDepartmentSummary(final List<DepartmentCategoryWiseItems> list) {
@@ -8067,7 +8678,7 @@ public class PharmacyController implements Serializable {
 
     }
 
-    public List<Object[]> calDepartmentBhtIssue(Institution institution, BillType billType) {
+    public List<Object[]> calDepartmentBhtIssue(Institution institution, List<BillTypeAtomic> billTypeAtomics) {
         Item item;
 
         if (pharmacyItem instanceof Ampp) {
@@ -8082,14 +8693,14 @@ public class PharmacyController implements Serializable {
         m.put("ins", institution);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
-        m.put("btp", billType);
+        m.put("btas", billTypeAtomics);
         sql = "select i.bill.department,"
                 + " sum(i.netValue),"
                 + " sum(i.pharmaceuticalBillItem.qty) "
                 + " from BillItem i "
                 + " where i.bill.department.institution=:ins"
                 + " and i.item=:itm "
-                + " and i.bill.billType=:btp "
+                + " and i.bill.billTypeAtomic in :btas "
                 + " and i.createdAt between :frm and :to  "
                 + " group by i.bill.department";
 
@@ -8264,6 +8875,9 @@ public class PharmacyController implements Serializable {
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
 
+        boolean listOnlyDepartmentTransactions = configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy History Lists Only Department Transactions for Sales", true);
+
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacySaleByBillTypeDTO("
                 + "i.bill.billTypeAtomic, "
                 + "sum(i.pharmaceuticalBillItem.qty)) "
@@ -8271,16 +8885,20 @@ public class PharmacyController implements Serializable {
                 + "WHERE (i.bill.retired is null or i.bill.retired=false) "
                 + "AND i.item in :ris "
                 + "AND i.bill.billTypeAtomic in :btas "
-                + "AND i.createdAt between :frm and :to "
-                + "AND i.bill.department=:dep "
-                + "GROUP BY i.bill.billTypeAtomic";
+                + "AND i.createdAt between :frm and :to ";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ris", relatedAmpAndAmpps);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
         m.put("btas", btas);
-        m.put("dep", sessionController.getDepartment());
+
+        if (listOnlyDepartmentTransactions) {
+            jpql += "AND i.bill.department=:dep ";
+            m.put("dep", sessionController.getDepartment());
+        }
+
+        jpql += "GROUP BY i.bill.billTypeAtomic";
 
         salesByBillType = (List<PharmacySaleByBillTypeDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
@@ -8371,6 +8989,180 @@ public class PharmacyController implements Serializable {
         m.put("dep", sessionController.getDepartment());
 
         disposeIssuesByDepartment = (List<com.divudi.core.data.dto.PharmacyDisposeIssueByDepartmentDTO>) getBillItemFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Creates a consolidated department-wise view of retail sale, wholesale
+     * sale, and inpatient issue quantities for the currently selected pharmacy
+     * item and date range.
+     *
+     * Uses PharmaceuticalBillItem.qty (PBI qty) which carries the correct sign
+     * — negative for outgoing (sale, issue), positive for incoming
+     * (cancellation, return). The sign is reverted for display so that all
+     * quantities are shown as positive numbers.
+     *
+     * Includes all bill types where stock movement occurs, including
+     * cancellations and returns. The net PBI qty is obtained by summing all
+     * matching BillItems — the sign naturally handles the netting.
+     */
+    public void createDepartmentSaleIssueDto() {
+        List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
+
+        if (relatedItems == null || relatedItems.isEmpty()) {
+            departmentSaleIssueDtos = new ArrayList<>();
+            grantDepartmentSaleIssueTotalQty = 0.0;
+            return;
+        }
+
+        // --- Retail Sale bill types (including cancellations and returns) ---
+        List<BillTypeAtomic> retailBtas = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS
+        );
+
+        // --- Wholesale Sale bill types (including cancellations and returns) ---
+        List<BillTypeAtomic> wholesaleBtas = Arrays.asList(
+                BillTypeAtomic.PHARMACY_WHOLESALE,
+                BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_WHOLESALE_REFUND
+        );
+
+        // --- Inpatient Issue bill types (including cancellations and returns) ---
+        List<BillTypeAtomic> inpatientBtas = Arrays.asList(
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
+        );
+
+        String baseJpql = "SELECT pbi.billItem.bill.department, sum(pbi.qty) "
+                + "FROM PharmaceuticalBillItem pbi "
+                + "WHERE (pbi.billItem.bill.retired is null or pbi.billItem.bill.retired = false) "
+                + "AND pbi.billItem.item in :items "
+                + "AND pbi.billItem.bill.billTypeAtomic in :btas "
+                + "AND pbi.billItem.createdAt between :frm and :to "
+                + "GROUP BY pbi.billItem.bill.department";
+
+        // --- Query 1: Retail Sale by Department ---
+        Map<String, Object> paramsRetail = new HashMap<>();
+        paramsRetail.put("items", relatedItems);
+        paramsRetail.put("btas", retailBtas);
+        paramsRetail.put("frm", getFromDate());
+        paramsRetail.put("to", getToDate());
+
+        List<Object[]> retailResults = getBillItemFacade().findAggregates(baseJpql, paramsRetail, TemporalType.TIMESTAMP);
+
+        Map<Long, Double> retailByDept = new HashMap<>();
+        if (retailResults != null) {
+            for (Object[] row : retailResults) {
+            Department dept = (Department) row[0];
+            Double qty = row[1] instanceof BigDecimal
+                    ? ((BigDecimal) row[1]).doubleValue()
+                    : ((Number) row[1]).doubleValue();
+                retailByDept.put(dept.getId(), qty);
+            }
+        }
+
+        // --- Query 2: Wholesale Sale by Department ---
+        Map<String, Object> paramsWholesale = new HashMap<>();
+        paramsWholesale.put("items", relatedItems);
+        paramsWholesale.put("btas", wholesaleBtas);
+        paramsWholesale.put("frm", getFromDate());
+        paramsWholesale.put("to", getToDate());
+
+        List<Object[]> wholesaleResults = getBillItemFacade().findAggregates(baseJpql, paramsWholesale, TemporalType.TIMESTAMP);
+
+        Map<Long, Double> wholesaleByDept = new HashMap<>();
+        if (wholesaleResults != null) {
+            for (Object[] row : wholesaleResults) {
+            Department dept = (Department) row[0];
+            Double qty = row[1] instanceof BigDecimal
+                    ? ((BigDecimal) row[1]).doubleValue()
+                    : ((Number) row[1]).doubleValue();
+                wholesaleByDept.put(dept.getId(), qty);
+            }
+        }
+
+        // --- Query 3: Inpatient Issue by Department ---
+        Map<String, Object> paramsInpatient = new HashMap<>();
+        paramsInpatient.put("items", relatedItems);
+        paramsInpatient.put("btas", inpatientBtas);
+        paramsInpatient.put("frm", getFromDate());
+        paramsInpatient.put("to", getToDate());
+
+        List<Object[]> inpatientResults = getBillItemFacade().findAggregates(baseJpql, paramsInpatient, TemporalType.TIMESTAMP);
+
+        Map<Long, Double> inpatientByDept = new HashMap<>();
+        if (inpatientResults != null) {
+            for (Object[] row : inpatientResults) {
+                Department dept = (Department) row[0];
+                Double qty = row[1] instanceof BigDecimal
+                        ? ((BigDecimal) row[1]).doubleValue()
+                        : ((Number) row[1]).doubleValue();
+                inpatientByDept.put(dept.getId(), qty);
+            }
+        }
+
+        // --- Collect all unique departments ---
+        Set<Long> allDeptIds = new HashSet<>();
+        allDeptIds.addAll(retailByDept.keySet());
+        allDeptIds.addAll(wholesaleByDept.keySet());
+        allDeptIds.addAll(inpatientByDept.keySet());
+
+        // --- Build consolidated DTO list (reverting sign for display) ---
+        departmentSaleIssueDtos = new ArrayList<>();
+        grantDepartmentSaleIssueTotalQty = 0.0;
+
+        // Build a lookup map from the query results
+        Map<Long, Department> deptLookup = new HashMap<>();
+        if (retailResults != null) {
+            for (Object[] row : retailResults) {
+                Department d = (Department) row[0];
+                deptLookup.putIfAbsent(d.getId(), d);
+            }
+        }
+        if (wholesaleResults != null) {
+            for (Object[] row : wholesaleResults) {
+                Department d = (Department) row[0];
+                deptLookup.putIfAbsent(d.getId(), d);
+            }
+        }
+        if (inpatientResults != null) {
+            for (Object[] row : inpatientResults) {
+                Department d = (Department) row[0];
+                deptLookup.putIfAbsent(d.getId(), d);
+            }
+        }
+
+        for (Long deptId : allDeptIds) {
+            Department dept = deptLookup.get(deptId);
+            if (dept == null) {
+                continue;
+            }
+
+            // Revert sign: PBI qty is negative for outgoing (sale/issue),
+            // positive for incoming (cancellation/return). For display we want
+            // positive numbers representing what went out to each channel.
+            Double retailQty = retailByDept.containsKey(deptId) ? -retailByDept.get(deptId) : 0.0;
+            Double wholesaleQty = wholesaleByDept.containsKey(deptId) ? -wholesaleByDept.get(deptId) : 0.0;
+            Double inpatientQty = inpatientByDept.containsKey(deptId) ? -inpatientByDept.get(deptId) : 0.0;
+
+            DepartmentSaleIssueDTO dto = new DepartmentSaleIssueDTO(dept, retailQty, wholesaleQty, inpatientQty);
+            departmentSaleIssueDtos.add(dto);
+            grantDepartmentSaleIssueTotalQty += dto.getTotalQty();
+        }
+
+        // Sort by department name for consistent display
+        departmentSaleIssueDtos.sort(Comparator.comparing(d -> d.getDepartment().getName()));
     }
 
     public List<Object[]> calDepartmentSalesAllInstitutions(List<Institution> institutions) {
@@ -8893,6 +9685,22 @@ public class PharmacyController implements Serializable {
         this.institutionBhtIssue = institutionBhtIssue;
     }
 
+    public List<DepartmentSaleIssueDTO> getDepartmentSaleIssueDtos() {
+        return departmentSaleIssueDtos;
+    }
+
+    public void setDepartmentSaleIssueDtos(List<DepartmentSaleIssueDTO> departmentSaleIssueDtos) {
+        this.departmentSaleIssueDtos = departmentSaleIssueDtos;
+    }
+
+    public double getGrantDepartmentSaleIssueTotalQty() {
+        return grantDepartmentSaleIssueTotalQty;
+    }
+
+    public void setGrantDepartmentSaleIssueTotalQty(double grantDepartmentSaleIssueTotalQty) {
+        this.grantDepartmentSaleIssueTotalQty = grantDepartmentSaleIssueTotalQty;
+    }
+
     public void createInstitutionBhtIssue() {
         List<Institution> insList = getCompany();
 
@@ -8905,7 +9713,17 @@ public class PharmacyController implements Serializable {
             List<DepartmentSale> list = new ArrayList<>();
             double totalValue = 0;
             double totalQty = 0;
-            List<Object[]> objs = calDepartmentBhtIssue(ins, BillType.PharmacyBhtPre);
+            List<Object[]> objs = calDepartmentBhtIssue(ins, Arrays.asList(
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
+                    BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
+                    BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                    BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
+            ));
 
             for (Object[] obj : objs) {
                 DepartmentSale r = new DepartmentSale();
@@ -8920,20 +9738,22 @@ public class PharmacyController implements Serializable {
                 }
                 r.setSaleValue(saleValue);
 
-                // Safe casting for saleQty - handle BigDecimal from SUM() function
+                // Safe casting for saleQty - handle BigDecimal from SUM() function.
+                // PBI qty is negative for outgoing issues; revert sign for display
+                // so the BHT Issue tab/block shows positive issued quantities.
                 double saleQty = 0.0;
                 if (obj[2] instanceof BigDecimal) {
-                    saleQty = ((BigDecimal) obj[2]).doubleValue();
+                    saleQty = -((BigDecimal) obj[2]).doubleValue();
                 } else if (obj[2] instanceof Number) {
-                    saleQty = ((Number) obj[2]).doubleValue();
+                    saleQty = -((Number) obj[2]).doubleValue();
                 }
                 r.setSaleQty(saleQty);
                 list.add(r);
                 //Total Institution Stock
                 totalValue += r.getSaleValue();
-                totalQty += r.getSaleQty();
+                totalQty += saleQty;
                 grantBhtValue += r.getSaleValue();
-                grantBhtIssueQty += r.getSaleQty();
+                grantBhtIssueQty += saleQty;
 
             }
 
@@ -8961,6 +9781,12 @@ public class PharmacyController implements Serializable {
     private List<com.divudi.core.data.dto.PharmacyTransferIssueByDepartmentDTO> transferIssuesByDepartment;
     private List<com.divudi.core.data.dto.PharmacyTransferReceiveByDepartmentDTO> transferReceivesByDepartment;
     private List<com.divudi.core.data.dto.PharmacyDisposeIssueByDepartmentDTO> disposeIssuesByDepartment;
+    private List<DepartmentSaleIssueDTO> departmentSaleIssueDtos;
+    private double grantDepartmentSaleIssueTotalQty;
+
+    private List<ConsumptionBillDto> consumptionBillDtos;
+    private List<ConsumptionBillItemDto> consumptionBillItemDtos;
+    private Map<String, Map<String, List<ConsumptionCategoryItemDto>>> consumptionCategoryDtoMap = new HashMap<>();
 
     private List<InstitutionSale> institutionTransferIssue;
     private List<InstitutionSale> institutionIssue;
@@ -9805,147 +10631,175 @@ public class PharmacyController implements Serializable {
         return total;
     }
 
-    public void exportGRNDetailReportToExcel() {
-        FacesContext context = FacesContext.getCurrentInstance();
-        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+   public void exportGRNAndDirectPurchaseDetailReportToExcel() {
+    FacesContext context = FacesContext.getCurrentInstance();
+    HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=GRN_Report.xlsx");
+    String fileName = "GRN_Detailed_report_" + fromDateFormatted() + "_to_" + toDateFormatted() + ".xlsx";
+    response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+    SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
-        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+    Map<String,Object> filters = getFiltersForGRNDetailReport();
+    
+    try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
 
-            XSSFSheet sheet = workbook.createSheet("GRN Report");
-            int rowIndex = 0;
+        XSSFSheet sheet = workbook.createSheet("GRN Detail Report");
+        int rowIndex = 0;
 
-            Row headerRow = sheet.createRow(rowIndex++);
-            headerRow.createCell(0).setCellValue("S. No");
-            headerRow.createCell(1).setCellValue("Bill No");
-            headerRow.createCell(2).setCellValue("PO No");
-            headerRow.createCell(3).setCellValue("Invoice No");
-            headerRow.createCell(4).setCellValue("Type");
-            headerRow.createCell(5).setCellValue("Store Name");
-            headerRow.createCell(6).setCellValue("Item Category");
-            headerRow.createCell(7).setCellValue("Code");
-            headerRow.createCell(8).setCellValue("Item");
-            headerRow.createCell(9).setCellValue("Receiving Time");
-            headerRow.createCell(10).setCellValue("Qty");
-            headerRow.createCell(11).setCellValue("UOM");
-            headerRow.createCell(12).setCellValue("Rate");
-            headerRow.createCell(13).setCellValue("Batch");
-            headerRow.createCell(14).setCellValue("Expiry Date");
-            headerRow.createCell(15).setCellValue("Supplier");
-            headerRow.createCell(16).setCellValue("MRP");
-            headerRow.createCell(17).setCellValue("Discount");
-            headerRow.createCell(18).setCellValue("Amount");
-            headerRow.createCell(19).setCellValue("Total Amount");
-            headerRow.createCell(20).setCellValue("PO Sub Total");
-            headerRow.createCell(21).setCellValue("GRN Sub Total");
-
-            int count = 0;
-
-            for (Bill bill : bills) {
-                Row emptyRow = sheet.createRow(rowIndex++);
-                emptyRow.createCell(0).setCellValue("-");
-                emptyRow.createCell(1).setCellValue(bill.getDeptId());
-                emptyRow.createCell(2).setCellValue(bill.getReferenceBill() != null ? bill.getReferenceBill().getDeptId() : "-");
-                emptyRow.createCell(3).setCellValue(
-                        bill.getInvoiceNumber() != null ? bill.getInvoiceNumber()
-                        : (bill.getReferenceBill() != null && bill.getReferenceBill().getInvoiceNumber() != null
-                        ? bill.getReferenceBill().getInvoiceNumber() : "-"));
-                emptyRow.createCell(4).setCellValue(bill.getBillTypeAtomic() != null ? bill.getBillTypeAtomic().getLabel() : "-");
-                emptyRow.createCell(5).setCellValue("-");
-                emptyRow.createCell(6).setCellValue("-");
-                emptyRow.createCell(7).setCellValue("-");
-                emptyRow.createCell(8).setCellValue("-");
-                emptyRow.createCell(9).setCellValue(sdf.format(bill.getReferenceBill() != null ? bill.getReferenceBill().getCreatedAt() : bill.getCreatedAt()));
-                emptyRow.createCell(10).setCellValue("-");
-                emptyRow.createCell(11).setCellValue("-");
-                emptyRow.createCell(12).setCellValue("-");
-                emptyRow.createCell(13).setCellValue("-");
-                emptyRow.createCell(14).setCellValue("-");
-                emptyRow.createCell(15).setCellValue(
-                        bill.getBillTypeAtomic() != null && (bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN) || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND))
-                        ? (bill.getToInstitution() != null && bill.getToInstitution().getName() != null
-                        ? bill.getToInstitution().getName() : "-")
-                        : (bill.getFromInstitution() != null && bill.getFromInstitution().getName() != null
-                        ? bill.getFromInstitution().getName() : "-"));
-                emptyRow.createCell(16).setCellValue("-");
-                emptyRow.createCell(17).setCellValue("-");
-                emptyRow.createCell(18).setCellValue("-");
-                emptyRow.createCell(19).setCellValue("-");
-
-                double poSubTotal;
-                if (bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
-                        || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)) {
-                    poSubTotal = -1 * bill.getReferenceBill().getNetTotal();
-                } else if (bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED)
-                        || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND)) {
-                    poSubTotal = -1 * bill.getNetTotal();
-                } else if (bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE)) {
-                    poSubTotal = bill.getNetTotal();
-                } else {
-                    poSubTotal = bill.getReferenceBill().getNetTotal();
-                }
-                emptyRow.createCell(20).setCellValue(poSubTotal);
-                emptyRow.createCell(21).setCellValue(bill.getNetTotal());
-
-                for (BillItem billItem : bill.getBillItems()) {
-                    Row emptyInnerRow = sheet.createRow(rowIndex++);
-                    count++;
-                    emptyInnerRow.createCell(0).setCellValue(count);
-                    emptyInnerRow.createCell(1).setCellValue("-");
-                    emptyInnerRow.createCell(2).setCellValue("-");
-                    emptyInnerRow.createCell(3).setCellValue("-");
-                    emptyInnerRow.createCell(4).setCellValue("-");
-                    emptyInnerRow.createCell(5).setCellValue(
-                            (billItem.getBill() != null && billItem.getBill().getToDepartment() != null && billItem.getBill().getToDepartment().getName() != null)
-                            ? billItem.getBill().getToDepartment().getName()
-                            : (billItem.getBill() != null && billItem.getBill().getReferenceBill() != null
-                            && billItem.getBill().getReferenceBill().getToDepartment() != null
-                            && billItem.getBill().getReferenceBill().getToDepartment().getName() != null)
-                            ? billItem.getBill().getReferenceBill().getToDepartment().getName()
-                            : "-");
-                    emptyInnerRow.createCell(6).setCellValue(
-                            (billItem.getItem() != null && billItem.getItem().getCategory() != null
-                            && billItem.getItem().getCategory().getName() != null)
-                            ? billItem.getItem().getCategory().getName() : "-");
-                    emptyInnerRow.createCell(7).setCellValue(
-                            (billItem.getItem() != null && billItem.getItem().getCode() != null)
-                            ? billItem.getItem().getCode() : "-");
-                    emptyInnerRow.createCell(8).setCellValue(
-                            (billItem.getItem() != null && billItem.getItem().getName() != null)
-                            ? billItem.getItem().getName() : "-");
-                    emptyInnerRow.createCell(9).setCellValue("-");
-                    emptyInnerRow.createCell(10).setCellValue(billItem.getQty());
-                    emptyInnerRow.createCell(11).setCellValue(
-                            (billItem.getItem() != null && billItem.getItem().getMeasurementUnit() != null
-                            && billItem.getItem().getMeasurementUnit().getName() != null)
-                            ? billItem.getItem().getMeasurementUnit().getName() : "-");
-                    emptyInnerRow.createCell(12).setCellValue(billItem.getPharmaceuticalBillItem().getPurchaseRate());
-                    emptyInnerRow.createCell(13).setCellValue(billItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
-                    emptyInnerRow.createCell(14).setCellValue(sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()));
-                    emptyInnerRow.createCell(15).setCellValue("-");
-                    emptyInnerRow.createCell(16).setCellValue(billItem.getPharmaceuticalBillItem().getRetailRate());
-                    emptyInnerRow.createCell(17).setCellValue(billItem.getDiscount());
-                    emptyInnerRow.createCell(18).setCellValue(billItem.getNetValue());
-                    emptyInnerRow.createCell(19).setCellValue(billItem.getBill().getNetTotal());
-                    emptyInnerRow.createCell(20).setCellValue("-");
-                    emptyInnerRow.createCell(21).setCellValue("-");
-                }
-            }
-
-            Row footerRow = sheet.createRow(rowIndex++);
-            footerRow.createCell(20).setCellValue(Math.round(calculateTotalPOAmount() * 100.0) / 100.0);
-            footerRow.createCell(21).setCellValue(Math.round(calculateTotalGrnAmount() * 100.0) / 100.0);
-
-            workbook.write(out);
-            context.responseComplete();
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (filters != null && !filters.isEmpty()){
+            rowIndex = addMetaDataToExcelSheet(workbook, sheet, rowIndex, "GRN and Direct Purchase Report", filters);
         }
+        
+        // Add "Generated On" row with current date and time
+        Row generatedOnRow = sheet.createRow(rowIndex++);
+        CellStyle generatedOnStyle = workbook.createCellStyle();
+        XSSFFont generatedOnFont = workbook.createFont();
+        generatedOnFont.setBold(true);
+        generatedOnStyle.setFont(generatedOnFont);
+
+        Cell generatedLabelCell = generatedOnRow.createCell(0);
+        generatedLabelCell.setCellValue("Generated On:");
+        generatedLabelCell.setCellStyle(generatedOnStyle);
+
+        Cell generatedValueCell = generatedOnRow.createCell(1);
+        generatedValueCell.setCellValue(sdf.format(new Date()));
+
+        // Add an empty row as spacing before the header
+        sheet.createRow(rowIndex++);
+
+        Row headerRow = sheet.createRow(rowIndex++);
+        headerRow.createCell(0).setCellValue("S. No");
+        headerRow.createCell(1).setCellValue("GRN No");
+        headerRow.createCell(2).setCellValue("PO No");
+        headerRow.createCell(3).setCellValue("Invoice No");
+        headerRow.createCell(4).setCellValue("Store Name");
+        headerRow.createCell(5).setCellValue("Item Category");
+        headerRow.createCell(6).setCellValue("Code");
+        headerRow.createCell(7).setCellValue("Item");
+        headerRow.createCell(8).setCellValue("Receiving Time");
+        headerRow.createCell(9).setCellValue("Qty");
+        headerRow.createCell(10).setCellValue("UOM");
+        headerRow.createCell(11).setCellValue("Rate");
+        headerRow.createCell(12).setCellValue("Batch");
+        headerRow.createCell(13).setCellValue("Expiry Date");
+        headerRow.createCell(14).setCellValue("Supplier");
+        headerRow.createCell(15).setCellValue("MRP");
+        headerRow.createCell(16).setCellValue("Discount");
+        headerRow.createCell(17).setCellValue("Amount");
+        headerRow.createCell(18).setCellValue("Total Amount");
+        headerRow.createCell(19).setCellValue("PO Sub Total");
+        headerRow.createCell(20).setCellValue("GRN Sub Total");
+
+        int count = 0;
+        for (Bill bill : bills) {
+            Row emptyRow = sheet.createRow(rowIndex++);
+            emptyRow.createCell(0).setCellValue("-");
+            emptyRow.createCell(1).setCellValue(bill.getDeptId());
+            emptyRow.createCell(2).setCellValue(bill.getReferenceBill()!= null ? bill.getReferenceBill().getDeptId():"-");
+            emptyRow.createCell(3).setCellValue(
+                    bill.getInvoiceNumber() != null ? bill.getInvoiceNumber()
+                    : (bill.getReferenceBill() != null && bill.getReferenceBill().getInvoiceNumber() != null
+                    ? bill.getReferenceBill().getInvoiceNumber() : "-"));
+            emptyRow.createCell(4).setCellValue("-");
+            emptyRow.createCell(5).setCellValue("-");
+            emptyRow.createCell(6).setCellValue("-");
+            emptyRow.createCell(7).setCellValue("-");
+            emptyRow.createCell(8).setCellValue(bill.getCreatedAt() != null ? sdf.format(bill.getCreatedAt()) : "-");
+            emptyRow.createCell(9).setCellValue("-");
+            emptyRow.createCell(10).setCellValue("-");
+            emptyRow.createCell(11).setCellValue("-");
+            emptyRow.createCell(12).setCellValue("-");
+            emptyRow.createCell(13).setCellValue("-");
+            emptyRow.createCell(14).setCellValue(
+                    bill.getBillTypeAtomic() != null && bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)
+                    ? (bill.getToInstitution() != null && bill.getToInstitution().getName() != null
+                    ? bill.getToInstitution().getName() : "-")
+                    : (bill.getFromInstitution() != null && bill.getFromInstitution().getName() != null
+                    ? bill.getFromInstitution().getName() : "-"));
+            emptyRow.createCell(15).setCellValue("-");
+            emptyRow.createCell(16).setCellValue("-");
+            emptyRow.createCell(17).setCellValue("-");
+            emptyRow.createCell(18).setCellValue("-");
+            emptyRow.createCell(19).setCellValue(bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
+                    || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)
+                    ? -1 *(bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0 )  : (bill.getReferenceBill() != null ? bill.getReferenceBill().getNetTotal() : 0 ));
+            emptyRow.createCell(20).setCellValue(bill.getNetTotal());
+
+            for (BillItem billItem : bill.getBillItems()) {
+                Row emptyInnerRow = sheet.createRow(rowIndex++);
+                count++;
+                emptyInnerRow.createCell(0).setCellValue(count);
+                emptyInnerRow.createCell(1).setCellValue("-");
+                emptyInnerRow.createCell(2).setCellValue("-");
+                emptyInnerRow.createCell(3).setCellValue("-");
+                emptyInnerRow.createCell(4).setCellValue(
+                        (billItem.getBill() != null && billItem.getBill().getToDepartment() != null && billItem.getBill().getToDepartment().getName() != null)
+                        ? billItem.getBill().getToDepartment().getName()
+                        : (billItem.getBill() != null && billItem.getBill().getReferenceBill() != null
+                        && billItem.getBill().getReferenceBill().getToDepartment() != null
+                        && billItem.getBill().getReferenceBill().getToDepartment().getName() != null)
+                        ? billItem.getBill().getReferenceBill().getToDepartment().getName()
+                        : "-");
+                emptyInnerRow.createCell(5).setCellValue(
+                        (billItem.getItem() != null && billItem.getItem().getCategory() != null
+                        && billItem.getItem().getCategory().getName() != null)
+                        ? billItem.getItem().getCategory().getName() : "-");
+                emptyInnerRow.createCell(6).setCellValue(
+                        (billItem.getItem() != null && billItem.getItem().getCode() != null)
+                        ? billItem.getItem().getCode() : "-");
+                emptyInnerRow.createCell(7).setCellValue(
+                        (billItem.getItem() != null && billItem.getItem().getName() != null)
+                        ? billItem.getItem().getName() : "-");
+                emptyInnerRow.createCell(8).setCellValue("-");
+                emptyInnerRow.createCell(9).setCellValue(billItem.getQty());
+                emptyInnerRow.createCell(10).setCellValue(
+                        (billItem.getItem() != null && billItem.getItem().getMeasurementUnit() != null
+                        && billItem.getItem().getMeasurementUnit().getName() != null)
+                        ? billItem.getItem().getMeasurementUnit().getName() : "-");
+                emptyInnerRow.createCell(11).setCellValue(billItem.getPharmaceuticalBillItem().getPurchaseRate());
+                emptyInnerRow.createCell(12).setCellValue(billItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
+                emptyInnerRow.createCell(13).setCellValue(sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()));
+                emptyInnerRow.createCell(14).setCellValue("-");
+                emptyInnerRow.createCell(15).setCellValue(billItem.getPharmaceuticalBillItem().getRetailRate());
+                emptyInnerRow.createCell(16).setCellValue(billItem.getDiscount());
+                emptyInnerRow.createCell(17).setCellValue(billItem.getNetValue());
+                emptyInnerRow.createCell(18).setCellValue(billItem.getBill().getNetTotal());
+                emptyInnerRow.createCell(19).setCellValue("-");
+                emptyInnerRow.createCell(20).setCellValue("-");
+            }
+        }
+
+        // =====================
+        // 4️⃣ Footer Row
+        // =====================
+        Row footerRow = sheet.createRow(rowIndex++);
+
+        sheet.addMergedRegion(new CellRangeAddress(
+                footerRow.getRowNum(), footerRow.getRowNum(), 0, 18));
+
+        CellStyle footerStyle = workbook.createCellStyle();
+        footerStyle.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
+        footerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        XSSFFont footerFont = workbook.createFont();
+        footerFont.setBold(true);
+        footerStyle.setFont(footerFont);
+
+        for (int i = 0; i <= 20; i++) {
+            footerRow.createCell(i).setCellStyle(footerStyle);
+        }
+
+        footerRow.getCell(0).setCellValue("TOTAL");
+        footerRow.createCell(19).setCellValue(Math.round(calculateTotalPOAmount() * 100.0) / 100.0);
+        footerRow.createCell(20).setCellValue(Math.round(calculateTotalGrnAmount() * 100.0) / 100.0);
+        workbook.write(out);
+        context.responseComplete();
+
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+}
 
     public double getLastPurchaseRate(Item item) {
         return pharmacyBean.getLastPurchaseRate(item, getSessionController().getDepartment());
@@ -9954,103 +10808,257 @@ public class PharmacyController implements Serializable {
     public double getLastRetailRate(Item item) {
         return pharmacyBean.getLastRetailRate(item, getSessionController().getDepartment());
     }
+    
+    public String fromDateFormatted(){
+        String format = sessionController.getApplicationPreference().getLongDateFormat();
+        return new SimpleDateFormat(format).format(fromDate).replaceAll("[: /]", "_");
+    }
 
-    public void exportGRNDetailReportToPDF() {
+    public String toDateFormatted(){
+        String format = sessionController.getApplicationPreference().getLongDateFormat();
+        return new SimpleDateFormat(format).format(toDate).replaceAll("[: /]", "_");
+    }
+    
+    public String GRNHeader(){
+        Map<String, Object> filters = getFiltersForGRNDetailReport();
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, Object> entry : filters.entrySet()) {
+            if (sb.length() > 0) {
+                sb.append("   |   ");
+            }
+            sb.append(entry.getKey()).append(": ").append(entry.getValue());
+        }
+        return sb.toString();
+    }
+
+        private PdfPCell textCell(String text, com.itextpdf.text.Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text == null ? "-" : text, font));
+        cell.setPadding(2f); // smaller padding
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+        return cell;
+    }
+
+    private PdfPCell numCell(Object val, com.itextpdf.text.Font font) {
+        String s;
+        if (val == null) {
+            s = "-";
+        } else if (val instanceof Double) {
+            s = new java.text.DecimalFormat("#,##0.00").format((Double) val);
+        } else if (val instanceof Float) {
+            s = new java.text.DecimalFormat("#,##0.00").format((Float) val);
+        } else if (val instanceof Long) {
+            s = new java.text.DecimalFormat("#,##0").format((Long) val);
+        } else if (val instanceof Integer) {
+            s = String.valueOf(val);
+        } else {
+            s = String.valueOf(val);
+        }
+        PdfPCell cell = new PdfPCell(new Phrase(s, font));
+        cell.setPadding(2f);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        return cell;
+    }
+
+    private PdfPCell headerCell(String text, com.itextpdf.text.Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text == null ? "-" : text, font));
+        cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+        cell.setPadding(2f);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        return cell;
+    }
+    public void exportGRNAndDirectPurchaseDetailReportToPDF() {
         FacesContext context = FacesContext.getCurrentInstance();
         ExternalContext externalContext = context.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
 
+        String fileName = "GRN_Detailed_report_" + fromDateFormatted() + "_to_" + toDateFormatted() + ".pdf";
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=GRN_Report.pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
 
+        // ✅ smaller fonts (like your pharmacy report)
+        com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+        com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7);
+        com.itextpdf.text.Font bodyFont   = FontFactory.getFont(FontFactory.HELVETICA, 6);
+        com.itextpdf.text.Font footerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+        
         try (OutputStream out = response.getOutputStream()) {
-            Document document = new Document(PageSize.A4.rotate());
+
+            // ✅ landscape + small margins (important for 21 columns)
+            Document document = new Document(PageSize.A4.rotate(), 10f, 10f, 12f, 12f);
             PdfWriter.getInstance(document, out);
             document.open();
 
-            document.add(new Paragraph("GRN and Direct Purchase Detail Report", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
-            document.add(new Paragraph("Date: " + sdf.format(new Date()), FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            if (!institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName,
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new Paragraph("GRN and Direct Purchase Report",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
+            
+            Map<String, Object> filters = getFiltersForGRNDetailReport();
+            PdfPTable infoTable = createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
 
-            PdfPTable table = new PdfPTable(22);
+            PdfPTable table = new PdfPTable(21);
             table.setWidthPercentage(100);
-            float[] columnWidths = {2f, 3f, 3f, 3f, 3f, 4f, 3f, 3f, 4f, 4f, 3f, 3f, 3f, 3f, 3f, 4f, 3f, 3f, 3f, 4f, 4f, 4f};
+            table.setHeaderRows(1); // ✅ repeat header if table goes to next page
+
+            float[] columnWidths = {2f, 3f, 3f, 3f, 4f, 3f, 3f, 4f, 4f, 3f, 3f, 3f, 3f, 3f, 4f, 3f, 3f, 3f, 4f, 4f, 4f};
             table.setWidths(columnWidths);
 
-            String[] headers = {"S. No", "Bill No", "PO No", "Invoice No", "Type", "Store Name", "Item Category", "Code", "Item", "Receiving Time", "Qty", "UOM", "Rate", "Batch", "Expiry Date", "Supplier", "MRP", "Discount", "Amount", "Total Amount", "PO Sub Total", "GRN Sub Total"};
+            String[] headers = {
+                "S. No", "GRN No", "PO No", "Invoice No", "Store Name", "Item Category", "Code", "Item",
+                "Receiving Time", "Qty", "UOM", "Rate", "Batch", "Expiry Date", "Supplier", "MRP",
+                "Discount", "Amount", "Total Amount", "PO Sub Total", "GRN Sub Total"
+            };
 
-            for (String header : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
-                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                table.addCell(cell);
+            for (String h : headers) {
+                table.addCell(headerCell(h, headerFont));
             }
 
             int count = 0;
+
             for (Bill bill : bills) {
-                table.addCell("-");
-                table.addCell(bill.getDeptId());
-                table.addCell(bill.getReferenceBill() != null ? bill.getReferenceBill().getDeptId() : "-");
-                table.addCell(bill.getInvoiceNumber() != null ? bill.getInvoiceNumber() : (bill.getReferenceBill() != null ? bill.getReferenceBill().getInvoiceNumber() : "-"));
-                table.addCell(bill.getBillTypeAtomic() != null ? bill.getBillTypeAtomic().getLabel() : "-");
-                table.addCell("-");
-                table.addCell("-");
-                table.addCell("-");
-                table.addCell("-");
-                table.addCell(sdf.format(bill.getReferenceBill() != null ? bill.getReferenceBill().getCreatedAt() : bill.getCreatedAt()));
-                table.addCell("-");
-                table.addCell("-");
-                table.addCell("-");
-                table.addCell("-");
-                table.addCell("-");
-                table.addCell(bill.getBillTypeAtomic() != null && (bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN) || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND))
-                        ? (bill.getToInstitution() != null ? bill.getToInstitution().getName() : "-")
-                        : (bill.getFromInstitution() != null ? bill.getFromInstitution().getName() : "-"));
-                table.addCell("-");
-                table.addCell("-");
-                table.addCell("-");
-                table.addCell("-");
 
-                double pdfPoSubTotal;
-                if (bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
-                        || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)) {
-                    pdfPoSubTotal = -1 * bill.getReferenceBill().getNetTotal();
-                } else if (bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED)
-                        || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND)) {
-                    pdfPoSubTotal = -1 * bill.getNetTotal();
-                } else if (bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE)) {
-                    pdfPoSubTotal = bill.getNetTotal();
-                } else {
-                    pdfPoSubTotal = bill.getReferenceBill().getNetTotal();
+                // bill-level row (use small fonts + helper cells)
+                table.addCell(textCell("-", bodyFont));
+                table.addCell(textCell(bill.getDeptId(), bodyFont));
+                table.addCell(textCell(bill.getReferenceBill() != null ? bill.getReferenceBill().getDeptId() : "-", bodyFont));
+
+                String inv = bill.getInvoiceNumber() != null ? bill.getInvoiceNumber()
+                        : (bill.getReferenceBill() != null ? bill.getReferenceBill().getInvoiceNumber() : "-");
+                table.addCell(textCell(inv, bodyFont));
+
+                table.addCell(textCell("-", bodyFont));
+                table.addCell(textCell("-", bodyFont));
+                table.addCell(textCell("-", bodyFont));
+                table.addCell(textCell("-", bodyFont));
+
+                table.addCell(textCell(
+                        bill.getCreatedAt() != null
+                                ? sdf.format(bill.getCreatedAt())
+                                : "-",
+                        bodyFont
+                ));
+
+                table.addCell(textCell("-", bodyFont));
+                table.addCell(textCell("-", bodyFont));
+                table.addCell(textCell("-", bodyFont));
+                table.addCell(textCell("-", bodyFont));
+                table.addCell(textCell("-", bodyFont));
+
+                String supplier =
+                        (bill.getBillTypeAtomic() != null && bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN))
+                                ? (bill.getToInstitution() != null ? bill.getToInstitution().getName() : "-")
+                                : (bill.getFromInstitution() != null ? bill.getFromInstitution().getName() : "-");
+                table.addCell(textCell(supplier, bodyFont));
+
+                table.addCell(textCell("-", bodyFont));
+                table.addCell(textCell("-", bodyFont));
+                table.addCell(textCell("-", bodyFont));
+                table.addCell(textCell("-", bodyFont));
+
+                double poSubTotal = 0.0;
+                if (bill.getReferenceBill() != null) {
+                    double refNet = bill.getReferenceBill().getNetTotal();
+                    if (bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
+                            || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)) {
+                        refNet = -1 * refNet;
+                    }
+                    poSubTotal = refNet;
                 }
-                table.addCell(String.format("%.2f", pdfPoSubTotal));
-                table.addCell(String.valueOf(bill.getNetTotal()));
 
+                table.addCell(numCell(poSubTotal, bodyFont));
+                table.addCell(numCell(bill.getNetTotal(), bodyFont));
+
+                // item-level rows
                 for (BillItem billItem : bill.getBillItems()) {
                     count++;
-                    table.addCell(String.valueOf(count));
-                    table.addCell("-");
-                    table.addCell("-");
-                    table.addCell("-");
-                    table.addCell("-");
-                    table.addCell(billItem.getBill() != null && billItem.getBill().getToDepartment() != null ? billItem.getBill().getToDepartment().getName() : "-");
-                    table.addCell(billItem.getItem() != null && billItem.getItem().getCategory() != null ? billItem.getItem().getCategory().getName() : "-");
-                    table.addCell(billItem.getItem() != null ? billItem.getItem().getCode() : "-");
-                    table.addCell(billItem.getItem() != null ? billItem.getItem().getName() : "-");
-                    table.addCell("-");
-                    table.addCell(String.valueOf(billItem.getQty()));
-                    table.addCell(billItem.getItem() != null && billItem.getItem().getMeasurementUnit() != null ? billItem.getItem().getMeasurementUnit().getName() : "-");
-                    table.addCell(String.valueOf(billItem.getPharmaceuticalBillItem().getPurchaseRate()));
-                    table.addCell(billItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
-                    table.addCell(sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()));
-                    table.addCell("-");
-                    table.addCell(String.valueOf(billItem.getPharmaceuticalBillItem().getRetailRate()));
-                    table.addCell(String.format("%.2f", billItem.getDiscount()));
-                    table.addCell(String.format("%.2f", billItem.getNetValue()));
-                    table.addCell(String.format("%.2f", billItem.getBill().getNetTotal()));
-                    table.addCell("-");
-                    table.addCell("-");
+
+                    table.addCell(numCell(count, bodyFont));
+                    table.addCell(textCell("-", bodyFont));
+                    table.addCell(textCell("-", bodyFont));
+                    table.addCell(textCell("-", bodyFont));
+
+                    table.addCell(textCell(
+                            billItem.getBill() != null && billItem.getBill().getToDepartment() != null
+                                    ? billItem.getBill().getToDepartment().getName()
+                                    : "-",
+                            bodyFont
+                    ));
+
+                    table.addCell(textCell(
+                            billItem.getItem() != null && billItem.getItem().getCategory() != null
+                                    ? billItem.getItem().getCategory().getName()
+                                    : "-",
+                            bodyFont
+                    ));
+
+                    table.addCell(textCell(billItem.getItem() != null ? billItem.getItem().getCode() : "-", bodyFont));
+                    table.addCell(textCell(billItem.getItem() != null ? billItem.getItem().getName() : "-", bodyFont));
+
+                    table.addCell(textCell("-", bodyFont));
+                    table.addCell(numCell(billItem.getQty(), bodyFont));
+
+                    table.addCell(textCell(
+                            billItem.getItem() != null && billItem.getItem().getMeasurementUnit() != null
+                                    ? billItem.getItem().getMeasurementUnit().getName()
+                                    : "-",
+                            bodyFont
+                    ));
+
+                    table.addCell(numCell(
+                            billItem.getPharmaceuticalBillItem() != null
+                                    ? billItem.getPharmaceuticalBillItem().getPurchaseRate()
+                                    : "-",
+                            bodyFont
+                    ));
+
+                    table.addCell(textCell(
+                            billItem.getPharmaceuticalBillItem() != null
+                                    && billItem.getPharmaceuticalBillItem().getItemBatch() != null
+                                    ? billItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo()
+                                    : "-",
+                            bodyFont
+                    ));
+
+                    table.addCell(textCell(
+                            billItem.getPharmaceuticalBillItem() != null
+                                    && billItem.getPharmaceuticalBillItem().getItemBatch() != null
+                                    && billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire() != null
+                                    ? sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire())
+                                    : "-",
+                            bodyFont
+                    ));
+
+                    table.addCell(textCell("-", bodyFont));
+
+                    table.addCell(numCell(
+                            billItem.getPharmaceuticalBillItem() != null ? billItem.getPharmaceuticalBillItem().getRetailRate() : "-",
+                            bodyFont
+                    ));
+
+                    table.addCell(numCell(billItem.getDiscount(), bodyFont));
+                    table.addCell(numCell(billItem.getNetValue(), bodyFont));
+
+                    table.addCell(numCell(
+                            billItem.getBill() != null ? billItem.getBill().getNetTotal() : null,
+                            bodyFont
+                    ));
+
+                    table.addCell(textCell("-", bodyFont));
+                    table.addCell(textCell("-", bodyFont));
                 }
             }
 
@@ -10060,17 +11068,175 @@ public class PharmacyController implements Serializable {
             PdfPTable footerTable = new PdfPTable(2);
             footerTable.setWidthPercentage(100);
             footerTable.setWidths(new float[]{1f, 1f});
-            footerTable.addCell(new PdfPCell(new Phrase("Total PO Amount: " + String.format("%.2f", calculateTotalPOAmount()), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
-            footerTable.addCell(new PdfPCell(new Phrase("Total GRN Amount: " + String.format("%.2f", calculateTotalGrnAmount()), FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12))));
+
+            java.text.DecimalFormat amtFmt = new java.text.DecimalFormat("#,##0.00");
+            footerTable.addCell(new PdfPCell(new Phrase(
+                    "Total PO Amount: " + amtFmt.format(calculateTotalPOAmount()),
+                    footerFont
+            )));
+            footerTable.addCell(new PdfPCell(new Phrase(
+                    "Total GRN Amount: " + amtFmt.format(calculateTotalGrnAmount()),
+                    footerFont
+            )));
+
             document.add(footerTable);
 
             document.close();
             context.responseComplete();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+    
+    public void exportGRNAndDirectPurchaseSummaryReportToPDF(){
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
 
+        List<Bill> rows = getBills();
+        if (rows == null || rows.isEmpty()) {
+            JsfUtil.addErrorMessage("No data available to export");
+            return;
+        }
+
+        String fileName = "GRN_Summary_report_" 
+                + fromDateFormatted() + "_to_" + toDateFormatted() + ".pdf";
+
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        com.itextpdf.text.Font bodyFontSmall =
+                com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 7);
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+        com.itextpdf.text.Document document = null;
+        OutputStream out = null;
+
+        try {
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+            externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+            out = externalContext.getResponseOutputStream();
+
+            document = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A4.rotate(), 10f, 10f, 12f, 12f);
+            com.itextpdf.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+           if (!institutionName.isEmpty()) {
+                document.add(new Paragraph(institutionName,
+                        FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new Paragraph("GRN and Direct Purchase Summary report",
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+            
+            Map<String, Object> filters = getFiltersForGRNDetailReport();
+            PdfPTable infoTable = createInfoTablePdfExport(sdf, filters);
+            if (infoTable != null) {
+                document.add(infoTable);
+            }
+
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(8);
+            table.setWidthPercentage(100);
+            table.setWidths(new float[]{1f, 3f, 3f, 2f, 3f, 3f, 2f, 2f});
+
+            String[] headers = {
+                "S.No", "GRN No.", "PO No.", "Invoice No.", "Receiving Time",
+                "Supplier", "PO Sub Total", "GRN Sub Total"
+            };
+
+            for (String header : headers) {
+                com.itextpdf.text.pdf.PdfPCell cell =
+                        new com.itextpdf.text.pdf.PdfPCell(
+                                new com.itextpdf.text.Phrase(header,
+                                        com.itextpdf.text.FontFactory.getFont(
+                                                com.itextpdf.text.FontFactory.HELVETICA_BOLD, 8)));
+                cell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+            
+            int index = 1;
+            for (Bill f : rows) {
+                table.addCell(numCell(index++, bodyFontSmall));
+                table.addCell(textCell(f.getDeptId(), bodyFontSmall));
+                table.addCell(textCell(f.getReferenceBill() != null ? f.getReferenceBill().getDeptId() : "-", bodyFontSmall));
+                table.addCell(textCell(f.getInvoiceNumber() == null ? (f.getReferenceBill() != null ? f.getReferenceBill().getInvoiceNumber() : "-") : f.getInvoiceNumber() , bodyFontSmall));
+                table.addCell(textCell(
+                        f.getCreatedAt() != null ? sdf.format(f.getCreatedAt()) : "-",
+                        bodyFontSmall));
+                table.addCell(textCell(f.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN_RETURN ? (f.getToInstitution()!= null ? f.getToInstitution().getName() : "-") : (f.getFromInstitution() != null ? f.getFromInstitution().getName() : "-"), bodyFontSmall));
+                table.addCell(numCell(f.getBillTypeAtomic()==BillTypeAtomic.PHARMACY_GRN_RETURN || f.getBillTypeAtomic()==BillTypeAtomic.PHARMACY_GRN_CANCELLED ? -1*(f.getReferenceBill() != null ? f.getReferenceBill().getNetTotal() : 0) : (f.getReferenceBill() != null ? f.getReferenceBill().getNetTotal() : 0) , bodyFontSmall));
+                table.addCell(numCell(f.getNetTotal(), bodyFontSmall));
+            }
+
+            com.itextpdf.text.pdf.PdfPCell footerCell =
+                    new com.itextpdf.text.pdf.PdfPCell(
+                            new com.itextpdf.text.Phrase("Total",
+                                    com.itextpdf.text.FontFactory.getFont(
+                                            com.itextpdf.text.FontFactory.HELVETICA_BOLD, 10)));
+            footerCell.setColspan(6);
+            footerCell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+            footerCell.setHorizontalAlignment(com.itextpdf.text.Element.ALIGN_CENTER);
+            table.addCell(footerCell);
+
+            table.addCell(numCell(calculateTotalPOAmount(), bodyFontSmall));
+            table.addCell(numCell(calculateTotalGrnAmount(), bodyFontSmall));
+
+            document.add(table);
+
+        } catch (Exception e) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating detailed PDF", e);
+        } finally {
+            if (document != null && document.isOpen()) {
+                document.close();
+            }
+            context.responseComplete();
+        }
+    }
+    
+    // PostProcessor for grn and direct purchase summary report excel export
+    public void postProcessGRNAndDirectPurchaseReportExcel(Object document) {
+        if (document == null) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Document is null in postProcessBillWiseItemMovementReportExcel");
+            return;
+        }
+        if (!(document instanceof XSSFWorkbook)) {
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Expected document to be an instance of XSSFWorkbook, but got: {0}", document.getClass().getName());
+            return;
+        }
+        XSSFWorkbook workbook = (XSSFWorkbook) document;
+        XSSFSheet sheet = workbook.getSheetAt(0);
+        if (sheet == null) {
+            return;
+        }
+
+        workbook.setSheetName(0, "GRN and Direct Purchase Report");
+        sheet.shiftRows(0, sheet.getLastRowNum(), 7);
+
+        Map<String, Object> filters = getFiltersForGRNDetailReport();
+
+        if (filters != null && !filters.isEmpty()) {
+            addMetaDataToExcelSheet(workbook, sheet, 0, "GRN and Direct Purchase Report", filters);
+        }
+        int rowIndex = 5;
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
+        // Add "Generated On" row with current date and time
+        Row generatedOnRow = sheet.createRow(rowIndex++);
+        CellStyle generatedOnStyle = workbook.createCellStyle();
+        XSSFFont generatedOnFont = workbook.createFont();
+        generatedOnFont.setBold(true);
+        generatedOnStyle.setFont(generatedOnFont);
+
+        Cell generatedLabelCell = generatedOnRow.createCell(0);
+        generatedLabelCell.setCellValue("Generated On:");
+        generatedLabelCell.setCellStyle(generatedOnStyle);
+
+        Cell generatedValueCell = generatedOnRow.createCell(1);
+        generatedValueCell.setCellValue(sdf.format(new Date()));
+
+        // Add an empty row as spacing before the header
+        sheet.createRow(rowIndex++);
+    }
     public SessionController getSessionController() {
         return sessionController;
     }
@@ -10497,6 +11663,30 @@ public class PharmacyController implements Serializable {
 
     public void setDisposeIssuesByDepartment(List<com.divudi.core.data.dto.PharmacyDisposeIssueByDepartmentDTO> disposeIssuesByDepartment) {
         this.disposeIssuesByDepartment = disposeIssuesByDepartment;
+    }
+
+    public List<ConsumptionBillDto> getConsumptionBillDtos() {
+        return consumptionBillDtos;
+    }
+
+    public void setConsumptionBillDtos(List<ConsumptionBillDto> consumptionBillDtos) {
+        this.consumptionBillDtos = consumptionBillDtos;
+    }
+
+    public List<ConsumptionBillItemDto> getConsumptionBillItemDtos() {
+        return consumptionBillItemDtos;
+    }
+
+    public void setConsumptionBillItemDtos(List<ConsumptionBillItemDto> consumptionBillItemDtos) {
+        this.consumptionBillItemDtos = consumptionBillItemDtos;
+    }
+
+    public Map<String, Map<String, List<ConsumptionCategoryItemDto>>> getConsumptionCategoryDtoMap() {
+        return consumptionCategoryDtoMap;
+    }
+
+    public void setConsumptionCategoryDtoMap(Map<String, Map<String, List<ConsumptionCategoryItemDto>>> consumptionCategoryDtoMap) {
+        this.consumptionCategoryDtoMap = consumptionCategoryDtoMap;
     }
 
     public Double getTotalDisposeIssuesByDepartmentQuantity() {
@@ -11664,7 +12854,7 @@ public class PharmacyController implements Serializable {
         response.setContentType("application/pdf");
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
 
-        SimpleDateFormat sdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        SimpleDateFormat sdf = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat());
         String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
 
         try (OutputStream out = response.getOutputStream()) {
@@ -12294,20 +13484,17 @@ public class PharmacyController implements Serializable {
                     table.addCell(new PdfPCell(new Phrase(bill.getInvoiceNumber() != null ? bill.getInvoiceNumber() : "", normalFont)));
 
                     PdfPCell purchaseCell = new PdfPCell(new Phrase(
-                            bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getTotalPurchaseValue() != null
-                                    ? decimalFormat.format(bill.getBillFinanceDetails().getTotalPurchaseValue()) : "0.00", normalFont));
+                            decimalFormat.format(row.getConsumptionPurchaseValue()), normalFont));
                     purchaseCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     table.addCell(purchaseCell);
 
                     PdfPCell costCell = new PdfPCell(new Phrase(
-                            bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getTotalCostValue() != null
-                                    ? decimalFormat.format(bill.getBillFinanceDetails().getTotalCostValue()) : "0.00", normalFont));
+                            decimalFormat.format(row.getConsumptionCostValue()), normalFont));
                     costCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     table.addCell(costCell);
 
                     PdfPCell retailCell = new PdfPCell(new Phrase(
-                            bill.getBillFinanceDetails() != null && bill.getBillFinanceDetails().getTotalRetailSaleValue() != null
-                                    ? decimalFormat.format(bill.getBillFinanceDetails().getTotalRetailSaleValue()) : "0.00", normalFont));
+                            decimalFormat.format(row.getConsumptionRetailValue()), normalFont));
                     retailCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     table.addCell(retailCell);
 
@@ -12418,7 +13605,11 @@ public class PharmacyController implements Serializable {
             Cell valueCell = row.createCell(pairCounter * 3 + 1);
             Object value = entry.getValue();
 
-            valueCell.setCellValue((value != null) ? value.toString() : "");
+            if (value instanceof Date) {
+                valueCell.setCellValue(new SimpleDateFormat("dd MMM yyyy hh:mm a").format(value));
+            } else {
+                valueCell.setCellValue((value != null) ? value.toString() : "");
+            } 
 
             pairCounter++;
 

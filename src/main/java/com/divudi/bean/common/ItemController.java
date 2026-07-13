@@ -23,9 +23,8 @@ import com.divudi.core.entity.inward.TheatreService;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.ItemForItem;
 import com.divudi.core.entity.lab.Machine;
-import com.divudi.core.entity.Speciality;
-import com.divudi.core.entity.Staff;
 import com.divudi.core.data.dto.AmpDto;
+import com.divudi.core.data.dto.search.ItemDTO;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.Atm;
@@ -37,7 +36,6 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemFeeFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.lab.InvestigationController;
-import com.divudi.bean.common.SpecialityController;
 import com.divudi.bean.hr.StaffController;
 import com.divudi.core.data.SessionNumberType;
 import com.divudi.core.data.Sex;
@@ -1872,7 +1870,7 @@ public class ItemController implements Serializable {
         }
         for (Item i : selectedList) {
             Item item = itemFacade.findWithoutCache(i.getId());
-                
+
             item.setAllowedForBillingPriority(true);
             itemFacade.editAndCommit(item);
         }
@@ -1887,7 +1885,7 @@ public class ItemController implements Serializable {
         }
         for (Item i : selectedList) {
             Item item = itemFacade.findWithoutCache(i.getId());
-                
+
             item.setAllowedForBillingPriority(false);
             itemFacade.editAndCommit(item);
         }
@@ -1905,7 +1903,7 @@ public class ItemController implements Serializable {
         for (Item i : selectedList) {
             if (i instanceof Investigation) {
                 Item item = itemFacade.findWithoutCache(i.getId());
-                
+
                 item.setAllowToSendSMS(true);
                 itemFacade.editAndCommit(item);
                 updatedCount++;
@@ -1929,8 +1927,56 @@ public class ItemController implements Serializable {
         for (Item i : selectedList) {
             if (i instanceof Investigation) {
                 Item item = itemFacade.findWithoutCache(i.getId());
-                
+
                 item.setAllowToSendSMS(false);
+                itemFacade.editAndCommit(item);
+                updatedCount++;
+            }
+        }
+        if (updatedCount == 0) {
+            JsfUtil.addErrorMessage("No Investigation items selected.");
+        } else {
+            fillItemsWithInvestigationsAndServices();
+            JsfUtil.addSuccessMessage(updatedCount + " item(s) unmarked for report SMS.");
+        }
+    }
+
+    public void markSelectedItemsToAllowCalculatedRequerd() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        int updatedCount = 0;
+
+        for (Item i : selectedList) {
+            if (i instanceof Investigation) {
+                Item item = itemFacade.findWithoutCache(i.getId());
+
+                item.setCalculatedRequerd(true);
+                itemFacade.editAndCommit(item);
+                updatedCount++;
+            }
+        }
+        if (updatedCount == 0) {
+            JsfUtil.addErrorMessage("No Investigation items selected.");
+        } else {
+            fillItemsWithInvestigationsAndServices();
+            JsfUtil.addSuccessMessage(updatedCount + " item(s) marked to allow report SMS.");
+        }
+    }
+
+    public void unMarkSelectedItemsToAllowCalculatedRequerd() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        int updatedCount = 0;
+
+        for (Item i : selectedList) {
+            if (i instanceof Investigation) {
+                Item item = itemFacade.findWithoutCache(i.getId());
+
+                item.setCalculatedRequerd(false);
                 itemFacade.editAndCommit(item);
                 updatedCount++;
             }
@@ -2371,10 +2417,18 @@ public class ItemController implements Serializable {
     public List<Item> completeMedicineByTypeWithFilter(String query, boolean includeVtm, boolean includeAtm, boolean includeVmp, boolean includeAmp) {
         DepartmentType[] dts = new DepartmentType[]{DepartmentType.Pharmacy, null};
         List<Class> classList = new ArrayList<>();
-        if (includeVtm) classList.add(Vtm.class);
-        if (includeAtm) classList.add(Atm.class);
-        if (includeVmp) classList.add(Vmp.class);
-        if (includeAmp) classList.add(Amp.class);
+        if (includeVtm) {
+            classList.add(Vtm.class);
+        }
+        if (includeAtm) {
+            classList.add(Atm.class);
+        }
+        if (includeVmp) {
+            classList.add(Vmp.class);
+        }
+        if (includeAmp) {
+            classList.add(Amp.class);
+        }
         if (classList.isEmpty()) {
             return new ArrayList<>();
         }
@@ -2965,6 +3019,78 @@ public class ItemController implements Serializable {
         }
 
         return availableDepartmentTypesForPharmacyTransactions;
+    }
+
+    /**
+     * DTO-based autocomplete for transfer request item entry. Runs four
+     * lightweight constructor queries (one per subtype) instead of loading full
+     * Item entities. Returns at most {@code maxResults} entries sorted by name.
+     *
+     * @param query text typed by the user
+     * @param dept toDepartment used to resolve allowed department types
+     * @param typeFilter when non-null, restrict results to this department type
+     */
+    public List<ItemDTO> completeAmpAmppVmpVmppItemDtosForRequestingDepartment(
+            String query, Department dept, DepartmentType typeFilter) {
+
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String q = "%" + query.trim().toUpperCase() + "%";
+        int barcodeMinLength = 8;
+        int maxResults = 30;
+
+        try {
+            barcodeMinLength = configOptionApplicationController.getIntegerValueByKey("BarcodeMinLength", 8);
+        } catch (Exception e) {
+            // use default
+        }
+        try {
+            maxResults = configOptionApplicationController.getIntegerValueByKey("PharmaceuticalAutocompleteMaxResults", 30);
+        } catch (Exception e) {
+            // use default
+        }
+
+        boolean includeBarcode = query.trim().length() >= barcodeMinLength;
+        String barcodeCondition = includeBarcode ? "OR UPPER(COALESCE(i.barcode, '')) LIKE :q " : "";
+
+        Department lookupDept = dept != null ? dept : sessionController.getDepartment();
+        List<DepartmentType> allowedTypes;
+        if (typeFilter != null) {
+            allowedTypes = java.util.Collections.singletonList(typeFilter);
+        } else {
+            allowedTypes = getAvailableDepartmentTypesForPharmacyTransactions(lookupDept);
+        }
+        if (allowedTypes == null || allowedTypes.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String where = "WHERE i.retired = false AND i.inactive = false "
+                + "AND i.departmentType IN :dts "
+                + "AND (UPPER(i.name) LIKE :q OR UPPER(COALESCE(i.code, '')) LIKE :q "
+                + barcodeCondition + ") "
+                + "ORDER BY i.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("dts", allowedTypes);
+        params.put("q", q);
+
+        String dtoClass = "com.divudi.core.data.dto.search.ItemDTO";
+
+        String ampJpql = "SELECT new " + dtoClass + "(i.id, i.name, COALESCE(i.code,''), i.dblValue, 'Amp',  i.id)     FROM Amp  i " + where;
+        String amppJpql = "SELECT new " + dtoClass + "(i.id, i.name, COALESCE(i.code,''), i.dblValue, 'Ampp', i.amp.id) FROM Ampp i " + where;
+        String vmpJpql = "SELECT new " + dtoClass + "(i.id, i.name, COALESCE(i.code,''), i.dblValue, 'Vmp',  i.id)     FROM Vmp  i " + where;
+        String vmppJpql = "SELECT new " + dtoClass + "(i.id, i.name, COALESCE(i.code,''), i.dblValue, 'Vmpp', i.vmp.id) FROM Vmpp i " + where;
+
+        List<ItemDTO> results = new ArrayList<>();
+        results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(ampJpql, params, TemporalType.TIMESTAMP, maxResults));
+        results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(amppJpql, params, TemporalType.TIMESTAMP, maxResults));
+        results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(vmpJpql, params, TemporalType.TIMESTAMP, maxResults));
+        results.addAll((List<ItemDTO>) getFacade().findLightsByJpql(vmppJpql, params, TemporalType.TIMESTAMP, maxResults));
+
+        results.sort(java.util.Comparator.comparing(dto -> dto.getName() != null ? dto.getName() : ""));
+        return results.size() > maxResults ? results.subList(0, maxResults) : results;
     }
 
     public List<Item> completeAmpAndVmpItem(String query) {
@@ -3833,11 +3959,82 @@ public class ItemController implements Serializable {
         getCurrent();
     }
 
+    public String generateNextItemCode(Institution itemInstitution, Department itemDepartment) {
+
+        if (itemInstitution == null && itemDepartment == null) {
+            return "";
+        }
+
+        StringBuilder code = new StringBuilder();
+        String symbol = configOptionApplicationController.getShortTextValueByKey("Item Codes Generate - The symbol used between the department number and the item number when automatically generating item codes.", "-");
+
+        if (configOptionApplicationController.getBooleanValueByKey("Item Codes Generate - Use Item Institution Code", false)) {
+            if (itemInstitution != null && itemInstitution.getCode() != null && !itemInstitution.getCode().isEmpty()) {
+                code.append(itemInstitution.getCode());
+                code.append(symbol);
+            }
+        }
+        if (itemDepartment != null && itemDepartment.getCode() != null && !itemDepartment.getCode().isEmpty()) {
+            code.append(itemDepartment.getCode());
+            code.append(symbol);
+        }
+        code.append(String.format("%06d", getItemCountByDepartment(itemDepartment) + 1));
+        return code.toString();
+    }
+
+    public void generateCode() {
+        String code = generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
+        getCurrent().setCode(code);
+    }
+
     public void saveSelectedWithItemLight() {
+        if (configOptionApplicationController.getBooleanValueByKey("Item Codes Generate - Automatically create Item Codes by Department.", false)) {
+            if (getCurrent().getId() == null) {
+                if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()) {
+                    if (getCurrent().getDepartment() == null) {
+                        JsfUtil.addErrorMessage("Please select Department before generating code");
+                        return;
+                    }
+
+                    String code = generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
+                    getCurrent().setCode(code);
+                }
+            }
+        }
+
+        if (isItemCodeDuplicate(getCurrent().getCode(), getCurrent().getId())) {
+            JsfUtil.addErrorMessage("This Item Code is Already Used.");
+            return;
+        }
+
         saveSelected(getCurrent());
         JsfUtil.addSuccessMessage("Saved");
         recreateModel();
         getAllItems();
+    }
+
+    /**
+     * Returns true when another (non-retired) item already uses the given code.
+     * Queries the base {@link Item} entity so duplicates are detected across
+     * all item subtypes (Service, Investigation, etc.). A blank code is never
+     * considered a duplicate. When {@code excludeId} is null (a new item) no
+     * id-exclusion is applied — using {@code i.id != null} would wrongly filter
+     * out every row and make the check always pass.
+     */
+    public boolean isItemCodeDuplicate(String code, Long excludeId) {
+        if (code == null || code.trim().isEmpty()) {
+            return false;
+        }
+        Map<String, Object> m = new HashMap<>();
+        StringBuilder jpql = new StringBuilder(
+                "select i from Item i where i.retired = false and i.code = :code ");
+        m.put("code", code.trim());
+        if (excludeId != null) {
+            jpql.append("and i.id != :id ");
+            m.put("id", excludeId);
+        }
+        Item existing = getFacade().findFirstByJpql(jpql.toString(), m);
+        return existing != null;
     }
 
     public void saveSelected(Item item) {
@@ -4462,6 +4659,23 @@ public class ItemController implements Serializable {
 
     public Department getSelectedDepartment() {
         return selectedDepartment;
+    }
+
+    public Long getItemCountByDepartment(Department department) {
+        if (department == null) {
+            return 0L;
+        }
+        String jpql = "select count(i) "
+                + "from Item i "
+                + "where i.department=:dept "
+                + "and (TYPE(i)=:ix or TYPE(i)=:sv or TYPE(i)=:inw or TYPE(i)=:the)";
+        Map<String, Object> m = new HashMap<>();
+        m.put("dept", department);
+        m.put("ix", Investigation.class);
+        m.put("sv", Service.class);
+        m.put("inw", InwardService.class);
+        m.put("the", TheatreService.class);
+        return itemFacade.countByJpql(jpql, m);
     }
 
     public void setSelectedDepartment(Department selectedDepartment) {

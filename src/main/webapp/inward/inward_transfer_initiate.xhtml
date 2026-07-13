@@ -414,6 +414,16 @@
                         ajax="false"
                         class="ui-button-secondary"
                         action="#{patientTransferController.navigateToInitiateTransfer()}"/>
+                    <p:commandButton
+                        value="Inpatient Dashboard"
+                        icon="fa fa-id-card"
+                        ajax="false"
+                        class="ui-button-secondary"
+                        action="#{admissionController.navigateToAdmissionProfilePage}">
+                        <f:setPropertyActionListener
+                            value="#{patientTransferController.current}"
+                            target="#{admissionController.current}" />
+                    </p:commandButton>
                 </div>
 
                 <p:panel class="my-3">

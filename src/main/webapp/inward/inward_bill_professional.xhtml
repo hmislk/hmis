@@ -312,9 +312,13 @@
                                                     placeholder="Search Doctor..."
                                                     completeMethod="#{inwardProfessionalBillController.completeStaff}"
                                                     var="mys" 
+                                                    maxResults="20"
                                                     itemLabel="#{mys.person.nameWithTitle}" 
                                                     itemValue="#{mys}">
                                                     <f:ajax event="itemSelect" execute="scStaff" render="pIxAdd pBillDetails" />
+                                                    <p:column headerText="Doctor Name" style="padding: 5px;">
+                                                        <h:outputLabel value="#{mys.person.nameWithTitle}" styleClass="fw-bold" />
+                                                    </p:column>
                                                 </p:autoComplete>
                                             </div>
                                         </div>
@@ -431,6 +435,11 @@
                                                     <f:convertNumber pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </p:column>
+                                            <p:column headerText="Adjusted Fee" styleClass="text-end">
+                                                <h:outputLabel value="#{bif.feeAdjusted}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </p:column>
                                         </p:dataTable>
                                     </p:panel>
                                 </h:panelGroup>
@@ -503,6 +512,22 @@
                                             styleClass="ui-button-warning"
                                             ajax="false"
                                             actionListener="#{inwardProfessionalBillController.makeNull()}" />
+
+                                        <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
+                                            <p:commandButton
+                                                ajax="false"
+                                                value="Inpatient Profile"
+                                                icon="fa fa-id-card"
+                                                styleClass="ui-button-secondary"
+                                                action="#{bhtSummeryController.navigateToInpatientProfile()}">
+                                                <f:setPropertyActionListener
+                                                    target="#{bhtSummeryController.patientEncounter}"
+                                                    value="#{inwardProfessionalBillController.current.patientEncounter}" />
+                                                <f:setPropertyActionListener
+                                                    target="#{admissionController.current}"
+                                                    value="#{inwardProfessionalBillController.current.patientEncounter}" />
+                                            </p:commandButton>
+                                        </h:panelGroup>
                                     </div>
                                 </div>
                             </f:facet>

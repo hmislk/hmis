@@ -25,6 +25,8 @@ import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.ParameterExpression;
 import javax.persistence.criteria.Predicate;
+import org.eclipse.persistence.descriptors.ClassDescriptor;
+import org.eclipse.persistence.jpa.JpaHelper;
 
 /**
  *
@@ -158,6 +160,22 @@ public abstract class AbstractFacade<T> {
     public void flushAndClear() {
         getEntityManager().flush();
         getEntityManager().clear();
+    }
+
+    /**
+     * Returns the actual database table name for this entity as known to
+     * EclipseLink. This correctly reflects the case used by the database
+     * (e.g. "PatientEncounter" vs "patientencounter") regardless of the
+     * MySQL lower_case_table_names setting, avoiding hard-coded table name
+     * issues in native SQL queries.
+     *
+     * Closes #19648
+     */
+    public String getTableName() {
+        ClassDescriptor descriptor = JpaHelper
+                .getServerSession(getEntityManager().getEntityManagerFactory())
+                .getDescriptor(entityClass);
+        return descriptor.getTableName();
     }
 
     public List<?> executeQuery(Class<?> entityType, String jpqlQuery) {
@@ -818,6 +836,36 @@ public abstract class AbstractFacade<T> {
         return resultList;
     }
 
+    public List<?> findLightsByJpql(String jpql, Map<String, Object> parameters, TemporalType tt, int maxRecords, int firstResult) {
+        Query qry = getEntityManager().createQuery(jpql);
+        Set<Map.Entry<String, Object>> entries = parameters.entrySet();
+
+        for (Map.Entry<String, Object> entry : entries) {
+            String paramName = entry.getKey();
+            Object paramValue = entry.getValue();
+
+            if (paramValue instanceof Date) {
+                qry.setParameter(paramName, (Date) paramValue, tt);
+            } else {
+                qry.setParameter(paramName, paramValue);
+            }
+        }
+
+        if (firstResult > 0) {
+            qry.setFirstResult(firstResult);
+        }
+        qry.setMaxResults(maxRecords);
+
+        List<?> resultList;
+        try {
+            resultList = qry.getResultList();
+        } catch (Exception e) {
+            resultList = new ArrayList<>();
+        }
+
+        return resultList;
+    }
+
     public List<T> findByJpql(String jpql, int maxResults) {
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         qry.setMaxResults(maxResults);
@@ -936,6 +984,25 @@ public abstract class AbstractFacade<T> {
                 qry.setParameter(pPara, pVal);
             }
         }
+        return qry.getResultList();
+    }
+
+    public List<Object[]> findObjectsArrayByJpql(String jpql, Map<String, Object> parameters, TemporalType tt, int maxResults) {
+        TypedQuery<Object[]> qry = getEntityManager().createQuery(jpql, Object[].class);
+        Set s = parameters.entrySet();
+        Iterator it = s.iterator();
+        while (it.hasNext()) {
+            Map.Entry m = (Map.Entry) it.next();
+            Object pVal = m.getValue();
+            String pPara = (String) m.getKey();
+            if (pVal instanceof Date) {
+                Date d = (Date) pVal;
+                qry.setParameter(pPara, d, tt);
+            } else {
+                qry.setParameter(pPara, pVal);
+            }
+        }
+        qry.setMaxResults(maxResults);
         return qry.getResultList();
     }
 

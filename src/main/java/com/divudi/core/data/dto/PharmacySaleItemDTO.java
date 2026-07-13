@@ -1,5 +1,6 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.BillTypeAtomic;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -22,6 +23,8 @@ public class PharmacySaleItemDTO implements Serializable {
     private Double grossValue;
     private Double marginValue;
     private Double discount;
+    private Double netTotal;
+    private BillTypeAtomic billTypeAtomic;
     private Double netValue;
 
     public PharmacySaleItemDTO() {
@@ -33,7 +36,7 @@ public class PharmacySaleItemDTO implements Serializable {
             Long itemId, String itemName,
             Double qty, Double retailRate, Double purchaseRate,
             Double grossValue, Double marginValue,
-            Double discount, Double netValue) {
+            Double discount, Double netTotal,BillTypeAtomic billTypeAtomic, Double netValue) {
         this.departmentId = departmentId;
         this.departmentName = departmentName;
         this.bhtNumber = bhtNumber;
@@ -51,6 +54,8 @@ public class PharmacySaleItemDTO implements Serializable {
         this.grossValue = grossValue;
         this.marginValue = marginValue;
         this.discount = discount;
+        this.netTotal = netTotal;
+        this.billTypeAtomic = billTypeAtomic;
         this.netValue = netValue;
     }
 
@@ -196,5 +201,21 @@ public class PharmacySaleItemDTO implements Serializable {
 
     public void setNetValue(Double netValue) {
         this.netValue = netValue;
+    }
+
+    public Double getNetTotal() {
+        return netTotal;
+    }
+
+    public void setNetTotal(Double netTotal) {
+        this.netTotal = netTotal;
+    }
+
+    public BillTypeAtomic getBillTypeAtomic() {
+        return billTypeAtomic;
+    }
+
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
     }
 }

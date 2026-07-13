@@ -172,6 +172,23 @@ public class AmpDto implements Serializable {
     }
 
     /**
+     * AMP list constructor with category — used by fillAmpsDto() JPQL.
+     * category path uses implicit inner join so only AMPs with a category are returned.
+     */
+    public AmpDto(Long id, String name, Long categoryId, String categoryName,
+                  Boolean discountAllowed, Boolean allowFractions,
+                  Boolean consumptionAllowed, Boolean refundsAllowed) {
+        this.id = id;
+        this.name = name;
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
+        this.discountAllowed = discountAllowed;
+        this.allowFractions = allowFractions;
+        this.consumptionAllowed = consumptionAllowed;
+        this.refundsAllowed = refundsAllowed;
+    }
+
+    /**
      * Comprehensive list constructor — all Details-Section fields for the Store AMP list page.
      * Used by getStoreAmpListDtos() JPQL query.
      *

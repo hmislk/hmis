@@ -12,6 +12,7 @@
     </cc:interface>
     <!-- IMPLEMENTATION -->
     <cc:implementation>
+        <style>.hidden { display: none !important; } @media print { .hidden { display: none !important; } }</style>
         <div class="purhcaseBill"
              style="font-family: sans-serif!important;
              border: none!important;
@@ -88,6 +89,7 @@
                         rowIndexVar="rowIndex"
                         value="#{cc.attrs.bill.billItems}"
                         var="bip"
+                        rowStyleClass="#{bip.retired ? 'hidden' : ''}"
                         style="font-size: 16px; margin-left: 3%; margin-right: 3%;"
                         rendered="#{not empty cc.attrs.bill.billItems}">
 
@@ -117,21 +119,21 @@
                             style="padding: 4px; width: 7em;" class="text-end"
                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity', false)}">
                         <f:facet name="header">Return Total QTY</f:facet>
-                        <h:outputLabel value="#{bip.billItemFinanceDetails.quantity + bip.billItemFinanceDetails.freeQuantity}"/>
+                        <h:outputLabel value="#{bip.qty + (bip.billItemFinanceDetails.freeQuantity != null ? 0 - bip.billItemFinanceDetails.freeQuantity : 0)}"/>
                     </p:column>
 
                     <p:column
                             style="padding: 4px; width: 7em;" class="text-end"
                             rendered="#{!configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity', false)}">
                         <f:facet name="header">Return QTY</f:facet>
-                        <h:outputLabel value="#{bip.billItemFinanceDetails.quantity}"/>
+                        <h:outputLabel value="#{bip.qty}"/>
                     </p:column>
 
                     <p:column
                             style="padding: 4px; width: 7em;" class="text-end"
                             rendered="#{!configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity', false)}">
                         <f:facet name="header">Free QTY</f:facet>
-                        <h:outputLabel value="#{bip.billItemFinanceDetails.freeQuantity}"/>
+                        <h:outputLabel value="#{bip.billItemFinanceDetails.freeQuantity != null ? 0 - bip.billItemFinanceDetails.freeQuantity : 0}"/>
                     </p:column>
 
                     <p:column style="padding: 4px; width: 7em;" class="text-end">
@@ -143,7 +145,7 @@
 
                     <p:column style="padding: 4px; width: 7em;" class="text-end">
                         <f:facet name="header">Amount</f:facet>
-                        <h:outputLabel value="#{bip.billItemFinanceDetails.lineGrossRate*(bip.billItemFinanceDetails.quantity + bip.billItemFinanceDetails.freeQuantity)}" >
+                        <h:outputLabel value="#{bip.netValue}" >
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
@@ -151,9 +153,9 @@
                     <p:columnGroup type="footer">
                         <p:row>
                             <p:column style="padding: 4px;" colspan="#{configOptionApplicationController.getBooleanValueByKey('Purchase Return by Total Quantity', false) ? 6 : 7}" footerText="Total"/>
-                            <p:column style="padding: 4px; width: 7em;" footerText="#{0-cc.attrs.bill.total}" class="text-end">
+                            <p:column style="padding: 4px; width: 7em;" class="text-end">
                                 <f:facet name="footer" >
-                                    <h:outputLabel value="#{0-cc.attrs.bill.total}" >
+                                    <h:outputLabel value="#{cc.attrs.bill.total}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </f:facet>

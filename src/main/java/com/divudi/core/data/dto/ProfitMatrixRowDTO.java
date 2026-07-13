@@ -1,6 +1,7 @@
 package com.divudi.core.data.dto;
 
 import com.divudi.core.data.inward.PatientEncounterType;
+import com.divudi.core.entity.inward.RoomCategory;
 
 public class ProfitMatrixRowDTO {
 
@@ -13,6 +14,7 @@ public class ProfitMatrixRowDTO {
     private Double invoiceAmount;
     private Double finalAmount;
     private Double profitMargin;
+    private RoomCategory roomCategory;
 
     private String serviceName;
     private String serviceDepartment;
@@ -37,6 +39,35 @@ public class ProfitMatrixRowDTO {
                 invoiceAmount,
                 finalAmount
         );
+    }
+
+    public ProfitMatrixRowDTO(
+            String invoiceNo,
+            String admissionNo,
+            String mrn,
+            String patientName,
+            PatientEncounterType visitType,
+            String referringDoctorName,
+            Double invoiceAmount,
+            RoomCategory roomCategory,
+            Double finalAmount
+    ) {
+        this.invoiceNo = invoiceNo;
+        this.admissionNo = admissionNo;
+        this.mrn = mrn;
+        this.patientName = patientName;
+        this.visitType = visitType != null ? visitType.toString() : null;
+        this.referringDoctorName = referringDoctorName;
+        this.invoiceAmount = invoiceAmount;
+        this.roomCategory = roomCategory;
+        this.finalAmount = finalAmount;
+
+        if (invoiceAmount != null && finalAmount != null) {
+            this.profitMargin = invoiceAmount - finalAmount;
+            this.matrixPercentage = invoiceAmount != 0.0
+                    ? (this.profitMargin * 100.0 / invoiceAmount)
+                    : null;
+        }
     }
 
     public ProfitMatrixRowDTO(String invoiceNo,
@@ -95,6 +126,64 @@ public class ProfitMatrixRowDTO {
                 : null;
     }
 
+    public ProfitMatrixRowDTO(
+            String invoiceNo,
+            String admissionNo,
+            String mrn,
+            String patientName,
+            String visitType,
+            String referringDoctorName,
+            String serviceName,
+            String serviceDepartment,
+            double invoiceAmount,
+            double serviceValue,
+            double finalAmount
+    ) {
+        this.invoiceNo = invoiceNo;
+        this.admissionNo = admissionNo;
+        this.mrn = mrn;
+        this.patientName = patientName;
+        this.visitType = visitType;
+        this.referringDoctorName = referringDoctorName;
+        this.serviceName = serviceName;
+        this.serviceDepartment = serviceDepartment;
+        this.invoiceAmount = invoiceAmount;
+        this.serviceValue = serviceValue;
+        this.finalAmount = finalAmount;
+
+        this.profitMargin = invoiceAmount - finalAmount;
+        this.matrixPercentage = invoiceAmount != 0.0
+                ? (this.profitMargin * 100.0 / invoiceAmount)
+                : null;
+    }
+
+    public ProfitMatrixRowDTO(
+            String invoiceNo,
+            String admissionNo,
+            String mrn,
+            String patientName,
+            String visitType,
+            String referringDoctorName,
+            double invoiceAmount,
+            RoomCategory roomCategory,
+            double finalAmount
+    ) {
+        this.invoiceNo = invoiceNo;
+        this.admissionNo = admissionNo;
+        this.mrn = mrn;
+        this.patientName = patientName;
+        this.visitType = visitType;
+        this.referringDoctorName = referringDoctorName;
+        this.invoiceAmount = invoiceAmount;
+        this.roomCategory = roomCategory;
+        this.finalAmount = finalAmount;
+
+        this.profitMargin = invoiceAmount - finalAmount;
+        this.matrixPercentage = invoiceAmount != 0.0
+                ? (this.profitMargin * 100.0 / invoiceAmount)
+                : null;
+    }
+
     public String getInvoiceNo() {
         return invoiceNo;
     }
@@ -145,5 +234,13 @@ public class ProfitMatrixRowDTO {
 
     public Double getMatrixPercentage() {
         return matrixPercentage;
+    }
+
+    public RoomCategory getRoomCategory() {
+        return roomCategory;
+    }
+
+    public void setRoomCategory(RoomCategory roomCategory) {
+        this.roomCategory = roomCategory;
     }
 }

@@ -56,12 +56,12 @@
                                     action="#{searchController.createPettyCashToApproveTable()}">
                                 </p:commandButton>
 
-
-
-
                             </div>
                             <div class="col-md-10">
-                                <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
+                                <p:dataTable 
+                                    id="tblBills" 
+                                    value="#{searchController.bills}" 
+                                    var="bill">
                                     <p:column headerText="Bill No" >
                                         <p:commandLink 
                                             id="billNo" 
@@ -73,12 +73,12 @@
                                             <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillSearch.bill}"/>
                                             <f:setPropertyActionListener value="#{bill}" target="#{pettyCashBillController.current}"/>
                                         </p:commandLink>
-
-
                                     </p:column>
+                                    
                                     <p:column headerText="Invoice No" >
                                         <h:outputLabel  value="#{bill.invoiceNumber}"  />
                                     </p:column>
+                                    
                                     <p:column headerText="Billed At"  >
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -97,6 +97,7 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>  
+                                    
                                     <p:column headerText="Billed By" >
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>
@@ -112,17 +113,20 @@
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>
-                                    </p:column>  
+                                    </p:column>
+                                    
                                     <p:column headerText="Paid To(Staff)"  >
-
                                         <h:outputLabel value="#{bill.staff.person.name}" ></h:outputLabel>
                                     </p:column>  
+                                    
                                     <p:column headerText="Paid To(Person)"  >
                                         <h:outputLabel value="#{bill.person.name}" />
                                     </p:column>
+                                    
                                     <p:column headerText="Paid To(Department)"  >
                                         <h:outputLabel value="#{bill.toDepartment.name}" />
                                     </p:column> 
+                                    
                                     <p:column headerText="Net Value" >
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -135,21 +139,25 @@
                                         </h:panelGroup>
                                         <p:badge value="Not Approved" severity="danger" rendered="#{bill.approveAt eq null}" />
                                     </p:column>
+                                    
                                     <p:column headerText="Approved By" >
                                         <h:outputLabel value=" #{bill.approveUser.name}" >
                                         </h:outputLabel><br/>
                                         <p:outputLabel value="#{bill.approveAt}">
                                             <f:convertDateTime pattern="#{sessionController.departmentPreference.shortDateFormat}" />
                                         </p:outputLabel>
-                                    </p:column> 
+                                    </p:column>
+                                    
                                     <p:column headerText="Action">
-                                        <p:commandButton class="ui-button-success" 
-                                                         icon="fas fa-check" 
-                                                         value="Approve"
-                                                         onclick="if (!confirm('Are you sure you want to approve this ?'))
+                                        <p:commandButton 
+                                            class="ui-button-success" 
+                                            icon="fas fa-check" 
+                                            value="Approve"
+                                            onclick="if (!confirm('Are you sure you want to approve this ?'))
                                                                      return false;"
-                                                         action="#{pettyCashBillController.approveBill(bill)}"
-                                                         disabled="#{bill.approveAt ne null or pettyCashBillController.checkForExpireofApproval(bill)}" />
+                                            action="#{pettyCashBillController.approveBill(bill)}"
+                                            disabled="#{bill.approveAt ne null or pettyCashBillController.checkForExpireofApproval(bill)}" >
+                                        </p:commandButton>
                                     </p:column>
                                 </p:dataTable>
                             </div>

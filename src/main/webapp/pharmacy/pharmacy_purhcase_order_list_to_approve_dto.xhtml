@@ -174,7 +174,7 @@
                                 <p:column headerText="Request Details">
                                     <div class="d-flex flex-column gap-1">
                                         <div>
-                                            <h:outputText value="#{dto.creatorName}" class="fw-bold"/>
+                                            <h:outputText value="#{dto.checkedByName}" class="fw-bold"/>
                                         </div>
                                         <div>
                                             <small class="text-muted">
@@ -278,15 +278,14 @@
                                             disabled="#{dto.checkedById eq null or dto.approved or dto.cancelled eq true or !webUserController.hasPrivilege('PurchaseOrdersApprovel')}">
                                             <f:setPropertyActionListener target="#{purchaseOrderController.requestedBillId}" value="#{dto.billId}"/>
                                         </p:commandButton>
-                                        <p:commandButton 
+                                        <p:commandButton
                                             id="btnViewApproved"
                                             ajax="false"
                                             icon="pi pi-eye"
                                             class="ui-button-info ui-button-sm"
                                             title="View Approved Purchase Order"
-                                            action="#{pharmacyBillSearch.navigateToReprintPharmacyPurchaseOrderFromDto}" 
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByBillId(dto.referenceBillId)}"
                                             disabled="#{not dto.approved}">
-                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.billId}" value="#{dto.referenceBillId}"/>
                                         </p:commandButton>
                                         <p:commandButton 
                                             id="btnViewRequest"

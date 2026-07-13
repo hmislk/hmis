@@ -139,6 +139,17 @@ public class BillNumberGenerator {
         return institution.getId() + "-" + "null" + "-" + "null";
     }
 
+    private static final int MAX_SERIAL_DIGITS = 12;
+
+    private String formatSerialNumber(Long serialNumber) {
+        Integer digits = configOptionApplicationController.getIntegerValueByKey("Bill Number Serial Digit Count", 6);
+        if (digits == null || digits < 1) {
+            digits = 6;
+        }
+        digits = Math.min(digits, MAX_SERIAL_DIGITS);
+        return String.format("%0" + digits + "d", serialNumber);
+    }
+
     private String getBillNumberDelimiter() {
         String delimiter = configOptionApplicationController.getShortTextValueByKey("Bill Number Delimiter", "/");
         if (delimiter == null) {
@@ -699,10 +710,34 @@ public class BillNumberGenerator {
     }
 
     // Special method for Single Number strategy only
+    // Returns the next serial number, with the increment and flush performed inside the lock.
+    public Long fetchNextSerialForYearSingleNumber(Institution institution, Department toDepartment, List<BillTypeAtomic> billTypes) {
+        String lockKey = getLockKey(institution, toDepartment, billTypes);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            return incrementAndFlushSingleNumber(toDepartment, billTypes);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    // Returns the next serial number, with the increment and flush performed inside the lock.
+    public Long fetchNextSerialForYearOpdAndInpatientServiceBatchBills(Department department, List<BillTypeAtomic> billTypes) {
+        String lockKey = getLockKey(department, billTypes);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            return incrementAndFlushBatchBills(department, billTypes);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    // Kept for callers outside the single-number strategy path.
     public BillNumber fetchLastBillNumberForYearSingleNumber(Institution institution, Department toDepartment, List<BillTypeAtomic> billTypes) {
         String lockKey = getLockKey(institution, toDepartment, billTypes);
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
-
         lock.lock();
         try {
             return fetchLastBillNumberSynchronizedSingleNumber(toDepartment, billTypes);
@@ -722,6 +757,24 @@ public class BillNumberGenerator {
         }
     }
 
+    // Fetches, increments, and flushes the individual-bill counter inside the caller's lock.
+    private Long incrementAndFlushSingleNumber(Department department, List<BillTypeAtomic> billTypes) {
+        BillNumber billNumber = fetchLastBillNumberSynchronizedSingleNumber(department, billTypes);
+        Long next = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(next);
+        billNumberFacade.editAndFlush(billNumber);
+        return next;
+    }
+
+    // Fetches, increments, and flushes the batch-bill counter inside the caller's lock.
+    private Long incrementAndFlushBatchBills(Department department, List<BillTypeAtomic> billTypes) {
+        BillNumber billNumber = fetchLastBillNumberSynchronizedForOpdAndInpatientBatchBills(department, billTypes);
+        Long next = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(next);
+        billNumberFacade.editAndFlush(billNumber);
+        return next;
+    }
+
     // Special synchronized method for Single Number strategy only
     private BillNumber fetchLastBillNumberSynchronizedSingleNumber(Department department, List<BillTypeAtomic> billTypes) {
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
@@ -738,7 +791,7 @@ public class BillNumberGenerator {
         }
         jpql += " order by b.id desc";
         hm.put("yr", currentYear);
-        BillNumber billNumber = billNumberFacade.findFirstByJpql(jpql, hm);
+        BillNumber billNumber = billNumberFacade.findFreshByJpql(jpql, hm);
 
         if (billNumber == null) {
             billNumber = new BillNumber();
@@ -790,7 +843,7 @@ public class BillNumberGenerator {
         }
         jpql += " order by b.id desc";
         hm.put("yr", currentYear);
-        BillNumber billNumber = billNumberFacade.findFirstByJpql(jpql, hm);
+        BillNumber billNumber = billNumberFacade.findFreshByJpql(jpql, hm);
         if (billNumber == null) {
             billNumber = new BillNumber();
             billNumber.setBillTypeAtomic(null);
@@ -2160,7 +2213,7 @@ public class BillNumberGenerator {
 
         // Append formatted 6-digit bill number
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
 
         // Return the formatted bill number
         return result.toString();
@@ -2220,7 +2273,7 @@ public class BillNumberGenerator {
         result.append(getBillNumberDelimiter());
         
         // Append formatted 6-digit bill number
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
 
         // Return the formatted bill number
         return result.toString();
@@ -2263,7 +2316,7 @@ public class BillNumberGenerator {
         result.append(String.format("%02d", year)); // Ensure year is always two digits
         result.append(getBillNumberDelimiter());
         // Append formatted 6-digit bill number
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
         // Return the formatted bill number
         return result.toString();
     }
@@ -2305,7 +2358,7 @@ public class BillNumberGenerator {
         result.append(String.format("%02d", year)); // Ensure year is always two digits
         result.append(getBillNumberDelimiter());
         // Append formatted 6-digit bill number
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
         // Return the formatted bill number
         return result.toString();
     }
@@ -2345,7 +2398,7 @@ public class BillNumberGenerator {
         result.append(String.format("%02d", year)); // Ensure year is always two digits
         result.append(getBillNumberDelimiter());
         // Append formatted 6-digit bill number
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
         // Return the formatted bill number
         return result.toString();
     }
@@ -2382,7 +2435,7 @@ public class BillNumberGenerator {
         int year = Calendar.getInstance().get(Calendar.YEAR) % 100; // Get last two digits of year
         result.append(String.format("%02d", year)); // Ensure year is always two digits
         // Append formatted 6-digit bill number
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
         // Return the formatted bill number
         return result.toString();
     }
@@ -2496,7 +2549,7 @@ public class BillNumberGenerator {
         result.append(String.format("%02d", year)); // Ensure year is always two digits
         result.append(getBillNumberDelimiter());
         // Append formatted 6-digit bill number
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
         // Return the formatted bill number
         return result.toString();
     }
@@ -2536,7 +2589,7 @@ public class BillNumberGenerator {
         result.append(String.format("%02d", year)); // Ensure year is always two digits
         result.append(getBillNumberDelimiter());
         // Append formatted 6-digit bill number
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
         // Return the formatted bill number
         return result.toString();
     }
@@ -2580,30 +2633,46 @@ public class BillNumberGenerator {
         boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
                 = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
 
+        Long dd;
         if (commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
             billNumber = fetchLastBillNumberForYear(null, null, billTypes);
+            dd = billNumber.getLastBillNumber() + 1;
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.edit(billNumber);
         } else if (separateBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
             billNumber = fetchLastBillNumberForYear(dep.getInstitution(), dep, billTypes);
+            dd = billNumber.getLastBillNumber() + 1;
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.edit(billNumber);
         } else if (separateBillNumberForInstitutionsOnly) {
             billNumber = fetchLastBillNumberForYear(dep.getInstitution(), null, billTypes);
+            dd = billNumber.getLastBillNumber() + 1;
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.edit(billNumber);
         } else if (separateBillNumberForDepartmentsOnly) {
             billNumber = fetchLastBillNumberForYear(null, dep, billTypes);
+            dd = billNumber.getLastBillNumber() + 1;
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.edit(billNumber);
         } else if (separateBillNumberForBillTypesOnly) {
             billNumber = fetchLastBillNumberForYear(null, null, billTypes);
+            dd = billNumber.getLastBillNumber() + 1;
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.edit(billNumber);
         } else if (opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination) {
             billNumber = fetchLastBillNumberForYear(null, dep, billTypes); //TODO: Correct this in a seperate issue
+            dd = billNumber.getLastBillNumber() + 1;
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.edit(billNumber);
         } else if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
-            billNumber = fetchLastBillNumberForYearSingleNumber(null, dep, billTypes);
+            // increment + flush happens inside the lock — no separate edit() needed
+            dd = fetchNextSerialForYearSingleNumber(null, dep, billTypes);
         } else {
             billNumber = fetchLastBillNumberForYear(dep.getInstitution());
+            dd = billNumber.getLastBillNumber() + 1;
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.edit(billNumber);
         }
-
-        Long dd = billNumber.getLastBillNumber();
-        dd = dd + 1;
-
-        billNumber.setLastBillNumber(dd);
-
-        billNumberFacade.edit(billNumber);
 
         StringBuilder result = new StringBuilder();
 
@@ -2626,7 +2695,7 @@ public class BillNumberGenerator {
         result.append(getBillNumberDelimiter());
         result.append(String.format("%02d", year));
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd));
+        result.append(formatSerialNumber(dd));
 
         String finalResult = result.toString();
         return finalResult;
@@ -2645,13 +2714,8 @@ public class BillNumberGenerator {
     }
 
     public String departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServices(Department dep, List<BillTypeAtomic> billTypes) {
-        BillNumber billNumber = fetchLastBillNumberSynchronizedForOpdAndInpatientBatchBillForYear(dep, billTypes);
-
-        Long dd = billNumber.getLastBillNumber();
-        dd = dd + 1;
-        billNumber.setLastBillNumber(dd);
-
-        billNumberFacade.edit(billNumber);
+        // increment + flush happen inside the lock via fetchNextSerialForYearOpdAndInpatientServiceBatchBills
+        Long dd = fetchNextSerialForYearOpdAndInpatientServiceBatchBills(dep, billTypes);
 
         StringBuilder result = new StringBuilder();
 
@@ -2677,7 +2741,7 @@ public class BillNumberGenerator {
         result.append(getBillNumberDelimiter());
         result.append(String.format("%02d", year));
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd));
+        result.append(formatSerialNumber(dd));
 
         String finalResult = result.toString();
         return finalResult;
@@ -2728,7 +2792,7 @@ public class BillNumberGenerator {
         result.append(getBillNumberDelimiter());
         result.append(String.format("%02d", year));
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd));
+        result.append(formatSerialNumber(dd));
 
         String finalResult = result.toString();
         return finalResult;
@@ -2816,7 +2880,7 @@ public class BillNumberGenerator {
 
         // Append formatted 6-digit bill number
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
 
         // Return the formatted bill number
         return result.toString();
@@ -2877,7 +2941,7 @@ public class BillNumberGenerator {
 
         // Append formatted 6-digit bill number
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
 
         // Return the formatted bill number
         return result.toString();
@@ -2936,7 +3000,7 @@ public class BillNumberGenerator {
 
         // Append formatted 6-digit bill number
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+        result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
 
         // Return the formatted bill number
         return result.toString();
@@ -2978,7 +3042,7 @@ public class BillNumberGenerator {
 
             // Append formatted 6-digit bill number
             result.append(getBillNumberDelimiter());
-            result.append(String.format("%06d", dd));
+            result.append(formatSerialNumber(dd));
 //        billNumber.setLastBillNumber(dd);
 //        billNumberFacade.editAndFlush(billNumber);
             // Ensure bill number is always six digits
@@ -3005,7 +3069,7 @@ public class BillNumberGenerator {
 
             // Append formatted 6-digit bill number
             result.append(getBillNumberDelimiter());
-            result.append(String.format("%06d", dd)); // Ensure bill number is always six digits
+            result.append(formatSerialNumber(dd)); // Ensure bill number is always six digits
 
             // Return the formatted bill number
             return result.toString();
@@ -3392,7 +3456,7 @@ public class BillNumberGenerator {
         int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
         result.append(String.format("%02d", year));
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd));
+        result.append(formatSerialNumber(dd));
 
         return result.toString();
     }
@@ -3434,7 +3498,7 @@ public class BillNumberGenerator {
         int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
         result.append(String.format("%02d", year));
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd));
+        result.append(formatSerialNumber(dd));
 
         return result.toString();
     }
@@ -3475,7 +3539,7 @@ public class BillNumberGenerator {
         int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
         result.append(String.format("%02d", year));
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd));
+        result.append(formatSerialNumber(dd));
 
         return result.toString();
     }
@@ -3516,7 +3580,7 @@ public class BillNumberGenerator {
         int year = Calendar.getInstance().get(Calendar.YEAR) % 100;
         result.append(String.format("%02d", year));
         result.append(getBillNumberDelimiter());
-        result.append(String.format("%06d", dd));
+        result.append(formatSerialNumber(dd));
 
         return result.toString();
     }

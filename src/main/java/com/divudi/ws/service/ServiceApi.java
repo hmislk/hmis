@@ -440,6 +440,115 @@ public class ServiceApi {
         }
     }
 
+    /**
+     * Bulk-update marginAllowed and/or discountAllowed on fees in a category.
+     * POST /api/services/fees/bulk-margin
+     * Body: {"categoryId": 1054, "feeType": "OwnInstitution", "marginAllowed": true, "discountAllowed": null}
+     */
+    @POST
+    @Path("/fees/bulk-margin")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response bulkUpdateMargin(String requestBody) {
+        try {
+            String key = requestContext.getHeader("Finance");
+            WebUser user = validateApiKey(key);
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> body;
+            try {
+                body = gson.fromJson(requestBody, Map.class);
+            } catch (JsonSyntaxException e) {
+                return errorResponse("Invalid JSON format: " + e.getMessage(), 400);
+            }
+
+            if (body == null) {
+                return errorResponse("Request body is required", 400);
+            }
+
+            Long categoryId = null;
+            if (body.get("categoryId") instanceof Number) {
+                Number n = (Number) body.get("categoryId");
+                if (n.doubleValue() != Math.floor(n.doubleValue()) || Double.isInfinite(n.doubleValue())) {
+                    return errorResponse("categoryId must be a whole number", 400);
+                }
+                categoryId = n.longValue();
+            }
+            String feeType = body.get("feeType") != null ? body.get("feeType").toString() : null;
+
+            Boolean marginAllowed = null;
+            if (body.get("marginAllowed") != null) {
+                if (body.get("marginAllowed") instanceof Boolean) {
+                    marginAllowed = (Boolean) body.get("marginAllowed");
+                } else {
+                    return errorResponse("marginAllowed must be a boolean", 400);
+                }
+            }
+
+            Boolean discountAllowed = null;
+            if (body.get("discountAllowed") != null) {
+                if (body.get("discountAllowed") instanceof Boolean) {
+                    discountAllowed = (Boolean) body.get("discountAllowed");
+                } else {
+                    return errorResponse("discountAllowed must be a boolean", 400);
+                }
+            }
+
+            Map<String, Object> result = serviceApiService.bulkUpdateMargin(
+                    categoryId, feeType, marginAllowed, discountAllowed, user);
+            return successResponse(result);
+
+        } catch (Exception e) {
+            String msg = e.getMessage();
+            if (msg != null && (msg.contains("required") || msg.contains("Invalid") || msg.contains("must be"))) {
+                return errorResponse(msg, 400);
+            }
+            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+        }
+    }
+
+    /**
+     * List fees with marginAllowed disabled (false or null) in a category.
+     * GET /api/services/fees/margin-disabled?categoryId=X
+     */
+    @GET
+    @Path("/fees/margin-disabled")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listMarginDisabled() {
+        try {
+            String key = requestContext.getHeader("Finance");
+            WebUser user = validateApiKey(key);
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+
+            String categoryIdStr = uriInfo.getQueryParameters().getFirst("categoryId");
+            if (categoryIdStr == null || categoryIdStr.trim().isEmpty()) {
+                return errorResponse("categoryId query parameter is required", 400);
+            }
+
+            Long categoryId;
+            try {
+                categoryId = Long.parseLong(categoryIdStr.trim());
+            } catch (NumberFormatException e) {
+                return errorResponse("Invalid categoryId format", 400);
+            }
+
+            List<ItemFeeDTO> fees = serviceApiService.findFeesWithMarginDisabled(categoryId);
+            return successResponse(fees);
+
+        } catch (Exception e) {
+            String msg = e.getMessage();
+            if (msg != null && msg.contains("required")) {
+                return errorResponse(msg, 400);
+            }
+            return errorResponse("An error occurred: " + (msg != null ? msg : "Unknown error"), 500);
+        }
+    }
+
     // =========================================================================
     // Service Category CRUD
     // =========================================================================

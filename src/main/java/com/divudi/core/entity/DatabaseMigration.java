@@ -30,7 +30,7 @@ public class DatabaseMigration implements Serializable, Comparable<DatabaseMigra
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true, length = 50)
@@ -276,17 +276,26 @@ public class DatabaseMigration implements Serializable, Comparable<DatabaseMigra
             return 1;
         }
 
-        String[] parts1 = version1.split("\\.");
-        String[] parts2 = version2.split("\\.");
+        String v1 = version1.startsWith("v") ? version1.substring(1) : version1;
+        String v2 = version2.startsWith("v") ? version2.substring(1) : version2;
+
+        String[] parts1 = v1.split("\\.");
+        String[] parts2 = v2.split("\\.");
 
         int maxLength = Math.max(parts1.length, parts2.length);
 
         for (int i = 0; i < maxLength; i++) {
-            int num1 = i < parts1.length ? Integer.parseInt(parts1[i]) : 0;
-            int num2 = i < parts2.length ? Integer.parseInt(parts2[i]) : 0;
-
-            if (num1 != num2) {
-                return Integer.compare(num1, num2);
+            try {
+                int num1 = i < parts1.length ? Integer.parseInt(parts1[i]) : 0;
+                int num2 = i < parts2.length ? Integer.parseInt(parts2[i]) : 0;
+                if (num1 != num2) {
+                    return Integer.compare(num1, num2);
+                }
+            } catch (NumberFormatException e) {
+                String s1 = i < parts1.length ? parts1[i] : "";
+                String s2 = i < parts2.length ? parts2[i] : "";
+                int cmp = s1.compareTo(s2);
+                if (cmp != 0) return cmp;
             }
         }
 

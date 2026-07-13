@@ -28,6 +28,7 @@
                         class="ui-button-warning mx-1"
                         icon="fas fa-check"
                         ajax="false"
+                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnFinalize')}"
                         style="float: right;">
                     </p:commandButton>
                     <p:commandButton
@@ -36,6 +37,7 @@
                         class="ui-button-success"
                         icon="fas fa-floppy-disk"
                         ajax="false"
+                        disabled="#{not webUserController.hasPrivilege('PharmacyGrnSave')}"
                         style="float: right;">
                     </p:commandButton>
 

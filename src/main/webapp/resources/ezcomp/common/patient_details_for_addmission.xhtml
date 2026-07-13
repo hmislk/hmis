@@ -13,6 +13,7 @@
         <cc:attribute name="editable" type="java.lang.Boolean"  />
         <cc:attribute name="searchable" type="java.lang.Boolean" default="true" />
         <cc:attribute name="controller" type="com.divudi.bean.common.ControllerWithPatient"/>
+        <cc:attribute name="extraUpdateIds" default="" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -77,9 +78,9 @@
                                 id="btnSearchbyPhoneNo"
                                 icon="fa fa-search" 
                                 title="Quick Search from Phone Number"
-                                action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}" 
+                                action="#{patientController.quickSearchPatientLongPhoneNumber(cc.attrs.controller)}"
                                 process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
-                                update="ptImp selectPatient editPatient viewPatient ptAl"
+                                update="ptImp selectPatient editPatient viewPatient ptAl #{cc.attrs.extraUpdateIds}"
                                 styleClass="btn-sm mx-1"/>
                             <p:defaultCommand target="btnSearchbyPhoneNo"> </p:defaultCommand>
                             <p:commandButton 
@@ -106,11 +107,11 @@
                             #{ps.person.phone}
                         </p:column>
                         <p:column>
-                            <p:commandButton 
-                                action="#{patientController.selectQuickOneFromQuickSearchPatient(cc.attrs.controller)}" 
+                            <p:commandButton
+                                action="#{patientController.selectQuickOneFromQuickSearchPatient(cc.attrs.controller)}"
                                 id="btnSelectPt"
                                 process="btnSelectPt tblPatients"
-                                update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId}"
+                                update=":#{p:resolveFirstComponentWithId('ptImp',view).clientId} #{cc.attrs.extraUpdateIds}"
                                 value="select">
                                 <f:setPropertyActionListener value="#{ps}" target="#{patientController.current}" />
                             </p:commandButton>
@@ -390,13 +391,12 @@
 
                             <h:panelGroup class="d-flex">
 
-                                <p:outputLabel class="ml-4" value="#{cc.attrs.controller.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.controller.patient.person.nameWithTitle and !configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" />
-
-                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable patient specific status management in the system')}" style="transform: translate(110%, -40%);background-color: #{empty cc.attrs.controller.patient.specificStatus ? 'white' : '#FF401F'} ; font-style: italic;" value="#{cc.attrs.controller.patient.specificStatus}" severity="danger">
+                                
+                                <p:badge style="transform: translate(110%, -40%);background-color: #{cc.attrs.controller.patient.specificStatus != null and cc.attrs.controller.patient.specificStatus.name() != 'NORMAL' ? '#FF401F' : 'white'} ; font-style: italic;" value="#{cc.attrs.controller.patient.specificStatus}" severity="danger">
                                     <p:outputLabel value="#{cc.attrs.controller.patient.person.nameWithTitle}" rendered="#{not empty cc.attrs.controller.patient.person.nameWithTitle}" />
                                 </p:badge> 
 
-                                <p:badge rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable blacklist patient management in the system')}" style="transform: translate(110%, -40%);background-color: #{cc.attrs.controller.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{cc.attrs.controller.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
+                                <p:badge style="transform: translate(110%, -40%);background-color: #{cc.attrs.controller.patient.blacklisted ? 'black' : 'white'} ; font-style: italic; font-size: 15px" value="X #{cc.attrs.controller.patient.blacklisted ? 'Blacklisted' : 'Active'}" severity="danger">
 
                                 </p:badge>
 

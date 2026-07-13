@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.BillService;
 import com.divudi.core.data.BillType;
@@ -42,6 +43,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -55,6 +58,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class TransferIssueDirectController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(TransferIssueDirectController.class.getName());
 
     @EJB
     private BillFacade billFacade;
@@ -76,6 +81,8 @@ public class TransferIssueDirectController implements Serializable {
     private NotificationController notificationController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     private PharmacyController pharmacyController;
     @Inject
@@ -177,6 +184,18 @@ public class TransferIssueDirectController implements Serializable {
 
         billItem.setSearialNo(getBillItems().size());
 
+        if (billItem.getItem() != null) {
+            DepartmentType itemDeptType = billItem.getItem().getDepartmentType();
+            if (issuedBill.getDepartmentType() == null) {
+                issuedBill.setDepartmentType(itemDeptType);
+            } else if (itemDeptType != null && !itemDeptType.equals(issuedBill.getDepartmentType())) {
+                JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                        + "Bill is set for " + issuedBill.getDepartmentType().getLabel()
+                        + " items, but you are trying to add a " + itemDeptType.getLabel() + " item.");
+                return;
+            }
+        }
+
         // Set the transfer rate based on configuration
         BigDecimal itemTransferRate = determineTransferRate(getTmpStock().getItemBatch());
         BigDecimal lineGrossRate = itemTransferRate.multiply(billItem.getBillItemFinanceDetails().getUnitsPerPack());
@@ -212,7 +231,14 @@ public class TransferIssueDirectController implements Serializable {
     /**
      * Settles the direct issue transaction
      */
-    public void settleDirectIssue() {
+    public synchronized void settleDirectIssue() {
+        if (!isAuthorized("SETTLE_DIRECT_ISSUE", "PharmacyDisbursementDirectIssue")) {
+            return;
+        }
+        if (issuedBill != null && issuedBill.getId() != null) {
+            JsfUtil.addErrorMessage("This bill has already been saved.");
+            return;
+        }
         if (issuedBill.getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please Select Department to Issue");
             return;
@@ -856,6 +882,36 @@ public class TransferIssueDirectController implements Serializable {
 
     public void setBillItemValue(Double billItemValue) {
         this.billItemValue = billItemValue;
+    }
+
+    /**
+     * Authorization helper method to check Pharmacy Direct Transfer Issue
+     * privileges and audit denied access
+     *
+     * @param action The action being attempted (e.g. SETTLE_DIRECT_ISSUE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, issuedBill != null ? issuedBill.getId() : "null"});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = issuedBill != null ? issuedBill.getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Pharmacy Direct Transfer Issue access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to perform this direct transfer issue action.");
+            return false;
+        }
+
+        return true;
     }
 
 }

@@ -10,6 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -46,7 +47,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import com.divudi.bean.common.ConfigOptionController;
 import javax.ejb.EJB;
+import com.divudi.bean.inward.SurgeryBillController;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
@@ -65,7 +68,15 @@ public class InwardProfessionalBillController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
+    private WebUserController webUserController;
+    @Inject
     AdmissionController admissionController;
+    @Inject
+    InwardSearch inwardSearch;
+    @Inject
+    SurgeryBillController surgeryBillController;
+    @Inject
+    ConfigOptionController configOptionController;
     ////////////////////
     @EJB
     private BillFacade ejbFacade;
@@ -96,6 +107,8 @@ public class InwardProfessionalBillController implements Serializable {
     List<BillEntry> lstBillEntries;
     List<BillFee> encounterProfessionalFees;
     double totalProfessionalFeesForEncounter;
+    List<BillFee> savedEstimatedProfessionalFees;
+    double totalSavedEstimatedProfessionalFeesForEncounter;
     /////////////////
     String patientTabId = "tabNewPt";
     String selectText = "";
@@ -114,10 +127,18 @@ public class InwardProfessionalBillController implements Serializable {
     boolean toClearBill = false;
     boolean printPreview;
     Bill batchBill;
+    Bill selectedSurgeryBill;
+    Bill lastSavedProfessionalFeeBill;
+    boolean settlePreview = false;
+    List<Bill> surgeryProfessionalFeeBills;
     EncounterComponent proEncounterComponent;
     List<EncounterComponent> proEncounterComponents;
     @EJB
     EncounterComponentFacade encounterComponentFacade;
+    // Print config temp fields (loaded into dialog, not persisted directly)
+    boolean profFeeA4;
+    boolean profFee5x5;
+    boolean profFeePos;
 
     public List<Staff> completeItems(String qry) {
         HashMap hm = new HashMap();
@@ -182,6 +203,12 @@ public class InwardProfessionalBillController implements Serializable {
 
         if (getBatchBill().getPatientEncounter().isPaymentFinalized()) {
             JsfUtil.addErrorMessage("Final Payment is Finalized");
+            return true;
+        }
+
+        if (getBatchBill().getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
             return true;
         }
 
@@ -267,6 +294,9 @@ public class InwardProfessionalBillController implements Serializable {
             bill.setBillDate(new Date());
             bill.setBillTime(new Date());
             bill.setPatientEncounter(getBatchBill().getPatientEncounter());
+            if (getBatchBill().getPatientEncounter() != null) {
+                bill.setPatient(getBatchBill().getPatientEncounter().getPatient());
+            }
             bill.setProcedure(getBatchBill().getProcedure());
             bill.setDepartment(getSessionController().getDepartment());
             bill.setInstitution(getSessionController().getInstitution());
@@ -395,10 +425,76 @@ public class InwardProfessionalBillController implements Serializable {
         proEncounterComponent.setOrderNo(getProEncounterComponents().size() + 1);
         getProEncounterComponents().add(proEncounterComponent);
 
-        saveSurgeryProfessional();
-
         proEncounterComponent = null;
+        JsfUtil.addSuccessMessage("Fee added. Click 'Save Bill' to confirm.");
     }
+
+    public void saveProfessionalFeeBill() {
+        if (generalChecking()) {
+            return;
+        }
+        if (getProEncounterComponents().isEmpty()) {
+            JsfUtil.addErrorMessage("Add at least one fee before saving.");
+            return;
+        }
+        saveSurgeryProfessional();
+        lastSavedProfessionalFeeBill = current;
+        fetchSurgeryProfessionalFeeBills();
+        makeNullList();
+        current = null;
+        settlePreview = true;
+        JsfUtil.addSuccessMessage("Professional fee bill saved.");
+    }
+
+    public void clearProfessionalFeeForm() {
+        makeNullList();
+        current = null;
+        lastSavedProfessionalFeeBill = null;
+        settlePreview = false;
+    }
+
+    public Bill getLastSavedProfessionalFeeBill() {
+        return lastSavedProfessionalFeeBill;
+    }
+
+    public boolean isSettlePreview() {
+        return settlePreview;
+    }
+
+    public void setSettlePreview(boolean settlePreview) {
+        this.settlePreview = settlePreview;
+    }
+
+    public List<EncounterComponent> getEncounterComponentsForBill(Bill bill) {
+        if (bill == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT ec FROM EncounterComponent ec"
+                + " WHERE ec.retired=false AND ec.billItem.bill=:bill ORDER BY ec.orderNo";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bill", bill);
+        return getEncounterComponentFacade().findByJpql(jpql, hm);
+    }
+
+    public void loadProfFeeConfig() {
+        profFeeA4 = configOptionController.getBooleanValueByKey("Surgery Professional Fee Bill is A4Paper", true);
+        profFee5x5 = configOptionController.getBooleanValueByKey("Surgery Professional Fee Bill is FiveFivePaper", false);
+        profFeePos = configOptionController.getBooleanValueByKey("Surgery Professional Fee Bill is PosPaper", false);
+    }
+
+    public void saveProfFeeConfig() {
+        configOptionController.setBooleanValueByKey("Surgery Professional Fee Bill is A4Paper", profFeeA4);
+        configOptionController.setBooleanValueByKey("Surgery Professional Fee Bill is FiveFivePaper", profFee5x5);
+        configOptionController.setBooleanValueByKey("Surgery Professional Fee Bill is PosPaper", profFeePos);
+        JsfUtil.addSuccessMessage("Print settings saved.");
+    }
+
+    public boolean isProfFeeA4() { return profFeeA4; }
+    public void setProfFeeA4(boolean profFeeA4) { this.profFeeA4 = profFeeA4; }
+    public boolean isProfFee5x5() { return profFee5x5; }
+    public void setProfFee5x5(boolean profFee5x5) { this.profFee5x5 = profFee5x5; }
+    public boolean isProfFeePos() { return profFeePos; }
+    public void setProfFeePos(boolean profFeePos) { this.profFeePos = profFeePos; }
 
     public Bill getBatchBill() {
         return batchBill;
@@ -709,6 +805,12 @@ public class InwardProfessionalBillController implements Serializable {
             return true;
         }
 
+        if (getCurrent().getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
+            return true;
+        }
+
         if (lstBillFees.size() <= 0) {
             JsfUtil.addErrorMessage("Professional Fee Should Not Empty");
             return true;
@@ -730,6 +832,7 @@ public class InwardProfessionalBillController implements Serializable {
         }
 
         fetchEncounterProfessionalFees();
+        fetchSavedEstimatedProfessionalFees();
 
         printPreview = true;
 
@@ -759,6 +862,10 @@ public class InwardProfessionalBillController implements Serializable {
         Date toDate = null;
         current = null;
         batchBill = null;
+        selectedSurgeryBill = null;
+        surgeryProfessionalFeeBills = null;
+        lastSavedProfessionalFeeBill = null;
+        settlePreview = false;
         printPreview = false;
         institution = sessionController.getInstitution();
         makeNullList();
@@ -820,6 +927,74 @@ public class InwardProfessionalBillController implements Serializable {
         return "/inward/inward_bill_professional_estimate?faces-redirect=true";
     }
 
+    public String navigateToSurgeryProfessionalFees(Bill surgeryBill) {
+        makeNull();
+        selectedSurgeryBill = surgeryBill;
+        batchBill = surgeryBill;
+        getCurrent().setPatientEncounter(surgeryBill.getPatientEncounter());
+        fetchEncounterProfessionalFees();
+        fetchSurgeryProfessionalFeeBills();
+        return "/theater/surgery_professional_fees?faces-redirect=true";
+    }
+
+    public String navigateToSurgeryProfessionalFeesList(Bill surgeryBill) {
+        makeNull();
+        selectedSurgeryBill = surgeryBill;
+        fetchSurgeryProfessionalFeeBills();
+        return "/theater/surgery_professional_fees_list?faces-redirect=true";
+    }
+
+    public String navigateToSurgeryProfessionalFeeCancel(Bill profFeeBill) {
+        inwardSearch.setBill(profFeeBill);
+        inwardSearch.setComment(null);
+        inwardSearch.setPrintPreview(false);
+        return "/theater/surgery_professional_fees_cancel?faces-redirect=true";
+    }
+
+    private void fetchSurgeryProfessionalFeeBills() {
+        surgeryProfessionalFeeBills = null;
+        if (selectedSurgeryBill == null) {
+            return;
+        }
+        String jpql = "SELECT b FROM Bill b WHERE b.retired=false "
+                + " AND b.forwardReferenceBill=:surg "
+                + " AND b.billType=:bt ORDER BY b.createdAt DESC";
+        HashMap hm = new HashMap();
+        hm.put("surg", selectedSurgeryBill);
+        hm.put("bt", BillType.InwardProfessional);
+        surgeryProfessionalFeeBills = getEjbFacade().findByJpql(jpql, hm);
+    }
+
+    public List<Bill> getSurgeryProfessionalFeeBills() {
+        if (surgeryProfessionalFeeBills == null) {
+            fetchSurgeryProfessionalFeeBills();
+        }
+        return surgeryProfessionalFeeBills;
+    }
+
+    public void refreshSurgeryProfessionalFeeBills() {
+        surgeryProfessionalFeeBills = null;
+    }
+
+    public void cancelSurgeryProfessionalFeeBill(Bill bill) {
+        inwardSearch.setBill(bill);
+        inwardSearch.cancelTheatreProfessionalFeeBill();
+        surgeryProfessionalFeeBills = null;
+        surgeryBillController.refreshSurgeryBillFromDb();
+    }
+
+    public void setSurgeryProfessionalFeeBills(List<Bill> surgeryProfessionalFeeBills) {
+        this.surgeryProfessionalFeeBills = surgeryProfessionalFeeBills;
+    }
+
+    public Bill getSelectedSurgeryBill() {
+        return selectedSurgeryBill;
+    }
+
+    public void setSelectedSurgeryBill(Bill selectedSurgeryBill) {
+        this.selectedSurgeryBill = selectedSurgeryBill;
+    }
+
     public void makeNullList() {
         currentBillFee = null;
         billItem = null;
@@ -830,6 +1005,8 @@ public class InwardProfessionalBillController implements Serializable {
         proEncounterComponents = null;
         encounterProfessionalFees = null;
         totalProfessionalFeesForEncounter = 0.0;
+        savedEstimatedProfessionalFees = null;
+        totalSavedEstimatedProfessionalFeesForEncounter = 0.0;
     }
 
     private void fetchEncounterProfessionalFees() {
@@ -870,6 +1047,79 @@ public class InwardProfessionalBillController implements Serializable {
 
     public void setTotalProfessionalFeesForEncounter(double totalProfessionalFeesForEncounter) {
         this.totalProfessionalFeesForEncounter = totalProfessionalFeesForEncounter;
+    }
+
+    private void fetchSavedEstimatedProfessionalFees() {
+        savedEstimatedProfessionalFees = null;
+        totalSavedEstimatedProfessionalFeesForEncounter = 0.0;
+        if (current == null || getCurrent().getPatientEncounter() == null) {
+            return;
+        }
+        String sql = "select bf from BillFee bf "
+                + " where bf.retired=false "
+                + " and bf.bill.retired=false "
+                + " and bf.bill.cancelled=false "
+                + " and bf.bill.patientEncounter=:pe "
+                + " and bf.bill.billType=:bt "
+                + " order by bf.createdAt desc";
+        HashMap hm = new HashMap();
+        hm.put("pe", getCurrent().getPatientEncounter());
+        hm.put("bt", BillType.InwardProfessionalEstimates);
+        savedEstimatedProfessionalFees = getBillFeeFacade().findByJpql(sql, hm);
+        if (savedEstimatedProfessionalFees != null) {
+            for (BillFee bf : savedEstimatedProfessionalFees) {
+                totalSavedEstimatedProfessionalFeesForEncounter += bf.getFeeValue();
+            }
+        }
+    }
+
+    public List<BillFee> getSavedEstimatedProfessionalFees() {
+        if (savedEstimatedProfessionalFees == null) {
+            fetchSavedEstimatedProfessionalFees();
+        }
+        return savedEstimatedProfessionalFees;
+    }
+
+    public void setSavedEstimatedProfessionalFees(List<BillFee> savedEstimatedProfessionalFees) {
+        this.savedEstimatedProfessionalFees = savedEstimatedProfessionalFees;
+    }
+
+    public double getTotalSavedEstimatedProfessionalFeesForEncounter() {
+        return totalSavedEstimatedProfessionalFeesForEncounter;
+    }
+
+    public void setTotalSavedEstimatedProfessionalFeesForEncounter(double totalSavedEstimatedProfessionalFeesForEncounter) {
+        this.totalSavedEstimatedProfessionalFeesForEncounter = totalSavedEstimatedProfessionalFeesForEncounter;
+    }
+
+    public void removeSavedEstimatedProfessionalFee(BillFee bf) {
+        if (bf == null) {
+            return;
+        }
+        bf.setRetired(true);
+        bf.setRetiredAt(new Date());
+        bf.setRetirer(getSessionController().getLoggedUser());
+        getBillFeeFacade().edit(bf);
+
+        Bill parent = bf.getBill();
+        if (parent != null) {
+            String activeSql = "select count(b) from BillFee b "
+                    + " where b.retired=false "
+                    + " and b.bill=:bill ";
+            HashMap hm = new HashMap();
+            hm.put("bill", parent);
+            long activeCount = getBillFeeFacade().findLongByJpql(activeSql, hm);
+            if (activeCount == 0L) {
+                parent.setRetired(true);
+                parent.setRetiredAt(new Date());
+                parent.setRetirer(getSessionController().getLoggedUser());
+                parent.setCancelled(true);
+                getEjbFacade().edit(parent);
+            }
+        }
+
+        fetchSavedEstimatedProfessionalFees();
+        JsfUtil.addSuccessMessage("Estimated professional fee removed.");
     }
 
     BillItem billItem;

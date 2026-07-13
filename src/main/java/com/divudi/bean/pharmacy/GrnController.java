@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
@@ -46,6 +47,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -61,8 +64,12 @@ import org.primefaces.event.RowEditEvent;
 @SessionScoped
 public class GrnController implements Serializable {
 
+    private static final Logger LOGGER = Logger.getLogger(GrnController.class.getName());
+
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     private BilledBill bill;
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -500,6 +507,21 @@ public class GrnController implements Serializable {
     }
 
     public void request() {
+        if (!isAuthorized("REQUEST", "PharmacyGrnSave")) {
+            return;
+        }
+        doRequest();
+    }
+
+    /**
+     * Unguarded core of {@link #request()}. Called directly (bypassing the
+     * PharmacyGrnSave check) by {@link #finalizeBill()} when it needs to
+     * auto-save a not-yet-persisted draft as part of a Finalize action that
+     * has already been authorized under PharmacyGrnFinalize — a user with
+     * only the Finalize privilege must still be able to finalize a brand
+     * new GRN in one step.
+     */
+    private void doRequest() {
 //        if (Math.abs(difference) > 1) {
 //            JsfUtil.addErrorMessage("The invoice does not match..! Check again");
 //            return;
@@ -593,6 +615,9 @@ public class GrnController implements Serializable {
     }
 
     public void requestFinalize() {
+        if (!isAuthorized("REQUEST_FINALIZE", "PharmacyGrnFinalize")) {
+            return;
+        }
         if (Math.abs(difference) > 1) {
             JsfUtil.addErrorMessage("The invoice does not match..! Check again");
             return;
@@ -692,6 +717,9 @@ public class GrnController implements Serializable {
     }
 
     public void settle() {
+        if (!isAuthorized("SETTLE", "PharmacyGrnFinalize")) {
+            return;
+        }
         if (Math.abs(difference) > 1) {
             JsfUtil.addErrorMessage("The invoice does not match..! Check again");
             return;
@@ -849,6 +877,9 @@ public class GrnController implements Serializable {
 
 
     public void settleWholesale() {
+        if (!isAuthorized("SETTLE_WHOLESALE", "PharmacyGrnFinalize")) {
+            return;
+        }
         if (insTotal == 0 && difference != 0) {
             JsfUtil.addErrorMessage("Fill the invoice Total");
             return;
@@ -1039,7 +1070,7 @@ public class GrnController implements Serializable {
             return;
         }
         if (currentGrnBillPre.getId() == null) {
-            request();
+            doRequest();
         }
         getCurrentGrnBillPre().setEditedAt(new Date());
         getCurrentGrnBillPre().setEditor(sessionController.getLoggedUser());
@@ -1965,9 +1996,23 @@ public class GrnController implements Serializable {
     }
     
     public void requestWithSaveApprove() {
+        if (!isAuthorized("REQUEST_WITH_SAVE_APPROVE", "PharmacyGrnSave")) {
+            return;
+        }
+        doRequestWithSaveApprove();
+    }
+
+    /**
+     * Unguarded core of {@link #requestWithSaveApprove()}. Called directly
+     * (bypassing the PharmacyGrnSave check) by
+     * {@link #approveGrnWithSaveApprove()} when it needs to auto-save a
+     * not-yet-persisted draft as part of an Approve action that has already
+     * been authorized under PharmacyGrnApprove.
+     */
+    private void doRequestWithSaveApprove() {
         // Simple save method for save/approve workflow
         // Allow saving with incomplete data - no validation required
-        
+
         // Set basic bill information
         getCurrentGrnBillPre().setBillDate(new Date());
         getCurrentGrnBillPre().setBillTime(new Date());
@@ -2058,6 +2103,9 @@ public class GrnController implements Serializable {
     }
 
     public void approveGrnWithSaveApprove() {
+        if (!isAuthorized("APPROVE_GRN_WITH_SAVE_APPROVE", "PharmacyGrnApprove")) {
+            return;
+        }
         // Always use bill's invoice number, ignore controller reference
         if (getCurrentGrnBillPre().getInvoiceNumber() == null || getCurrentGrnBillPre().getInvoiceNumber().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please fill invoice number");
@@ -2089,7 +2137,7 @@ public class GrnController implements Serializable {
 
         // First ensure the bill is saved
         if (getCurrentGrnBillPre().getId() == null) {
-            requestWithSaveApprove(); // Save first if not already saved
+            doRequestWithSaveApprove(); // Save first if not already saved
         }
 
         // Process bill items for finalization with full stock management
@@ -2186,6 +2234,43 @@ public class GrnController implements Serializable {
         double profitMargin = getProfitMargin(bi);
         double threshold = 20.0; // Example threshold
         return profitMargin > threshold;
+    }
+
+    /**
+     * Authorization helper method to check GRN privileges and audit denied
+     * access
+     *
+     * @param action The action being attempted (SAVE, FINALIZE, APPROVE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null",
+                    action);
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = null;
+            if (grnBill != null) {
+                billId = grnBill.getId();
+            } else if (currentGrnBillPre != null) {
+                billId = currentGrnBillPre.getId();
+            } else if (approveBill != null) {
+                billId = approveBill.getId();
+            }
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized GRN access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " GRN.");
+            return false;
+        }
+
+        return true;
     }
 
 }

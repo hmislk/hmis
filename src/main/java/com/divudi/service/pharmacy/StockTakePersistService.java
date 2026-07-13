@@ -3,9 +3,9 @@ package com.divudi.service.pharmacy;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -20,13 +20,13 @@ import javax.persistence.Query;
  * Strategy:
  *  1. Persist the Bill header via JPA (gets DTYPE, ID, all Bill fields).
  *  2. Flush to obtain the Bill ID.
- *  3. Allocate IDs for BillItems from the EclipseLink SEQ_GEN sequence table.
+ *  3. Allocate IDs for BillItems via SequenceAllocatorService (EclipseLink API).
  *  4. Bulk-insert BillItems using native SQL with explicit IDs.
- *  5. Allocate IDs for PharmaceuticalBillItems from SEQ_GEN.
+ *  5. Allocate IDs for PharmaceuticalBillItems via SequenceAllocatorService.
  *  6. Bulk-insert PharmaceuticalBillItems using native SQL with explicit IDs.
  *
- * EclipseLink uses a single SEQ_GEN row in the `sequence` table for all entities.
- * IDs are allocated in blocks to minimise lock contention on the sequence table.
+ * Sequence allocation uses EclipseLink's internal non-JTA sequence mechanism, which
+ * keeps its in-memory cache in sync and avoids lock-wait conflicts.
  *
  * Only used for PharmacySnapshotBill creation. All other Bill types use JPA cascade.
  */
@@ -38,16 +38,16 @@ public class StockTakePersistService {
     /** Rows per native INSERT ... VALUES (...),(...),... statement */
     private static final int BATCH_SIZE = 100;
 
-    /**
-     * EclipseLink allocation size — must match the value used by the JPA provider.
-     * Default for GenerationType.AUTO with EclipseLink sequence table is 50.
-     */
-    private static final int SEQ_ALLOC_SIZE = 50;
-
-    private static final String SEQ_NAME = "SEQ_GEN";
+    /** Cached table names — resolved once via INFORMATION_SCHEMA to handle case-sensitive
+     *  MySQL installations (lower_case_table_names=0) where table names may be upper or lower case. */
+    private volatile String resolvedBillItemTable = null;
+    private volatile String resolvedPharmBillItemTable = null;
 
     @PersistenceContext(unitName = "hmisPU")
     private EntityManager em;
+
+    @EJB
+    private SequenceAllocatorService sequenceAllocator;
 
     /**
      * Persist the snapshot bill header via JPA and all child rows via native SQL multi-row INSERT.
@@ -85,10 +85,11 @@ public class StockTakePersistService {
         snapshotBill.setBillItems(items);
 
         // -----------------------------------------------------------------------
-        // Step 2: Allocate IDs for BillItems from SEQ_GEN, then bulk-insert
+        // Step 2: Allocate IDs for BillItems (REQUIRES_NEW — commits immediately),
+        //         then bulk-insert
         // -----------------------------------------------------------------------
         long t1 = System.currentTimeMillis();
-        long[] billItemIds = allocateIds(items.size());
+        long[] billItemIds = sequenceAllocator.allocate(items.size(), BillItem.class);
         insertBillItemsBulk(items, billId, billItemIds);
         System.out.println("[StockTakePersist] Step2 BillItems inserted. count=" + items.size()
                 + "  ms=" + (System.currentTimeMillis() - t1));
@@ -99,10 +100,11 @@ public class StockTakePersistService {
         }
 
         // -----------------------------------------------------------------------
-        // Step 3: Allocate IDs for PharmaceuticalBillItems, then bulk-insert
+        // Step 3: Allocate IDs for PharmaceuticalBillItems (REQUIRES_NEW — commits
+        //         immediately), then bulk-insert
         // -----------------------------------------------------------------------
         long t2 = System.currentTimeMillis();
-        long[] pbIds = allocateIds(items.size());
+        long[] pbIds = sequenceAllocator.allocate(items.size(), PharmaceuticalBillItem.class);
         insertPharmBillItemsBulk(items, billItemIds, pbIds);
         System.out.println("[StockTakePersist] Step3 PharmaceuticalBillItems inserted. count=" + items.size()
                 + "  ms=" + (System.currentTimeMillis() - t2));
@@ -114,46 +116,25 @@ public class StockTakePersistService {
     // private helpers
     // -----------------------------------------------------------------------
 
-    /**
-     * Allocate `count` IDs from the EclipseLink SEQ_GEN sequence table.
-     * Issues one or more locked UPDATE+SELECT pairs, each reserving SEQ_ALLOC_SIZE IDs,
-     * until enough IDs are accumulated.
-     *
-     * @param count number of IDs needed
-     * @return array of `count` unique IDs safe to use in native SQL INSERTs
-     */
-    private long[] allocateIds(int count) {
-        List<Long> ids = new ArrayList<>(count);
+    private String resolveTable(String upperName) {
+        Object name = em.createNativeQuery(
+                "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES "
+                + "WHERE TABLE_SCHEMA = DATABASE() AND UPPER(TABLE_NAME) = ? LIMIT 1")
+                .setParameter(1, upperName)
+                .getSingleResult();
+        String resolved = name.toString();
+        System.out.println("[StockTakePersist] Resolved table name: " + upperName + " -> " + resolved);
+        return resolved;
+    }
 
-        while (ids.size() < count) {
-            // Reserve the next block atomically
-            em.createNativeQuery(
-                    "UPDATE sequence SET SEQ_COUNT = SEQ_COUNT + ? WHERE SEQ_NAME = ?")
-                    .setParameter(1, SEQ_ALLOC_SIZE)
-                    .setParameter(2, SEQ_NAME)
-                    .executeUpdate();
+    private String billItemTable() {
+        if (resolvedBillItemTable == null) resolvedBillItemTable = resolveTable("BILLITEM");
+        return resolvedBillItemTable;
+    }
 
-            // Read back the new high-water mark
-            Object result = em.createNativeQuery(
-                    "SELECT SEQ_COUNT FROM sequence WHERE SEQ_NAME = ?")
-                    .setParameter(1, SEQ_NAME)
-                    .getSingleResult();
-
-            long newCount = result instanceof Number ? ((Number) result).longValue()
-                    : Long.parseLong(result.toString());
-
-            // IDs in this block: [newCount - SEQ_ALLOC_SIZE, newCount - 1]
-            long blockStart = newCount - SEQ_ALLOC_SIZE;
-            for (int i = 0; i < SEQ_ALLOC_SIZE && ids.size() < count; i++) {
-                ids.add(blockStart + i);
-            }
-        }
-
-        long[] result = new long[count];
-        for (int i = 0; i < count; i++) {
-            result[i] = ids.get(i);
-        }
-        return result;
+    private String pharmBillItemTable() {
+        if (resolvedPharmBillItemTable == null) resolvedPharmBillItemTable = resolveTable("PHARMACEUTICALBILLITEM");
+        return resolvedPharmBillItemTable;
     }
 
     /**
@@ -167,7 +148,7 @@ public class StockTakePersistService {
             List<BillItem> batch = items.subList(start, end);
 
             StringBuilder sql = new StringBuilder(
-                    "INSERT INTO billitem (ID, bill_ID, item_ID, qty, descreption, netValue, "
+                    "INSERT INTO " + billItemTable() + " (ID, bill_ID, item_ID, qty, descreption, netValue, "
                     + "catId, createdAt, creater_ID, retired, refunded, billItemRefunded, consideredForCosting) VALUES ");
 
             for (int i = 0; i < batch.size(); i++) {
@@ -204,13 +185,12 @@ public class StockTakePersistService {
             int end = Math.min(start + BATCH_SIZE, total);
 
             StringBuilder sql = new StringBuilder(
-                    "INSERT INTO pharmaceuticalbillitem "
-                    + "(ID, billItem_ID, itemBatch_ID, stock_ID, qty, stringValue, costRate, purchaseRate, retailRate, doe, description) VALUES ");
+                    "INSERT INTO " + pharmBillItemTable()
+                    + " (ID, billItem_ID, itemBatch_ID, stock_ID, qty, stringValue, costRate, purchaseRate, retailRate, doe, description) VALUES ");
 
             List<BillItem> batchItems = items.subList(start, end);
             int rowCount = 0;
             for (int i = 0; i < batchItems.size(); i++) {
-                int globalIdx = start + i;
                 PharmaceuticalBillItem pbi = batchItems.get(i).getPharmaceuticalBillItem();
                 if (pbi == null) continue;
                 if (rowCount > 0) sql.append(",");

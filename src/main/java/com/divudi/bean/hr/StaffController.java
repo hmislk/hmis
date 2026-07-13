@@ -24,6 +24,7 @@ import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Speciality;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.hr.Roster;
+import com.divudi.core.entity.hr.SalaryCycle;
 import com.divudi.core.entity.hr.StaffDesignation;
 import com.divudi.core.entity.hr.StaffEmployeeStatus;
 import com.divudi.core.entity.hr.StaffEmployment;
@@ -175,7 +176,7 @@ public class StaffController implements Serializable {
         if (current.getId() == null || current.getId() == 0) {
             JsfUtil.addErrorMessage("Please Select Staff Member");
         }
-        if (getSignatureUrl() == null || getSignatureUrl().trim() == "") {
+        if (getSignatureUrl() == null || getSignatureUrl().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Add Signature Url");
         }
         System.out.println("getStaffController().getCurrent = " + getCurrent());
@@ -198,6 +199,7 @@ public class StaffController implements Serializable {
     }
 
     public String navigateToListStaff() {
+        staff = null;
         fillItems();
         return "/admin/staff/staff_list?faces-redirect=true";
     }
@@ -499,7 +501,7 @@ public class StaffController implements Serializable {
                 + " and type(ss)!=:class "
                 + " and LENGTH(ss.code) > 0 "
                 + " and LENGTH(ss.person.name) > 0 "
-                + " and ss.employeeStatus!=:sts";
+                + " and (ss.employeeStatus!=:sts or ss.employeeStatus is null)";
 
         sql += " and (ss.dateLeft is null or ss.dateLeft > :to ) ";
         hm.put("to", ssDate);
@@ -551,7 +553,7 @@ public class StaffController implements Serializable {
                 + " and type(ss)!=:class "
                 + " and LENGTH(ss.code) > 0 "
                 + " and LENGTH(ss.person.name) > 0 "
-                + " and ss.employeeStatus!=:sts"
+                + " and (ss.employeeStatus!=:sts or ss.employeeStatus is null)"
                 + " and ss.dateLeft >:fd "
                 + " and ss.dateLeft < :to ";
         hm.put("to", staffSalaryController.getSalaryCycle().getSalaryToDate());
@@ -620,7 +622,7 @@ public class StaffController implements Serializable {
                 + " and type(ss)!=:class "
                 + " and LENGTH(ss.code) > 0 "
                 + " and LENGTH(ss.person.name) > 0 "
-                + " and ss.employeeStatus!=:sts";
+                + " and (ss.employeeStatus!=:sts or ss.employeeStatus is null)";
 
 //        sql += " and (ss.dateLeft is null or ss.dateLeft > :to ) ";
 //        hm.put("to", ssDate );
@@ -664,12 +666,31 @@ public class StaffController implements Serializable {
     }
 
     public void fetchWorkDays(List<Staff> staffs) {
+        if (staffs == null || staffs.isEmpty()) {
+            return;
+        }
+        SalaryCycle cycle = staffSalaryController.getSalaryCycle();
+        if (cycle == null) {
+            JsfUtil.addErrorMessage("Please select a Salary Cycle before filling staff.");
+            return;
+        }
+        if (cycle.getDayOffPhFromDate() == null || cycle.getDayOffPhToDate() == null) {
+            JsfUtil.addErrorMessage("Salary Cycle dates are incomplete.");
+            return;
+        }
+        if (cycle.getSalaryFromDate() == null || cycle.getSalaryToDate() == null) {
+            JsfUtil.addErrorMessage("Salary From/To dates are incomplete.");
+            return;
+        }
         for (Staff s : staffs) {
-            if (staffSalaryController.getSalaryCycle() != null) {
-                s.setTransWorkedDays(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getDayOffPhFromDate(), staffSalaryController.getSalaryCycle().getDayOffPhToDate()));
-                s.setTransWorkedDaysSalaryFromToDate(hrReportController.fetchWorkedDays(s, staffSalaryController.getSalaryCycle().getSalaryFromDate(), staffSalaryController.getSalaryCycle().getSalaryToDate()));
-
-            }
+            s.setTransWorkedDays(
+                hrReportController.fetchWorkedDays(s,
+                    cycle.getDayOffPhFromDate(),
+                    cycle.getDayOffPhToDate()));
+            s.setTransWorkedDaysSalaryFromToDate(
+                hrReportController.fetchWorkedDays(s,
+                    cycle.getSalaryFromDate(),
+                    cycle.getSalaryToDate()));
         }
     }
 
@@ -931,21 +952,24 @@ public class StaffController implements Serializable {
     }
 
     public List<Staff> completeStaffWithoutDoctors(String query) {
-        List<Staff> suggestions;
-        String sql;
-        if (query == null) {
-            suggestions = new ArrayList<>();
-        } else {
-            sql = "select p from Staff p where p.retired=false and "
-                    + "((p.person.name) like :q or "
-                    + " (p.code) like :q or "
-                    + " (p.staffCode) like :q ) and type(p) != Doctor"
-                    + " order by p.person.name";
-            HashMap hm = new HashMap();
-            hm.put("q", "%" + query.toUpperCase() + "%");
-            suggestions = getFacade().findByJpql(sql, hm, 20);
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
         }
-        return suggestions;
+        // Split on whitespace and require every token to match (in any order) across
+        // name/code/staffCode, so a full name like "Dulmin Perera" matches reliably.
+        String[] tokens = query.trim().split("\\s+");
+        StringBuilder sql = new StringBuilder(
+                "select p from Staff p where p.retired=false and type(p) != Doctor");
+        HashMap hm = new HashMap();
+        for (int i = 0; i < tokens.length; i++) {
+            String paramName = "q" + i;
+            sql.append(" and ((p.person.name) like :").append(paramName)
+                    .append(" or (p.code) like :").append(paramName)
+                    .append(" or (p.staffCode) like :").append(paramName).append(")");
+            hm.put(paramName, "%" + tokens[i].toUpperCase() + "%");
+        }
+        sql.append(" order by p.person.name");
+        return getFacade().findByJpql(sql.toString(), hm, 20);
     }
 
     public String saveSignature() {
@@ -1062,7 +1086,7 @@ public class StaffController implements Serializable {
 
     public List<Staff> getSelectedItems() {
         if (selectedItems == null) {
-            selectedItems = new ArrayList<>();
+            fillSelectedItemsWithAllStaff();
         }
         return selectedItems;
     }
@@ -1181,6 +1205,7 @@ public class StaffController implements Serializable {
 
     public void prepareAdd() {
         current = new Staff();
+        current.setPerson(new Person());
         tempRetireDate = null;
         removeResign = false;
     }

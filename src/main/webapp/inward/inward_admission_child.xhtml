@@ -7,10 +7,7 @@
                 xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward"
-                xmlns:in="http://xmlns.jcp.org/jsf/composite/patient"
-                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
-                xmlns:credit="http://xmlns.jcp.org/jsf/composite/inward/creditCompany">
-
+xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <ui:define name="content">
         <h:form>
@@ -25,14 +22,12 @@
                             <div>
                                 <p:commandButton
                                     ajax="false"
+                                    immediate="true"
                                     value="Inpatient Dashboard"
                                     icon="fa fa-id-card"
                                     class="ui-button-secondary mx-1"
                                     rendered="#{admissionController.parentAdmission ne null and admissionController.parentAdmission.id ne null}"
-                                    action="#{admissionController.navigateToAdmissionProfilePage}">
-                                    <f:setPropertyActionListener
-                                        value="#{admissionController.parentAdmission}"
-                                        target="#{admissionController.current}" />
+                                    action="#{admissionController.navigateCancelBabyAdmission()}">
                                 </p:commandButton>
                                 <p:commandButton
                                     id="admt"
@@ -134,22 +129,7 @@
                             </div>
                         </div>
                         <div class="col-4 my-2">
-                            <p:panel header="Patient Detail">
-                                <p:tabView  id="tvPt"  style="min-height: 250px;"  >
-                                    <p:ajax event="tabChange"  process="@this" listener="#{admissionController.onTabChange}" />
-                                    <p:tab  title="New Patient" id="tabNewPt">
-
-                                        <in:inputPatientDetail patient="#{admissionController.current.patient}"/>
-
-                                    </p:tab>
-                                    <p:tab id="tabSearchPt" title="Search Patient">
-                                        <h:panelGrid columns="1" >
-                                            <in:searchPatient patient="#{admissionController.parentAdmission.patient}"/>
-                                        </h:panelGrid>
-
-                                    </p:tab>
-                                </p:tabView>
-                            </p:panel>
+                            <common:patient_details_for_addmission editable="true" controller="#{admissionController}" />
                         </div>
                         <div class="col-4">
                             <div class="row my-2">
@@ -201,25 +181,6 @@
                                         </p:autoComplete>
 
                                     </h:panelGrid>
-                                </p:panel>
-                            </div>
-                            <div class="row my-2">
-                                <p:panel header="Payment Detail">
-
-                                    <h:panelGrid columns="2">
-                                        <h:outputLabel value="BHT Type"/>
-                                        <p:selectOneMenu   id="cmbPs" value="#{admissionController.current.paymentMethod}"  >
-                                            <f:selectItem itemLabel="Select" />                           
-                                            <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
-                                            <p:ajax process="@this" update="crd" event="change" />
-                                        </p:selectOneMenu>
-                                    </h:panelGrid>
-
-                                    <h:panelGroup id="crd" style="display: #{admissionController.current.paymentMethod eq 'Credit' ? 'block' : 'none'} ;min-width: 100%; ">
-                                        <credit:inputCredit  patientEncounter="#{admissionController.current}"/>
-                                    </h:panelGroup>
-
-
                                 </p:panel>
                             </div>
                         </div>
@@ -292,7 +253,22 @@
                 </h:panelGrid>
             </h:panelGroup>
             <p:panel rendered="#{admissionController.printPreview}">
-                <p:commandButton ajax="false" value="New Admission" actionListener="#{admissionController.makeNull}" />                   
+                <p:commandButton ajax="false" value="New Admission" actionListener="#{admissionController.makeNull}" class="mx-1" />
+                <p:commandButton
+                    ajax="false"
+                    immediate="true"
+                    value="Baby Inpatient Profile"
+                    icon="fa fa-child"
+                    class="ui-button-info mx-1"
+                    action="#{admissionController.navigateToAdmissionProfilePage()}" />
+                <p:commandButton
+                    ajax="false"
+                    immediate="true"
+                    value="Mother's Inpatient Profile"
+                    icon="fa fa-female"
+                    class="ui-button-secondary mx-1"
+                    rendered="#{admissionController.current.parentEncounter != null}"
+                    action="#{admissionController.navigateToAdmissionProfileById(admissionController.current.parentEncounter.id)}" />
                 <bill:bht admission="#{admissionController.current}"/>
             </p:panel>
 

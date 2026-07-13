@@ -121,6 +121,11 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.18.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.12.0</version>
+        </dependency>
 
         <dependency>
             <groupId>commons-fileupload</groupId>
@@ -312,6 +317,13 @@
             <type>jar</type>
         </dependency>
 
+        <!-- OmniFaces — 3.x targets JSF 2.3 (javax.faces); used for o:socket reliable push -->
+        <dependency>
+            <groupId>org.omnifaces</groupId>
+            <artifactId>omnifaces</artifactId>
+            <version>3.14.16</version>
+        </dependency>
+
         <!-- JFreeChart -->
         <dependency>
             <groupId>org.jfree</groupId>
@@ -474,7 +486,7 @@
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-catalina</artifactId>
-            <version>9.0.113</version> <!-- or the version compatible with your setup -->
+            <version>9.0.118</version> <!-- or the version compatible with your setup -->
         </dependency>
         <dependency>
             <groupId>com.github.hmislk</groupId>

@@ -41,7 +41,7 @@ import javax.persistence.Transient;
 public class BillItem implements Serializable, RetirableEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     static final long serialVersionUID = 1L;
@@ -182,6 +182,8 @@ public class BillItem implements Serializable, RetirableEntity {
     private double previousRecieveFreeQtyInUnit;
     @Transient
     private double issuedPhamaceuticalItemQty;
+    @ManyToOne
+    private Staff primaryStaff;
 
     public double getIssuedPhamaceuticalItemQty() {
         return issuedPhamaceuticalItemQty;
@@ -200,7 +202,10 @@ public class BillItem implements Serializable, RetirableEntity {
     @OneToMany(mappedBy = "billItem", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<BillFee> billFees = new ArrayList<>();
     @OneToMany(mappedBy = "referenceBillItem", fetch = FetchType.LAZY)
-    @OrderBy("feeAdjusted")
+    // orderNo holds the manual (drag-and-drop) display order set at settle time;
+    // feeAdjusted is the secondary key so historical bills (orderNo all 0) keep
+    // their original adjusted-fee ordering.
+    @OrderBy("orderNo, feeAdjusted")
     private List<BillFee> proFees = new ArrayList<>();
     @OneToMany(mappedBy = "parentBillItem")
     private List<BillItem> chiledBillItems;
@@ -211,6 +216,10 @@ public class BillItem implements Serializable, RetirableEntity {
     double transWithOutCCFee;
     @Transient
     boolean transRefund;
+    @Transient
+    private boolean autoSubstituted = false;
+    @Transient
+    private String requestedItemName = null;
 
     public double getVat() {
         return vat;
@@ -285,6 +294,7 @@ public class BillItem implements Serializable, RetirableEntity {
         vatPlusNetValue = billItem.getVatPlusNetValue();
         collectingCentreFee = billItem.getCollectingCentreFee();
         consideredForCosting = billItem.isConsideredForCosting();
+        primaryStaff = billItem.getPrimaryStaff();
         //  referanceBillItem=billItem.getReferanceBillItem();
         // Copy BillItemFinanceDetails if present (access field directly to avoid auto-creation)
         if (billItem.billItemFinanceDetails != null) {
@@ -327,6 +337,7 @@ public class BillItem implements Serializable, RetirableEntity {
         vatPlusNetValue = billItem.getVatPlusNetValue();
         collectingCentreFee = billItem.getCollectingCentreFee();
         consideredForCosting = billItem.isConsideredForCosting();
+        primaryStaff = billItem.getPrimaryStaff();
 
         // Access field directly to avoid auto-creation, then use getter for cloning
         if (billItem.billItemFinanceDetails != null) {
@@ -359,6 +370,7 @@ public class BillItem implements Serializable, RetirableEntity {
         priceMatrix = billItem.getPriceMatrix();
         agentRefNo = billItem.getAgentRefNo();
         consideredForCosting = billItem.isConsideredForCosting();
+        primaryStaff = billItem.getPrimaryStaff();
     }
 
     public void resetValue() {
@@ -993,6 +1005,22 @@ public class BillItem implements Serializable, RetirableEntity {
         this.transRefund = transRefund;
     }
 
+    public boolean isAutoSubstituted() {
+        return autoSubstituted;
+    }
+
+    public void setAutoSubstituted(boolean autoSubstituted) {
+        this.autoSubstituted = autoSubstituted;
+    }
+
+    public String getRequestedItemName() {
+        return requestedItemName;
+    }
+
+    public void setRequestedItemName(String requestedItemName) {
+        this.requestedItemName = requestedItemName;
+    }
+
     public double getVatPlusNetValue() {
         return vatPlusNetValue;
     }
@@ -1175,6 +1203,16 @@ public class BillItem implements Serializable, RetirableEntity {
         return prescription;
     }
 
+    /**
+     * Returns true only when a Prescription has been explicitly associated with
+     * this BillItem (i.e. it was persisted before or carries meaningful data).
+     * Use this instead of {@code getPrescription() != null} to avoid the
+     * auto-create side-effect of the getter.
+     */
+    public boolean hasPrescription() {
+        return prescription != null && prescription.getId() != null;
+    }
+
     public void setPrescription(Prescription prescription) {
         this.prescription = prescription;
     }
@@ -1229,6 +1267,14 @@ public class BillItem implements Serializable, RetirableEntity {
 
     public void setConsideredForCosting(boolean consideredForCosting) {
         this.consideredForCosting = consideredForCosting;
+    }
+
+    public Staff getPrimaryStaff() {
+        return primaryStaff;
+    }
+
+    public void setPrimaryStaff(Staff primaryStaff) {
+        this.primaryStaff = primaryStaff;
     }
 
 }

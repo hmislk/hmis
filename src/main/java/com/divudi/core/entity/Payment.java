@@ -34,7 +34,7 @@ public class Payment implements Serializable, RetirableEntity {
     static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     @ManyToOne
@@ -133,11 +133,19 @@ public class Payment implements Serializable, RetirableEntity {
     private boolean paymentRecordCompleted;
 
     private boolean selectedForHandover;
+    private boolean handoverProofMissing;
     private boolean selectedForCashbookEntry;
     private boolean selectedForRecording;
     private boolean selectedForRecordingConfirmation;
     private boolean handingOverStarted;
     private boolean handingOverCompleted;
+
+    // Non-Cash Settlement (Phase 4, issue #17964)
+    // Set when a non-cash payment (Card/Cheque/Slip/eWallet/Online) has been
+    // settled with the bank or processor. Always false for cash.
+    private boolean paymentSettled;
+    @ManyToOne
+    private Bill paymentSettlementBill;
 
     //Payment Record Creation
     @ManyToOne
@@ -154,6 +162,8 @@ public class Payment implements Serializable, RetirableEntity {
     private CashBookEntry cashbookEntry;
     @ManyToOne
     private CashBook cashbook;
+
+    private boolean deposited;
 
     private boolean cancelled;
     @ManyToOne
@@ -191,6 +201,9 @@ public class Payment implements Serializable, RetirableEntity {
     @ManyToOne
     private Institution toInstitution;
 
+    @ManyToOne
+    private WebUser floatRecipient;
+
     private Staff toStaff;
 
     // newly added fields
@@ -204,6 +217,7 @@ public class Payment implements Serializable, RetirableEntity {
         paymentRecordCompleted = false;
         chequeRealized = false;
         chequePaid = false;
+        paymentSettled = false;
         paymentDate = new Date();
     }
 
@@ -725,6 +739,14 @@ public class Payment implements Serializable, RetirableEntity {
         this.selectedForHandover = selectedForHandover;
     }
 
+    public boolean isHandoverProofMissing() {
+        return handoverProofMissing;
+    }
+
+    public void setHandoverProofMissing(boolean handoverProofMissing) {
+        this.handoverProofMissing = handoverProofMissing;
+    }
+
     public boolean isSelectedForRecording() {
         return selectedForRecording;
     }
@@ -758,6 +780,22 @@ public class Payment implements Serializable, RetirableEntity {
 
     public void setCurrentHolder(WebUser currentHolder) {
         this.currentHolder = currentHolder;
+    }
+
+    public WebUser getFloatRecipient() {
+        return floatRecipient;
+    }
+
+    public void setFloatRecipient(WebUser floatRecipient) {
+        this.floatRecipient = floatRecipient;
+    }
+
+    public boolean isDeposited() {
+        return deposited;
+    }
+
+    public void setDeposited(boolean deposited) {
+        this.deposited = deposited;
     }
 
     public boolean isCancelled() {
@@ -948,6 +986,22 @@ public class Payment implements Serializable, RetirableEntity {
     @Transient
     public Double getAbsolutePaidValueTransient() {
         return Math.abs(this.paidValue);
+    }
+
+    public boolean isPaymentSettled() {
+        return paymentSettled;
+    }
+
+    public void setPaymentSettled(boolean paymentSettled) {
+        this.paymentSettled = paymentSettled;
+    }
+
+    public Bill getPaymentSettlementBill() {
+        return paymentSettlementBill;
+    }
+
+    public void setPaymentSettlementBill(Bill paymentSettlementBill) {
+        this.paymentSettlementBill = paymentSettlementBill;
     }
 
 }

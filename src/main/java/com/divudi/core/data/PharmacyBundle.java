@@ -293,6 +293,15 @@ public class PharmacyBundle implements Serializable {
                         rows.add(ir);
                     }
                 }
+            } else if (firstElement instanceof com.divudi.core.data.dto.PharmacyMovementOutByItemDTO) {
+                // Process list as movement-out-by-item DTOs (already aggregated per item in DB)
+                for (Object obj : entries) {
+                    if (obj instanceof com.divudi.core.data.dto.PharmacyMovementOutByItemDTO) {
+                        com.divudi.core.data.dto.PharmacyMovementOutByItemDTO dto
+                                = (com.divudi.core.data.dto.PharmacyMovementOutByItemDTO) obj;
+                        rows.add(new PharmacyRow(dto));
+                    }
+                }
             } else if (firstElement instanceof PharmacyRow) {
                 // Process list as PharmacyRows
                 for (Object obj : entries) {
@@ -568,6 +577,45 @@ public class PharmacyBundle implements Serializable {
         List<PharmacyRow> grouped = new ArrayList<>(itemRowMap.values());
         grouped.sort(Comparator.comparing(r -> r.getItem().getName(), Comparator.nullsLast(String::compareToIgnoreCase)));
         setRows(grouped);
+        summaryRow = new PharmacyRow();
+        summaryRow.setGrossSaleValue(grossSaleValue);
+        summaryRow.setMarginValue(marginValue);
+        summaryRow.setDiscountValue(discountValue);
+        summaryRow.setNetSaleValue(netSaleValue);
+        summaryRow.setQuantity(quantity);
+    }
+
+    /**
+     * Builds the summary (footer) row for the BY_ITEM movement-out view when
+     * the rows are already aggregated per item by the database (DTO path).
+     * Rows are NOT regrouped here; we only total them and build the summary row,
+     * matching the footer values produced by {@code groupSaleDetailsByItems()}.
+     */
+    public void summarizeMovementOutByItem() {
+        grossSaleValue = BigDecimal.ZERO;
+        marginValue = BigDecimal.ZERO;
+        discountValue = BigDecimal.ZERO;
+        netSaleValue = BigDecimal.ZERO;
+        quantity = 0.0;
+
+        for (PharmacyRow r : getRows()) {
+            if (r.getQuantity() != null) {
+                quantity += r.getQuantity();
+            }
+            if (r.getGrossSaleValue() != null) {
+                grossSaleValue = grossSaleValue.add(r.getGrossSaleValue());
+            }
+            if (r.getMarginValue() != null) {
+                marginValue = marginValue.add(r.getMarginValue());
+            }
+            if (r.getDiscountValue() != null) {
+                discountValue = discountValue.add(r.getDiscountValue());
+            }
+            if (r.getNetSaleValue() != null) {
+                netSaleValue = netSaleValue.add(r.getNetSaleValue());
+            }
+        }
+
         summaryRow = new PharmacyRow();
         summaryRow.setGrossSaleValue(grossSaleValue);
         summaryRow.setMarginValue(marginValue);

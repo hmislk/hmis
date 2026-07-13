@@ -63,7 +63,7 @@
                             class="ui-button-info " >
                             <p:printer target="gpBillPreview"  />
                         </p:commandButton>
-                        <h:panelGroup rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
+                        <h:panelGroup >
                             <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
                             <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
                                 <f:selectItem itemLabel="Please Select Paper Type" />

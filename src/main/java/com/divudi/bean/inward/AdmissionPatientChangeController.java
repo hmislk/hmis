@@ -82,10 +82,25 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
     // <editor-fold defaultstate="collapsed" desc="Functions">
 
     /**
-     * Navigate to the Change Patient for Admission page
+     * Navigate to the Change Patient for Admission page with no pre-selected
+     * admission (user must search and pick one on the page).
      */
     public String navigateToChangeAdmissionPatient() {
         prepareForNew();
+        return "/inward/inward_change_patient?faces-redirect=true";
+    }
+
+    /**
+     * Navigate to the Change Patient page with the admission already loaded
+     * from the Admission Profile context. Skips the admission-search step so
+     * the user goes straight to selecting the new patient.
+     */
+    public String navigateToChangeAdmissionPatientFromProfile() {
+        prepareForNew();
+        current = admissionController.getCurrent();
+        if (current != null) {
+            loadAdmission();
+        }
         return "/inward/inward_change_patient?faces-redirect=true";
     }
 
@@ -183,23 +198,25 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
         }
         patientAllergies = new ArrayList<>();
         Map params = new HashMap<>();
-        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt";
+        String s = "SELECT c FROM ClinicalFindingValue c WHERE c.retired = false AND c.patient = :pt AND c.clinicalFindingValueType = :type";
         params.put("pt", pt);
+        params.put("type", ClinicalFindingValueType.PatientAllergy);
         patientAllergies = clinicalFindingValueFacade.findByJpql(s, params);
     }
 
     /**
-     * Confirm and save the patient change
+     * Confirm and save the patient change, then navigate to the admission
+     * profile so the user can see the updated record immediately.
      */
-    public void confirmPatientChange() {
+    public String confirmPatientChange() {
         if (current == null || newPatient == null) {
             JsfUtil.addErrorMessage("Invalid operation");
-            return;
+            return "";
         }
 
         if (originalPatient.getId().equals(newPatient.getId())) {
             JsfUtil.addErrorMessage("Cannot change to the same patient");
-            return;
+            return "";
         }
 
         try {
@@ -224,12 +241,17 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
                 "BHT: " + current.getBhtNo() +
                 " is now assigned to " + newPatient.getPerson().getName());
 
-            // Reset for next operation
+            // Explicitly sync admissionController before navigating — when this
+            // flow is launched from the search page (not the profile), current may
+            // differ from admissionController.current. (Issue #21275)
+            admissionController.setCurrent(current);
+            String destination = admissionController.navigateToAdmissionProfilePage();
             prepareForNew();
+            return destination;
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error changing patient: " + e.getMessage());
-            e.printStackTrace();
+            return "";
         }
     }
 

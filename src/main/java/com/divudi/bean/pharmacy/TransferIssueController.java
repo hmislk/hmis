@@ -12,6 +12,7 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.ejb.BillNumberGenerator;
 
@@ -557,7 +558,11 @@ public class TransferIssueController implements Serializable {
 
     }
 
-    public void settleDirectIssue() {
+    public synchronized void settleDirectIssue() {
+        if (getIssuedBill() != null && getIssuedBill().getId() != null) {
+            JsfUtil.addErrorMessage("This bill has already been saved.");
+            return;
+        }
         if (getIssuedBill().getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please Select Department to Issue");
             return;
@@ -726,7 +731,11 @@ public class TransferIssueController implements Serializable {
         getBillFacade().edit(bill);
     }
 
-    public void settle() {
+    public synchronized void settle() {
+        if (getIssuedBill() != null && getIssuedBill().getId() != null) {
+            JsfUtil.addErrorMessage("This bill has already been saved.");
+            return;
+        }
         if (getIssuedBill().getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please Select Department to Issue");
             return;
@@ -775,6 +784,11 @@ public class TransferIssueController implements Serializable {
             JsfUtil.addErrorMessage("No Bill Items are added to Transfer");
             return;
         }
+
+        if (getIssuedBill().getDepartmentType() == null && getRequestedBill() != null) {
+            getIssuedBill().setDepartmentType(getRequestedBill().getDepartmentType());
+        }
+        stampDepartmentTypeFromItemsIfMissing();
 
         saveBill();
         for (BillItem billItemsInIssue : getBillItems()) {
@@ -1518,6 +1532,19 @@ public class TransferIssueController implements Serializable {
         billItem.getBillItemFinanceDetails().setValueAtPurchaseRate(purchaseRate.multiply(billItem.getBillItemFinanceDetails().getQuantity()));
 
         billItem.setSearialNo(getBillItems().size() + 1);
+
+        if (billItem.getItem() != null) {
+            DepartmentType itemDeptType = billItem.getItem().getDepartmentType();
+            if (getIssuedBill().getDepartmentType() == null) {
+                getIssuedBill().setDepartmentType(itemDeptType);
+            } else if (itemDeptType != null && !itemDeptType.equals(getIssuedBill().getDepartmentType())) {
+                JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                        + "Bill is set for " + getIssuedBill().getDepartmentType().getLabel()
+                        + " items, but you are trying to add a " + itemDeptType.getLabel() + " item.");
+                return;
+            }
+        }
+
         getBillItems().add(billItem);
 
         qty = null;
@@ -1768,6 +1795,30 @@ public class TransferIssueController implements Serializable {
             getBillFacade().create(getIssuedBill());
         } else {
             getBillFacade().edit(getIssuedBill());
+        }
+    }
+
+    // Fallback when neither the request bill nor addToBill stamped a
+    // departmentType: department-type-filtered reports drop NULL bills (#22056).
+    // Stamps only when all non-null item types agree; mixed legacy data is left
+    // unset rather than misclassifying the whole bill.
+    private void stampDepartmentTypeFromItemsIfMissing() {
+        if (getIssuedBill().getDepartmentType() != null) {
+            return;
+        }
+        DepartmentType found = null;
+        for (BillItem bi : getBillItems()) {
+            if (bi.getItem() == null || bi.getItem().getDepartmentType() == null) {
+                continue;
+            }
+            if (found == null) {
+                found = bi.getItem().getDepartmentType();
+            } else if (!found.equals(bi.getItem().getDepartmentType())) {
+                return;
+            }
+        }
+        if (found != null) {
+            getIssuedBill().setDepartmentType(found);
         }
     }
 

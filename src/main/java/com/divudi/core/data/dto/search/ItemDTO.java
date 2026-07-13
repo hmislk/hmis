@@ -21,6 +21,9 @@ public class ItemDTO implements Serializable {
     private String barcode;
     private String genericName;
     private String categoryName;
+    private Double dblValue;
+    private String itemTypeName;
+    private Long rateItemId;
 
     public ItemDTO() {
     }
@@ -35,6 +38,20 @@ public class ItemDTO implements Serializable {
         this.code = code;
         this.barcode = barcode;
         this.genericName = genericName;
+    }
+
+    /**
+     * Constructor for autocomplete DTO queries — includes pack size, item type
+     * discriminator, and the ID of the item used for rate lookups (Amp for
+     * Ampp items, Vmp for Vmpp items, self for Amp/Vmp items).
+     */
+    public ItemDTO(Long id, String name, String code, Double dblValue, String itemTypeName, Long rateItemId) {
+        this.id = id;
+        this.name = name;
+        this.code = code;
+        this.dblValue = dblValue;
+        this.itemTypeName = itemTypeName;
+        this.rateItemId = rateItemId;
     }
 
     /**
@@ -97,6 +114,30 @@ public class ItemDTO implements Serializable {
 
     public void setCategoryName(String categoryName) {
         this.categoryName = categoryName;
+    }
+
+    public Double getDblValue() {
+        return dblValue;
+    }
+
+    public void setDblValue(Double dblValue) {
+        this.dblValue = dblValue;
+    }
+
+    public String getItemTypeName() {
+        return itemTypeName;
+    }
+
+    public void setItemTypeName(String itemTypeName) {
+        this.itemTypeName = itemTypeName;
+    }
+
+    public Long getRateItemId() {
+        return rateItemId;
+    }
+
+    public void setRateItemId(Long rateItemId) {
+        this.rateItemId = rateItemId;
     }
 
     @Override

@@ -74,7 +74,7 @@
                                     ajax="false"
                                     value="Approve Request"
                                     title="Approve Request"
-                                    icon="fas fa-check-double" class="ui-button-success mx-2"
+                                    icon="fas fa-check-double" styleClass="ui-button-stage-approve mx-2"
                                     action="#{transferRequestController.navigateToApproveRequest}"
                                     disabled="#{b.cancelled eq true}">
                                     <f:setPropertyActionListener target="#{transferRequestController.transferRequestBillPre}" value="#{b}"/>
