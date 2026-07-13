@@ -152,7 +152,18 @@ public class PurchaseOrderController implements Serializable {
         return fromDate;
     }
 
-    public String navigateToPurchaseOrderApproval() {
+    // synchronized: the Approve button on the PO-list-to-approve page has no
+    // confirm() or double-click guard and posts here (not to approve()) before
+    // the review screen is even shown. A double-click raced two calls through
+    // clearList()+generateBillComponent() on this session-scoped bean: both
+    // nulled billItems, then both re-populated it from the same PO Request,
+    // leaving billItems holding every line twice. The (already synchronized)
+    // approve() then faithfully persisted the doubled list in a single call,
+    // producing one approved Bill with every item duplicated once - the GRN
+    // duplication reported by Ruhunu on PO/RH/GSK/26/01093, a recurrence of
+    // the same bug class as the approve() fix (PR #21815) one step earlier
+    // in the workflow.
+    public synchronized String navigateToPurchaseOrderApproval() {
         Bill temRequestedBill = requestedBill;
 
         // Check if the requested bill is already approved
