@@ -1288,10 +1288,6 @@ public class StaffController implements Serializable {
         current.getPerson().getFullName();
         current.getPerson().getNameWithInitials();
 
-        System.out.println(" current.getName() = " + current.getName());
-        System.out.println(" current.getPerson().getName() = " + current.getPerson().getName());
-        System.out.println("current.getPerson().getFullName() = " + current.getPerson().getFullName());
-        System.out.println("current.getPerson().getNameWithInitials() = " + current.getPerson().getNameWithInitials());
         // Prepare editedPersonMap for audit logging
         Map<String, Object> editedPerson = new HashMap<>();
         personService.personToAuditMap(editedPerson, current.getPerson());
@@ -1332,8 +1328,6 @@ public class StaffController implements Serializable {
             getFacade().createAndFlush(current);
             JsfUtil.addSuccessMessage("New Staff Created");
         }
-
-        System.out.println(" current.getName() = " + current.getName());
 
         updateStaffEmployment();
 
