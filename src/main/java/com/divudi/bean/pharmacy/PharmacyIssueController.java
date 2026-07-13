@@ -497,6 +497,7 @@ public class PharmacyIssueController implements Serializable {
     public void setQty(Double qty) {
         if (qty != null && qty <= 0) {
             JsfUtil.addErrorMessage("Can not enter a minus value");
+            this.qty = null; // clear stale value so downstream validation catches the invalid input
             return;
         }
         this.qty = qty;
