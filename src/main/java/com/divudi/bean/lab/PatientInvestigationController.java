@@ -70,6 +70,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -775,7 +776,12 @@ public class PatientInvestigationController implements Serializable {
         } else {
             listingEntity = ListingEntity.BILLS;
             bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-            return "/lab/generate_barcode_p?faces-redirect=true";
+            
+            if ((configOptionApplicationController.getBooleanValueByKey("Use the Nursing Laboratory Dashboard for inward laboratory process.", false)) && bill.getBillTypeAtomic() == BillTypeAtomic.INWARD_SERVICE_BILL) {
+                return "/inward/inward_lab_dashboard?faces-redirect=true";
+            }else{
+                return "/lab/generate_barcode_p?faces-redirect=true";
+            }
         }
     }
 
@@ -5266,8 +5272,17 @@ public class PatientInvestigationController implements Serializable {
             }
         }
 
+        // Sort the antibiotics that have a result alphabetically (A-Z) by name.
+        antibioticItems.sort(Comparator.comparing(
+                ptiv -> ptiv.getInvestigationItem().getName() == null
+                        ? "" : ptiv.getInvestigationItem().getName(),
+                String.CASE_INSENSITIVE_ORDER));
+
+        // Fill the first column top-to-bottom with the first half (rounded up)
+        // and the rest into the second column, e.g. 11 -> 6 + 5, 12 -> 6 + 6.
+        int firstColumnCount = (antibioticItems.size() + 1) / 2;
         for (int i = 0; i < antibioticItems.size(); i++) {
-            if (i % 2 == 0) {
+            if (i < firstColumnCount) {
                 column1AntibioticList.add(antibioticItems.get(i));
             } else {
                 column2AntibioticList.add(antibioticItems.get(i));

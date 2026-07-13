@@ -8,6 +8,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
@@ -31,6 +32,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -55,6 +58,8 @@ public class TransferIssueNativeSqlController implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    private static final Logger LOGGER = Logger.getLogger(TransferIssueNativeSqlController.class.getName());
+
     // ---- State ----
     private Bill requestedBill;
     private Long requestedBillId;
@@ -67,6 +72,9 @@ public class TransferIssueNativeSqlController implements Serializable {
     // ---- Injected ----
     @Inject
     private SessionController sessionController;
+
+    @Inject
+    private WebUserController webUserController;
 
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
@@ -166,6 +174,9 @@ public class TransferIssueNativeSqlController implements Serializable {
     }
 
     public void saveDraftNativeIssue() {
+        if (!isAuthorized("SAVE_DRAFT_NATIVE_ISSUE", "PharmacyIssueForRequestSave")) {
+            return;
+        }
         if (issueItems == null || issueItems.isEmpty()) {
             JsfUtil.addErrorMessage("No items to save. Please check the request.");
             return;
@@ -231,6 +242,9 @@ public class TransferIssueNativeSqlController implements Serializable {
     }
 
     public void finalizeDraftNativeIssue() {
+        if (!isAuthorized("FINALIZE_DRAFT_NATIVE_ISSUE", "PharmacyIssueForRequestFinalize")) {
+            return;
+        }
         if (issuedBill == null || issuedBill.getId() == null) {
             JsfUtil.addErrorMessage("No draft to finalize.");
             return;
@@ -253,6 +267,9 @@ public class TransferIssueNativeSqlController implements Serializable {
     }
 
     public synchronized String approveDraftNativeIssue() {
+        if (!isAuthorized("APPROVE_DRAFT_NATIVE_ISSUE", "PharmacyIssueForRequestApprove")) {
+            return null;
+        }
         if (issueItems == null || issueItems.isEmpty()) {
             JsfUtil.addErrorMessage("No items to issue. Reload the draft and check quantities.");
             return null;
@@ -308,6 +325,9 @@ public class TransferIssueNativeSqlController implements Serializable {
     }
 
     public String cancelPendingNativeIssue() {
+        if (!isAuthorized("CANCEL_PENDING_NATIVE_ISSUE", "PharmacyTransferIssueCancel")) {
+            return "";
+        }
         if (issuedBill == null || issuedBill.getId() == null) {
             JsfUtil.addErrorMessage("No draft to cancel.");
             return null;
@@ -353,6 +373,9 @@ public class TransferIssueNativeSqlController implements Serializable {
      * Mirrors TransferIssueForRequestsController.settle().
      */
     public void settle() {
+        if (!isAuthorized("SETTLE_NATIVE_ISSUE", "PharmacyIssueForRequestFinalize")) {
+            return;
+        }
         if (issueItems == null || issueItems.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to issue. Please check quantities.");
             return;
@@ -755,5 +778,35 @@ public class TransferIssueNativeSqlController implements Serializable {
 
     public void setDraftMode(boolean draftMode) {
         this.draftMode = draftMode;
+    }
+
+    /**
+     * Authorization helper method to check Pharmacy Transfer Issue (native
+     * SQL / fast issue) privileges and audit denied access
+     *
+     * @param action The action being attempted (e.g. SAVE_DRAFT_NATIVE_ISSUE, FINALIZE_DRAFT_NATIVE_ISSUE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, issuedBill != null ? issuedBill.getId() : "null"});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = issuedBill != null ? issuedBill.getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Pharmacy Transfer Issue (native) access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " fast transfer issues.");
+            return false;
+        }
+
+        return true;
     }
 }

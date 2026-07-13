@@ -151,6 +151,7 @@
                         class="ui-button-success"
                         update=":formWardReturnToPharmacy"
                         actionListener="#{wardPharmacyReturnToPharmacyController.settle}"
+                        disabled="#{not webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
                         onclick="if (!confirm('Return the selected items to the pharmacy via the selected porter? This cannot be undone.')) { return false; }"/>
                 </div>
             </p:panel>

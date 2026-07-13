@@ -32,6 +32,7 @@ import com.divudi.core.facade.CancelledBillFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.RefundBillFacade;
 import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.data.ProfessionalPaymentVoucherGroup;
 import com.divudi.service.DrawerService;
 import com.divudi.service.ProfessionalPaymentService;
 import java.io.Serializable;
@@ -100,6 +101,8 @@ public class InwardSurgeryPaymentBillController implements Serializable {
     private Date toDate;
 
     private Bill current;
+    private List<ProfessionalPaymentVoucherGroup> individualVoucherGroups;
+    private Bill individualVoucherGroupsBill;
     private List<Bill> items = null;
 
     private Staff currentSurgeon;
@@ -626,6 +629,15 @@ public class InwardSurgeryPaymentBillController implements Serializable {
 
     public Bill getCurrent() {
         return current;
+    }
+
+    public List<ProfessionalPaymentVoucherGroup> getIndividualVoucherGroups() {
+        if (individualVoucherGroups == null || individualVoucherGroupsBill != current) {
+            individualVoucherGroups = professionalPaymentService
+                    .groupPaymentBillItemsByPatientOrBht(current);
+            individualVoucherGroupsBill = current;
+        }
+        return individualVoucherGroups;
     }
 
     public void setCurrent(Bill current) {

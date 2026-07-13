@@ -353,6 +353,15 @@
                                         <p:printer target="gpSummaryPreview" />
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnPrintIndividual"
+                                        value="Print Individual"
+                                        class="ui-button-danger"
+                                        icon="fas fa-print"
+                                        ajax="false"
+                                        action="#" >
+                                        <p:printer target="gpIndividualPreview" />
+                                    </p:commandButton>
+                                    <p:commandButton
                                         rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                                         value="Settings"
                                         icon="fas fa-cog"
@@ -419,6 +428,23 @@
 
                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is POS paper')}">
                                 <bi:staff_payment_pos_summary controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}" dup="false"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <!-- Format 4: Individual per-patient vouchers -->
+                        <h:panelGroup id="gpIndividualPreview" >
+                            <h:panelGroup class="mb-4" rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is A4 paper', true)}">
+                                <h:panelGroup class="d-flex justify-content-center">
+                                    <bi:staff_payment_individual_a4 controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}"/>
+                                </h:panelGroup>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is five five paper.')}">
+                                <bi:staff_payment_individual_five_five controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}"/>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Doctor payment bill is POS paper')}">
+                                <bi:staff_payment_individual_pos controller="#{staffPaymentBillController}" bill="#{staffPaymentBillController.current}"/>
                             </h:panelGroup>
                         </h:panelGroup>
 

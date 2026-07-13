@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.core.util.JsfUtil;
@@ -36,6 +37,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -52,8 +55,12 @@ import com.divudi.core.entity.pharmacy.Amp;
 @SessionScoped
 public class PurchaseOrderController implements Serializable {
 
+    private static final Logger LOGGER = Logger.getLogger(PurchaseOrderController.class.getName());
+
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -171,7 +178,39 @@ public class PurchaseOrderController implements Serializable {
         return "/pharmacy/pharmacy_purhcase_order_approving?faces-redirect=true";
     }
 
+    /**
+     * Authorization helper method to check Purchase Order Approval
+     * privileges and audit denied access
+     *
+     * @param action The action being attempted (APPROVE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, requestedBill != null ? requestedBill.getId() : "null"});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = requestedBill != null ? requestedBill.getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Purchase Order access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " purchase orders.");
+            return false;
+        }
+
+        return true;
+    }
+
     public String approve() {
+        if (!isAuthorized("APPROVE", "PurchaseOrdersApprovel")) {
+            return "";
+        }
         // Check if the requested bill is already approved to prevent double approving
         if (getRequestedBill() != null && getRequestedBill().getReferenceBill() != null) {
             JsfUtil.addErrorMessage("This purchase order is already approved");

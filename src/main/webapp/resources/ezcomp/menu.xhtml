@@ -1264,12 +1264,13 @@
                         <p:menuitem  ajax="false"  action="/credit/index_pharmacy_due_access?faces-redirect=true" value="Credit Dues and Access" rendered="#{webUserController.hasPrivilege('PharmacyCreditDueAndAccess')}" ></p:menuitem>-->
                     </p:menuitem>
 
-                    <p:menuitem  
+                    <p:menuitem
                         id="mnuReturnsAndCancellations"
-                        ajax="false" 
-                        action="/pharmacy/returns_and_cancellations_index?faces-redirect=true"  
-                        value="Returns and Cancellations" 
+                        ajax="false"
+                        action="/pharmacy/returns_and_cancellations_index?faces-redirect=true"
+                        value="Returns and Cancellations"
                         title="Manage Returns and Cancellations"
+                        rendered="#{webUserController.hasPrivilege('CreateGrnReturn') or webUserController.hasPrivilege('FinalizeGrnReturn') or webUserController.hasPrivilege('ApproveGrnReturn') or webUserController.hasPrivilege('CreateDisposalReturn') or webUserController.hasPrivilege('FinalizeDisposalReturn') or webUserController.hasPrivilege('ApproveDisposalReturn')}"
                         icon="fas fa-undo-alt">
                     </p:menuitem>
 

@@ -57,7 +57,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="card border-success mt-3" rendered="#{not empty transferIssueDirectController.recentToDepartments}">
+                            <h:panelGroup layout="block" styleClass="card border-success mt-3" rendered="#{not empty transferIssueDirectController.recentToDepartments}">
                                 <div class="card-header bg-light">
                                     <h:outputLabel styleClass="fas fa-history me-2 text-success" />
                                     <small class="fw-bold text-success">Quick Access - Recently Issued To</small>
@@ -72,7 +72,7 @@
                                             ajax="false" />
                                     </ui:repeat>
                                 </div>
-                            </div>
+                            </h:panelGroup>
                         </div>
                         <div class="col-2"></div>
                     </div>
@@ -326,6 +326,7 @@
                                             onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
                                                         return false;"
                                             ajax="false"
+                                            disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementDirectIssue')}"
                                             styleClass="ui-button-success" />
                                     </div>
                                 </f:facet>
@@ -380,7 +381,7 @@
                                     </p:autoComplete>
                                 </div>
 
-                                <div class="card border-success mb-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
+                                <h:panelGroup layout="block" styleClass="card border-success mb-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue - Show Rate and Value', false) and webUserController.hasPrivilege('PharmacyTransferViewRates')}">
                                     <div class="card-header bg-light">
                                         <h:outputLabel styleClass="fas fa-calculator me-2" />
                                         <small class="fw-bold">Transfer Summary</small>
@@ -403,7 +404,7 @@
                                             </span>
                                         </div>
                                     </div>
-                                </div>
+                                </h:panelGroup>
 
                                 <div class="mb-3">
                                     <p:outputLabel value="Comments" styleClass="form-label fw-bold text-danger"/>
