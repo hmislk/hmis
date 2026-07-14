@@ -13716,13 +13716,35 @@ public class PharmacyReportController implements Serializable {
 
     private void calculateBhtIssueValue() {
         try {
+            // The BHT Issue row is the NET stock effect of the inward medicine
+            // cycle (same pattern as the retail Sale row, where refunds/cancels
+            // net against sales inside one row):
+            //   - pharmacy issue to BHT ................ stock OUT (qty stored negative)
+            //   - ward receiving the issued medicines ... stock IN at ward (qty stored positive)
+            //   - pharmacy accepting a ward return ...... stock IN at pharmacy (qty stored positive)
+            // All three groups sum correctly with their stored signs in one query.
             List<BillTypeAtomic> billTypes = Arrays.asList(
                     BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
                     BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
-                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                    BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD,
+                    BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD
             );
 
             Map<String, Double> bhtIssues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypes);
+
+            // The ward-return leg (RETURN_MEDICINE_INWARD) removes stock from the
+            // ward but its bills store a POSITIVE quantity, so it must be queried
+            // separately and DEDUCTED from the row total. Without these ward legs
+            // every ward receive/return shows up as a spurious COGS variance
+            // (found via COGS E2E verification).
+            Map<String, Double> wardReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ",
+                    Collections.singletonList(BillTypeAtomic.RETURN_MEDICINE_INWARD));
+            for (Map.Entry<String, Double> e : wardReturns.entrySet()) {
+                double v = e.getValue() == null ? 0.0 : Math.abs(e.getValue());
+                bhtIssues.merge(e.getKey(), -v, Double::sum);
+            }
+
             cogsRows.put("BHT Issue", bhtIssues);
 
         } catch (Exception e) {
