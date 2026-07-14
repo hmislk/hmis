@@ -21,6 +21,17 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 import java.util.stream.Collectors;
 
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Element;
+import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import java.awt.Color;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+
 @Named
 @SessionScoped
 public class RoomOccupancyReportController implements Serializable {
@@ -62,34 +73,34 @@ public class RoomOccupancyReportController implements Serializable {
 
         StringBuilder jpql = new StringBuilder();
         jpql.append(" select new com.divudi.core.data.dto.RoomOccupancyReportDto( ")
-            .append("     pat.phn, ")
-            .append("     per.name, ")
-            .append("     adm.dateOfAdmission, ")
-            .append("     adm.dateOfDischarge, ")
-            .append("     rc.name, ")
-            .append("     at.name, ")
-            .append("     dept.name, ")
-            .append("     r.name, ")
-            .append("     pr.admittedAt, ")
-            .append("     pr.dischargedAt ")
-            .append(" ) ")
-            .append(" from PatientRoom pr ")
-            .append(" left join pr.patientEncounter adm ")
-            .append(" left join adm.patient pat ")
-            .append(" left join pat.person per ")
-            .append(" left join pr.roomFacilityCharge rfc ")
-            .append(" left join rfc.room r ")
-            .append(" left join rfc.roomCategory rc ")
-            .append(" left join rfc.department dept ")
-            .append(" left join dept.institution inst ")
-            .append(" left join adm.admissionType at ")
-            .append(" where pr.retired = false ")
-            .append(" and pr.dischargedAt = true ");
+                .append("     pat.phn, ")
+                .append("     per.name, ")
+                .append("     adm.dateOfAdmission, ")
+                .append("     adm.dateOfDischarge, ")
+                .append("     rc.name, ")
+                .append("     at.name, ")
+                .append("     dept.name, ")
+                .append("     r.name, ")
+                .append("     pr.admittedAt, ")
+                .append("     pr.dischargedAt ")
+                .append(" ) ")
+                .append(" from PatientRoom pr ")
+                .append(" left join pr.patientEncounter adm ")
+                .append(" left join adm.patient pat ")
+                .append(" left join pat.person per ")
+                .append(" left join pr.roomFacilityCharge rfc ")
+                .append(" left join rfc.room r ")
+                .append(" left join rfc.roomCategory rc ")
+                .append(" left join rfc.department dept ")
+                .append(" left join dept.institution inst ")
+                .append(" left join adm.admissionType at ")
+                .append(" where pr.retired = false ")
+                .append(" and pr.discharged = true ");
 
         Map<String, Object> params = new HashMap<>();
 
         // Date filter on dischargedAt (if discharged in range) or if still admitted (admittedAt before range end)
-        jpql.append(" and (pr.dischargedAt between :fd and :td or (pr.dischargedAt is null and pr.admittedAt <= :td)) ");
+        jpql.append(" and (pr.dischargedAt between :fd and :td) ");
         params.put("fd", fromDate);
         params.put("td", toDate);
 
@@ -129,17 +140,16 @@ public class RoomOccupancyReportController implements Serializable {
         jpql.append(" order by pr.admittedAt desc ");
         detailDtos = (List<RoomOccupancyReportDto>) patientRoomFacade
                 .findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        
+
         System.out.println("This is msg " + detailDtos.size());
 
-        
     }
 
     private void processSummaryReport() {
         processDetailReport(); // Fetch all raw data first
-        
+
         summaryDtos = new ArrayList<>();
-        
+
         if (detailDtos == null || detailDtos.isEmpty()) {
             return;
         }
@@ -147,9 +157,9 @@ public class RoomOccupancyReportController implements Serializable {
         if ("Summary By Room Category".equals(reportType)) {
             summaryType = "Category";
             Map<String, Double> map = detailDtos.stream()
-                .filter(dto -> dto.getRoomCategory() != null)
-                .collect(Collectors.groupingBy(RoomOccupancyReportDto::getRoomCategory, Collectors.summingDouble(RoomOccupancyReportDto::getOccupancyDays)));
-            
+                    .filter(dto -> dto.getRoomCategory() != null)
+                    .collect(Collectors.groupingBy(RoomOccupancyReportDto::getRoomCategory, Collectors.summingDouble(RoomOccupancyReportDto::getOccupancyDays)));
+
             for (Map.Entry<String, Double> entry : map.entrySet()) {
                 RoomOccupancyReportDto dto = new RoomOccupancyReportDto();
                 dto.setGroupName(entry.getKey());
@@ -159,9 +169,9 @@ public class RoomOccupancyReportController implements Serializable {
         } else if ("Summary By Admission Type".equals(reportType)) {
             summaryType = "AdmissionType";
             Map<String, Double> map = detailDtos.stream()
-                .filter(dto -> dto.getAdmissionType() != null)
-                .collect(Collectors.groupingBy(RoomOccupancyReportDto::getAdmissionType, Collectors.summingDouble(RoomOccupancyReportDto::getOccupancyDays)));
-            
+                    .filter(dto -> dto.getAdmissionType() != null)
+                    .collect(Collectors.groupingBy(RoomOccupancyReportDto::getAdmissionType, Collectors.summingDouble(RoomOccupancyReportDto::getOccupancyDays)));
+
             for (Map.Entry<String, Double> entry : map.entrySet()) {
                 RoomOccupancyReportDto dto = new RoomOccupancyReportDto();
                 dto.setGroupName(entry.getKey());
@@ -169,12 +179,92 @@ public class RoomOccupancyReportController implements Serializable {
                 summaryDtos.add(dto);
             }
         }
-        
+
         // Sort
         summaryDtos.sort((d1, d2) -> d1.getGroupName().compareToIgnoreCase(d2.getGroupName()));
     }
-    
-    // Getters and Setters...
+
+// ... inside the class
+    private static final SimpleDateFormat HEADER_DATE_FMT = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
+
+    /**
+     * Called by PrimeFaces before the Detail table is written into the PDF.
+     * Sets landscape orientation (11 columns won't fit portrait) and adds a
+     * header.
+     */
+    public void preProcessDetailPdf(Object document) throws DocumentException {
+        Document pdf = (Document) document;
+        pdf.setPageSize(PageSize.A4.rotate());
+        pdf.setMargins(20f, 20f, 20f, 20f);
+        pdf.open();
+        addReportHeader(pdf, "Room Occupancy Report - Detail");
+    }
+
+    /**
+     * Called by PrimeFaces before a Summary table is written into the PDF.
+     */
+    public void preProcessSummaryPdf(Object document) throws DocumentException {
+        Document pdf = (Document) document;
+        pdf.setPageSize(PageSize.A4);
+        pdf.setMargins(30f, 30f, 30f, 30f);
+        pdf.open();
+
+        String title = "Summary By Admission Type".equals(reportType)
+                ? "Room Occupancy Report - Summary By Admission Type"
+                : "Room Occupancy Report - Summary By Room Category";
+        addReportHeader(pdf, title);
+    }
+
+    /**
+     * Shared header: report title + the filter criteria used to generate it.
+     * Keeping filters visible on the printed page matters for audit trails.
+     */
+    private void addReportHeader(Document pdf, String title) throws DocumentException {
+        Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16, Color.DARK_GRAY);
+        Font metaFont = FontFactory.getFont(FontFactory.HELVETICA, 9, Color.GRAY);
+
+        Paragraph titlePara = new Paragraph(title, titleFont);
+        titlePara.setAlignment(Element.ALIGN_CENTER);
+        titlePara.setSpacingAfter(4f);
+        pdf.add(titlePara);
+
+        Paragraph metaPara = new Paragraph(buildFilterSummary(), metaFont);
+        metaPara.setAlignment(Element.ALIGN_CENTER);
+        metaPara.setSpacingAfter(12f);
+        pdf.add(metaPara);
+    }
+
+    private String buildFilterSummary() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Discharge Period: ")
+                .append(fromDate != null ? HEADER_DATE_FMT.format(fromDate) : "N/A")
+                .append(" - ")
+                .append(toDate != null ? HEADER_DATE_FMT.format(toDate) : "N/A");
+
+        if (selectedPatient != null) {
+            sb.append("  |  Patient MRN: ").append(selectedPatient.getBhtNo());
+        }
+        if (ward != null) {
+            sb.append("  |  Ward: ").append(ward.getName());
+        }
+        if (roomFacilityCharge != null) {
+            sb.append("  |  Bed: ").append(roomFacilityCharge.getName());
+        }
+        if (roomCategory != null) {
+            sb.append("  |  Room Category: ").append(roomCategory.getName());
+        }
+        if (admissionType != null) {
+            sb.append("  |  Admission Type: ").append(admissionType.getName());
+        }
+        if (institution != null) {
+            sb.append("  |  Institution: ").append(institution.getName());
+        }
+        if (site != null) {
+            sb.append("  |  Site: ").append(site.getName());
+        }
+        sb.append("\nGenerated: ").append(HEADER_DATE_FMT.format(new Date()));
+        return sb.toString();
+    }
 
     public Date getFromDate() {
         return fromDate;

@@ -20,7 +20,7 @@
                                 <p:outputLabel value="Discharge from" for="fromDate" styleClass="m-3" />
                             </h:panelGroup>
 
-                             <p:datePicker
+                            <p:datePicker
                                 id="fromDate"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
@@ -39,8 +39,8 @@
                                 <h:outputText value="&#xf073;" styleClass="fa mr-2"/> 
                                 <p:outputLabel value="Discharge to" for="toDate" class="m-3"/>
                             </h:panelGroup>
-                            
-                             <p:datePicker
+
+                            <p:datePicker
                                 id="toDate"
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
@@ -79,7 +79,7 @@
                                     <h:outputText value="#{pe.patientName}"/>
                                 </p:column>
                             </p:autoComplete>
-                            
+
                             <p:spacer width="20"/>
 
                             <!-- Ward -->
@@ -102,7 +102,7 @@
                                     <h:outputText value="#{dept.name}"/>
                                 </p:column>
                             </p:autoComplete>
-                            
+
                             <p:spacer width="20"/>
 
                             <!-- Bed -->
@@ -125,9 +125,9 @@
                                     <h:outputText value="#{rfc.name}"/>
                                 </p:column>
                             </p:autoComplete>
-                                                        
+
                             <p:spacer width="20"/>
-                            
+
                             <!-- Room Category -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf1ad;" styleClass="fa mr-2"/>
@@ -137,9 +137,9 @@
                                 <f:selectItem itemLabel="All Room Categories" itemValue="#{null}"/>
                                 <f:selectItems value="#{roomCategoryController.items}" var="rc" itemLabel="#{rc.name}" itemValue="#{rc}"/>
                             </p:selectOneMenu>
-                            
+
                             <p:spacer width="20"/>
-                           
+
                             <!-- Admission Type -->
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0f6;" styleClass="fa mr-2"/>
@@ -179,7 +179,7 @@
                                 <f:selectItem itemLabel="All Sites" itemValue="#{null}"/>
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}"/>
                             </p:selectOneMenu>
-                            
+
                             <p:spacer width="20"/>
 
                             <h:panelGroup layout="block" styleClass="form-group">
@@ -216,17 +216,30 @@
                                 class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
                                 <p:dataExporter type="xlsx" target="detailWise" fileName="Room_Occupancy_Detail"/>
                             </p:commandButton>
-                            
+
                             <p:commandButton
                                 rendered="#{roomOccupancyReportController.reportType ne 'Detail'}"
                                 class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
                                 <p:dataExporter type="xlsx" target="summaryWise" fileName="Room_Occupancy_Summary"/>
                             </p:commandButton>
+                            <p:commandButton
+                                rendered="#{roomOccupancyReportController.reportType eq 'Detail'}"
+                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
+                                <p:dataExporter type="pdf" target="detailWise" fileName="Room_Occupancy_Detail"
+                                                preProcessor="#{roomOccupancyReportController.preProcessDetailPdf}"/>
+                            </p:commandButton>
+
+                            <p:commandButton
+                                rendered="#{roomOccupancyReportController.reportType ne 'Detail'}"
+                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
+                                <p:dataExporter type="pdf" target="summaryWise" fileName="Room_Occupancy_Summary"
+                                                preProcessor="#{roomOccupancyReportController.preProcessSummaryPdf}"/>
+                            </p:commandButton>
 
                         </div>
 
                         <h:panelGroup id="printPanel">
-                        
+
                             <p:dataTable
                                 id="detailWise"
                                 value="#{roomOccupancyReportController.detailDtos}"
@@ -340,7 +353,7 @@
                                     </h:outputText>
                                 </p:column>
                             </p:dataTable>
-                            
+
                             <p:dataTable
                                 id="summaryWise"
                                 value="#{roomOccupancyReportController.summaryDtos}"
@@ -368,7 +381,7 @@
                                     <h:outputText value="#{svar.groupName}">
                                     </h:outputText>
                                 </p:column>
-                                
+
                                 <p:column width="15em" styleClass="border" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputText value="Total Occupancy Days" />
