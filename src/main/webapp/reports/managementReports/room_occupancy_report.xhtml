@@ -225,8 +225,12 @@
                             </p:commandButton>
 
                             <p:commandButton
+                                id="summaryExcelButton"
                                 rendered="#{roomOccupancyReportController.reportType ne 'Detail'}"
-                                class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                                class="ui-button-success mx-1" 
+                                icon="fas fa-file-excel" 
+                                ajax="false" 
+                                value="Download">
                                 <p:dataExporter type="xlsx" target="summaryWise" fileName="Room_Occupancy_Summary"/>
                             </p:commandButton>
                             <p:commandButton
