@@ -3078,6 +3078,7 @@ public class FinancialTransactionController implements Serializable {
         selectedBundle = null;
         selectedPaymentMethod = null;
         nonClosedShiftStartFundBill = null;
+        handoverValuesCreated = false;
     }
 
     public List<Payment> findPaymentsForBill(Bill b) {
