@@ -234,8 +234,12 @@
                                 <p:dataExporter type="xlsx" target="summaryWise" fileName="Room_Occupancy_Summary"/>
                             </p:commandButton>
                             <p:commandButton
+                                id="detailPdfButton"
                                 rendered="#{roomOccupancyReportController.reportType eq 'Detail'}"
-                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
+                                class="ui-button-danger mx-1" 
+                                icon="fas fa-file-pdf" 
+                                ajax="false" 
+                                value="PDF">
                                 <p:dataExporter type="pdf" target="detailWise" fileName="Room_Occupancy_Detail"
                                                 preProcessor="#{roomOccupancyReportController.preProcessDetailPdf}"/>
                             </p:commandButton>
