@@ -20,6 +20,7 @@ import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.ServiceCategory;
 import com.divudi.core.entity.ServiceSubCategory;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.InwardPriceAdjustment;
 import com.divudi.core.entity.lab.InvestigationCategory;
 import com.divudi.core.entity.pharmacy.ConsumableCategory;
@@ -70,11 +71,17 @@ public class InwardPriceAdjustmntController implements Serializable {
     double toPrice;
     double margin;
     private Category roomLocation;
+    private Institution creditCompany;
+    private AdmissionType admissionType;
+    private Category roomCategory;
 
     private void recreateModel() {
         fromPrice = toPrice + 1;
         toPrice = 0.0;
         margin = 0;
+        creditCompany = null;
+        admissionType = null;
+        roomCategory = null;
         items = null;
     }
 
@@ -82,6 +89,9 @@ public class InwardPriceAdjustmntController implements Serializable {
         fromPrice = toPrice + 1;
         toPrice = 0.0;
         margin = 0;
+        creditCompany = null;
+        admissionType = null;
+        roomCategory = null;
         items = null;
     }
 
@@ -148,6 +158,9 @@ public class InwardPriceAdjustmntController implements Serializable {
         a.setInstitution(department.getInstitution());
         a.setPaymentMethod(paymentMethod);
         a.setMargin(margin);
+        a.setCreditCompany(creditCompany);
+        a.setAdmissionType(admissionType);
+        a.setRoomCategory(roomCategory);
         a.setCreatedAt(new Date());
         a.setCreater(getSessionController().getLoggedUser());
         if (a.getId() == null) {
@@ -184,6 +197,9 @@ public class InwardPriceAdjustmntController implements Serializable {
             a.setInstitution(department.getInstitution());
             a.setPaymentMethod(paymentMethod);
             a.setMargin(margin);
+            a.setCreditCompany(creditCompany);
+            a.setAdmissionType(admissionType);
+            a.setRoomCategory(roomCategory);
             a.setCreatedAt(new Date());
             a.setCreater(getSessionController().getLoggedUser());
             if (a.getId() == null) {
@@ -426,6 +442,26 @@ public class InwardPriceAdjustmntController implements Serializable {
         //  createItems();
     }
 
+    /**
+     * Load the selected row into {@link #current} for editing in the edit
+     * dialog. The list itself is display-only; all changes are made in the
+     * dialog and committed via {@link #saveEdit()} (or discarded by closing it).
+     */
+    public void prepareEdit(PriceMatrix tmp) {
+        this.current = tmp;
+    }
+
+    /**
+     * Persist the row currently being edited in the edit dialog.
+     */
+    public void saveEdit() {
+        if (current == null) {
+            return;
+        }
+        getFacade().edit(current);
+        current = null;
+    }
+
     public Category getRoomLocation() {
 
         return roomLocation;
@@ -441,6 +477,30 @@ public class InwardPriceAdjustmntController implements Serializable {
 
     public void setFilterItems(List<PriceMatrix> filterItems) {
         this.filterItems = filterItems;
+    }
+
+    public Institution getCreditCompany() {
+        return creditCompany;
+    }
+
+    public void setCreditCompany(Institution creditCompany) {
+        this.creditCompany = creditCompany;
+    }
+
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
+
+    public Category getRoomCategory() {
+        return roomCategory;
+    }
+
+    public void setRoomCategory(Category roomCategory) {
+        this.roomCategory = roomCategory;
     }
 
     /**

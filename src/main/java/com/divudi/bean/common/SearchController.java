@@ -694,6 +694,9 @@ public class SearchController implements Serializable {
         billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
 //        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+//        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
 
         //Pharmacy Types
         billTypeAtomic.add(BillTypeAtomic.INWARD_FINAL_BILL);
@@ -846,6 +849,9 @@ public class SearchController implements Serializable {
         billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
 //        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+//        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
 
         //Pharmacy Types
         billTypeAtomic.add(BillTypeAtomic.INWARD_FINAL_BILL);
@@ -1475,6 +1481,7 @@ public class SearchController implements Serializable {
         filterChannelBillsByBilledDate = true;
         settledBillType = null;
         total = 0.0;
+        pharmacyBillSearch.setSaleBillDtos(null);
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
@@ -1736,6 +1743,10 @@ public class SearchController implements Serializable {
 
     public String navigateToShiftEndCash() {
         return "/reports/cashier_reports/shift_end_cash_list?faces-redirect=true";
+    }
+
+    public String navigateToShiftStartAndEnd() {
+        return "/reports/cashier_reports/shift_start_and_ends?faces-redirect=true";
     }
 
     public String navigatToReportDoctorPaymentOpd() {
@@ -2733,6 +2744,56 @@ public class SearchController implements Serializable {
                 .sum();
     }
 
+    public double getOpdSaleSummaryHospitalFeeTotal() {
+        if (opdSaleSummaryDtos == null || opdSaleSummaryDtos.isEmpty()) {
+            return 0.0;
+        }
+        return opdSaleSummaryDtos.stream()
+                .filter(dto -> dto.getHospitalFee() != null)
+                .mapToDouble(OpdSaleSummaryDTO::getHospitalFee)
+                .sum();
+    }
+
+    public double getOpdSaleSummaryProfessionalFeeTotal() {
+        if (opdSaleSummaryDtos == null || opdSaleSummaryDtos.isEmpty()) {
+            return 0.0;
+        }
+        return opdSaleSummaryDtos.stream()
+                .filter(dto -> dto.getProfessionalFee() != null)
+                .mapToDouble(OpdSaleSummaryDTO::getProfessionalFee)
+                .sum();
+    }
+
+    public double getOpdSaleSummaryGrossAmountTotal() {
+        if (opdSaleSummaryDtos == null || opdSaleSummaryDtos.isEmpty()) {
+            return 0.0;
+        }
+        return opdSaleSummaryDtos.stream()
+                .filter(dto -> dto.getGrossAmount() != null)
+                .mapToDouble(OpdSaleSummaryDTO::getGrossAmount)
+                .sum();
+    }
+
+    public double getOpdSaleSummaryDiscountTotal() {
+        if (opdSaleSummaryDtos == null || opdSaleSummaryDtos.isEmpty()) {
+            return 0.0;
+        }
+        return opdSaleSummaryDtos.stream()
+                .filter(dto -> dto.getDiscountAmount() != null)
+                .mapToDouble(OpdSaleSummaryDTO::getDiscountAmount)
+                .sum();
+    }
+
+    public double getOpdSaleSummaryServiceChargeTotal() {
+        if (opdSaleSummaryDtos == null || opdSaleSummaryDtos.isEmpty()) {
+            return 0.0;
+        }
+        return opdSaleSummaryDtos.stream()
+                .filter(dto -> dto.getServiceCharge() != null)
+                .mapToDouble(OpdSaleSummaryDTO::getServiceCharge)
+                .sum();
+    }
+
     public int getOpdAnalyticsIndex() {
         return opdAnalyticsIndex;
     }
@@ -3331,6 +3392,10 @@ public class SearchController implements Serializable {
 
     public void createPharmacyRetailBills() {
         pharmacyBillSearch.fetchSaleSearchDtosFromNativeBills(true);
+    }
+
+    public void createPharmacySaleBillItems() {
+        pharmacyBillSearch.fetchSaleBillItemSearchDtos(getMaxResult());
     }
 
     public void createPharmacyAddToStockBills() {
@@ -4249,6 +4314,44 @@ public class SearchController implements Serializable {
                 dto.setReceivedBills(byIssued.getOrDefault(dto.getBillId(), new ArrayList<>()));
             }
         }
+        populatePendingReceivePre(transferIssuedListDtos);
+    }
+
+    private void populatePendingReceivePre(List<PharmacyTransferIssuedListDTO> dtos) {
+        if (dtos == null || dtos.isEmpty()) {
+            return;
+        }
+        List<Long> issuedBillIds = dtos.stream()
+                .map(PharmacyTransferIssuedListDTO::getBillId)
+                .collect(Collectors.toList());
+        String jpql = "SELECT b FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billTypeAtomic = :btp "
+                + "AND b.backwardReferenceBill.id IN :issuedIds";
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
+        params.put("issuedIds", issuedBillIds);
+        List<Bill> preBills = getBillFacade().findByJpql(jpql, params);
+        if (preBills == null || preBills.isEmpty()) {
+            return;
+        }
+        Map<Long, Long[]> preByIssued = new HashMap<>();
+        for (Bill preBill : preBills) {
+            if (preBill.getBackwardReferenceBill() == null) {
+                continue;
+            }
+            Long issuedId = preBill.getBackwardReferenceBill().getId();
+            boolean isFinalized = preBill.getCheckedBy() != null;
+            preByIssued.put(issuedId, new Long[]{preBill.getId(), isFinalized ? 1L : 0L});
+        }
+        for (PharmacyTransferIssuedListDTO dto : dtos) {
+            Long[] preInfo = preByIssued.get(dto.getBillId());
+            if (preInfo != null) {
+                dto.setPendingReceiveBillId(preInfo[0]);
+                dto.setPendingReceiveIsFinalized(preInfo[1] == 1L);
+            }
+        }
     }
 
     private List<PharmacyTransferReceivedListDTO> fetchReceivedBillsForIssuedIds(List<Long> issuedBillIds) {
@@ -4598,6 +4701,48 @@ public class SearchController implements Serializable {
             return;
         }
 
+        // PHARMACY_DIRECT_PURCHASE atomics: redirect to DTO fetch so purchase.xhtml
+        // composite (which binds to purchaseSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyPurchaseBill) {
+            pharmacyBillSearch.fetchPurchaseSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyGrnReturn atomics: redirect to DTO fetch so grn_return.xhtml composite
+        // (which binds to grnReturnSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyGrnReturn) {
+            pharmacyBillSearch.fetchGrnReturnSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyReturnWithoutTraising: redirect to DTO fetch so grn_return_without_traising.xhtml
+        // composite (which binds to returnWithoutTraisingSearchDtos) shows results from the atomic search path.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyReturnWithoutTraising) {
+            pharmacyBillSearch.fetchReturnWithoutTraisingSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyIssue atomics: redirect to DTO fetch so pharmacy_issue.xhtml composite
+        // (which binds to issueSearchDtos) shows results from the atomic search path.
+        // ISSUE_MEDICINE_ON_REQUEST_INWARD is excluded: the atomic search page renders
+        // pharmacy_issue_for_inpatients.xhtml for that atomic, which still reads
+        // searchController.bills and must fall through to the generic query below.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyIssue
+                && billTypeAtomic != BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD) {
+            pharmacyBillSearch.fetchIssueSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyAdjustment atomics: redirect to DTO fetch so adjustment.xhtml composite
+        // (which binds to adjustmentSearchDtos) shows results from the atomic search path.
+        // PharmacyStockAdjustmentBill is also included: pharmacy_search_by_bill_type_atomic.xhtml
+        // renders <se:adjustment/> for that BillType too, so it must populate adjustmentSearchDtos.
+        if (billTypeAtomic.getBillType() == BillType.PharmacyAdjustment
+                || billTypeAtomic.getBillType() == BillType.PharmacyStockAdjustmentBill) {
+            pharmacyBillSearch.fetchAdjustmentSearchDtos(maxResult);
+            return;
+        }
+
         String jpql;
         Map params = new HashMap();
 
@@ -4762,38 +4907,42 @@ public class SearchController implements Serializable {
             return;
         }
 
-        String jpql;
+        // PharmacyPurchaseBill: use lightweight DTO query (issue #21013 / #20299).
+        if (billType == BillType.PharmacyPurchaseBill) {
+            pharmacyBillSearch.fetchPurchaseSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyGrnReturn: use lightweight DTO query (issue #21014 / #20299).
+        if (billType == BillType.PharmacyGrnReturn) {
+            pharmacyBillSearch.fetchGrnReturnSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyReturnWithoutTraising: use lightweight DTO query (issue #21014 / #20299).
+        if (billType == BillType.PharmacyReturnWithoutTraising) {
+            pharmacyBillSearch.fetchReturnWithoutTraisingSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyIssue: use lightweight DTO query (issue #21015 / #20299).
+        if (billType == BillType.PharmacyIssue) {
+            pharmacyBillSearch.fetchIssueSearchDtos(maxResult);
+            return;
+        }
+
+        // PharmacyAdjustment: use lightweight DTO query (issue #21016 / #20299).
+        if (billType == BillType.PharmacyAdjustment) {
+            pharmacyBillSearch.fetchAdjustmentSearchDtos(maxResult);
+            return;
+        }
+
+        String jpql = "select b from Bill b where b.retired=false and "
+                + " (type(b)=:class1 or type(b)=:class2) "
+                + " and b.department=:dep and b.billType = :billType "
+                + " and b.createdAt between :fromDate and :toDate ";
         Map params = new HashMap();
 
-        // Special handling for PharmacyAdjustment - use bill type atomics instead
-        if (billType == BillType.PharmacyAdjustment) {
-            jpql = "select b from Bill b where b.retired=false and "
-                    + " b.department=:dep and b.billTypeAtomic in :billTypeAtomics "
-                    + " and b.createdAt between :fromDate and :toDate ";
-
-            // Include all adjustment-related bill type atomics
-            List<BillTypeAtomic> adjustmentAtomics = Arrays.asList(
-                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
-                    BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
-                    BillTypeAtomic.PHARMACY_STAFF_STOCK_ADJUSTMENT,
-                    BillTypeAtomic.PHARMACY_ADJUSTMENT,
-                    BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED,
-                    BillTypeAtomic.PHARMACY_PURCHASE_RATE_ADJUSTMENT,
-                    BillTypeAtomic.PHARMACY_RETAIL_RATE_ADJUSTMENT,
-                    BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
-                    BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT,
-                    BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT
-            );
-            params.put("billTypeAtomics", adjustmentAtomics);
-
-            System.out.println("DEBUG: Using PharmacyAdjustment branch");
-        } else {
-            jpql = "select b from Bill b where b.retired=false and "
-                    + " (type(b)=:class1 or type(b)=:class2) "
-                    + " and b.department=:dep and b.billType = :billType "
-                    + " and b.createdAt between :fromDate and :toDate ";
-            params.put("billType", billType);
-        }
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             jpql += " and  ((b.deptId) like :billNo )";
             params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
@@ -4860,12 +5009,9 @@ public class SearchController implements Serializable {
 
         jpql += " order by b.createdAt asc  ";
 
-        // Only set class1, class2, and billType parameters if not using billTypeAtomics
-        if (billType != BillType.PharmacyAdjustment) {
-            params.put("class1", BilledBill.class);
-            params.put("class2", PreBill.class);
-            params.put("billType", billType);
-        }
+        params.put("class1", BilledBill.class);
+        params.put("class2", PreBill.class);
+        params.put("billType", billType);
         params.put("dep", getSessionController().getDepartment());
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
@@ -7115,6 +7261,92 @@ public class SearchController implements Serializable {
         }
     }
 
+    public void createDirectPurchaseTableToFinalize() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.completed = :completed "
+                + " and b.department = :dept "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+
+        HashMap params = new HashMap();
+        params.put("bTp", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_PRE);
+        params.put("completed", false);
+        params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    public void createDirectPurchaseTableToApprove() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.institution = :ins "
+                + " and b.department = :dept "
+                + " and b.completed = :completed "
+                + " and b.checked = :checked "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+
+        HashMap params = new HashMap();
+        params.put("bTp", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_PRE);
+        params.put("ins", getSessionController().getInstitution());
+        params.put("dept", sessionController.getDepartment());
+        params.put("completed", true);
+        params.put("checked", false);
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    public void createIssueForRequestTableToFinalize() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.institution = :ins "
+                + " and b.department = :dept "
+                + " and b.completed = :completed "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        HashMap params = new HashMap();
+        params.put("bTp", BillTypeAtomic.PHARMACY_ISSUE_PRE);
+        params.put("ins", getSessionController().getInstitution());
+        params.put("dept", sessionController.getDepartment());
+        params.put("completed", false);
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    public void createIssueForRequestTableToApprove() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.institution = :ins "
+                + " and b.department = :dept "
+                + " and b.completed = :completed "
+                + " and b.checked = :checked "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        HashMap params = new HashMap();
+        params.put("bTp", BillTypeAtomic.PHARMACY_ISSUE_PRE);
+        params.put("ins", getSessionController().getInstitution());
+        params.put("dept", sessionController.getDepartment());
+        params.put("completed", true);
+        params.put("checked", false);
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
     private List<Bill> getReturnBill(Bill b, BillType bt) {
         String sql = "Select b From Bill b where b.retired=false and b.creater is not null"
                 + " and  b.billType=:btp and "
@@ -7180,6 +7412,11 @@ public class SearchController implements Serializable {
         createPoTable(billTypesToList, billTypesToAttachedToEachBillInTheList);
     }
 
+    private boolean isCrossDepartmentPoReceivingAllowed() {
+        return configOptionApplicationController
+                .getBooleanValueByKey("Pharmacy - Allow Cross-Department PO Receiving", false);
+    }
+
     /**
      * DTO-based version of createPoTablePharmacy for optimized performance.
      * Uses direct DTO query to avoid N+1 problem and entity graph loading. Does
@@ -7191,20 +7428,25 @@ public class SearchController implements Serializable {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
+        boolean allowCrossDepartmentPoReceiving = isCrossDepartmentPoReceivingAllowed();
+        String departmentClause = allowCrossDepartmentPoReceiving ? "" : "AND b.department = :dept ";
+
         // First, get count to verify data exists
         String countJpql = "SELECT COUNT(b) "
                 + "FROM Bill b "
                 + "WHERE b.retired = false "
                 + "AND b.billTypeAtomic = :bta "
                 + "AND b.referenceBill.institution = :ins "
-                + "AND b.department = :dept "
+                + departmentClause
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
 
         Map<String, Object> countParams = new HashMap<>();
         countParams.put("toDate", getToDate());
         countParams.put("fromDate", getFromDate());
         countParams.put("ins", getSessionController().getInstitution());
-        countParams.put("dept", sessionController.getDepartment());
+        if (!allowCrossDepartmentPoReceiving) {
+            countParams.put("dept", sessionController.getDepartment());
+        }
         countParams.put("bta", BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
 
         logger.debug("createPoTablePharmacyDto: Count JPQL = {}", countJpql);
@@ -7222,7 +7464,7 @@ public class SearchController implements Serializable {
                 + "WHERE b.retired = false "
                 + "AND b.billTypeAtomic = :bta "
                 + "AND b.referenceBill.institution = :ins "
-                + "AND b.department = :dept "
+                + departmentClause
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
 
         List testResult = getBillFacade().findByJpql(testJpql, countParams, TemporalType.TIMESTAMP);
@@ -7256,7 +7498,7 @@ public class SearchController implements Serializable {
                 + "WHERE b.retired = false "
                 + "AND b.billTypeAtomic = :bta "
                 + "AND b.referenceBill.institution = :ins "
-                + "AND b.department = :dept "
+                + departmentClause
                 + "AND b.createdAt BETWEEN :fromDate AND :toDate ";
 
         logger.debug("createPoTablePharmacyDto: DTO JPQL = {}", jpql);
@@ -7296,7 +7538,9 @@ public class SearchController implements Serializable {
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
         params.put("ins", getSessionController().getInstitution());
-        params.put("dept", sessionController.getDepartment());
+        if (!allowCrossDepartmentPoReceiving) {
+            params.put("dept", sessionController.getDepartment());
+        }
         params.put("bta", BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
 
         logger.info("createPoTablePharmacyDto: Executing DTO query...");
@@ -7381,11 +7625,13 @@ public class SearchController implements Serializable {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
+        boolean allowCrossDepartmentPoReceiving = isCrossDepartmentPoReceivingAllowed();
+
         jpql = "Select b From Bill b "
                 + " where b.retired = false"
                 + " and b.billTypeAtomic in :btas"
                 + " and b.referenceBill.institution = :ins "
-                + " and b.department = :dept "
+                + (allowCrossDepartmentPoReceiving ? "" : " and b.department = :dept ")
                 + " and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword() != null) {
@@ -7421,7 +7667,9 @@ public class SearchController implements Serializable {
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
         params.put("ins", getSessionController().getInstitution());
-        params.put("dept", sessionController.getDepartment());
+        if (!allowCrossDepartmentPoReceiving) {
+            params.put("dept", sessionController.getDepartment());
+        }
         params.put("btas", billTypeAtomicToList);
 
         if (getReportKeyWord() != null && getReportKeyWord().isAdditionalDetails()) {
@@ -7562,7 +7810,9 @@ public class SearchController implements Serializable {
     private List<Bill> getBHTIssudBills(Bill b) {
         String sql = "Select b From Bill b where b.retired=false "
                 + " and b.billType=:btp "
-                + " and b.referenceBill=:ref ";
+                + " and b.referenceBill=:ref "
+                + " and b.cancelled=false "
+                + " and b.refunded=false ";
         HashMap hm = new HashMap();
         hm.put("ref", b);
         hm.put("btp", BillType.PharmacyBhtPre);
@@ -7902,6 +8152,7 @@ public class SearchController implements Serializable {
                 //Starting of newly added code
                 //                + " and b.bill.refunded=false "
                 //Ending of newly added code
+                + " and b.fee.feeType=:feeType"
                 + " and (b.feeValue - b.paidValue) > 0"
                 //                + " and  b.bill.billTime between :fromDate and :toDate ";
                 + " and  b.bill.createdAt between :fromDate and :toDate ";
@@ -7947,6 +8198,7 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", BillType.InwardBill);
         temMap.put("btp2", BillType.InwardProfessional);
+        temMap.put("feeType", FeeType.Staff);
 
         billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
         List<BillFee> removeingBillFees = new ArrayList<>();
@@ -7979,6 +8231,7 @@ public class SearchController implements Serializable {
         temMap.put("billClass", BilledBill.class);
         temMap.put("btp", BillType.InwardBill);
         temMap.put("btp2", BillType.InwardProfessional);
+        temMap.put("feeType", FeeType.Staff);
 
         sql = "select b from BillFee b where "
                 + " b.retired=false "
@@ -7988,6 +8241,7 @@ public class SearchController implements Serializable {
                 //Starting of newly added code
                 //                + " and b.bill.refunded=false "
                 //Ending of newly added code
+                + " and b.fee.feeType=:feeType"
                 + " and (b.feeValue - b.paidValue) > 0"
                 //                + " and  b.bill.billTime between :fromDate and :toDate ";
                 + " and  b.bill.createdAt between :fromDate and :toDate ";
@@ -8058,6 +8312,7 @@ public class SearchController implements Serializable {
         sql = "select b from BillFee b where "
                 + " b.retired=false "
                 + " and (b.bill.billType=:btp or b.bill.billType=:btp2 )"
+                + " and b.fee.feeType=:feeType"
                 + " and (b.feeValue - b.paidValue) > 0"
                 + " and  b.bill.billDate between :fromDate and :toDate ";
 
@@ -8102,6 +8357,7 @@ public class SearchController implements Serializable {
         temMap.put("fromDate", getFromDate());
         temMap.put("btp", BillType.InwardBill);
         temMap.put("btp2", BillType.InwardProfessional);
+        temMap.put("feeType", FeeType.Staff);
 
         billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
         calTotal();
@@ -16614,6 +16870,108 @@ public class SearchController implements Serializable {
         return "/pharmacy/pharmacy_grn_list_to_approve?faces-redirect=true";
     }
 
+    public String navigateToDirectPurchaseListToFinalize() {
+        makeListNull();
+        return "/pharmacy/pharmacy_direct_purchase_list_to_finalize?faces-redirect=true";
+    }
+
+    public String navigateToDirectPurchaseListToApprove() {
+        makeListNull();
+        return "/pharmacy/pharmacy_direct_purchase_list_to_approve?faces-redirect=true";
+    }
+
+    public String navigateToIssueForRequestListToFinalize() {
+        makeListNull();
+        return "/pharmacy/pharmacy_issue_for_request_list_to_finalize?faces-redirect=true";
+    }
+
+    public String navigateToIssueForRequestListToApprove() {
+        makeListNull();
+        return "/pharmacy/pharmacy_issue_for_request_list_to_approve?faces-redirect=true";
+    }
+
+    public String navigateToReceiveListToFinalize() {
+        makeListNull();
+        return "/pharmacy/pharmacy_receive_list_to_finalize?faces-redirect=true";
+    }
+
+    public String navigateToReceiveListToApprove() {
+        makeListNull();
+        return "/pharmacy/pharmacy_receive_list_to_approve?faces-redirect=true";
+    }
+
+    public void createReceiveTableToFinalize() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.department = :dept "
+                + " and b.checkedBy is null "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bTp", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
+        params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    public void createReceiveTableToApprove() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.department = :dept "
+                + " and b.checkedBy is not null "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bTp", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
+        params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    public void createDisposalIssueTableToFinalize() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.department = :dept "
+                + " and b.checkedBy is null "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bTp", BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_PRE);
+        params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
+    public void createDisposalIssueTableToApprove() {
+        bills = null;
+        String jpql = "Select b From Bill b "
+                + " where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.billTypeAtomic = :bTp "
+                + " and b.department = :dept "
+                + " and b.checkedBy is not null "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " order by b.createdAt desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bTp", BillTypeAtomic.PHARMACY_DISPOSAL_ISSUE_PRE);
+        params.put("dept", sessionController.getDepartment());
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+    }
+
     public String navigateToPurchaseOrderApprove() {
         makeListNull();
         return "/pharmacy/pharmacy_purhcase_order_list_to_approve_dto?faces-redirect=true";
@@ -16862,7 +17220,10 @@ public class SearchController implements Serializable {
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
         btas.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_REFUND);
-        opdSaleSummaryDtos = billService.fetchOpdSaleSummaryDTOs(
+        // Issue #21920: one row per billing instance (not aggregated by item) with a
+        // billed date, so re-billed/cancelled/refunded services are preserved as
+        // separate rows instead of overwriting the same record.
+        opdSaleSummaryDtos = billService.fetchItemizedServiceInstanceDTOs(
                 fromDate, toDate, institution, site, department, category, item, btas);
     }
 
@@ -17670,6 +18031,7 @@ public class SearchController implements Serializable {
 // Generate Inward Payments and add to the main bundle
             List<BillTypeAtomic> inwardPayments = new ArrayList<>();
             inwardPayments.add(BillTypeAtomic.INWARD_DEPOSIT);
+            inwardPayments.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
             ReportTemplateRowBundle inwardPaymentsBundle = generatePaymentMethodColumnsByBills(inwardPayments);
             inwardPaymentsBundle.setBundleType("InwardPayments");
             inwardPaymentsBundle.setName("Inward Payments");
@@ -17679,6 +18041,7 @@ public class SearchController implements Serializable {
 // Generate Inward Payments Cancel and add to the main bundle
             List<BillTypeAtomic> inwardPaymentsCancel = new ArrayList<>();
             inwardPaymentsCancel.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            inwardPaymentsCancel.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
             ReportTemplateRowBundle inwardPaymentsCancelBundle = generatePaymentMethodColumnsByBills(inwardPaymentsCancel);
             inwardPaymentsCancelBundle.setBundleType("InwardPaymentsCancel");
             inwardPaymentsCancelBundle.setName("Inward Payment Cancellations");
@@ -18124,6 +18487,7 @@ public class SearchController implements Serializable {
 // Generate Inward Payments and add to the main bundle
             List<BillTypeAtomic> inwardPayments = new ArrayList<>();
             inwardPayments.add(BillTypeAtomic.INWARD_DEPOSIT);
+            inwardPayments.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
             ReportTemplateRowBundle inwardPaymentsBundle = generatePaymentMethodColumnsByBills(inwardPayments);
             inwardPaymentsBundle.setBundleType("InwardPayments");
             inwardPaymentsBundle.setName("Inward Payments");
@@ -18133,6 +18497,7 @@ public class SearchController implements Serializable {
 // Generate Inward Payments Cancel and add to the main bundle
             List<BillTypeAtomic> inwardPaymentsCancel = new ArrayList<>();
             inwardPaymentsCancel.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+            inwardPaymentsCancel.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
             ReportTemplateRowBundle inwardPaymentsCancelBundle = generatePaymentMethodColumnsByBills(inwardPaymentsCancel);
             inwardPaymentsCancelBundle.setBundleType("InwardPaymentsCancel");
             inwardPaymentsCancelBundle.setName("Inward Payment Cancellations");
@@ -19748,7 +20113,9 @@ public class SearchController implements Serializable {
         // Query bills for inward deposit receipts
         List<BillTypeAtomic> inwardDepositBillTypes = new ArrayList<>();
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT);
+        inwardDepositBillTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_BILL);
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+        inwardDepositBillTypes.add(BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL);
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
         inwardDepositBillTypes.add(BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION);
 
@@ -20371,7 +20738,9 @@ public class SearchController implements Serializable {
             // Get specific inward deposit bill types only
             List<BillTypeAtomic> inwardDepositBillTypes = Arrays.asList(
                     BillTypeAtomic.INWARD_DEPOSIT,
+                    BillTypeAtomic.INWARD_APPOINTMENT_BILL,
                     BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION,
+                    BillTypeAtomic.INWARD_APPOINTMENT_CANCEL_BILL,
                     BillTypeAtomic.INWARD_DEPOSIT_REFUND,
                     BillTypeAtomic.INWARD_DEPOSIT_REFUND_CANCELLATION
             );
@@ -21509,6 +21878,10 @@ public class SearchController implements Serializable {
             //Start - Atomic Bill Type with Cash in and cash out added for 10088-all-cashier-summary-had-calculated-fund-bills
             List<BillTypeAtomic> btas = BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_IN);
             btas.addAll(BillTypeAtomic.findByFinanceType(BillFinanceType.CASH_OUT));
+            // Collecting Centre Agent Payment / Cancellation are agent commission payouts, not cashier
+            // collections - exclude them (issue #21840)
+            btas.remove(BillTypeAtomic.CC_AGENT_PAYMENT);
+            btas.remove(BillTypeAtomic.CC_AGENT_PAYMENT_CANCELLATION);
             jpql += "AND bill.billTypeAtomic in :btas ";
             parameters.put("btas", btas);
             // End - Atomic Bill Type with Cash in and cash out added FOR 10088-all-cashier-summary-had-calculated-fund-bills
@@ -23657,6 +24030,29 @@ public class SearchController implements Serializable {
         return pdfSc;
     }
 
+    // PDF Export: Shift End Summary Report (shift_start_and_ends)
+    public StreamedContent getShiftEndSummaryReportAsPdf() {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Shift End Summary report before exporting.");
+            return null;
+        }
+
+        StreamedContent pdfSc = null;
+        try {
+            String fileName = "Shift_End_Summary_Report";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }   
+            pdfSc = pdfController.createPdfForShiftEndSummary(bills, PageSize.A4.rotate(), true, getFiltersForShiftEndSummaryReport(), fileName);
+        } catch (IOException e) {
+            logger.error("getShiftEndSummaryReportAsPdf: Error creating pdfSc via pdfController.createPdfForShiftEndSummary", e);
+            pdfSc = null;
+            JsfUtil.addErrorMessage("Failed to generate Shift End Summary Report PDF file. Please try again.");
+        } 
+        return pdfSc;
+    }
+
     // Excel Export: wht Report
     public StreamedContent getWhtReportAsExcel() {
         if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
@@ -23870,6 +24266,28 @@ public class SearchController implements Serializable {
         }
     }
 
+    // Excel Export: shift end summary Report (shift_start_and_ends)
+    public StreamedContent getShiftEndSummaryReportAsExcel() {
+        if (bills == null || bills.isEmpty()) {
+            JsfUtil.addErrorMessage("Please generate the Shift End Summary report before exporting.");
+            return null;
+        }
+
+        try {
+            String fileName = "Shift_End_Summary_Report";
+            String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+            if (dates != null && !dates.isEmpty()) {
+                fileName += "_" + dates;
+            }
+            downloadingExcel = excelController.createExcelForShiftEndSummary(bills, getFiltersForShiftEndSummaryReport(), fileName);
+        } catch (IOException e) {
+            logger.error("getShiftEndSummaryReportAsExcel: Error creating downloadingExcel via excelController.createExcelForShiftEndSummary", e);
+            downloadingExcel = null;
+            JsfUtil.addErrorMessage("Failed to generate Shift End Summary Report Excel file. Please try again.");
+        }
+        return downloadingExcel;
+    }
+
     // </editor-fold>
     // wht report, searchType as String
     public String getSearchTypeAsString() {
@@ -23925,6 +24343,23 @@ public class SearchController implements Serializable {
         params.put("MRN", (mrnNo != null && !mrnNo.isEmpty()) ? mrnNo : "All");
         params.put("Speciality", speciality != null ? speciality.getName() : "All");
         params.put("Doctor", staff != null && staff.getPerson() != null && staff.getPerson().getNameWithTitle() != null ? staff.getPerson().getNameWithTitle() : "All");
+
+        return params;
+    }
+
+    // Filters for Shift End Summary report
+    public Map<String, Object> getFiltersForShiftEndSummaryReport() {
+        Map<String, Object> params = new LinkedHashMap<>();
+        String dateTimeFormat = sessionController.getApplicationPreference().getLongDateTimeFormat();
+        String formattedFromDate = fromDate != null ? new SimpleDateFormat(dateTimeFormat).format(fromDate) : "Not available";
+        String formattedToDate = toDate != null ? new SimpleDateFormat(dateTimeFormat).format(toDate) : "Not available";
+
+        params.put("From Date", formattedFromDate);
+        params.put("To Date", formattedToDate);
+        params.put("User", (webUser != null && webUser.getWebUserPerson() != null) ? webUser.getWebUserPerson().getName() : "All");
+        params.put("Institution", institution != null ? institution.getName() : "All Institutions");
+        params.put("Site", site != null ? site.getName() : "All Sites");
+        params.put("Department", department != null ? department.getName() : "All Departments");
 
         return params;
     }

@@ -13,7 +13,7 @@
 **UI-ONLY CHANGES**: When UI improvements are requested, make ONLY frontend/XHTML changes
 **KEEP IT SIMPLE**: Use existing controller properties and methods - avoid introducing filteredValues, globalFilter, or new backend logic
 **FRONTEND FOCUS**: Stick to HTML/CSS styling, PrimeFaces component attributes, and layout improvements
-**ERP UI RULE**: Use `h:outputText` instead of HTML headings (h1-h6)
+**ERP UI RULE**: Use `h:outputText` for ALL text content in JSF pages — headings, labels, descriptions, static strings, and link labels. Do NOT write bare text nodes directly inside `<td>`, `<p:panel>`, or any JSF composite component. This is JSF best practice.
 **PRIMEFACES CSS**: Use PrimeFaces button classes, not Bootstrap button classes
 **XHTML STRUCTURE**: HTML DOCTYPE with `ui:composition` and template inside `h:body`
 **XML ENTITIES**: Always escape ampersands as `&amp;` in XHTML attributes
@@ -53,9 +53,30 @@
 ---
 
 ## Layout, Typography, and Containers
-- Use **PrimeFaces components for interaction** (buttons, dialogs, tables) and **Bootstrap utilities for layout** (`row`, `col-*`, `d-flex`, spacing helpers).
+- Use **PrimeFaces components for interaction** (buttons, dialogs, tables) and **Bootstrap utilities for layout** (`row`, `col-*`, `d-flex`, spacing helpers). The full decision matrix is below — when in doubt: *if it does something, it's PrimeFaces; if it positions something, it's Bootstrap.*
 - Prefer `p:panelGrid` when you only need a grid with a header; only wrap in `p:panel` when you need facets or panel styling.
-- Use `h:outputText` and `p:outputLabel` for headings, labels, and messages instead of HTML heading tags. Attach Bootstrap utility classes for emphasis when needed.
+
+### PrimeFaces vs Bootstrap — Decision Matrix
+
+Bootstrap 5.3 is loaded globally by the template, but it is a **layout toolkit only** in this project. Anything interactive or themed comes from PrimeFaces. Mixing the two for the same concern produces pages that look and behave differently module to module.
+
+| Concern | Use | Never use |
+|---|---|---|
+| Grid / columns / spacing / flex | Bootstrap `row`, `col-*`, `d-flex`, `gap-*`, `m*-*`/`p*-*`, `w-100`, `d-grid` | `p:panelGrid` for pure layout (renders a `<table>`) |
+| Buttons | `p:commandButton` / `p:button` + `ui-button-*` / `ui-button-stage-*` classes | Bootstrap `btn`, `btn-primary`, … |
+| Badges / status | `p:badge` with `severity` | Bootstrap `badge`, `bg-*` pills |
+| Tables of data | `p:dataTable` | Bootstrap `table`, `table-striped` (HTML tables only for print layouts) |
+| Form inputs | `p:inputText`, `p:selectOneMenu`, `p:autoComplete`, `p:datePicker` | Bootstrap `form-control` styling as a substitute for PF components |
+| Dialogs / overlays | `p:dialog`, `p:confirmDialog` (see Confirmation Dialogs), `p:tooltip` | Bootstrap modals, popovers, tooltips (JS conflicts with PrimeFaces) |
+| Tabs / accordions | `p:tabView`, `p:accordionPanel` | Bootstrap nav-tabs / collapse |
+| Alignment/emphasis utilities | Bootstrap `text-end`, `text-center`, `fw-bold`, `text-muted` | Custom inline CSS for the same effect |
+| Icons | PrimeFaces `pi`, then Font Awesome `fas` (see `icon-management.md`) | Bootstrap Icons (`bi-*`) in new code |
+
+Rules:
+- **Never attach Bootstrap component classes (`btn`, `badge`, `form-control`, `table`) to PrimeFaces components.** PF theming and Bootstrap component CSS fight each other; the result depends on load order.
+- Bootstrap **utility** classes (spacing, flex, text alignment, width) on PrimeFaces components are fine and encouraged — that is the sanctioned overlap.
+- Never initialize Bootstrap JavaScript components (modal, tooltip, dropdown) on a page — all interactive behaviour goes through PrimeFaces widgets.
+- Use `h:outputText` and `p:outputLabel` for **all text content** — headings, labels, messages, descriptions, static strings, and link labels. Never write bare text nodes directly inside JSF/PrimeFaces components. Attach Bootstrap utility classes for emphasis when needed.
 - Keep screens dense and business-focused; avoid marketing-style hero headers.
 
 ---
@@ -87,6 +108,92 @@ Example:
 
 ---
 
+### Panel Header — Three-Zone Layout (required for action-rich panels)
+
+When a panel header contains both navigation and actions, divide it into three zones using a full-width flex row. This layout is aligned with enterprise UI standards (SAP Fiori shell bar, IBM Carbon top navigation).
+
+```text
+[title + config]          [navigation buttons]          [secondary actions → primary]
+LEFT                       CENTER                         RIGHT
+```
+
+**Zone rules:**
+
+| Zone | Contents | Button style |
+|------|----------|--------------|
+| **Left** | Panel title (icon + label) + contextual config button (admin-only) | Config: `ui-button-secondary ui-button-outlined` |
+| **Center** | Entity navigation buttons (e.g. Patient Lookup, Patient Profile) | `ui-button-info ui-button-outlined` |
+| **Right** | Page actions, **ordered left → right by ascending importance** | See action styles below |
+
+**Right-zone action ordering (left = least prominent → right = most prominent):**
+1. Rarely-used / dangerous / irreversible actions → `ui-button-secondary` (leftmost)
+2. Fast-path or warning actions → `ui-button-warning`
+3. **Primary action → `ui-button-success`, rightmost, with an icon and `style="min-width:120px"`**
+
+**Rules:**
+- The primary action MUST be the rightmost button. Users scan left-to-right; the last element is the natural "confirm" position.
+- Short-label primary buttons (e.g. "Admit", "Save", "Submit") look weak without an icon and minimum width. Always add `icon="pi pi-check-circle"` (or equivalent) and `style="min-width:120px"`.
+- Config belongs in the left zone, next to the title it configures — not on the far right. Wrap it in `rendered="#{webUserController.hasPrivilege('Admin')}"`.
+- Navigation buttons go in the center zone, never mixed into the action zone. Navigation style is `ui-button-info ui-button-outlined`.
+- Remove explicit `ms-*` / `mx-*` spacing classes from buttons inside a flex container; use `gap-2` on the parent instead.
+
+**Skeleton:**
+```xhtml
+<f:facet name="header">
+    <div class="d-flex justify-content-between align-items-center w-100">
+
+        <!-- LEFT: title + contextual config -->
+        <div class="d-flex align-items-center gap-2">
+            <h:outputText styleClass="fa fa-some-icon" />
+            <h:outputText value="Panel Title"/>
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                <p:commandButton value="Config" icon="fa fa-cog"
+                                 immediate="true" ajax="false"
+                                 title="Configure settings"
+                                 action="#{controller.navigateToConfig()}"
+                                 styleClass="ui-button-secondary ui-button-outlined"/>
+            </h:panelGroup>
+        </div>
+
+        <!-- CENTER: entity-level navigation -->
+        <div class="d-flex gap-2">
+            <p:commandButton value="Patient Lookup" icon="fa fa-search"
+                             ajax="false" immediate="true"
+                             action="#{patientController.navigateToSearchPatients()}"
+                             styleClass="ui-button-info ui-button-outlined"/>
+            <p:commandButton value="Patient Profile" icon="fa fa-user"
+                             ajax="false" immediate="true"
+                             action="#{patientController.navigateToOpdPatientProfile()}"
+                             styleClass="ui-button-info ui-button-outlined"/>
+        </div>
+
+        <!-- RIGHT: actions, left=least important → right=primary -->
+        <div class="d-flex gap-2 align-items-center">
+            <!-- Rare / dangerous — leftmost -->
+            <p:commandButton value="Dangerous Action" icon="fas fa-exclamation"
+                             styleClass="ui-button-secondary"
+                             onclick="PF('dlgConfirm').show();"/>
+            <!-- Warning fast-path — middle -->
+            <p:commandButton value="Emergency Action" icon="fas fa-bolt"
+                             styleClass="ui-button-warning"
+                             onclick="PF('dlgEmergency').show();"/>
+            <!-- Primary action — rightmost, widened -->
+            <p:commandButton id="btnPrimary"
+                             value="Save" icon="pi pi-check-circle"
+                             action="#{controller.save}"
+                             update="@form"
+                             style="min-width:120px"
+                             styleClass="ui-button-success"/>
+        </div>
+
+    </div>
+</f:facet>
+```
+
+Reference implementation: `src/main/webapp/inward/inward_admission.xhtml`
+
+---
+
 ## Forms and Input Patterns
 - Align labels and inputs with `p:outputLabel` + PrimeFaces components; include `for` attributes for accessibility.
 - Reuse controller state; avoid duplicating filters or adding new global variables when not required.
@@ -115,7 +222,17 @@ Report filter panels use an 8-column `h:panelGrid` with the pattern: `label(1) |
 
 5. **Do not mix `p:spacer` counts to "push" a field rightward** as an alignment trick — this is fragile. If a field should appear in a specific column, count the cells from the start of the row.
 
-Reference implementation: `src/main/webapp/inward/report_admission_by_consultant.xhtml`
+6. **🚨 Institution / Site / Department MUST share one row and align on the same level.** When a report filters by location, the three location selectors always go together on their own row in this exact order and column position: `Institution(label+input) | spacer | Site(label+input) | spacer | Department(label+input)` = 8 cells. Never stagger them across multiple rows (the classic symptom of a `columns="2"` or `columns="4"` grid) or put another filter between them. They are a single visual unit and end users expect to scan them left-to-right on one line. This is the single most common filter-layout defect in the report pages.
+
+7. **Department is always four rendered `p:selectOneMenu` variants** keyed on the institution/site selection, wrapped in a single `<h:panelGroup id="...">` that the institution and site `p:ajax` re-render via `update`. Use the correct `DepartmentController` method per variant — they are NOT interchangeable:
+   - both null → `getDepartmentsOfInstitutionAndSite()`
+   - site only → `getDepartmentsOfInstitutionAndSite(site)`
+   - **institution only → `getDepartmentsOfInstitutionAndSiteForInstitution(institution)`** (NOT `getDepartmentsOfInstitutionAndSite(institution)` — that overload takes a *site* and silently filters by `d.site`, returning the wrong departments)
+   - both → `getDepartmentsOfInstitutionAndSite(institution, site)`
+
+Reference implementations:
+- `src/main/webapp/inward/report_admission_by_consultant.xhtml` (location filters as the last row)
+- `src/main/webapp/reports/inventoryReports/cost_of_goods_sold.xhtml` (Institution/Site/Department aligned on one row in an inventory report)
 
 ---
 
@@ -137,17 +254,105 @@ Reference implementation: `src/main/webapp/inward/report_admission_by_consultant
 </div>
 ```
 
+### Index / landing page menus (accordion-sidebar button lists)
+
+Module landing pages (e.g. `pharmacy/disbursement_index.xhtml`, `opd/analytics/index.xhtml`) place a vertical list of navigation buttons inside `p:accordionPanel` tabs in a narrow left sidebar, with the working area (`subcontent`) on the right. This is an ERP, not a marketing site — **maximise the data area and eliminate wasted whitespace in the menu.**
+
+**🚨 Use `<div class="d-grid gap-2">` to stack the buttons — never `<p:panelGrid columns="1">`.** `p:panelGrid` renders an HTML `<table>`: each button lands in a padded `<td>` that does not fill the tab width even with `w-100`, producing ragged button widths and wasted horizontal/vertical space. The Bootstrap `d-grid` makes every button truly full-width with a tight, uniform `gap-2`.
+
+```xhtml
+<p:tab title="Transfer Requests">
+    <div class="d-grid gap-2">
+        <p:commandButton value="Create Request"
+                         ajax="false"
+                         style="text-align: left"
+                         icon="fas fa-plus-circle"
+                         styleClass="ui-button-stage-save w-100"
+                         action="#{...}"
+                         rendered="#{webUserController.hasPrivilege('...')}"/>
+        <p:commandButton value="Finalize Requests"
+                         ajax="false"
+                         style="text-align: left"
+                         icon="fas fa-lock"
+                         styleClass="ui-button-stage-finalize w-100"
+                         action="#{...}"
+                         rendered="#{webUserController.hasPrivilege('...')}"/>
+        <p:commandButton value="Approve Requests"
+                         ajax="false"
+                         style="text-align: left"
+                         icon="fas fa-check-double"
+                         styleClass="ui-button-stage-approve w-100"
+                         action="#{...}"
+                         rendered="#{webUserController.hasPrivilege('...')}"/>
+        <p:commandButton value="Completed Requests"
+                         ajax="false"
+                         style="text-align: left"
+                         icon="fas fa-check-double"
+                         styleClass="ui-button-secondary w-100"
+                         action="#{...}"
+                         rendered="#{webUserController.hasPrivilege('...')}"/>
+    </div>
+</p:tab>
+```
+
+Rules:
+- Each button: `styleClass="... w-100"`, `style="text-align: left"` (vertical menus read better left-aligned), and a leading `icon` reflecting the workflow stage.
+- **Always use `styleClass` (not `class`) for stage-class buttons** so PrimeFaces applies them correctly.
+- **Workflow stage colour convention for all sidebar menus:**
+  - Create / New / Save → `styleClass="ui-button-stage-save w-100"` (blue/primary) + action-appropriate icon (e.g. `fas fa-plus-circle`, `fas fa-trash`, `fas fa-recycle`)
+  - Finalize → `styleClass="ui-button-stage-finalize w-100"` (amber) + `icon="fas fa-lock"`
+  - Approve → `styleClass="ui-button-stage-approve w-100"` (green) + `icon="fas fa-check-double"`
+  - View completed / search / informational → `styleClass="ui-button-secondary w-100"` or `ui-button-info w-100`
+- Wrap the whole accordion in a single `<h:form>` and use `activeIndex` for tab persistence (see § Forms & State).
+- Favour a narrow menu column (`col-2`) over a wide one so the data area gets the space; only widen to `col-md-3` when button labels genuinely need it.
+
+Reference implementation: `src/main/webapp/pharmacy/disposal_index.xhtml` — canonical example of the correct `d-grid` layout and stage-class buttons (Create = `ui-button-stage-save`, Finalize = `ui-button-stage-finalize`, Approve = `ui-button-stage-approve`).
+
 ### Primary data actions (row-level)
+
 | Action | Style class | Icon suggestion | Notes |
 |--------|-------------|-----------------|-------|
 | Edit / Continue | `ui-button-warning` | `fas fa-edit` | Switch to view mode when finalized. |
-| Finalize | `ui-button-success` | `fas fa-check-circle` | Disable or swap label when already finalized. |
-| Approve / Complete | `ui-button-success` | `fas fa-check-circle` or `fas fa-check-double` | Reuse icon across the module. |
+| Finalize | `ui-button-stage-finalize` | `fas fa-lock` | Use `styleClass`. Disable or swap label when already finalized. |
+| Approve / Complete | `ui-button-stage-approve` | `fas fa-check-double` | Use `styleClass`. Reuse icon across the module. |
 | Print / View | `ui-button-info` | `fas fa-print` / `fas fa-eye` | Keep `min-width: 90px` for consistency. |
 | Cancel / Close | `ui-button-danger ui-button-outlined` | `fas fa-times` | Always add confirmation. |
 
 Supporting rules:
 - Use `p:growl` for feedback after actions.
+- For any Save / Finalize / Approve button, always use the `ui-button-stage-*` classes — see § Three-Stage Transaction Workflow below.
+
+### 🚨 Three-Stage Transaction Workflow (Save → Finalize → Approve) — MANDATORY STANDARD
+
+Many transaction workflows in the system (pharmacy transfer request/issue/receive, disposals, GRN returns, purchase orders, etc.) progress through three stages: **Save (Draft) → Finalize → Approve.** Historically each page chose its own colour and icon — most stages were all green (`ui-button-success`) with random icons (`pi pi-save`, `pi pi-check`, `fas fa-check`, `fas fa-check-circle`), so a user could not tell the stages apart. **This is now standardised through dedicated CSS classes** so the palette is defined once and every workflow button follows. The colour temperature progresses with the workflow (blue → amber → green) and each stage has one fixed icon:
+
+| Stage | Meaning | Style class (colour) | Icon | Confirm? |
+|-------|---------|----------------------|------|----------|
+| **Create / New** | Navigate to a new transaction form | `ui-button-stage-save` (blue) | Action-specific (e.g. `fas fa-plus-circle`, `fas fa-trash`) | No |
+| **Save / Save Draft** | Save an editable draft in-form, nothing committed yet | `ui-button-stage-save` (blue) | `fas fa-floppy-disk` | No |
+| **Finalize** | Locks the draft; sends it forward for approval | `ui-button-stage-finalize` (amber) | `fas fa-lock` | Yes — `onclick="return confirm('…?')"` |
+| **Approve** | Final sign-off, completes the transaction | `ui-button-stage-approve` (green) | `fas fa-check-double` | Yes — `onclick="return confirm('…?')"` |
+
+The three `ui-button-stage-*` classes are defined **once** in `src/main/webapp/resources/css/ohmis.css` (loaded globally by the template) and are the single source of truth for the workflow palette. Use them via `styleClass` instead of `ui-button-info/warning/success` — to re-theme every workflow button across the system, edit those three classes, not the pages. The matching **icon stays on the markup** (PrimeFaces renders button icons natively), so each button carries `styleClass="ui-button-stage-…"` **and** the `icon` listed above.
+
+```xhtml
+<p:commandButton id="btnSave"     value="Save"     icon="fas fa-floppy-disk"  styleClass="mx-1 ui-button-stage-save"     ajax="false" action="#{ctrl.save()}" />
+<p:commandButton id="btnFinalize" value="Finalize" icon="fas fa-lock"         styleClass="mx-1 ui-button-stage-finalize" ajax="false" action="#{ctrl.finalize()}" onclick="return confirm('Are you sure you want to finalize? This cannot be undone.');" />
+<p:commandButton id="btnApprove"  value="Approve"  icon="fas fa-check-double" styleClass="mx-1 ui-button-stage-approve"  ajax="false" action="#{ctrl.approve()}" onclick="return confirm('Are you sure you want to approve?');" />
+```
+
+Rules:
+- Always use the `ui-button-stage-*` class (not the raw `ui-button-info/warning/success`) for any Save/Finalize/Approve button so the palette stays centralised. Use `styleClass`, not `class` (canonical PrimeFaces attribute).
+- Apply the **same** stage class + icon everywhere it appears — on the action page header, in list-page row actions ("Edit and Finalize", "Edit and Approve"), and in landing-page menus. The "Edit and …" list variants keep the destination stage's class/icon (e.g. "Edit and Finalize" = `ui-button-stage-finalize` + `fas fa-lock`).
+- Finalize and Approve are irreversible transitions → always guard with native `confirm()` (see Confirmation Dialogs below).
+- Never reuse the green Approve class for Save or Finalize, and never reuse `pi pi-check` / `fas fa-check-circle` for these three stages — those collisions are exactly what this standard removes.
+- This overrides the generic row-level "Finalize / Approve" rows in the table above for any button that is part of a three-stage transaction workflow.
+
+CSS source: `src/main/webapp/resources/css/ohmis.css` (search "Three-Stage Transaction Workflow buttons").
+
+**Reference implementations:**
+- **Action page** (the transaction form itself): `src/main/webapp/pharmacy/pharmacy_issue.xhtml` — canonical example of a three-zone panel header containing Save (`ui-button-stage-save`), Finalize (`ui-button-stage-finalize`), and Approve (`ui-button-stage-approve`) in the right zone, with outlined navigation links in the center zone (`ui-button-info ui-button-outlined` — **always use `ui-button-info ui-button-outlined` for center nav, never stage classes there**, because the `!important` background in stage classes prevents the outlined modifier from rendering correctly).
+- **Index / landing page** (sidebar accordion menu): `src/main/webapp/pharmacy/disposal_index.xhtml` — canonical example of `d-grid` layout with stage-class buttons (Create = `ui-button-stage-save`, Finalize = `ui-button-stage-finalize`, Approve = `ui-button-stage-approve`).
 
 ### Confirmation Dialogs
 
@@ -175,7 +380,24 @@ Rules:
 - Align numeric fields with `text-end`, status columns with `text-center`, and specify column widths in `em`.
 - Format numbers with `<f:convertNumber pattern="#,##0.00"/>` and dates with application preference patterns (`#{sessionController.applicationPreference.shortDateTimeFormat}` etc.).
 - Avoid placing decorative icons in every cell; reserve icons for headers or action columns.
-- Use neutral currency labels (e.g., `Requested Value`, `Net Amount`) and neutral icons such as `pi pi-money-bill` (or `fas fa-coins` when no PrimeFaces option exists) so pages stay multi-currency friendly.
+- Use neutral currency labels (e.g., `Requested Value`, `Net Amount`) so pages stay multi-currency friendly. See [icon-management.md § Data and Status Icon Patterns](icon-management.md#data-and-status-icon-patterns) for the canonical monetary-value icon.
+
+### DataTable Compact Size (required for data-entry and multi-column tables)
+
+Always add `styleClass="p-datatable-sm"` to `p:dataTable` components on data-entry and transaction pages, and `stickyHeader="true"` to any table that can grow beyond one screen. See [Data-Dense Page Patterns § Scroll Management](data-dense-page-patterns.md#1-scroll-management-for-tables) for the full code sample, rules, and the lazy-loading / action-reachability standards that go with it.
+
+**Column width rules** — always use the `width` attribute on `p:column`, never `style="min-width:…"` (PrimeFaces ignores CSS min-width in its column width allocation algorithm):
+
+| Column type | Recommended width |
+|---|---|
+| Row index (`#`) | `2em` |
+| Item / description name | `15em` |
+| Quantity / short number | `6em` |
+| Currency value | `6em` |
+| Date | `6em` |
+| Actions | `8em`–`10em` |
+
+If the sum of all column widths exceeds the table container, add `scrollable="true"` to enable horizontal scroll rather than letting columns collapse to zero.
 
 ### Badge Usage for Status Indicators
 - **ALWAYS use PrimeFaces `p:badge`** instead of HTML/Bootstrap badge classes (`badge`, `badge-*`)
@@ -204,10 +426,7 @@ Rules:
 ---
 
 ## Icon Standards
-- Primary library: PrimeFaces `pi` icons. Use Font Awesome `fas` only when there is no `pi` equivalent.
-- Use SVG assets at 80x80 for reusable art and declare `fill="currentColor"` (or rely on `currentColor`) for dynamic theming.
-- Keep icon, label, tooltip, and button style combinations consistent across modules.
-- Canonical icon pairings and additional patterns live in `icon-management.md`. Update that file first when introducing or changing icons.
+Canonical icon library choice, sizing, and icon/label/tooltip pairings live in [icon-management.md](icon-management.md). Update that file first when introducing or changing icons.
 
 ---
 
@@ -231,6 +450,78 @@ We drive Chrome via the Playwright MCP server for end-to-end verification. Playw
 - For status badges and other read-only indicators, prefer text + colour over colour alone, and surface the status in a `title` if the badge is icon-only.
 
 When you finish a UI change, mentally check: "If I asked Playwright to click the Fast Receive button on row PHPHTI/2878, can it identify that row uniquely from the accessibility snapshot?" If not, add titles until it can.
+
+### Data-entry components — make them automatable and robust (required)
+
+These patterns came out of end-to-end transfer testing. Apply them **while
+writing the page** so both real users and the Playwright MCP server can drive
+the form reliably. The runtime counterpart is
+[Playwright E2E Testing Workflow](../testing/playwright-e2e-workflow.md).
+
+- **Give every actionable button a stable `id`.** Add/Save/Settle/Issue/Receive
+  buttons must have an explicit `id` (e.g. `id="btnAddItem"`,
+  `id="btnSettleReceive"`). Reference one button from another component's
+  JavaScript via `#{p:resolveFirstComponentWithId('btnAddItem',view).clientId}`.
+  Do **not** use the `p:component(...)` EL function — it is not registered in
+  this project and throws a 500 (`Function 'p:component' not found`).
+
+- **Limit autocomplete result counts.** Add `maxResults="10"` (or a config-driven
+  cap) to every `p:autoComplete`. Unbounded result lists are slow and unusable.
+  For large master lists (staff, items), also set `minQueryLength="3"` and
+  `queryDelay="600"` so the server query fires once the user pauses, not on every
+  keystroke.
+
+- **Never let Enter clear or wrongly submit the form.** A JSF form with no
+  default command submits on Enter via the first command button, which on an
+  item-entry page silently wipes the in-progress bill. **First line of defence:
+  declare `<p:defaultCommand target="btnAdd"/>` pointing at the safe, repeatable
+  action** (Add on entry forms, Process/Search on filter forms — never
+  Settle/Finalize/Approve). See [Data-Dense Page Patterns § Keyboard-First Data
+  Entry](data-dense-page-patterns.md#3-keyboard-first-data-entry). Add the
+  per-field guards below only when individual fields need different Enter
+  behaviour:
+  - On the item autocomplete, `onkeydown`: when the suggestion panel is open, let
+    Enter select the highlighted item; otherwise `event.preventDefault()` so
+    Enter does not submit.
+  - On the quantity field, `onkeydown`: `preventDefault()` on Enter to stop the
+    submit; `onkeyup`: on Enter, after a short `setTimeout` (≈350 ms, to let the
+    keyup-AJAX commit the bound quantity first) click the Add button by its
+    resolved client id. The delay matters — without it the quantity arrives empty.
+
+- **Multi-word search must match in any order.** When a `completeMethod` backs a
+  full-name search (staff, patients), split the query on whitespace and AND each
+  token across the relevant fields (name/code) server-side. A naïve single-`LIKE`
+  query fails the moment the user types `First Last`. (See
+  `StaffController.completeStaffWithoutDoctors`.)
+
+- **Protect settle/issue/receive against double submission.** Use a JS
+  `confirm()` guard in `onclick`
+  (`onclick="if (!confirm('Are you sure …?')) return false;"`) **and** a
+  server-side re-entrancy guard (a `synchronized` settle method and/or a boolean
+  `settling` flag) so a rapid double-click cannot create duplicate bills/items.
+  Do **not** rely on `this.disabled=true` in `onclick` — disabled fields are
+  excluded from the POST, so the values they hold never reach the server.
+
+---
+
+## Validation and Feedback Patterns
+
+Consistent feedback stops users from double-clicking and re-submitting "silent" pages.
+
+### Messages: growl vs inline
+
+- **`p:growl` (template `id="growl"`) is for action outcomes**: saved, settled, failed-with-reason. Update it with `update="... :growl"` from every action button (see [AJAX guidelines](../jsf/ajax-update-guidelines.md) for the absolute-id rule).
+- **Inline `p:message for="fieldId"` is for field validation errors** — the error must appear next to the field the user has to fix, not only as a toast that disappears. On forms with server-side validation, place `p:message` beside each required input and a `p:messages showDetail="true"` at the top of the form for cross-field errors.
+- Never rely on growl alone for validation failures on long forms — the user cannot tell which of 20 fields is at fault.
+
+### Required fields
+
+- Mark required inputs with `required="true"` and `requiredMessage="..."` naming the field ("Quantity is required"), not the default cryptic message.
+- Visually indicate requiredness on the label (`p:outputLabel for="..."` renders the `*` automatically when the input is required).
+
+### Busy indicators
+
+Any action that can take longer than ~1 second must show progress — `p:ajaxStatus` (global) or `p:blockUI` (region). Patterns and code are in [Data-Dense Page Patterns § Feedback During Slow Operations](data-dense-page-patterns.md#6-feedback-during-slow-operations).
 
 ---
 
@@ -278,6 +569,7 @@ This applies to all entity-backed autocompletes: `Institution`, `Department`, `I
 ---
 
 ## Related Guides
+- `data-dense-page-patterns.md` – **scroll management, sticky action bars, keyboard-first entry, lazy loading, button-clutter budgets** for large-data pages.
 - `icon-management.md` – canonical icon library, terminology, and accessibility notes.
 - `page-break-implementation-guide.md` – printing guidance for token/bill flows.
 - Security and privilege patterns – see `developer_docs/security/privilege-system.md`.

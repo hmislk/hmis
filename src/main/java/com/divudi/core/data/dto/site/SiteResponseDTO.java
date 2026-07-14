@@ -32,6 +32,9 @@ public class SiteResponseDTO implements Serializable {
     private Boolean active;
     private Date createdAt;
     private String message;
+    // Bed-board SVG fields (issue #21592). Additive only — populated via setters.
+    private String svgParentView;
+    private String svgChildView;
 
     public SiteResponseDTO() {
     }
@@ -159,6 +162,22 @@ public class SiteResponseDTO implements Serializable {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getSvgParentView() {
+        return svgParentView;
+    }
+
+    public void setSvgParentView(String svgParentView) {
+        this.svgParentView = svgParentView;
+    }
+
+    public String getSvgChildView() {
+        return svgChildView;
+    }
+
+    public void setSvgChildView(String svgChildView) {
+        this.svgChildView = svgChildView;
     }
 
     @Override

@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="content">
+        <h:form id="pharmacyReturnFromWardReceiveListForm">
+            <p:panel class="w-100">
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h:outputText styleClass="fa-solid fa-truck-ramp-box"/>
+                            <p:outputLabel value="Medicine Returns Pending Receipt - #{sessionController.department.name}" class="mx-4"/>
+                        </div>
+                        <div>
+                            <p:commandButton
+                                id="btnRefreshPendingReturns"
+                                value="Refresh"
+                                icon="fas fa-sync"
+                                ajax="false"
+                                class="ui-button-secondary"
+                                action="#{pharmacyReturnFromWardReceiveController.navigateToPendingList}"/>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <p:dataTable
+                    id="pendingReturnTable"
+                    widgetVar="pendingReturnTable"
+                    rowKey="#{p.id}"
+                    value="#{pharmacyReturnFromWardReceiveController.pendingReturnBills}"
+                    var="p"
+                    rows="10"
+                    paginator="true"
+                    paginatorPosition="bottom"
+                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                    rowsPerPageTemplate="5,10,15"
+                    class="w-100"
+                    emptyMessage="No pending medicine returns for this pharmacy.">
+
+                    <p:column headerText="Bill No">
+                        <h:outputText value="#{p.deptId}"/>
+                    </p:column>
+
+                    <p:column headerText="Returned From Ward">
+                        <h:outputLabel value="#{p.fromDepartment.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Returned By">
+                        <h:outputLabel value="#{p.creater.webUserPerson.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Carried By">
+                        <h:outputLabel value="#{p.toStaff.person.nameWithTitle}"/>
+                    </p:column>
+
+                    <p:column headerText="Returned At">
+                        <h:outputLabel value="#{p.createdAt}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column headerText="Actions">
+                        <p:commandButton
+                            id="btnReceiveReturn"
+                            title="Receive Return #{p.deptId}"
+                            class="ui-button-success m-1"
+                            ajax="false"
+                            icon="fa fa-check-circle"
+                            value="Receive"
+                            action="#{pharmacyReturnFromWardReceiveController.navigateToReceive}">
+                            <f:setPropertyActionListener value="#{p}" target="#{pharmacyReturnFromWardReceiveController.returnedBill}"/>
+                        </p:commandButton>
+                    </p:column>
+
+                </p:dataTable>
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

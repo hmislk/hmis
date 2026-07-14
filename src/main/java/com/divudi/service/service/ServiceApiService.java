@@ -34,6 +34,7 @@ import com.divudi.core.facade.ServiceFacade;
 import com.divudi.core.facade.SpecialityFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.AuditService;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -79,6 +80,9 @@ public class ServiceApiService implements Serializable {
 
     @EJB
     private StaffFacade staffFacade;
+
+    @EJB
+    private AuditService auditService;
 
     // =========================================================================
     // Service Search
@@ -531,6 +535,11 @@ public class ServiceApiService implements Serializable {
         Service service = loadAndValidateService(serviceId);
         ItemFee itemFee = loadAndValidateFee(feeId, service);
 
+        // Snapshot before-state for audit
+        Map<String, Object> beforeFlags = new HashMap<>();
+        beforeFlags.put("marginAllowed", itemFee.getMarginAllowed());
+        beforeFlags.put("discountAllowed", itemFee.isDiscountAllowed());
+
         if (request.getName() != null && !request.getName().trim().isEmpty()) {
             itemFee.setName(request.getName().trim());
         }
@@ -555,6 +564,9 @@ public class ServiceApiService implements Serializable {
         }
         if (request.getDiscountAllowed() != null) {
             itemFee.setDiscountAllowed(request.getDiscountAllowed());
+        }
+        if (request.getMarginAllowed() != null) {
+            itemFee.setMarginAllowed(request.getMarginAllowed());
         }
         if (request.getInstitutionId() != null) {
             Institution institution = institutionFacade.find(request.getInstitutionId());
@@ -589,6 +601,15 @@ public class ServiceApiService implements Serializable {
         itemFee.setEditedAt(Calendar.getInstance().getTime());
         itemFeeFacade.edit(itemFee);
 
+        // Audit flag changes
+        Map<String, Object> afterFlags = new HashMap<>();
+        afterFlags.put("marginAllowed", itemFee.getMarginAllowed());
+        afterFlags.put("discountAllowed", itemFee.isDiscountAllowed());
+        if (!java.util.Objects.equals(beforeFlags.get("marginAllowed"), afterFlags.get("marginAllowed"))
+                || !java.util.Objects.equals(beforeFlags.get("discountAllowed"), afterFlags.get("discountAllowed"))) {
+            auditService.logAudit(beforeFlags, afterFlags, user, "ItemFee", "FEE_FLAG_UPDATED", feeId);
+        }
+
         // Recalculate service totals
         recalculateServiceTotal(service);
 
@@ -617,6 +638,100 @@ public class ServiceApiService implements Serializable {
 
         List<ItemFee> fees = fetchFeesForItem(service);
         return buildServiceResponseDTO(service, fees, "Fee removed successfully");
+    }
+
+    // =========================================================================
+    // Fee Flag Bulk Operations
+    // =========================================================================
+
+    /**
+     * Bulk-update marginAllowed and/or discountAllowed on all non-retired fees
+     * for items in a given category with a given feeType.
+     */
+    public Map<String, Object> bulkUpdateMargin(Long categoryId, String feeTypeStr,
+            Boolean marginAllowed, Boolean discountAllowed, WebUser user) throws Exception {
+        if (categoryId == null) {
+            throw new Exception("categoryId is required");
+        }
+        if (user == null) {
+            throw new Exception("User is required for bulk update");
+        }
+        if (marginAllowed == null && discountAllowed == null) {
+            throw new Exception("At least one of marginAllowed or discountAllowed must be provided");
+        }
+
+        FeeType feeType = null;
+        if (feeTypeStr != null && !feeTypeStr.trim().isEmpty()) {
+            try {
+                feeType = FeeType.valueOf(feeTypeStr.trim());
+            } catch (IllegalArgumentException e) {
+                throw new Exception("Invalid feeType: " + feeTypeStr);
+            }
+        }
+
+        StringBuilder jpqlBuilder = new StringBuilder("SELECT f FROM ItemFee f "
+                + "WHERE f.item.category.id = :catId "
+                + "AND f.retired = false");
+        Map<String, Object> params = new HashMap<>();
+        params.put("catId", categoryId);
+        if (feeType != null) {
+            jpqlBuilder.append(" AND f.feeType = :ft");
+            params.put("ft", feeType);
+        }
+
+        List<ItemFee> fees = itemFeeFacade.findByJpql(jpqlBuilder.toString(), params);
+        int count = 0;
+        Map<String, Object> changes = new HashMap<>();
+        changes.put("categoryId", categoryId);
+        changes.put("feeType", feeType != null ? feeType.name() : "ALL_TYPES");
+        if (marginAllowed != null) {
+            changes.put("marginAllowed", marginAllowed);
+        }
+        if (discountAllowed != null) {
+            changes.put("discountAllowed", discountAllowed);
+        }
+
+        for (ItemFee fee : fees) {
+            if (marginAllowed != null) {
+                fee.setMarginAllowed(marginAllowed);
+            }
+            if (discountAllowed != null) {
+                fee.setDiscountAllowed(discountAllowed);
+            }
+            itemFeeFacade.edit(fee);
+            count++;
+        }
+
+        changes.put("count", count);
+        auditService.logAudit(null, changes, user, "ItemFee",
+                "FEE_FLAGS_BULK_UPDATED", null);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("count", count);
+        return result;
+    }
+
+    /**
+     * Find fees with marginAllowed disabled (false or null) for items in a category.
+     */
+    public List<ItemFeeDTO> findFeesWithMarginDisabled(Long categoryId) throws Exception {
+        if (categoryId == null) {
+            throw new Exception("categoryId is required");
+        }
+
+        String jpql = "SELECT f FROM ItemFee f "
+                + "WHERE f.item.category.id = :catId "
+                + "AND f.retired = false "
+                + "AND (f.marginAllowed = false OR f.marginAllowed IS NULL)";
+        Map<String, Object> params = new HashMap<>();
+        params.put("catId", categoryId);
+
+        List<ItemFee> fees = itemFeeFacade.findByJpql(jpql, params);
+        List<ItemFeeDTO> dtos = new ArrayList<>();
+        for (ItemFee fee : fees) {
+            dtos.add(buildItemFeeDTO(fee));
+        }
+        return dtos;
     }
 
     // =========================================================================
@@ -920,6 +1035,7 @@ public class ServiceApiService implements Serializable {
         dto.setFee(fee.getFee());
         dto.setFfee(fee.getFfee());
         dto.setDiscountAllowed(fee.isDiscountAllowed());
+        dto.setMarginAllowed(fee.getMarginAllowed());
         dto.setRetired(fee.isRetired());
         if (fee.getInstitution() != null) {
             dto.setInstitutionId(fee.getInstitution().getId());

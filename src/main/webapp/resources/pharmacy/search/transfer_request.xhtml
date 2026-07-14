@@ -22,78 +22,83 @@
         available via the View action.
     -->
     <cc:implementation>
-        <h:panelGrid columns="3" styleClass="mb-2">
-            <h:outputLabel value="Request No"/>
-            <h:outputLabel value="To Department"/>
-            <h:outputLabel value="Net Total"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.billNo}"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.department}"/>
-            <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-        </h:panelGrid>
-
-        <p:commandButton ajax="false" value="Download" icon="fa fa-download"
-                         class="ui-button-success mb-2">
-            <p:dataExporter target="tblTransferRequest" type="xlsx" fileName="transfer_request_list"/>
-        </p:commandButton>
-
-        <p:dataTable rowIndexVar="i"
-                     id="tblTransferRequest"
-                     widgetVar="tblTransferRequest"
-                     value="#{pharmacyBillSearch.transferRequestSearchDtos}"
-                     var="dto"
-                     paginator="true"
-                     rows="10"
-                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                     rowsPerPageTemplate="10,20,50,100"
-                     emptyMessage="No Transfer Requests Found">
-
+        <p:panel>
             <f:facet name="header">
-                <h:outputLabel value="TRANSFER REQUEST"/>
+                <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+                    <span>TRANSFER REQUEST</span>
+                    <p:commandButton ajax="false" value="Download" icon="fa fa-download"
+                                     styleClass="ui-button-success ui-button-sm">
+                        <p:dataExporter target="tblTransferRequest" type="xlsx" fileName="transfer_request_list"/>
+                    </p:commandButton>
+                </div>
             </f:facet>
 
-            <!-- Actions (not exported) -->
-            <p:column headerText="Actions" exportable="false" style="white-space:nowrap;">
-                <p:commandButton
-                    ajax="false"
-                    icon="fa fa-eye"
-                    styleClass="ui-button-info ui-button-sm"
-                    title="View Transfer Request"
-                    action="#{pharmacyBillSearch.navigateToViewPharmacyTransferRequestById()}">
-                    <f:setPropertyActionListener value="#{dto.billId}" target="#{pharmacyBillSearch.billId}"/>
-                </p:commandButton>
-            </p:column>
+            <h:panelGrid columns="3" styleClass="mb-2">
+                <h:outputLabel value="Request No"/>
+                <h:outputLabel value="To Department"/>
+                <h:outputLabel value="Net Total"/>
+                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.billNo}"/>
+                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.department}"/>
+                <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
+            </h:panelGrid>
 
-            <p:column headerText="Request No"
-                      sortBy="#{dto.deptId}"
-                      filterBy="#{dto.deptId}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.deptId}"/>
-            </p:column>
+            <div class="pharma-search-wrapper">
+                <p:dataTable rowIndexVar="i"
+                             id="tblTransferRequest"
+                             widgetVar="tblTransferRequest"
+                             value="#{pharmacyBillSearch.transferRequestSearchDtos}"
+                             var="dto"
+                             paginator="true"
+                             rows="10"
+                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                             rowsPerPageTemplate="10,20,50,100"
+                             emptyMessage="No Transfer Requests Found">
 
-            <p:column headerText="To Department"
-                      sortBy="#{dto.fromDepartmentName}"
-                      filterBy="#{dto.fromDepartmentName}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.fromDepartmentName}"/>
-            </p:column>
+                    <p:column headerText="Request No"
+                              sortBy="#{dto.deptId}"
+                              filterBy="#{dto.deptId}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.deptId}"/>
+                    </p:column>
 
-            <p:column headerText="Requested At" sortBy="#{dto.createdAt}">
-                <h:outputLabel value="#{dto.createdAt}">
-                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                </h:outputLabel>
-            </p:column>
+                    <p:column headerText="To Department"
+                              sortBy="#{dto.fromDepartmentName}"
+                              filterBy="#{dto.fromDepartmentName}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.fromDepartmentName}"/>
+                    </p:column>
 
-            <p:column headerText="Requested By"
-                      sortBy="#{dto.creatorName}"
-                      filterBy="#{dto.creatorName}"
-                      filterMatchMode="contains">
-                <h:outputLabel value="#{dto.creatorName}"/>
-            </p:column>
+                    <p:column headerText="Requested At" sortBy="#{dto.createdAt}">
+                        <h:outputLabel value="#{dto.createdAt}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </p:column>
 
-            <p:column headerText="Status" exportable="false">
-                <p:badge value="Cancelled" severity="danger" rendered="#{dto.cancelled}"/>
-            </p:column>
+                    <p:column headerText="Requested By"
+                              sortBy="#{dto.creatorName}"
+                              filterBy="#{dto.creatorName}"
+                              filterMatchMode="contains">
+                        <h:outputLabel value="#{dto.creatorName}"/>
+                    </p:column>
 
-        </p:dataTable>
+                    <p:column headerText="Status" exportable="false">
+                        <p:badge value="Cancelled" severity="danger" rendered="#{dto.cancelled}"/>
+                    </p:column>
+
+                    <!-- Actions (last column, not exported) -->
+                    <p:column headerText="Actions" exportable="false" style="white-space:nowrap;">
+                        <p:commandButton
+                            ajax="false"
+                            icon="fa fa-eye"
+                            styleClass="ui-button-info ui-button-sm"
+                            title="View Transfer Request"
+                            action="#{pharmacyBillSearch.navigateToViewPharmacyTransferRequestById()}">
+                            <f:setPropertyActionListener value="#{dto.billId}" target="#{pharmacyBillSearch.billId}"/>
+                        </p:commandButton>
+                    </p:column>
+
+                </p:dataTable>
+            </div>
+        </p:panel>
     </cc:implementation>
 </html>

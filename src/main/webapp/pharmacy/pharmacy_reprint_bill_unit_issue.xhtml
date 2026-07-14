@@ -35,17 +35,6 @@
                                             <f:setPropertyActionListener value="false" target="#{pharmacyBillSearch.printPreview}"/>
                                         </p:commandButton>
                                     </h:panelGroup>
-                                    <h:panelGroup 
-                                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposal Returns are allowed', true)}" >
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            value="To Return" 
-                                            class="mx-2 ui-button-danger"
-                                            icon="fa fa-money-bill-wave"
-                                            action="#{issueReturnController.navigateToReturnDisposalIssueBill(pharmacyBillSearch.bill)}"   
-                                            disabled="#{pharmacyBillSearch.bill.cancelled eq true}"  >                                
-                                        </p:commandButton>
-                                    </h:panelGroup>
                                     <p:commandButton
                                         accesskey="n"
                                         value="New Disposal Issue Bill"
@@ -88,10 +77,6 @@
                                 <h:panelGroup 
                                     rendered="#{not configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposal Cancellation is allowed', false)}" >
                                     <p:outputLabel value="Disposal Cancellation is Disabled by Configuration - Pharmacy Disposal Cancellation is allowed" ></p:outputLabel>
-                                </h:panelGroup>
-                                <h:panelGroup 
-                                    rendered="#{not configOptionApplicationController.getBooleanValueByKey('Pharmacy Disposal Returns are allowed', true)}" >
-                                    <p:outputLabel value="Disposal Returns are Disabled by Configuration - Pharmacy Disposal Returns are allowed" ></p:outputLabel>
                                 </h:panelGroup>
                             </div>
                         </div>

@@ -645,6 +645,9 @@ public class PharmacyService {
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
@@ -721,6 +724,7 @@ public class PharmacyService {
                 BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
+                BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED
         );

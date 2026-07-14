@@ -1426,7 +1426,6 @@ public class FinancialTransactionController implements Serializable {
             findNonClosedShiftStartFundBillIsAvailable();
             if (getNonClosedShiftStartFundBill() == null) {
                 // Use Flash scope to preserve error message across redirect
-                FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
                 JsfUtil.addErrorMessage("Start Your Shift First!");
                 return "/cashier/index?faces-redirect=true";
             }
@@ -2687,7 +2686,6 @@ public class FinancialTransactionController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Float Transfer Until Shift Start", false)) {
             findNonClosedShiftStartFundBillIsAvailable();
             if (getNonClosedShiftStartFundBill() == null) {
-                FacesContext.getCurrentInstance().getExternalContext().getFlash().setKeepMessages(true);
                 JsfUtil.addErrorMessage("Start Your Shift First!");
                 return "/cashier/index?faces-redirect=true";
             }
@@ -3066,6 +3064,21 @@ public class FinancialTransactionController implements Serializable {
         paymentsFromShiftSratToNow = null;
         fundTransferAvailablePayments = null;
         selectedFundTransferRequest = null;
+    }
+
+    /**
+     * Clears the shift/handover summary state carried by this session-scoped
+     * bean so the next user to log in on the same browser session never sees
+     * the previous user's shift (bundle.user, bundle.startBill, etc.) on the
+     * Shift Handover pages. Call on logout, before a new user logs in.
+     */
+    public void resetForLogout() {
+        resetClassVariables();
+        bundle = null;
+        selectedBundle = null;
+        selectedPaymentMethod = null;
+        nonClosedShiftStartFundBill = null;
+        handoverValuesCreated = false;
     }
 
     public List<Payment> findPaymentsForBill(Bill b) {

@@ -236,7 +236,7 @@ PATCH /api/bill_data_correction
 Use `GET /api/costing_data/by_bill_id/{billId}` to retrieve bill items and compute the correct
 `totalRetailSaleValue` (sum of `qty × retailRate`, negated for sales-type bills).
 
-See `developer_docs/API_BILL_DATA_CORRECTION.md` for full field reference.
+See `developer_docs/api/API_BILL_DATA_CORRECTION.md` for full field reference.
 
 ---
 
@@ -397,5 +397,5 @@ Check `balanceCheck.discrepancyAtRetailRate` — it should be near zero (within 
 | `PharmacySaleForCashierController.java` | `calculateAndRecordCostingValues()` – BFD logic for sales |
 | `PharmacyBean.java` | `createFinanceDetailsForCancellationBill()` – BFD for CANCELLED_PRE |
 | `resources/pharmacy/grn.xhtml` | GRN reprint template: reads `bip.billItemFinanceDetails.*` fields |
-| `developer_docs/API_F15_REPORT.md` | F15 API usage guide and investigation workflow |
-| `developer_docs/API_BILL_DATA_CORRECTION.md` | Correction API reference (UPDATE only, no CREATE) |
+| `developer_docs/api/API_F15_REPORT.md` | F15 API usage guide and investigation workflow |
+| `developer_docs/api/API_BILL_DATA_CORRECTION.md` | Correction API reference (UPDATE only, no CREATE) |

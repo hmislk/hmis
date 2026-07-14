@@ -836,6 +836,36 @@ public abstract class AbstractFacade<T> {
         return resultList;
     }
 
+    public List<?> findLightsByJpql(String jpql, Map<String, Object> parameters, TemporalType tt, int maxRecords, int firstResult) {
+        Query qry = getEntityManager().createQuery(jpql);
+        Set<Map.Entry<String, Object>> entries = parameters.entrySet();
+
+        for (Map.Entry<String, Object> entry : entries) {
+            String paramName = entry.getKey();
+            Object paramValue = entry.getValue();
+
+            if (paramValue instanceof Date) {
+                qry.setParameter(paramName, (Date) paramValue, tt);
+            } else {
+                qry.setParameter(paramName, paramValue);
+            }
+        }
+
+        if (firstResult > 0) {
+            qry.setFirstResult(firstResult);
+        }
+        qry.setMaxResults(maxRecords);
+
+        List<?> resultList;
+        try {
+            resultList = qry.getResultList();
+        } catch (Exception e) {
+            resultList = new ArrayList<>();
+        }
+
+        return resultList;
+    }
+
     public List<T> findByJpql(String jpql, int maxResults) {
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         qry.setMaxResults(maxResults);
@@ -954,6 +984,25 @@ public abstract class AbstractFacade<T> {
                 qry.setParameter(pPara, pVal);
             }
         }
+        return qry.getResultList();
+    }
+
+    public List<Object[]> findObjectsArrayByJpql(String jpql, Map<String, Object> parameters, TemporalType tt, int maxResults) {
+        TypedQuery<Object[]> qry = getEntityManager().createQuery(jpql, Object[].class);
+        Set s = parameters.entrySet();
+        Iterator it = s.iterator();
+        while (it.hasNext()) {
+            Map.Entry m = (Map.Entry) it.next();
+            Object pVal = m.getValue();
+            String pPara = (String) m.getKey();
+            if (pVal instanceof Date) {
+                Date d = (Date) pVal;
+                qry.setParameter(pPara, d, tt);
+            } else {
+                qry.setParameter(pPara, pVal);
+            }
+        }
+        qry.setMaxResults(maxResults);
         return qry.getResultList();
     }
 
@@ -1719,7 +1768,8 @@ public abstract class AbstractFacade<T> {
             }
         }
         try {
-            return (Double) qry.getSingleResult();
+            Double result = (Double) qry.getSingleResult();
+            return result == null ? 0.0 : result;
         } catch (Exception e) {
             return 0.0;
         }

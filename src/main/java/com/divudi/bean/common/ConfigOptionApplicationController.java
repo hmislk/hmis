@@ -110,6 +110,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadPharmacyCommonBillConfigurationDefaults();
             loadPharmacyAdjustmentReceiptConfigurationDefaults();
             loadPatientNameConfigurationDefaults();
+            loadPhnConfigurationDefaults();
             loadSecurityConfigurationDefaults();
             loadPharmacyAnalyticsConfigurationDefaults();
             loadReportMethodConfigurationDefaults();
@@ -119,6 +120,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadDatabaseVersionConfigurationDefaults();
             loadAiChatConfigurationDefaults();
             loadStockHistoryArchiveConfigurationDefaults();
+            loadSapIntegrationConfigurationDefaults();
             enumController.resetPaymentMethods();
         } finally {
             isLoadingApplicationOptions = false;
@@ -195,6 +197,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Consignment Option is checked in new Pharmacy Purchasing Bills", false);
         getBooleanValueByKey("GRN Returns is only after Approval", true);
         getBooleanValueByKey("GRN Return can be done without Approval", true);
+        getBooleanValueByKey("Pharmacy - Allow Cross-Department PO Receiving", false);
 
         // Stock Upload Configuration
         getBooleanValueByKey("Allow Expired Items in Direct Purchase Stock Upload", false);
@@ -949,6 +952,20 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
     }
 
+    private void loadPhnConfigurationDefaults() {
+        // PHN Standard Version: V1 (NeGS sequential), V2 (NDHGS random), External (manual), None (disabled)
+        // Default: V2 for new deployments; existing deployments that used the old random method are V2-compatible
+        getShortTextValueByKey("PHN Standard Version", "V2");
+        // POI Scope: Global (one POI for all institutions) or PerInstitution (POI from Institution.pointOfIssueNo)
+        getShortTextValueByKey("PHN POI Number Scope", "Global");
+        // Global POI value — used when scope is Global (4 chars, alphanumeric for V2, numeric for V1)
+        getShortTextValueByKey("PHN POI Number", "");
+        // Auto-generate PHN on patient registration (true) or allow manual entry (false)
+        getBooleanValueByKey("PHN Auto-generate on Registration", true);
+        // Starting sequential number for V1 generation (applies per POI scope)
+        getIntegerValueByKey("PHN Sequential Start", 1);
+    }
+
     private void loadSecurityConfigurationDefaults() {
         getBooleanValueByKey("prevent_password_reuse", false);
         // Admin-triggered JPA L2 cache clear is disabled by default
@@ -1571,6 +1588,21 @@ public class ConfigOptionApplicationController implements Serializable {
 
     public void listApplicationOptions() {
         options = getApplicationOptions();
+    }
+
+    private void loadSapIntegrationConfigurationDefaults() {
+        getBooleanValueByKey("SAP Integration - Enabled", false);
+        getShortTextValueByKey("SAP Integration - Base URL", "");
+        getShortTextValueByKey("SAP Integration - Token URL", "");
+        getShortTextValueByKey("SAP Integration - Client ID", "");
+        getShortTextValueByKey("SAP Integration - Client Secret", "");
+        getShortTextValueByKey("SAP Integration - Material Code Field", "code");
+        getShortTextValueByKey("SAP Integration - Inventory Last Sync", "");
+        getShortTextValueByKey("SAP Integration - Inventory Sync From Days", "7");
+        getShortTextValueByKey("SAP Integration - Company Code", "");
+        getShortTextValueByKey("SAP Integration - AR Account", "");
+        getShortTextValueByKey("SAP Integration - Revenue Account", "");
+        getShortTextValueByKey("SAP Integration - Currency", "LKR");
     }
 
 }
