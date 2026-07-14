@@ -138,6 +138,8 @@ public enum Privileges {
     InwardPhysicalDischarge("Inward Physical Discharge"),
     InwardDocumentUpload("Inward Document Upload"),
     InpatientLetter("Inpatient Letter"),
+    InwardPackageAdministration("Inward Package Administration"),
+    InwardPackageAdmission("Inward Package Admission"),
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Nurse">
@@ -1177,6 +1179,8 @@ public enum Privileges {
             case InwardAddChargesAfterNursingDischarge:
             case InwardDocumentUpload:
             case InpatientLetter:
+            case InwardPackageAdministration:
+            case InwardPackageAdmission:
             case InwardFormTemplateAdmin:
             case InwardFormFill:
             case InwardSettleFinalBill:

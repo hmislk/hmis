@@ -195,6 +195,8 @@ public class PharmacyReportController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
+    EnumController enumController;
+    @Inject
     PageMetadataRegistry pageMetadataRegistry;
     @Inject
     SessionController sessionController;
@@ -13714,13 +13716,35 @@ public class PharmacyReportController implements Serializable {
 
     private void calculateBhtIssueValue() {
         try {
+            // The BHT Issue row is the NET stock effect of the inward medicine
+            // cycle (same pattern as the retail Sale row, where refunds/cancels
+            // net against sales inside one row):
+            //   - pharmacy issue to BHT ................ stock OUT (qty stored negative)
+            //   - ward receiving the issued medicines ... stock IN at ward (qty stored positive)
+            //   - pharmacy accepting a ward return ...... stock IN at pharmacy (qty stored positive)
+            // All three groups sum correctly with their stored signs in one query.
             List<BillTypeAtomic> billTypes = Arrays.asList(
                     BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
                     BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
-                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+                    BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD,
+                    BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD
             );
 
             Map<String, Double> bhtIssues = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ", billTypes);
+
+            // The ward-return leg (RETURN_MEDICINE_INWARD) removes stock from the
+            // ward but its bills store a POSITIVE quantity, so it must be queried
+            // separately and DEDUCTED from the row total. Without these ward legs
+            // every ward receive/return shows up as a spurious COGS variance
+            // (found via COGS E2E verification).
+            Map<String, Double> wardReturns = retrievePurchaseAndCostValues(" bi.bill.billTypeAtomic ",
+                    Collections.singletonList(BillTypeAtomic.RETURN_MEDICINE_INWARD));
+            for (Map.Entry<String, Double> e : wardReturns.entrySet()) {
+                double v = e.getValue() == null ? 0.0 : Math.abs(e.getValue());
+                bhtIssues.merge(e.getKey(), -v, Double::sum);
+            }
+
             cogsRows.put("BHT Issue", bhtIssues);
 
         } catch (Exception e) {
@@ -15348,7 +15372,7 @@ public class PharmacyReportController implements Serializable {
         Map m = new HashMap();
         m.put("fd", fromDate);
         m.put("td", toDate);
-        List<BillType> bts = Arrays.asList(billTypes);
+        List<BillType> bts = resolveMovementBillTypes();
         Class[] btsa = {PreBill.class,
             CancelledBill.class,
             RefundBill.class,
@@ -15400,10 +15424,10 @@ public class PharmacyReportController implements Serializable {
         sql += " group by bi.item ";
 
         if (sortType.equalsIgnoreCase("byvalue") && !fast) {
-            sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty) desc";
+            sql += "order by  abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)) asc";
         }
         if (sortType.equalsIgnoreCase("byvalue") && fast) {
-            sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty) asc";
+            sql += "order by  abs(SUM(bi.pharmaceuticalBillItem.stock.itemBatch.purcahseRate * bi.pharmaceuticalBillItem.qty)) desc";
         }
 
         List<Object[]> objs = getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
@@ -15461,7 +15485,7 @@ public class PharmacyReportController implements Serializable {
         String sql;
         Map m = new HashMap();
 
-        List<BillType> bts = Arrays.asList(billTypes);
+        List<BillType> bts = resolveMovementBillTypes();
 
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -15518,10 +15542,10 @@ public class PharmacyReportController implements Serializable {
         sql += " group by bi.item ";
 
         if (sortType.equalsIgnoreCase("byquantity") && !fast) {
-            sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) desc";
+            sql += "order by  abs(SUM(bi.pharmaceuticalBillItem.qty)) asc";
         }
         if (sortType.equalsIgnoreCase("byquantity") && fast) {
-            sql += "order by  SUM(bi.pharmaceuticalBillItem.qty) asc";
+            sql += "order by  abs(SUM(bi.pharmaceuticalBillItem.qty)) desc";
         }
 
         List<Object[]> objs = getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
@@ -15583,7 +15607,7 @@ public class PharmacyReportController implements Serializable {
                 + " WHERE  "
                 + " bi.bill.billType in :bts "
                 + " AND bi.bill.billDate between :fd and :td ";
-        m.put("bts", Arrays.asList(billTypes));
+        m.put("bts", resolveMovementBillTypes());
         m.put("fd", fromDate);
         m.put("td", toDate);
 
@@ -16985,6 +17009,31 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    // Bill types for slow_fast_none_movement report; empty selection means all
+    private List<BillType> resolveMovementBillTypes() {
+        if (billTypes == null || billTypes.length == 0) {
+            return Arrays.asList(enumController.getPharmacyBillTypesForMovementReports());
+        }
+        return Arrays.asList(billTypes);
+    }
+
+    // Report-specific labels; BillType.getLabel() gives "Pharmacy Transfer Issue"
+    // for both PharmacyIssue and PharmacyTransferIssue, and users know
+    // PharmacyDisposalIssue as Consumption
+    public String getMovementBillTypeLabel(BillType bt) {
+        if (bt == null) {
+            return "";
+        }
+        switch (bt) {
+            case PharmacyDisposalIssue:
+                return "Consumption";
+            case PharmacyIssue:
+                return "Pharmacy Direct Issue";
+            default:
+                return bt.getLabel();
+        }
+    }
+
     // get Bill Types for slow_fast_none_movement report
     public String getBillTypesForMovementReportAsString() {
 
@@ -16995,11 +17044,11 @@ public class PharmacyReportController implements Serializable {
         StringBuilder sb = new StringBuilder();
 
         for (BillType bt : billTypes) {
-            if (bt != null && bt.getLabel() != null) {
+            if (bt != null) {
                 if (sb.length() > 0) {
                     sb.append(", ");
                 }
-                sb.append(bt.getLabel());
+                sb.append(getMovementBillTypeLabel(bt));
             }
         }
 

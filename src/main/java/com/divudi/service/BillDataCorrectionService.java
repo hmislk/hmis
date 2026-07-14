@@ -1,5 +1,6 @@
 package com.divudi.service;
 
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFinanceDetails;
@@ -49,7 +50,7 @@ public class BillDataCorrectionService {
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
 
-    private static final Set<String> BILL_FIELDS = new HashSet<>(Arrays.asList("netTotal", "grossTotal", "comments", "retired", "retireComments"));
+    private static final Set<String> BILL_FIELDS = new HashSet<>(Arrays.asList("netTotal", "grossTotal", "comments", "retired", "retireComments", "departmentType"));
     private static final Set<String> BILL_ITEM_FIELDS = new HashSet<>(Arrays.asList("qty", "rate", "grossValue", "netValue", "discount"));
     private static final Set<String> BILL_FINANCE_FIELDS = new HashSet<>(Arrays.asList("totalRetailSaleValue", "totalCostValue", "totalPurchaseValue", "netTotal", "grossTotal", "billExpensesConsideredForCosting", "billExpensesNotConsideredForCosting", "totalBillValue"));
     private static final Set<String> BILL_FEE_FIELDS = new HashSet<>(Arrays.asList("feeValue", "grossValue"));
@@ -152,6 +153,21 @@ public class BillDataCorrectionService {
             String value = toStringValue(fields.get("comments"));
             entity.setComments(value);
             newValues.put("comments", entity.getComments());
+        }
+        if (fields.containsKey("departmentType")) {
+            previousValues.put("departmentType", entity.getDepartmentType() != null ? entity.getDepartmentType().name() : null);
+            String value = toStringValue(fields.get("departmentType"));
+            if (value == null || value.trim().isEmpty()) {
+                throw new IllegalArgumentException("Field 'departmentType' cannot be empty");
+            }
+            DepartmentType departmentType;
+            try {
+                departmentType = DepartmentType.valueOf(value.trim());
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalArgumentException("Field 'departmentType' must be one of " + Arrays.toString(DepartmentType.values()));
+            }
+            entity.setDepartmentType(departmentType);
+            newValues.put("departmentType", departmentType.name());
         }
         if (fields.containsKey("retired")) {
             boolean requestedRetire = toBooleanValue(fields.get("retired"), "retired");

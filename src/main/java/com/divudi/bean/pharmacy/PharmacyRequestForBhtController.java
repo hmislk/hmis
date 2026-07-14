@@ -125,6 +125,8 @@ public class PharmacyRequestForBhtController implements Serializable {
     com.divudi.ejb.PrescriptionToItemService prescriptionToItemService;
     @EJB
     private PharmacyService pharmacyService;
+    @EJB
+    private com.divudi.core.facade.InpatientPackageItemFacade inpatientPackageItemFacade;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -1320,6 +1322,53 @@ public class PharmacyRequestForBhtController implements Serializable {
         return false;
     }
 
+    private Double resolvePackageOverrideRate(com.divudi.core.entity.Item item, double requestedQty) {
+        if (patientEncounter == null || patientEncounter.getInpatientPackage() == null || item == null) {
+            return null;
+        }
+        java.util.Map<String, Object> m = new java.util.HashMap<>();
+        m.put("pkg", patientEncounter.getInpatientPackage());
+        m.put("item", item);
+        m.put("type", com.divudi.core.data.inward.InpatientPackageComponentType.PHARMACY_ITEM);
+        java.util.List<com.divudi.core.entity.inward.InpatientPackageItem> matches = inpatientPackageItemFacade.findByJpql(
+                "SELECT i FROM InpatientPackageItem i"
+                        + " WHERE i.retired = false"
+                        + " AND i.inpatientPackage = :pkg"
+                        + " AND i.item = :item"
+                        + " AND i.componentType = :type",
+                m);
+        if (matches.isEmpty()) {
+            return null;
+        }
+        com.divudi.core.entity.inward.InpatientPackageItem packageItem = matches.get(0);
+
+        java.util.Map<String, Object> qm = new java.util.HashMap<>();
+        qm.put("pe", patientEncounter);
+        qm.put("item", item);
+        Double alreadyIssued = getBillItemFacade().findDoubleByJpql(
+                "SELECT SUM(bi.qty) FROM BillItem bi"
+                        + " WHERE bi.retired = false"
+                        + " AND bi.fromPackage = true"
+                        + " AND bi.patientEncounter = :pe"
+                        + " AND bi.item = :item",
+                qm);
+        double consumed = alreadyIssued != null ? alreadyIssued : 0.0;
+
+        if (getPreBill() != null && getPreBill().getBillItems() != null) {
+            for (BillItem existing : getPreBill().getBillItems()) {
+                if (existing.getId() == null && existing.isFromPackage() && item.equals(existing.getItem())) {
+                    consumed += existing.getQty() != null ? existing.getQty() : 0.0;
+                }
+            }
+        }
+
+        if (consumed + requestedQty > packageItem.getQty()) {
+            return null; // Beyond allocation — bill remaining/extra qty at live rate.
+        }
+
+        return packageItem.getFixedPrice() / packageItem.getQty();
+    }
+
     public void addBillItem() {
 
         if (billItem == null) {
@@ -1365,6 +1414,9 @@ public class PharmacyRequestForBhtController implements Serializable {
         newBillItem.setQty(getQty());
         newBillItem.setInwardChargeType(InwardChargeType.Medicine);
         newBillItem.setBill(getPreBill());
+        // Required so resolvePackageOverrideRate()'s cumulative-quantity JPQL (bi.patientEncounter = :pe)
+        // can find this row on subsequent dispenses of the same package-listed item.
+        newBillItem.setPatientEncounter(patientEncounter);
 
         // Handle prescription only if prescription data is available
         boolean hasPrescriptionData = hasMeaningfulPrescriptionData(billItem.getPrescription(), billItem.getItem());
@@ -1427,6 +1479,13 @@ public class PharmacyRequestForBhtController implements Serializable {
                     return;
                 }
             }
+        }
+
+        Double packageRate = resolvePackageOverrideRate(newBillItem.getItem(), getQty());
+        if (packageRate != null) {
+            newBillItem.setOverriddenRate(packageRate);
+            newBillItem.setRate(packageRate);
+            newBillItem.setFromPackage(true);
         }
 
         newBillItem.setSearialNo(getPreBill().getBillItems().size() + 1);

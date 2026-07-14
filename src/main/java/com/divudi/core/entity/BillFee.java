@@ -5,6 +5,7 @@
 package com.divudi.core.entity;
 
 import com.divudi.core.data.FeeType;
+import com.divudi.core.entity.inward.InpatientPackageItem;
 import com.divudi.core.entity.inward.PatientRoom;
 import java.io.Serializable;
 import java.util.Date;
@@ -122,6 +123,11 @@ public class BillFee implements Serializable, RetirableEntity {
     private BillItem referenceBillItem;
     int orderNo;
 
+    private Double overriddenRate;
+    private boolean fromPackage;
+    @ManyToOne
+    private InpatientPackageItem sourcePackageItem;
+
     private boolean returned;
 
     @Transient
@@ -170,6 +176,30 @@ public class BillFee implements Serializable, RetirableEntity {
         this.orderNo = orderNo;
     }
 
+    public Double getOverriddenRate() {
+        return overriddenRate;
+    }
+
+    public void setOverriddenRate(Double overriddenRate) {
+        this.overriddenRate = overriddenRate;
+    }
+
+    public boolean isFromPackage() {
+        return fromPackage;
+    }
+
+    public void setFromPackage(boolean fromPackage) {
+        this.fromPackage = fromPackage;
+    }
+
+    public InpatientPackageItem getSourcePackageItem() {
+        return sourcePackageItem;
+    }
+
+    public void setSourcePackageItem(InpatientPackageItem sourcePackageItem) {
+        this.sourcePackageItem = sourcePackageItem;
+    }
+
     public double getTransNetValue() {
         transNetValue = (feeValue + feeMargin) - feeDiscount + feeVat;
         return transNetValue;
@@ -203,6 +233,9 @@ public class BillFee implements Serializable, RetirableEntity {
         feeUnitValue = billFee.getFeeUnitValue();
         feeUnitMargin = billFee.getFeeUnitMargin();
         feeUnitDiscount = billFee.getFeeUnitDiscount();
+        overriddenRate = billFee.getOverriddenRate();
+        fromPackage = billFee.isFromPackage();
+        sourcePackageItem = billFee.getSourcePackageItem();
     }
 
     public void copyWithoutFinancialData(BillFee billFee) {
@@ -215,6 +248,8 @@ public class BillFee implements Serializable, RetirableEntity {
         department = billFee.getDepartment();
         speciality = billFee.getSpeciality();
         FeeAt = billFee.getFeeAt();
+        fromPackage = billFee.isFromPackage();
+        sourcePackageItem = billFee.getSourcePackageItem();
     }
 
     public double getFeeVatPlusValue() {

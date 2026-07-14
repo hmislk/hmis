@@ -325,11 +325,12 @@
                                 id="billTypes"
                                 class="w-100"
                                 value="#{pharmacyReportController.billTypes}"
-                                label="Bill Types">
+                                label="All Bill Types"
+                                title="Leave empty to include all bill types">
                             <f:selectItems
                                     value="#{enumController.pharmacyBillTypesForMovementReports}"
                                     var="pbt"
-                                    itemLabel="#{pbt.label}"
+                                    itemLabel="#{pharmacyReportController.getMovementBillTypeLabel(pbt)}"
                                     itemValue="#{pbt}"/>
                         </p:selectCheckboxMenu>
 

@@ -400,12 +400,14 @@ public class PharmacySaleBhtController implements Serializable {
         tmp.setQty(tmp.getPharmaceuticalBillItem().getQtyInUnit());
         if (tmp.getPharmaceuticalBillItem().getQtyInUnit() <= 0) {
             setZeroToQty(tmp);
+            recalculateEditedIssueRow(tmp);
             JsfUtil.addErrorMessage("Can not enter a minus value");
             return;
         }
         Stock fetchedStock = tmp.getPharmaceuticalBillItem().getStock();
         if (fetchedStock != null && tmp.getPharmaceuticalBillItem().getQtyInUnit() > fetchedStock.getStock()) {
             setZeroToQty(tmp);
+            recalculateEditedIssueRow(tmp);
             JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return;
         }
@@ -421,6 +423,34 @@ public class PharmacySaleBhtController implements Serializable {
             }
         }
 
+        recalculateEditedIssueRow(tmp);
+    }
+
+    /**
+     * After a row-edit on the BHT issue page, restore the issue sign convention
+     * (unit qty is stored NEGATIVE for issues, exactly as
+     * generateIssueBillComponentsForBhtRequest builds the rows) and recalculate
+     * this row's financials (rate/margin/gross/net) plus the running bill total
+     * for the edited quantity.
+     *
+     * Without this, a partially-issued row settled after a qty edit keeps the
+     * ORIGINAL requested-quantity gross/margin/net values while stock moves by
+     * the edited quantity, and the positive unit qty flips the sign of the
+     * movement in the Cost Of Goods Sold report (found via COGS E2E
+     * verification: request 20, issue 10 → bill said 458.70, stock moved 10,
+     * COGS saw +10 instead of -10).
+     */
+    private void recalculateEditedIssueRow(BillItem tmp) {
+        if (tmp == null || tmp.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        double editedQty = Math.abs(tmp.getPharmaceuticalBillItem().getQtyInUnit());
+        tmp.setQty(editedQty);
+        tmp.getPharmaceuticalBillItem().setQtyInUnit((float) (0 - editedQty));
+        tmp.getPharmaceuticalBillItem().setQty(0 - editedQty);
+        calculateRates(tmp);
+        calCurrentBillItemTotal(getBillItems());
+        calTotal();
     }
 
     private void setZeroToQty(BillItem tmp) {
@@ -2578,6 +2608,20 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
+        if (bi.isFromPackage() && bi.getOverriddenRate() != null) {
+            double packageRate = bi.getOverriddenRate();
+            double quantity = bi.getQty() != null ? bi.getQty() : 0.0;
+            bi.setRate(packageRate);
+            bi.setGrossValue(packageRate * quantity);
+            bi.setMarginValue(0.0);
+            bi.setNetValue(packageRate * quantity);
+            bi.setMarginRate(0.0);
+            bi.setNetRate(packageRate);
+            bi.setAdjustedValue(packageRate * quantity);
+            bi.setDiscount(0);
+            return;
+        }
+
         if (selectedStockDto != null
                 && bi.getPharmaceuticalBillItem().getStock() != null
                 && Objects.equals(selectedStockDto.getId(), bi.getPharmaceuticalBillItem().getStock().getId())) {
@@ -2936,6 +2980,11 @@ public class PharmacySaleBhtController implements Serializable {
                     billItem.setInwardChargeType(InwardChargeType.Medicine);
                     billItem.getPharmaceuticalBillItem().setBillItem(billItem);
                     billItem.setReferanceBillItem(i);
+                    if (i.isFromPackage()) {
+                        billItem.setFromPackage(true);
+                        billItem.setOverriddenRate(i.getOverriddenRate());
+                        billItem.setSourcePackageItem(i.getSourcePackageItem());
+                    }
                     billItem.setSearialNo(getBillItems().size() + 1);
                     if (isSubstitute) {
                         billItem.setAutoSubstituted(true);
@@ -2957,6 +3006,11 @@ public class PharmacySaleBhtController implements Serializable {
                 billItem.setDescreption(i.getDescreption());
                 billItem.setInwardChargeType(InwardChargeType.Medicine);
                 billItem.setReferanceBillItem(i);
+                if (i.isFromPackage()) {
+                    billItem.setFromPackage(true);
+                    billItem.setOverriddenRate(i.getOverriddenRate());
+                    billItem.setSourcePackageItem(i.getSourcePackageItem());
+                }
                 billItem.setSearialNo(getBillItems().size() + 1);
                 billItem.getPharmaceuticalBillItem().setBillItem(billItem);
                 calculateRates(billItem);

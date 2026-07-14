@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    <cc:interface>
+        <cc:attribute name="bill"      required="true"  type="com.divudi.core.entity.Bill" />
+        <cc:attribute name="duplicate" required="false" />
+    </cc:interface>
+    <cc:implementation>
+        <style>
+            .idi-a4 { width: 100%; font-family: Arial, sans-serif; font-size: 12px; color: #000; }
+            .idi-a4 h2 { text-align: center; margin: 0 0 4px 0; }
+            .idi-a4 .meta td { padding: 2px 8px; }
+            .idi-a4 table.items { width: 100%; border-collapse: collapse; margin-top: 8px; }
+            .idi-a4 table.items th, .idi-a4 table.items td { border: 1px solid #000; padding: 4px 6px; }
+            .idi-a4 table.items th { text-align: right; }
+            .idi-a4 table.items th.l, .idi-a4 table.items td.l { text-align: left; }
+            .idi-a4 table.items td.r { text-align: right; }
+            .idi-a4 table.totals { width: 40%; margin-top: 8px; margin-left: auto; border-collapse: collapse; }
+            .idi-a4 table.totals td { padding: 2px 8px; }
+            .idi-a4 table.totals td.r { text-align: right; }
+        </style>
+        <div class="idi-a4">
+            <h2>
+                <h:outputText value="#{cc.attrs.bill.department.name}"/>
+                <h:outputText value=" (Return)"/>
+                <h:outputText value=" **Duplicate**" rendered="#{cc.attrs.duplicate eq true}"/>
+                <h:outputText value=" **Cancelled**" rendered="#{cc.attrs.bill.cancelled eq true}"/>
+            </h2>
+            <table class="meta">
+                <tr>
+                    <td>Name</td><td>#{cc.attrs.bill.patient.person.nameWithTitle}</td>
+                    <td>BHT</td><td>#{cc.attrs.bill.patientEncounter.bhtNo}</td>
+                </tr>
+                <tr>
+                    <td>Bill No</td><td>#{cc.attrs.bill.deptId}</td>
+                    <td>Date</td>
+                    <td><h:outputText value="#{cc.attrs.bill.createdAt}"><f:convertDateTime pattern="yyyy-MM-dd HH:mm"/></h:outputText></td>
+                </tr>
+            </table>
+            <table class="items">
+                <thead>
+                    <tr>
+                        <th class="l">No</th><th class="l">Item</th><th>Qty</th><th>Rate</th>
+                        <th>Gross</th><th>Service Charge</th><th>Discount</th><th>Net</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="item" varStatus="s">
+                        <tr>
+                            <td class="l">#{s.index + 1}</td>
+                            <td class="l">#{item.item.name}</td>
+                            <td class="r"><h:outputText value="#{item.qty}"><f:convertNumber integerOnly="true"/></h:outputText></td>
+                            <td class="r"><h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{item.netRate}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                            <td class="r"><h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{item.grossValue lt 0 ? -item.grossValue : item.grossValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                            <td class="r"><h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{item.marginValue lt 0 ? -item.marginValue : item.marginValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                            <td class="r"><h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{item.discount lt 0 ? -item.discount : item.discount}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                            <td class="r"><h:outputText rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}" value="#{item.netValue lt 0 ? -item.netValue : item.netValue}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td>
+                        </tr>
+                    </ui:repeat>
+                </tbody>
+            </table>
+            <table class="totals">
+                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}">
+                    <tr><td>Gross</td><td class="r"><h:outputText value="#{cc.attrs.bill.total lt 0 ? -cc.attrs.bill.total : cc.attrs.bill.total}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td></tr>
+                    <tr><td>Service Charge</td><td class="r"><h:outputText value="#{cc.attrs.bill.margin lt 0 ? -cc.attrs.bill.margin : cc.attrs.bill.margin}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td></tr>
+                    <tr><td>Discount</td><td class="r"><h:outputText value="#{cc.attrs.bill.discount lt 0 ? -cc.attrs.bill.discount : cc.attrs.bill.discount}"><f:convertNumber pattern="#,##0.00"/></h:outputText></td></tr>
+                    <tr><td><strong>Net Total</strong></td><td class="r"><strong><h:outputText value="#{cc.attrs.bill.netTotal lt 0 ? -cc.attrs.bill.netTotal : cc.attrs.bill.netTotal}"><f:convertNumber pattern="#,##0.00"/></h:outputText></strong></td></tr>
+                </h:panelGroup>
+                <tr><td>No of Items</td><td class="r"><h:outputText value="#{cc.attrs.bill.billItems.size()}"><f:convertNumber integerOnly="true"/></h:outputText></td></tr>
+            </table>
+        </div>
+    </cc:implementation>
+</html>
