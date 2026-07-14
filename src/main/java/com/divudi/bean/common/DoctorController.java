@@ -357,9 +357,12 @@ public class DoctorController implements Serializable {
         
         if (current.getPerson().getId() == null || current.getPerson().getId() == 0) {
             getPersonFacade().create(current.getPerson());
-            
+
+            // Refresh the map now that the Person has been assigned an ID
+            personService.personToAuditMap(editedPerson, current.getPerson());
+
             // Person created, log the creation event
-            auditService.logAudit(null, editedPerson, sessionController.getLoggedUser(), "Person", "createPerson", null);
+            auditService.logAudit(null, editedPerson, sessionController.getLoggedUser(), "Person", "createPerson", current.getPerson().getId());
         } else {
             getPersonFacade().edit(current.getPerson());
             

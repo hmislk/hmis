@@ -265,11 +265,14 @@ public class StaffController implements Serializable {
         } else {
             current.getPerson().setCreatedAt(new Date());
             current.getPerson().setCreater(sessionController.getLoggedUser());
-            personFacade.edit(current.getPerson());
+            personFacade.createAndFlush(current.getPerson());
+
+            // Refresh the map now that the Person has been assigned an ID
+            personService.personToAuditMap(editedPerson, current.getPerson());
 
             // Person created, log the creation event
-            auditService.logAudit(null, editedPerson, sessionController.getLoggedUser(), "Person", "createPerson", null);
-            
+            auditService.logAudit(null, editedPerson, sessionController.getLoggedUser(), "Person", "createPerson", current.getPerson().getId());
+
             // For editing staff just created
             initialPerson = new HashMap<>();
         }
@@ -1339,9 +1342,12 @@ public class StaffController implements Serializable {
             current.getPerson().setCreatedAt(new Date());
             current.getPerson().setCreater(getSessionController().getLoggedUser());
             getPersonFacade().createAndFlush(current.getPerson());
-            
+
+            // Refresh the map now that the Person has been assigned an ID
+            personService.personToAuditMap(editedPerson, current.getPerson());
+
             // Person created, log the creation event
-            auditService.logAudit(null, editedPerson, sessionController.getLoggedUser(), "Person", "createPerson", null);
+            auditService.logAudit(null, editedPerson, sessionController.getLoggedUser(), "Person", "createPerson", current.getPerson().getId());
             JsfUtil.addSuccessMessage("New Person Created");
             
             // For editing staff just created
