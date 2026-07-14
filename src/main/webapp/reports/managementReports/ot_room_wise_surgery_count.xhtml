@@ -8,7 +8,7 @@
     <h:body>
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
-                <h:form >
+                <h:form id="otRoomForm">
                     <p:panel header="OT Room Wise Surgery Count (Monthly)" styleClass="my-2" >
                         <h:panelGrid columns="5" class="w-100">
 
@@ -80,6 +80,7 @@
                             <p:commandButton 
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
+                                onclick="captureChartsForDownload();"
                                 action="#{surgeryReportController.downloadOtRoomWiseExcel()}"
                                 ajax="false"
                                 value="Download" />
@@ -87,13 +88,16 @@
                             <p:commandButton 
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
+                                onclick="captureChartsForDownload();"
                                 action="#{surgeryReportController.downloadOtRoomWisePdf()}"
                                 ajax="false"
                                 value="PDF" />
 
                         </div>
 
-
+                        <!-- Hidden fields to hold chart base64 strings for export -->
+                        <h:inputHidden id="otRoomBarChartImg" value="#{surgeryReportController.otRoomBarChartImage}"/>
+                        <h:inputHidden id="otRoomLineChartImg" value="#{surgeryReportController.otRoomLineChartImage}"/>
 
                         <h:panelGroup id="printArea" layout="block">
                             <p:dataTable id="tb"
@@ -126,7 +130,7 @@
                                             </f:facet>
                                         </p:column>
                                     </p:row>
-
+    
                                     <p:row>
                                         <p:column><f:facet name="header"><h:outputText value="Jan"/></f:facet></p:column>
                                         <p:column><f:facet name="header"><h:outputText value="Feb"/></f:facet></p:column>
@@ -142,7 +146,7 @@
                                         <p:column><f:facet name="header"><h:outputText value="Dec"/></f:facet></p:column>
                                     </p:row>
                                 </p:columnGroup>
-
+    
                                 <p:column><h:outputText value="#{c.roomName}" /></p:column>
                                 <p:column style="text-align: left;"><h:outputText value="#{c.getCount(0)}" /></p:column>
                                 <p:column style="text-align: left;"><h:outputText value="#{c.getCount(1)}" /></p:column>
@@ -157,7 +161,7 @@
                                 <p:column style="text-align: left;"><h:outputText value="#{c.getCount(10)}" /></p:column>
                                 <p:column style="text-align: left;"><h:outputText value="#{c.getCount(11)}" /></p:column>
                                 <p:column style="text-align: left; font-weight: bold;"><h:outputText value="#{c.totalCount}" /></p:column>
-
+    
                                 <p:columnGroup type="footer">
                                     <p:row>
                                         <p:column style="text-align: left;">
@@ -233,52 +237,71 @@
                                     </p:row>
                                 </p:columnGroup>
                             </p:dataTable>
+
+                            <!-- Charts Section (included in printArea) -->
+                            <h:panelGroup id="otRoomChartPanel" layout="block" style="margin-top:20px;">
+                                <h:panelGroup layout="block" rendered="#{not empty surgeryReportController.otRoomWiseList and not empty surgeryReportController.otRoomChartType}">
+                                    
+                                    <!-- Bar Chart -->
+                                    <h:panelGroup layout="block" rendered="#{surgeryReportController.otRoomChartType eq 'bar' and surgeryReportController.otRoomBarChartModel ne null}" styleClass="my-3">
+                                        <p:panel header="OT Room Count - Bar Chart (#{surgeryReportController.otRoomSelectedYear})">
+                                            <h:panelGroup layout="block" style="width:100%; height:400px;">
+                                                <p:chart value="#{surgeryReportController.otRoomBarChartModel}" widgetVar="otRoomBarWV" style="width:100%; height:100%;" />
+                                            </h:panelGroup>
+                                        </p:panel>
+                                    </h:panelGroup>
+
+                                    <!-- Line Chart -->
+                                    <h:panelGroup layout="block" rendered="#{surgeryReportController.otRoomChartType eq 'line' and surgeryReportController.otRoomLineChartModel ne null}" styleClass="my-3">
+                                        <p:panel header="OT Room Count - Line Chart (#{surgeryReportController.otRoomSelectedYear})">
+                                            <h:panelGroup layout="block" style="width:100%; height:400px;">
+                                                <p:chart value="#{surgeryReportController.otRoomLineChartModel}" widgetVar="otRoomLineWV" style="width:100%; height:100%;" />
+                                            </h:panelGroup>
+                                        </p:panel>
+                                    </h:panelGroup>
+
+                                </h:panelGroup>
+
+                                <!-- Message when no chart type selected but data exists -->
+                                <h:panelGroup layout="block" rendered="#{not empty surgeryReportController.otRoomWiseList and empty surgeryReportController.otRoomChartType}" styleClass="my-3 text-center">
+                                    <h:outputText value="Please select a Chart Type above to view the chart." styleClass="text-muted"/>
+                                </h:panelGroup>
+                            </h:panelGroup>
                         </h:panelGroup>
 
-                        <!-- Charts Section -->
-                        <h:panelGroup id="otRoomChartPanel" layout="block">
-
-                            <h:panelGroup layout="block"
-                                          rendered="#{not empty surgeryReportController.otRoomWiseList and not empty surgeryReportController.otRoomChartType}">
-
-                                <!-- Bar Chart -->
-                                <h:panelGroup layout="block"
-                                              rendered="#{surgeryReportController.otRoomChartType eq 'bar' and surgeryReportController.otRoomBarChartModel ne null}"
-                                              styleClass="my-3">
-                                    <p:panel header="OT Room Count - Bar Chart (#{surgeryReportController.selectedYear})">
-                                        <h:panelGroup layout="block" style="width:100%; height:400px;">
-                                            <p:chart value="#{surgeryReportController.otRoomBarChartModel}"
-                                                     widgetVar="otRoomBarWV"
-                                                     style="width:100%; height:100%;" />
-                                        </h:panelGroup>
-                                    </p:panel>
-                                </h:panelGroup>
-
-                                <!-- Line Chart -->
-                                <h:panelGroup layout="block"
-                                              rendered="#{surgeryReportController.otRoomChartType eq 'line' and surgeryReportController.otRoomLineChartModel ne null}"
-                                              styleClass="my-3">
-                                    <p:panel header="OT Room Count - Line Chart (#{surgeryReportController.selectedYear})">
-                                        <h:panelGroup layout="block" style="width:100%; height:400px;">
-                                            <p:chart value="#{surgeryReportController.otRoomLineChartModel}"
-                                                     widgetVar="otRoomLineWV"
-                                                     style="width:100%; height:100%;" />
-                                        </h:panelGroup>
-                                    </p:panel>
-                                </h:panelGroup>
-
-                            </h:panelGroup>
-
-                            <!-- Message when no chart type selected but data exists -->
-                            <h:panelGroup layout="block"
-                                          rendered="#{not empty surgeryReportController.otRoomWiseList and empty surgeryReportController.otRoomChartType}"
-                                          styleClass="my-3 text-center">
-                                <h:outputText value="Please select a Chart Type above to view the chart." styleClass="text-muted"/>
-                            </h:panelGroup>
-
+                        <!-- Off-screen charts used only for Excel/PDF export -->
+                        <h:panelGroup layout="block" style="position:fixed; left:-9999px; top:0; width:900px;" rendered="#{not empty surgeryReportController.otRoomWiseList}">
+                            <div style="width:900px; height:450px;">
+                                <p:chart value="#{surgeryReportController.otRoomBarChartModel}" widgetVar="expOtRoomBarWV" style="width:100%; height:450px;"/>
+                            </div>
+                            <div style="width:900px; height:450px;">
+                                <p:chart value="#{surgeryReportController.otRoomLineChartModel}" widgetVar="expOtRoomLineWV" style="width:100%; height:450px;"/>
+                            </div>
                         </h:panelGroup>
 
                     </p:panel>
+
+                    <h:outputScript>
+                        function captureChartsForDownload() {
+                            var pairs = [
+                                { wv: 'expOtRoomBarWV',  id: 'otRoomForm:otRoomBarChartImg' },
+                                { wv: 'expOtRoomLineWV', id: 'otRoomForm:otRoomLineChartImg' }
+                            ];
+                            pairs.forEach(function(pair) {
+                                try {
+                                    var widget = PF(pair.wv);
+                                    if (widget &amp;&amp; widget.chart) {
+                                        var input = document.getElementById(pair.id);
+                                        if (input) {
+                                            input.value = widget.chart.toBase64Image('image/png', 1);
+                                        }
+                                    }
+                                } catch(e) {
+                                    console.warn('Chart export capture failed: ' + pair.wv, e);
+                                }
+                            });
+                        }
+                    </h:outputScript>
 
                 </h:form>
 

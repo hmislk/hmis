@@ -89,6 +89,8 @@ public class SurgeryReportController implements Serializable {
     private long otRoomGrandTotal;
     private String otRoomBarChartModel;
     private String otRoomLineChartModel;
+    private String otRoomBarChartImage;
+    private String otRoomLineChartImage;
     private int selectedYear;
 
     public void processSurgeryStatusReport() {
@@ -693,6 +695,31 @@ public class SurgeryReportController implements Serializable {
                 sheet.autoSizeColumn(c);
             }
 
+            // Append Chart Image if available
+            String b64Image = null;
+            if ("bar".equals(otRoomChartType) && otRoomBarChartImage != null && otRoomBarChartImage.startsWith("data:image/png;base64,")) {
+                b64Image = otRoomBarChartImage.substring("data:image/png;base64,".length());
+            } else if ("line".equals(otRoomChartType) && otRoomLineChartImage != null && otRoomLineChartImage.startsWith("data:image/png;base64,")) {
+                b64Image = otRoomLineChartImage.substring("data:image/png;base64,".length());
+            }
+
+            if (b64Image != null) {
+                try {
+                    byte[] imgBytes = java.util.Base64.getDecoder().decode(b64Image);
+                    int picIdx = workbook.addPicture(imgBytes, Workbook.PICTURE_TYPE_PNG);
+                    CreationHelper helper = workbook.getCreationHelper();
+                    Drawing drawing = sheet.createDrawingPatriarch();
+                    ClientAnchor anchor = helper.createClientAnchor();
+                    anchor.setCol1(0);
+                    anchor.setRow1(rowIdx + 2);
+                    anchor.setCol2(10);
+                    anchor.setRow2(rowIdx + 22);
+                    drawing.createPicture(anchor, picIdx);
+                } catch (Exception ex) {
+                    System.err.println("Failed to embed chart image in Excel: " + ex.getMessage());
+                }
+            }
+
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             workbook.write(bos);
             streamToResponse(bos.toByteArray(),
@@ -779,6 +806,28 @@ public class SurgeryReportController implements Serializable {
                     pdfFooterFont, new java.awt.Color(230, 230, 230));
 
             document.add(table);
+
+            // Append Chart Image if available
+            String b64Image = null;
+            if ("bar".equals(otRoomChartType) && otRoomBarChartImage != null && otRoomBarChartImage.startsWith("data:image/png;base64,")) {
+                b64Image = otRoomBarChartImage.substring("data:image/png;base64,".length());
+            } else if ("line".equals(otRoomChartType) && otRoomLineChartImage != null && otRoomLineChartImage.startsWith("data:image/png;base64,")) {
+                b64Image = otRoomLineChartImage.substring("data:image/png;base64,".length());
+            }
+
+            if (b64Image != null) {
+                try {
+                    byte[] imgBytes = java.util.Base64.getDecoder().decode(b64Image);
+                    com.lowagie.text.Image chartImg = com.lowagie.text.Image.getInstance(imgBytes);
+                    chartImg.scaleToFit(PageSize.A4.rotate().getWidth() - 40, 300);
+                    chartImg.setAlignment(Element.ALIGN_CENTER);
+                    chartImg.setSpacingBefore(20);
+                    document.add(chartImg);
+                } catch (Exception ex) {
+                    System.err.println("Failed to embed chart image in PDF: " + ex.getMessage());
+                }
+            }
+
             document.close();
 
             streamToResponse(bos.toByteArray(),
@@ -960,6 +1009,22 @@ public class SurgeryReportController implements Serializable {
             return 0;
         }
         return otRoomMonthlyTotals.getOrDefault(monthIndex, 0L);
+    }
+
+    public String getOtRoomBarChartImage() {
+        return otRoomBarChartImage;
+    }
+
+    public void setOtRoomBarChartImage(String otRoomBarChartImage) {
+        this.otRoomBarChartImage = otRoomBarChartImage;
+    }
+
+    public String getOtRoomLineChartImage() {
+        return otRoomLineChartImage;
+    }
+
+    public void setOtRoomLineChartImage(String otRoomLineChartImage) {
+        this.otRoomLineChartImage = otRoomLineChartImage;
     }
 
     public int getSelectedYear() {
