@@ -99,7 +99,6 @@ public class RoomOccupancyReportController implements Serializable {
 
         Map<String, Object> params = new HashMap<>();
 
-        // Date filter on dischargedAt (if discharged in range) or if still admitted (admittedAt before range end)
         jpql.append(" and (pr.dischargedAt between :fd and :td) ");
         params.put("fd", fromDate);
         params.put("td", toDate);
@@ -184,14 +183,8 @@ public class RoomOccupancyReportController implements Serializable {
         summaryDtos.sort((d1, d2) -> d1.getGroupName().compareToIgnoreCase(d2.getGroupName()));
     }
 
-// ... inside the class
     private static final SimpleDateFormat HEADER_DATE_FMT = new SimpleDateFormat("dd/MM/yyyy hh:mm a");
 
-    /**
-     * Called by PrimeFaces before the Detail table is written into the PDF.
-     * Sets landscape orientation (11 columns won't fit portrait) and adds a
-     * header.
-     */
     public void preProcessDetailPdf(Object document) throws DocumentException {
         Document pdf = (Document) document;
         pdf.setPageSize(PageSize.A4.rotate());
@@ -200,9 +193,6 @@ public class RoomOccupancyReportController implements Serializable {
         addReportHeader(pdf, "Room Occupancy Report - Detail");
     }
 
-    /**
-     * Called by PrimeFaces before a Summary table is written into the PDF.
-     */
     public void preProcessSummaryPdf(Object document) throws DocumentException {
         Document pdf = (Document) document;
         pdf.setPageSize(PageSize.A4);
@@ -215,10 +205,6 @@ public class RoomOccupancyReportController implements Serializable {
         addReportHeader(pdf, title);
     }
 
-    /**
-     * Shared header: report title + the filter criteria used to generate it.
-     * Keeping filters visible on the printed page matters for audit trails.
-     */
     private void addReportHeader(Document pdf, String title) throws DocumentException {
         Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16, Color.DARK_GRAY);
         Font metaFont = FontFactory.getFont(FontFactory.HELVETICA, 9, Color.GRAY);
