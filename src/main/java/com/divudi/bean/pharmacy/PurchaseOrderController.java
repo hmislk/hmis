@@ -108,30 +108,33 @@ public class PurchaseOrderController implements Serializable {
 
     private String emailRecipient;
 
-    public void removeSelected() {
-        //  //System.err.println("1");
-        if (selectedItems == null) {
-            JsfUtil.addErrorMessage("Please select items");
-            return;
+    public synchronized String removeSelected() {
+        if (selectedItems == null || selectedItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No items selected to remove");
+            return "";
         }
 
-        //System.err.println("3");
         for (BillItem b : selectedItems) {
-            //  //System.err.println("4");
             getBillItems().remove(b.getSearialNo());
             calTotal();
         }
 
         selectedItems = null;
+        return "";
     }
 
     public void displayItemDetails(BillItem bi) {
         getPharmacyController().fillItemDetails(bi.getItem());
     }
 
-    public void removeItem(BillItem billItem) {
+    public synchronized String removeItem(BillItem billItem) {
+        if (billItem == null || !billItems.contains(billItem)) {
+            JsfUtil.addErrorMessage("Item not found or already removed");
+            return "";
+        }
         getBillItems().remove(billItem.getSearialNo());
         calTotal();
+        return "";
     }
 
     private int maxResult = 50;
