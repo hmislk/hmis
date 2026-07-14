@@ -73,11 +73,7 @@ Organize files by module:
 
 ### Step 3: Write Content
 
-Follow the [Wiki Writing Guidelines](wiki-writing-guidelines.md):
-- Write for end users (pharmacy staff, nurses, doctors, administrators)
-- Use step-by-step instructions with numbered steps
-- Bold all UI elements (**Pharmacy** > **Reports**)
-- No code snippets or technical implementation details
+Follow the [Wiki Writing Guidelines](wiki-writing-guidelines.md) for audience, structure, and content rules.
 
 ### Step 4: Commit and Push
 
@@ -112,9 +108,6 @@ After publishing, verify your documentation is live:
 - When existing feature workflows change
 - When user interface is modified
 - When error messages or user workflows are updated
-
-### Content Quality
-See [Wiki Writing Guidelines](wiki-writing-guidelines.md) for detailed content guidance.
 
 ## Troubleshooting
 

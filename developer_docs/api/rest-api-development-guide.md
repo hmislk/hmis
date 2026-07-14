@@ -92,7 +92,7 @@ Add an `appendModule(...)` block so the AI chat system prompt knows what the end
 ```java
 appendModule(sb, "My Module", "/my_module",
     "What this module manages.",
-    null,  // or githubUrl(branch, "developer_docs/API_MY_MODULE.md")
+    null,  // or githubUrl(branch, "developer_docs/api/API_MY_MODULE.md")
     new String[][]{
         {"GET",    "/my_module",      "List entries"},
         {"POST",   "/my_module",      "Create entry. Returns already_exists if duplicate."},
