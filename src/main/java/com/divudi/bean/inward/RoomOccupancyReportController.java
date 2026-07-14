@@ -60,6 +60,14 @@ public class RoomOccupancyReportController implements Serializable {
     }
 
     public void processReport() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select both discharge dates.");
+            return;
+        }
+        if (fromDate.after(toDate)) {
+            JsfUtil.addErrorMessage("Discharge from date must not be after discharge to date.");
+            return;
+        }
         if ("Detail".equals(reportType)) {
             processDetailReport();
         } else {
