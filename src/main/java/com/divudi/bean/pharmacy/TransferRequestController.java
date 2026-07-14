@@ -337,6 +337,13 @@ public class TransferRequestController implements Serializable {
     // the final persist step on this session-scoped bean so a racing double-submit
     // can't write the (already duplicated) billItems list twice.
     public synchronized void approveTransferRequestBill() {
+        // Check if the pre-bill is already approved to prevent a queued double-submit
+        // (blocked on the synchronized lock above) from creating a second approved bill
+        // once the first call has finished.
+        if (transferRequestBillPre != null && transferRequestBillPre.getReferenceBill() != null) {
+            JsfUtil.addErrorMessage("This transfer request is already approved");
+            return;
+        }
         if (billItems == null || billItems.isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Items");
             return;
