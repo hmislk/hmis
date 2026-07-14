@@ -1,9 +1,10 @@
 package com.divudi.core.data.dto;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class OtRoomWiseSurgeryCountDTO {
+public class OtRoomWiseSurgeryCountDTO implements Serializable {
 
     private String roomName;
     private Long roomFacilityChargeId;
