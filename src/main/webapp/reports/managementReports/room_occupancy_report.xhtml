@@ -245,8 +245,12 @@
                             </p:commandButton>
 
                             <p:commandButton
+                                id="smyPdfButton"
                                 rendered="#{roomOccupancyReportController.reportType ne 'Detail'}"
-                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
+                                class="ui-button-danger mx-1" 
+                                icon="fas fa-file-pdf" 
+                                ajax="false" 
+                                value="PDF">
                                 <p:dataExporter type="pdf" target="summaryWise" fileName="Room_Occupancy_Summary"
                                                 preProcessor="#{roomOccupancyReportController.preProcessSummaryPdf}"/>
                             </p:commandButton>
