@@ -380,19 +380,11 @@ Rules:
 - Align numeric fields with `text-end`, status columns with `text-center`, and specify column widths in `em`.
 - Format numbers with `<f:convertNumber pattern="#,##0.00"/>` and dates with application preference patterns (`#{sessionController.applicationPreference.shortDateTimeFormat}` etc.).
 - Avoid placing decorative icons in every cell; reserve icons for headers or action columns.
-- Use neutral currency labels (e.g., `Requested Value`, `Net Amount`) and neutral icons such as `pi pi-money-bill` (or `fas fa-coins` when no PrimeFaces option exists) so pages stay multi-currency friendly.
+- Use neutral currency labels (e.g., `Requested Value`, `Net Amount`) so pages stay multi-currency friendly. See [icon-management.md § Data and Status Icon Patterns](icon-management.md#data-and-status-icon-patterns) for the canonical monetary-value icon.
 
 ### DataTable Compact Size (required for data-entry and multi-column tables)
 
-Always add `styleClass="p-datatable-sm"` to `p:dataTable` components on data-entry and transaction pages. This is the PrimeFaces 14 standard for compact row padding and keeps more rows visible without scrolling. Any table that can grow beyond one screen also gets `stickyHeader="true"` — see [Data-Dense Page Patterns](data-dense-page-patterns.md) for the full scroll-management, lazy-loading, and action-reachability standards.
-
-```xhtml
-<p:dataTable id="tbl"
-             value="#{bean.items}"
-             var="item"
-             stickyHeader="true"
-             styleClass="p-datatable-sm">
-```
+Always add `styleClass="p-datatable-sm"` to `p:dataTable` components on data-entry and transaction pages, and `stickyHeader="true"` to any table that can grow beyond one screen. See [Data-Dense Page Patterns § Scroll Management](data-dense-page-patterns.md#1-scroll-management-for-tables) for the full code sample, rules, and the lazy-loading / action-reachability standards that go with it.
 
 **Column width rules** — always use the `width` attribute on `p:column`, never `style="min-width:…"` (PrimeFaces ignores CSS min-width in its column width allocation algorithm):
 
@@ -434,10 +426,7 @@ If the sum of all column widths exceeds the table container, add `scrollable="tr
 ---
 
 ## Icon Standards
-- Primary library: PrimeFaces `pi` icons. Use Font Awesome `fas` only when there is no `pi` equivalent.
-- Use SVG assets at 80x80 for reusable art and declare `fill="currentColor"` (or rely on `currentColor`) for dynamic theming.
-- Keep icon, label, tooltip, and button style combinations consistent across modules.
-- Canonical icon pairings and additional patterns live in `icon-management.md`. Update that file first when introducing or changing icons.
+Canonical icon library choice, sizing, and icon/label/tooltip pairings live in [icon-management.md](icon-management.md). Update that file first when introducing or changing icons.
 
 ---
 
