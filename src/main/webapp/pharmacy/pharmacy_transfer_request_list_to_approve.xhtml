@@ -76,6 +76,7 @@
                                     title="Approve Request"
                                     icon="fas fa-check-double" class="ui-button-success mx-2"
                                     action="#{transferRequestController.navigateToApproveRequest}"
+                                    onclick="return confirm('Proceed to review and approve this transfer request?');"
                                     disabled="#{b.cancelled eq true}">
                                     <f:setPropertyActionListener target="#{transferRequestController.transferRequestBillPre}" value="#{b}"/>
                                 </p:commandButton>
