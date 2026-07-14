@@ -10,6 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.CashBookController;
 import com.divudi.bean.cashTransaction.DenominationController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.channel.BookingController;
 import com.divudi.bean.collectingCentre.CourierController;
@@ -168,6 +169,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     private DrawerController drawerController;
     @Inject
     private PharmacySaleController pharmacySaleController;
+    @Inject
+    private FinancialTransactionController financialTransactionController;
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
     @Inject
@@ -2165,6 +2168,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         pharmacyBillingAfterShiftStart = null;
         paymentManagementAfterShiftStart = null;
         availableDepartmentTypesForPharmacyTransactions = null;
+        financialTransactionController.resetForLogout();
     }
 
     public WebUser getCurrent() {

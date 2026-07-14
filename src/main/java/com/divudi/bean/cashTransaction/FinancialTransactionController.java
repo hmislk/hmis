@@ -3066,6 +3066,20 @@ public class FinancialTransactionController implements Serializable {
         selectedFundTransferRequest = null;
     }
 
+    /**
+     * Clears the shift/handover summary state carried by this session-scoped
+     * bean so the next user to log in on the same browser session never sees
+     * the previous user's shift (bundle.user, bundle.startBill, etc.) on the
+     * Shift Handover pages. Call on logout, before a new user logs in.
+     */
+    public void resetForLogout() {
+        resetClassVariables();
+        bundle = null;
+        selectedBundle = null;
+        selectedPaymentMethod = null;
+        nonClosedShiftStartFundBill = null;
+    }
+
     public List<Payment> findPaymentsForBill(Bill b) {
         String jpql = "select p "
                 + " from Payment p "
