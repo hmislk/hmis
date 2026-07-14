@@ -450,6 +450,7 @@ public class PharmacySaleBhtController implements Serializable {
         tmp.getPharmaceuticalBillItem().setQty(0 - editedQty);
         calculateRates(tmp);
         calCurrentBillItemTotal(getBillItems());
+        calTotal();
     }
 
     private void setZeroToQty(BillItem tmp) {
