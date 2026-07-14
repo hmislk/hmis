@@ -66,7 +66,7 @@ Specifically verify:
 
 ### 5. Pre-Push Checklist
 
-- **persistence.xml** — must use `${JDBC_DATASOURCE}` and `${JDBC_AUDIT_DATASOURCE}`, not hardcoded JNDI names. See [Persistence Configuration Guide](../deployment/persistence-verification.md)
+- **persistence.xml** — must be reverted to CI/CD placeholders before pushing. See [Start Issue Workflow § Persistence.xml Swap](start-issue-workflow.md#persistencexml-swap) and [Persistence Configuration Guide](../deployment/persistence-verification.md)
 - No credentials or `.env` files staged
 - JSF-only changes (XHTML, no Java) do not require compilation
 
@@ -180,7 +180,7 @@ gh api -X POST "repos/hmislk/hmis/pulls/<PR>/comments/<COMMENT_ID>/replies" \
 
 ## Notes
 
-- All PRs target `development`, never `master`
+- All PRs target `development`, never `master` — see [Commit Conventions § Feature Branches](commit-conventions.md#feature-branches)
 - "Re-request review" is distinct from just pushing — always click it once, at the end
 - Replying ONLY UNDER existing reviewer threads maintains a clean audit trail without creating new manual-resolve chores
 - Self-review items go in commit messages, not as new inline comments

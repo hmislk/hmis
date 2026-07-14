@@ -1142,7 +1142,39 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
+        if (getPreBill() != null && getPreBill().getId() != null && hasNonCancelledIssuingAgainstRequest(getPreBill())) {
+            JsfUtil.addErrorMessage("This request has already been issued (partially or fully) from pharmacy and can no longer be edited.");
+            return;
+        }
         settleEditedBhtIssueRequest(BillType.InwardPharmacyRequest, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUEREQ);
+    }
+
+    /**
+     * XHTML-facing check so the Settle button can be disabled up front
+     * (server-side re-check on submit still applies via
+     * settleEditedPharmacyBhtIssueRequest()).
+     */
+    public boolean isPreBillAlreadyIssuedAgainstRequest() {
+        return preBill != null && preBill.getId() != null && hasNonCancelledIssuingAgainstRequest(preBill);
+    }
+
+    /**
+     * Mirrors PharmacyBillSearch.hasNonCancelledIssuingAgainstRequest - checks
+     * whether any non-cancelled, non-refunded PharmacyBhtPre bill still
+     * references this request, i.e. pharmacy has already issued (partially or
+     * fully) against it and it should no longer be editable/settleable.
+     */
+    private boolean hasNonCancelledIssuingAgainstRequest(Bill requestBill) {
+        String jpql = "SELECT COUNT(b) FROM Bill b WHERE b.retired = false "
+                + "AND b.billType = :btp "
+                + "AND b.referenceBill = :ref "
+                + "AND b.cancelled = false "
+                + "AND b.refunded = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillType.PharmacyBhtPre);
+        params.put("ref", requestBill);
+        Long count = billFacade.findLongByJpql(jpql, params);
+        return count != null && count > 0;
     }
 
     private void settleEditedBhtIssueRequest(BillType btp, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
