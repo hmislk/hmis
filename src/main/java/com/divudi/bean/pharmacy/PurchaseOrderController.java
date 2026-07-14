@@ -114,11 +114,8 @@ public class PurchaseOrderController implements Serializable {
             return "";
         }
 
-        for (BillItem b : selectedItems) {
-            getBillItems().remove(b.getSearialNo());
-            calTotal();
-        }
-
+        getBillItems().removeAll(selectedItems);
+        calTotal();
         selectedItems = null;
         return "";
     }
@@ -128,11 +125,11 @@ public class PurchaseOrderController implements Serializable {
     }
 
     public synchronized String removeItem(BillItem billItem) {
-        if (billItem == null || !billItems.contains(billItem)) {
+        if (billItem == null || !getBillItems().contains(billItem)) {
             JsfUtil.addErrorMessage("Item not found or already removed");
             return "";
         }
-        getBillItems().remove(billItem.getSearialNo());
+        getBillItems().remove(billItem);
         calTotal();
         return "";
     }
