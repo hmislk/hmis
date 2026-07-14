@@ -767,7 +767,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
                     JsfUtil.addSuccessMessage("Email Sent Successfully");
                     return "/inward/inward_edit_bht?faces-redirect=true";
                 } else {
-                    JsfUtil.addErrorMessage("Error: Sending Email Failed");
+                    JsfUtil.addErrorMessage("Sending Email Failed");
                     return "";
                 }
             } catch (Exception ex) {
