@@ -170,6 +170,7 @@
                                         icon="fa fa-eye"
                                         action="/ward/ward_pharmacy_reprint_bht_issue_request?faces-redirect=true">
                                         <f:setPropertyActionListener value="#{b}" target="#{pharmacyBillSearch.bill}"/>
+                                        <f:setPropertyActionListener value="/inward/reports/inpatient_pharmacy_requests_list?faces-redirect=true" target="#{pharmacyBillSearch.returnPage}"/>
                                     </p:commandButton>
 
                                     <p:commandButton
