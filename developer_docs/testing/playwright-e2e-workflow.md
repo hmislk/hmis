@@ -657,6 +657,21 @@ button) surfaced these:
 - **html2canvas does not capture PrimeFaces overlay panels** (`*_panel` appended near body root render
   blank/absent) — capture page states instead, or read the panel's `innerText` as textual evidence.
 
+## 29. GRN costing Save→Finalize→Approve: `Difference` guard needs a real keyup on Invoice Total at EVERY step
+
+On `pharmacy_grn_costing_with_save_approve.xhtml` the controller field `difference` (checked by
+`Math.abs(difference) > 1` in the finalize/approve actions) is recomputed **only** by the
+`p:ajax event="keyup"` listener on the Invoice Total input (`insv`) — a DOM-set value applied by an
+`ajax="false"` full submit updates `insTotal` server-side but never recalculates `difference`, so the
+approve fails with "The invoice does not match..! Check again" even though the submitted total is
+correct. Worse, after the Finalize → "To Approve GRNs" → Approve navigation the page reloads with
+Invoice Total rendered as `0.00`, so a value that passed at Save/Finalize is gone at the Approve step.
+Fix in automation: on the approve pass, click into `insv`, `Control+a`, `browser_type` the total
+`slowly: true` (real keyups fire the AJAX), confirm the `diff` input reads `0.00`, then click Approve.
+Everything else on that page (row qty/free-qty/batch/expiry/retail-rate inputs, invoice number/date)
+CAN be set directly on the DOM inputs — the `ajax="false"` Save/Finalize buttons submit and apply them
+(verified while testing issue #22120).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
