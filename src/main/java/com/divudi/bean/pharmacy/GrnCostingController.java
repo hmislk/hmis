@@ -158,6 +158,7 @@ public class GrnCostingController implements Serializable {
     private Institution fromInstitution;
     private Institution referenceInstitution;
     BillItem currentExpense;
+    private Item freeItemToAdd;
 
     public double calDifference() {
         double netTotal = getGrnBill().getNetTotal();
@@ -271,6 +272,10 @@ public class GrnCostingController implements Serializable {
         if (originalBillItemToDuplicate == null) {
             return;
         }
+        if (originalBillItemToDuplicate.getReferanceBillItem() == null) {
+            JsfUtil.addInfoMessage("Cannot duplicate an ad-hoc free item line");
+            return;
+        }
         BigDecimal totalQuantityOfBillItemsRefernceToOriginalItem = BigDecimal.ZERO;
         BigDecimal totalFreeQuantityOfBillItemsRefernceToOriginalItem = BigDecimal.ZERO;
 
@@ -323,6 +328,69 @@ public class GrnCostingController implements Serializable {
         distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         recalculateProfitMarginsForAllItems();
         calDifference();
+    }
+
+    public void addFreeItemNotInPo() {
+        if (!configOptionApplicationController.getBooleanValueByKey("GRN - Allow Free Items Not in Purchase Order", false)) {
+            JsfUtil.addErrorMessage("Adding free items not in the purchase order is not enabled.");
+            return;
+        }
+        if (freeItemToAdd == null) {
+            JsfUtil.addErrorMessage("Please select an item");
+            return;
+        }
+
+        List<Item> singleItemList = new ArrayList<>();
+        singleItemList.add(freeItemToAdd);
+        Map<Long, double[]> lastRatesMap = buildLastRatesMap(singleItemList);
+        double[] rates = lastRatesMap.get(freeItemToAdd.getId());
+        double lastPr = rates != null ? rates[0] : 0.0;
+        double lastRr = rates != null ? rates[1] : 0.0;
+
+        BillItem freeBillItem = new BillItem();
+        freeBillItem.setSearialNo(getBillItems().size());
+        freeBillItem.setItem(freeItemToAdd);
+        freeBillItem.setReferanceBillItem(null);
+        freeBillItem.setQty(0.0);
+        freeBillItem.setTmpQty(0.0);
+        freeBillItem.setTmpFreeQty(0.0);
+
+        PharmaceuticalBillItem freePbi = new PharmaceuticalBillItem();
+        freePbi.setBillItem(freeBillItem);
+        freePbi.setQty(0.0);
+        freePbi.setQtyInUnit(0.0);
+        freePbi.setFreeQty(0.0);
+        freePbi.setFreeQtyInUnit(0.0);
+        freePbi.setPurchaseRate(0.0);
+        freePbi.setRetailRate(lastRr);
+
+        freeBillItem.setPharmaceuticalBillItem(freePbi);
+
+        BillItemFinanceDetails fd = new BillItemFinanceDetails(freeBillItem);
+        fd.setQuantity(BigDecimal.ZERO);
+        fd.setFreeQuantity(BigDecimal.ZERO);
+        fd.setLineGrossRate(BigDecimal.ZERO);
+        fd.setLineDiscountRate(BigDecimal.ZERO);
+        fd.setLineNetRate(BigDecimal.ZERO);
+        fd.setRetailSaleRate(BigDecimal.valueOf(lastRr));
+
+        freeBillItem.setBillItemFinanceDetails(fd);
+        recalculateFinancialsBeforeAddingBillItem(fd);
+
+        freePbi.setLastPurchaseRate(lastPr);
+        freePbi.setLastPurchaseRateInUnit(lastPr);
+        freePbi.setLastPurchaseRatePack(lastPr * fd.getUnitsPerPack().doubleValue());
+
+        getBillItems().add(freeBillItem);
+
+        ensureBillDiscountSynchronization();
+        calculateBillTotalsFromItems();
+        distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+        calDifference();
+        recalculateProfitMarginsForAllItems();
+
+        freeItemToAdd = null;
+        JsfUtil.addSuccessMessage("Free item added. Enter the received free quantity.");
     }
 
     public void removeSelected() {
@@ -1768,6 +1836,9 @@ public class GrnCostingController implements Serializable {
     }
 
     private double getRetailPrice(BillItem billItem) {
+        if (billItem == null || billItem.getReferanceBillItem() == null) {
+            return 0;
+        }
         String sql = "select (p.retailRate) from PharmaceuticalBillItem p where p.billItem=:b";
         HashMap hm = new HashMap();
         hm.put("b", billItem.getReferanceBillItem());
@@ -1902,11 +1973,13 @@ public class GrnCostingController implements Serializable {
         if (f == null) {
             return;
         }
-        double remains = getRemainingQty(tmp.getPharmaceuticalBillItem());
-        if (remains < f.getQuantity().doubleValue()) {
-            f.setQuantity(java.math.BigDecimal.valueOf(remains));
-            tmp.setTmpQty(remains);
-            JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");
+        if (tmp.getReferanceBillItem() != null) {
+            double remains = getRemainingQty(tmp.getPharmaceuticalBillItem());
+            if (remains < f.getQuantity().doubleValue()) {
+                f.setQuantity(java.math.BigDecimal.valueOf(remains));
+                tmp.setTmpQty(remains);
+                JsfUtil.addErrorMessage("You cant Change Qty than Remaining qty");
+            }
         }
 
         if (f.getLineGrossRate().compareTo(f.getRetailSaleRatePerUnit()) > 0) {
@@ -2574,6 +2647,14 @@ public class GrnCostingController implements Serializable {
         this.selectedBillItems = selectedBillItems;
     }
 
+    public Item getFreeItemToAdd() {
+        return freeItemToAdd;
+    }
+
+    public void setFreeItemToAdd(Item freeItemToAdd) {
+        this.freeItemToAdd = freeItemToAdd;
+    }
+
     public SearchKeyword getSearchKeyword() {
         if (searchKeyword == null) {
             searchKeyword = new SearchKeyword();
@@ -3130,14 +3211,13 @@ public class GrnCostingController implements Serializable {
             if (ph == null) {
                 continue;
             }
-            if (ph.getQty() != 0.0) {
-                if (ph.getDoe() == null || ph.getStringValue().trim().isEmpty()) {
+            if (ph.getQty() != 0.0 || ph.getFreeQty() != 0.0) {
+                if (ph.getDoe() == null || ph.getStringValue() == null || ph.getStringValue().trim().isEmpty()) {
                     return true;
                 }
-                if (ph.getPurchaseRate() > ph.getRetailRate()) {
-                    return true;
-                }
-
+            }
+            if (ph.getQty() != 0.0 && ph.getPurchaseRate() > ph.getRetailRate()) {
+                return true;
             }
 
         }
