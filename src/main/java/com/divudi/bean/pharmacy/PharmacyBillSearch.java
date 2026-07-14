@@ -104,6 +104,9 @@ public class PharmacyBillSearch implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger(PharmacyBillSearch.class.getName());
 
+    private static final String DEFAULT_INWARD_PHARMACY_REQUEST_REPRINT_RETURN_PAGE =
+            "/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true";
+
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private StaffService staffBean;
@@ -175,6 +178,13 @@ public class PharmacyBillSearch implements Serializable {
     private String comment;
     private String emailRecipient;
     private Bill bill;
+    /**
+     * The page to navigate to when the Back button on the inward pharmacy
+     * request reprint page is pressed. Callers set this via
+     * f:setPropertyActionListener before navigating to that page; defaults
+     * to the all-requests list if a caller does not set it.
+     */
+    private String returnPage;
     private PaymentMethod paymentMethod;
     private PaymentScheme paymentScheme;
     private RefundBill billForRefund;
@@ -638,6 +648,18 @@ public class PharmacyBillSearch implements Serializable {
     // </editor-fold>
     //////////////////
     ///////////////////
+    /**
+     * Navigates back from the inward pharmacy request reprint page to
+     * wherever the user came from (all-requests list, search results, or a
+     * single patient's request list), rather than always returning to the
+     * all-requests list (#22106 follow-up).
+     */
+    public String navigateBackFromInwardPharmacyRequestReprint() {
+        String dest = returnPage != null ? returnPage : DEFAULT_INWARD_PHARMACY_REQUEST_REPRINT_RETURN_PAGE;
+        returnPage = null;
+        return dest;
+    }
+
     public String editInwardPharmacyRequestBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Not Bill Found !");
@@ -669,7 +691,7 @@ public class PharmacyBillSearch implements Serializable {
         bill.setCancelled(true);
         bill.setCancelledBill(cb);
         billFacade.edit(bill);
-        return "/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true";
+        return navigateBackFromInwardPharmacyRequestReprint();
     }
 
     /**
@@ -4174,6 +4196,13 @@ public class PharmacyBillSearch implements Serializable {
 
     }
 
+    public String getReturnPage() {
+        return returnPage;
+    }
+
+    public void setReturnPage(String returnPage) {
+        this.returnPage = returnPage;
+    }
 
     public List<BillEntry> getBillEntrys() {
         return billEntrys;
