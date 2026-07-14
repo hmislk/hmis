@@ -205,10 +205,12 @@
                                 action="#{roomOccupancyReportController.processReport()}">
                             </p:commandButton>
 
-                            <p:commandButton    class="ui-button-primary mx-1"
-                                             icon="fas fa-print"
-                                             ajax="false"
-                                             value="Print All">
+                            <p:commandButton
+                                id="prtButton"
+                                class="ui-button-primary mx-1"
+                                icon="fas fa-print"
+                                ajax="false"
+                                value="Print All">
                                 <p:printer target="printPanel" />
                             </p:commandButton>
 
