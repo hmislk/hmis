@@ -80,6 +80,16 @@ public class SurgeryReportController implements Serializable {
     private Item procedure;
     private RoomFacilityCharge operationTheatreRoom;
     private List<SurgeryReportDTO> reportList;
+    
+    private Date fromYearDate;
+    private Date toYearDate;
+    private String otRoomChartType;
+    private List<OtRoomWiseSurgeryCountDTO> otRoomWiseList;
+    private Map<Integer, Long> otRoomMonthlyTotals;
+    private long otRoomGrandTotal;
+    private String otRoomBarChartModel;
+    private String otRoomLineChartModel;
+    private int selectedYear;
 
     public void processSurgeryStatusReport() {
         reportList = new ArrayList<>();
@@ -349,77 +359,8 @@ public class SurgeryReportController implements Serializable {
         }
         fc.responseComplete();
     }
-
-    public List<SurgeryReportDTO> getReportList() {
-        return reportList;
-    }
-
-    public void setReportList(List<SurgeryReportDTO> reportList) {
-        this.reportList = reportList;
-    }
-
-    public Institution getInstitution() {
-        return institution;
-    }
-
-    public void setInstitution(Institution institution) {
-        this.institution = institution;
-    }
-
-    public Institution getSite() {
-        return site;
-    }
-
-    public void setSite(Institution site) {
-        this.site = site;
-    }
-
-    public Department getDepartment() {
-        return department;
-    }
-
-    public void setDepartment(Department department) {
-        this.department = department;
-    }
-
-    public Date getFromDate() {
-        if (fromDate == null) {
-            fromDate = com.divudi.core.util.CommonFunctions.getStartOfDay(new Date());
-        }
-        return fromDate;
-    }
-
-    public void setFromDate(Date fromDate) {
-        this.fromDate = fromDate;
-    }
-
-    public Date getToDate() {
-        if (toDate == null) {
-            toDate = com.divudi.core.util.CommonFunctions.getEndOfDay(new Date());
-        }
-        return toDate;
-    }
-
-    public void setToDate(Date toDate) {
-        this.toDate = toDate;
-    }
-
-    public com.divudi.core.entity.Item getProcedure() {
-        return procedure;
-    }
-
-    public void setProcedure(Item procedure) {
-        this.procedure = procedure;
-    }
-
-    public RoomFacilityCharge getOperationTheatreRoom() {
-        return operationTheatreRoom;
-    }
-
-    public void setOperationTheatreRoom(RoomFacilityCharge operationTheatreRoom) {
-        this.operationTheatreRoom = operationTheatreRoom;
-    }
-
+    
+    
     // ═══════════════════════════════════════════════════════════════════════
     // OT Room Wise Surgery Count Report
     // ═══════════════════════════════════════════════════════════════════════
@@ -434,15 +375,6 @@ public class SurgeryReportController implements Serializable {
         "255, 99, 255", "99, 255, 132", "220, 20, 60", "65, 105, 225"
     };
 
-    private Date fromYearDate;
-    private Date toYearDate;
-    private String otRoomChartType;
-    private List<OtRoomWiseSurgeryCountDTO> otRoomWiseList;
-    private Map<Integer, Long> otRoomMonthlyTotals;
-    private long otRoomGrandTotal;
-    private String otRoomBarChartModel;
-    private String otRoomLineChartModel;
-    private int selectedYear;
 
     public void processOtRoomWiseSurgeryCountReport() {
         otRoomWiseList = new ArrayList<>();
@@ -865,6 +797,77 @@ public class SurgeryReportController implements Serializable {
             cell.setBackgroundColor(bgColor);
         }
         table.addCell(cell);
+    }
+
+
+    public List<SurgeryReportDTO> getReportList() {
+        return reportList;
+    }
+
+    public void setReportList(List<SurgeryReportDTO> reportList) {
+        this.reportList = reportList;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = com.divudi.core.util.CommonFunctions.getStartOfDay(new Date());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = com.divudi.core.util.CommonFunctions.getEndOfDay(new Date());
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public com.divudi.core.entity.Item getProcedure() {
+        return procedure;
+    }
+
+    public void setProcedure(Item procedure) {
+        this.procedure = procedure;
+    }
+
+    public RoomFacilityCharge getOperationTheatreRoom() {
+        return operationTheatreRoom;
+    }
+
+    public void setOperationTheatreRoom(RoomFacilityCharge operationTheatreRoom) {
+        this.operationTheatreRoom = operationTheatreRoom;
     }
 
     // ── OT Room Wise getters/setters ─────────────────────────────────────
