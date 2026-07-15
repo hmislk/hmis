@@ -1,0 +1,273 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <!-- INTERFACE -->
+    <cc:interface>
+        <cc:attribute name="dto" type="com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto" required="true"/>
+        <cc:attribute name="duplicate"/>
+        <cc:attribute name="comment"/>
+    </cc:interface>
+
+    <!-- IMPLEMENTATION -->
+    <cc:implementation>
+
+        <style>
+            .biq-status-pending { color: #b8860b; font-weight: bold; }
+            .biq-status-completed { color: #1a7a1a; font-weight: bold; }
+            .biq-status-cancelled { color: #c0392b; font-weight: bold; }
+            .biq-watermark { color: #c0392b; font-weight: bold; }
+            .biq-signature-row { display: flex; justify-content: space-between; margin-top: 2em; }
+            .biq-signature-line { border-top: 1px solid #000; width: 45%; text-align: center; padding-top: 4px; font-size: 0.85em; }
+
+            .biq-a4 { width: 100%; font-family: Arial, sans-serif; font-size: 13px; color: #000; padding: 1.5em; }
+            .biq-a4 table { width: 100%; border-collapse: collapse; }
+            .biq-a4 .biq-items th, .biq-a4 .biq-items td { border: 1px solid #999; padding: 4px 6px; }
+
+            .biq-five-five { width: 100%; font-family: Arial, sans-serif; font-size: 11px; color: #000; padding: 0.5em; }
+            .biq-five-five table { width: 100%; border-collapse: collapse; }
+            .biq-five-five .biq-items th, .biq-five-five .biq-items td { border-bottom: 1px dashed #999; padding: 2px 4px; }
+
+            .biq-pos { width: 100%; font-family: 'Courier New', monospace; font-size: 10px; color: #000; padding: 0.25em; }
+            .biq-pos table { width: 100%; }
+            .biq-pos .biq-items td { padding: 1px 2px; }
+
+            @media print {
+                .biq-a4, .biq-five-five, .biq-pos { -webkit-print-color-adjust: exact; }
+            }
+        </style>
+
+        <h:outputText escape="false"
+                      value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy BHT Issue Request Receipt CSS')}"/>
+
+        <!-- ==================== A4 ==================== -->
+        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy BHT Issue Request Receipt is A4', false)}">
+            <div class="biq-a4">
+                <h:outputText escape="false"
+                              value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy BHT Issue Request Receipt Header')}"/>
+
+                <div style="text-align:center;">
+                    <strong><h:outputText value="#{cc.attrs.dto.fromDepartmentPrintingName}"/></strong><br/>
+                    <h:panelGroup rendered="#{cc.attrs.dto.fromDepartmentAddress ne ''}">
+                        <h:outputText value="#{cc.attrs.dto.fromDepartmentAddress}"/><br/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.dto.fromDepartmentTelephone1 ne ''}">
+                        <h:outputText value="#{cc.attrs.dto.fromDepartmentTelephone1}"/>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.dto.fromDepartmentTelephone2 ne ''}">
+                        <h:outputText value=" / #{cc.attrs.dto.fromDepartmentTelephone2}"/>
+                    </h:panelGroup>
+                    <br/>
+                    <h:panelGroup rendered="#{cc.attrs.dto.fromDepartmentFax ne ''}">
+                        <h:outputText value="Fax: #{cc.attrs.dto.fromDepartmentFax}"/>
+                    </h:panelGroup>
+                </div>
+
+                <h2 style="text-align:center;">
+                    BHT Pharmacy Issue Request
+                    <h:panelGroup rendered="#{cc.attrs.duplicate eq true}">
+                        <span class="biq-watermark"> **DUPLICATE**</span>
+                    </h:panelGroup>
+                </h2>
+                <div style="text-align:center;">
+                    <h:panelGroup rendered="#{cc.attrs.dto.cancelled eq true}">
+                        <span class="biq-status-cancelled">CANCELLED</span>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.dto.cancelled eq false and cc.attrs.dto.completed eq true}">
+                        <span class="biq-status-completed">COMPLETED</span>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.dto.cancelled eq false and cc.attrs.dto.completed eq false}">
+                        <span class="biq-status-pending">PENDING</span>
+                    </h:panelGroup>
+                </div>
+                <hr/>
+
+                <table>
+                    <tr>
+                        <td>Date</td><td>:</td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.dto.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                            </h:outputLabel>
+                            <h:outputLabel value="#{cc.attrs.dto.createdAt}">
+                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr><td>Request No</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.requestNo}"/></td></tr>
+                    <tr><td>BHT No</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.bhtNo}"/></td></tr>
+                    <tr><td>Patient Name</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.patientName}"/></td></tr>
+                    <h:panelGroup rendered="#{cc.attrs.dto.patientPhn ne ''}">
+                        <tr><td>PHN</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.patientPhn}"/></td></tr>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.dto.roomName ne ''}">
+                        <tr><td>Ward/Room</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.roomName}"/></td></tr>
+                    </h:panelGroup>
+                    <tr><td>Requesting Dept</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.fromDepartmentName}"/></td></tr>
+                    <tr><td>Pharmacy Dept</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.toDepartmentName}"/></td></tr>
+                    <tr><td>Requested By</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.requestedByName}"/></td></tr>
+                    <h:panelGroup rendered="#{(cc.attrs.comment ne null and cc.attrs.comment ne '') or cc.attrs.dto.comments ne ''}">
+                        <tr>
+                            <td>Comments</td><td>:</td>
+                            <td><h:outputText value="#{(cc.attrs.comment ne null and cc.attrs.comment ne '') ? cc.attrs.comment : cc.attrs.dto.comments}"/></td>
+                        </tr>
+                    </h:panelGroup>
+                </table>
+                <hr/>
+
+                <table class="biq-items">
+                    <thead>
+                        <tr><th>#</th><th>Item</th><th>Quantity</th><th>Directions</th></tr>
+                    </thead>
+                    <tbody>
+                        <ui:repeat value="#{cc.attrs.dto.items}" var="bii" varStatus="st">
+                            <tr>
+                                <td><h:outputText value="#{st.index + 1}"/></td>
+                                <td><h:outputText value="#{bii.itemName}"/></td>
+                                <td><h:outputText value="#{bii.qty}"><f:convertNumber pattern="#,##0"/></h:outputText></td>
+                                <td><h:outputText value="#{bii.directions}"/></td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+                </table>
+                <hr/>
+                <p>Number of Items: <h:outputText value="#{cc.attrs.dto.items.size()}"><f:convertNumber pattern="#,##0"/></h:outputText></p>
+
+                <div class="biq-signature-row">
+                    <div class="biq-signature-line">Requested By</div>
+                    <div class="biq-signature-line">Issued By</div>
+                </div>
+
+                <p>System User: <h:outputText value="#{cc.attrs.dto.systemUserName}"/></p>
+
+                <h:outputText escape="false"
+                              value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy BHT Issue Request Receipt Footer')}"/>
+            </div>
+        </h:panelGroup>
+
+        <!-- ==================== FiveFive ==================== -->
+        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy BHT Issue Request Receipt is FiveFive', true)}">
+            <div class="biq-five-five">
+                <h:outputText escape="false"
+                              value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy BHT Issue Request Receipt Header')}"/>
+
+                <div style="text-align:center;">
+                    <strong><h:outputText value="#{cc.attrs.dto.fromDepartmentPrintingName}"/></strong>
+                </div>
+
+                <div style="text-align:center;">
+                    <strong>BHT Pharmacy Issue Request</strong>
+                    <h:panelGroup rendered="#{cc.attrs.duplicate eq true}">
+                        <span class="biq-watermark"> DUPLICATE</span>
+                    </h:panelGroup>
+                    <br/>
+                    <h:panelGroup rendered="#{cc.attrs.dto.cancelled eq true}">
+                        <span class="biq-status-cancelled">CANCELLED</span>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.dto.cancelled eq false and cc.attrs.dto.completed eq true}">
+                        <span class="biq-status-completed">COMPLETED</span>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.dto.cancelled eq false and cc.attrs.dto.completed eq false}">
+                        <span class="biq-status-pending">PENDING</span>
+                    </h:panelGroup>
+                </div>
+                <hr/>
+
+                <table>
+                    <tr><td>Date</td><td>:</td><td>
+                        <h:outputLabel value="#{cc.attrs.dto.createdAt}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                        </h:outputLabel>
+                    </td></tr>
+                    <tr><td>Req No</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.requestNo}"/></td></tr>
+                    <tr><td>BHT No</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.bhtNo}"/></td></tr>
+                    <tr><td>Patient</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.patientName}"/></td></tr>
+                    <h:panelGroup rendered="#{cc.attrs.dto.roomName ne ''}">
+                        <tr><td>Room</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.roomName}"/></td></tr>
+                    </h:panelGroup>
+                    <tr><td>To</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.toDepartmentName}"/></td></tr>
+                    <tr><td>By</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.requestedByName}"/></td></tr>
+                </table>
+                <hr/>
+
+                <table class="biq-items">
+                    <thead><tr><th>Item</th><th>Qty</th><th>Directions</th></tr></thead>
+                    <tbody>
+                        <ui:repeat value="#{cc.attrs.dto.items}" var="bii">
+                            <tr>
+                                <td><h:outputText value="#{bii.itemName}"/></td>
+                                <td><h:outputText value="#{bii.qty}"><f:convertNumber pattern="#,##0"/></h:outputText></td>
+                                <td><h:outputText value="#{bii.directions}"/></td>
+                            </tr>
+                        </ui:repeat>
+                    </tbody>
+                </table>
+                <hr/>
+
+                <div class="biq-signature-row">
+                    <div class="biq-signature-line">Req By</div>
+                    <div class="biq-signature-line">Issued By</div>
+                </div>
+
+                <h:outputText escape="false"
+                              value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy BHT Issue Request Receipt Footer')}"/>
+            </div>
+        </h:panelGroup>
+
+        <!-- ==================== POS ==================== -->
+        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy BHT Issue Request Receipt is POS', false)}">
+            <div class="biq-pos">
+                <div style="text-align:center;">
+                    <strong><h:outputText value="#{cc.attrs.dto.fromDepartmentPrintingName}"/></strong><br/>
+                    BHT Issue Request
+                    <h:panelGroup rendered="#{cc.attrs.duplicate eq true}">
+                        <span class="biq-watermark"> (DUP)</span>
+                    </h:panelGroup>
+                    <br/>
+                    <h:panelGroup rendered="#{cc.attrs.dto.cancelled eq true}">
+                        <span class="biq-status-cancelled">CANCELLED</span>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.dto.cancelled eq false and cc.attrs.dto.completed eq true}">
+                        <span class="biq-status-completed">COMPLETED</span>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.dto.cancelled eq false and cc.attrs.dto.completed eq false}">
+                        <span class="biq-status-pending">PENDING</span>
+                    </h:panelGroup>
+                </div>
+                <hr/>
+                <div>
+                    BHT: <h:outputText value="#{cc.attrs.dto.bhtNo}"/><br/>
+                    Patient: <h:outputText value="#{cc.attrs.dto.patientName}"/><br/>
+                    Req No: <h:outputText value="#{cc.attrs.dto.requestNo}"/><br/>
+                    <h:outputLabel value="#{cc.attrs.dto.createdAt}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                    </h:outputLabel>
+                </div>
+                <hr/>
+                <table class="biq-items">
+                    <ui:repeat value="#{cc.attrs.dto.items}" var="bii">
+                        <tr>
+                            <td colspan="2"><h:outputText value="#{bii.itemName}"/></td>
+                        </tr>
+                        <tr>
+                            <td>&#160;&#160;Qty: <h:outputText value="#{bii.qty}"><f:convertNumber pattern="#,##0"/></h:outputText></td>
+                            <td><h:outputText value="#{bii.directions}"/></td>
+                        </tr>
+                    </ui:repeat>
+                </table>
+                <hr/>
+                <div>Req By: <h:outputText value="#{cc.attrs.dto.requestedByName}"/></div>
+
+                <div class="biq-signature-row">
+                    <div class="biq-signature-line">Req</div>
+                    <div class="biq-signature-line">Issued</div>
+                </div>
+            </div>
+        </h:panelGroup>
+
+    </cc:implementation>
+</html>
