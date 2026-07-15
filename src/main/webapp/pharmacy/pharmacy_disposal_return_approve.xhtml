@@ -17,7 +17,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
                             <i class="fas fa-check-circle text-success me-2"></i>
-                            <h:outputText value="Approve Disposal Return Requests" styleClass="mb-0 text-success" style="font-size: 1.5rem; font-weight: 500; margin: 0;" />
+                            <h:outputText value="Approve Consumption Return Requests" styleClass="mb-0 text-success" style="font-size: 1.5rem; font-weight: 500; margin: 0;" />
                         </div>
                         <div class="d-flex gap-2">
                             <p:commandButton
@@ -27,7 +27,7 @@
                                 icon="fas fa-plus-circle"
                                 styleClass="ui-button-info ui-button-outlined"
                                 rendered="#{webUserController.hasPrivilege('CreateDisposalReturn')}"
-                                title="Create a new Disposal Return Request">
+                                title="Create a new Consumption Return Request">
                             </p:commandButton>
                             <p:commandButton
                                 value="List Returns to Finalize"
@@ -36,7 +36,7 @@
                                 icon="fas fa-tasks"
                                 styleClass="ui-button-info ui-button-outlined"
                                 rendered="#{webUserController.hasPrivilege('FinalizeDisposalReturn')}"
-                                title="Finalize Disposal Return Requests">
+                                title="Finalize Consumption Return Requests">
                             </p:commandButton>
                             <p:commandButton
                                 value="List Returns To Approve"
@@ -45,7 +45,7 @@
                                 icon="fas fa-check-circle"
                                 styleClass="ui-button-info ui-button-outlined"
                                 rendered="#{webUserController.hasPrivilege('ApproveDisposalReturn')}"
-                                title="Approve Disposal Return Requests">
+                                title="Approve Consumption Return Requests">
                             </p:commandButton>
                             <p:commandButton
                                 value="Completed Returns"
@@ -54,7 +54,7 @@
                                 icon="fas fa-check-double"
                                 styleClass="ui-button-info ui-button-outlined"
                                 rendered="#{webUserController.hasPrivilege('ViewDisposalReturn')}"
-                                title="View Completed Disposal Returns">
+                                title="View Completed Consumption Returns">
                             </p:commandButton>
                         </div>
                     </div>
@@ -107,7 +107,7 @@
                                 <p:commandButton
                                     class="ui-button-success w-100"
                                     icon="fas fa-search"
-                                    value="Search Disposal Returns"
+                                    value="Search Consumption Returns"
                                     action="#{disposalReturnWorkflowController.fillDisposalReturnsToApprove()}"
                                     ajax="false"
                                     style="min-height: 45px;">
@@ -117,7 +117,7 @@
                         </p:panel>
                     </div>
                     <div class="col-lg-9 col-md-8">
-                        <p:panel header="Disposal Return Requests to Approve" styleClass="shadow-sm">
+                        <p:panel header="Consumption Return Requests to Approve" styleClass="shadow-sm">
                             <p:dataTable
                                 id="tbl"
                                 value="#{disposalReturnWorkflowController.disposalReturnsToApprove}"
@@ -128,7 +128,7 @@
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="5,10,15,25"
                                 styleClass="table-striped"
-                                emptyMessage="No disposal return requests found matching your criteria"
+                                emptyMessage="No consumption return requests found matching your criteria"
                                 filteredValue="#{disposalReturnWorkflowController.filteredDisposalReturnsToApprove}"
                                 sortMode="multiple"
                                 resizableColumns="true"
@@ -215,7 +215,7 @@
                                     <p:commandButton
                                         id="approve"
                                         ajax="false"
-                                        title="#{b.completed ? 'Already Approved' : (b.billClosed eq true ? 'Closed Return' : 'Review and Approve Disposal Return')}"
+                                        title="#{b.completed ? 'Already Approved' : (b.billClosed eq true ? 'Closed Return' : 'Review and Approve Consumption Return')}"
                                         icon="fas #{b.completed ? 'fa-check-circle' : 'fa-eye'}"
                                         class="#{b.completed ? 'ui-button-success ui-button-outlined' : (b.billClosed eq true ? 'ui-button-secondary ui-button-outlined' : 'ui-button-success')}"
                                         value="#{b.completed ? 'Approved' : 'Approve'}"
@@ -226,7 +226,7 @@
                                     <p:commandButton
                                         id="close"
                                         ajax="false"
-                                        title="Close this disposal return"
+                                        title="Close this consumption return"
                                         icon="fas fa-times"
                                         class="ui-button-danger ui-button-outlined"
                                         value="Close"
@@ -235,7 +235,7 @@
                                         rendered="#{b.billClosed ne true and b.completed ne true and b.checkedBy ne null}"
                                         style="min-width: 70px;">
                                         <p:confirm header="Confirm Close"
-                                                   message="Are you sure you want to close this finalized disposal return? This will allow creating a new return for the same bill."
+                                                   message="Are you sure you want to close this finalized consumption return? This will allow creating a new return for the same bill."
                                                    icon="pi pi-exclamation-triangle"/>
                                     </p:commandButton>
                                 </div>
