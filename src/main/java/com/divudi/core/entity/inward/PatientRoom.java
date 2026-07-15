@@ -9,12 +9,15 @@ import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
@@ -98,6 +101,10 @@ public class PatientRoom implements Serializable, RetirableEntity {
     double calculatedLinenCharge = 0;
     double calculatedAdministrationCharge = 0;
     double calculatedMedicalCareCharge = 0;
+
+    private boolean fromPackage;
+    private Double includedRoomDurationHours;
+
 //Discount
     private double discountRoomCharge;
     private double discountMaintainCharge;
@@ -700,5 +707,32 @@ public class PatientRoom implements Serializable, RetirableEntity {
 
     public void setAdmitted(boolean admitted) {
         this.admitted = admitted;
+    }
+
+    public boolean isFromPackage() {
+        return fromPackage;
+    }
+
+    public void setFromPackage(boolean fromPackage) {
+        this.fromPackage = fromPackage;
+    }
+
+    public Double getIncludedRoomDurationHours() {
+        return includedRoomDurationHours;
+    }
+
+    public void setIncludedRoomDurationHours(Double includedRoomDurationHours) {
+        this.includedRoomDurationHours = includedRoomDurationHours;
+    }
+
+    @OneToMany(mappedBy = "patientRoom", cascade = CascadeType.ALL)
+    private List<PatientRoomTimedItemCharge> timedItemCharges;
+
+    public List<PatientRoomTimedItemCharge> getTimedItemCharges() {
+        return timedItemCharges;
+    }
+
+    public void setTimedItemCharges(List<PatientRoomTimedItemCharge> timedItemCharges) {
+        this.timedItemCharges = timedItemCharges;
     }
 }

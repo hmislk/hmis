@@ -17,39 +17,18 @@
             <h:panelGroup id="gpDetail" rendered="#{!admissionController.printPreview}" >
                 <p:panel >
                     <f:facet name="header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
+                        <!--
+                            Three-zone panel header layout (see UI guidelines § Panel Header Three-Zone Layout):
+                            LEFT  : panel title + contextual config button (admin-only, next to the label it configures)
+                            CENTER: entity-level navigation buttons (Patient Lookup, Patient Profile)
+                            RIGHT : page actions ordered left→right by ascending importance; primary action rightmost
+                        -->
+                        <div class="d-flex justify-content-between align-items-center w-100">
+
+                            <!-- LEFT: title + config -->
+                            <div class="d-flex align-items-center gap-2">
                                 <h:outputText styleClass="fa fa-hospital" />
-                                <h:outputText class="mx-4" value="Admit a Patient"/>
-                            </div>
-                            <div>
-                                <p:commandButton
-                                    id="admt"
-                                    action="#{admissionController.checkBeforeAdmit}"
-                                    update="@form"
-                                    class="ui-button-success mx-1"
-                                    value="Admit">
-                                </p:commandButton>
-
-                                <p:commandButton 
-                                    ajax="false" 
-                                    immediate="true"
-                                    value="Patient Lookup" 
-                                    class="ui-button-warning mx-1" 
-                                    action="#{patientController.navigateToSearchPatients()}" 
-                                    icon="fa fa-search" >
-                                </p:commandButton>
-
-                                <p:commandButton
-                                    ajax="false"
-                                    immediate="true"
-                                    class="ui-button-warning mx-1"
-                                    value="Patient Profile"
-                                    action="#{patientController.navigateToOpdPatientProfile()}"
-                                    icon="fa fa-user" > <!-- Font Awesome icon for user -->
-                                    <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" />
-                                </p:commandButton>
-
+                                <h:outputText value="Admit a Patient"/>
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                     <p:commandButton
                                         value="Config"
@@ -58,10 +37,62 @@
                                         title="Configure Admission Settings"
                                         action="#{admissionController.navigateToAdmissionConfig()}"
                                         ajax="false"
-                                        styleClass="ui-button-secondary ms-5">
+                                        styleClass="ui-button-secondary ui-button-outlined">
                                     </p:commandButton>
                                 </h:panelGroup>
                             </div>
+
+                            <!-- CENTER: navigation (page-to-page, entity-related) -->
+                            <div class="d-flex gap-2">
+                                <p:commandButton
+                                    ajax="false"
+                                    immediate="true"
+                                    value="Patient Lookup"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    action="#{patientController.navigateToSearchPatients()}"
+                                    icon="fa fa-search">
+                                </p:commandButton>
+                                <p:commandButton
+                                    ajax="false"
+                                    immediate="true"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    value="Patient Profile"
+                                    action="#{patientController.navigateToOpdPatientProfile()}"
+                                    icon="fa fa-user">
+                                    <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" />
+                                </p:commandButton>
+                            </div>
+
+                            <!-- RIGHT: actions — left=least important, right=primary -->
+                            <div class="d-flex gap-2 align-items-center">
+                                <!-- Rarely used, least prominent — leftmost in the action zone -->
+                                <p:commandButton
+                                    type="button"
+                                    value="On Admission Death"
+                                    icon="fas fa-cross"
+                                    title="Record this admission as an On Admission Death (patient arrived dead, or died before registration was completed)"
+                                    styleClass="ui-button-secondary"
+                                    onclick="PF('dlgOnAdmissionDeath').show();"/>
+                                <!-- Warning / dangerous fast-path — middle -->
+                                <p:commandButton
+                                    type="button"
+                                    value="Provisional Emergency Admit"
+                                    icon="fas fa-truck-medical"
+                                    title="Admit an emergency patient with incomplete demographics. Blank name/address are filled with placeholders and demographic checks are skipped; complete the details later."
+                                    styleClass="ui-button-warning"
+                                    onclick="PF('dlgRapidTempAe').show();"/>
+                                <!-- Primary action — rightmost, widened, with icon -->
+                                <p:commandButton
+                                    id="admt"
+                                    action="#{admissionController.checkBeforeAdmit}"
+                                    ajax="false"
+                                    styleClass="ui-button-success"
+                                    icon="pi pi-check-circle"
+                                    style="min-width:120px"
+                                    value="Admit">
+                                </p:commandButton>
+                            </div>
+
                         </div>
                     </f:facet>
 
@@ -153,13 +184,11 @@
                                         </p:datePicker>     
 
                                         <p:outputLabel value="Consultant*" />
-                                        <p:autoComplete 
-                                            forceSelection="true" 
-                                            value="#{admissionController.current.referringConsultant}" 
+                                        <p:autoComplete
+                                            forceSelection="true"
+                                            value="#{admissionController.current.referringConsultant}"
                                             id="refCon"
-                                            required="true" 
-                                            requiredMessage="Please select referring consultant"
-                                            completeMethod="#{consultantController.completeConsultant}" 
+                                            completeMethod="#{consultantController.completeConsultant}"
                                             var="mysp"
                                             itemLabel="#{mysp.person.nameWithTitle}" 
                                             itemValue="#{mysp}"
@@ -171,11 +200,9 @@
                                         </p:autoComplete>
 
                                         <p:outputLabel value="Medical Officer*"/>
-                                        <p:autoComplete 
-                                            required="true" 
-                                            requiredMessage="Please select referring doctor"
-                                            forceSelection="true" 
-                                            id="scStaff" 
+                                        <p:autoComplete
+                                            forceSelection="true"
+                                            id="scStaff"
                                             maxResults="15"
                                             placeholder="OPD Doctor"
                                             value="#{admissionController.current.opdDoctor}" 
@@ -406,7 +433,7 @@
                                     <h:panelGroup id="pg1">
                                         <div class="mb-2">
                                             <p:selectBooleanCheckbox
-                                                value="#{admissionController.current.foriegner}"
+                                                value="#{admissionController.patientForiegner}"
                                                 itemLabel="Mark as Foreigner"/>
                                         </div>
                                         <div class="mb-2">
@@ -587,6 +614,82 @@
                             action="#{admissionController.saveSelected}"
                             update="@form"
                             onclick="PF('dlgActiveAdmission').hide();"/>
+                    </div>
+                </div>
+            </p:dialog>
+
+            <!-- On Admission Death confirmation dialog (Issue #21182) -->
+            <p:dialog id="dlgOnAdmissionDeath"
+                      widgetVar="dlgOnAdmissionDeath"
+                      header="Confirm On Admission Death"
+                      modal="true"
+                      resizable="false"
+                      closable="true"
+                      style="width:500px">
+                <div style="padding:12px">
+                    <p style="font-weight:bold; font-size:1.05em;">
+                        Record this admission as an <strong>On Admission Death</strong>?
+                    </p>
+                    <p>
+                        Use this only when the patient arrived dead, or died before
+                        registration was completed. The admission will be saved with the
+                        <strong>On Admission Death</strong> flag.
+                    </p>
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <p:commandButton
+                            value="Cancel"
+                            icon="fa fa-times"
+                            type="button"
+                            class="ui-button-secondary"
+                            onclick="PF('dlgOnAdmissionDeath').hide(); return false;"/>
+                        <p:commandButton
+                            value="Confirm — Save as On Admission Death"
+                            icon="fas fa-cross"
+                            class="ui-button-secondary"
+                            action="#{admissionController.checkBeforeAdmitOnAdmissionDeath}"
+                            update="@form"
+                            onclick="PF('dlgOnAdmissionDeath').hide();"/>
+                    </div>
+                </div>
+            </p:dialog>
+
+            <!-- Rapid / Temp A&E confirmation dialog (Issue #21183) -->
+            <p:dialog id="dlgRapidTempAe"
+                      widgetVar="dlgRapidTempAe"
+                      header="Confirm Provisional Emergency Admission"
+                      modal="true"
+                      resizable="false"
+                      closable="true"
+                      style="width:520px">
+                <div style="padding:12px">
+                    <p style="font-weight:bold; font-size:1.05em;">
+                        Admit this patient as a <strong>Provisional Emergency</strong> admission?
+                    </p>
+                    <p>
+                        Use this for emergency admissions where full demographics are not
+                        yet available. Any blank <strong>Name</strong> or
+                        <strong>Address</strong> will be filled with placeholders, and the
+                        usual demographic checks are skipped so the patient can be admitted
+                        immediately.
+                    </p>
+                    <p class="text-muted">
+                        The admission will be flagged <strong>Provisional Emergency</strong>.
+                        Please complete the patient details later from the Inpatient Dashboard.
+                    </p>
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <p:commandButton
+                            value="Cancel"
+                            icon="fa fa-times"
+                            type="button"
+                            class="ui-button-secondary"
+                            onclick="PF('dlgRapidTempAe').hide(); return false;"/>
+                        <p:commandButton
+                            value="Confirm — Provisional Emergency Admit"
+                            icon="fas fa-truck-medical"
+                            class="ui-button-warning"
+                            action="#{admissionController.checkBeforeAdmitRapidTempAe}"
+                            update="@form"
+                            onclick="PF('dlgRapidTempAe').hide();"/>
                     </div>
                 </div>
             </p:dialog>

@@ -17,6 +17,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Add New Discount Entry" class="mt-2"/>
                                 <p:commandButton
+                                    id="btnAdd"
                                     value="Add"
                                     class="ui-button-success"
                                     icon="fa fa-plus"
@@ -78,11 +79,12 @@
                                         <p:selectOneMenu
                                             class="w-100"
                                             value="#{inwardDiscountMatrixController.category}">
-                                            <f:selectItem itemLabel="All Categories" itemValue="#{null}"/>
-                                            <f:selectItems value="#{pharmaceuticalItemCategoryController.items}"
-                                                           var="c"
-                                                           itemLabel="#{c.name}"
-                                                           itemValue="#{c}"/>
+                                            <f:selectItem itemLabel="Select Categories" itemValue="#{null}"/>
+                                            <f:selectItems 
+                                                value="#{pharmaceuticalItemCategoryController.items}"
+                                                var="c"
+                                                itemLabel="#{c.name}"
+                                                itemValue="#{c}"/>
                                         </p:selectOneMenu>
                                     </div>
                                 </div>
@@ -96,10 +98,11 @@
                                             class="w-100"
                                             value="#{inwardDiscountMatrixController.admissionType}">
                                             <f:selectItem itemLabel="All Admission Types" itemValue="#{null}"/>
-                                            <f:selectItems value="#{admissionTypeController.items}"
-                                                           var="at"
-                                                           itemValue="#{at}"
-                                                           itemLabel="#{at.name}"/>
+                                            <f:selectItems 
+                                                value="#{admissionTypeController.items}"
+                                                var="at"
+                                                itemValue="#{at}"
+                                                itemLabel="#{at.name}"/>
                                         </p:selectOneMenu>
                                     </div>
                                 </div>
@@ -120,12 +123,38 @@
 
                                 <div class="row mt-1">
                                     <div class="col-2">
+                                        <h:outputLabel value="Credit Company" class="mt-2"/>
+                                    </div>
+                                    <div class="col-10">
+                                        <p:autoComplete
+                                            value="#{inwardDiscountMatrixController.creditCompany}"
+                                            forceSelection="true"
+                                            completeMethod="#{institutionController.completeCreditCompany}"
+                                            var="ins"
+                                            inputStyleClass="form-control"
+                                            class="w-100"
+                                            itemLabel="#{ins.name}"
+                                            itemValue="#{ins}"
+                                            placeholder="Leave blank to apply to all companies"
+                                            maxResults="20"
+                                            onkeydown="if (event.key === 'Enter') {
+                                                        event.preventDefault();
+                                                        return false;
+                                                    }">
+                                            <p:column headerText="Name">#{ins.name}</p:column>
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2">
                                         <h:outputLabel value="Discount %" class="mt-2"/>
                                     </div>
                                     <div class="col-4">
                                         <p:inputText
-                                            class="w-100"
+                                            class="w-100 text-end"
                                             autocomplete="off"
+                                            onfocus="this.select()"
                                             value="#{inwardDiscountMatrixController.discountPercent}"/>
                                     </div>
                                 </div>
@@ -139,6 +168,7 @@
                                 <h:outputLabel value="Discount Matrix" class="mt-2"/>
                                 <div class="d-flex" style="float: right">
                                     <p:commandButton
+                                        id="btnFill"
                                         ajax="false"
                                         icon="fa fa-fill"
                                         class="ui-button-warning"
@@ -146,6 +176,7 @@
                                         action="#{inwardDiscountMatrixController.loadPharmacy}">
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnExcel"
                                         class="ui-button-success mx-2"
                                         actionListener="#{inwardDiscountMatrixController.loadPharmacy}"
                                         ajax="false"
@@ -157,6 +188,7 @@
                                             fileName="inward_discount_matrix_pharmacy"/>
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnPrint"
                                         class="ui-button-info"
                                         ajax="false"
                                         icon="fa fa-print"
@@ -206,13 +238,22 @@
                                     <h:outputText value="#{a.paymentMethod}"/>
                                 </p:column>
 
+                                <p:column
+                                    headerText="Credit Company"
+                                    filterBy="#{empty a.creditCompany ? '' : a.creditCompany.name}"
+                                    filterMatchMode="contains">
+                                    <h:outputText value="#{empty a.creditCompany ? 'All Companies' : a.creditCompany.name}"/>
+                                </p:column>
+
                                 <p:column headerText="Discount %" style="width: 8em;">
-                                    <h:inputText
+                                    <p:inputText
                                         autocomplete="off"
+                                        class="w-100 text-end"
                                         value="#{a.discountPercent}"
+                                        onfocus="this.select()"
                                         style="width: 5em;">
                                         <f:convertNumber pattern="#,##0.00"/>
-                                    </h:inputText>
+                                    </p:inputText>
                                 </p:column>
 
                                 <p:column headerText="Action" style="width: 10em;">

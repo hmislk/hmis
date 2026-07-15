@@ -103,9 +103,18 @@
                                         sortBy="#{bb.deptId}" 
                                         filterBy="#{bb.deptId}" 
                                         filterMatchMode="contains"  >
-                                        <h:outputLabel value="#{bb.deptId}" ></h:outputLabel>
+                                        
+                                        <p:commandLink
+                                            ajax="false"
+                                            value="#{bb.deptId}"
+                                            action="inward_reprint_bill_final?faces-redirect=true" 
+                                            actionListener="#{inwardSearch.refreshFinalBillBackwordReferenceBills}">
+                                            <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
+                                            <f:setPropertyActionListener value="#{bb.patientEncounter.patient}" target="#{admissionController.patient}"/>
+                                            <f:setPropertyActionListener value="#{bb.patientEncounter}" target="#{admissionController.current}"/>
+                                        </p:commandLink>
                                     </p:column>
-
+                                    
                                     <p:column 
                                         headerText="BHT No"  
                                         sortBy="#{bb.patientEncounter.bhtNo}" 
@@ -190,18 +199,6 @@
                                         </h:outputLabel>
                                     </p:column> 
 
-                                    <p:column>
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            value="View Bill" 
-                                            action="inward_reprint_bill_final?faces-redirect=true" 
-                                            actionListener="#{inwardSearch.refreshFinalBillBackwordReferenceBills}" 
-                                            >
-                                            <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
-                                            <f:setPropertyActionListener value="#{bb.patientEncounter.patient}" target="#{admissionController.patient}"/>
-                                            <f:setPropertyActionListener value="#{bb.patientEncounter}" target="#{admissionController.current}"/>
-                                        </p:commandButton>
-                                    </p:column>
                                 </p:dataTable>
                             </div>
                         </div>

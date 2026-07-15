@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.admin.ConfigOptionInfo;
@@ -19,6 +20,7 @@ import java.util.Objects;
 import javax.persistence.TemporalType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
@@ -37,6 +39,7 @@ import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
@@ -52,6 +55,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -67,6 +72,8 @@ import org.primefaces.event.RowEditEvent;
 @SessionScoped
 public class TransferReceiveController implements Serializable {
 
+    private static final Logger LOGGER = Logger.getLogger(TransferReceiveController.class.getName());
+
     private Bill issuedBill;
     private Bill receivedBill;
     private boolean printPreview;
@@ -79,6 +86,8 @@ public class TransferReceiveController implements Serializable {
     private SessionController sessionController;
     @Inject
     private PharmacyController pharmacyController;
+    @Inject
+    private WebUserController webUserController;
     ////
     @EJB
     private BillFacade billFacade;
@@ -109,9 +118,14 @@ public class TransferReceiveController implements Serializable {
     private PageMetadataRegistry pageMetadataRegistry;
     @Inject
     private com.divudi.bean.common.SearchController searchController;
+    @Inject
+    private TransferReceiveNativeSqlController transferReceiveNativeSqlController;
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
     private BillItem selectedBillItem;
+    // Re-entrancy guard: blocks a second settle() (e.g. rapid double-click on the
+    // non-AJAX Receive button) from processing the same transfer twice.
+    private boolean settling;
 
     public static class ConfigOptionInfo {
 
@@ -140,6 +154,13 @@ public class TransferReceiveController implements Serializable {
         return "/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true";
     }
 
+    /**
+     * @deprecated The issued-list now uses the native SQL path exclusively
+     * ({@link TransferReceiveNativeSqlController#navigateToReceiveRequestNative()}).
+     * This method is retained for backward-compatibility only and will be removed
+     * once TransferReceiveController is fully retired.
+     */
+    @Deprecated
     public String navigateToRecieveRequest() {
         if (issuedBill == null) {
             JsfUtil.addErrorMessage("Nothing to received");
@@ -150,15 +171,24 @@ public class TransferReceiveController implements Serializable {
             JsfUtil.addErrorMessage("Already Received!");
             return null;
         }
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Use Save Finalize Approve Workflow for Transfer Receive", false)) {
+            transferReceiveNativeSqlController.setIssuedBillId(issuedBill.getId());
+            return transferReceiveNativeSqlController.navigateToReceiveRequestNative();
+        }
         printPreview=false;
         generateBillComponent();
         return "/pharmacy/pharmacy_transfer_receive?faces-redirect=true";
     }
 
+    /** @deprecated Use {@link TransferReceiveNativeSqlController#navigateToEditReceiveIssue()} instead. */
+    @Deprecated
     public String navigateToEditRecieveIssue() {
         return "/pharmacy/pharmacy_transfer_receive_with_approval?faces-redirect=true";
     }
 
+    /** @deprecated Use {@link TransferReceiveNativeSqlController#navigateToApproveReceiveIssue()} instead. */
+    @Deprecated
     public String navigateToAproveRecieveIssue() {
         return "/pharmacy/pharmacy_transfer_receive_approval?faces-redirect=true";
     }
@@ -266,6 +296,14 @@ public class TransferReceiveController implements Serializable {
             // Invert to turn negative values from the issued bill into positives
             newlyCreatedReceivedBillItem.invertValue();
             newlyCreatedReceivedBillItem.getPharmaceuticalBillItem().invertValue();
+
+            // The copy above inherits the ISSUE line's stock binding, which is the
+            // ISSUING department's stock row. A receive must only ever touch the
+            // porter's in-transit stock (deducted) and the receiving department's
+            // stock (added; bound after addToStock() in settle). A receive line that
+            // keeps the sender's stock reference and slips past the stock loop is
+            // recorded as received without moving any stock (#21266 phantom receives).
+            newlyCreatedReceivedBillItem.getPharmaceuticalBillItem().setStock(null);
 
             // Adjust quantity to remaining amount
             double unitsPerPack = 1.0;
@@ -441,6 +479,98 @@ public class TransferReceiveController implements Serializable {
     }
 
     public void settle() {
+        if (!isAuthorized("FINALIZE", "PharmacyReceiveFinalize")) {
+            return;
+        }
+        // Re-entrancy guard: a second near-simultaneous submit (rapid double-click
+        // on the non-AJAX Receive button) is ignored until the first completes.
+        if (settling) {
+            return;
+        }
+        settling = true;
+        try {
+            doSettle();
+        } finally {
+            settling = false;
+        }
+    }
+
+    /**
+     * Converts a bill item's user-entered receive quantity (packs) to units.
+     */
+    private double receiveQtyInUnits(BillItem i) {
+        double qtyInPacks = 0.0;
+        if (i.getBillItemFinanceDetails() != null && i.getBillItemFinanceDetails().getQuantity() != null) {
+            qtyInPacks = i.getBillItemFinanceDetails().getQuantity().doubleValue();
+        }
+        double unitsPerPack = 1.0;
+        Item item = i.getItem();
+        if (item instanceof Ampp || item instanceof Vmpp) {
+            unitsPerPack = item.getDblValue() > 0 ? item.getDblValue() : 1.0;
+        }
+        return qtyInPacks * unitsPerPack;
+    }
+
+    /**
+     * Validates that the porter (carrier) holds enough in-transit stock to cover
+     * EVERY line being received, before any data is written. Quantities are
+     * aggregated per item batch (several receive lines can draw from the same
+     * batch) and compared against the porter's live stock read fresh from the
+     * database.
+     *
+     * On a receive, stock must move porter -> receiving department. Previously,
+     * lines that could not be covered were silently skipped or zeroed mid-settle,
+     * and the skipped lines were later cascade-persisted still carrying the
+     * issuing department's stock binding with no stock movement — the #21266
+     * phantom-receive corruption. Failing the whole settle up front with explicit
+     * messages prevents both the corruption and the silent partial receive.
+     *
+     * @return true if every line is covered; false (with user-facing error
+     * messages) otherwise.
+     */
+    private boolean porterStockCoversAllLines() {
+        Staff porter = getIssuedBill() == null ? null : getIssuedBill().getToStaff();
+        if (porter == null) {
+            JsfUtil.addErrorMessage("This transfer issue has no carrying staff (porter) recorded - cannot receive. Please contact the issuing department.");
+            return false;
+        }
+        Map<Long, Double> requiredUnitsByBatch = new HashMap<>();
+        Map<Long, ItemBatch> batchById = new HashMap<>();
+        for (BillItem i : getReceivedBill().getBillItems()) {
+            double units = receiveQtyInUnits(i);
+            if (units <= 0.0) {
+                continue;
+            }
+            ItemBatch batch = i.getPharmaceuticalBillItem() == null ? null : i.getPharmaceuticalBillItem().getItemBatch();
+            if (batch == null || batch.getId() == null) {
+                JsfUtil.addErrorMessage("Item " + (i.getItem() != null ? i.getItem().getName() : "?") + " has no batch - cannot receive.");
+                return false;
+            }
+            requiredUnitsByBatch.merge(batch.getId(), units, Double::sum);
+            batchById.put(batch.getId(), batch);
+        }
+        boolean allCovered = true;
+        for (Map.Entry<Long, Double> e : requiredUnitsByBatch.entrySet()) {
+            ItemBatch batch = batchById.get(e.getKey());
+            HashMap<String, Object> params = new HashMap<>();
+            String jpql = "select s from Stock s where s.itemBatch=:bc and s.staff=:stf";
+            params.put("bc", batch);
+            params.put("stf", porter);
+            Stock porterStock = getStockFacade().findFirstByJpql(jpql, params, true);
+            double available = porterStock == null ? 0.0 : porterStock.getStock();
+            if (available + 0.0001 < e.getValue()) {
+                String itemName = (batch.getItem() != null && batch.getItem().getName() != null)
+                        ? batch.getItem().getName() : ("Batch " + batch.getId());
+                JsfUtil.addErrorMessage("Insufficient in-transit (porter) stock for " + itemName
+                        + ": receiving " + e.getValue() + " but porter holds " + available
+                        + ". Nothing was received.");
+                allCovered = false;
+            }
+        }
+        return allCovered;
+    }
+
+    private void doSettle() {
         if (getReceivedBill().getBillItems() == null || getReceivedBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
             return;
@@ -455,6 +585,12 @@ public class TransferReceiveController implements Serializable {
         // Validate that current receive quantities don't exceed remaining quantities
         if (wouldCauseOverReceiving()) {
             JsfUtil.addErrorMessage("Cannot receive - quantities exceed remaining amounts!");
+            return;
+        }
+
+        // All-or-nothing: every line must be coverable from the porter's in-transit
+        // stock BEFORE anything is written (#21266 phantom-receive guard).
+        if (!porterStockCoversAllLines()) {
             return;
         }
 
@@ -518,6 +654,13 @@ public class TransferReceiveController implements Serializable {
             }
         }
 
+        // Drop lines that were never persisted (zero quantity or failed checks)
+        // from the in-memory bill. Bill.billItems cascades ALL, so the later
+        // edit(getReceivedBill()) merges would otherwise INSERT these skipped
+        // lines - still carrying the issue line's data with no stock movement -
+        // which is exactly the #21266 phantom-receive corruption.
+        getReceivedBill().getBillItems().removeIf(bi -> bi.getId() == null);
+
         // Handle Department ID generation (independent)
         String deptId;
         if (configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy for Pharmacy Transfer Receive - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
@@ -565,8 +708,12 @@ public class TransferReceiveController implements Serializable {
 
         getIssuedBill().getForwardReferenceBills().add(getReceivedBill());
         fillData(getReceivedBill());
-        getBillFacade().edit(getIssuedBill());
+        // Persist the received bill again after fillData() recalculates its
+        // net/grand/total and BillFinanceDetails value fields. Safe here: the
+        // BillItems were already created (have IDs) in the settle() loop above,
+        // so this merge updates totals without re-inserting them.
         getBillFacade().edit(getReceivedBill());
+        getBillFacade().edit(getIssuedBill());
         
         // Check if Transfer Issue is fully received and update fullyIssued status
         if (getIssuedBill() != null && !getIssuedBill().isFullyIssued()) {
@@ -729,11 +876,15 @@ public class TransferReceiveController implements Serializable {
         // Also negate BillFinanceDetails totals to match
         inputBill.getBillFinanceDetails().setNetTotal(BigDecimal.valueOf(netTotal));
         inputBill.getBillFinanceDetails().setGrossTotal(BigDecimal.valueOf(netTotal));
-
+        inputBill.getBillFinanceDetails().setBillNetTotal(BigDecimal.ZERO);
+        inputBill.getBillFinanceDetails().setBillGrossTotal(BigDecimal.ZERO);
 
     }
 
     public void saveRequest() {
+        if (!isAuthorized("SAVE", "PharmacyReceiveSave")) {
+            return;
+        }
 
         getReceivedBill().setBillType(BillType.PharmacyTransferReceive);
         getReceivedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE_PRE);
@@ -741,6 +892,10 @@ public class TransferReceiveController implements Serializable {
         getReceivedBill().setFromStaff(getIssuedBill().getToStaff());
         getReceivedBill().setFromInstitution(getIssuedBill().getInstitution());
         getReceivedBill().setFromDepartment(getIssuedBill().getDepartment());
+        if (getIssuedBill().getDepartmentType() != null) {
+            getReceivedBill().setDepartmentType(getIssuedBill().getDepartmentType());
+        }
+        stampDepartmentTypeFromItemsIfMissing();
 
         if (getReceivedBill().getId() == null) {
             getBillFacade().create(getReceivedBill());
@@ -768,6 +923,9 @@ public class TransferReceiveController implements Serializable {
     }
 
     public void finalizeRequest() {
+        if (!isAuthorized("FINALIZE", "PharmacyReceiveFinalize")) {
+            return;
+        }
         // Check if a bill has been selected
         if (getReceivedBill() == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
@@ -785,6 +943,10 @@ public class TransferReceiveController implements Serializable {
             getReceivedBill().setFromDepartment(getIssuedBill().getDepartment());
             getReceivedBill().setToInstitution(getSessionController().getInstitution());
             getReceivedBill().setToDepartment(getSessionController().getDepartment());
+            if (getIssuedBill().getDepartmentType() != null) {
+                getReceivedBill().setDepartmentType(getIssuedBill().getDepartmentType());
+            }
+            stampDepartmentTypeFromItemsIfMissing();
 
             if (getReceivedBill().getId() == null) {
                 getBillFacade().create(getReceivedBill());
@@ -834,6 +996,9 @@ public class TransferReceiveController implements Serializable {
     }
 
     public void settleApprove() {
+        if (!isAuthorized("APPROVE", "PharmacyReceiveApprove")) {
+            return;
+        }
         if (getReceivedBill().getId() == null) {
             JsfUtil.addErrorMessage("No Bill");
             return;
@@ -851,12 +1016,22 @@ public class TransferReceiveController implements Serializable {
             return;
         }
 
+        // All-or-nothing: every line must be coverable from the porter's in-transit
+        // stock BEFORE anything is written (#21266 phantom-receive guard).
+        if (!porterStockCoversAllLines()) {
+            return;
+        }
+
         getReceivedBill().setApproveAt(new Date());
         getReceivedBill().setApproveUser(getSessionController().getLoggedUser());
 
         getReceivedBill().setBillType(BillType.PharmacyTransferReceive);
         getReceivedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE);
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
+        if (getIssuedBill().getDepartmentType() != null) {
+            getReceivedBill().setDepartmentType(getIssuedBill().getDepartmentType());
+        }
+        stampDepartmentTypeFromItemsIfMissing();
         List<BillItem> itemsToAdd = new ArrayList<>();
 
         for (BillItem i : getReceivedBill().getBillItems()) {
@@ -919,6 +1094,12 @@ public class TransferReceiveController implements Serializable {
                 Stock addedStock = getPharmacyBean().addToStock(tmpPh, Math.abs(qty), getSessionController().getDepartment());
                 tmpPh.setStock(addedStock);
             } else {
+                // No stock was moved - never leave the line bound to the stock
+                // reference inherited from the issue line (the issuing
+                // department's stock), or it records a phantom receive (#21266).
+                tmpPh.setStock(null);
+                tmpPh.setQty(0);
+                i.setQty(0.0);
                 i.setTmpQty(0);
                 getBillItemFacade().edit(i);
             }
@@ -975,12 +1156,50 @@ public class TransferReceiveController implements Serializable {
         getReceivedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE);
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
         getReceivedBill().setFromStaff(getIssuedBill().getToStaff());
+        if (getIssuedBill().getDepartmentType() != null) {
+            getReceivedBill().setDepartmentType(getIssuedBill().getDepartmentType());
+        }
+        stampDepartmentTypeFromItemsIfMissing();
         if (getReceivedBill().getId() == null) {
             getReceivedBill().setCreatedAt(new Date());
             getReceivedBill().setCreater(sessionController.getLoggedUser());
-            getBillFacade().create(getReceivedBill());
+            // Detach billItems before create() to prevent CascadeType.ALL from inserting
+            // them here — settle() creates each BillItem explicitly after stock validation.
+            List<BillItem> items = getReceivedBill().getBillItems();
+            getReceivedBill().setBillItems(new ArrayList<>());
+            try {
+                getBillFacade().create(getReceivedBill());
+            } finally {
+                // Always restore the in-memory items, even if create() throws,
+                // so the @SessionScoped bean does not lose the receive rows on retry.
+                getReceivedBill().setBillItems(items);
+            }
         } else {
             getBillFacade().edit(getReceivedBill());
+        }
+    }
+
+    // Fallback when the issued bill carries no departmentType (legacy issues):
+    // department-type-filtered reports drop bills left NULL (#22056).
+    // Stamps only when all non-null item types agree; mixed legacy data is left
+    // unset rather than misclassifying the whole bill.
+    private void stampDepartmentTypeFromItemsIfMissing() {
+        if (getReceivedBill().getDepartmentType() != null) {
+            return;
+        }
+        DepartmentType found = null;
+        for (BillItem bi : getReceivedBill().getBillItems()) {
+            if (bi.getItem() == null || bi.getItem().getDepartmentType() == null) {
+                continue;
+            }
+            if (found == null) {
+                found = bi.getItem().getDepartmentType();
+            } else if (!found.equals(bi.getItem().getDepartmentType())) {
+                return;
+            }
+        }
+        if (found != null) {
+            getReceivedBill().setDepartmentType(found);
         }
     }
 
@@ -1483,6 +1702,10 @@ public class TransferReceiveController implements Serializable {
         this.selectedBillItem = selectedBillItem;
     }
 
+    public boolean isSettling() {
+        return settling;
+    }
+
     @Deprecated
     public boolean isShowAllBillFormats() {
         return showAllBillFormats;
@@ -1589,6 +1812,36 @@ public class TransferReceiveController implements Serializable {
         ));
 
         pageMetadataRegistry.registerPage(receiveMetadata);
+    }
+
+    /**
+     * Authorization helper method to check Transfer Receive privileges and
+     * audit denied access.
+     *
+     * @param action The action being attempted (SAVE, FINALIZE, APPROVE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, receivedBill != null ? receivedBill.getId() : "null"});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = receivedBill != null ? receivedBill.getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Transfer Receive access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " transfer receive requests.");
+            return false;
+        }
+
+        return true;
     }
 
 }

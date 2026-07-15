@@ -40,6 +40,8 @@ public class AppEmail implements Serializable {
     private Bill bill;
     @ManyToOne
     private EncounterCreditCompany encounterCreditCompany;
+    @ManyToOne
+    private PatientEncounter patientEncounter;
     
     @Enumerated(EnumType.STRING)
     private MessageType messageType;
@@ -341,6 +343,14 @@ public class AppEmail implements Serializable {
 
     public void setEncounterCreditCompany(EncounterCreditCompany encounterCreditCompany) {
         this.encounterCreditCompany = encounterCreditCompany;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
     }
     
     

@@ -31,6 +31,10 @@ public class InstitutionUpdateRequestDTO implements Serializable {
     private String ownerName; // Optional - update if provided
     private String ownerEmail; // Optional - update if provided
     private Boolean active; // Optional - update if provided
+    // Bed-board SVG fields (issue #21592). Optional; additive only — not part of
+    // any existing constructor signature.
+    private String svgParentView; // Optional - update if provided
+    private String svgChildView; // Optional - update if provided
 
     public InstitutionUpdateRequestDTO() {
     }
@@ -174,6 +178,22 @@ public class InstitutionUpdateRequestDTO implements Serializable {
 
     public void setActive(Boolean active) {
         this.active = active;
+    }
+
+    public String getSvgParentView() {
+        return svgParentView;
+    }
+
+    public void setSvgParentView(String svgParentView) {
+        this.svgParentView = svgParentView;
+    }
+
+    public String getSvgChildView() {
+        return svgChildView;
+    }
+
+    public void setSvgChildView(String svgChildView) {
+        this.svgChildView = svgChildView;
     }
 
     @Override

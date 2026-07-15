@@ -45,6 +45,7 @@ import com.itextpdf.text.BaseColor;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.dto.ExpiryItemListDto;
 import com.divudi.core.data.dto.DurationServiceReportDTO;
+import com.divudi.core.data.dto.PatientJourneyRow;
 import com.divudi.core.data.dto.PatientEncounterDto;
 import com.divudi.core.data.dto.PharmacySaleBhtBillDTO;
 import com.divudi.core.data.dto.PharmacySaleDepartmentDTO;
@@ -241,6 +242,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private List<Institution> collectionCenters;
     private List<AgentHistory> agentHistories;
     private List<BillTypeAtomic> billTypeAtomics;
+    private List<PatientJourneyRow> patientJourneyRows;
 
     private BillTypeAtomic billTypeAtomic;
 
@@ -2524,6 +2526,131 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
 
     public ReportController() {
+    }
+
+    public void processPatientJourney() {
+        patientJourneyRows = new ArrayList<>();
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select From Date and To Date.");
+            return;
+        }
+        if (patient == null) {
+            JsfUtil.addErrorMessage("Please select a patient.");
+            return;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "select new com.divudi.core.data.dto.PatientJourneyRow("
+            + " b.createdAt,"
+                + " b.deptId,"
+                + " b.billTypeAtomic,"
+                + " b.billType,"
+                + " b.deptId,"
+                + " b.comments,"
+                + " b.paymentMemo,"
+                + " cr.name)"
+                + " from Bill b"
+                + " left join b.creater cr"
+            + " where b.retired=false"
+            + " and coalesce(b.createdAt, b.billDate) between :fd and :td"
+                + " and b.patient=:pt";
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("pt", patient);
+
+        List<PatientJourneyRow> billRows
+                = (List<PatientJourneyRow>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (billRows != null) {
+            patientJourneyRows.addAll(billRows);
+        }
+
+        String peJpql = "select pe.dateOfAdmission, pe.timeOfAdmission, pe.fromTime, "
+            + " pe.dateOfDischarge, pe.timeOfDischarge, pe.toTime, "
+            + " pe.bhtNo, pe.encounterId, at.name, cr.name "
+            + " from PatientEncounter pe"
+            + " left join pe.admissionType at"
+            + " left join pe.creater cr"
+            + " where pe.retired=false"
+            + " and pe.patient=:pt"
+            + " and (coalesce(pe.dateOfAdmission, pe.timeOfAdmission, pe.fromTime) between :fd and :td"
+            + " or coalesce(pe.dateOfDischarge, pe.timeOfDischarge, pe.toTime) between :fd and :td)";
+
+        List<Object[]> encounters = peFacade.findObjectArrayByJpql(peJpql, params, TemporalType.TIMESTAMP);
+        if (encounters != null) {
+            for (Object[] row : encounters) {
+                addEncounterRows(row);
+            }
+        }
+
+        patientJourneyRows.sort(Comparator.comparing(
+                PatientJourneyRow::getTransactionDate,
+                Comparator.nullsLast(Date::compareTo)));
+    }
+
+    private void addEncounterRows(Object[] row) {
+        if (row == null || row.length < 10) {
+            return;
+        }
+        Date dateOfAdmission = (Date) row[0];
+        Date timeOfAdmission = (Date) row[1];
+        Date fromTime = (Date) row[2];
+        Date dateOfDischarge = (Date) row[3];
+        Date timeOfDischarge = (Date) row[4];
+        Date toTime = (Date) row[5];
+        String bhtNo = (String) row[6];
+        Long encounterId = (Long) row[7];
+        String admissionTypeName = (String) row[8];
+        String userName = (String) row[9];
+
+        String visitNo = firstNonEmpty(bhtNo, encounterId != null ? encounterId.toString() : null);
+
+        Date admissionDate = firstNonNullDate(dateOfAdmission, timeOfAdmission, fromTime);
+        if (admissionDate != null) {
+            String description = admissionTypeName != null ? admissionTypeName : "";
+            patientJourneyRows.add(new PatientJourneyRow(
+                    admissionDate,
+                    visitNo,
+                    "Admission",
+                    visitNo,
+                    description,
+                    userName != null ? userName : ""));
+        }
+
+        Date dischargeDate = firstNonNullDate(dateOfDischarge, timeOfDischarge, toTime);
+        if (dischargeDate != null) {
+            patientJourneyRows.add(new PatientJourneyRow(
+                    dischargeDate,
+                    visitNo,
+                    "Discharge",
+                    visitNo,
+                    "Discharged",
+                    userName != null ? userName : ""));
+        }
+    }
+
+
+    private String firstNonEmpty(String... values) {
+        if (values == null) {
+            return "";
+        }
+        for (String value : values) {
+            if (value != null && !value.trim().isEmpty()) {
+                return value.trim();
+            }
+        }
+        return "";
+    }
+
+    private Date firstNonNullDate(Date... values) {
+        if (values == null) {
+            return null;
+        }
+        for (Date value : values) {
+            if (value != null) {
+                return value;
+            }
+        }
+        return null;
     }
 
     // Modified by Dr M H B Ariyaratne with assistance from ChatGPT from OpenAI.
@@ -4846,6 +4973,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
@@ -4859,6 +4989,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
             billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+            billtypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
             billtypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
@@ -4936,6 +5069,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
     private static final Set<BillTypeAtomic> RETURN_BILL_TYPES = new HashSet<>(Arrays.asList(
             BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
             BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
     ));
 
@@ -6362,13 +6496,22 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/inpatientReports/room_change?faces-redirect=true";
     }
 
+    @Deprecated
     public String navigateToconsumption() {
         return "/reports/inventoryReports/consumption?faces-redirect=true";
+    }
+
+    public String navigateToConsumptionDto() {
+        return "/reports/inventoryReports/consumption_dto?faces-redirect=true";
     }
 
     public String navigateToCostOfGoodSoldReports() {
         pharmacyReportController.setBillItems(new ArrayList<>());
         pharmacyReportController.setNetTotal(0.0);
+        pharmacyReportController.setStockConsumptionItemDtos(new ArrayList<>());
+        pharmacyReportController.setDtoStockConsumptionPurchaseTotal(0.0);
+        pharmacyReportController.setDtoStockConsumptionCostTotal(0.0);
+        pharmacyReportController.setDtoStockConsumptionRetailTotal(0.0);
 
         if (reportTemplateFileIndexName == null) {
             return "";
@@ -6386,7 +6529,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             case "Drug Return Op":
                 return "/reports/inventoryReports/op_drug_return?faces-redirect=true";
             case "Stock Consumption":
-                return "/reports/inventoryReports/stock_consumption?faces-redirect=true";
+                return "/reports/inventoryReports/stock_consumption_dto?faces-redirect=true";
             case "Purchase Return":
                 return "/reports/inventoryReports/purchase_return?faces-redirect=true";
             case "Stock Adjustment Receive":
@@ -6639,6 +6782,14 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
     public void setReportList(List<CategoryCount> reportList) {
         this.reportList = reportList;
+    }
+
+    public List<PatientJourneyRow> getPatientJourneyRows() {
+        return patientJourneyRows;
+    }
+
+    public void setPatientJourneyRows(List<PatientJourneyRow> patientJourneyRows) {
+        this.patientJourneyRows = patientJourneyRows;
     }
 
     public String getProcessBy() {

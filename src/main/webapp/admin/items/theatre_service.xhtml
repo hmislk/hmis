@@ -12,7 +12,7 @@
 
         <h:panelGroup >
             <h:form id="form"  >
-                <p:growl/>
+                <p:growl id="msg"  showDetail="true"/>
 
                 <p:panel header="Manage Service" >
                     <div class="row">
@@ -21,7 +21,7 @@
                                 id="btnAdd"
                                 value="Add" 
                                 process="btnAdd"
-                                update="gpDetail"
+                                update="gpDetail msg"
                                 class="w-25 ui-button-success"
                                 action="#{theatreServiceController.prepareAdd()}" >
 
@@ -78,9 +78,9 @@
                                         id="btnSave"
                                         value="Save" 
                                         process="btnSave gpDetail"
-                                        update="lstSelect "
+                                        update="msg lstSelect"
                                         class="w-25 ui-button-warning"
-                                        action="#{theatreServiceController.saveSelected()}" 
+                                        action="#{theatreServiceController.saveSelected()}"
                                         >
                                     </p:commandButton>
                                     <p:defaultCommand target="btnSave"/>
@@ -88,8 +88,7 @@
                                 </f:facet>
 
                                 <h:panelGrid id="gpDetail" columns="2">
-                                    <h:outputLabel value="Created At" />
-                                    <p:calendar   value="#{theatreServiceController.current.createdAt}" pattern="#{sessionController.applicationPreference.longTimeFormat}" />
+                                    
                                     <h:outputText id="lblName" value="Name" ></h:outputText>
                                     <p:inputText autocomplete="off" id="txtName" value="#{theatreServiceController.current.name}" required="true" style="width: 400px;"></p:inputText>
                                     <h:outputText id="lblAddress" value="Printing Name" ></h:outputText>
@@ -97,7 +96,19 @@
                                     <h:outputText id="lblFullName" value="Full Name" ></h:outputText>
                                     <p:inputText autocomplete="off" id="txtFullName"   value="#{theatreServiceController.current.fullName}" style="width: 400px;" ></p:inputText>
                                     <p:outputLabel value="Item Code"/>
-                                    <p:inputText autocomplete="off" value="#{theatreServiceController.current.code}" style="width: 400px;"/>
+                                    <h:panelGroup class="d-flex gap-2">
+                                        <p:inputText id="ServiceCode" autocomplete="off" value="#{theatreServiceController.current.code}" style="width: 400px;"/>
+                                        <p:commandButton
+                                            class="ui-button-warning"
+                                            update="ServiceCode"
+                                            process="@this btnGenCode cmbIns cmbDep"
+                                            icon="fa fa-cog"
+                                            title="Auto Generate Code"
+                                            disabled="#{theatreServiceController.current.id ne null}"
+                                            id="btnGenCode"
+                                            action="#{theatreServiceController.generateCode()}">
+                                        </p:commandButton>
+                                    </h:panelGroup>
 
                                     <h:outputText value="Service Category/Sub Category" ></h:outputText>
                                     <p:autoComplete

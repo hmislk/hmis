@@ -9,7 +9,9 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ItemApplicationController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
@@ -111,6 +113,10 @@ public class InvestigationController implements Serializable {
     ItemForItemController itemForItemController;
     @Inject
     ItemApplicationController itemApplicationController;
+    @Inject
+    private ItemController itemController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
     /**
      * EJBs
      */
@@ -1524,6 +1530,11 @@ public class InvestigationController implements Serializable {
         getItems();
     }
 
+    public void generateCode() {
+        String code = itemController.generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
+        getCurrent().setCode(code);
+    }
+
     public void saveSelected() {
         if (getCurrent() == null){
             JsfUtil.addErrorMessage("Please add investigation");
@@ -1533,8 +1544,20 @@ public class InvestigationController implements Serializable {
             JsfUtil.addErrorMessage("Please enter a Investigation Name before saving");
             return;
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Item Codes Generate - Automatically create Item Codes by Department.", false)) {
+            if (getCurrent().getId() == null) {
+                if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()) {
+                    String code = itemController.generateNextItemCode(getCurrent().getInstitution(), getCurrent().getDepartment());
+                    getCurrent().setCode(code);
+                }
+            }
+        }
         if (getCurrent().getCode() == null || getCurrent().getCode().trim().isEmpty()){
             JsfUtil.addErrorMessage("Please enter a Investigation Code before saving");
+            return;
+        }
+        if (itemController.isItemCodeDuplicate(getCurrent().getCode(), getCurrent().getId())) {
+            JsfUtil.addErrorMessage("Item code is already used");
             return;
         }
         getCurrent().setSymanticType(SymanticType.Laboratory_Procedure);

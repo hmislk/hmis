@@ -32,6 +32,9 @@ public class DepartmentCreateRequestDTO implements Serializable {
     private Long superDepartmentId; // Optional - parent department
     private Double margin; // Optional - department margin
     private Double pharmacyMarginFromPurchaseRate; // Optional
+    // Bed-board SVG fields (issue #21592). Optional; additive only.
+    private String svgParentView; // Optional - bed-board floor-plan canvas
+    private String svgChildView; // Optional - bed-board child tile shape
 
     public DepartmentCreateRequestDTO() {
     }
@@ -188,6 +191,22 @@ public class DepartmentCreateRequestDTO implements Serializable {
 
     public void setPharmacyMarginFromPurchaseRate(Double pharmacyMarginFromPurchaseRate) {
         this.pharmacyMarginFromPurchaseRate = pharmacyMarginFromPurchaseRate;
+    }
+
+    public String getSvgParentView() {
+        return svgParentView;
+    }
+
+    public void setSvgParentView(String svgParentView) {
+        this.svgParentView = svgParentView;
+    }
+
+    public String getSvgChildView() {
+        return svgChildView;
+    }
+
+    public void setSvgChildView(String svgChildView) {
+        this.svgChildView = svgChildView;
     }
 
     @Override

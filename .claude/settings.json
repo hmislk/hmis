@@ -4,7 +4,19 @@
       "C:\\Development\\hmis.wiki"
     ],
     "allow": [
-      "Bash(mysql *)"
+      "Bash(git stash*)",
+      "Bash(git fetch *)",
+      "Bash(git checkout development*)",
+      "Bash(git branch *)",
+      "Bash(git reset --hard origin/development*)",
+      "Bash(gh pr list *)",
+      "Bash(mysql *)",
+      "Bash(curl -s *)",
+      "Bash(curl -sS *)",
+      "Bash(ping -c *)",
+      "Bash(ss -tnlp*)",
+      "Bash(/home/buddhika/payara/bin/asadmin list*)",
+      "Bash(/home/buddhika/payara/bin/asadmin ping-connection-pool*)"
     ]
   }
 }

@@ -94,6 +94,22 @@ public class EnumController implements Serializable {
         return pettyCashBillTypes;
     }
 
+    List<InwardChargeType> roomChargeType;
+
+    public List<InwardChargeType> getRoomChargeType() {
+        if (roomChargeType == null) {
+            roomChargeType = new ArrayList<>();
+            roomChargeType.add(InwardChargeType.AdministrationCharge);
+            roomChargeType.add(InwardChargeType.LinenCharges);
+            roomChargeType.add(InwardChargeType.MaintainCharges);
+            roomChargeType.add(InwardChargeType.MedicalCareICU);
+            roomChargeType.add(InwardChargeType.MOCharges);
+            roomChargeType.add(InwardChargeType.NursingCharges);
+            roomChargeType.add(InwardChargeType.RoomCharges);
+        }
+        return roomChargeType;
+    }
+
     public Sex[] getSex() {
         return Sex.values();
     }
@@ -626,6 +642,7 @@ public class EnumController implements Serializable {
         rt.add(RequestType.DRAWER_ADJUSTMENT);
         rt.add(RequestType.PETTYCASH_APROVEL);
         rt.add(RequestType.PETTYCASH_CANCELLATION);
+        rt.add(RequestType.PHARMACY_RETAIL_SALE_RETURN_APPROVAL);
         //rt.add(RequestType.EDIT_REQUEST);
         //rt.add(RequestType.INFORMATION_UPDATE);
         //rt.add(RequestType.QUANTITY_CHANGE);
@@ -868,8 +885,11 @@ public class EnumController implements Serializable {
     public BillType[] getPharmacyBillTypesForMovementReports() {
         BillType[] b = {
             BillType.PharmacySale,
-            BillType.PharmacyDisposalIssue,
-            BillType.PharmacyBhtPre};
+            BillType.PharmacyWholeSale,
+            BillType.PharmacyBhtPre,
+            BillType.PharmacyIssue,
+            BillType.PharmacyTransferIssue,
+            BillType.PharmacyDisposalIssue};
         return b;
     }
 

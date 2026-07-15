@@ -16,13 +16,15 @@ Use the following pairings for command buttons across reporting and transactiona
 | Process / Generate Report | `pi pi-play` | `ui-button-warning` | `Process` | `Generate report with current filters` |
 | Export to Excel | `pi pi-file-excel` | `ui-button-success` | `Export to Excel` | `Download results as Excel` |
 | Print | `pi pi-print` | `ui-button-info` | `Print Report` | `Print the current report` |
-| Approve / Complete | `pi pi-check` | `ui-button-success` | `Approve` | `Approve the selected record` |
+| Approve / Complete (standalone action, not part of a Save→Finalize→Approve workflow) | `pi pi-check` | `ui-button-success` | `Approve` | `Approve the selected record` |
 | Revert / Reset | `pi pi-undo` | `ui-button-secondary` | `Reset` | `Reset filters to defaults` |
 
 **Implementation tips**
 - Always include a `title` attribute for accessibility.
 - Group related buttons with flex utilities, e.g. `class="d-flex flex-wrap gap-2 my-3"`.
 - Prefer non-AJAX submissions (`ajax="false"`) for heavy report generation that triggers downloads.
+
+**🚨 Exception — Three-Stage Transaction Workflows**: Save/Finalize/Approve buttons on transaction workflows (pharmacy transfer/issue/receive, disposals, GRN returns, purchase orders, etc.) do **not** use the table above. They follow a dedicated standard with fixed `ui-button-stage-*` classes and `fas fa-check-double` for Approve — never `pi pi-check` in that context. See [UI Development Handbook § Three-Stage Transaction Workflow](comprehensive-ui-guidelines.md#-three-stage-transaction-workflow-save--finalize--approve--mandatory-standard) for the full rule.
 
 ## Terminology Alignment
 - Use **“Process”** for generating reports instead of “Refresh” or “Fill”.

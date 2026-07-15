@@ -10,6 +10,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -46,6 +47,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import com.divudi.bean.common.ConfigOptionController;
 import javax.ejb.EJB;
 import com.divudi.bean.inward.SurgeryBillController;
@@ -66,6 +68,8 @@ public class InwardProfessionalBillController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     AdmissionController admissionController;
     @Inject
@@ -112,6 +116,7 @@ public class InwardProfessionalBillController implements Serializable {
     private String ageText;
     private Speciality speciality;
     private Staff staff;
+    private Map<Long, Staff> pendingPackageStaffByFeeId = new HashMap<>();
     private Bill current;
     private Institution institution;
     BillEntry removeBillEntry;
@@ -203,6 +208,12 @@ public class InwardProfessionalBillController implements Serializable {
             return true;
         }
 
+        if (getBatchBill().getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
+            return true;
+        }
+
         return false;
 
     }
@@ -245,6 +256,11 @@ public class InwardProfessionalBillController implements Serializable {
 
         if (encounterComponent.getBillFee().getPaidValue() != 0) {
             JsfUtil.addErrorMessage("Staff Payment Already Paid U cant Remove");
+            return;
+        }
+
+        if (encounterComponent.getBillFee().isFromPackage()) {
+            JsfUtil.addErrorMessage("This fee is included in the admission's package and cannot be removed.");
             return;
         }
 
@@ -729,6 +745,29 @@ public class InwardProfessionalBillController implements Serializable {
         //   JsfUtil.addSuccessMessage("Fee Added");
     }
 
+    public void assignStaffToPackageFee(BillFee billFee, Staff staff) {
+        if (billFee == null || !billFee.isFromPackage()) {
+            JsfUtil.addErrorMessage("This action is only for package-included professional fee roles.");
+            return;
+        }
+        if (staff == null) {
+            JsfUtil.addErrorMessage("Please select a Staff");
+            return;
+        }
+        if (billFee.getSpeciality() != null
+                && (staff.getSpeciality() == null || !staff.getSpeciality().equals(billFee.getSpeciality()))) {
+            JsfUtil.addErrorMessage("Selected staff's speciality does not match this fee role's required speciality ("
+                    + billFee.getSpeciality().getName() + ").");
+            return;
+        }
+        double lockedFee = billFee.getOverriddenRate() != null ? billFee.getOverriddenRate() : billFee.getFeeValue();
+        billFee.setStaff(staff);
+        billFee.setFeeValue(lockedFee);
+        billFee.setFeeGrossValue(lockedFee);
+        getBillFeeFacade().edit(billFee);
+        JsfUtil.addSuccessMessage("Staff assigned. Fee amount unchanged.");
+    }
+
     public void feeChanged(BillFee bf) {
         lstBillItems = null;
         getLstBillItems();
@@ -793,6 +832,12 @@ public class InwardProfessionalBillController implements Serializable {
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("Selct Patient Encounter");
+            return true;
+        }
+
+        if (getCurrent().getPatientEncounter().isNursingDischarged()
+                && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
             return true;
         }
 
@@ -992,6 +1037,7 @@ public class InwardProfessionalBillController implements Serializable {
         totalProfessionalFeesForEncounter = 0.0;
         savedEstimatedProfessionalFees = null;
         totalSavedEstimatedProfessionalFeesForEncounter = 0.0;
+        pendingPackageStaffByFeeId.clear();
     }
 
     private void fetchEncounterProfessionalFees() {
@@ -1229,6 +1275,10 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public void remove(BillFee bf) {
+        if (bf.isFromPackage()) {
+            JsfUtil.addErrorMessage("This fee is included in the admission's package and cannot be removed.");
+            return;
+        }
         bf.setRetiredAt(new Date());
         bf.setRetired(true);
         bf.setRetirer(getSessionController().getLoggedUser());
@@ -1323,6 +1373,13 @@ public class InwardProfessionalBillController implements Serializable {
 
     public void setStaff(Staff staff) {
         this.staff = staff;
+    }
+
+    public Map<Long, Staff> getPendingPackageStaffByFeeId() {
+        if (pendingPackageStaffByFeeId == null) {
+            pendingPackageStaffByFeeId = new HashMap<>();
+        }
+        return pendingPackageStaffByFeeId;
     }
 
     public BillFee getCurrentBillFee() {

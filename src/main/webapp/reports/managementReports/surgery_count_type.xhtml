@@ -17,15 +17,12 @@
                                 <p:outputLabel value="From Date" for="fromDate" styleClass="m-3"/>
                             </h:panelGroup>
 
-                            <p:datePicker
-                                id="fromDate"
+                            <p:calendar
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy HH:mm:ss"   
-                                showTime="true"                                                           
-                                monthNavigator="true"           
-                                yearNavigator="true"                              
-                                timeInput="true"                
+                                id="fromDate"
+                                value="#{inwardReportController.fromYearStartDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 />
 
                             <p:spacer width="40"/>
@@ -36,22 +33,19 @@
                                 <p:outputLabel value="To Date" for="toDate" styleClass="m-3"/>
                             </h:panelGroup>
 
-                            <p:datePicker
-                                id="toDate"
+                            <p:calendar
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
-                                pattern="dd/MM/yyyy HH:mm:ss"   
-                                showTime="true"                                                         
-                                monthNavigator="true"           
-                                yearNavigator="true"                              
-                                timeInput="true"                
+                                id="toDate"
+                                value="#{inwardReportController.toYearEndDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 />
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf080;" styleClass="fa mr-2"/> 
                                 <p:outputLabel value="Chart Type" for="chartType" styleClass="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="chartType" styleClass="w-100">
+                            <p:selectOneMenu id="chartType" value="#{inwardReportController.surgeryCountChartType}" styleClass="w-100">
                                 <f:selectItem itemLabel="Select Chart Type" itemValue="" noSelectionOption="true"/>
                                 <f:selectItem itemLabel="Bar Chart" itemValue="bar"/>
                                 <f:selectItem itemLabel="Line Chart" itemValue="line"/>
@@ -65,111 +59,120 @@
                                 class="ui-button-warning mx-1"
                                 icon="fas fa-cogs"
                                 ajax="false"
+                                action="#{inwardReportController.processSurgeryCountTypeReport()}"
                                 value="Process" />
 
-                            <p:commandButton 
+                            <p:commandButton
+                                id="btnPrintAll"
                                 class="ui-button-primary mx-1"
                                 icon="fas fa-print"
                                 ajax="false"
-                                value="Print All" />
+                                value="Print All" >
+                                <p:printer target="tb" />
+                            </p:commandButton>
 
-                            <p:commandButton 
+                            <p:commandButton
+                                id="btnDownloadExcel"
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
-                                value="Download" />
+                                value="Download">
+                                <p:dataExporter type="xlsx" target="tb" fileName="Surgery_Count_Surgery_Type_Wise"/>
+                            </p:commandButton>
 
-                            <p:commandButton 
+                            <p:commandButton
+                                id="btnDownloadPdf"
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
-                                value="PDF" />
+                                value="PDF">
+                                <p:dataExporter type="pdf" target="tb" fileName="Surgery_Count_Surgery_Type_Wise"/>
+                            </p:commandButton>
 
                         </div>
 
 
                         <p:dataTable id="tb"
-                                     value="#"
+                                     value="#{inwardReportController.surgeryCountTypeList}"
                                      var="var"
                                      rowIndexVar="n"
                                      paginator="true"
                                      paginatorPosition="bottom"
-                                     rows="10"
+                                     rows="12"
                                      rendered="true"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
-                                     rowsPerPageTemplate="5,10,15,25,50,100,500,1000"
+                                     rowsPerPageTemplate="12,24,36"
                                      styleClass="table-sm">
-                            <p:columnGroup  type="header">
-                                <p:row>
-                                    <p:column rowspan="2">
-                                        <f:facet name="header">
-                                            <h:outputText value="Month"/>
-                                        </f:facet>
-                                    </p:column>
 
-                                    <p:column colspan="5" style="text-align:center;" >
-                                        <f:facet name="header">
-                                            <h:outputText value="2025" />
-                                        </f:facet>
-                                    </p:column>
-                                </p:row>
+                            <p:column headerText="Month">
+                                <h:outputText value="#{var.monthString}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="Total:" style="float: right;" />
+                                </f:facet>
+                            </p:column>
 
-                                <p:row>
-                                    <p:column><f:facet name="header"><h:outputText value="MAJOR"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="INTERMEDIATE"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="MINOR"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="CATH LAB"/></f:facet></p:column>
-                                    <p:column><f:facet name="header"><h:outputText value="TOTAL"/></f:facet></p:column>
-                                </p:row>
-                            </p:columnGroup>
+                            <p:columns value="#{inwardReportController.surgeryCategoryNames}" var="cat" headerText="#{cat}" style="text-align: right;">
+                                <h:outputText value="#{var.getCount(cat)}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="#{inwardReportController.totalCategoryCounts[cat]}" />
+                                </f:facet>
+                            </p:columns>
 
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-                            <p:column><h:outputText value="" /></p:column>
-
-
-                            <p:columnGroup type="footer">
-                                <p:row>
-                                    <p:column colspan="1" >
-                                        <f:facet name="footer">
-                                            <h:outputText value="Total:" />
-                                        </f:facet> 
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-                                    <p:column>
-                                        <f:facet name="footer">
-                                            <h:outputText value="0" />
-                                        </f:facet>
-                                    </p:column>
-
-                                </p:row>
-                            </p:columnGroup>
+                            <p:column headerText="TOTAL" style="text-align: right; font-weight: bold;">
+                                <h:outputText value="#{var.totalCount}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="#{inwardReportController.totalAllSurgeryCount}" />
+                                </f:facet>
+                            </p:column>
 
                         </p:dataTable>
+                        
+                        <!-- Charts Section -->
+                        <h:panelGroup id="chartPanel" layout="block">
+                            <h:panelGroup layout="block" 
+                                          rendered="#{not empty inwardReportController.surgeryCountTypeList 
+                                                      and not empty inwardReportController.surgeryCountChartType}">
 
+                                <!-- Bar Chart -->
+                                <h:panelGroup layout="block" 
+                                              rendered="#{inwardReportController.surgeryCountChartType eq 'bar' 
+                                                          and inwardReportController.surgeryCountBarChartModel ne null}"
+                                              styleClass="my-3">
+                                    <p:panel header="Surgery Count - Bar Chart (#{inwardReportController.selectedYear})">
+                                        <h:panelGroup layout="block" style="width:100%; height:500px;">
+                                            <p:chart value="#{inwardReportController.surgeryCountBarChartModel}" 
+                                                     widgetVar="surgeryCountBarWV"
+                                                     style="width:100%; height:100%;" />
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </h:panelGroup>
+
+                                <!-- Line Chart -->
+                                <h:panelGroup layout="block" 
+                                              rendered="#{inwardReportController.surgeryCountChartType eq 'line' 
+                                                          and inwardReportController.surgeryCountLineChartModel ne null}"
+                                              styleClass="my-3">
+                                    <p:panel header="Surgery Count - Line Chart (#{inwardReportController.selectedYear})">
+                                        <h:panelGroup layout="block" style="width:100%; height:500px;">
+                                            <p:chart value="#{inwardReportController.surgeryCountLineChartModel}" 
+                                                     widgetVar="surgeryCountLineWV"
+                                                     style="width:100%; height:100%;" />
+                                        </h:panelGroup>
+                                    </p:panel>
+                                </h:panelGroup>
+
+                            </h:panelGroup>
+
+                            <!-- Message when no chart type selected but data exists -->
+                            <h:panelGroup layout="block" 
+                                          rendered="#{not empty inwardReportController.surgeryCountTypeList 
+                                                      and empty inwardReportController.surgeryCountChartType}"
+                                          styleClass="my-3 text-center">
+                                <h:outputText value="Please select a Chart Type above to view the chart." 
+                                              styleClass="text-muted"/>
+                            </h:panelGroup>
+                        </h:panelGroup>
 
                     </p:panel>
 

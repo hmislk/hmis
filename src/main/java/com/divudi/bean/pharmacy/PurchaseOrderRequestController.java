@@ -11,6 +11,7 @@ import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.DepartmentType;
@@ -94,6 +95,8 @@ public class PurchaseOrderRequestController implements Serializable {
     @Inject
     private SessionController sessionController;
     @Inject
+    private WebUserController webUserController;
+    @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     EnumController enumController;
@@ -124,6 +127,9 @@ public class PurchaseOrderRequestController implements Serializable {
     private String emailRecipient;
 
     public void removeSelected() {
+        if (!isAuthorized("SAVE", "PurchaseOrderSave")) {
+            return;
+        }
         if (selectedBillItems == null) {
             return;
         }
@@ -270,6 +276,9 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void removeItem(BillItem bi) {
+        if (!isAuthorized("SAVE", "PurchaseOrderSave")) {
+            return;
+        }
         if (currentBill == null || bi == null) {
             return;
         }
@@ -950,6 +959,7 @@ public class PurchaseOrderRequestController implements Serializable {
     public void saveBillComponent() {
         for (BillItem b : getBillItems()) {
             b.setBill(getCurrentBill());
+            resyncPharmaceuticalBillItemIfEmpty(b);
             if (b.getId() == null) {
                 getBillItemFacade().create(b);
             } else {
@@ -958,10 +968,32 @@ public class PurchaseOrderRequestController implements Serializable {
         }
     }
 
+    // A duplicate-line removal can leave the surviving BillItem with a lazily
+    // created all-zero PharmaceuticalBillItem while its BillItemFinanceDetails
+    // still holds the real quantities; downstream approval/GRN reads the PBI,
+    // so rebuild it from the finance details before persisting (issue #21417)
+    private void resyncPharmaceuticalBillItemIfEmpty(BillItem b) {
+        if (b == null || b.isRetired() || b.getBillItemFinanceDetails() == null) {
+            return;
+        }
+        PharmaceuticalBillItem pbi = b.getPharmaceuticalBillItem();
+        if (pbi.getQty() != 0 || pbi.getFreeQty() != 0) {
+            return;
+        }
+        BigDecimal qtyByUnits = b.getBillItemFinanceDetails().getQuantityByUnits();
+        BigDecimal freeQtyByUnits = b.getBillItemFinanceDetails().getFreeQuantityByUnits();
+        boolean financeDetailsHaveQty = (qtyByUnits != null && qtyByUnits.compareTo(BigDecimal.ZERO) > 0)
+                || (freeQtyByUnits != null && freeQtyByUnits.compareTo(BigDecimal.ZERO) > 0);
+        if (financeDetailsHaveQty) {
+            calculateLineValues(b);
+        }
+    }
+
     public void finalizeBillComponent() {
         getBillItems().removeIf(BillItem::isRetired);
         for (BillItem b : getBillItems()) {
             b.setBill(getCurrentBill());
+            resyncPharmaceuticalBillItemIfEmpty(b);
             BigDecimal qUnits = (b.getBillItemFinanceDetails() != null && b.getBillItemFinanceDetails().getQuantityByUnits() != null)
                     ? b.getBillItemFinanceDetails().getQuantityByUnits() : BigDecimal.ZERO;
             BigDecimal fqUnits = (b.getBillItemFinanceDetails() != null && b.getBillItemFinanceDetails().getFreeQuantityByUnits() != null)
@@ -1018,14 +1050,50 @@ public class PurchaseOrderRequestController implements Serializable {
         }
     }
 
+    /**
+     * Authorization helper method to check Purchase Order privileges and
+     * audit denied access
+     *
+     * @param action The action being attempted (SAVE, FINALIZE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, currentBill != null ? currentBill.getId() : "null"});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = currentBill != null ? currentBill.getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Purchase Order access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " purchase order requests.");
+            return false;
+        }
+
+        return true;
+    }
+
     public void saveRequest() {
+        if (!isAuthorized("SAVE", "PurchaseOrderSave")) {
+            return;
+        }
         boolean saved = saveRequestWithoutMessage();
         if (saved) {
             JsfUtil.addSuccessMessage("Request Saved");
         }
     }
 
-    private boolean saveRequestWithoutMessage() {
+    // synchronized: concurrent saves from the same session (Enter-key defaultCommand
+    // racing a button click) both saw billItem.id == null and persisted the same
+    // in-memory BillItem twice, creating duplicate rows sharing one
+    // BillItemFinanceDetails (issue #21417)
+    private synchronized boolean saveRequestWithoutMessage() {
         if (getCurrentBill().isChecked()) {
             JsfUtil.addErrorMessage("Cannot save a finalized bill");
             return false;
@@ -1094,7 +1162,10 @@ public class PurchaseOrderRequestController implements Serializable {
         return allItems;
     }
 
-    public void finalizeRequest() {
+    public synchronized void finalizeRequest() {
+        if (!isAuthorized("FINALIZE", "PurchaseOrderFinalize")) {
+            return;
+        }
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No Bill");
             return;

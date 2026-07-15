@@ -2391,7 +2391,14 @@ public class DataAdministrationController implements Serializable {
     }
 
     public String getStoredDdlVersion() {
-        return configOptionApplicationController.getShortTextValueByKey(CONFIG_KEY_DDL_VERSION);
+        try {
+            return configOptionApplicationController.getShortTextValueByKey(CONFIG_KEY_DDL_VERSION);
+        } catch (Exception e) {
+            // Reading/creating this config option can fail on a database that is itself
+            // mid-migration (e.g. config_option.id not yet AUTO_INCREMENT) — this page
+            // exists to fix that exact situation, so it must not crash rendering because of it.
+            return null;
+        }
     }
 
     public String getWikiDdlVersion() {
@@ -4483,6 +4490,7 @@ public class DataAdministrationController implements Serializable {
         // Target bill types for inpatient direct issues
         List<BillTypeAtomic> targetTypes = Arrays.asList(
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
                 BillTypeAtomic.DIRECT_ISSUE_STORE_INWARD,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD
