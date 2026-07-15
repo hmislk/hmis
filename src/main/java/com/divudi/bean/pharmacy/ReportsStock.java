@@ -1628,12 +1628,12 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             jpql.append("s.itemBatch.retailsaleRate, ");
             jpql.append("df.name) ");
             jpql.append("from Stock s ");
-            jpql.append("join TREAT(s.itemBatch.item as Amp) amp ");
             jpql.append("left join s.itemBatch.item.category cat ");
             jpql.append("left join s.itemBatch.item.dosageForm df ");
             jpql.append("where s.stock > 0");
-            jpql.append(" and amp.numberOfDaysToMarkAsShortExpiary > 0");
-            jpql.append(" and (s.itemBatch.dateOfExpire - CURRENT_DATE) <= CAST(amp.numberOfDaysToMarkAsShortExpiary AS long)");
+            jpql.append(" and type(s.itemBatch.item) = Amp");
+            jpql.append(" and cast(s.itemBatch.item as Amp).numberOfDaysToMarkAsShortExpiary > 0");
+            jpql.append(" and (s.itemBatch.dateOfExpire - CURRENT_DATE) <= CAST(cast(s.itemBatch.item as Amp).numberOfDaysToMarkAsShortExpiary AS long)");
 
             if (department != null) {
                 jpql.append(" and s.department=:d");
