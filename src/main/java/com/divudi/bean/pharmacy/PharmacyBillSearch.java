@@ -4206,7 +4206,7 @@ public class PharmacyBillSearch implements Serializable {
         if (bill == null || bill.getId() == null) {
             return null;
         }
-        if (bhtIssueRequestPrintDto == null || !bill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
+        if (!bill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
             bhtIssueRequestPrintDto = bhtIssueRequestNativeSqlService.loadPrintDtoByBillId(bill.getId());
             bhtIssueRequestPrintDtoBillId = bill.getId();
             if (bhtIssueRequestPrintDto == null) {
