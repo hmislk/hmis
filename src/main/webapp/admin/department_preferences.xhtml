@@ -1,0 +1,107 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <!-- Privilege Guard: Only administrators can access this page -->
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                    <h:form id="departmentPreferencesForm">
+                        <p:messages id="messages" closable="true"/>
+
+                        <p:panel styleClass="mb-3">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between align-items-center w-100">
+                                    <h:outputText value="Department Preferences &#8212; #{departmentPreferencesController.loggedUserDepartmentName}"/>
+                                    <h:panelGroup>
+                                        <p:commandButton
+                                            value="Save"
+                                            icon="fa fa-save"
+                                            styleClass="ui-button-success"
+                                            action="#{departmentPreferencesController.savePreferences}"
+                                            process="@form"
+                                            update=":departmentPreferencesForm"/>
+                                        <p:commandButton
+                                            value="Reset to Defaults"
+                                            icon="fa fa-undo"
+                                            styleClass="ui-button-danger ms-2"
+                                            action="#{departmentPreferencesController.resetToDefaults}"
+                                            process="@this"
+                                            update=":departmentPreferencesForm"
+                                            onclick="return confirm('Reset all department preferences on this page to their system defaults?')"/>
+                                    </h:panelGroup>
+                                </div>
+                            </f:facet>
+
+                            <!-- Department Warning -->
+                            <div class="alert alert-warning mb-3" role="alert" rendered="#{departmentPreferencesController.loggedUserDepartment eq null}">
+                                <i class="fa fa-exclamation-triangle"></i>
+                                <strong class="ms-2">No Department Selected</strong>
+                                <p class="mt-2 ms-2">
+                                    You need to be logged into a specific department to manage department preferences.
+                                </p>
+                            </div>
+
+                            <p:panel header="Pharmacy" styleClass="my-3" rendered="#{departmentPreferencesController.loggedUserDepartment ne null}">
+                                <h:panelGrid columns="2" styleClass="alignTop w-100" columnClasses="col-8,col-4">
+
+                                    <h:outputLabel for="allowIssueToSameDept" value="Allow Disposal Issue to Same Department" styleClass="form-label"/>
+                                    <p:selectBooleanButton
+                                        id="allowIssueToSameDept"
+                                        onIcon="fas fa-check"
+                                        offIcon="fas fa-times"
+                                        onLabel="Allowed"
+                                        offLabel="Not Allowed"
+                                        styleClass="form-control"
+                                        value="#{departmentPreferencesController.allowPharmacyIssueToSameDepartment}"/>
+
+                                </h:panelGrid>
+                            </p:panel>
+
+                            <!-- Info Section -->
+                            <div class="alert alert-info mt-3" role="alert">
+                                <i class="fa fa-info-circle"></i>
+                                <strong class="ms-2">About Department Preferences</strong>
+                                <p class="mt-2 ms-2">
+                                    Department preferences let each department independently enable or disable
+                                    specific behaviors, instead of relying on a single system-wide setting.
+                                    Changes made here only affect the
+                                    <strong>#{departmentPreferencesController.loggedUserDepartmentName}</strong>
+                                    department and take effect immediately after saving.
+                                </p>
+                                <p class="ms-2">
+                                    <strong>Allow Disposal Issue to Same Department:</strong>
+                                    When enabled, this department is allowed to create a pharmacy disposal issue
+                                    where the issuing and receiving department are the same. When disabled (the
+                                    system default), such issues are blocked.
+                                </p>
+                            </div>
+
+                        </p:panel>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Access denied message for non-admin users -->
+                <h:panelGroup rendered="#{not webUserController.hasPrivilege('Admin')}">
+                    <p:panel header="Access Denied" styleClass="mb-3">
+                        <div class="alert alert-danger" role="alert">
+                            <h:outputText styleClass="fa fa-ban fa-2x" style="vertical-align: middle;"/>
+                            <strong class="ms-3">Insufficient Privileges</strong>
+                            <p class="mt-2 ms-2">
+                                You do not have permission to access this page.
+                                Only administrators can manage department preferences.
+                            </p>
+                        </div>
+                    </p:panel>
+                </h:panelGroup>
+
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
