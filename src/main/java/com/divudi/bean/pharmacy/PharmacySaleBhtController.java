@@ -24,7 +24,6 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.data.Privileges;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.StockQty;
 import com.divudi.core.data.Title;
@@ -1662,21 +1661,18 @@ public class PharmacySaleBhtController implements Serializable {
             freshRequestBill.setFullyIssued(true);
             freshRequestBill.setFullyIssuedAt(new Date());
             freshRequestBill.setFullyIssuedBy(sessionController.getLoggedUser());
+            freshRequestBill.setCompleted(true);
+            freshRequestBill.setCompletedAt(freshRequestBill.getFullyIssuedAt());
+            freshRequestBill.setCompletedBy(freshRequestBill.getFullyIssuedBy());
             getBillFacade().edit(freshRequestBill);
             bhtRequestBill.setFullyIssued(true);
             bhtRequestBill.setFullyIssuedAt(freshRequestBill.getFullyIssuedAt());
             bhtRequestBill.setFullyIssuedBy(freshRequestBill.getFullyIssuedBy());
-        }
-
-        //update Bill
-        if (completed && webUserController.hasPrivilege(Privileges.PharmacyBhtRequestForceComplete.toString())) {
             bhtRequestBill.setCompleted(true);
-            bhtRequestBill.setCompletedAt(new Date());
-            bhtRequestBill.setCompletedBy(sessionController.getLoggedUser());
-
-            billFacade.edit(bhtRequestBill);
+            bhtRequestBill.setCompletedAt(freshRequestBill.getCompletedAt());
+            bhtRequestBill.setCompletedBy(freshRequestBill.getCompletedBy());
         }
-        completed = false;
+
         userNotificationController.userNotificationRequestComplete();
 
     }
@@ -1870,9 +1866,7 @@ public class PharmacySaleBhtController implements Serializable {
     private BillItem itemForSubstitution;
     private Stock selectedSubstituteStock;
     private List<Stock> substituteStocks;
-    
-    private boolean completed;
-    
+
     @Inject
     VmpController vmpController;
     @EJB
@@ -2799,7 +2793,10 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("This request has already been fully issued.");
             return "";
         }
-        setCompleted(false);
+        if (bhtRequestBill.isCompleted()) {
+            JsfUtil.addErrorMessage("This request has already been completed.");
+            return "";
+        }
         // The search-list render already initialized patientEncounter (and its
         // nested patient/person/room associations) on the session-stored entity.
         // Preserve it here because loadBillWithItemsFresh() does not join-fetch
@@ -3588,14 +3585,6 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setSubstituteStocks(List<Stock> substituteStocks) {
         this.substituteStocks = substituteStocks;
-    }
-
-    public boolean isCompleted() {
-        return completed;
-    }
-
-    public void setCompleted(boolean completed) {
-        this.completed = completed;
     }
 
     // StockDTO Converter for JSF

@@ -53,12 +53,6 @@
                                 onclick="PF('viewRequestDialog').show();">
                             </p:commandButton>
 
-                            <p:selectBooleanCheckbox
-                                itemLabel="Complete the Request"
-                                value="#{pharmacySaleBhtController.completed}"
-                                disabled="#{!webUserController.hasPrivilege('PharmacyBhtRequestForceComplete')}" >
-                            </p:selectBooleanCheckbox>
-
                             <p:commandButton
                                 id="btnIssue"
                                 style="float: right;"
