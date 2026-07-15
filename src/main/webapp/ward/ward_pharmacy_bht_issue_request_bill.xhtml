@@ -7,7 +7,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
       xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
-      xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward">
+      xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward"
+      xmlns:phprint="http://xmlns.jcp.org/jsf/composite/pharmacy/print">
 
     <h:body>
 
@@ -848,6 +849,8 @@
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
 
+                                    <phprint:bht_issue_request_print_config_button/>
+
                                     <p:commandButton
                                         id="btnNewMedicineRequest"
                                         value="New Medicine Request for BHT"
@@ -865,8 +868,8 @@
                         </f:facet>
 
                         <h:panelGroup id="gpBillPreview">
-                            <ph:pharmacy_bht_issue_request_receipt 
-                                bill="#{pharmacyRequestForBhtController.printBill}"
+                            <phprint:bht_issue_request_receipt
+                                dto="#{pharmacyRequestForBhtController.bhtIssueRequestPrintDto}"
                                 comment="#{pharmacyRequestForBhtController.comment}" />
                         </h:panelGroup>
 
