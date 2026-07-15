@@ -570,6 +570,14 @@ public class CollectingCentrePaymentController implements Serializable {
         ccAgentPaymentBill.setTotal(payingBalanceAcodingToCCBalabce);
         ccAgentPaymentBill.setPaidAmount(payingBalanceAcodingToCCBalabce);
 
+        // Record the CC repayment voucher figures so the voucher can be reprinted later.
+        ccAgentPaymentBill.setCcBalanceBeforeTransaction(startingBalanseInCC);
+        ccAgentPaymentBill.setCcBalanceAfterTransaction(finalEndingBalanseInCC);
+        ccAgentPaymentBill.setCcTotalReceived(totalCCReceiveAmount);
+        ccAgentPaymentBill.setCcTransactionAmount(totalHospitalAmount);
+        ccAgentPaymentBill.setCcTotalCenterValue(totalCCAmount);
+        ccAgentPaymentBill.setCcExcessAmount(payingBalanceAcodingToCCBalabce);
+
         ccAgentPaymentBill.setFromDate(fromDate);
         ccAgentPaymentBill.setToDate(toDate);
 
