@@ -1692,6 +1692,10 @@ public class PharmacySaleBhtController implements Serializable {
             bhtRequestBill.setCompleted(true);
             bhtRequestBill.setCompletedAt(freshRequestBill.getCompletedAt());
             bhtRequestBill.setCompletedBy(freshRequestBill.getCompletedBy());
+            // Invalidate the cached print DTO so a subsequent "Original Request" view
+            // for this same bill id (this bean is session-scoped) re-reads the
+            // now-completed status instead of serving the stale pre-completion snapshot.
+            bhtIssueRequestPrintDtoBillId = null;
         }
 
         userNotificationController.userNotificationRequestComplete();

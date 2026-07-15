@@ -720,6 +720,10 @@ public class PharmacyBillSearch implements Serializable {
         bill.setCompletedAt(new Date());
         bill.setCompletedBy(sessionController.getLoggedUser());
         billFacade.edit(bill);
+        // Invalidate the cached print DTO so a subsequent "View Request" for this
+        // same bill id (this bean is session-scoped) re-reads the now-completed
+        // status instead of serving the stale pre-completion snapshot.
+        bhtIssueRequestPrintDtoBillId = null;
         JsfUtil.addSuccessMessage("Request marked as Completed.");
         return "";
     }
