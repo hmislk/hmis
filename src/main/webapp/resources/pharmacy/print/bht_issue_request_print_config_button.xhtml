@@ -22,12 +22,24 @@
             title="Print Format Settings"
             onclick="PF('bhtIssueRequestPrintConfigDialog').show();"/>
 
+        <!--
+            NOTE: deliberately no nested <h:form> here. Every current call site
+            embeds this composite inside a page-level <h:form>, and HTML forbids
+            nested <form> elements - browsers silently drop the inner <form> tag
+            during parsing, which left the checkboxes formless: PrimeFaces' ajax
+            "open" update kept re-rendering them correctly server-side, but the
+            client never re-attached the "checked" state (confirmed via direct
+            DOM inspection - the parsed tree had no ancestor <form> at all for
+            these inputs). Relying on the caller's own enclosing form (as the
+            pre-existing "Confirmation" cancel dialog on the reprint page also
+            does) avoids the nested-form parse issue entirely.
+        -->
         <p:dialog id="bhtIssueRequestPrintConfigDialog"
                   header="BHT Issue Request - Print Format Settings"
                   widgetVar="bhtIssueRequestPrintConfigDialog"
                   modal="true" width="500" resizable="false" closeOnEscape="true">
-            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="bhtIssueRequestPrintConfigForm"/>
-            <h:form id="bhtIssueRequestPrintConfigForm">
+            <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="bhtIssueRequestPrintConfigPanel"/>
+            <h:panelGroup id="bhtIssueRequestPrintConfigPanel" layout="block">
                 <div class="mb-3">
                     <h:selectBooleanCheckbox id="cbBiqA4" value="#{pharmacyConfigController.bhtIssueRequestReceiptA4}"/>
                     <h:outputLabel for="cbBiqA4" value="A4 Paper" class="ms-2"/>
@@ -48,7 +60,7 @@
                     <p:commandButton value="Cancel" icon="fas fa-times" styleClass="ui-button-secondary"
                                      onclick="PF('bhtIssueRequestPrintConfigDialog').hide(); return false;" type="button"/>
                 </div>
-            </h:form>
+            </h:panelGroup>
         </p:dialog>
 
     </cc:implementation>

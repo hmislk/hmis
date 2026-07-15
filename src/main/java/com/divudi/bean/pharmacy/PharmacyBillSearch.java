@@ -691,6 +691,10 @@ public class PharmacyBillSearch implements Serializable {
         bill.setCancelled(true);
         bill.setCancelledBill(cb);
         billFacade.edit(bill);
+        // Invalidate the cached print DTO so a subsequent "View Request" for this
+        // same bill id (this bean is session-scoped) re-reads the now-cancelled
+        // status instead of serving the stale pre-cancellation snapshot.
+        bhtIssueRequestPrintDtoBillId = null;
         return navigateBackFromInwardPharmacyRequestReprint();
     }
 
