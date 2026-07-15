@@ -1235,7 +1235,7 @@ Add immediately after it:
         if (bill == null || bill.getId() == null) {
             return null;
         }
-        if (bhtIssueRequestPrintDto == null || !bill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
+        if (!bill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
             bhtIssueRequestPrintDto = bhtIssueRequestNativeSqlService.loadPrintDtoByBillId(bill.getId());
             bhtIssueRequestPrintDtoBillId = bill.getId();
             if (bhtIssueRequestPrintDto == null) {
@@ -1383,7 +1383,7 @@ Add immediately after it:
         if (printBill == null || printBill.getId() == null) {
             return null;
         }
-        if (bhtIssueRequestPrintDto == null || !printBill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
+        if (!printBill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
             bhtIssueRequestPrintDto = bhtIssueRequestNativeSqlService.loadPrintDtoByBillId(printBill.getId());
             bhtIssueRequestPrintDtoBillId = printBill.getId();
             if (bhtIssueRequestPrintDto == null) {
@@ -1539,7 +1539,7 @@ Replace with (adds the injected service + cached fields right after `bhtRequestB
         if (bhtRequestBill == null || bhtRequestBill.getId() == null) {
             return null;
         }
-        if (bhtIssueRequestPrintDto == null || !bhtRequestBill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
+        if (!bhtRequestBill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
             bhtIssueRequestPrintDto = bhtIssueRequestNativeSqlService.loadPrintDtoByBillId(bhtRequestBill.getId());
             bhtIssueRequestPrintDtoBillId = bhtRequestBill.getId();
             if (bhtIssueRequestPrintDto == null) {
