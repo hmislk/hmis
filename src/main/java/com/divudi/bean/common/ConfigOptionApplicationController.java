@@ -1472,6 +1472,99 @@ public class ConfigOptionApplicationController implements Serializable {
         loadApplicationOptions();
     }
 
+    /**
+     * Retrieves a department-scoped boolean preference (OptionScope.DEPARTMENT).
+     * Falls back to the application-scoped value when department is null.
+     * Creates the department-scoped ConfigOption (with defaultValue) if absent.
+     *
+     * @param key the preference key (e.g. "Pharmacy - Allow Issue to Same Department")
+     * @param dept the department the preference is scoped to
+     * @param defaultValue the value to persist if the option does not exist yet
+     * @return the current boolean value of the department-scoped preference
+     */
+    public Boolean getBooleanValueByKeyForDepartment(String key, Department dept, boolean defaultValue) {
+        if (dept == null) {
+            return getBooleanValueByKey(key, defaultValue);
+        }
+        ConfigOption option = findActiveOptionWithLock(key, OptionScope.DEPARTMENT, null, dept, null);
+        if (option == null || option.getValueType() != OptionValueType.BOOLEAN) {
+            option = optionFacade.createOptionIfNotExists(key, OptionScope.DEPARTMENT, null, dept, null,
+                    OptionValueType.BOOLEAN, Boolean.toString(defaultValue));
+        }
+        return Boolean.parseBoolean(option.getOptionValue());
+    }
+
+    /**
+     * Persists a department-scoped boolean preference (OptionScope.DEPARTMENT),
+     * creating the ConfigOption if it does not already exist. Falls back to the
+     * application-scoped setter when department is null.
+     *
+     * @param key the preference key
+     * @param dept the department the preference is scoped to
+     * @param value the value to persist
+     */
+    public void setBooleanValueByKeyForDepartment(String key, Department dept, boolean value) {
+        if (dept == null) {
+            setBooleanValueByKey(key, value);
+            return;
+        }
+        ConfigOption option = findActiveOptionWithLock(key, OptionScope.DEPARTMENT, null, dept, null);
+        if (option == null) {
+            option = optionFacade.createOptionIfNotExists(key, OptionScope.DEPARTMENT, null, dept, null,
+                    OptionValueType.BOOLEAN, Boolean.toString(value));
+        }
+        option.setValueType(OptionValueType.BOOLEAN);
+        option.setOptionValue(Boolean.toString(value));
+        optionFacade.edit(option);
+    }
+
+    /**
+     * Retrieves a department-scoped long-text preference (OptionScope.DEPARTMENT).
+     * Falls back to the application-scoped value when department is null.
+     * Creates the department-scoped ConfigOption (with defaultValue) if absent.
+     *
+     * @param key the preference key
+     * @param dept the department the preference is scoped to
+     * @param defaultValue the value to persist if the option does not exist yet
+     * @return the current text value of the department-scoped preference
+     */
+    public String getLongTextValueByKeyForDepartment(String key, Department dept, String defaultValue) {
+        if (dept == null) {
+            return getLongTextValueByKey(key, defaultValue);
+        }
+        ConfigOption option = findActiveOptionWithLock(key, OptionScope.DEPARTMENT, null, dept, null);
+        if (option == null || option.getValueType() != OptionValueType.LONG_TEXT) {
+            option = optionFacade.createOptionIfNotExists(key, OptionScope.DEPARTMENT, null, dept, null,
+                    OptionValueType.LONG_TEXT, defaultValue);
+        }
+        return option.getOptionValue();
+    }
+
+    /**
+     * Persists a department-scoped long-text preference (OptionScope.DEPARTMENT),
+     * creating the ConfigOption if it does not already exist. Falls back to the
+     * application-scoped setter when department is null.
+     *
+     * @param key the preference key
+     * @param dept the department the preference is scoped to
+     * @param value the value to persist
+     */
+    public void setLongTextValueByKeyForDepartment(String key, Department dept, String value) {
+        if (dept == null) {
+            setLongTextValueByKey(key, value);
+            return;
+        }
+        ConfigOption option = findActiveOptionWithLock(key, OptionScope.DEPARTMENT, null, dept, null);
+        if (option == null) {
+            option = optionFacade.createOptionIfNotExists(key, OptionScope.DEPARTMENT, null, dept, null,
+                    OptionValueType.LONG_TEXT, value);
+        }
+        String sanitized = Jsoup.clean(value, Safelist.basic());
+        option.setValueType(OptionValueType.LONG_TEXT);
+        option.setOptionValue(sanitized);
+        optionFacade.edit(option);
+    }
+
     public boolean isPreventPasswordReuse() {
         return getBooleanValueByKey("prevent_password_reuse", false);
     }
