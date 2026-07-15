@@ -4172,14 +4172,63 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
-        jpql.append("SELECT pi ")
+        jpql.append("SELECT new com.divudi.core.data.dto.DurationServiceReportDTO( ")
+                .append("pi.id, ")
+                .append("pe.bhtNo, ")
+                .append("pat.phn, ")
+                .append("per.title, ")
+                .append("per.name, ")
+                .append("COALESCE(procItem.name, biProcItem.name, (SELECT MAX(bfProcItem.name) FROM BillFee bf JOIN bf.patienEncounter bfProc JOIN bfProc.item bfProcItem WHERE bf.patientItem = pi AND bf.retired = false)), ")
+                .append("COALESCE(proc.name, biProc.name, (SELECT MAX(bfProc.name) FROM BillFee bf JOIN bf.patienEncounter bfProc WHERE bf.patientItem = pi AND bf.retired = false)), ")
+                .append("dept.name, ")
+                .append("timedItem.name, ")
+                .append("cat.name, ")
+                .append("pi.fromTime, ")
+                .append("pi.toTime, ")
+                .append("pi.serviceValue, ")
+                .append("pi.discount, ")
+                .append("pi.adjustedValue, ")
+                .append("COALESCE(cPer.name, bPer.name, biPer.name), ")
+                .append("COALESCE(cbPer.name, fcbPer.name), ")
+                .append("fcbPer.name, ")
+                .append("bill.checkeAt, ")
+                .append("finalBill.checkeAt, ")
+                .append("pi.createdAt, ")
+                .append("bill.createdAt, ")
+                .append("finalBill.createdAt, ")
+                .append("cc.id, ")
+                .append("COALESCE(bDept.name, rfcDept.name) ) ")
                 .append("FROM PatientItem pi ")
                 .append("JOIN pi.patientEncounter pe ")
-                .append("LEFT JOIN pi.item timedItem ")
+                .append("LEFT JOIN pe.patient pat ")
+                .append("LEFT JOIN pe.referringConsultant rc ")
+                .append("LEFT JOIN rc.person per ")
                 .append("LEFT JOIN pi.bill bill ")
+                .append("LEFT JOIN bill.procedure proc ")
+                .append("LEFT JOIN proc.item procItem ")
+                .append("LEFT JOIN pi.billItem bi ")
+                .append("LEFT JOIN bi.bill biBill ")
+                .append("LEFT JOIN biBill.procedure biProc ")
+                .append("LEFT JOIN biProc.item biProcItem ")
                 .append("LEFT JOIN pe.finalBill finalBill ")
+                .append("LEFT JOIN pi.item timedItem ")
+                .append("LEFT JOIN timedItem.department dept ")
+                .append("LEFT JOIN timedItem.category cat ")
+                .append("LEFT JOIN pi.creater cUser ")
+                .append("LEFT JOIN cUser.webUserPerson cPer ")
+                .append("LEFT JOIN bill.creater bUser ")
+                .append("LEFT JOIN bUser.webUserPerson bPer ")
+                .append("LEFT JOIN biBill.creater biUser ")
+                .append("LEFT JOIN biUser.webUserPerson biPer ")
+                .append("LEFT JOIN bill.checkedBy cbUser ")
+                .append("LEFT JOIN cbUser.webUserPerson cbPer ")
+                .append("LEFT JOIN finalBill.checkedBy fcbUser ")
+                .append("LEFT JOIN fcbUser.webUserPerson fcbPer ")
+                .append("LEFT JOIN pe.creditCompany cc ")
                 .append("LEFT JOIN pe.currentPatientRoom room ")
-                .append("LEFT JOIN room.roomFacilityCharge rfc ");
+                .append("LEFT JOIN room.roomFacilityCharge rfc ")
+                .append("LEFT JOIN bill.department bDept ")
+                .append("LEFT JOIN rfc.department rfcDept ");
 
         jpql.append("WHERE pi.retired = :ret ")
                 .append("AND timedItem.retired = :itemRet ")
@@ -4243,19 +4292,14 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("ORDER BY pe.dateOfDischarge, pe.bhtNo, timedItem.name, pi.fromTime ");
         System.out.println("jpql = " + jpql);
         System.out.println("params = " + params);
-        List<PatientItem> patientItems = (List<PatientItem>) billItemFacade.findLightsByJpql(
-                jpql.toString(), params, TemporalType.TIMESTAMP);
-        System.out.println("durationServicePatientItems = " + patientItems);
-
-        durationServiceReportRows = new ArrayList<>();
-        if (patientItems == null) {
-            return;
+        
+        List<DurationServiceReportDTO> results = (List<DurationServiceReportDTO>) (Object) billItemFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        
+        if (results == null) {
+            results = new ArrayList<>();
         }
-
-        for (PatientItem patientItem : patientItems) {
-            durationServiceReportRows.add(toDurationServiceReportDto(patientItem));
-        }
-        System.out.println("durationServiceReportRows = " + durationServiceReportRows);
+        
+        this.durationServiceReportRows = results;
     }
     
      public void exportDurationServiceReportToPDF() {
