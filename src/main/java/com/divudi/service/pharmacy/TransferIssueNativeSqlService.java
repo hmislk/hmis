@@ -117,7 +117,8 @@ public class TransferIssueNativeSqlService {
                 + " COALESCE(i.code, '') AS itemCode,"
                 + " i.DTYPE AS itemDtype,"
                 + " CASE WHEN i.DTYPE = 'Ampp' THEN COALESCE(i.dblValue, 1.0) ELSE 1.0 END AS packSize,"
-                + " CASE WHEN i.DTYPE = 'Ampp' THEN COALESCE(i.amp_ID, i.ID) ELSE i.ID END AS ampItemId"
+                + " CASE WHEN i.DTYPE = 'Ampp' THEN COALESCE(i.amp_ID, i.ID) ELSE i.ID END AS ampItemId,"
+                + " i.departmentType AS departmentType"
                 + " FROM " + billItemTable() + " bi"
                 + " JOIN " + itemTable() + " i ON i.ID = bi.item_ID"
                 + " WHERE bi.bill_ID = ? AND (bi.retired IS NULL OR bi.retired = 0)"
@@ -246,6 +247,7 @@ public class TransferIssueNativeSqlService {
             double packSize      = toDouble(reqRow[9]);
             if (packSize <= 0) packSize = 1.0;
             long ampItemId       = ((Number) reqRow[10]).longValue();
+            String deptType      = reqRow[11] == null ? null : reqRow[11].toString();
             boolean isVmp        = "Vmp".equals(dtype);
 
             if (remainingQty <= 0.001) {
@@ -294,6 +296,7 @@ public class TransferIssueNativeSqlService {
                 empty.setItemName(itemName);
                 empty.setItemCode(itemCode);
                 empty.setItemDtype(dtype);
+                empty.setDepartmentType(deptType);
                 empty.setUnitsPerPack(packSize);
                 empty.setRequestedQty(requestedQty);
                 empty.setAlreadyIssuedQty(alreadyIssued);
@@ -363,6 +366,7 @@ public class TransferIssueNativeSqlService {
                 dto.setItemName(rowItemName);
                 dto.setItemCode(rowItemCode);
                 dto.setItemDtype(rowDtype);
+                dto.setDepartmentType(deptType);
                 dto.setUnitsPerPack(packSize);
                 dto.setDeptStockId(stockId);
                 dto.setItemBatchId(itemBatchId);
@@ -398,6 +402,7 @@ public class TransferIssueNativeSqlService {
                 empty.setItemName(itemName);
                 empty.setItemCode(itemCode);
                 empty.setItemDtype(dtype);
+                empty.setDepartmentType(deptType);
                 empty.setUnitsPerPack(packSize);
                 empty.setRequestedQty(requestedQty);
                 empty.setAlreadyIssuedQty(alreadyIssued);

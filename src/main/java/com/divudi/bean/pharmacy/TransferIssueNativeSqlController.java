@@ -13,6 +13,7 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.dto.TransferIssueItemRowDto;
 import com.divudi.core.data.dto.TransferIssuePrintDto;
@@ -205,8 +206,9 @@ public class TransferIssueNativeSqlController implements Serializable {
         if (issuedBill != null) {
             draft.setToStaff(issuedBill.getToStaff());
         }
-        billFacade.create(draft);
         issuedBill = draft;
+        stampDepartmentTypeIfMissing();
+        billFacade.create(draft);
         draftMode = true;
         JsfUtil.addSuccessMessage("Draft fast issue saved. Please proceed to Finalize.");
     }
@@ -584,6 +586,27 @@ public class TransferIssueNativeSqlController implements Serializable {
         issuedBill.setDepartment(sessionController.getDepartment());
         issuedBill.setCreater(sessionController.getLoggedUser());
         issuedBill.setCreatedAt(new Date());
+        stampDepartmentTypeIfMissing();
+    }
+
+    /**
+     * Department-type-filtered reports drop bills left NULL (#22056). The request bill
+     * normally already carries a departmentType (TransferRequestController stamps it on
+     * first item add); this is the fallback for legacy requests that predate that stamp —
+     * take the first issued item's type, defaulting to Pharmacy (#22146).
+     */
+    private void stampDepartmentTypeIfMissing() {
+        if (issuedBill.getDepartmentType() != null) {
+            return;
+        }
+        if (requestedBill != null && requestedBill.getDepartmentType() != null) {
+            issuedBill.setDepartmentType(requestedBill.getDepartmentType());
+            return;
+        }
+        if (issueItems != null && !issueItems.isEmpty()) {
+            String dt = issueItems.get(0).getDepartmentType();
+            issuedBill.setDepartmentType(dt != null ? DepartmentType.valueOf(dt) : DepartmentType.Pharmacy);
+        }
     }
 
     private void applyBillNumbers(Bill bill) {

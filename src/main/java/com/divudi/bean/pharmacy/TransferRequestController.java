@@ -382,6 +382,14 @@ public class TransferRequestController implements Serializable {
         newApprovedBill.setFromInstitution(preBillToCreateApprovedBill.getFromInstitution());
         newApprovedBill.setToDepartment(preBillToCreateApprovedBill.getToDepartment());
         newApprovedBill.setToInstitution(preBillToCreateApprovedBill.getToInstitution());
+        // Bill.copy() above does not carry departmentType — stamp it explicitly so the
+        // approved request bill doesn't lose the type the PRE bill already had (#22146).
+        if (preBillToCreateApprovedBill.getDepartmentType() != null) {
+            newApprovedBill.setDepartmentType(preBillToCreateApprovedBill.getDepartmentType());
+        } else if (!transferRequestPreBillItems.isEmpty() && transferRequestPreBillItems.get(0).getItem() != null) {
+            DepartmentType firstItemType = transferRequestPreBillItems.get(0).getItem().getDepartmentType();
+            newApprovedBill.setDepartmentType(firstItemType != null ? firstItemType : DepartmentType.Pharmacy);
+        }
 
         newApprovedBill.setCreatedAt(new Date());
         newApprovedBill.setCreater(sessionController.getLoggedUser());

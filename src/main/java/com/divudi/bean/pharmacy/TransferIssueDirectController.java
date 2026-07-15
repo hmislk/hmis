@@ -187,7 +187,10 @@ public class TransferIssueDirectController implements Serializable {
         if (billItem.getItem() != null) {
             DepartmentType itemDeptType = billItem.getItem().getDepartmentType();
             if (issuedBill.getDepartmentType() == null) {
-                issuedBill.setDepartmentType(itemDeptType);
+                // #22146: default to Pharmacy when the item itself carries no department
+                // type, mirroring TransferRequestController.addItem() — a direct-issue
+                // bill should never be saved with departmentType left null.
+                issuedBill.setDepartmentType(itemDeptType != null ? itemDeptType : DepartmentType.Pharmacy);
             } else if (itemDeptType != null && !itemDeptType.equals(issuedBill.getDepartmentType())) {
                 JsfUtil.addErrorMessage("Cannot add items from different department types. "
                         + "Bill is set for " + issuedBill.getDepartmentType().getLabel()
