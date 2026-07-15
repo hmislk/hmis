@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -17,6 +17,7 @@
                                 <h:outputText value="Short Expiry Stock Report (by AMP Period) Print" class="mt-2"/>
                                 <div class="d-flex gap-2">
                                     <p:commandButton
+                                        id="btnPrintView"
                                         icon="fa-solid fa-print"
                                         class="ui-button-info"
                                         style="width: 150px"
@@ -25,6 +26,7 @@
                                         <p:printer target="reportView" />
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnBackToReport"
                                         ajax="false"
                                         value="Back to Report"
                                         style="width: 200px"

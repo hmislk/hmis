@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
@@ -92,13 +92,13 @@
                                         <h:outputLabel value="&#160;" styleClass="mb-0"/>
                                     </h:panelGroup>
                                     <h:panelGroup layout="block" styleClass="d-flex flex-wrap">
-                                        <p:commandButton class="ui-button-warning m-1" icon="fas fa-cogs"
+                                        <p:commandButton id="btnProcess" class="ui-button-warning m-1" icon="fas fa-cogs"
                                                          ajax="false" value="Process"
                                                          actionListener="#{reportsStock.fillShortExpiryByAmpPeriod()}" />
-                                        <p:commandButton class="ui-button-info m-1" icon="fas fa-print"
+                                        <p:commandButton id="btnPrint" class="ui-button-info m-1" icon="fas fa-print"
                                                          value="To Print" ajax="false" action="pharmacy_report_short_expiry_by_amp_period_print?faces-redirect=true">
                                         </p:commandButton>
-                                        <p:commandButton icon="fas fa-file-excel" class="ui-button-success m-1"
+                                        <p:commandButton id="btnExcel" icon="fas fa-file-excel" class="ui-button-success m-1"
                                                          value="Excel" ajax="false">
                                             <p:dataExporter type="xlsx" target="tbl" fileName="Short Expiry Stock" />
                                         </p:commandButton>
@@ -147,7 +147,7 @@
                                           filterBy="#{i.itemName}"
                                           filterMatchMode="contains">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Item" />
+                                        <h:outputText value="Item" />
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemName}" />
                                 </p:column>

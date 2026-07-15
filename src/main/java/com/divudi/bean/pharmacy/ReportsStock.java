@@ -230,6 +230,14 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         return "/pharmacy/pharmacy_report_department_vice_stock?faces-redirect=true";
     }
 
+    public String navigateToShortExpiryByAmpPeriod() {
+        stockDtos = new ArrayList<>();
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        stockCostValue = 0.0;
+        return "/pharmacy/pharmacy_report_short_expiry_by_amp_period?faces-redirect=true";
+    }
+
     /**
      * Methods
      */
