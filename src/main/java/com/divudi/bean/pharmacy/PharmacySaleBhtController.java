@@ -367,6 +367,7 @@ public class PharmacySaleBhtController implements Serializable {
         selectedAlternative = null;
         preBill = null;
         printBill = null;
+        bhtIssueRequestPrintDtoBillId = null;
         bill = null;
         billItem = null;
         editingBillItem = null;

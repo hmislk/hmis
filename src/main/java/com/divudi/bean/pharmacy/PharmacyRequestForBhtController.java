@@ -242,6 +242,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         selectedAlternative = null;
         preBill = null;
         printBill = null;
+        bhtIssueRequestPrintDtoBillId = null;
         bill = null;
         billItem = null;
         editingBillItem = null;
@@ -1194,6 +1195,10 @@ public class PharmacyRequestForBhtController implements Serializable {
         // Calculation Margin
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
         setPrintBill(getBillFacade().find(getPreBill().getId()));
+        // This is a re-settle of an existing request (same bill id) with edited
+        // items - invalidate the cached print DTO so the preview re-reads the
+        // updated item list instead of the pre-edit snapshot.
+        bhtIssueRequestPrintDtoBillId = null;
         Bill bill = getBillFacade().find(getPreBill().getId());
         bill.setBillTypeAtomic(BillTypeAtomic.REQUEST_MEDICINE_INWARD);
         bill.setEditedAt(new Date());

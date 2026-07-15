@@ -51,7 +51,7 @@
                               value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy BHT Issue Request Receipt Header')}"/>
 
                 <div style="text-align:center;">
-                    <strong><h:outputText value="#{cc.attrs.dto.fromDepartmentPrintingName}"/></strong><br/>
+                    <h:outputText value="#{cc.attrs.dto.fromDepartmentPrintingName}" style="font-weight:bold;"/><br/>
                     <h:panelGroup rendered="#{cc.attrs.dto.fromDepartmentAddress ne ''}">
                         <h:outputText value="#{cc.attrs.dto.fromDepartmentAddress}"/><br/>
                     </h:panelGroup>
@@ -67,12 +67,12 @@
                     </h:panelGroup>
                 </div>
 
-                <h2 style="text-align:center;">
-                    BHT Pharmacy Issue Request
+                <div style="text-align:center; font-size: 1.5em; font-weight: bold; margin: 0.83em 0;">
+                    <h:outputText value="BHT Pharmacy Issue Request"/>
                     <h:panelGroup rendered="#{cc.attrs.duplicate eq true}">
-                        <span class="biq-watermark"> **DUPLICATE**</span>
+                        <h:outputText value=" **DUPLICATE**" styleClass="biq-watermark"/>
                     </h:panelGroup>
-                </h2>
+                </div>
                 <div style="text-align:center;">
                     <h:panelGroup rendered="#{cc.attrs.dto.cancelled eq true}">
                         <span class="biq-status-cancelled">CANCELLED</span>
@@ -90,12 +90,12 @@
                     <tr>
                         <td>Date</td><td>:</td>
                         <td>
-                            <h:outputLabel value="#{cc.attrs.dto.createdAt}">
+                            <h:outputText value="#{cc.attrs.dto.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputLabel>
-                            <h:outputLabel value="#{cc.attrs.dto.createdAt}">
+                            </h:outputText>
+                            <h:outputText value="#{cc.attrs.dto.createdAt}">
                                 <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}"/>
-                            </h:outputLabel>
+                            </h:outputText>
                         </td>
                     </tr>
                     <tr><td>Request No</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.requestNo}"/></td></tr>
@@ -156,13 +156,13 @@
                               value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy BHT Issue Request Receipt Header')}"/>
 
                 <div style="text-align:center;">
-                    <strong><h:outputText value="#{cc.attrs.dto.fromDepartmentPrintingName}"/></strong>
+                    <h:outputText value="#{cc.attrs.dto.fromDepartmentPrintingName}" style="font-weight:bold;"/>
                 </div>
 
                 <div style="text-align:center;">
-                    <strong>BHT Pharmacy Issue Request</strong>
+                    <h:outputText value="BHT Pharmacy Issue Request" style="font-weight:bold;"/>
                     <h:panelGroup rendered="#{cc.attrs.duplicate eq true}">
-                        <span class="biq-watermark"> DUPLICATE</span>
+                        <h:outputText value=" DUPLICATE" styleClass="biq-watermark"/>
                     </h:panelGroup>
                     <br/>
                     <h:panelGroup rendered="#{cc.attrs.dto.cancelled eq true}">
@@ -179,9 +179,9 @@
 
                 <table>
                     <tr><td>Date</td><td>:</td><td>
-                        <h:outputLabel value="#{cc.attrs.dto.createdAt}">
+                        <h:outputText value="#{cc.attrs.dto.createdAt}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                        </h:outputLabel>
+                        </h:outputText>
                     </td></tr>
                     <tr><td>Req No</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.requestNo}"/></td></tr>
                     <tr><td>BHT No</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.bhtNo}"/></td></tr>
@@ -228,10 +228,10 @@
         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy BHT Issue Request Receipt is POS', false)}">
             <div class="biq-pos">
                 <div style="text-align:center;">
-                    <strong><h:outputText value="#{cc.attrs.dto.fromDepartmentPrintingName}"/></strong><br/>
-                    BHT Issue Request
+                    <h:outputText value="#{cc.attrs.dto.fromDepartmentPrintingName}" style="font-weight:bold;"/><br/>
+                    <h:outputText value="BHT Issue Request"/>
                     <h:panelGroup rendered="#{cc.attrs.duplicate eq true}">
-                        <span class="biq-watermark"> (DUP)</span>
+                        <h:outputText value=" (DUP)" styleClass="biq-watermark"/>
                     </h:panelGroup>
                     <br/>
                     <h:panelGroup rendered="#{cc.attrs.dto.cancelled eq true}">
@@ -249,9 +249,9 @@
                     BHT: <h:outputText value="#{cc.attrs.dto.bhtNo}"/><br/>
                     Patient: <h:outputText value="#{cc.attrs.dto.patientName}"/><br/>
                     Req No: <h:outputText value="#{cc.attrs.dto.requestNo}"/><br/>
-                    <h:outputLabel value="#{cc.attrs.dto.createdAt}">
+                    <h:outputText value="#{cc.attrs.dto.createdAt}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                    </h:outputLabel><br/>
+                    </h:outputText><br/>
                     <h:panelGroup rendered="#{(cc.attrs.comment ne null and cc.attrs.comment ne '') or cc.attrs.dto.comments ne ''}">
                         Comments: <h:outputText value="#{(cc.attrs.comment ne null and cc.attrs.comment ne '') ? cc.attrs.comment : cc.attrs.dto.comments}"/><br/>
                     </h:panelGroup>

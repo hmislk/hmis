@@ -149,6 +149,13 @@ document's CSS/Header/Footer keys):
 - `Pharmacy BHT Issue Request Receipt is FiveFive` (default true — current de-facto format)
 - `Pharmacy BHT Issue Request Receipt is POS` (default false)
 
+These three flags are independent, not mutually exclusive — this deliberately matches
+the established sibling pattern (Inward BHT Direct Issue Bill), where a site can enable
+more than one format at once (e.g. an A4 archival copy alongside a POS patient copy).
+The receipt composite renders one block per enabled flag; enabling more than one prints
+multiple copies back-to-back in a single `p:printer` pass, not "exactly one" format. No
+mutual-exclusion validation is required in the config dialog.
+
 ## Wiring per page
 
 - **`ward_pharmacy_bht_issue_request_bill.xhtml`**: in the post-settle "View Bill"
