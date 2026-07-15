@@ -19,6 +19,7 @@
                         <div class="d-flex align-items-center gap-2">
                             <h:outputText styleClass="fas fa-file-invoice" />
                             <h:outputLabel value="Inward Pharmacy Request Reprint" ></h:outputLabel>
+                            <p:tag value="Completed" severity="success" rendered="#{pharmacyBillSearch.bill.completed}" />
                         </div>
 
                         <!-- CENTER: navigation -->
@@ -35,6 +36,18 @@
 
                         <!-- RIGHT: actions, left=least important -> right=primary -->
                         <div class="d-flex gap-2 align-items-center">
+                            <p:commandButton
+                                id="btnMarkComplete"
+                                title="Force this request to Completed status (allows discharge to proceed even if not fully issued)"
+                                styleClass="ui-button-secondary"
+                                icon="fas fa-check-double"
+                                value="Mark as Complete"
+                                disabled="#{not webUserController.hasPrivilege('PharmacyBhtRequestForceComplete') or pharmacyBillSearch.bill.completed or pharmacyBillSearch.bill.cancelled}"
+                                onclick="return confirm('Mark this request as Complete? This allows discharge to proceed even if not all medicines have been issued.');"
+                                action="#{pharmacyBillSearch.markInwardPharmacyRequestComplete()}"
+                                ajax="false">
+                            </p:commandButton>
+
                             <p:commandButton
                                 id="btnCancelRequest"
                                 title="Cancel this request"

@@ -20,6 +20,7 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.PaperType;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -696,6 +697,31 @@ public class PharmacyBillSearch implements Serializable {
         // status instead of serving the stale pre-cancellation snapshot.
         bhtIssueRequestPrintDtoBillId = null;
         return navigateBackFromInwardPharmacyRequestReprint();
+    }
+
+    public String markInwardPharmacyRequestComplete() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Not Bill Found !");
+            return "";
+        }
+        if (!webUserController.hasPrivilege(Privileges.PharmacyBhtRequestForceComplete.toString())) {
+            JsfUtil.addErrorMessage("You do not have privilege to force-complete this request.");
+            return "";
+        }
+        if (bill.isCompleted()) {
+            JsfUtil.addErrorMessage("This request is already marked as Completed.");
+            return "";
+        }
+        if (bill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot complete a cancelled request.");
+            return "";
+        }
+        bill.setCompleted(true);
+        bill.setCompletedAt(new Date());
+        bill.setCompletedBy(sessionController.getLoggedUser());
+        billFacade.edit(bill);
+        JsfUtil.addSuccessMessage("Request marked as Completed.");
+        return "";
     }
 
     /**
