@@ -4259,7 +4259,7 @@ public class SearchController implements Serializable {
         StringBuilder jpql = new StringBuilder();
         jpql.append("SELECT NEW com.divudi.core.data.dto.PharmacyTransferIssuedListDTO(");
         jpql.append("b.id, b.deptId, d.name, b.departmentType, wup.name, stfp.name, ");
-        jpql.append("b.createdAt, b.cancelled, b.fullyIssued, cbwup.name, cb.createdAt) ");
+        jpql.append("b.createdAt, b.cancelled, b.fullyIssued, cbwup.name, cb.createdAt, b.billTypeAtomic) ");
         jpql.append("FROM Bill b ");
         jpql.append("LEFT JOIN b.department d ");
         jpql.append("LEFT JOIN b.creater wu ");
