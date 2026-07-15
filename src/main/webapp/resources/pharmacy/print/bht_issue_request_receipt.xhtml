@@ -39,10 +39,10 @@
             @media print {
                 .biq-a4, .biq-five-five, .biq-pos { -webkit-print-color-adjust: exact; }
             }
-        </style>
 
-        <h:outputText escape="false"
-                      value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy BHT Issue Request Receipt CSS')}"/>
+            <h:outputText escape="false"
+                          value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy BHT Issue Request Receipt CSS')}"/>
+        </style>
 
         <!-- ==================== A4 ==================== -->
         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy BHT Issue Request Receipt is A4', false)}">
@@ -191,6 +191,12 @@
                     </h:panelGroup>
                     <tr><td>To</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.toDepartmentName}"/></td></tr>
                     <tr><td>By</td><td>:</td><td><h:outputText value="#{cc.attrs.dto.requestedByName}"/></td></tr>
+                    <h:panelGroup rendered="#{(cc.attrs.comment ne null and cc.attrs.comment ne '') or cc.attrs.dto.comments ne ''}">
+                        <tr>
+                            <td>Comments</td><td>:</td>
+                            <td><h:outputText value="#{(cc.attrs.comment ne null and cc.attrs.comment ne '') ? cc.attrs.comment : cc.attrs.dto.comments}"/></td>
+                        </tr>
+                    </h:panelGroup>
                 </table>
                 <hr/>
 
@@ -245,7 +251,10 @@
                     Req No: <h:outputText value="#{cc.attrs.dto.requestNo}"/><br/>
                     <h:outputLabel value="#{cc.attrs.dto.createdAt}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                    </h:outputLabel>
+                    </h:outputLabel><br/>
+                    <h:panelGroup rendered="#{(cc.attrs.comment ne null and cc.attrs.comment ne '') or cc.attrs.dto.comments ne ''}">
+                        Comments: <h:outputText value="#{(cc.attrs.comment ne null and cc.attrs.comment ne '') ? cc.attrs.comment : cc.attrs.dto.comments}"/><br/>
+                    </h:panelGroup>
                 </div>
                 <hr/>
                 <table class="biq-items">
