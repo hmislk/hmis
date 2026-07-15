@@ -389,6 +389,8 @@ public class TransferRequestController implements Serializable {
         } else if (!transferRequestPreBillItems.isEmpty() && transferRequestPreBillItems.get(0).getItem() != null) {
             DepartmentType firstItemType = transferRequestPreBillItems.get(0).getItem().getDepartmentType();
             newApprovedBill.setDepartmentType(firstItemType != null ? firstItemType : DepartmentType.Pharmacy);
+        } else {
+            newApprovedBill.setDepartmentType(DepartmentType.Pharmacy);
         }
 
         newApprovedBill.setCreatedAt(new Date());
