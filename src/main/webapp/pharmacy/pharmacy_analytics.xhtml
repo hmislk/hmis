@@ -174,13 +174,23 @@
                                                 action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItemDTO()}"
                                                 ajax="false"/>
 
-                                            <p:commandButton 
-                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Expiry')}" 
+                                            <p:commandButton
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Stock Report by Expiry')}"
                                                 class="w-100 ui-button-warning"
                                                 icon="fa fa-clock"
                                                 value="Expiring Stock"
                                                 action="pharmacy_report_department_stock_by_batch_expiary?faces-redirect=true"
                                                 ajax="false" />
+
+                                            <p:commandButton
+                                                id="btnShortExpiryByAmpPeriod"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Short Expiry (by AMP Period)', true)}"
+                                                class="w-100 ui-button-warning"
+                                                icon="fa fa-hourglass-half"
+                                                value="Short Expiry (by AMP Period)"
+                                                action="#{reportsStock.navigateToShortExpiryByAmpPeriod()}"
+                                                ajax="false"
+                                                title="Stock items expiring within their AMP's configured short-expiry alert period" />
 
                                             <p:commandButton
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show All Staff Stock')}"
