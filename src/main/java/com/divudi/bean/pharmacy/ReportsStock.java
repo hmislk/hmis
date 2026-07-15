@@ -1640,8 +1640,8 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             jpql.append("left join s.itemBatch.item.dosageForm df ");
             jpql.append("where s.stock > 0");
             jpql.append(" and type(s.itemBatch.item) = Amp");
-            jpql.append(" and cast(s.itemBatch.item as Amp).numberOfDaysToMarkAsShortExpiary > 0");
-            jpql.append(" and (s.itemBatch.dateOfExpire - CURRENT_DATE) <= CAST(cast(s.itemBatch.item as Amp).numberOfDaysToMarkAsShortExpiary AS long)");
+            jpql.append(" and treat(s.itemBatch.item as Amp).numberOfDaysToMarkAsShortExpiary > 0");
+            jpql.append(" and FUNCTION('DATEDIFF', s.itemBatch.dateOfExpire, CURRENT_DATE) <= treat(s.itemBatch.item as Amp).numberOfDaysToMarkAsShortExpiary");
 
             if (department != null) {
                 jpql.append(" and s.department=:d");
