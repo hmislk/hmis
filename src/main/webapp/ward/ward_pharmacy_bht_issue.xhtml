@@ -7,7 +7,8 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:phe="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
                 xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
-                xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy">
+                xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:phprint="http://xmlns.jcp.org/jsf/composite/pharmacy/print">
 
     <ui:define name="content">
         <h:form>
@@ -511,8 +512,8 @@
                 fitViewport="true"
                 position="top"
                 rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}">
-                <ph:pharmacy_bht_issue_request_receipt
-                    bill="#{pharmacySaleBhtController.bhtRequestBill}" />
+                <phprint:bht_issue_request_receipt
+                    dto="#{pharmacySaleBhtController.bhtIssueRequestPrintDto}" />
             </p:dialog>
 
         </h:form>

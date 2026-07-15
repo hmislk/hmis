@@ -242,6 +242,27 @@ public class PharmacySaleBhtController implements Serializable {
     Bill printBill;
     Bill bill;
     private Bill bhtRequestBill;
+
+    @EJB
+    private com.divudi.service.pharmacy.BhtIssueRequestNativeSqlService bhtIssueRequestNativeSqlService;
+
+    private com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto bhtIssueRequestPrintDto;
+    private Long bhtIssueRequestPrintDtoBillId;
+
+    public com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto getBhtIssueRequestPrintDto() {
+        if (bhtRequestBill == null || bhtRequestBill.getId() == null) {
+            return null;
+        }
+        if (!bhtRequestBill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
+            bhtIssueRequestPrintDto = bhtIssueRequestNativeSqlService.loadPrintDtoByBillId(bhtRequestBill.getId());
+            bhtIssueRequestPrintDtoBillId = bhtRequestBill.getId();
+            if (bhtIssueRequestPrintDto == null) {
+                JsfUtil.addErrorMessage("BHT Issue Request not found");
+            }
+        }
+        return bhtIssueRequestPrintDto;
+    }
+
     BillItem billItem;
     Stock replacableStock;
     Item selectedAvailableAmp;
