@@ -1456,6 +1456,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         newBillItem.setQty(getQty());
         newBillItem.setInwardChargeType(InwardChargeType.Medicine);
         newBillItem.setBill(getPreBill());
+        newBillItem.setInstructions(billItem.getInstructions());
         // Required so resolvePackageOverrideRate()'s cumulative-quantity JPQL (bi.patientEncounter = :pe)
         // can find this row on subsequent dispenses of the same package-listed item.
         newBillItem.setPatientEncounter(patientEncounter);
