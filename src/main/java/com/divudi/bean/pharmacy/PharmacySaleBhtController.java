@@ -2449,6 +2449,12 @@ public class PharmacySaleBhtController implements Serializable {
         billItem.setInwardChargeType(InwardChargeType.Medicine);
 
         billItem.setItem(getTmpStock().getItemBatch().getItem());
+
+        String reorderMsg = pharmacyService.getReorderWarningMessage(patientEncounter, billItem.getItem());
+        if (!reorderMsg.isEmpty()) {
+            JsfUtil.addWarningMessage(reorderMsg);
+        }
+
         billItem.setQty(qty);
 //        billItem.setBill(getPreBill());
         billItem.setSearialNo(getBillItems().size() + 1);

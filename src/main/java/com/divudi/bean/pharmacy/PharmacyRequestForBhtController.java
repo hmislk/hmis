@@ -1445,6 +1445,11 @@ public class PharmacyRequestForBhtController implements Serializable {
 
         }
 
+        String reorderMsg = pharmacyService.getReorderWarningMessage(patientEncounter, billItem.getItem());
+        if (!reorderMsg.isEmpty()) {
+            JsfUtil.addWarningMessage(reorderMsg);
+        }
+
         // Create a new billItem for the collection to avoid entity state issues
         BillItem newBillItem = new BillItem();
         newBillItem.setItem(billItem.getItem());
