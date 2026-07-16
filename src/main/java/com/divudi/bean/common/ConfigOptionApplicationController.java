@@ -1576,6 +1576,7 @@ public class ConfigOptionApplicationController implements Serializable {
      * @param value the value to persist
      */
     public void setLongTextValueByKeyForDepartment(String key, Department dept, String value) {
+        String sanitized = Jsoup.clean(value, Safelist.basic());
         if (dept == null) {
             setLongTextValueByKey(key, value);
             return;
@@ -1583,9 +1584,8 @@ public class ConfigOptionApplicationController implements Serializable {
         ConfigOption option = findActiveOptionWithLock(key, OptionScope.DEPARTMENT, null, dept, null);
         if (option == null) {
             option = optionFacade.createOptionIfNotExists(key, OptionScope.DEPARTMENT, null, dept, null,
-                    OptionValueType.LONG_TEXT, value);
+                    OptionValueType.LONG_TEXT, sanitized);
         }
-        String sanitized = Jsoup.clean(value, Safelist.basic());
         option.setValueType(OptionValueType.LONG_TEXT);
         option.setOptionValue(sanitized);
         optionFacade.edit(option);

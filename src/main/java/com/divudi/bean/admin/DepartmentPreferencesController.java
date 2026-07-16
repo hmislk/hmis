@@ -7,12 +7,12 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import javax.annotation.PostConstruct;
-import javax.enterprise.context.SessionScoped;
+import javax.faces.view.ViewScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 
 /**
- * Session-scoped controller for managing department-level preferences backed
+ * View-scoped controller for managing department-level preferences backed
  * by department-scoped ConfigOption entries (OptionScope.DEPARTMENT).
  *
  * Starts with a single preference: "Pharmacy - Allow Issue to Same Department".
@@ -20,7 +20,7 @@ import javax.inject.Named;
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
  */
 @Named
-@SessionScoped
+@ViewScoped
 public class DepartmentPreferencesController implements Serializable {
 
     private static final long serialVersionUID = 1L;
