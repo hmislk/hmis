@@ -40,13 +40,15 @@
                             </f:facet>
 
                             <!-- Department Warning -->
-                            <div class="alert alert-warning mb-3" role="alert" rendered="#{departmentPreferencesController.loggedUserDepartment eq null}">
-                                <i class="fa fa-exclamation-triangle"></i>
-                                <strong class="ms-2">No Department Selected</strong>
-                                <p class="mt-2 ms-2">
-                                    You need to be logged into a specific department to manage department preferences.
-                                </p>
-                            </div>
+                            <h:panelGroup rendered="#{departmentPreferencesController.loggedUserDepartment eq null}">
+                                <div class="alert alert-warning mb-3" role="alert">
+                                    <i class="fa fa-exclamation-triangle"></i>
+                                    <strong class="ms-2">No Department Selected</strong>
+                                    <p class="mt-2 ms-2">
+                                        You need to be logged into a specific department to manage department preferences.
+                                    </p>
+                                </div>
+                            </h:panelGroup>
 
                             <p:panel header="Pharmacy" styleClass="my-3" rendered="#{departmentPreferencesController.loggedUserDepartment ne null}">
                                 <h:panelGrid columns="2" styleClass="alignTop w-100" columnClasses="col-8,col-4">
