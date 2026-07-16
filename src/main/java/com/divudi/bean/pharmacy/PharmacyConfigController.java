@@ -206,6 +206,11 @@ public class PharmacyConfigController implements Serializable {
     private boolean inwardDirectIssueBillFiveFive;
     private boolean inwardDirectIssueBillPos;
 
+    // BHT Pharmacy Issue Request Receipt print formats
+    private boolean bhtIssueRequestReceiptA4;
+    private boolean bhtIssueRequestReceiptFiveFive;
+    private boolean bhtIssueRequestReceiptPos;
+
     public PharmacyConfigController() {
     }
     
@@ -394,6 +399,11 @@ public class PharmacyConfigController implements Serializable {
         inwardDirectIssueBillA4 = configOptionApplicationController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is A4", false);
         inwardDirectIssueBillFiveFive = configOptionApplicationController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is FiveFive", true);
         inwardDirectIssueBillPos = configOptionApplicationController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is POS", false);
+
+        // BHT Pharmacy Issue Request Receipt print formats — application-wide
+        bhtIssueRequestReceiptA4 = configOptionApplicationController.getBooleanValueByKey("Pharmacy BHT Issue Request Receipt is A4", false);
+        bhtIssueRequestReceiptFiveFive = configOptionApplicationController.getBooleanValueByKey("Pharmacy BHT Issue Request Receipt is FiveFive", true);
+        bhtIssueRequestReceiptPos = configOptionApplicationController.getBooleanValueByKey("Pharmacy BHT Issue Request Receipt is POS", false);
 
     }
 
@@ -924,6 +934,21 @@ public class PharmacyConfigController implements Serializable {
             configOptionApplicationController.setBooleanValueByKey("Pharmacy Inward Direct Issue Bill is FiveFive", inwardDirectIssueBillFiveFive);
             configOptionApplicationController.setBooleanValueByKey("Pharmacy Inward Direct Issue Bill is POS", inwardDirectIssueBillPos);
             JsfUtil.addSuccessMessage("Inward Direct Issue Bill print format settings saved");
+            loadCurrentConfig();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving print format settings: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save BHT Pharmacy Issue Request Receipt print format configuration changes
+     */
+    public void saveBhtIssueRequestReceiptConfig() {
+        try {
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy BHT Issue Request Receipt is A4", bhtIssueRequestReceiptA4);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy BHT Issue Request Receipt is FiveFive", bhtIssueRequestReceiptFiveFive);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy BHT Issue Request Receipt is POS", bhtIssueRequestReceiptPos);
+            JsfUtil.addSuccessMessage("BHT Issue Request Receipt print format settings saved");
             loadCurrentConfig();
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving print format settings: " + e.getMessage());
@@ -1915,6 +1940,31 @@ public class PharmacyConfigController implements Serializable {
 
     public void setInwardDirectIssueBillPos(boolean inwardDirectIssueBillPos) {
         this.inwardDirectIssueBillPos = inwardDirectIssueBillPos;
+    }
+
+    // BHT Pharmacy Issue Request Receipt Getters and Setters
+    public boolean isBhtIssueRequestReceiptA4() {
+        return bhtIssueRequestReceiptA4;
+    }
+
+    public void setBhtIssueRequestReceiptA4(boolean bhtIssueRequestReceiptA4) {
+        this.bhtIssueRequestReceiptA4 = bhtIssueRequestReceiptA4;
+    }
+
+    public boolean isBhtIssueRequestReceiptFiveFive() {
+        return bhtIssueRequestReceiptFiveFive;
+    }
+
+    public void setBhtIssueRequestReceiptFiveFive(boolean bhtIssueRequestReceiptFiveFive) {
+        this.bhtIssueRequestReceiptFiveFive = bhtIssueRequestReceiptFiveFive;
+    }
+
+    public boolean isBhtIssueRequestReceiptPos() {
+        return bhtIssueRequestReceiptPos;
+    }
+
+    public void setBhtIssueRequestReceiptPos(boolean bhtIssueRequestReceiptPos) {
+        this.bhtIssueRequestReceiptPos = bhtIssueRequestReceiptPos;
     }
 
 }

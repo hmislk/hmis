@@ -22,6 +22,7 @@ import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFeePayment;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.BillFacade;
@@ -1572,8 +1573,17 @@ public class GrnReturnWithCostingController implements Serializable {
     // These should update bill item lelvel txtLineReturnValue and Bill Level panelReturnBillDetails
     // have to prefil 
     public void onEditItem(PharmacyItemData tmp) {
-        double pur = getPharmacyBean().getLastPurchaseRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
-        double ret = getPharmacyBean().getLastRetailRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
+        BillItem billItem = tmp.getPharmaceuticalBillItem().getBillItem();
+        BillItem referanceBillItem = billItem.getReferanceBillItem();
+        Department department = null;
+        if (referanceBillItem != null && referanceBillItem.getBill() != null) {
+            department = referanceBillItem.getBill().getDepartment();
+        } else if (billItem.getBill() != null) {
+            department = billItem.getBill().getDepartment();
+        }
+
+        double pur = getPharmacyBean().getLastPurchaseRate(billItem.getItem(), department);
+        double ret = getPharmacyBean().getLastRetailRate(billItem.getItem(), department);
 
         tmp.getPharmaceuticalBillItem().setPurchaseRateInUnit(pur);
         tmp.getPharmaceuticalBillItem().setRetailRateInUnit(ret);

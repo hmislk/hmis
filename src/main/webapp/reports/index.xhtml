@@ -117,6 +117,12 @@
                                         value="11. Float Transfer Report"
                                         rendered="#{webUserController.hasPrivilege('ViewFundTransferReports')}"
                                         action="#{financialTransactionController.navigateToFundTransferReport()}" />
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        action="#{searchController.navigateToShiftStartAndEnd()}"
+                                        value="12. Shift End Summary" >
+                                    </p:commandButton>
 
                                 </div>
                             </p:tab>

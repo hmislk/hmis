@@ -85,21 +85,45 @@
 
                     <f:facet name="header" >
                         <div class="d-flex justify-content-between align-items-center w-100">
-                            <div>
-                                <h:outputLabel styleClass="fas fa-arrow-right-arrow-left me-2" />
+                            <!-- LEFT: title + config -->
+                            <div class="d-flex align-items-center gap-2">
+                                <h:outputLabel styleClass="fas fa-arrow-right-arrow-left" />
                                 <h:outputText value="Pharmacy Direct Issue - " />
                                 <h:outputText value="#{transferIssueDirectController.issuedBill.fromDepartment.name}" styleClass="fw-bold" />
                                 <h:outputText value=" → " styleClass="mx-2" />
                                 <h:outputText value="#{transferIssueDirectController.issuedBill.toDepartment.name}" styleClass="fw-bold text-primary" />
+                                <p:commandButton
+                                    value="Config"
+                                    icon="fas fa-cog"
+                                    immediate="true"
+                                    ajax="false"
+                                    type="button"
+                                    onclick="PF('transferIssueDirectDepartmentConfigDialog').show();"
+                                    title="Configure printer settings"
+                                    styleClass="ui-button-secondary ui-button-outlined" />
                             </div>
-                            <div>
+                            <!-- CENTER: navigation -->
+                            <div class="d-flex gap-2">
                                 <p:commandButton
                                     value="Change Department"
-                                    styleClass="ui-button-warning"
+                                    styleClass="ui-button-info ui-button-outlined"
                                     ajax="false"
                                     immediate="true"
                                     icon="pi pi-refresh"
                                     action="#{transferIssueDirectController.changeDepartment()}" />
+                            </div>
+                            <!-- RIGHT: primary action -->
+                            <div>
+                                <p:commandButton
+                                    value="Settle Issue"
+                                    icon="fas fa-check-circle"
+                                    action="#{transferIssueDirectController.settleDirectIssue}"
+                                    onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
+                                                return false;"
+                                    ajax="false"
+                                    disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementDirectIssue')}"
+                                    style="min-width:120px"
+                                    styleClass="ui-button-success" />
                             </div>
                         </div>
                     </f:facet>
@@ -314,21 +338,8 @@
                         <div class="col-4" >
                             <p:panel styleClass="shadow-sm">
                                 <f:facet name="header" >
-                                    <div class="d-flex justify-content-between align-items-center w-100">
-                                        <div>
-                                            <h:outputLabel styleClass="fas fa-info-circle me-2" />
-                                            <h:outputText value="Issue Details" styleClass="fw-bold" />
-                                        </div>
-                                        <p:commandButton
-                                            value="Issue"
-                                            icon="fas fa-check"
-                                            action="#{transferIssueDirectController.settleDirectIssue}"
-                                            onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                        return false;"
-                                            ajax="false"
-                                            disabled="#{not webUserController.hasPrivilege('PharmacyDisbursementDirectIssue')}"
-                                            styleClass="ui-button-success" />
-                                    </div>
+                                    <h:outputLabel styleClass="fas fa-info-circle me-2" />
+                                    <h:outputText value="Issue Details" styleClass="fw-bold" />
                                 </f:facet>
 
                                 <div class="card border-info mb-2">
@@ -358,6 +369,7 @@
                                     <p:outputLabel value="Receiving Staff" styleClass="form-label fw-bold text-danger"/>
                                     <small class="text-muted d-block mb-1">Select the staff member who will receive the items</small>
                                     <p:autoComplete
+                                        class="w-100"
                                         inputStyleClass="w-100"
                                         completeMethod="#{staffController.completeStaffWithoutDoctors}"
                                         forceSelection="true"

@@ -111,8 +111,9 @@ public class InpatientDirectIssueNativeSqlService {
                 + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, netRate,"
                 + " rate, marginValue, discount, discountRate,"
                 + " createdAt, creater_ID, retired, refunded, billItemRefunded,"
-                + " consideredForCosting, inwardChargeType, referanceBillItem_ID)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine',?)")
+                + " consideredForCosting, inwardChargeType, referanceBillItem_ID,"
+                + " overriddenRate, fromPackage, sourcePackageItem_ID)"
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine',?,?,?,?)")
                 .setParameter(1, billId)
                 .setParameter(2, d.getItemId())
                 .setParameter(3, absQty)
@@ -127,6 +128,9 @@ public class InpatientDirectIssueNativeSqlService {
                 .setParameter(12, new Timestamp(createdAt.getTime()))
                 .setParameter(13, d.getCreaterId())
                 .setParameter(14, d.getSourceRequestBillItemId())
+                .setParameter(15, d.getOverriddenRate())
+                .setParameter(16, d.isFromPackage() ? 1 : 0)
+                .setParameter(17, d.getSourcePackageItemId())
                 .executeUpdate();
             biIds[i] = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
 

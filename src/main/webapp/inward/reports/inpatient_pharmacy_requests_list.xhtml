@@ -30,6 +30,16 @@
                         </div>
                         <div class="d-flex gap-2">
                             <p:commandButton
+                                id="btnRefresh"
+                                title="Reload the latest pharmacy requests for this admission"
+                                value="Refresh"
+                                action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyRequestsList()}"
+                                ajax="false"
+                                icon="fa fa-sync-alt"
+                                styleClass="ui-button-secondary">
+                            </p:commandButton>
+                            <p:commandButton
+                                id="btnDownload"
                                 value="Download"
                                 ajax="false"
                                 icon="fa fa-download"
@@ -37,6 +47,7 @@
                                 <p:dataExporter fileName="Inpatient Pharmacy Requests" target="tbl1" type="xlsx"></p:dataExporter>
                             </p:commandButton>
                             <p:commandButton
+                                id="btnPrint"
                                 value="Print"
                                 ajax="false"
                                 icon="fa fa-print"
@@ -170,6 +181,7 @@
                                         icon="fa fa-eye"
                                         action="/ward/ward_pharmacy_reprint_bht_issue_request?faces-redirect=true">
                                         <f:setPropertyActionListener value="#{b}" target="#{pharmacyBillSearch.bill}"/>
+                                        <f:setPropertyActionListener value="/inward/reports/inpatient_pharmacy_requests_list?faces-redirect=true" target="#{pharmacyBillSearch.returnPage}"/>
                                     </p:commandButton>
 
                                     <p:commandButton

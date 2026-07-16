@@ -101,6 +101,10 @@ public class PatientRoom implements Serializable, RetirableEntity {
     double calculatedLinenCharge = 0;
     double calculatedAdministrationCharge = 0;
     double calculatedMedicalCareCharge = 0;
+
+    private boolean fromPackage;
+    private Double includedRoomDurationHours;
+
 //Discount
     private double discountRoomCharge;
     private double discountMaintainCharge;
@@ -703,6 +707,22 @@ public class PatientRoom implements Serializable, RetirableEntity {
 
     public void setAdmitted(boolean admitted) {
         this.admitted = admitted;
+    }
+
+    public boolean isFromPackage() {
+        return fromPackage;
+    }
+
+    public void setFromPackage(boolean fromPackage) {
+        this.fromPackage = fromPackage;
+    }
+
+    public Double getIncludedRoomDurationHours() {
+        return includedRoomDurationHours;
+    }
+
+    public void setIncludedRoomDurationHours(Double includedRoomDurationHours) {
+        this.includedRoomDurationHours = includedRoomDurationHours;
     }
 
     @OneToMany(mappedBy = "patientRoom", cascade = CascadeType.ALL)
