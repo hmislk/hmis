@@ -572,6 +572,119 @@ privilege check for that department under the PO branch's code. Fix: delete (or 
 the rows for privileges that don't exist on the currently deployed branch, re-grant only
 what the current branch's `Privileges.java` actually declares, then re-login.
 
+## 25. A JPQL path expression through a nullable relationship silently INNER-JOINs and drops rows
+
+Writing `b.patientEncounter.bhtNo` or `b.patient.person.name` directly in a `SELECT`/`WHERE`
+generates an **implicit INNER JOIN** on that relationship. If the relationship is null for
+some rows (e.g. `patientEncounter`/`patient` are null on OPD bills), **every one of those
+rows silently disappears** from the result — no error, no log entry. The report just looks
+"wrong" (too few rows), and it's easy to blame filters/dates first.
+
+Tell: a combined OPD+Inward report showed only the 2 Inward rows (which have a
+`patientEncounter`) and dropped all 20 OPD rows for the same item/date range. DB count
+didn't match the report count. Fix: use explicit `left join b.patientEncounter pe` /
+`left join b.patient pat left join pat.person per` and reference the aliases (`pe.bhtNo`,
+`per.name`) in the projection. Verified on issue #21920 (`fetchItemizedServiceInstanceDTOs`
+in `BillService`). Always cross-check report row count against a direct
+`SELECT ... FROM billitem bi JOIN bill b ...` when a report projects fields from an
+optional relationship.
+
+Related sign gotcha found the same pass: cancellation/refund `BillItem` fee columns
+(`netValue`, `hospitalFee`, …) are **already stored negative** in the DB. A
+`case when billClassType in (cancel, refund) then -bi.netValue else bi.netValue end`
+double-negates them to positive — this is the "fee doubling after cancellation" symptom
+(issue #21918). Use the stored values as-is; only synthesize a sign for the row **count**
+(which has no stored value). Verify by summing `bi.netValue` directly in SQL and matching
+the report's Grand Total.
+
+## 26. Editing a `ConfigOption` via raw SQL is invisible to the running app — use the admin UI
+
+`ConfigOptionApplicationController.getApplicationOption(key)` reads through EclipseLink's
+shared L2 entity cache. A direct `UPDATE configoption SET optionvalue=... WHERE optionkey=...`
+via the `mysql` CLI changes the DB row but the already-cached `ConfigOption` entity in the
+running Payara instance keeps serving the old value — `getLongValueByKey`/`getBooleanValueByKey`
+never see the change, with no error or log entry. This wasted a full test cycle while verifying
+a day-limit config for issue #22055 (two `UPDATE` statements had zero effect on rendered button
+state).
+
+**Fix:** edit config values through `admin/institutions/admin_mange_application_options.xhtml`
+(List Application Options → filter by Key → **Edit Option** → Save). That path goes through
+the entity manager and correctly invalidates the cache, and the change is visible on the very
+next page load — no redeploy or Payara restart needed. Reserve raw SQL for *reading* config
+state (e.g. confirming a key auto-created with the right default on first access), never for
+writing it mid-test.
+
+## 27. Multi-Payara machines: `asadmin` without `--port` may hit ANOTHER USER'S domain
+
+On a box with two Payara installs (e.g. `/home/carecode/payara` domain `rh` admin port **9048**,
+and `/home/buddhika/payara` domain1 on default **4848**), a bare `asadmin redeploy/undeploy/deploy`
+connects to whoever owns 4848 — which can be the *other user's* server. Tells that you're on the
+wrong DAS: `redeploy` fails with **"Cannot determine the path of application"**, `deploy` fails with
+**"File not found"** for a WAR that clearly exists (the other user's Payara process can't traverse
+your 750-mode home directory), and `list-applications` shows an app list that doesn't match your
+domain. An `undeploy` in this state removes the app from the *other* server — before any
+state-changing asadmin call, confirm which process owns the admin port you're about to use
+(`ss -tlnp | grep <port>` + `ps -o user= -p <pid>`), run `asadmin --port <port> list-applications`
+on that same endpoint to confirm the expected app list, and always pass the explicit admin port on
+**every** command (`asadmin --port 9048 redeploy/undeploy/deploy ...` for the local `rh` domain —
+never the bare default).
+
+Recovery after removing the wrong domain's app: copy the WAR to a path the *target* domain's user
+can read (its Payara can't traverse your `0750` home directory) — keep permissions as tight as that
+allows (e.g. a dedicated directory rather than bare `/tmp`, no wider than `0644` on the file),
+rewrite `WEB-INF/classes/META-INF/persistence.xml` inside the copy to that domain's JNDI names via
+`unzip`/`sed`/`zip`, **verify the rewritten `<jta-data-source>` values before deploying**, deploy
+with `--port <that domain's admin port>` and `--name`/`--contextroot` matching what was removed,
+and **delete the staged copy immediately after** the deploy succeeds. (Hit while deploying for
+issue #14863.)
+
+## 28. Claude-in-Chrome on heavy non-AJAX report pages (full-submit + long query)
+
+Verifying `slow_fast_none_movement.xhtml` (multi-minute aggregate queries, `ajax="false"` Process
+button) surfaced these:
+
+- **Screenshots time out while the server renders** (`Page.captureScreenshot ... renderer may be
+  frozen`). Don't retry screenshots in a loop — poll cheaply with `javascript_tool` on
+  `document.readyState` + a marker string in `document.body.innerText`, and screenshot once ready.
+- **`find`-ref and coordinate clicks on the submit button intermittently do nothing** (stale refs
+  after each full reload; overlay panels intercepting clicks). The reliable submit is DOM-level:
+  `[...document.querySelectorAll('button')].find(b=>b.textContent.includes('Process')).click()`.
+- **Set PrimeFaces inputs directly on the hidden native elements before a full submit**: p:selectOneMenu
+  → `select[id$="..._input"].value = '...'`; p:selectCheckboxMenu → toggle
+  `input[name$="billTypes"]` checkboxes; p:datePicker → `PF widget .setDate(new Date(...))`. For a
+  non-AJAX submit only the submitted values matter, so skipping the widget UI is safe and immune to
+  overlay/timing issues. (AJAX listeners do NOT fire this way — only use for full-form submits.)
+- **html2canvas does not capture PrimeFaces overlay panels** (`*_panel` appended near body root render
+  blank/absent) — capture page states instead, or read the panel's `innerText` as textual evidence.
+
+## 29. GRN costing Save→Finalize→Approve: `Difference` guard needs a real keyup on Invoice Total at EVERY step
+
+On `pharmacy_grn_costing_with_save_approve.xhtml` the controller field `difference` (checked by
+`Math.abs(difference) > 1` in the finalize/approve actions) is recomputed **only** by the
+`p:ajax event="keyup"` listener on the Invoice Total input (`insv`) — a DOM-set value applied by an
+`ajax="false"` full submit updates `insTotal` server-side but never recalculates `difference`, so the
+approve fails with "The invoice does not match..! Check again" even though the submitted total is
+correct. Worse, after the Finalize → "To Approve GRNs" → Approve navigation the page reloads with
+Invoice Total rendered as `0.00`, so a value that passed at Save/Finalize is gone at the Approve step.
+Fix in automation: on the approve pass, click into `insv`, `Control+a`, `browser_type` the total
+`slowly: true` (real keyups fire the AJAX), confirm the `diff` input reads `0.00`, then click Approve.
+Everything else on that page (row qty/free-qty/batch/expiry/retail-rate inputs, invoice number/date)
+CAN be set directly on the DOM inputs — the `ajax="false"` Save/Finalize buttons submit and apply them
+(verified while testing issue #22120).
+
+## 30. `ward_pharmacy_bht_issue_request_bill.xhtml` — "New Bill" silently discards unsaved items
+
+On the "Start Pharmacy Request for Inpatients" flow, the "Add Dispense Only" button only stages
+`BillItem`s in the in-memory `PreBill` — nothing is persisted until "Settle Request" is clicked (the
+"Save Draft" button that would otherwise persist an intermediate `PharmacyBhtPre` is `rendered="false"`,
+per a comment in the page noting there's currently no way to resume a saved draft). The "New Bill"
+button (`actionListener="#{pharmacyRequestForBhtController.resetAll}"`) looks like a reasonable "finish
+this request" action but actually **discards all staged items with no confirmation** and resets the form
+to "Start Pharmacy Request for Inpatients". If a Playwright pass adds items and then clicks "New Bill"
+expecting the request to be saved, a DB check afterward will show nothing was created. Always use
+**"Settle Request"** (confirm-dialog-guarded) to actually persist a BHT pharmacy request. Verified while
+testing issue #22153.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

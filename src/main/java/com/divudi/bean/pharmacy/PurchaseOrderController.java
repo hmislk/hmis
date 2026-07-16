@@ -108,30 +108,30 @@ public class PurchaseOrderController implements Serializable {
 
     private String emailRecipient;
 
-    public void removeSelected() {
-        //  //System.err.println("1");
-        if (selectedItems == null) {
-            JsfUtil.addErrorMessage("Please select items");
-            return;
+    public synchronized String removeSelected() {
+        if (selectedItems == null || selectedItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No items selected to remove");
+            return "";
         }
 
-        //System.err.println("3");
-        for (BillItem b : selectedItems) {
-            //  //System.err.println("4");
-            getBillItems().remove(b.getSearialNo());
-            calTotal();
-        }
-
+        getBillItems().removeAll(selectedItems);
+        calTotal();
         selectedItems = null;
+        return "";
     }
 
     public void displayItemDetails(BillItem bi) {
         getPharmacyController().fillItemDetails(bi.getItem());
     }
 
-    public void removeItem(BillItem billItem) {
-        getBillItems().remove(billItem.getSearialNo());
+    public synchronized String removeItem(BillItem billItem) {
+        if (billItem == null || !getBillItems().contains(billItem)) {
+            JsfUtil.addErrorMessage("Item not found or already removed");
+            return "";
+        }
+        getBillItems().remove(billItem);
         calTotal();
+        return "";
     }
 
     private int maxResult = 50;
@@ -159,7 +159,17 @@ public class PurchaseOrderController implements Serializable {
         return fromDate;
     }
 
-    public String navigateToPurchaseOrderApproval() {
+    // synchronized: the Approve button on the PO-list-to-approve page has no
+    // confirm() or double-click guard and posts here (not to approve()) before
+    // the review screen is even shown. A double-click raced two calls through
+    // clearList()+generateBillComponent() on this session-scoped bean: both
+    // nulled billItems, then both re-populated it from the same PO Request,
+    // leaving billItems holding every line twice. approve() then faithfully
+    // persisted the doubled list in a single call, producing one approved
+    // Bill with every item duplicated once - the GRN duplication reported by
+    // Ruhunu on PO/RH/GSK/26/01093, a recurrence of the same bug class as the
+    // approve() fix (PR #21815/#22101) one step earlier in the workflow.
+    public synchronized String navigateToPurchaseOrderApproval() {
         Bill temRequestedBill = requestedBill;
 
         // Check if the requested bill is already approved
@@ -207,7 +217,15 @@ public class PurchaseOrderController implements Serializable {
         return true;
     }
 
-    public String approve() {
+    // synchronized: a double-submit on the Approve button (slow ajax="false"
+    // postback re-clicked, or a resubmitted form) let two requests race through
+    // the same in-memory billItems list before either had persisted, so both
+    // saw BillItem.id == null and created every line twice. The "already
+    // approved" guard below only protects against a second call once the first
+    // has actually finished; synchronized serializes concurrent/racing calls
+    // on this session-scoped bean so the guard is effective (issue: GRN item
+    // duplication reported by Ruhunu, same pattern as #21417)
+    public synchronized String approve() {
         if (!isAuthorized("APPROVE", "PurchaseOrdersApprovel")) {
             return "";
         }

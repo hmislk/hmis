@@ -138,6 +138,8 @@ public enum Privileges {
     InwardPhysicalDischarge("Inward Physical Discharge"),
     InwardDocumentUpload("Inward Document Upload"),
     InpatientLetter("Inpatient Letter"),
+    InwardPackageAdministration("Inward Package Administration"),
+    InwardPackageAdmission("Inward Package Admission"),
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Nurse">
@@ -755,6 +757,7 @@ public enum Privileges {
     DrawerAdjustmentRequestApproval("Drawer Adjustment Request Approval"),
     DrawerAdjustmentDirect("Drawer Adjustment Direct (No Approval)"),
     PettyCashCancellationApproval("Petty-Cash Cancellation Approval"),
+    PharmacyRetailSaleReturnApproval("Pharmacy Retail Sale Return Approval"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Float Transfer">
@@ -1138,6 +1141,7 @@ public enum Privileges {
             case DrawerAdjustmentRequestApproval:
             case DrawerAdjustmentDirect:
             case PettyCashCancellationApproval:
+            case PharmacyRetailSaleReturnApproval:
                 return "Approval";
 
             case CashierHandoverStatusReport:
@@ -1175,6 +1179,8 @@ public enum Privileges {
             case InwardAddChargesAfterNursingDischarge:
             case InwardDocumentUpload:
             case InpatientLetter:
+            case InwardPackageAdministration:
+            case InwardPackageAdmission:
             case InwardFormTemplateAdmin:
             case InwardFormFill:
             case InwardSettleFinalBill:

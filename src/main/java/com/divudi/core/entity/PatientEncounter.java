@@ -102,6 +102,8 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     Date timeOfAdmission;
     @ManyToOne
     AdmissionType admissionType;
+    @javax.persistence.ManyToOne
+    private com.divudi.core.entity.inward.InpatientPackage inpatientPackage;
     Boolean discharged = false;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date timeOfDischarge;
@@ -713,6 +715,14 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setAdmissionType(AdmissionType admissionType) {
         this.admissionType = admissionType;
+    }
+
+    public com.divudi.core.entity.inward.InpatientPackage getInpatientPackage() {
+        return inpatientPackage;
+    }
+
+    public void setInpatientPackage(com.divudi.core.entity.inward.InpatientPackage inpatientPackage) {
+        this.inpatientPackage = inpatientPackage;
     }
 
     public Boolean isDischarged() {

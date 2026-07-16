@@ -64,6 +64,11 @@ public class BillItemData implements Serializable {
     // ---- Linkage back to an originating ItemRequest line (issue #21793 redesign) ----
     private Long sourceRequestBillItemId;
 
+    // ---- Package rate override (Task 16d — inpatient package pricing) ----
+    private Double overriddenRate;
+    private boolean fromPackage;
+    private Long sourcePackageItemId;
+
     public BillItemData() {
     }
 
@@ -329,5 +334,29 @@ public class BillItemData implements Serializable {
 
     public void setSourceRequestBillItemId(Long sourceRequestBillItemId) {
         this.sourceRequestBillItemId = sourceRequestBillItemId;
+    }
+
+    public Double getOverriddenRate() {
+        return overriddenRate;
+    }
+
+    public void setOverriddenRate(Double overriddenRate) {
+        this.overriddenRate = overriddenRate;
+    }
+
+    public boolean isFromPackage() {
+        return fromPackage;
+    }
+
+    public void setFromPackage(boolean fromPackage) {
+        this.fromPackage = fromPackage;
+    }
+
+    public Long getSourcePackageItemId() {
+        return sourcePackageItemId;
+    }
+
+    public void setSourcePackageItemId(Long sourcePackageItemId) {
+        this.sourcePackageItemId = sourcePackageItemId;
     }
 }

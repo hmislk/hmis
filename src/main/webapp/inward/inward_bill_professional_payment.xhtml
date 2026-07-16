@@ -6,6 +6,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill"
+      xmlns:bic="http://xmlns.jcp.org/jsf/composite/bill"
       >
 
     <h:body>
@@ -266,12 +267,21 @@
                                         class="ui-button-success"
                                         action="#{inwardStaffPaymentBillController.navigateToInwardPayStaff()}"  >
                                     </p:commandButton>
-                                    <p:commandButton 
-                                        value="Print" 
+                                    <p:commandButton
+                                        id="btnPrint"
+                                        value="Print"
                                         icon="fa fa-print"
                                         class="ui-button-info"
                                         ajax="false" action="#" >
                                         <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        id="btnPrintIndividual"
+                                        value="Print Individual"
+                                        icon="fa fa-print"
+                                        class="ui-button-danger"
+                                        ajax="false" action="#" >
+                                        <p:printer target="gpIndividualPreview" ></p:printer>
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -289,6 +299,17 @@
 
                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a five five paper.',false)}">
                                 <bi:staff_payment_five_five_paper_with_headings controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" />
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <!-- Individual per-BHT vouchers -->
+                        <h:panelGroup id="gpIndividualPreview">
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a A4 paper.', true)}">
+                                <bic:staff_payment_individual_a4 controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" />
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a five five paper.',false)}">
+                                <bic:staff_payment_individual_five_five controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" />
                             </h:panelGroup>
                         </h:panelGroup>
 

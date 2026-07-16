@@ -6,6 +6,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
@@ -41,6 +42,7 @@ import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.UserStockContainer;
@@ -66,6 +68,7 @@ import javax.inject.Named;
 
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 
@@ -90,6 +93,8 @@ public class PharmacyRequestForBhtController implements Serializable {
     PharmacyCalculation pharmacyCalculation;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    ItemController itemController;
 
 ////////////////////////
     @EJB
@@ -120,6 +125,8 @@ public class PharmacyRequestForBhtController implements Serializable {
     com.divudi.ejb.PrescriptionToItemService prescriptionToItemService;
     @EJB
     private PharmacyService pharmacyService;
+    @EJB
+    private com.divudi.core.facade.InpatientPackageItemFacade inpatientPackageItemFacade;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -138,6 +145,27 @@ public class PharmacyRequestForBhtController implements Serializable {
     boolean billPreview = false;
     Department department;
     String errorMessage = "";
+    // Prescription medicine-type toggle filters (VTM/ATM/VMP/AMP). Default all on = list all pharmaceutical items.
+    private boolean includeVtm = true;
+    private boolean includeAtm = true;
+    private boolean includeVmp = true;
+    private boolean includeAmp = true;
+    // Edit-a-bill-item modal state: the row being edited and the same-generic substitute options
+    private BillItem billItemForEdit;
+    private List<Item> substituteAmps;
+    private Item selectedSubstituteAmp;
+    // Detached edit-model quantity. The dialog binds to this, not to the live
+    // billItemForEdit.qty, so a failed validation never leaves a bad quantity on
+    // the row. The value is committed to the row only when saveEditedBillItem()
+    // fully passes.
+    private Double editQty;
+    // True only when the last saveEditedBillItem() call passed all validation and
+    // committed. The dialog reads this in oncomplete to decide whether to close,
+    // so a failed edit keeps the dialog open with the bad value visible.
+    private boolean editSavedSuccessfully;
+    // Re-entrancy guard for settleBhtRequest() so a rapid double-submit cannot
+    // create duplicate bills / notifications.
+    private boolean settlingBhtRequest;
     /////////////////
     List<Stock> replaceableStocks;
     //List<BillItem> billItems;
@@ -214,6 +242,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         selectedAlternative = null;
         preBill = null;
         printBill = null;
+        bhtIssueRequestPrintDtoBillId = null;
         bill = null;
         billItem = null;
         editingBillItem = null;
@@ -539,6 +568,15 @@ public class PharmacyRequestForBhtController implements Serializable {
         }
         if (billItem.getPrescription() == null) {
             billItem.setPrescription(new Prescription());
+        }
+        // Default the "Prescribed From" date to today whenever it is missing. This
+        // covers the start of every new cycle (a fresh prescription after
+        // clearBillItem()) as well as recovery from a postback that submitted the
+        // calendar empty and nulled the field. Once a duration is entered,
+        // calculateToDateFromDuration() derives "Prescribed To" from this
+        // from-date + duration.
+        if (billItem.getPrescription().getPrescribedFrom() == null) {
+            billItem.getPrescription().setPrescribedFrom(new Date());
         }
         return billItem;
     }
@@ -906,6 +944,22 @@ public class PharmacyRequestForBhtController implements Serializable {
     }
 
     public void settleBhtRequest() {
+        // Server-side re-entry guard: a rapid double-submit (double-click, duplicate
+        // AJAX) must not create a second request bill / notification. The first call
+        // sets the flag; any overlapping call is rejected until this one finishes.
+        if (settlingBhtRequest) {
+            JsfUtil.addErrorMessage("This request is already being settled. Please wait.");
+            return;
+        }
+        settlingBhtRequest = true;
+        try {
+            settleBhtRequestInternal();
+        } finally {
+            settlingBhtRequest = false;
+        }
+    }
+
+    private void settleBhtRequestInternal() {
         if (getPatientEncounter() == null || getPatientEncounter().getPatient() == null) {
             JsfUtil.addErrorMessage("Please Select a BHT");
             return;
@@ -1089,7 +1143,39 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
+        if (getPreBill() != null && getPreBill().getId() != null && hasNonCancelledIssuingAgainstRequest(getPreBill())) {
+            JsfUtil.addErrorMessage("This request has already been issued (partially or fully) from pharmacy and can no longer be edited.");
+            return;
+        }
         settleEditedBhtIssueRequest(BillType.InwardPharmacyRequest, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUEREQ);
+    }
+
+    /**
+     * XHTML-facing check so the Settle button can be disabled up front
+     * (server-side re-check on submit still applies via
+     * settleEditedPharmacyBhtIssueRequest()).
+     */
+    public boolean isPreBillAlreadyIssuedAgainstRequest() {
+        return preBill != null && preBill.getId() != null && hasNonCancelledIssuingAgainstRequest(preBill);
+    }
+
+    /**
+     * Mirrors PharmacyBillSearch.hasNonCancelledIssuingAgainstRequest - checks
+     * whether any non-cancelled, non-refunded PharmacyBhtPre bill still
+     * references this request, i.e. pharmacy has already issued (partially or
+     * fully) against it and it should no longer be editable/settleable.
+     */
+    private boolean hasNonCancelledIssuingAgainstRequest(Bill requestBill) {
+        String jpql = "SELECT COUNT(b) FROM Bill b WHERE b.retired = false "
+                + "AND b.billType = :btp "
+                + "AND b.referenceBill = :ref "
+                + "AND b.cancelled = false "
+                + "AND b.refunded = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillType.PharmacyBhtPre);
+        params.put("ref", requestBill);
+        Long count = billFacade.findLongByJpql(jpql, params);
+        return count != null && count > 0;
     }
 
     private void settleEditedBhtIssueRequest(BillType btp, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
@@ -1109,6 +1195,10 @@ public class PharmacyRequestForBhtController implements Serializable {
         // Calculation Margin
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
         setPrintBill(getBillFacade().find(getPreBill().getId()));
+        // This is a re-settle of an existing request (same bill id) with edited
+        // items - invalidate the cached print DTO so the preview re-reads the
+        // updated item list instead of the pre-edit snapshot.
+        bhtIssueRequestPrintDtoBillId = null;
         Bill bill = getBillFacade().find(getPreBill().getId());
         bill.setBillTypeAtomic(BillTypeAtomic.REQUEST_MEDICINE_INWARD);
         bill.setEditedAt(new Date());
@@ -1269,6 +1359,53 @@ public class PharmacyRequestForBhtController implements Serializable {
         return false;
     }
 
+    private Double resolvePackageOverrideRate(com.divudi.core.entity.Item item, double requestedQty) {
+        if (patientEncounter == null || patientEncounter.getInpatientPackage() == null || item == null) {
+            return null;
+        }
+        java.util.Map<String, Object> m = new java.util.HashMap<>();
+        m.put("pkg", patientEncounter.getInpatientPackage());
+        m.put("item", item);
+        m.put("type", com.divudi.core.data.inward.InpatientPackageComponentType.PHARMACY_ITEM);
+        java.util.List<com.divudi.core.entity.inward.InpatientPackageItem> matches = inpatientPackageItemFacade.findByJpql(
+                "SELECT i FROM InpatientPackageItem i"
+                        + " WHERE i.retired = false"
+                        + " AND i.inpatientPackage = :pkg"
+                        + " AND i.item = :item"
+                        + " AND i.componentType = :type",
+                m);
+        if (matches.isEmpty()) {
+            return null;
+        }
+        com.divudi.core.entity.inward.InpatientPackageItem packageItem = matches.get(0);
+
+        java.util.Map<String, Object> qm = new java.util.HashMap<>();
+        qm.put("pe", patientEncounter);
+        qm.put("item", item);
+        Double alreadyIssued = getBillItemFacade().findDoubleByJpql(
+                "SELECT SUM(bi.qty) FROM BillItem bi"
+                        + " WHERE bi.retired = false"
+                        + " AND bi.fromPackage = true"
+                        + " AND bi.patientEncounter = :pe"
+                        + " AND bi.item = :item",
+                qm);
+        double consumed = alreadyIssued != null ? alreadyIssued : 0.0;
+
+        if (getPreBill() != null && getPreBill().getBillItems() != null) {
+            for (BillItem existing : getPreBill().getBillItems()) {
+                if (existing.getId() == null && existing.isFromPackage() && item.equals(existing.getItem())) {
+                    consumed += existing.getQty() != null ? existing.getQty() : 0.0;
+                }
+            }
+        }
+
+        if (consumed + requestedQty > packageItem.getQty()) {
+            return null; // Beyond allocation — bill remaining/extra qty at live rate.
+        }
+
+        return packageItem.getFixedPrice() / packageItem.getQty();
+    }
+
     public void addBillItem() {
 
         if (billItem == null) {
@@ -1314,15 +1451,27 @@ public class PharmacyRequestForBhtController implements Serializable {
         newBillItem.setQty(getQty());
         newBillItem.setInwardChargeType(InwardChargeType.Medicine);
         newBillItem.setBill(getPreBill());
+        // Required so resolvePackageOverrideRate()'s cumulative-quantity JPQL (bi.patientEncounter = :pe)
+        // can find this row on subsequent dispenses of the same package-listed item.
+        newBillItem.setPatientEncounter(patientEncounter);
 
         // Handle prescription only if prescription data is available
-        boolean hasPrescriptionData = hasMeaningfulPrescriptionData(billItem.getPrescription());
+        boolean hasPrescriptionData = hasMeaningfulPrescriptionData(billItem.getPrescription(), billItem.getItem());
 
         if (hasPrescriptionData) {
             // Create a detached prescription instance for in-memory use only
             // This will be persisted later during settle operations
             Prescription inMemoryPrescription = new Prescription();
-            inMemoryPrescription.setItem(billItem.getItem());
+            // Carry the PRESCRIBED medicine (selected in the Prescription panel's
+            // acMedicine) onto the prescription, NOT the resolved dispense item.
+            // The Directions text is built from the prescription's own item, so it
+            // must reflect what was prescribed (e.g. the VTM/ATM/VMP the doctor
+            // ordered), not the concrete AMP/VMP chosen for dispensing. Fall back
+            // to the dispense item only when no prescription medicine was picked.
+            Item prescribedItem = billItem.getPrescription().getItem() != null
+                    ? billItem.getPrescription().getItem()
+                    : billItem.getItem();
+            inMemoryPrescription.setItem(prescribedItem);
             inMemoryPrescription.setDose(billItem.getPrescription().getDose());
             inMemoryPrescription.setDoseUnit(billItem.getPrescription().getDoseUnit());
             inMemoryPrescription.setFrequencyUnit(billItem.getPrescription().getFrequencyUnit());
@@ -1367,6 +1516,13 @@ public class PharmacyRequestForBhtController implements Serializable {
                     return;
                 }
             }
+        }
+
+        Double packageRate = resolvePackageOverrideRate(newBillItem.getItem(), getQty());
+        if (packageRate != null) {
+            newBillItem.setOverriddenRate(packageRate);
+            newBillItem.setRate(packageRate);
+            newBillItem.setFromPackage(true);
         }
 
         newBillItem.setSearialNo(getPreBill().getBillItems().size() + 1);
@@ -1450,7 +1606,12 @@ public class PharmacyRequestForBhtController implements Serializable {
         newBillItem.setBill(getPreBill());
 
         Prescription inMemoryPrescription = new Prescription();
-        inMemoryPrescription.setItem(dispensableItem);
+        // Carry the PRESCRIBED medicine onto the prescription so the Directions
+        // text reflects what was ordered, not the resolved dispensable AMP/VMP.
+        Item prescribedItem = sourcePrescription.getItem() != null
+                ? sourcePrescription.getItem()
+                : dispensableItem;
+        inMemoryPrescription.setItem(prescribedItem);
         inMemoryPrescription.setDose(sourcePrescription.getDose());
         inMemoryPrescription.setDoseUnit(sourcePrescription.getDoseUnit());
         inMemoryPrescription.setFrequencyUnit(sourcePrescription.getFrequencyUnit());
@@ -2076,6 +2237,200 @@ public class PharmacyRequestForBhtController implements Serializable {
         JsfUtil.addSuccessMessage("Request Saved");
     }
 
+    /**
+     * Opens the edit modal for a bill item already in the request. Loads the
+     * same-generic substitute options (other AMPs sharing the resolved item's VMP)
+     * so the user can swap the algorithm-picked item for an equivalent one.
+     *
+     * @param bi the bill item row to edit
+     */
+    public void prepareEditBillItem(BillItem bi) {
+        billItemForEdit = bi;
+        selectedSubstituteAmp = null;
+        substituteAmps = new ArrayList<>();
+        editQty = null;
+        if (bi == null || bi.getItem() == null) {
+            return;
+        }
+        selectedSubstituteAmp = bi.getItem();
+        editQty = bi.getQty();
+        fillSubstituteAmpsFor(bi.getItem());
+    }
+
+    /**
+     * Populates {@link #substituteAmps} with AMPs that share the same VMP (generic)
+     * as the given item, i.e. true therapeutic substitutes. The current item is
+     * included so the dropdown shows the present selection.
+     */
+    private void fillSubstituteAmpsFor(Item currentItem) {
+        substituteAmps = new ArrayList<>();
+        if (!(currentItem instanceof Amp)) {
+            // Only AMPs have a VMP-based generic equivalence to substitute within.
+            if (currentItem != null) {
+                substituteAmps.add(currentItem);
+            }
+            return;
+        }
+        Vmp vmp = ((Amp) currentItem).getVmp();
+        if (vmp == null) {
+            substituteAmps.add(currentItem);
+            return;
+        }
+        String jpql = "select amp from Amp amp "
+                + "where amp.retired = false "
+                + "and amp.vmp = :vmp "
+                + "order by amp.name";
+        Map<String, Object> m = new HashMap<>();
+        m.put("vmp", vmp);
+        List<Item> found = itemFacade.findByJpql(jpql, m);
+        if (found != null && !found.isEmpty()) {
+            substituteAmps.addAll(found);
+        } else {
+            substituteAmps.add(currentItem);
+        }
+    }
+
+    /**
+     * Applies the substitute item and quantity chosen in the edit modal to the
+     * bill item, and regenerates the directions text so it reflects the new item.
+     */
+    public void saveEditedBillItem() {
+        editSavedSuccessfully = false;
+        try {
+            if (billItemForEdit == null) {
+                JsfUtil.addErrorMessage("No item selected to edit.");
+                return;
+            }
+            if (selectedSubstituteAmp == null) {
+                JsfUtil.addErrorMessage("Please select an item.");
+                return;
+            }
+            // Validate the detached edit-model quantity; the live row is untouched
+            // until every check below passes, so a failed edit never corrupts the row.
+            if (editQty == null || editQty <= 0) {
+                JsfUtil.addErrorMessage("Please enter a valid quantity.");
+                return;
+            }
+            // All checks passed — commit the edit to the live row.
+            billItemForEdit.setItem(selectedSubstituteAmp);
+            billItemForEdit.setQty(editQty);
+            // The prescription keeps the originally prescribed medicine; only the
+            // dispensed bill-item changes when a therapeutic substitute is chosen.
+            rebuildBillItemDescription(billItemForEdit);
+            editSavedSuccessfully = true;
+            JsfUtil.addSuccessMessage("Item updated.");
+        } finally {
+            // Tell the client whether the save passed so the dialog closes only on
+            // success (see btnSaveEditBillItem oncomplete).
+            if (PrimeFaces.current().isAjaxRequest()) {
+                PrimeFaces.current().ajax().addCallbackParam("editSaved", editSavedSuccessfully);
+            }
+        }
+    }
+
+    /**
+     * Rebuilds a bill item's directions text from its prescription (or a simple
+     * item + qty fallback), mirroring how {@link #addBillItem()} builds it.
+     */
+    private void rebuildBillItemDescription(BillItem bi) {
+        Prescription rx = bi.hasPrescription() ? bi.getPrescription() : null;
+        if (rx != null && hasMeaningfulPrescriptionData(rx, bi.getItem())) {
+            String prescriptionText = rx.getFormattedPrescriptionWithoutIndoorOutdoor();
+            if (rx.getComment() != null && !rx.getComment().trim().isEmpty()) {
+                prescriptionText += " - " + rx.getComment();
+            }
+            bi.setDescreption(prescriptionText);
+        } else if (bi.getItem() != null) {
+            bi.setDescreption(bi.getItem().getName() + " - Qty: " + bi.getQty());
+        }
+    }
+
+    public BillItem getBillItemForEdit() {
+        return billItemForEdit;
+    }
+
+    public void setBillItemForEdit(BillItem billItemForEdit) {
+        this.billItemForEdit = billItemForEdit;
+    }
+
+    public List<Item> getSubstituteAmps() {
+        return substituteAmps;
+    }
+
+    public void setSubstituteAmps(List<Item> substituteAmps) {
+        this.substituteAmps = substituteAmps;
+    }
+
+    public Item getSelectedSubstituteAmp() {
+        return selectedSubstituteAmp;
+    }
+
+    public void setSelectedSubstituteAmp(Item selectedSubstituteAmp) {
+        this.selectedSubstituteAmp = selectedSubstituteAmp;
+    }
+
+    public Double getEditQty() {
+        return editQty;
+    }
+
+    public void setEditQty(Double editQty) {
+        this.editQty = editQty;
+    }
+
+    public boolean isEditSavedSuccessfully() {
+        return editSavedSuccessfully;
+    }
+
+    public void setEditSavedSuccessfully(boolean editSavedSuccessfully) {
+        this.editSavedSuccessfully = editSavedSuccessfully;
+    }
+
+    /**
+     * Autocomplete for the Prescription item field, filtered by the VTM/ATM/VMP/AMP
+     * toggle buttons. Delegates to the shared ItemController query so the filtering
+     * logic stays in one place. When no type is selected, returns an empty list and
+     * warns the user.
+     */
+    public List<Item> completePrescriptionMedicineWithTypeFilter(String query) {
+        if (!includeVtm && !includeAtm && !includeVmp && !includeAmp) {
+            JsfUtil.addErrorMessage("Please select at least one medicine type to search");
+            return new ArrayList<>();
+        }
+        return itemController.completeMedicineByTypeWithFilter(query, includeVtm, includeAtm, includeVmp, includeAmp);
+    }
+
+    public boolean isIncludeVtm() {
+        return includeVtm;
+    }
+
+    public void setIncludeVtm(boolean includeVtm) {
+        this.includeVtm = includeVtm;
+    }
+
+    public boolean isIncludeAtm() {
+        return includeAtm;
+    }
+
+    public void setIncludeAtm(boolean includeAtm) {
+        this.includeAtm = includeAtm;
+    }
+
+    public boolean isIncludeVmp() {
+        return includeVmp;
+    }
+
+    public void setIncludeVmp(boolean includeVmp) {
+        this.includeVmp = includeVmp;
+    }
+
+    public boolean isIncludeAmp() {
+        return includeAmp;
+    }
+
+    public void setIncludeAmp(boolean includeAmp) {
+        this.includeAmp = includeAmp;
+    }
+
     public SessionController getSessionController() {
         return sessionController;
     }
@@ -2214,6 +2569,26 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public void setPrintBill(Bill printBill) {
         this.printBill = printBill;
+    }
+
+    @EJB
+    private com.divudi.service.pharmacy.BhtIssueRequestNativeSqlService bhtIssueRequestNativeSqlService;
+
+    private com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto bhtIssueRequestPrintDto;
+    private Long bhtIssueRequestPrintDtoBillId;
+
+    public com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto getBhtIssueRequestPrintDto() {
+        if (printBill == null || printBill.getId() == null) {
+            return null;
+        }
+        if (!printBill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
+            bhtIssueRequestPrintDto = bhtIssueRequestNativeSqlService.loadPrintDtoByBillId(printBill.getId());
+            bhtIssueRequestPrintDtoBillId = printBill.getId();
+            if (bhtIssueRequestPrintDto == null) {
+                JsfUtil.addErrorMessage("BHT Issue Request not found");
+            }
+        }
+        return bhtIssueRequestPrintDto;
     }
 
     public PaymentSchemeController getPaymentSchemeController() {
@@ -2413,6 +2788,65 @@ public class PharmacyRequestForBhtController implements Serializable {
     }
 
     /**
+     * Case 1 — Generate but do NOT add.
+     *
+     * Recomputes the dispense item and quantity from the current prescription
+     * details, then leaves the resolved values in the Dispense Request panel so
+     * the user can review and adjust them before adding. Focus is moved to the
+     * Dispense item field on the page (see the button's update/focus wiring).
+     * This intentionally does not touch the bill-items table.
+     */
+    public void generateDispenseFromPrescription() {
+        calculateItemAndQuantityFromPrescription();
+        if (errorMessage != null && !errorMessage.isEmpty()) {
+            JsfUtil.addErrorMessage(errorMessage);
+        }
+    }
+
+    /**
+     * Case 2 — Calculate and Add in one step.
+     *
+     * Recomputes the dispense item and quantity from the prescription and, only
+     * if the calculation succeeds, adds the resolved line to the dispense
+     * request. If the calculation cannot produce an item and quantity (e.g. a
+     * missing dose or frequency), the error is shown and nothing is added, so a
+     * blank or stale line can never be appended.
+     */
+    public void calculateAndAddBillItem() {
+        if (billItem == null || billItem.getPrescription() == null) {
+            JsfUtil.addErrorMessage("No prescription available for calculation");
+            return;
+        }
+
+        try {
+            com.divudi.ejb.PrescriptionToItemService.PrescriptionToItemResult result
+                    = prescriptionToItemService.calculateItemAndQuantity(billItem.getPrescription());
+
+            // Require a positive quantity too: setQty() silently drops values <= 0,
+            // so a non-positive result would otherwise leave the prior quantity in
+            // place and add a stale line.
+            if (!result.isSuccess() || result.getItem() == null
+                    || result.getQuantity() == null || result.getQuantity() <= 0) {
+                String msg = result.getErrorMessage() != null && !result.getErrorMessage().isEmpty()
+                        ? result.getErrorMessage()
+                        : "Could not calculate the item and quantity from the prescription";
+                JsfUtil.addErrorMessage("Calculation Error: " + msg);
+                return;
+            }
+
+            setItem(result.getItem());
+            billItem.setItem(result.getItem());
+            setQty(result.getQuantity());
+            setErrorMessage("");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error calculating item and quantity: " + e.getMessage());
+            return;
+        }
+
+        addBillItem();
+    }
+
+    /**
      * Check if prescription has enough information for item/quantity
      * calculation
      */
@@ -2439,21 +2873,26 @@ public class PharmacyRequestForBhtController implements Serializable {
      * @param prescription The prescription to check
      * @return true if prescription has meaningful data, false otherwise
      */
-    private boolean hasMeaningfulPrescriptionData(Prescription prescription) {
+    private boolean hasMeaningfulPrescriptionData(Prescription prescription, Item dispenseItem) {
         if (prescription == null) {
             return false;
         }
 
-        // Check if any of the key prescription fields have meaningful values
+        // Check if any of the key prescription fields have meaningful values.
+        // Note: prescribedFrom is intentionally excluded here because it is now
+        // auto-defaulted to today for every new cycle (see getBillItem()), so on
+        // its own it does not indicate the user entered prescription details.
+        // The item check compares the prescribed medicine against the passed-in
+        // dispensed item (a therapeutic substitute) rather than the controller-level
+        // billItem, which may already have been cleared after a row was added.
         return prescription.getDose() != null
                 || prescription.getDoseUnit() != null
                 || prescription.getFrequencyUnit() != null
                 || prescription.getDuration() != null
                 || prescription.getDurationUnit() != null
-                || prescription.getPrescribedFrom() != null
                 || prescription.getPrescribedTo() != null
                 || (prescription.getComment() != null && !prescription.getComment().trim().isEmpty())
-                || (prescription.getItem() != null && billItem != null && !prescription.getItem().equals(billItem.getItem()));
+                || (prescription.getItem() != null && !Objects.equals(prescription.getItem(), dispenseItem));
     }
 
     public List<ClinicalFindingValue> getAllergyListOfPatient() {

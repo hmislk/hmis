@@ -8,6 +8,7 @@ import com.divudi.core.data.BillItemStatus;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.lab.Priority;
 import com.divudi.core.entity.clinical.Prescription;
+import com.divudi.core.entity.inward.InpatientPackageItem;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
@@ -143,6 +144,10 @@ public class BillItem implements Serializable, RetirableEntity {
     Bill referenceBill;
     @Enumerated(EnumType.STRING)
     InwardChargeType inwardChargeType;
+    private Double overriddenRate;
+    private boolean fromPackage;
+    @ManyToOne
+    private InpatientPackageItem sourcePackageItem;
     String agentRefNo;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date billTime;
@@ -295,6 +300,9 @@ public class BillItem implements Serializable, RetirableEntity {
         collectingCentreFee = billItem.getCollectingCentreFee();
         consideredForCosting = billItem.isConsideredForCosting();
         primaryStaff = billItem.getPrimaryStaff();
+        overriddenRate = billItem.getOverriddenRate();
+        fromPackage = billItem.isFromPackage();
+        sourcePackageItem = billItem.getSourcePackageItem();
         //  referanceBillItem=billItem.getReferanceBillItem();
         // Copy BillItemFinanceDetails if present (access field directly to avoid auto-creation)
         if (billItem.billItemFinanceDetails != null) {
@@ -338,6 +346,9 @@ public class BillItem implements Serializable, RetirableEntity {
         collectingCentreFee = billItem.getCollectingCentreFee();
         consideredForCosting = billItem.isConsideredForCosting();
         primaryStaff = billItem.getPrimaryStaff();
+        overriddenRate = billItem.getOverriddenRate();
+        fromPackage = billItem.isFromPackage();
+        sourcePackageItem = billItem.getSourcePackageItem();
 
         // Access field directly to avoid auto-creation, then use getter for cloning
         if (billItem.billItemFinanceDetails != null) {
@@ -371,6 +382,8 @@ public class BillItem implements Serializable, RetirableEntity {
         agentRefNo = billItem.getAgentRefNo();
         consideredForCosting = billItem.isConsideredForCosting();
         primaryStaff = billItem.getPrimaryStaff();
+        fromPackage = billItem.isFromPackage();
+        sourcePackageItem = billItem.getSourcePackageItem();
     }
 
     public void resetValue() {
@@ -785,6 +798,30 @@ public class BillItem implements Serializable, RetirableEntity {
 
     public void setInwardChargeType(InwardChargeType inwardChargeType) {
         this.inwardChargeType = inwardChargeType;
+    }
+
+    public Double getOverriddenRate() {
+        return overriddenRate;
+    }
+
+    public void setOverriddenRate(Double overriddenRate) {
+        this.overriddenRate = overriddenRate;
+    }
+
+    public boolean isFromPackage() {
+        return fromPackage;
+    }
+
+    public void setFromPackage(boolean fromPackage) {
+        this.fromPackage = fromPackage;
+    }
+
+    public InpatientPackageItem getSourcePackageItem() {
+        return sourcePackageItem;
+    }
+
+    public void setSourcePackageItem(InpatientPackageItem sourcePackageItem) {
+        this.sourcePackageItem = sourcePackageItem;
     }
 
     public String getAgentRefNo() {

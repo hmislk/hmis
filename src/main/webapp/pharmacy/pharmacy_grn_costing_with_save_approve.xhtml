@@ -154,6 +154,7 @@
                                         id="txtQty"
                                         onfocus="this.select();"
                                         autocomplete="off"
+                                        disabled="#{bi.referanceBillItem == null}"
                                         class="text-end text-primary w-100"
                                         value="#{bi.billItemFinanceDetails.quantity}" >
                                         <p:ajax
@@ -189,7 +190,7 @@
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:inputText
                                         autocomplete="off"
-                                        disabled="#{not configOptionApplicationController.getBooleanValueByKey('Allow Editing the Purchase Rate during Goods Receipt', true)}"
+                                        disabled="#{not configOptionApplicationController.getBooleanValueByKey('Allow Editing the Purchase Rate during Goods Receipt', true) or bi.referanceBillItem == null}"
                                         class="text-end text-primary w-100"
                                         value="#{bi.billItemFinanceDetails.lineGrossRate}"
                                         id="pRate" >
@@ -206,6 +207,7 @@
                                     styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                                     <p:inputText
                                         autocomplete="off"
+                                        disabled="#{bi.referanceBillItem == null}"
                                         class="text-end text-primary w-100"
                                         value="#{bi.billItemFinanceDetails.lineDiscountRate}"
                                         id="dRate"
@@ -317,11 +319,12 @@
                                     headerText="Actions"
                                     width="7em"
                                     styleClass="text-center #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
-                                    <p:commandButton 
+                                    <p:commandButton
                                         process=":#{p:resolveFirstComponentWithId('itemList',view).clientId}"
                                         update=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('itemList',view).clientId} "
                                         icon="fas fa-plus"
                                         class="ui-button-warning mx-1"
+                                        disabled="#{bi.referanceBillItem == null}"
                                         action="#{grnCostingController.duplicateItem(bi)}"/>
                                     <p:commandButton
                                         id="btnRemoveItem"
@@ -336,6 +339,56 @@
                             </p:dataTable>
                         </div>
                     </div>
+
+                    <h:panelGroup
+                        layout="block"
+                        class="row"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('GRN - Allow Free Items Not in Purchase Order', false)}">
+                        <div class="col-12">
+                            <p:panel header="Add Free Item (not in PO)" class="my-2">
+                                <f:facet name="header">
+                                    <h:outputText styleClass="fas fa-gift" />
+                                    <h:outputText class="mx-4" value="Add Free Item (not in PO)" />
+                                </f:facet>
+                                <div class="row w-100">
+                                    <div class="col-8">
+                                        <h:outputLabel
+                                            for="acFreeItem"
+                                            class="w-100 m-1"
+                                            value="Item"/><br/>
+                                        <p:autoComplete
+                                            id="acFreeItem"
+                                            class="w-100 m-1"
+                                            inputStyleClass="w-100"
+                                            value="#{grnCostingController.freeItemToAdd}"
+                                            forceSelection="true"
+                                            maxResults="50"
+                                            minQueryLength="3" queryDelay="300" completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}">
+                                            <p:column headerText="Item" style="padding: 6px;">
+                                                <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Code" style="padding: 6px;">
+                                                <h:outputLabel value="#{vt.code}"></h:outputLabel>
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </div>
+                                    <div class="col-4">
+                                        <h:outputLabel
+                                            class="w-100 m-1"
+                                            value="&nbsp;"/><br/>
+                                        <p:commandButton
+                                            id="btnAddFreeItem"
+                                            value="Add Free Item"
+                                            icon="fas fa-gift"
+                                            title="Add a free item that is not on the purchase order"
+                                            class="ui-button-success w-100"
+                                            action="#{grnCostingController.addFreeItemNotInPo()}"
+                                            ajax="false"/>
+                                    </div>
+                                </div>
+                            </p:panel>
+                        </div>
+                    </h:panelGroup>
 
                     <div class="row" >
                         <div class="col-9" >

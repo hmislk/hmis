@@ -289,13 +289,23 @@
                                         action="#{channelStaffPaymentBillController.newPayment}" 
                                         oncomplete="location.reload(true);"
                                         />
-                                    <p:commandButton 
-                                        value="Print" 
-                                        class="ui-button-info" 
-                                        icon="fas fa-print" 
-                                        ajax="false" 
+                                    <p:commandButton
+                                        id="btnPrint"
+                                        value="Print"
+                                        class="ui-button-info"
+                                        icon="fas fa-print"
+                                        ajax="false"
                                         action="#" >
                                         <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        id="btnPrintIndividual"
+                                        value="Print Individual"
+                                        class="ui-button-danger"
+                                        icon="fas fa-print"
+                                        ajax="false"
+                                        action="#" >
+                                        <p:printer target="gpIndividualPreview" ></p:printer>
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -304,6 +314,11 @@
 
                         <h:panelGroup id="gpBillPreview" class="d-flex justify-content-center">
                             <bi:A4PaperPamentChannelDoctor controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}" dup="false"/>
+                        </h:panelGroup>
+
+                        <!-- Individual per-patient vouchers -->
+                        <h:panelGroup id="gpIndividualPreview" class="d-flex justify-content-center">
+                            <bi:staff_payment_individual_a4 controller="#{channelStaffPaymentBillController}" bill="#{channelStaffPaymentBillController.current}"/>
                         </h:panelGroup>
 
                     </p:panel>

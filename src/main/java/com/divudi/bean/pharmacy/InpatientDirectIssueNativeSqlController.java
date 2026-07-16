@@ -17,6 +17,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.ItemBatchFacade;
 import com.divudi.core.facade.ItemFacade;
@@ -31,6 +32,7 @@ import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -84,6 +86,12 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
     private InpatientDirectIssueNativeSqlService nativeSqlService;
     @EJB
     private PriceMatrixNativeSqlService priceMatrixNativeSqlService;
+    @EJB
+    private com.divudi.core.facade.BillItemFacade billItemFacade;
+    @EJB
+    private com.divudi.core.facade.InpatientPackageItemFacade inpatientPackageItemFacade;
+    @EJB
+    private com.divudi.core.facade.RoomFacilityChargeFacade roomFacilityChargeFacade;
 
     // ---- Working state ----
     private PatientEncounter patientEncounter;
@@ -117,6 +125,10 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         }
         if (patientEncounter == null || patientEncounter.getPatient() == null) {
             JsfUtil.addErrorMessage("Please select a BHT.");
+            return;
+        }
+        if (patientEncounter.isNursingDischarged()) {
+            JsfUtil.addErrorMessage("Cannot issue medicines: nursing discharge has already been confirmed for this patient.");
             return;
         }
         if (patientEncounter.isDischarged()) {
@@ -243,7 +255,29 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
                 return sessionController.getDepartment();
             }
             if (patientEncounter.getCurrentPatientRoom().getRoomFacilityCharge() != null) {
-                return patientEncounter.getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+                RoomFacilityCharge rfc = patientEncounter.getCurrentPatientRoom().getRoomFacilityCharge();
+                Department dept = rfc.getDepartment();
+                if (dept == null) {
+                    // The shared L2 cache can hold a RoomFacilityCharge whose
+                    // department association was still unset when it was first
+                    // cached (e.g. the room-to-department link was added later,
+                    // via a path that didn't go through this persistence unit).
+                    // Force a fresh read before giving up.
+                    RoomFacilityCharge fresh = roomFacilityChargeFacade.findFreshByJpql(
+                            "select r from RoomFacilityCharge r where r.id = :id",
+                            Collections.singletonMap("id", rfc.getId()));
+                    dept = fresh != null ? fresh.getDepartment() : null;
+                    if (dept != null) {
+                        LOGGER.log(Level.WARNING, "RoomFacilityCharge id={0} had a stale null department in cache; "
+                                + "resolved to department id={1} after a fresh read.",
+                                new Object[]{rfc.getId(), dept.getId()});
+                    } else {
+                        LOGGER.log(Level.WARNING, "RoomFacilityCharge id={0} has no department even after a fresh, "
+                                + "cache-bypassing read; this room is genuinely unmapped to a department.",
+                                rfc.getId());
+                    }
+                }
+                return dept;
             }
         } else if (matrixByIssuingDept) {
             return sessionController.getDepartment();
@@ -289,6 +323,60 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
     // -----------------------------------------------------------------------
     // Add item
     // -----------------------------------------------------------------------
+
+    /**
+     * Self-contained package-allocation check for the direct-issue flow
+     * (Task 16d) — mirrors the allocation lookup + persisted consumption +
+     * in-session consumption pattern used by the other two pharmacy issue
+     * paths (Task 16b/16c's resolvePackageOverrideRate), but duplicated here
+     * since this controller never receives a request-linked BillItem with
+     * useful override state to reuse.
+     */
+    private com.divudi.core.entity.inward.InpatientPackageItem resolvePackageAllocation(Long itemId, double requestedQty) {
+        if (patientEncounter == null || patientEncounter.getInpatientPackage() == null || itemId == null) {
+            return null;
+        }
+        java.util.Map<String, Object> m = new java.util.HashMap<>();
+        m.put("pkg", patientEncounter.getInpatientPackage());
+        m.put("itemId", itemId);
+        m.put("type", com.divudi.core.data.inward.InpatientPackageComponentType.PHARMACY_ITEM);
+        java.util.List<com.divudi.core.entity.inward.InpatientPackageItem> matches = inpatientPackageItemFacade.findByJpql(
+                "SELECT i FROM InpatientPackageItem i"
+                        + " WHERE i.retired = false"
+                        + " AND i.inpatientPackage = :pkg"
+                        + " AND i.item.id = :itemId"
+                        + " AND i.componentType = :type",
+                m);
+        if (matches.isEmpty()) {
+            return null;
+        }
+        com.divudi.core.entity.inward.InpatientPackageItem packageItem = matches.get(0);
+
+        java.util.Map<String, Object> qm = new java.util.HashMap<>();
+        qm.put("pe", patientEncounter);
+        qm.put("itemId", itemId);
+        Double alreadyIssued = billItemFacade.findDoubleByJpql(
+                "SELECT SUM(bi.qty) FROM BillItem bi"
+                        + " WHERE bi.retired = false"
+                        + " AND bi.fromPackage = true"
+                        + " AND bi.patientEncounter = :pe"
+                        + " AND bi.item.id = :itemId",
+                qm);
+        double consumed = alreadyIssued != null ? alreadyIssued : 0.0;
+
+        if (billItemDataList != null) {
+            for (BillItemData existing : billItemDataList) {
+                if (existing.isFromPackage() && itemId.equals(existing.getItemId())) {
+                    consumed += existing.getQty();
+                }
+            }
+        }
+
+        if (consumed + requestedQty > packageItem.getQty()) {
+            return null;
+        }
+        return packageItem;
+    }
 
     public void addBillItem() {
         if (patientEncounter == null) {
@@ -367,32 +455,37 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         bid.setCatId(null);
 
         // Rate / value for bill line — apply inward price matrix margin and discount
-        double lineRetailRate = selectedStockDto.getRetailRate() != null ? selectedStockDto.getRetailRate() : 0.0;
+        com.divudi.core.entity.inward.InpatientPackageItem packageAllocation = resolvePackageAllocation(selectedStockDto.getItemId(), qty);
+        boolean isPackageRate = packageAllocation != null;
+        double packageRate = isPackageRate ? packageAllocation.getFixedPrice() / packageAllocation.getQty() : 0.0;
+        double lineRetailRate = isPackageRate ? packageRate : (selectedStockDto.getRetailRate() != null ? selectedStockDto.getRetailRate() : 0.0);
         double absQty = Math.abs(qty);
         double grossValue = lineRetailRate * absQty;
         double marginRate = 0.0;
         double marginValue = 0.0;
         double discountPct = 0.0;
         double discountValue = 0.0;
-        try {
-            long itemId = selectedStockDto.getItemId();
-            Department matrixDept = determineMatrixDepartment();
-            if (matrixDept == null) matrixDept = sessionController.getDepartment();
-            long matrixDeptId = matrixDept.getId();
-            double marginPct = priceMatrixNativeSqlService.getInwardMarginPct(itemId, matrixDeptId, grossValue);
-            if (marginPct != 0.0) {
-                marginRate = (marginPct / 100.0) * lineRetailRate;
-                marginValue = marginRate * absQty;
+        if (!isPackageRate) {
+            try {
+                long itemId = selectedStockDto.getItemId();
+                Department matrixDept = determineMatrixDepartment();
+                if (matrixDept == null) matrixDept = sessionController.getDepartment();
+                long matrixDeptId = matrixDept.getId();
+                double marginPct = priceMatrixNativeSqlService.getInwardMarginPct(itemId, matrixDeptId, grossValue);
+                if (marginPct != 0.0) {
+                    marginRate = (marginPct / 100.0) * lineRetailRate;
+                    marginValue = marginRate * absQty;
+                }
+                if (priceMatrixNativeSqlService.isDiscountAllowed(itemId)) {
+                    Long schemeId = patientEncounter.getPaymentScheme() != null ? patientEncounter.getPaymentScheme().getId() : null;
+                    Long admTypeId = patientEncounter.getAdmissionType() != null ? patientEncounter.getAdmissionType().getId() : null;
+                    String pmName = patientEncounter.getPaymentMethod() != null ? patientEncounter.getPaymentMethod().name() : null;
+                    discountPct = priceMatrixNativeSqlService.getInwardDiscountPct(itemId, pmName, schemeId, admTypeId, matrixDeptId);
+                    discountValue = (discountPct / 100.0) * grossValue;
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "[addBillItem] margin/discount lookup failed, using retail rate only", e);
             }
-            if (priceMatrixNativeSqlService.isDiscountAllowed(itemId)) {
-                Long schemeId = patientEncounter.getPaymentScheme() != null ? patientEncounter.getPaymentScheme().getId() : null;
-                Long admTypeId = patientEncounter.getAdmissionType() != null ? patientEncounter.getAdmissionType().getId() : null;
-                String pmName = patientEncounter.getPaymentMethod() != null ? patientEncounter.getPaymentMethod().name() : null;
-                discountPct = priceMatrixNativeSqlService.getInwardDiscountPct(itemId, pmName, schemeId, admTypeId, matrixDeptId);
-                discountValue = (discountPct / 100.0) * grossValue;
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.WARNING, "[addBillItem] margin/discount lookup failed, using retail rate only", e);
         }
         double netRate = lineRetailRate + marginRate - (absQty > 0 ? discountValue / absQty : 0.0);
         double netValue = grossValue + marginValue - discountValue;
@@ -403,6 +496,11 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
         bid.setMarginValue(marginValue);
         bid.setNetValue(-netValue);
         bid.setGrossValue(-grossValue);
+        bid.setFromPackage(isPackageRate);
+        if (isPackageRate) {
+            bid.setOverriddenRate(packageRate);
+            bid.setSourcePackageItemId(packageAllocation.getId());
+        }
 
         if (billItemDataList == null) {
             billItemDataList = new ArrayList<>();
