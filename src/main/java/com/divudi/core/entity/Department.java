@@ -36,6 +36,10 @@ public class Department implements Serializable {
     String name;
     @Lob
     String description;
+    @Lob
+    private String svgParentView;
+    @Lob
+    private String svgChildView;
     String code;
     String printingName;
     String address;
@@ -381,6 +385,22 @@ public class Department implements Serializable {
 
     public void setSite(Institution site) {
         this.site = site;
+    }
+
+    public String getSvgParentView() {
+        return svgParentView;
+    }
+
+    public void setSvgParentView(String svgParentView) {
+        this.svgParentView = svgParentView;
+    }
+
+    public String getSvgChildView() {
+        return svgChildView;
+    }
+
+    public void setSvgChildView(String svgChildView) {
+        this.svgChildView = svgChildView;
     }
 
     public String trim() {

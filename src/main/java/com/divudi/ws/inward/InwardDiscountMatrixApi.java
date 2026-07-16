@@ -19,8 +19,11 @@ import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.InwardDiscountMatrix;
 import com.divudi.core.entity.lab.InvestigationCategory;
 import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.CategoryFacade;
 import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.PaymentSchemeFacade;
 import com.divudi.core.facade.PriceMatrixFacade;
 import com.google.gson.Gson;
@@ -86,6 +89,8 @@ public class InwardDiscountMatrixApi {
 
     @EJB
     private PaymentSchemeFacade paymentSchemeFacade;
+    @EJB
+    private InstitutionFacade institutionFacade;
 
     private static final Gson gson = new GsonBuilder()
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
@@ -116,6 +121,7 @@ public class InwardDiscountMatrixApi {
             Long categoryId       = longParam("categoryId");
             Long admissionTypeId  = longParam("admissionTypeId");
             Long paymentSchemeId  = longParam("paymentSchemeId");
+            Long creditCompanyId  = longParam("creditCompanyId");
             String paymentMethodStr = param("paymentMethod");
             int limit = intParam("limit", 200, 1, 1000);
 
@@ -166,6 +172,10 @@ public class InwardDiscountMatrixApi {
             if (paymentMethod != null) {
                 jpql.append(" and a.paymentMethod = :pm");
                 params.put("pm", paymentMethod);
+            }
+            if (creditCompanyId != null) {
+                jpql.append(" and a.creditCompany.id = :ccid");
+                params.put("ccid", creditCompanyId);
             }
 
             jpql.append(" order by a.paymentScheme.name, a.department.name, a.category.name");
@@ -242,13 +252,13 @@ public class InwardDiscountMatrixApi {
                 return errorResponse("Invalid scope. Use 'service' or 'pharmacy'.", 400);
             }
 
+            PaymentScheme paymentScheme = null;
             Long paymentSchemeId = asLong(body.get("paymentSchemeId"));
-            if (paymentSchemeId == null) {
-                return errorResponse("paymentSchemeId is required", 400);
-            }
-            PaymentScheme paymentScheme = paymentSchemeFacade.find(paymentSchemeId);
-            if (paymentScheme == null || paymentScheme.isRetired()) {
-                return errorResponse("PaymentScheme not found: " + paymentSchemeId, 400);
+            if (paymentSchemeId != null) {
+                paymentScheme = paymentSchemeFacade.find(paymentSchemeId);
+                if (paymentScheme == null || paymentScheme.isRetired()) {
+                    return errorResponse("PaymentScheme not found: " + paymentSchemeId, 400);
+                }
             }
 
             Double discountPercent = asDouble(body.get("discountPercent"));
@@ -302,8 +312,17 @@ public class InwardDiscountMatrixApi {
                 }
             }
 
+            Institution creditCompany = null;
+            Long creditCompanyId = asLong(body.get("creditCompanyId"));
+            if (creditCompanyId != null) {
+                creditCompany = institutionFacade.find(creditCompanyId);
+                if (creditCompany == null || creditCompany.isRetired()) {
+                    return errorResponse("Credit company not found: " + creditCompanyId, 400);
+                }
+            }
+
             InwardDiscountMatrix existing = findDuplicate(
-                    department, category, admissionType, paymentMethod, paymentScheme);
+                    department, category, admissionType, paymentMethod, paymentScheme, creditCompany);
             if (existing != null) {
                 Map<String, Object> payload = new LinkedHashMap<>();
                 payload.put("status", "already_exists");
@@ -321,6 +340,7 @@ public class InwardDiscountMatrixApi {
             entry.setPaymentMethod(paymentMethod);
             entry.setPaymentScheme(paymentScheme);
             entry.setDiscountPercent(discountPercent);
+            entry.setCreditCompany(creditCompany);
             if (department != null) {
                 entry.setInstitution(department.getInstitution());
             }
@@ -424,13 +444,14 @@ public class InwardDiscountMatrixApi {
             if (body.containsKey("paymentSchemeId")) {
                 Long paymentSchemeId = asLong(body.get("paymentSchemeId"));
                 if (paymentSchemeId == null) {
-                    return errorResponse("paymentSchemeId cannot be null", 400);
+                    entry.setPaymentScheme(null);
+                } else {
+                    PaymentScheme ps = paymentSchemeFacade.find(paymentSchemeId);
+                    if (ps == null || ps.isRetired()) {
+                        return errorResponse("PaymentScheme not found: " + paymentSchemeId, 400);
+                    }
+                    entry.setPaymentScheme(ps);
                 }
-                PaymentScheme ps = paymentSchemeFacade.find(paymentSchemeId);
-                if (ps == null || ps.isRetired()) {
-                    return errorResponse("PaymentScheme not found: " + paymentSchemeId, 400);
-                }
-                entry.setPaymentScheme(ps);
             }
 
             if (body.containsKey("paymentMethod")) {
@@ -457,9 +478,22 @@ public class InwardDiscountMatrixApi {
                 entry.setDiscountPercent(dp);
             }
 
+            if (body.containsKey("creditCompanyId")) {
+                Long ccId = asLong(body.get("creditCompanyId"));
+                if (ccId == null) {
+                    entry.setCreditCompany(null);
+                } else {
+                    Institution cc = institutionFacade.find(ccId);
+                    if (cc == null || cc.isRetired()) {
+                        return errorResponse("Credit company not found: " + ccId, 400);
+                    }
+                    entry.setCreditCompany(cc);
+                }
+            }
+
             InwardDiscountMatrix dup = findDuplicate(
                     entry.getDepartment(), entry.getCategory(), entry.getAdmissionType(),
-                    entry.getPaymentMethod(), entry.getPaymentScheme());
+                    entry.getPaymentMethod(), entry.getPaymentScheme(), entry.getCreditCompany());
             if (dup != null && !dup.getId().equals(entry.getId())) {
                 Map<String, Object> payload = new LinkedHashMap<>();
                 payload.put("status", "already_exists");
@@ -656,7 +690,8 @@ public class InwardDiscountMatrixApi {
     // =========================================================================
 
     private InwardDiscountMatrix findDuplicate(Department department, Category category,
-            AdmissionType admissionType, PaymentMethod paymentMethod, PaymentScheme paymentScheme) {
+            AdmissionType admissionType, PaymentMethod paymentMethod, PaymentScheme paymentScheme,
+            Institution creditCompany) {
 
         StringBuilder jpql = new StringBuilder(
                 "select a from InwardDiscountMatrix a where a.retired = false");
@@ -692,6 +727,12 @@ public class InwardDiscountMatrixApi {
             jpql.append(" and a.paymentScheme = :ps");
             params.put("ps", paymentScheme);
         }
+        if (creditCompany == null) {
+            jpql.append(" and a.creditCompany is null");
+        } else {
+            jpql.append(" and a.creditCompany = :cc");
+            params.put("cc", creditCompany);
+        }
 
         @SuppressWarnings("unchecked")
         List<InwardDiscountMatrix> list = (List<InwardDiscountMatrix>) (List<?>)
@@ -700,6 +741,47 @@ public class InwardDiscountMatrixApi {
             return null;
         }
         return list.get(0);
+    }
+
+    /**
+     * Search credit companies (institutions) by name.
+     * GET /api/inward-discount-matrix/credit-companies/search?query=&limit=
+     */
+    @GET
+    @Path("/credit-companies/search")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchCreditCompanies() {
+        try {
+            WebUser user = validateApiKey(requestContext.getHeader("Finance"));
+            if (user == null) {
+                return errorResponse("Not a valid key", 401);
+            }
+            String query = param("query");
+            int limit = intParam("limit", 30, 1, 200);
+            StringBuilder jpql = new StringBuilder(
+                    "select i from Institution i where i.retired = false"
+                    + " and i.institutionType = :type");
+            Map<String, Object> params = new HashMap<>();
+            params.put("type", InstitutionType.CreditCompany);
+            if (query != null && !query.trim().isEmpty()) {
+                jpql.append(" and upper(i.name) like :q");
+                params.put("q", "%" + query.trim().toUpperCase() + "%");
+            }
+            jpql.append(" order by i.name");
+            List<Institution> results = institutionFacade.findByJpql(jpql.toString(), params, limit);
+            List<Map<String, Object>> payload = new ArrayList<>();
+            if (results != null) {
+                for (Institution inst : results) {
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    row.put("id", inst.getId());
+                    row.put("name", inst.getName());
+                    payload.add(row);
+                }
+            }
+            return successResponse(payload);
+        } catch (Exception e) {
+            return errorResponse("An error occurred: " + e.getMessage(), 500);
+        }
     }
 
     private String validateCategoryForScope(Category category, String scope) {
@@ -766,6 +848,14 @@ public class InwardDiscountMatrixApi {
         }
 
         row.put("paymentMethod", pm.getPaymentMethod() != null ? pm.getPaymentMethod().name() : null);
+        if (pm.getCreditCompany() != null) {
+            Map<String, Object> cc = new LinkedHashMap<>();
+            cc.put("id", pm.getCreditCompany().getId());
+            cc.put("name", pm.getCreditCompany().getName());
+            row.put("creditCompany", cc);
+        } else {
+            row.put("creditCompany", null);
+        }
         row.put("retired", pm.isRetired());
         return row;
     }

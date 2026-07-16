@@ -24,6 +24,27 @@
                         border-color: #bd2130 !important;
                         color: #fff !important;
                     }
+                    .vis-item.mar-given,
+                    .vis-item.mar-refused,
+                    .vis-item.mar-held {
+                        border-radius: 50%;
+                        width: 12px !important;
+                        height: 12px !important;
+                        padding: 0;
+                        cursor: pointer;
+                    }
+                    .vis-item.mar-given {
+                        background-color: #007bff !important;
+                        border-color: #0056b3 !important;
+                    }
+                    .vis-item.mar-refused {
+                        background-color: #dc3545 !important;
+                        border-color: #bd2130 !important;
+                    }
+                    .vis-item.mar-held {
+                        background-color: #ffc107 !important;
+                        border-color: #d39e00 !important;
+                    }
                 </style>
                 <h:form id="formTimeline">
                     <div class="row">
@@ -53,11 +74,18 @@
                                         <span class="badge p-2 mr-2" style="background-color: #28a745; color: #fff;">Active</span>
                                         <span class="badge p-2 mr-2" style="background-color: #6c757d; color: #fff;">Expired (Duration)</span>
                                         <span class="badge p-2 mr-2" style="background-color: #dc3545; color: #fff;">Omitted</span>
+                                        <span class="badge p-2 mr-2" style="background-color: #007bff; color: #fff; border-radius: 50%;">&#160;</span>
+                                        <span class="mr-3">Given</span>
+                                        <span class="badge p-2 mr-2" style="background-color: #ffc107; color: #fff; border-radius: 50%;">&#160;</span>
+                                        <span class="mr-3">Held</span>
+                                        <span class="badge p-2 mr-2" style="background-color: #dc3545; color: #fff; border-radius: 50%;">&#160;</span>
+                                        <span class="mr-3">Refused</span>
                                     </div>
 
                                     <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.hasWardMedicineTimelineEvents}">
                                         <p:timeline id="wardTimeline"
                                                     value="#{inpatientClinicalDataController.wardMedicineTimelineModel}"
+                                                    var="entry"
                                                     zoomable="true"
                                                     moveable="true"
                                                     stackEvents="true"
@@ -65,8 +93,9 @@
                                                     style="width: 100%; min-height: 300px;">
                                             <p:ajax event="select"
                                                     listener="#{inpatientClinicalDataController.onTimelineSelect}"
-                                                    update="panelMedicineDetail"
-                                                    oncomplete="PF('dlgMedicineDetail').show()" />
+                                                    update="panelMedicineDetail panelAdministrationDetail" />
+                                            <h:outputText value="#{entry.medicine.prescription.formattedPrescriptionWithoutIndoorOutdoor}"
+                                                          rendered="#{not entry.administrationEvent}" />
                                         </p:timeline>
                                     </h:panelGroup>
 
@@ -167,6 +196,71 @@
                                             <td class="font-weight-bold">Omission Reason:</td>
                                             <td>
                                                 <h:outputText value="#{inpatientClinicalDataController.selectedTimelineMedicine.prescription.omissionReason}" />
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                </table>
+                            </h:panelGroup>
+                        </div>
+                    </p:dialog>
+
+                    <p:dialog id="panelAdministrationDetail"
+                             header="Medicine Administration"
+                             widgetVar="dlgAdministrationDetail"
+                             modal="true"
+                             resizable="false"
+                             closable="true"
+                             width="500">
+                        <div class="p-3">
+                            <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.selectedTimelineAdministration != null}">
+                                <table class="table table-borderless mb-0">
+                                    <tr>
+                                        <td class="font-weight-bold" style="width: 40%;">Medicine:</td>
+                                        <td>
+                                            <h:outputText value="#{inpatientClinicalDataController.selectedTimelineAdministration.item.name}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-weight-bold">Status:</td>
+                                        <td>
+                                            <h:outputText value="#{inpatientClinicalDataController.selectedTimelineAdministration.status.label}" />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-weight-bold">Administered At:</td>
+                                        <td>
+                                            <h:outputText value="#{inpatientClinicalDataController.selectedTimelineAdministration.administeredAt}">
+                                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm" />
+                                            </h:outputText>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-weight-bold">Administered By:</td>
+                                        <td>
+                                            <h:outputText value="#{inpatientClinicalDataController.selectedTimelineAdministration.administeredBy.person.name}" />
+                                        </td>
+                                    </tr>
+                                    <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.selectedTimelineAdministration.qty != null}">
+                                        <tr>
+                                            <td class="font-weight-bold">Quantity:</td>
+                                            <td>
+                                                <h:outputText value="#{inpatientClinicalDataController.selectedTimelineAdministration.qty}" />
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                    <h:panelGroup layout="block" rendered="#{inpatientClinicalDataController.selectedTimelineAdministration.itemBatch != null}">
+                                        <tr>
+                                            <td class="font-weight-bold">Batch:</td>
+                                            <td>
+                                                <h:outputText value="#{inpatientClinicalDataController.selectedTimelineAdministration.itemBatch.batchNo}" />
+                                            </td>
+                                        </tr>
+                                    </h:panelGroup>
+                                    <h:panelGroup layout="block" rendered="#{not empty inpatientClinicalDataController.selectedTimelineAdministration.comments}">
+                                        <tr>
+                                            <td class="font-weight-bold">Comments:</td>
+                                            <td>
+                                                <h:outputText value="#{inpatientClinicalDataController.selectedTimelineAdministration.comments}" />
                                             </td>
                                         </tr>
                                     </h:panelGroup>

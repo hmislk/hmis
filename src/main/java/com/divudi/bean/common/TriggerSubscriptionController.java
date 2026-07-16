@@ -47,18 +47,28 @@ public class TriggerSubscriptionController implements Serializable {
     private Department department;
     private List<Department> departments;
     private WebUser user;
+    // Application-wide (department IS NULL) subscription. Named "application-wide"
+    // rather than "institution-wide" because one HMIS application instance can host
+    // multiple institutions; a null department matches every department across the
+    // whole application.
+    private boolean applicationWide;
 
     public List<WebUser> fillSubscribedUsersByDepartment(TriggerType tt,Department dept) {
         List<WebUser> us = new ArrayList<>();
         if (tt == null) {
             return us;
         }
+        // Returns subscribers matching the given department PLUS application-wide
+        // subscribers (department IS NULL), so hospital-wide roles (e.g. Guest
+        // Relations Officer) can subscribe once instead of per department.
+        // DISTINCT avoids duplicate UserNotifications when a user holds both a
+        // department-specific and an application-wide subscription for the trigger.
         Map m = new HashMap();
-        String jpql = "SELECT i.webUser "
+        String jpql = "SELECT DISTINCT i.webUser "
                 + " FROM TriggerSubscription i "
                 + " where i.triggerType=:tt "
                 + " and i.retired=:ret "
-                + " and i.department=:dep";
+                + " and (i.department=:dep or i.department is null)";
 
         m.put("tt", tt);
         m.put("ret", false);
@@ -72,14 +82,22 @@ public class TriggerSubscriptionController implements Serializable {
             JsfUtil.addErrorMessage("Select Subscription");
             return;
         }
-        if (department == null) {
-            JsfUtil.addErrorMessage("Select Department");
+        if (department == null && !applicationWide) {
+            JsfUtil.addErrorMessage("Select a Department or mark the subscription Application-wide");
             return;
         }
         if (user == null) {
             JsfUtil.addErrorMessage("Program Error. Cannot have this page without a user. Create an issue in GitHub");
             return;
         }
+        // Application-wide subscriptions are stored with a null department so they
+        // match every department in fillSubscribedUsersByDepartment.
+        Department subscriptionDepartment = applicationWide ? null : department;
+
+        if (isSubscriptionAlreadyAdded()) {
+            return;
+        }
+
         double newOrder = getTriggerSubscriptions().size() + 1;
         TriggerSubscription existingTS = findUserSubscriptionByOrder(newOrder);
 
@@ -90,7 +108,7 @@ public class TriggerSubscriptionController implements Serializable {
             ts.setWebUser(user);
             ts.setTriggerType(triggerType);
             ts.setOrderNumber(newOrder);
-            ts.setDepartment(department);
+            ts.setDepartment(subscriptionDepartment);
             ts.setCreatedAt(d);
             ts.setCreater(sessionController.getLoggedUser());
             save(ts);
@@ -197,6 +215,9 @@ public class TriggerSubscriptionController implements Serializable {
 
     // Method to validate if the Icon is already added for the user
     public boolean isSubscriptionAlreadyAdded() {
+        if (triggerSubscriptions == null) {
+            return false;
+        }
         for (TriggerSubscription ts : triggerSubscriptions) {
             if (ts.getTriggerType() == triggerType) {
                 JsfUtil.addErrorMessage("Subscription already added");
@@ -314,6 +335,17 @@ public class TriggerSubscriptionController implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public boolean isApplicationWide() {
+        return applicationWide;
+    }
+
+    public void setApplicationWide(boolean applicationWide) {
+        this.applicationWide = applicationWide;
+        if (applicationWide) {
+            department = null;
+        }
     }
 
     public List<Department> getDepartments() {

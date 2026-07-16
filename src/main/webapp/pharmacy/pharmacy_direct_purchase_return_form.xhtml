@@ -194,12 +194,12 @@
                                         autocomplete="off"
                                         class="w-100 text-end"
                                         onfocus="this.select()"
-                                        value="#{ph.billItemFinanceDetails.quantity}">
+                                        value="#{ph.qty}">
                                         <f:convertNumber pattern="#,##0.00##" integerOnly="#{!ph.item.allowFractions}" ></f:convertNumber>
-                                        <p:ajax 
-                                            event="keyup" 
+                                        <p:ajax
+                                            event="blur"
                                             process="@this"
-                                            update="txtLineReturnValue messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
+                                            update="txtLineReturnValue messages :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}"
                                             listener="#{directPurchaseReturnWorkflowController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
                                     <p:keyFilter for="txtReturningTotalQty" mask="#{ph.item.allowFractions ? 'num' : 'int'}" />
@@ -215,11 +215,11 @@
                                         autocomplete="off"
                                         onfocus="this.select()"
                                         class="w-100 text-end"
-                                        value="#{ph.billItemFinanceDetails.quantity}">
+                                        value="#{ph.qty}">
                                         <f:convertNumber integerOnly="#{!ph.item.allowFractions}" />
-                                        <p:ajax 
+                                        <p:ajax
                                             process="@this"
-                                            event="blur" 
+                                            event="blur"
                                             update="txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId} messages @form" 
                                             listener="#{directPurchaseReturnWorkflowController.onReturningQtyChange(ph)}" 
                                             />

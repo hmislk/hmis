@@ -1,5 +1,6 @@
 package com.divudi.service;
 
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFinanceDetails;
@@ -12,6 +13,7 @@ import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillFinanceDetailsFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.BillItemFinanceDetailsFacade;
+import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -43,9 +45,12 @@ public class BillDataCorrectionService {
     private BillItemFinanceDetailsFacade billItemFinanceDetailsFacade;
 
     @EJB
+    private PaymentFacade paymentFacade;
+
+    @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
 
-    private static final Set<String> BILL_FIELDS = new HashSet<>(Arrays.asList("netTotal", "grossTotal", "comments"));
+    private static final Set<String> BILL_FIELDS = new HashSet<>(Arrays.asList("netTotal", "grossTotal", "comments", "retired", "retireComments", "departmentType"));
     private static final Set<String> BILL_ITEM_FIELDS = new HashSet<>(Arrays.asList("qty", "rate", "grossValue", "netValue", "discount"));
     private static final Set<String> BILL_FINANCE_FIELDS = new HashSet<>(Arrays.asList("totalRetailSaleValue", "totalCostValue", "totalPurchaseValue", "netTotal", "grossTotal", "billExpensesConsideredForCosting", "billExpensesNotConsideredForCosting", "totalBillValue"));
     private static final Set<String> BILL_FEE_FIELDS = new HashSet<>(Arrays.asList("feeValue", "grossValue"));
@@ -77,7 +82,7 @@ public class BillDataCorrectionService {
 
         switch (normalizedType) {
             case "BILL":
-                parentBill = updateBill(targetId, fields, previousValues, newValues);
+                parentBill = updateBill(targetId, fields, previousValues, newValues, apiUser);
                 break;
             case "BILL_ITEM":
                 parentBill = updateBillItem(targetId, fields, previousValues, newValues);
@@ -119,12 +124,17 @@ public class BillDataCorrectionService {
         return result;
     }
 
-    private Bill updateBill(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues) {
+    private Bill updateBill(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues, WebUser apiUser) {
         Bill entity = billFacade.find(id);
         if (entity == null) {
             throw new IllegalArgumentException("Bill not found for id " + id);
         }
         validateAllowedFields(fields, BILL_FIELDS, "BILL");
+
+        // Capture original persisted totals before any in-memory mutations so the retire guard
+        // always checks the true DB values, not values already changed in this same request.
+        final double originalNetTotal = entity.getNetTotal();
+        final double originalTotal = entity.getTotal();
 
         if (fields.containsKey("netTotal")) {
             previousValues.put("netTotal", entity.getNetTotal());
@@ -144,9 +154,75 @@ public class BillDataCorrectionService {
             entity.setComments(value);
             newValues.put("comments", entity.getComments());
         }
+        if (fields.containsKey("departmentType")) {
+            previousValues.put("departmentType", entity.getDepartmentType() != null ? entity.getDepartmentType().name() : null);
+            String value = toStringValue(fields.get("departmentType"));
+            if (value == null || value.trim().isEmpty()) {
+                throw new IllegalArgumentException("Field 'departmentType' cannot be empty");
+            }
+            DepartmentType departmentType;
+            try {
+                departmentType = DepartmentType.valueOf(value.trim());
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalArgumentException("Field 'departmentType' must be one of " + Arrays.toString(DepartmentType.values()));
+            }
+            entity.setDepartmentType(departmentType);
+            newValues.put("departmentType", departmentType.name());
+        }
+        if (fields.containsKey("retired")) {
+            boolean requestedRetire = toBooleanValue(fields.get("retired"), "retired");
+            if (requestedRetire) {
+                guardEmptyBillForRetire(entity, originalNetTotal, originalTotal);
+                previousValues.put("retired", entity.isRetired());
+                previousValues.put("retiredAt", entity.getRetiredAt());
+                previousValues.put("retireComments", entity.getRetireComments());
+                String retireComments = fields.containsKey("retireComments")
+                        ? toStringValue(fields.get("retireComments")) : null;
+                Date retiredAt = new Date();
+                entity.setRetired(true);
+                entity.setRetiredAt(retiredAt);
+                entity.setRetireComments(retireComments);
+                entity.setRetirer(apiUser);
+                newValues.put("retired", true);
+                newValues.put("retiredAt", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(retiredAt));
+                newValues.put("retireComments", retireComments);
+            }
+        }
 
         billFacade.edit(entity);
         return entity;
+    }
+
+    private void guardEmptyBillForRetire(Bill bill, double originalNetTotal, double originalTotal) {
+        Map<String, Object> params = new java.util.HashMap<>();
+        params.put("b", bill);
+
+        long itemCount = billItemFacade.findLongByJpql(
+                "SELECT COUNT(bi) FROM BillItem bi WHERE bi.bill = :b AND bi.retired = false", params);
+        if (itemCount > 0) {
+            throw new IllegalStateException(
+                    "Bill " + bill.getId() + " has " + itemCount + " active bill items — retire them first");
+        }
+
+        long feeCount = billFeeFacade.findLongByJpql(
+                "SELECT COUNT(bf) FROM BillFee bf WHERE bf.bill = :b AND bf.retired = false", params);
+        if (feeCount > 0) {
+            throw new IllegalStateException(
+                    "Bill " + bill.getId() + " has " + feeCount + " active bill fees — retire them first");
+        }
+
+        long paymentCount = paymentFacade.findLongByJpql(
+                "SELECT COUNT(p) FROM Payment p WHERE p.bill = :b AND p.retired = false", params);
+        if (paymentCount > 0) {
+            throw new IllegalStateException(
+                    "Bill " + bill.getId() + " has " + paymentCount + " active payments — retire them first");
+        }
+
+        if (originalNetTotal != 0.0 || originalTotal != 0.0) {
+            throw new IllegalStateException(
+                    "Bill " + bill.getId() + " has non-zero totals (net=" + originalNetTotal
+                    + ", gross=" + originalTotal + ") — only zero-value bills may be retired via this API");
+        }
     }
 
     private Bill updateBillItem(Long id, Map<String, Object> fields, Map<String, Object> previousValues, Map<String, Object> newValues) {
@@ -429,5 +505,18 @@ public class BillDataCorrectionService {
 
     private String toStringValue(Object value) {
         return value == null ? null : value.toString();
+    }
+
+    private boolean toBooleanValue(Object value, String fieldName) {
+        if (value == null) {
+            throw new IllegalArgumentException("Field '" + fieldName + "' cannot be null");
+        }
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        }
+        String s = value.toString().trim().toLowerCase();
+        if ("true".equals(s) || "1".equals(s)) return true;
+        if ("false".equals(s) || "0".equals(s)) return false;
+        throw new IllegalArgumentException("Field '" + fieldName + "' must be a boolean (true/false)");
     }
 }

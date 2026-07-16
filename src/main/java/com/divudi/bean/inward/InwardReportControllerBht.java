@@ -11,6 +11,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
+import static com.divudi.core.data.FeeType.Service;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -39,6 +40,8 @@ import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.service.BillService;
 import com.divudi.core.data.dto.InpatientPharmacyIssueDTO;
 import com.divudi.core.data.dto.InpatientServiceIssueDTO;
+import com.divudi.core.data.dto.BillListReportDTO;
+import com.divudi.core.entity.Service;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,6 +83,8 @@ public class InwardReportControllerBht implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     AdmissionController admissionController;
+    @Inject
+    InwardSearch inwardSearch;
 
     PatientEncounter patientEncounter;
     Bill bill;
@@ -103,6 +108,9 @@ public class InwardReportControllerBht implements Serializable {
 
     private List<InpatientServiceIssueDTO> serviceIssueDtosToPatientEncounter;
     private double serviceIssueDtosToPatientEncounterNetTotal;
+
+    private List<BillListReportDTO> serviceBillDtosToPatientEncounter;
+    private double serviceBillDtosToPatientEncounterNetTotal;
 
     private List<BillItem> labBillItemsToPatientEncounter;
     private double labBillItemsToPatientEncounterNetTotal;
@@ -145,6 +153,9 @@ public class InwardReportControllerBht implements Serializable {
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
             btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
             btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
@@ -156,12 +167,15 @@ public class InwardReportControllerBht implements Serializable {
                         case PHARMACY_DIRECT_ISSUE_CANCELLED:
                         case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
                         case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
+                        case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION:
+                        case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN:
                         case ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION:
                         case ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN:
                             pharmacyIssueBillItemsToPatientEncounterNetTotal -= Math.abs(bi.getNetValue());
                             break;
                         case PHARMACY_DIRECT_ISSUE:
                         case DIRECT_ISSUE_INWARD_MEDICINE:
+                        case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE:
                         case ISSUE_MEDICINE_ON_REQUEST_INWARD:
                             pharmacyIssueBillItemsToPatientEncounterNetTotal += Math.abs(bi.getNetValue());
                             break;
@@ -173,10 +187,12 @@ public class InwardReportControllerBht implements Serializable {
             List<BillTypeAtomic> btas = new ArrayList<>();
             btas.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
             List<BillItem> pharmacyIssuedDrugs = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
 
             btas = new ArrayList<>();
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
             List<BillItem> pharmacyIssuedReturnedDrugs = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
 
             List<BillItem> pharmacyIssuesWithoutCanceled = new ArrayList<>();
@@ -220,6 +236,8 @@ public class InwardReportControllerBht implements Serializable {
             pharmacyTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
             pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
             pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
 
@@ -235,6 +253,7 @@ public class InwardReportControllerBht implements Serializable {
                 double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
 
                 if (billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                        || billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
                         || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN) {
                     pharmacyIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
                 } else {
@@ -268,7 +287,7 @@ public class InwardReportControllerBht implements Serializable {
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
             serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
 
-            serviceIssueDtosToPatientEncounter = fetchServiceIssueDtos(serviceTypes);
+            serviceIssueDtosToPatientEncounter = fetchOnlyIPServiceIssueDtos(serviceTypes);
 
             for (InpatientServiceIssueDTO dto : serviceIssueDtosToPatientEncounter) {
                 double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
@@ -299,6 +318,8 @@ public class InwardReportControllerBht implements Serializable {
             pharmacyTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
             pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            pharmacyTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
             pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
             pharmacyTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
             List<InpatientPharmacyIssueDTO> allDtos = fetchPharmacyIssueDtos(pharmacyTypes);
@@ -307,6 +328,7 @@ public class InwardReportControllerBht implements Serializable {
                 BillTypeAtomic billType = dto.getBillTypeAtomic();
                 double netValue = dto.getNetValue() != null ? dto.getNetValue() : 0.0;
                 if (billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                        || billType == BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN
                         || billType == BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN) {
                     pharmacyIssueDtosToPatientEncounterNetTotal -= Math.abs(netValue);
                 } else {
@@ -350,7 +372,8 @@ public class InwardReportControllerBht implements Serializable {
     private List<InpatientServiceIssueDTO> fetchServiceIssueDtos(List<BillTypeAtomic> billTypes) {
         String jpql = "SELECT new com.divudi.core.data.dto.InpatientServiceIssueDTO("
                 + "bi.id, "
-                + "bi.item.name, "
+                + "CASE WHEN bi.item.printName IS NULL OR bi.item.printName = '' "
+                + "THEN CONCAT('Printing name is missing in ', bi.item.name) ELSE bi.item.printName END, "
                 + "bi.qty, "
                 + "bi.netValue, "
                 + "bi.bill.createdAt, "
@@ -376,6 +399,130 @@ public class InwardReportControllerBht implements Serializable {
 
         List<InpatientServiceIssueDTO> result = (List<InpatientServiceIssueDTO>) billItemFacade.findLightsByJpql(jpql, params);
         return result != null ? result : new ArrayList<>();
+    }
+
+    
+    private List<InpatientServiceIssueDTO> fetchOnlyIPServiceIssueDtos(List<BillTypeAtomic> billTypes) {
+        String jpql = "SELECT new com.divudi.core.data.dto.InpatientServiceIssueDTO("
+                + "bi.id, "
+                + "CASE WHEN bi.item.printName IS NULL OR bi.item.printName = '' "
+                + "THEN CONCAT('Printing name is missing in ', bi.item.name) ELSE bi.item.printName END, "
+                + "bi.qty, "
+                + "bi.netValue, "
+                + "bi.bill.createdAt, "
+                + "bi.bill.billTypeAtomic, "
+                + "COALESCE(bi.bill.department.name, 'N/A'), "
+                + "bi.bill.cancelled) "
+                + "FROM BillItem bi "
+                + "WHERE bi.bill.patientEncounter = :patientEncounter "
+                + "AND type(bi.item)=:btp "
+                + "AND bi.bill.billTypeAtomic IN :billTypeAtomics "
+                + "AND bi.retired = FALSE "
+                + "AND bi.bill.retired = FALSE ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypeAtomics", billTypes);
+        params.put("patientEncounter", patientEncounter);
+        params.put("btp", Service.class);
+
+        if (department != null) {
+            jpql += "AND bi.bill.department = :department ";
+            params.put("department", department);
+        }
+
+        jpql += "ORDER BY bi.bill.createdAt, bi.id";
+
+        List<InpatientServiceIssueDTO> result = (List<InpatientServiceIssueDTO>) billItemFacade.findLightsByJpql(jpql, params);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    // Issue #21247 - Encounter-scoped list of inward service bills with a View
+    // button that navigates to the existing reprint page (no whole-batch
+    // cancellation needed; partial return is done from the reprint page).
+    public String navigateToInpatientServiceBillListDto() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        serviceBillDtosToPatientEncounter = new ArrayList<>();
+        serviceBillDtosToPatientEncounterNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> serviceTypes = new ArrayList<>();
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+            serviceTypes.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_REFUND); // deprecated, for old refund bills
+            serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL);
+            serviceTypes.add(BillTypeAtomic.INWARD_OUTSIDE_CHARGES_BILL_CANCELLATION);
+
+            serviceBillDtosToPatientEncounter = fetchServiceBillDtos(serviceTypes);
+
+            for (BillListReportDTO dto : serviceBillDtosToPatientEncounter) {
+                double netValue = dto.getNetTotal() != null ? dto.getNetTotal().doubleValue() : 0.0;
+                serviceBillDtosToPatientEncounterNetTotal += netValue;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading service bill DTOs", e);
+            JsfUtil.addErrorMessage("Error loading service bill data");
+            return null;
+        }
+        return "/inward/reports/inpatient_service_bill_list_dto?faces-redirect=true";
+    }
+
+    private List<BillListReportDTO> fetchServiceBillDtos(List<BillTypeAtomic> billTypes) {
+        // Bill.retired/cancelled/refunded are primitive boolean and
+        // total/discount/netTotal/margin are primitive double, so they are
+        // never null - wrapping them in COALESCE makes EclipseLink return a
+        // mismatched type (e.g. Integer for a boolean) that breaks the
+        // reflective DTO-constructor binding. Project them directly; keep
+        // COALESCE only for the nullable String/relationship fields.
+        String jpql = "SELECT new com.divudi.core.data.dto.BillListReportDTO("
+                + "b.id, "
+                + "COALESCE(b.deptId, ''), "
+                + "b.billTypeAtomic, "
+                + "b.paymentMethod, "
+                + "COALESCE(b.patientEncounter.patient.person.name, ''), "
+                + "b.createdAt, "
+                + "COALESCE(b.creater.name, ''), "
+                + "b.retired, "
+                + "b.cancelled, "
+                + "b.refunded, "
+                + "b.total, "
+                + "b.discount, "
+                + "b.netTotal, "
+                + "COALESCE(b.patientEncounter.bhtNo, ''), "
+                + "COALESCE(b.deptId, ''), "
+                + "b.margin) "
+                + "FROM Bill b "
+                + "WHERE b.patientEncounter = :patientEncounter "
+                + "AND b.billTypeAtomic IN :billTypeAtomics "
+                + "AND b.retired = FALSE ";
+
+        jpql += "ORDER BY b.createdAt, b.id";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypeAtomics", billTypes);
+        params.put("patientEncounter", patientEncounter);
+
+        List<BillListReportDTO> result = (List<BillListReportDTO>) billFacade.findLightsByJpqlWithoutCache(jpql, params, javax.persistence.TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    // View button on the list row: load the bill into InwardSearch and open the
+    // existing reprint page (same destination as the interim-bill View Bill flow).
+    public String navigateToReprintServiceBill(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No bill");
+            return null;
+        }
+        Bill b = billFacade.find(billId);
+        if (b == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        inwardSearch.setBill(b);
+        return "/inward/inward_reprint_bill_service?faces-redirect=true";
     }
 
     public String navigateToAdmissionProfile() {
@@ -466,12 +613,14 @@ public class InwardReportControllerBht implements Serializable {
     public List<BillItem> fetchLabBillItems(PatientEncounter pt, List<BillTypeAtomic> billTypesAtomics) {
         String jpql = "select bi "
                 + "from BillItem bi "
-                + "where bi.bill.retired = :ret "
+                + "where bi.bill.retired = false "
+                + "and bi.bill.cancelled = false "
+                + "and bi.retired = false "
+                + "and bi.refunded = false "
                 + "and bi.bill.billTypeAtomic in :billTypesAtomics "
                 + "and bi.bill.patientEncounter = :pe ";
 
         HashMap<String, Object> params = new HashMap<>();
-        params.put("ret", false);
         params.put("pe", pt);
         params.put("billTypesAtomics", billTypesAtomics);
 
@@ -505,6 +654,9 @@ public class InwardReportControllerBht implements Serializable {
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+        btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
         btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
@@ -516,12 +668,15 @@ public class InwardReportControllerBht implements Serializable {
                     case PHARMACY_DIRECT_ISSUE_CANCELLED:
                     case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
                     case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
+                    case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION:
+                    case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN:
                     case ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION:
                     case ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN:
                         pharmacyIssueBillItemsToPatientEncounterNetTotal -= Math.abs(bi.getNetValue());
                         break;
                     case PHARMACY_DIRECT_ISSUE:
                     case DIRECT_ISSUE_INWARD_MEDICINE:
+                    case DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE:
                     case ISSUE_MEDICINE_ON_REQUEST_INWARD:
                         pharmacyIssueBillItemsToPatientEncounterNetTotal += Math.abs(bi.getNetValue());
                         break;
@@ -1937,5 +2092,21 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setServiceIssueDtosToPatientEncounterNetTotal(double serviceIssueDtosToPatientEncounterNetTotal) {
         this.serviceIssueDtosToPatientEncounterNetTotal = serviceIssueDtosToPatientEncounterNetTotal;
+    }
+
+    public List<BillListReportDTO> getServiceBillDtosToPatientEncounter() {
+        return serviceBillDtosToPatientEncounter;
+    }
+
+    public void setServiceBillDtosToPatientEncounter(List<BillListReportDTO> serviceBillDtosToPatientEncounter) {
+        this.serviceBillDtosToPatientEncounter = serviceBillDtosToPatientEncounter;
+    }
+
+    public double getServiceBillDtosToPatientEncounterNetTotal() {
+        return serviceBillDtosToPatientEncounterNetTotal;
+    }
+
+    public void setServiceBillDtosToPatientEncounterNetTotal(double serviceBillDtosToPatientEncounterNetTotal) {
+        this.serviceBillDtosToPatientEncounterNetTotal = serviceBillDtosToPatientEncounterNetTotal;
     }
 }

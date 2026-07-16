@@ -222,6 +222,15 @@
                         </h:panelGroup>
                     </tr>
 
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Comment on Inward Deposit Bill',false) and cc.attrs.bill.comments ne null and cc.attrs.bill.comments ne '' and !configOptionApplicationController.getBooleanValueByKey('Show Payment Type on Inward Deposit Bill',false)}" >
+                        <tr>
+                            <td style="padding: 2px;">Comment :</td>
+                            <td style="padding: 2px;" colspan="4">
+                                <h:outputLabel value="#{cc.attrs.bill.comments}"/>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
                     <h:panelGroup rendered="#{cc.attrs.bill.referredBy ne null}" >
                         <tr>
                             <td style="padding: 2px;">Ref. Doctor :</td>

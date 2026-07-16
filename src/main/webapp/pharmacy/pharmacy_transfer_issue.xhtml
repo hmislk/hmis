@@ -170,17 +170,64 @@
                         <p:panel >
                             <f:facet name="header" >                                  
                                 <h:outputText value="Issue Details" ></h:outputText>
-                                <p:commandButton  
+
+                                <!-- Existing single-step Issue (shown when 3-step workflow is OFF) -->
+                                <p:commandButton
                                     id="btnSettleIssue"
-                                    value="Issue" 
-                                    icon="fas fa-check" 
-                                    action="#{transferIssueForRequestsController.settle}" 
-                                    style="float: right;" 
-                                    onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                return false;"
-                                    ajax="false" 
-                                    class="ui-button-success mx-2" >
-                                </p:commandButton>  
+                                    value="Issue"
+                                    icon="fas fa-check"
+                                    action="#{transferIssueForRequestsController.settle}"
+                                    style="float: right;"
+                                    onclick="if (!confirm('Are you sure you want to Settle This Bill ?')) return false;"
+                                    ajax="false"
+                                    class="ui-button-success mx-2"
+                                    disabled="#{not webUserController.hasPrivilege('PharmacyIssueForRequestFinalize')}"
+                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Issue for Requests', false) and !transferIssueForRequestsController.draftMode}"/>
+
+                                <!-- 3-step workflow buttons -->
+                                <p:commandButton
+                                    id="btnSaveDraftIssue"
+                                    value="Save Draft"
+                                    icon="fas fa-floppy-disk"
+                                    actionListener="#{transferIssueForRequestsController.saveDraftIssue()}"
+                                    style="float: right;"
+                                    onclick="if (!confirm('Save this issue as a draft?')) return false;"
+                                    ajax="false"
+                                    styleClass="ui-button-stage-save mx-2"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Use Save Finalize Approve Workflow for Issue for Requests', false) and !transferIssueForRequestsController.issuedBill.completed and webUserController.hasPrivilege('PharmacyIssueForRequestSave')}"/>
+
+                                <p:commandButton
+                                    id="btnFinalizeIssue"
+                                    value="Finalize"
+                                    icon="fas fa-lock"
+                                    actionListener="#{transferIssueForRequestsController.finalizeDraftIssue()}"
+                                    style="float: right;"
+                                    onclick="if (!confirm('Finalize this issue draft?')) return false;"
+                                    ajax="false"
+                                    styleClass="ui-button-stage-finalize mx-2"
+                                    rendered="#{transferIssueForRequestsController.draftMode and transferIssueForRequestsController.issuedBill.id ne null and !transferIssueForRequestsController.issuedBill.completed and webUserController.hasPrivilege('PharmacyIssueForRequestFinalize')}"/>
+
+                                <p:commandButton
+                                    id="btnApproveIssue"
+                                    value="Approve"
+                                    icon="fas fa-check-double"
+                                    action="#{transferIssueForRequestsController.approveDraftIssue()}"
+                                    style="float: right;"
+                                    onclick="if (!confirm('Approve this issue? Stock will be moved.')) return false;"
+                                    ajax="false"
+                                    styleClass="ui-button-stage-approve mx-2"
+                                    rendered="#{transferIssueForRequestsController.draftMode and transferIssueForRequestsController.issuedBill.completed and !transferIssueForRequestsController.issuedBill.checked and webUserController.hasPrivilege('PharmacyIssueForRequestApprove')}"/>
+
+                                <p:commandButton
+                                    id="btnCancelDraftIssue"
+                                    value="Cancel Draft"
+                                    icon="fas fa-times"
+                                    actionListener="#{transferIssueForRequestsController.cancelPendingIssue()}"
+                                    style="float: right;"
+                                    onclick="if (!confirm('Cancel this draft? This cannot be undone.')) return false;"
+                                    ajax="false"
+                                    class="ui-button-danger mx-2"
+                                    rendered="#{transferIssueForRequestsController.draftMode and transferIssueForRequestsController.issuedBill.id ne null and !transferIssueForRequestsController.issuedBill.checked}"/>
                             </f:facet>
                             <p:panelGrid id="billDetails" columns="2" class="w-100">
                                 <h:outputLabel value="Items will be issued from &nbsp;" />
@@ -199,12 +246,15 @@
 
 
                                 <h:outputLabel value="Select Staff Name" />
-                                <p:autoComplete 
+                                <p:autoComplete
                                     class="w-100"
                                     inputStyleClass="w-100"
                                     completeMethod="#{staffController.completeStaffWithoutDoctors}"
                                     forceSelection="true"
-                                    var="w" itemLabel="#{w.person.name}" 
+                                    minQueryLength="3"
+                                    queryDelay="600"
+                                    maxResults="10"
+                                    var="w" itemLabel="#{w.person.name}"
                                     itemValue="#{w}"
                                     value="#{transferIssueForRequestsController.issuedBill.toStaff}" >
                                     <p:column headerText="Name">

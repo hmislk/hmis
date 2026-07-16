@@ -91,6 +91,9 @@
                             <p:column headerText="From Department">
                                 <h:outputLabel value="#{p.fromDepartmentName}"/>
                             </p:column>
+                            <p:column headerText="Issue Type">
+                                <p:tag value="#{p.issueTypeLabel}" severity="#{p.directIssue ? 'info' : 'success'}"/>
+                            </p:column>
                             <p:column headerText="Department Type">
                                 <h:outputText value="#{p.departmentTypeLabel}"
                                               rendered="#{p.departmentType != null}"/>
@@ -122,27 +125,72 @@
                             </p:column>
 
                             <p:column headerText="Action">
-                                <p:commandButton
-                                    id="btnToReceive"
-                                    ajax="false"
-                                    value="Receive"
-                                    title="Receive items from #{p.deptId}"
-                                    class="ui-button-warning mx-1"
-                                    action="#{transferReceiveController.navigateToRecieveRequest()}"
-                                    disabled="#{p.cancelled or p.fullyIssued}">
-                                    <f:setPropertyActionListener target="#{transferReceiveController.issuedBillId}" value="#{p.billId}"/>
-                                </p:commandButton>
-
-                                <p:commandButton
-                                    id="btnToReceiveFast"
-                                    ajax="false"
-                                    value="Fast Receive"
-                                    title="Fast receive items from #{p.deptId}"
-                                    class="ui-button-success mx-1"
-                                    action="#{transferReceiveNativeSqlController.navigateToReceiveRequestNative()}"
-                                    disabled="#{p.cancelled or p.fullyIssued}">
-                                    <f:setPropertyActionListener target="#{transferReceiveNativeSqlController.issuedBillId}" value="#{p.billId}"/>
-                                </p:commandButton>
+                                <!-- No pending PRE: show Receive button (native SQL path) -->
+                                <h:panelGroup rendered="#{p.pendingReceiveBillId == null and !p.cancelled and !p.fullyIssued}">
+                                    <!--
+                                    DEPRECATED: old normal-path Receive button (TransferReceiveController).
+                                    Replaced by the native SQL path below. Remove once TransferReceiveController
+                                    is fully retired.
+                                    <p:commandButton
+                                        id="btnToReceiveOld"
+                                        ajax="false"
+                                        value="Receive"
+                                        title="Receive items from #{p.deptId}"
+                                        class="ui-button-warning mx-1"
+                                        action="#{transferReceiveController.navigateToRecieveRequest()}">
+                                        <f:setPropertyActionListener target="#{transferReceiveController.issuedBillId}" value="#{p.billId}"/>
+                                    </p:commandButton>
+                                    -->
+                                    <p:commandButton
+                                        id="btnToReceive"
+                                        ajax="false"
+                                        value="Receive"
+                                        title="Receive items from #{p.deptId}"
+                                        class="ui-button-success mx-1"
+                                        action="#{transferReceiveNativeSqlController.navigateToReceiveRequestNative()}">
+                                        <f:setPropertyActionListener target="#{transferReceiveNativeSqlController.issuedBillId}" value="#{p.billId}"/>
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                <!-- PRE exists, not finalized: Finalize + Cancel -->
+                                <h:panelGroup rendered="#{p.pendingReceiveBillId != null and !p.pendingReceiveIsFinalized and !p.cancelled and !p.fullyIssued and webUserController.hasPrivilege('PharmacyReceiveFinalize')}">
+                                    <p:commandButton
+                                        id="btnToFinalizeReceive"
+                                        ajax="false"
+                                        value="Finalize"
+                                        title="Finalize pending receive for #{p.deptId}"
+                                        styleClass="ui-button-stage-finalize mx-1"
+                                        icon="fas fa-lock"
+                                        action="#{transferReceiveNativeSqlController.loadPendingReceiveForFinalize(p.pendingReceiveBillId)}"/>
+                                    <p:commandButton
+                                        id="btnCancelPendingReceive"
+                                        ajax="false"
+                                        value="Cancel"
+                                        title="Cancel pending receive for #{p.deptId}"
+                                        class="ui-button-danger mx-1"
+                                        icon="fas fa-times"
+                                        onclick="if(!confirm('Cancel this pending receive? This cannot be undone.')) return false;"
+                                        action="#{transferReceiveNativeSqlController.cancelPendingReceive(p.pendingReceiveBillId)}"/>
+                                </h:panelGroup>
+                                <!-- PRE finalized, awaiting approval: Approve + Cancel -->
+                                <h:panelGroup rendered="#{p.pendingReceiveBillId != null and p.pendingReceiveIsFinalized and !p.cancelled and !p.fullyIssued and webUserController.hasPrivilege('PharmacyReceiveApprove')}">
+                                    <p:commandButton
+                                        id="btnToApproveReceive"
+                                        ajax="false"
+                                        value="Approve"
+                                        title="Approve finalized receive for #{p.deptId}"
+                                        styleClass="ui-button-stage-approve mx-1"
+                                        icon="fas fa-check-double"
+                                        action="#{transferReceiveNativeSqlController.loadPendingReceiveForApprove(p.pendingReceiveBillId)}"/>
+                                    <p:commandButton
+                                        id="btnCancelFinalizedReceive"
+                                        ajax="false"
+                                        value="Cancel"
+                                        title="Cancel finalized receive for #{p.deptId}"
+                                        class="ui-button-danger mx-1"
+                                        icon="fas fa-times"
+                                        onclick="if(!confirm('Cancel this finalized receive? This cannot be undone.')) return false;"
+                                        action="#{transferReceiveNativeSqlController.cancelPendingReceive(p.pendingReceiveBillId)}"/>
+                                </h:panelGroup>
                             </p:column>
 
                             <p:column headerText="Received">

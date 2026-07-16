@@ -9,6 +9,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.pharmacy.DiscardCategory;
 import com.divudi.core.facade.DiscardCategoryFacade;
@@ -37,6 +38,8 @@ public class DiscardCategoryController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @EJB
     private DiscardCategoryFacade ejbFacade;
     List<DiscardCategory> selectedItems;
@@ -61,6 +64,10 @@ public class DiscardCategoryController implements Serializable {
     }
 
     public void saveSelected() {
+        if (!webUserController.hasPrivilege("PharmacyDiscardCategoryManage")) {
+            JsfUtil.addErrorMessage("You do not have the privilege to manage discard categories.");
+            return;
+        }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
@@ -111,6 +118,10 @@ public class DiscardCategoryController implements Serializable {
     }
 
     public void delete() {
+        if (!webUserController.hasPrivilege("PharmacyDiscardCategoryManage")) {
+            JsfUtil.addErrorMessage("You do not have the privilege to manage discard categories.");
+            return;
+        }
 
         if (current != null) {
             current.setRetired(true);

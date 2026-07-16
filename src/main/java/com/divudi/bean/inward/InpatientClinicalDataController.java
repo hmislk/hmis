@@ -12,9 +12,11 @@ import com.divudi.bean.clinical.*;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.MedicationAdministrationStatus;
 import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.data.clinical.DocumentTemplateType;
@@ -24,6 +26,7 @@ import com.divudi.core.data.lab.InvestigationResultForGraph;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
@@ -34,6 +37,7 @@ import com.divudi.core.entity.clinical.ClinicalEntity;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import com.divudi.core.entity.clinical.DocumentTemplate;
 import com.divudi.core.entity.clinical.ItemUsage;
+import com.divudi.core.entity.clinical.MedicationAdministrationRecord;
 import com.divudi.core.entity.clinical.Prescription;
 import com.divudi.core.entity.clinical.PrescriptionTemplate;
 import com.divudi.core.entity.pharmacy.MeasurementUnit;
@@ -48,7 +52,9 @@ import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.ClinicalEntityFacade;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
+import com.divudi.core.entity.EncounterCreditCompany;
 import com.divudi.core.facade.EncounterComponentFacade;
+import com.divudi.core.facade.EncounterCreditCompanyFacade;
 import com.divudi.core.facade.ItemUsageFacade;
 import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientFacade;
@@ -64,7 +70,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -80,6 +88,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.entity.AiMessage;
 import com.divudi.service.AnthropicApiService;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.CaptureEvent;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.file.UploadedFile;
@@ -136,6 +145,12 @@ public class InpatientClinicalDataController implements Serializable {
     private AnthropicApiService anthropicApiService;
     @EJB
     private PrescriptionService prescriptionService;
+    @EJB
+    private EncounterCreditCompanyFacade encounterCreditCompanyFacade;
+    @EJB
+    private com.divudi.core.facade.EmailFacade emailFacade;
+    @EJB
+    private com.divudi.ejb.EmailManagerEjb emailManagerEjb;
     /**
      * Controllers
      */
@@ -151,6 +166,16 @@ public class InpatientClinicalDataController implements Serializable {
     SearchController searchController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    com.divudi.bean.pharmacy.PharmacyRequestForBhtController pharmacyRequestForBhtController;
+    @Inject
+    com.divudi.bean.pharmacy.PharmacySaleBhtController pharmacySaleBhtController;
+    @Inject
+    com.divudi.bean.common.NotificationController notificationController;
+    @Inject
+    private MedicationAdministrationController medicationAdministrationController;
+    @Inject
+    private WebUserController webUserController;
 
     /**
      * Properties
@@ -178,8 +203,13 @@ public class InpatientClinicalDataController implements Serializable {
 
     private List<DocumentTemplate> userDocumentTemplates;
     private List<DocumentTemplate> diagnosisCardTemplates;
+    private List<DocumentTemplate> letterTemplates;
     private DocumentTemplate selectedDocumentTemplate;
     private boolean editingDiagnosisCard;
+    private String emailRecipient;
+
+    private List<EncounterCreditCompany> encounterCreditCompanies;
+    private Long selectedEncounterCreditCompanyId;
 
     private ClinicalFindingValue patientAllergy;
     private ClinicalFindingValue patientMedicine;
@@ -224,14 +254,52 @@ public class InpatientClinicalDataController implements Serializable {
     private List<ClinicalFindingValue> pastWardMedicines;
     private ClinicalFindingValue selectedWardMedicineToOmit;
     private String omissionReason;
+    private ClinicalFindingValue[] selectedWardMedicinesToRequest;
+    private ClinicalFindingValue[] selectedDischargeMedicinesToIssue;
     private ClinicalFindingValue selectedWardMedicineToChange;
     private Double newDose;
     private MeasurementUnit newDoseUnit;
     private MeasurementUnit newFrequencyUnit;
 
-    private TimelineModel<ClinicalFindingValue, String> wardMedicineTimelineModel;
+    private TimelineModel<WardMedicineTimelineEntry, String> wardMedicineTimelineModel;
     private ClinicalFindingValue selectedTimelineMedicine;
+    private MedicationAdministrationRecord selectedTimelineAdministration;
     private boolean hasWardMedicineTimelineEvents;
+
+    /**
+     * A single entry on the Ward Medicines Timeline (#21488): either a range
+     * bar for a prescription's active period, or a point marker for a single
+     * {@link MedicationAdministrationRecord} given/refused/held against it.
+     */
+    public static class WardMedicineTimelineEntry implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        private final ClinicalFindingValue medicine;
+        private final MedicationAdministrationRecord administration;
+
+        public WardMedicineTimelineEntry(ClinicalFindingValue medicine) {
+            this.medicine = medicine;
+            this.administration = null;
+        }
+
+        public WardMedicineTimelineEntry(MedicationAdministrationRecord administration) {
+            this.medicine = null;
+            this.administration = administration;
+        }
+
+        public ClinicalFindingValue getMedicine() {
+            return medicine;
+        }
+
+        public MedicationAdministrationRecord getAdministration() {
+            return administration;
+        }
+
+        public boolean isAdministrationEvent() {
+            return administration != null;
+        }
+    }
 
     private List<ItemUsage> currentEncounterMedicines;
     private List<ItemUsage> currentEncounterDiagnosis;
@@ -713,6 +781,51 @@ public class InpatientClinicalDataController implements Serializable {
             }
         }
 
+        // Credit company placeholders — use the user-selected EncounterCreditCompany if set,
+        // otherwise fall back to the first one linked to this encounter.
+        String creditCompanyName = "";
+        String creditCompanyAddress = "";
+        String policyNo = "";
+        String referenceNo = "";
+        String creditLimit = "";
+        EncounterCreditCompany ecc = getSelectedEncounterCreditCompany();
+        if (ecc == null) {
+            String jpqlCC = "select ecc from EncounterCreditCompany ecc "
+                    + "where ecc.retired = false and ecc.patientEncounter = :pe "
+                    + "order by ecc.id asc";
+            Map<String, Object> ccParams = new HashMap<>();
+            ccParams.put("pe", e);
+            List<EncounterCreditCompany> creditCompanies = encounterCreditCompanyFacade.findByJpql(jpqlCC, ccParams, 1);
+            if (creditCompanies != null && !creditCompanies.isEmpty()) {
+                ecc = creditCompanies.get(0);
+            }
+        }
+        if (ecc != null) {
+            if (ecc.getInstitution() != null) {
+                creditCompanyName = ecc.getInstitution().getName() != null ? ecc.getInstitution().getName() : "";
+                creditCompanyAddress = ecc.getInstitution().getAddress() != null ? ecc.getInstitution().getAddress() : "";
+            }
+            policyNo = ecc.getPolicyNo() != null ? ecc.getPolicyNo() : "";
+            referenceNo = ecc.getReferanceNo() != null ? ecc.getReferanceNo() : "";
+            creditLimit = ecc.getCreditLimit() > 0 ? String.format("%.2f", ecc.getCreditLimit()) : "";
+        } else if (e.getCreditCompany() != null) {
+            creditCompanyName = e.getCreditCompany().getName() != null ? e.getCreditCompany().getName() : "";
+            creditCompanyAddress = e.getCreditCompany().getAddress() != null ? e.getCreditCompany().getAddress() : "";
+        }
+
+        String finalBill = String.format("%.2f", e.getNetTotal());
+
+        String institutionName = e.getInstitution() != null && e.getInstitution().getName() != null
+                ? e.getInstitution().getName() : "";
+        String departmentName = e.getDepartment() != null && e.getDepartment().getName() != null
+                ? e.getDepartment().getName() : "";
+        String doctorName = "";
+        Staff doctor = e.getOpdDoctor() != null ? e.getOpdDoctor() : e.getReferringDoctor();
+        if (doctor != null && doctor.getPerson() != null && doctor.getPerson().getNameWithTitle() != null) {
+            doctorName = doctor.getPerson().getNameWithTitle();
+        }
+        String letterDate = CommonFunctions.formatDate(new Date(), sessionController.getApplicationPreference().getLongDateFormat());
+
         output = input.replace("{name}", name)
                 .replace("{age}", age)
                 .replace("{comments}", comments)
@@ -744,7 +857,20 @@ public class InpatientClinicalDataController implements Serializable {
                 .replace("{bp-series}", bpSeries)
                 .replace("{pr-series}", prSeries)
                 .replace("{rr-series}", rrSeries)
-                .replace("{sat-series}", satSeries);
+                .replace("{sat-series}", satSeries)
+                .replace("{credit_company}", creditCompanyName)
+                .replace("{credit_company_address}", creditCompanyAddress)
+                .replace("{policy_no}", policyNo)
+                .replace("{reference_no}", referenceNo)
+                .replace("{credit_limit}", creditLimit)
+                .replace("{institution}", institutionName)
+                .replace("{department}", departmentName)
+                .replace("{doctor}", doctorName)
+                .replace("{letter_date}", letterDate)
+                .replace("{final_bill}", finalBill)
+                .replace("{patient_name}", name)
+                .replace("{patient_age}", age)
+                .replace("{patient_sex}", sex);
         return output;
 
     }
@@ -1016,6 +1142,10 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("Select a template");
             return;
         }
+        if (requiresCreditCompanySelection()) {
+            JsfUtil.addErrorMessage("This admission has multiple linked credit companies. Please select one before generating.");
+            return;
+        }
         String generatedDoc = generateDocumentFromTemplate(selectedDocumentTemplate, current);
         ClinicalFindingValue ref = new ClinicalFindingValue();
         ref.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
@@ -1100,6 +1230,129 @@ public class InpatientClinicalDataController implements Serializable {
             Logger.getLogger(InpatientClinicalDataController.class.getName()).log(Level.SEVERE, "AI diagnosis card generation failed", ex);
             JsfUtil.addErrorMessage("AI generation failed: " + ex.getMessage());
         }
+    }
+
+    public void generateLetterWithAi() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No encounter selected");
+            return;
+        }
+        if (requiresCreditCompanySelection()) {
+            JsfUtil.addErrorMessage("This admission has multiple linked credit companies. Please select one before generating.");
+            return;
+        }
+
+        String apiKey = configOptionApplicationController.getShortTextValueByKey("AI Chat - Claude API Key", "");
+        if (apiKey == null || apiKey.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("AI API key is not configured. Please set 'AI Chat - Claude API Key' in application settings.");
+            return;
+        }
+
+        String model = configOptionApplicationController.getShortTextValueByKey("AI Chat - Claude Model", "claude-sonnet-4-20250514");
+        Integer maxTokensConfig = configOptionApplicationController.getIntegerValueByKey("AI Chat - Max Tokens", 4096);
+        int maxTokens = (maxTokensConfig != null && maxTokensConfig > 0) ? Math.max(maxTokensConfig, 4096) : 4096;
+
+        String clinicalSummary = buildLetterDataSummary(current);
+        String systemPrompt = buildLetterSystemPrompt();
+        String letterTitle = "AI Generated Letter";
+        if (selectedDocumentTemplate != null
+                && selectedDocumentTemplate.getContents() != null
+                && !selectedDocumentTemplate.getContents().trim().isEmpty()) {
+            systemPrompt += "\n\nTEMPLATE INSTRUCTIONS (follow these exactly while preserving the rules above):\n"
+                    + selectedDocumentTemplate.getContents().trim();
+            letterTitle = selectedDocumentTemplate.getName();
+        }
+
+        try {
+            AnthropicApiService.AnthropicResponse response = anthropicApiService.sendMessage(
+                    apiKey,
+                    model,
+                    maxTokens,
+                    systemPrompt,
+                    new ArrayList<>(),
+                    clinicalSummary,
+                    null,
+                    null
+            );
+
+            if (response == null || response.getContent() == null || response.getContent().trim().isEmpty()) {
+                JsfUtil.addErrorMessage("AI returned an empty response. Please try again.");
+                return;
+            }
+
+            String html = response.getContent().trim();
+            if (html.startsWith("```html")) html = html.substring(7);
+            else if (html.startsWith("```")) html = html.substring(3);
+            if (html.endsWith("```")) html = html.substring(0, html.length() - 3);
+            html = html.trim();
+
+            ClinicalFindingValue ref = new ClinicalFindingValue();
+            ref.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
+            ref.setLobValue(html);
+            ref.setStringValue(letterTitle);
+            ref.setEncounter(current);
+            ref.setOrderNo(getEncounterDocuments().size() + 1);
+            clinicalFindingValueFacade.create(ref);
+            encounterReferral = ref;
+            getEncounterDocuments().add(ref);
+            JsfUtil.addSuccessMessage("Letter generated with AI");
+        } catch (Exception ex) {
+            Logger.getLogger(InpatientClinicalDataController.class.getName()).log(Level.SEVERE, "AI letter generation failed", ex);
+            JsfUtil.addErrorMessage("AI generation failed: " + ex.getMessage());
+        }
+    }
+
+    private String buildLetterSystemPrompt() {
+        return "You are a medical correspondence formatter for a hospital information system. "
+                + "Your task is to generate a professional formal letter in HTML format based on the patient and admission data provided.\n\n"
+                + "RULES:\n"
+                + "1. Output ONLY the HTML markup. No markdown fencing, no explanations, no preamble.\n"
+                + "2. Use inline CSS styles on every element. The output must be self-contained and suitable for printing.\n"
+                + "3. Format as a formal letter: sender block (hospital/institution), date, recipient block (credit company or patient), salutation, body paragraphs, closing.\n"
+                + "4. OMIT any field that has no meaningful data.\n"
+                + "5. NEVER fabricate, infer, or add clinical or financial data that is not provided. Only use the data given.\n"
+                + "6. The letter should fit on an A4 page when printed.\n"
+                + "7. The INSTITUTION name must appear prominently in the header.\n"
+                + "8. If credit company information is provided, address the letter to the credit company.\n"
+                + "9. Include BHT number, admission date, patient name and diagnosis in the letter body.\n"
+                + "10. The letter date must be today's date as provided in the data.\n"
+                + "11. If a final bill value is provided, include it when referring to the outstanding/total amount.\n";
+    }
+
+    private String buildLetterDataSummary(PatientEncounter e) {
+        StringBuilder sb = new StringBuilder(buildClinicalDataSummary(e));
+
+        EncounterCreditCompany ecc = getSelectedEncounterCreditCompany();
+        if (ecc == null) {
+            String jpqlCC = "select ecc from EncounterCreditCompany ecc "
+                    + "where ecc.retired = false and ecc.patientEncounter = :pe order by ecc.id asc";
+            Map<String, Object> ccParams = new HashMap<>();
+            ccParams.put("pe", e);
+            List<EncounterCreditCompany> companies = encounterCreditCompanyFacade.findByJpql(jpqlCC, ccParams, 1);
+            if (companies != null && !companies.isEmpty()) {
+                ecc = companies.get(0);
+            }
+        }
+        if (ecc != null) {
+            sb.append("\nCREDIT COMPANY:\n");
+            if (ecc.getInstitution() != null) {
+                sb.append("  Name: ").append(ecc.getInstitution().getName() != null ? ecc.getInstitution().getName() : "").append("\n");
+                sb.append("  Address: ").append(ecc.getInstitution().getAddress() != null ? ecc.getInstitution().getAddress() : "").append("\n");
+            }
+            if (ecc.getPolicyNo() != null && !ecc.getPolicyNo().isEmpty())
+                sb.append("  Policy No: ").append(ecc.getPolicyNo()).append("\n");
+            if (ecc.getReferanceNo() != null && !ecc.getReferanceNo().isEmpty())
+                sb.append("  Reference No: ").append(ecc.getReferanceNo()).append("\n");
+            if (ecc.getCreditLimit() > 0)
+                sb.append("  Credit Limit: ").append(String.format("%.2f", ecc.getCreditLimit())).append("\n");
+        } else if (e.getCreditCompany() != null) {
+            sb.append("\nCREDIT COMPANY:\n");
+            sb.append("  Name: ").append(e.getCreditCompany().getName() != null ? e.getCreditCompany().getName() : "").append("\n");
+            sb.append("  Address: ").append(e.getCreditCompany().getAddress() != null ? e.getCreditCompany().getAddress() : "").append("\n");
+        }
+        sb.append("\nFINAL BILL VALUE: ").append(String.format("%.2f", e.getNetTotal())).append("\n");
+        sb.append("\nLETTER DATE: ").append(CommonFunctions.formatDate(new Date(), sessionController.getApplicationPreference().getLongDateFormat())).append("\n");
+        return sb.toString();
     }
 
     private String buildClinicalDataSummary(PatientEncounter e) {
@@ -2087,6 +2340,7 @@ public class InpatientClinicalDataController implements Serializable {
         this.admissionWardMedicine = null;
         this.selectedWardMedicineToOmit = null;
         this.omissionReason = null;
+        this.selectedWardMedicinesToRequest = null;
         this.selectedWardMedicineToChange = null;
         this.newDose = null;
         this.newDoseUnit = null;
@@ -2127,6 +2381,74 @@ public class InpatientClinicalDataController implements Serializable {
         }
     }
 
+    /**
+     * Returns a warning string if the given item matches any recorded patient
+     * allergy, or null if no match. Allergies are recorded at VTM level; the
+     * prescribed item may be an AMP/VMP whose VTM is reached through the
+     * AMP -> VMP -> VTM chain (AMP creation only sets {@code vmp}, so an AMP's
+     * own {@code vtm} is often null). A direct match (item == allergy item) is
+     * also caught.
+     * <p>
+     * The {@link #patientAllergies} session list is refreshed for the current
+     * {@link #patient} when it is empty, because some navigation paths (e.g. the
+     * ward-medicine page) set the patient without reloading allergies.
+     */
+    private String getAllergyWarning(Item prescribedItem) {
+        if (prescribedItem == null) {
+            return null;
+        }
+        List<ClinicalFindingValue> allergies = patientAllergies;
+        if ((allergies == null || allergies.isEmpty()) && patient != null) {
+            allergies = fillPatientAllergies(patient);
+            patientAllergies = allergies;
+        }
+        if (allergies == null || allergies.isEmpty()) {
+            return null;
+        }
+        Set<Long> prescribedVtmIds = collectVtmIds(prescribedItem);
+        for (ClinicalFindingValue allergy : allergies) {
+            if (allergy == null || allergy.getItemValue() == null) {
+                continue;
+            }
+            Item allergen = allergy.getItemValue();
+            if (allergen.getId() == null) {
+                continue;
+            }
+            // Direct match: the exact item is recorded as an allergy.
+            if (allergen.getId().equals(prescribedItem.getId())) {
+                return prescribedItem.getName() + " matches recorded allergy: " + allergen.getName();
+            }
+            // VTM-level match: any VTM the prescribed item resolves to is the allergen.
+            if (prescribedVtmIds.contains(allergen.getId())) {
+                return prescribedItem.getName() + " matches recorded allergy: " + allergen.getName();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Collects the VTM ids a prescribed item resolves to: its own
+     * {@code vtm}, and — for an AMP — the VTM of its VMP
+     * ({@code amp.getVmp().getVtm()}), since AMPs link to their VTM through the
+     * VMP rather than directly.
+     */
+    private Set<Long> collectVtmIds(Item prescribedItem) {
+        Set<Long> vtmIds = new HashSet<>();
+        if (prescribedItem == null) {
+            return vtmIds;
+        }
+        if (prescribedItem.getVtm() != null && prescribedItem.getVtm().getId() != null) {
+            vtmIds.add(prescribedItem.getVtm().getId());
+        }
+        if (prescribedItem instanceof Amp) {
+            Vmp vmp = ((Amp) prescribedItem).getVmp();
+            if (vmp != null && vmp.getVtm() != null && vmp.getVtm().getId() != null) {
+                vtmIds.add(vmp.getVtm().getId());
+            }
+        }
+        return vtmIds;
+    }
+
     public void addAdmissionWardMedicine() {
         if (parentAdmission == null || parentAdmission.getId() == null) {
             JsfUtil.addErrorMessage("No admission selected.");
@@ -2135,6 +2457,10 @@ public class InpatientClinicalDataController implements Serializable {
         if (getAdmissionWardMedicine().getPrescription().getItem() == null) {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
+        }
+        String allergyWarning = getAllergyWarning(getAdmissionWardMedicine().getPrescription().getItem());
+        if (allergyWarning != null) {
+            JsfUtil.addWarningMessage("ALLERGY ALERT: " + allergyWarning);
         }
         Prescription rx = getAdmissionWardMedicine().getPrescription();
         rx.setEncounter(parentAdmission);
@@ -2193,6 +2519,161 @@ public class InpatientClinicalDataController implements Serializable {
         JsfUtil.addSuccessMessage("Medicine Omitted");
     }
 
+    /**
+     * Pre-fills a BHT pharmacy request from the active ward medications the user
+     * ticked, then navigates to the BHT request page. The user still picks (or
+     * confirms the defaulted) requesting pharmacy there before settling.
+     */
+    public String requestSelectedWardMedicinesFromPharmacy() {
+        if (parentAdmission == null || parentAdmission.getId() == null) {
+            JsfUtil.addErrorMessage("No admission selected.");
+            return "";
+        }
+        if (selectedWardMedicinesToRequest == null || selectedWardMedicinesToRequest.length == 0) {
+            JsfUtil.addErrorMessage("Select at least one medicine to request.");
+            return "";
+        }
+        if (parentAdmission.isDischarged()) {
+            JsfUtil.addErrorMessage("Sorry, patient is discharged.");
+            return "";
+        }
+
+        pharmacyRequestForBhtController.resetAll();
+        pharmacyRequestForBhtController.setPatientEncounter(parentAdmission);
+
+        Long admissionId = parentAdmission.getId();
+        int added = 0;
+        int skippedOtherAdmission = 0;
+        for (ClinicalFindingValue cfv : selectedWardMedicinesToRequest) {
+            if (cfv == null || cfv.getPrescription() == null || cfv.getEncounter() == null) {
+                continue;
+            }
+            // Guard against a stale (session-scoped) selection carried over from
+            // a previously-viewed admission: only request medicines that belong
+            // to the current admission. Mirrors the fillAdmissionWardMedicines
+            // query (encounter == admission OR encounter.parentEncounter == admission).
+            Long encounterId = cfv.getEncounter().getId();
+            Long parentEncounterId = cfv.getEncounter().getParentEncounter() != null
+                    ? cfv.getEncounter().getParentEncounter().getId()
+                    : null;
+            if (!admissionId.equals(encounterId) && !admissionId.equals(parentEncounterId)) {
+                skippedOtherAdmission++;
+                continue;
+            }
+            if (pharmacyRequestForBhtController.addBillItemFromPrescription(cfv.getPrescription())) {
+                added++;
+            }
+        }
+
+        if (added == 0) {
+            selectedWardMedicinesToRequest = null;
+            if (skippedOtherAdmission > 0) {
+                JsfUtil.addErrorMessage("The selected medicines do not belong to this admission. Please re-select.");
+            } else {
+                JsfUtil.addErrorMessage("Could not add any of the selected medicines to the request.");
+            }
+            return "";
+        }
+
+        // Intentionally do NOT pre-set the requesting pharmacy here. Setting
+        // it would hide the department-pick panel on the request page (which
+        // renders only while department is null) and lock the pharmacy
+        // autocomplete, so the user could not change it without starting a
+        // new bill and losing these prefilled medicines. Instead the request
+        // page surfaces the ward's default + recent pharmacies as one-click
+        // chips (default first), leaving the choice explicit and changeable.
+        selectedWardMedicinesToRequest = null;
+        return "/ward/ward_pharmacy_bht_issue_request_bill?faces-redirect=true";
+    }
+
+    public ClinicalFindingValue[] getSelectedWardMedicinesToRequest() {
+        return selectedWardMedicinesToRequest;
+    }
+
+    public void setSelectedWardMedicinesToRequest(ClinicalFindingValue[] selectedWardMedicinesToRequest) {
+        this.selectedWardMedicinesToRequest = selectedWardMedicinesToRequest;
+    }
+
+    /**
+     * Converts the discharge-medicine prescriptions the user ticked into a
+     * discharge issue bill (no inward service charge) dispensed from the
+     * logged-in pharmacy, then navigates to the discharge issue page where the
+     * pharmacist reviews batch/quantity and settles. Mirrors
+     * {@link #requestSelectedWardMedicinesFromPharmacy()} for the discharge flow.
+     * Issue #21334.
+     */
+    public String createDischargeIssueBillFromSelected() {
+        // The discharge issue bill must be attributed to the admission. When the
+        // page is reached from the assessment list, current is the assessment
+        // encounter and parentAdmission holds the admission; from the dashboard
+        // both are the admission. Prefer parentAdmission, fall back to current.
+        PatientEncounter admission = parentAdmission != null ? parentAdmission : current;
+        if (admission == null || admission.getId() == null) {
+            JsfUtil.addErrorMessage("No admission selected.");
+            return "";
+        }
+        if (selectedDischargeMedicinesToIssue == null || selectedDischargeMedicinesToIssue.length == 0) {
+            JsfUtil.addErrorMessage("Select at least one discharge medicine to issue.");
+            return "";
+        }
+
+        Long admissionId = admission.getId();
+        List<ClinicalFindingValue> currentDischargeMedicines = getDischargeMedicines();
+        List<com.divudi.core.entity.clinical.Prescription> prescriptions = new ArrayList<>();
+        int skippedOtherAdmission = 0;
+        int skippedStale = 0;
+        for (ClinicalFindingValue cfv : selectedDischargeMedicinesToIssue) {
+            if (cfv == null || cfv.getPrescription() == null || cfv.getEncounter() == null) {
+                continue;
+            }
+            // Selection is session-scoped: reject any row that was deleted/retired
+            // (removed from the current discharge list) since it was selected, so a
+            // stale tick can never be converted into an issue line.
+            if (cfv.isRetired() || !currentDischargeMedicines.contains(cfv)) {
+                skippedStale++;
+                continue;
+            }
+            // Guard against a stale (session-scoped) selection carried over from a
+            // previously-viewed admission: only issue medicines that belong to the
+            // current admission.
+            Long encounterId = cfv.getEncounter().getId();
+            Long parentEncounterId = cfv.getEncounter().getParentEncounter() != null
+                    ? cfv.getEncounter().getParentEncounter().getId()
+                    : null;
+            if (!admissionId.equals(encounterId) && !admissionId.equals(parentEncounterId)) {
+                skippedOtherAdmission++;
+                continue;
+            }
+            prescriptions.add(cfv.getPrescription());
+        }
+        if (skippedStale > 0) {
+            JsfUtil.addWarningMessage(skippedStale
+                    + " selected medicine(s) were removed from the list and were skipped.");
+        }
+
+        if (prescriptions.isEmpty()) {
+            selectedDischargeMedicinesToIssue = null;
+            if (skippedOtherAdmission > 0) {
+                JsfUtil.addErrorMessage("The selected medicines do not belong to this admission. Please re-select.");
+            } else {
+                JsfUtil.addErrorMessage("Could not add any of the selected discharge medicines.");
+            }
+            return "";
+        }
+
+        String outcome = pharmacySaleBhtController.prepareDischargeIssueFromPrescriptions(admission, prescriptions);
+        selectedDischargeMedicinesToIssue = null;
+        return outcome;
+    }
+
+    public ClinicalFindingValue[] getSelectedDischargeMedicinesToIssue() {
+        return selectedDischargeMedicinesToIssue;
+    }
+
+    public void setSelectedDischargeMedicinesToIssue(ClinicalFindingValue[] selectedDischargeMedicinesToIssue) {
+        this.selectedDischargeMedicinesToIssue = selectedDischargeMedicinesToIssue;
+    }
+
     public String navigateToWardMedicinesTimeline(PatientEncounter admission) {
         if (admission == null) {
             JsfUtil.addErrorMessage("No admission selected.");
@@ -2202,6 +2683,8 @@ public class InpatientClinicalDataController implements Serializable {
         this.current = admission;
         this.patient = admission.getPatient();
         this.selectedTimelineMedicine = null;
+        this.selectedTimelineAdministration = null;
+        medicationAdministrationController.resetAdministrationHistoryCache();
         fillAdmissionWardMedicines(admission);
         buildWardMedicineTimeline();
         return "/inward/inward_ward_medicines_timeline?faces-redirect=true";
@@ -2244,8 +2727,8 @@ public class InpatientClinicalDataController implements Serializable {
             LocalDateTime end = endDate.toInstant()
                     .atZone(ZoneId.systemDefault()).toLocalDateTime();
 
-            TimelineEvent<ClinicalFindingValue> event = TimelineEvent.<ClinicalFindingValue>builder()
-                    .data(cfv)
+            TimelineEvent<WardMedicineTimelineEntry> event = TimelineEvent.<WardMedicineTimelineEntry>builder()
+                    .data(new WardMedicineTimelineEntry(cfv))
                     .startDate(start)
                     .endDate(end)
                     .group(groupId)
@@ -2253,17 +2736,82 @@ public class InpatientClinicalDataController implements Serializable {
                     .build();
             wardMedicineTimelineModel.add(event);
             hasWardMedicineTimelineEvents = true;
+
+            for (MedicationAdministrationRecord mar : medicationAdministrationController.getAdministrationHistory(rx)) {
+                if (mar.getAdministeredAt() == null) {
+                    continue;
+                }
+                LocalDateTime administeredAt = mar.getAdministeredAt().toInstant()
+                        .atZone(ZoneId.systemDefault()).toLocalDateTime();
+                TimelineEvent<WardMedicineTimelineEntry> marEvent = TimelineEvent.<WardMedicineTimelineEntry>builder()
+                        .data(new WardMedicineTimelineEntry(mar))
+                        .startDate(administeredAt)
+                        .type("point")
+                        .group(groupId)
+                        .styleClass(administrationStyleClass(mar.getStatus()))
+                        .title(administrationTitle(mar))
+                        .build();
+                wardMedicineTimelineModel.add(marEvent);
+            }
         }
     }
 
-    public void onTimelineSelect(TimelineSelectEvent<ClinicalFindingValue> e) {
-        if (e != null && e.getTimelineEvent() != null) {
-            selectedTimelineMedicine = e.getTimelineEvent().getData();
+    private String administrationStyleClass(MedicationAdministrationStatus status) {
+        if (status == null) {
+            return "mar-given";
+        }
+        switch (status) {
+            case REFUSED:
+                return "mar-refused";
+            case HELD:
+                return "mar-held";
+            default:
+                return "mar-given";
         }
     }
 
-    public TimelineModel<ClinicalFindingValue, String> getWardMedicineTimelineModel() {
+    private String administrationTitle(MedicationAdministrationRecord mar) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(mar.getStatus() != null ? mar.getStatus().getLabel() : "Administered");
+        if (mar.getQty() != null && mar.getItem() != null) {
+            sb.append(" - ").append(mar.getQty()).append(" ").append(mar.getItem().getName());
+        }
+        if (mar.getItemBatch() != null && mar.getItemBatch().getBatchNo() != null) {
+            sb.append(" (Batch ").append(mar.getItemBatch().getBatchNo()).append(")");
+        }
+        if (mar.getAdministeredBy() != null && mar.getAdministeredBy().getPerson() != null
+                && mar.getAdministeredBy().getPerson().getName() != null) {
+            sb.append(" by ").append(mar.getAdministeredBy().getPerson().getName());
+        }
+        return sb.toString();
+    }
+
+    public void onTimelineSelect(TimelineSelectEvent<WardMedicineTimelineEntry> e) {
+        if (e == null || e.getTimelineEvent() == null || e.getTimelineEvent().getData() == null) {
+            return;
+        }
+        WardMedicineTimelineEntry entry = e.getTimelineEvent().getData();
+        if (entry.isAdministrationEvent()) {
+            selectedTimelineAdministration = entry.getAdministration();
+            selectedTimelineMedicine = null;
+            PrimeFaces.current().executeScript("PF('dlgAdministrationDetail').show();");
+        } else {
+            selectedTimelineMedicine = entry.getMedicine();
+            selectedTimelineAdministration = null;
+            PrimeFaces.current().executeScript("PF('dlgMedicineDetail').show();");
+        }
+    }
+
+    public TimelineModel<WardMedicineTimelineEntry, String> getWardMedicineTimelineModel() {
         return wardMedicineTimelineModel;
+    }
+
+    public MedicationAdministrationRecord getSelectedTimelineAdministration() {
+        return selectedTimelineAdministration;
+    }
+
+    public void setSelectedTimelineAdministration(MedicationAdministrationRecord selectedTimelineAdministration) {
+        this.selectedTimelineAdministration = selectedTimelineAdministration;
     }
 
     public ClinicalFindingValue getSelectedTimelineMedicine() {
@@ -2413,6 +2961,7 @@ public class InpatientClinicalDataController implements Serializable {
         parentAdmission.setClinicalDischargeDateTime(new Date());
         parentAdmission.setClinicalDischargedBy(sessionController.getLoggedUser());
         getFacade().edit(parentAdmission);
+        notificationController.createNotification(parentAdmission, "ClinicalDischarge");
         JsfUtil.addSuccessMessage("Clinical discharge confirmed.");
     }
 
@@ -2472,18 +3021,6 @@ public class InpatientClinicalDataController implements Serializable {
         return "/inward/clinical_data_diagnosis_card?faces-redirect=true";
     }
 
-    public String navigateToDrugChart() {
-        if (current == null) {
-            JsfUtil.addErrorMessage("Nothing Selected");
-            return "";
-        }
-        setStartedEncounter(current);
-        fillCurrentPatientLists(current.getPatient());
-        fillCurrentEncounterLists(current);
-        generateDocumentsFromDocumentTemplates(current);
-        return "/inward/clinical_data_drug_chart?faces-redirect=true";
-    }
-
     public String navigateToImages() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing Selected");
@@ -2509,7 +3046,6 @@ public class InpatientClinicalDataController implements Serializable {
     }
     //clinical_data_investigations
     //clinical_data_images
-    //clinical_data_drug_chart
     //clinical_data_diagnosis_card
 
     public void fillCurrentPatientLists(Patient patient) {
@@ -2665,6 +3201,10 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
         }
+        String allergyWarning = getAllergyWarning(getPatientMedicine().getPrescription().getItem());
+        if (allergyWarning != null) {
+            JsfUtil.addWarningMessage("ALLERGY ALERT: " + allergyWarning);
+        }
         getPatientMedicine().setPatient(patient);
         getPatientMedicine().setClinicalFindingValueType(ClinicalFindingValueType.PatientMedicine);
         prescriptionFacade.create(getPatientMedicine().getPrescription());
@@ -2679,9 +3219,19 @@ public class InpatientClinicalDataController implements Serializable {
             JsfUtil.addErrorMessage("Save the assessment before adding medicines.");
             return;
         }
+        boolean nursingDischarged = current.isNursingDischarged()
+                || (current.getParentEncounter() != null && current.getParentEncounter().isNursingDischarged());
+        if (nursingDischarged && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
+            return;
+        }
         if (getEncounterMedicine().getPrescription().getItem() == null) {
             JsfUtil.addErrorMessage("Select Medicine");
             return;
+        }
+        String allergyWarning = getAllergyWarning(getEncounterMedicine().getPrescription().getItem());
+        if (allergyWarning != null) {
+            JsfUtil.addWarningMessage("ALLERGY ALERT: " + allergyWarning);
         }
         getEncounterMedicine().setEncounter(current);
         getEncounterMedicine().setClinicalFindingValueType(ClinicalFindingValueType.VisitMedicine);
@@ -2747,9 +3297,17 @@ public class InpatientClinicalDataController implements Serializable {
         dischargeMedicines = fillDischargeMedicines(current);
 
         setDischargeMedicine(null);
-        saveSelected();
 
-        JsfUtil.addSuccessMessage("Added");
+        // Persist the assessment quietly. saveSelected() emits its own generic
+        // messages ("Updated Successfully." + "Saved"), which together with the
+        // line below produced three confusing messages for a single add.
+        current.setDepartment(sessionController.getDepartment());
+        if (current.getEncounterDate() == null) {
+            current.setEncounterDate(new Date());
+        }
+        getFacade().edit(current);
+
+        JsfUtil.addSuccessMessage("Discharge medicine added");
     }
 
     public List<Bill> fillPatientBills(Patient patient) {
@@ -4290,6 +4848,7 @@ public class InpatientClinicalDataController implements Serializable {
         fillCurrentPatientLists(admission.getPatient());
         fillCurrentEncounterLists(admission);
         diagnosisCardTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientDiagnosisCard);
+        refreshEncounterCreditCompanies();
         return "/inward/inward_diagnosis_cards?faces-redirect=true";
     }
 
@@ -4302,6 +4861,97 @@ public class InpatientClinicalDataController implements Serializable {
 
     public void refreshDiagnosisCardTemplates() {
         diagnosisCardTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientDiagnosisCard);
+    }
+
+    public String navigateToInpatientLetters(PatientEncounter admission) {
+        if (admission == null) {
+            JsfUtil.addErrorMessage("Nothing Selected");
+            return "";
+        }
+        this.parentAdmission = admission;
+        this.current = admission;
+        fillClinicalAssessments();
+        fillCurrentPatientLists(admission.getPatient());
+        fillCurrentEncounterLists(admission);
+        letterTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientLetter);
+        clearInvalidSelectedLetterTemplate();
+        refreshEncounterCreditCompanies();
+        return "/inward/inward_letters?faces-redirect=true";
+    }
+
+    private void clearInvalidSelectedLetterTemplate() {
+        if (selectedDocumentTemplate != null
+                && (letterTemplates == null || !letterTemplates.contains(selectedDocumentTemplate))) {
+            selectedDocumentTemplate = null;
+        }
+    }
+
+    public List<EncounterCreditCompany> getEncounterCreditCompanies() {
+        if (encounterCreditCompanies == null) {
+            refreshEncounterCreditCompanies();
+        }
+        return encounterCreditCompanies;
+    }
+
+    public void refreshEncounterCreditCompanies() {
+        String jpql = "select ecc from EncounterCreditCompany ecc "
+                + "where ecc.retired = false and ecc.patientEncounter = :pe "
+                + "order by ecc.id asc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("pe", current);
+        encounterCreditCompanies = encounterCreditCompanyFacade.findByJpql(jpql, params);
+        if (encounterCreditCompanies == null) {
+            encounterCreditCompanies = new ArrayList<>();
+        }
+        if (encounterCreditCompanies.size() == 1) {
+            selectedEncounterCreditCompanyId = encounterCreditCompanies.get(0).getId();
+        } else {
+            selectedEncounterCreditCompanyId = null;
+        }
+    }
+
+    public Long getSelectedEncounterCreditCompanyId() {
+        return selectedEncounterCreditCompanyId;
+    }
+
+    public void setSelectedEncounterCreditCompanyId(Long selectedEncounterCreditCompanyId) {
+        this.selectedEncounterCreditCompanyId = selectedEncounterCreditCompanyId;
+    }
+
+    /**
+     * Returns true when the admission has more than one linked, non-retired
+     * credit company and the user has not yet picked which one to use.
+     * Letter generation must be blocked in this case to avoid silently
+     * addressing the letter to the wrong insurer/guarantor.
+     */
+    private boolean requiresCreditCompanySelection() {
+        return encounterCreditCompanies != null
+                && encounterCreditCompanies.size() > 1
+                && getSelectedEncounterCreditCompany() == null;
+    }
+
+    private EncounterCreditCompany getSelectedEncounterCreditCompany() {
+        if (selectedEncounterCreditCompanyId == null || encounterCreditCompanies == null) {
+            return null;
+        }
+        for (EncounterCreditCompany ecc : encounterCreditCompanies) {
+            if (ecc.getId() != null && ecc.getId().equals(selectedEncounterCreditCompanyId)) {
+                return ecc;
+            }
+        }
+        return null;
+    }
+
+    public List<DocumentTemplate> getLetterTemplates() {
+        if (letterTemplates == null) {
+            letterTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientLetter);
+        }
+        return letterTemplates;
+    }
+
+    public void refreshLetterTemplates() {
+        letterTemplates = documentTemplateController.fillByType(DocumentTemplateType.InpatientLetter);
+        clearInvalidSelectedLetterTemplate();
     }
 
     public boolean isEditingDiagnosisCard() {
@@ -4348,6 +4998,105 @@ public class InpatientClinicalDataController implements Serializable {
             }
         }
         return sb.toString();
+    }
+
+    public String getEmailRecipient() {
+        return emailRecipient;
+    }
+
+    public void setEmailRecipient(String emailRecipient) {
+        this.emailRecipient = emailRecipient;
+    }
+
+    public void prepareDocumentEmailDialog() {
+        if (encounterReferral == null || encounterReferral.getLobValue() == null) {
+            JsfUtil.addErrorMessage("No document selected or document content is empty");
+            return;
+        }
+        emailRecipient = resolveDefaultEmailRecipient();
+    }
+
+    private String resolveDefaultEmailRecipient() {
+        EncounterCreditCompany selected = getSelectedEncounterCreditCompany();
+        if (selected != null && selected.getInstitution() != null
+                && selected.getInstitution().getEmail() != null
+                && !selected.getInstitution().getEmail().trim().isEmpty()) {
+            return selected.getInstitution().getEmail().trim();
+        }
+        if (encounterCreditCompanies != null) {
+            for (EncounterCreditCompany ecc : encounterCreditCompanies) {
+                if (ecc.getInstitution() != null
+                        && ecc.getInstitution().getEmail() != null
+                        && !ecc.getInstitution().getEmail().trim().isEmpty()) {
+                    return ecc.getInstitution().getEmail().trim();
+                }
+            }
+        }
+        if (current != null && current.getPatient() != null && current.getPatient().getPerson() != null
+                && current.getPatient().getPerson().getEmail() != null
+                && !current.getPatient().getPerson().getEmail().trim().isEmpty()) {
+            return current.getPatient().getPerson().getEmail().trim();
+        }
+        if (current != null && current.getGuardian() != null
+                && current.getGuardian().getEmail() != null
+                && !current.getGuardian().getEmail().trim().isEmpty()) {
+            return current.getGuardian().getEmail().trim();
+        }
+        return "";
+    }
+
+    public void sendDocumentEmail() {
+        if (encounterReferral == null || encounterReferral.getLobValue() == null) {
+            JsfUtil.addErrorMessage("No document selected or document content is empty");
+            return;
+        }
+        if (emailRecipient == null || emailRecipient.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter recipient email");
+            return;
+        }
+        String recipient = emailRecipient.trim();
+        if (!CommonFunctions.isValidEmail(recipient)) {
+            JsfUtil.addErrorMessage("Please enter a valid email address");
+            return;
+        }
+
+        String subject = encounterReferral.getStringValue() != null
+                ? encounterReferral.getStringValue() : "Inpatient Document";
+        String body = encounterReferral.getLobValue();
+
+        com.divudi.core.entity.AppEmail email = new com.divudi.core.entity.AppEmail();
+        email.setCreatedAt(new Date());
+        email.setCreater(sessionController.getLoggedUser());
+        email.setReceipientEmail(recipient);
+        email.setMessageSubject(subject);
+        email.setMessageBody(body);
+        email.setDepartment(sessionController.getLoggedUser().getDepartment());
+        email.setInstitution(sessionController.getLoggedUser().getInstitution());
+        email.setPatientEncounter(current);
+        email.setMessageType(com.divudi.core.data.MessageType.InpatientClinicalDocument);
+        email.setSentSuccessfully(false);
+        email.setPending(true);
+        emailFacade.create(email);
+
+        try {
+            boolean success = emailManagerEjb.sendEmail(
+                    Collections.singletonList(recipient),
+                    body,
+                    subject,
+                    true
+            );
+            email.setSentSuccessfully(success);
+            email.setPending(!success);
+            if (success) {
+                email.setSentAt(new Date());
+                JsfUtil.addSuccessMessage("Email Sent Successfully");
+            } else {
+                JsfUtil.addErrorMessage("Sending Email Failed");
+            }
+            emailFacade.edit(email);
+        } catch (Exception ex) {
+            JsfUtil.addErrorMessage("Sending Email Failed");
+        }
     }
 
     public StreamedContent downloadAsPdf() {

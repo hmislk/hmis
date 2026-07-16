@@ -927,6 +927,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
         quickSearchPhoneNumber = null;
         admissionController.setPatientAllergies(null);
         admissionController.setCurrentReservation(null);
+        
+        admissionController.setPatientForiegner(false);
         return "/inward/inward_admission?faces-redirect=true";
 
     }
@@ -3471,7 +3473,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         try {
             javax.faces.context.ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
-            ec.redirect(ec.getRequestContextPath() + "/faces/opd/patient");
+            ec.redirect(ec.getRequestContextPath() + "/faces/opd/patient.xhtml");
             FacesContext.getCurrentInstance().responseComplete();
         } catch (java.io.IOException e) {
             JsfUtil.addErrorMessage("Saved but could not redirect.");

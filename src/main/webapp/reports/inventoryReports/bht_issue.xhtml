@@ -56,6 +56,7 @@
                                     id="departmentTypeFilter"
                                     value="#{pharmacyReportController.selectedDepartmentTypes}"
                                     label="Select Department Types"
+                                    updateLabel="true"
                                     class="w-100"
                                     filter="true"
                                     filterMatchMode="contains"
@@ -275,7 +276,10 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyReportController.costValueTotal}" >
+                                    <!-- Issue totals are stored with negative unit quantities; the
+                                         rows above display positive values, so display the total's
+                                         magnitude (display only). -->
+                                    <h:outputText value="#{pharmacyReportController.costValueTotal lt 0 ? -pharmacyReportController.costValueTotal : pharmacyReportController.costValueTotal}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>

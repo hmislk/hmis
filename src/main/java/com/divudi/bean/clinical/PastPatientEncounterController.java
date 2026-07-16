@@ -16,6 +16,7 @@ import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
+import com.divudi.core.data.clinical.DocumentTemplateType;
 import com.divudi.core.data.clinical.PrescriptionTemplateType;
 import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.core.data.lab.InvestigationResultForGraph;
@@ -1401,6 +1402,7 @@ public class PastPatientEncounterController implements Serializable {
         for (DocumentTemplate t : dts) {
             if (t.isDefaultTemplate()) {
                 ClinicalFindingValue cfv = new ClinicalFindingValue();
+                cfv.setClinicalFindingValueType(ClinicalFindingValueType.VisitPrescription);
                 cfv.setEncounter(encounter);
                 cfv.setDocumentTemplate(t);
                 cfv.setStringValue(t.getName());
@@ -1518,6 +1520,9 @@ public class PastPatientEncounterController implements Serializable {
         }
         if (encounterPrescreption != null) {
             encounterPrescreption.setLobValue(generateDocumentFromTemplate(encounterPrescreption.getDocumentTemplate(), current));
+            if (encounterPrescreption.getClinicalFindingValueType() == null) {
+                encounterPrescreption.setClinicalFindingValueType(ClinicalFindingValueType.VisitPrescription);
+            }
             if (encounterPrescreption.getId() == null) {
                 clinicalFindingValueFacade.create(encounterPrescreption);
             } else {
@@ -1533,7 +1538,7 @@ public class PastPatientEncounterController implements Serializable {
             }
             if (prescTemplate != null) {
                 encounterPrescreption = new ClinicalFindingValue();
-                encounterPrescreption.setClinicalFindingValueType(ClinicalFindingValueType.VisitDocument);
+                encounterPrescreption.setClinicalFindingValueType(ClinicalFindingValueType.VisitPrescription);
                 encounterPrescreption.setDocumentTemplate(prescTemplate);
                 encounterPrescreption.setEncounter(current);
                 encounterPrescreption.setLobValue(generateDocumentFromTemplate(prescTemplate, current));
@@ -2699,9 +2704,31 @@ public class PastPatientEncounterController implements Serializable {
     }
 
     private List<ClinicalFindingValue> fillEncounterPrescreptions(PatientEncounter encounter) {
-        List<ClinicalFindingValueType> clinicalFindingValueTypes = new ArrayList<>();
-        clinicalFindingValueTypes.add(ClinicalFindingValueType.VisitPrescription);
-        return loadCurrentEncounterFindingValues(encounter, clinicalFindingValueTypes);
+        List<ClinicalFindingValue> vs = new ArrayList<>();
+        if (encounterFindingValues == null) {
+            encounterFindingValues = fillEncounterFindingValues(encounter);
+        }
+        if (encounterFindingValues == null) {
+            encounterFindingValues = new ArrayList<>();
+        }
+        for (ClinicalFindingValue v : encounterFindingValues) {
+            if (v == null) {
+                continue;
+            }
+            if (v.getClinicalFindingValueType() == ClinicalFindingValueType.VisitPrescription) {
+                vs.add(v);
+                continue;
+            }
+            // Legacy prescriptions were persisted with a null or VisitDocument type;
+            // recognise them through their document template type instead.
+            boolean legacyType = v.getClinicalFindingValueType() == null
+                    || v.getClinicalFindingValueType() == ClinicalFindingValueType.VisitDocument;
+            if (legacyType && v.getDocumentTemplate() != null
+                    && v.getDocumentTemplate().getType() == DocumentTemplateType.Prescription) {
+                vs.add(v);
+            }
+        }
+        return vs;
     }
 
     private List<ClinicalFindingValue> fillPlanOfAction(PatientEncounter encounter) {

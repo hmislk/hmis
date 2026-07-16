@@ -1,7 +1,9 @@
 package com.divudi.core.data.dto;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class PrintBillData implements Serializable {
 
@@ -41,6 +43,10 @@ public class PrintBillData implements Serializable {
     private double cashPaid;
     private double balance;
     private double margin;
+
+    // Individual payment lines (one per component) for Multiple Payment Methods.
+    // Empty for single-method bills.
+    private List<PaymentLine> payments = new ArrayList<>();
 
     // Credit / Staff / Dept targets (shown on bill when applicable)
     private String toStaffName;
@@ -136,6 +142,9 @@ public class PrintBillData implements Serializable {
     public double getMargin() { return margin; }
     public void setMargin(double margin) { this.margin = margin; }
 
+    public List<PaymentLine> getPayments() { return payments; }
+    public void setPayments(List<PaymentLine> payments) { this.payments = payments; }
+
     // --- Targets ---
 
     public String getToStaffName() { return toStaffName; }
@@ -146,4 +155,37 @@ public class PrintBillData implements Serializable {
 
     public String getToInstitutionName() { return toInstitutionName; }
     public void setToInstitutionName(String toInstitutionName) { this.toInstitutionName = toInstitutionName; }
+
+    /**
+     * One settled payment line for printing. {@code paymentMethodLabel} is the
+     * human-readable method name (e.g. "Cash", "Credit Card") and {@code reference}
+     * carries any method-specific detail to show (card last digits, cheque/slip
+     * reference, etc.); it may be empty.
+     */
+    public static class PaymentLine implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        private String paymentMethodLabel;
+        private double value;
+        private String reference;
+
+        public PaymentLine() {
+        }
+
+        public PaymentLine(String paymentMethodLabel, double value, String reference) {
+            this.paymentMethodLabel = paymentMethodLabel;
+            this.value = value;
+            this.reference = reference;
+        }
+
+        public String getPaymentMethodLabel() { return paymentMethodLabel; }
+        public void setPaymentMethodLabel(String paymentMethodLabel) { this.paymentMethodLabel = paymentMethodLabel; }
+
+        public double getValue() { return value; }
+        public void setValue(double value) { this.value = value; }
+
+        public String getReference() { return reference; }
+        public void setReference(String reference) { this.reference = reference; }
+    }
 }

@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <ui:define name="content">
+        <h:form id="formMedicationAdministrationSettle" onkeypress="if(event.keyCode == 13 &amp;&amp; event.target.type != 'textarea') { return false; }">
+
+            <p:messages id="growlMedicationAdministrationSettle" showDetail="true" autoUpdate="true"/>
+
+            <p:panel rendered="#{!medicationAdministrationStockSettlementController.printPreview}">
+                <f:facet name="header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h:outputText styleClass="fa-solid fa-syringe"/>
+                            <p:outputLabel value="Deduct Administered Medicines from Ward Stock" class="mx-4"/>
+                        </div>
+                        <div>
+                            <p:commandButton
+                                id="btnRefreshPending"
+                                value="Refresh"
+                                icon="fas fa-rotate"
+                                class="ui-button-secondary mx-1"
+                                process="@this"
+                                update=":formMedicationAdministrationSettle:panelPendingRecords"
+                                actionListener="#{medicationAdministrationStockSettlementController.loadPendingRecords}"/>
+                            <p:commandButton
+                                id="btnDeductFromWardStock"
+                                value="Deduct from Ward Stock"
+                                icon="fas fa-check"
+                                class="ui-button-success"
+                                update=":formMedicationAdministrationSettle"
+                                actionListener="#{medicationAdministrationStockSettlementController.settle}"
+                                onclick="if (!confirm('Deduct ward stock for the selected administration records? This cannot be undone.')) { return false; }"/>
+                        </div>
+                    </div>
+                </f:facet>
+
+                <h:panelGroup id="panelPendingRecords" layout="block">
+                    <p:dataTable
+                        id="tblPendingRecords"
+                        widgetVar="tblPendingRecords"
+                        rowKey="#{m.id}"
+                        value="#{medicationAdministrationStockSettlementController.pendingRecords}"
+                        selection="#{medicationAdministrationStockSettlementController.selectedRecords}"
+                        var="m"
+                        class="w-100"
+                        emptyMessage="No administered doses are pending ward stock deduction.">
+
+                        <p:column selectionMode="multiple" style="width: 3rem; text-align: center;"/>
+
+                        <p:column headerText="Administered At">
+                            <h:outputText value="#{m.administeredAt}">
+                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Patient">
+                            <h:outputText value="#{m.patientEncounter.patient.person.nameWithTitle}"/>
+                            <br/>
+                            <span class="text-muted">
+                                <h:outputText value="BHT #{m.patientEncounter.bhtNo}"/>
+                            </span>
+                        </p:column>
+
+                        <p:column headerText="Item">
+                            <h:outputText value="#{m.item.name}"/>
+                        </p:column>
+
+                        <p:column headerText="Batch No">
+                            <h:outputText value="#{m.itemBatch.batchNo}"/>
+                        </p:column>
+
+                        <p:column headerText="Expiry">
+                            <h:outputText value="#{m.itemBatch.dateOfExpire}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Qty">
+                            <h:outputText value="#{m.qty}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputText>
+                        </p:column>
+
+                        <p:column headerText="Administered By">
+                            <h:outputText value="#{m.administeredBy.person.nameWithTitle}"/>
+                        </p:column>
+
+                    </p:dataTable>
+                </h:panelGroup>
+            </p:panel>
+
+            <p:panel rendered="#{medicationAdministrationStockSettlementController.printPreview}">
+                <f:facet name="header">
+                    <p:outputLabel value="Ward Stock Deducted - Bill #{medicationAdministrationStockSettlementController.lastSettlementBill.deptId}"/>
+                </f:facet>
+
+                <p:dataTable
+                    id="tblSettledItems"
+                    rowKey="#{i.id}"
+                    value="#{medicationAdministrationStockSettlementController.lastSettledItems}"
+                    var="i"
+                    class="w-100">
+
+                    <p:column headerText="Item">
+                        <h:outputText value="#{i.item.name}"/>
+                    </p:column>
+
+                    <p:column headerText="Batch No">
+                        <h:outputText value="#{i.pharmaceuticalBillItem.itemBatch.batchNo}"/>
+                    </p:column>
+
+                    <p:column headerText="Patient">
+                        <h:outputText value="#{i.patientEncounter.patient.person.nameWithTitle}"/>
+                    </p:column>
+
+                    <p:column headerText="Quantity Deducted">
+                        <h:outputText value="#{i.qty}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </p:column>
+
+                </p:dataTable>
+
+                <p:commandButton
+                    id="btnBackToPendingAfterSettle"
+                    value="Back to Pending List"
+                    icon="fas fa-arrow-left"
+                    ajax="false"
+                    class="ui-button-secondary mt-3"
+                    action="#{medicationAdministrationStockSettlementController.navigateToSettle}"/>
+
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

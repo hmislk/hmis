@@ -519,6 +519,15 @@ public class Bill implements Serializable, RetirableEntity {
     @Enumerated(EnumType.STRING)
     private Priority priority;
 
+    // Collecting Centre repayment voucher values (recorded at settlement time so
+    // the CC payment voucher can be reprinted with the same figures later).
+    private double ccBalanceBeforeTransaction;
+    private double ccBalanceAfterTransaction;
+    private double ccTotalReceived;
+    private double ccTransactionAmount;
+    private double ccTotalCenterValue;
+    private double ccExcessAmount;
+
     public Bill() {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
@@ -1391,6 +1400,22 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    /**
+     * Bill items excluding retired ones. Bill print templates should use
+     * this instead of getBillItems() directly, so a line item removed
+     * during draft editing (retired = true) doesn't still appear on the
+     * printed bill (issue #21856).
+     */
+    public List<BillItem> getActiveBillItems() {
+        List<BillItem> active = new ArrayList<>();
+        for (BillItem bi : getBillItems()) {
+            if (!bi.isRetired()) {
+                active.add(bi);
+            }
+        }
+        return active;
     }
 
     public Date getBillDate() {
@@ -3065,6 +3090,16 @@ public class Bill implements Serializable, RetirableEntity {
         return billFinanceDetails;
     }
 
+    /**
+     * Null-check for billFinanceDetails that does NOT auto-vivify a new instance
+     * (unlike getBillFinanceDetails(), which lazily creates one on first call).
+     * Use this when the presence/absence of BillFinanceDetails is itself meaningful,
+     * e.g. as the fingerprint of "bill created before BFD population existed".
+     */
+    public boolean hasBillFinanceDetails() {
+        return billFinanceDetails != null;
+    }
+
     public void setBillFinanceDetails(BillFinanceDetails billFinanceDetails) {
         this.billFinanceDetails = billFinanceDetails;
         if (billFinanceDetails != null && billFinanceDetails.getBill() != this) {
@@ -3140,6 +3175,54 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setPriority(Priority priority) {
         this.priority = priority;
+    }
+
+    public double getCcBalanceBeforeTransaction() {
+        return ccBalanceBeforeTransaction;
+    }
+
+    public void setCcBalanceBeforeTransaction(double ccBalanceBeforeTransaction) {
+        this.ccBalanceBeforeTransaction = ccBalanceBeforeTransaction;
+    }
+
+    public double getCcBalanceAfterTransaction() {
+        return ccBalanceAfterTransaction;
+    }
+
+    public void setCcBalanceAfterTransaction(double ccBalanceAfterTransaction) {
+        this.ccBalanceAfterTransaction = ccBalanceAfterTransaction;
+    }
+
+    public double getCcTotalReceived() {
+        return ccTotalReceived;
+    }
+
+    public void setCcTotalReceived(double ccTotalReceived) {
+        this.ccTotalReceived = ccTotalReceived;
+    }
+
+    public double getCcTransactionAmount() {
+        return ccTransactionAmount;
+    }
+
+    public void setCcTransactionAmount(double ccTransactionAmount) {
+        this.ccTransactionAmount = ccTransactionAmount;
+    }
+
+    public double getCcTotalCenterValue() {
+        return ccTotalCenterValue;
+    }
+
+    public void setCcTotalCenterValue(double ccTotalCenterValue) {
+        this.ccTotalCenterValue = ccTotalCenterValue;
+    }
+
+    public double getCcExcessAmount() {
+        return ccExcessAmount;
+    }
+
+    public void setCcExcessAmount(double ccExcessAmount) {
+        this.ccExcessAmount = ccExcessAmount;
     }
 
 }

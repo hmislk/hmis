@@ -121,6 +121,11 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.18.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.12.0</version>
+        </dependency>
 
         <dependency>
             <groupId>commons-fileupload</groupId>
@@ -310,6 +315,13 @@
             <artifactId>primefaces</artifactId>
             <version>14.0.6</version>
             <type>jar</type>
+        </dependency>
+
+        <!-- OmniFaces — 3.x targets JSF 2.3 (javax.faces); used for o:socket reliable push -->
+        <dependency>
+            <groupId>org.omnifaces</groupId>
+            <artifactId>omnifaces</artifactId>
+            <version>3.14.16</version>
         </dependency>
 
         <!-- JFreeChart -->

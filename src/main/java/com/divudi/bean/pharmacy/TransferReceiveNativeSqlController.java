@@ -8,11 +8,13 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dto.TransferReceiveItemRowDto;
 import com.divudi.core.data.dto.TransferReceivePrintDto;
 import com.divudi.core.entity.Bill;
@@ -76,6 +78,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
     private SessionController sessionController;
 
     @Inject
+    private WebUserController webUserController;
+
+    @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
 
     @Inject
@@ -128,6 +133,15 @@ public class TransferReceiveNativeSqlController implements Serializable {
             return null;
         }
 
+        // When Save→Finalize→Approve is enabled, block if a PRE is already in progress
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Use Save Finalize Approve Workflow for Transfer Receive", false)) {
+            if (findActivePre(issuedBill.getId()) != null) {
+                JsfUtil.addErrorMessage("A receive is already in progress. Please finalize or cancel it from the list.");
+                return null;
+            }
+        }
+
         printPreview = false;
         printDto = null;
         comments = null;
@@ -147,6 +161,10 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
         resolveAmpItemIds(itemRowList);
 
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Use Save Finalize Approve Workflow for Transfer Receive", false)) {
+            return "/pharmacy/pharmacy_transfer_receive_native_with_approval?faces-redirect=true";
+        }
         return "/pharmacy/pharmacy_transfer_receive_native?faces-redirect=true";
     }
 
@@ -164,6 +182,112 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
     public String navigateToApproveReceiveIssue() {
         return "/pharmacy/pharmacy_transfer_receive_native_approval?faces-redirect=true";
+    }
+
+    public String loadPendingReceiveForFinalize(Long preBillId) {
+        if (preBillId == null) {
+            JsfUtil.addErrorMessage("No pending receive selected.");
+            return null;
+        }
+        Bill preBill = billFacade.find(preBillId);
+        if (preBill == null || preBill.isRetired()) {
+            JsfUtil.addErrorMessage("Pending receive not found.");
+            return null;
+        }
+        if (preBill.getBackwardReferenceBill() == null) {
+            JsfUtil.addErrorMessage("Cannot find the associated issued bill.");
+            return null;
+        }
+        issuedBill = billFacade.find(preBill.getBackwardReferenceBill().getId());
+        if (issuedBill == null) {
+            JsfUtil.addErrorMessage("Issued bill not found.");
+            return null;
+        }
+        receivedBillId = preBillId;
+        printPreview = false;
+        printDto = null;
+        comments = null;
+        boolean byPurchaseRate = configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy Transfer is by Purchase Rate", false);
+        boolean byCostRate = configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy Transfer is by Cost Rate", false);
+        itemRowList = transferReceiveNativeSqlService.loadIssuedItemsForReceive(
+                issuedBill.getId(), byPurchaseRate, byCostRate);
+        resolveAmpItemIds(itemRowList);
+        return "/pharmacy/pharmacy_transfer_receive_native_with_approval?faces-redirect=true";
+    }
+
+    public String loadPendingReceiveForApprove(Long preBillId) {
+        if (preBillId == null) {
+            JsfUtil.addErrorMessage("No pending receive selected.");
+            return null;
+        }
+        Bill preBill = billFacade.find(preBillId);
+        if (preBill == null || preBill.isRetired()) {
+            JsfUtil.addErrorMessage("Pending receive not found.");
+            return null;
+        }
+        if (preBill.getBackwardReferenceBill() == null) {
+            JsfUtil.addErrorMessage("Cannot find the associated issued bill.");
+            return null;
+        }
+        issuedBill = billFacade.find(preBill.getBackwardReferenceBill().getId());
+        if (issuedBill == null) {
+            JsfUtil.addErrorMessage("Issued bill not found.");
+            return null;
+        }
+        receivedBillId = preBillId;
+        printPreview = false;
+        printDto = null;
+        comments = null;
+        boolean byPurchaseRate = configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy Transfer is by Purchase Rate", false);
+        boolean byCostRate = configOptionApplicationController.getBooleanValueByKey(
+                "Pharmacy Transfer is by Cost Rate", false);
+        itemRowList = transferReceiveNativeSqlService.loadIssuedItemsForReceive(
+                issuedBill.getId(), byPurchaseRate, byCostRate);
+        resolveAmpItemIds(itemRowList);
+        return "/pharmacy/pharmacy_transfer_receive_native_approval?faces-redirect=true";
+    }
+
+    public String cancelPendingReceive(Long preBillId) {
+        if (!isAuthorized("CANCEL", "PharmacyTransferReceiveCancel")) {
+            return "";
+        }
+        if (preBillId == null) {
+            JsfUtil.addErrorMessage("No pending receive selected.");
+            return null;
+        }
+        Bill preBill = billFacade.find(preBillId);
+        if (preBill == null || preBill.isRetired()) {
+            JsfUtil.addErrorMessage("Pending receive not found.");
+            return null;
+        }
+        preBill.setRetired(true);
+        preBill.setRetireComments("Pending receive cancelled by " + sessionController.getLoggedUser().getWebUserPerson().getName());
+        billFacade.edit(preBill);
+        if (preBill.getBackwardReferenceBill() != null) {
+            Bill issued = billFacade.find(preBill.getBackwardReferenceBill().getId());
+            if (issued != null) {
+                issued.getForwardReferenceBills().remove(preBill);
+                billFacade.edit(issued);
+            }
+        }
+        JsfUtil.addSuccessMessage("Pending receive cancelled.");
+        return "/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true";
+    }
+
+    private Bill findActivePre(long issuedBillId) {
+        String jpql = "SELECT b FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.cancelled = false "
+                + "AND b.billTypeAtomic = :btp "
+                + "AND b.backwardReferenceBill.id = :issueId";
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillTypeAtomic.PHARMACY_RECEIVE_PRE);
+        params.put("issueId", issuedBillId);
+        List<Bill> results = billFacade.findByJpql(jpql, params);
+        return results != null && !results.isEmpty() ? results.get(0) : null;
     }
 
     public String viewByBillId(Long billId) {
@@ -197,6 +321,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
      * Mirrors TransferReceiveController.settle().
      */
     public void settle() {
+        if (!isAuthorized("FINALIZE", "PharmacyReceiveFinalize")) {
+            return;
+        }
         if (itemRowList == null || itemRowList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to Receive, Please check Received Quantity");
             return;
@@ -244,6 +371,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
      * Mirrors TransferReceiveController.settleApprove().
      */
     public void settleApprove() {
+        if (!isAuthorized("APPROVE", "PharmacyReceiveApprove")) {
+            return;
+        }
         if (receivedBillId == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
             return;
@@ -305,6 +435,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
      * Mirrors TransferReceiveController.saveRequest().
      */
     public void saveRequest() {
+        if (!isAuthorized("SAVE", "PharmacyReceiveSave")) {
+            return;
+        }
         if (issuedBill == null || issuedBill.getId() == null) {
             JsfUtil.addErrorMessage("No issued bill selected");
             return;
@@ -333,6 +466,9 @@ public class TransferReceiveNativeSqlController implements Serializable {
      * Mirrors TransferReceiveController.finalizeRequest().
      */
     public void finalizeRequest() {
+        if (!isAuthorized("FINALIZE", "PharmacyReceiveFinalize")) {
+            return;
+        }
         if (receivedBillId == null) {
             JsfUtil.addErrorMessage("No saved request found. Please save first.");
             return;
@@ -355,6 +491,12 @@ public class TransferReceiveNativeSqlController implements Serializable {
         savedBill.setCheckeAt(new Date());
         savedBill.setCheckedBy(sessionController.getLoggedUser());
         billFacade.edit(savedBill);
+
+        printDto = transferReceiveNativeSqlService.loadPrintDtoByBillId(receivedBillId);
+        if (printDto != null) {
+            enrichPrintDto(printDto, savedBill);
+        }
+        printPreview = true;
 
         JsfUtil.addSuccessMessage("Request Finalized Successfully");
     }
@@ -637,7 +779,28 @@ public class TransferReceiveNativeSqlController implements Serializable {
         bill.setCreater(sessionController.getLoggedUser());
         bill.setCreatedAt(new Date());
         bill.setComments(comments);
+        stampDepartmentTypeIfMissing(bill);
         return bill;
+    }
+
+    /**
+     * Department-type-filtered reports drop bills left NULL (#22056). The issued bill
+     * normally already carries a departmentType (stamped when it was issued); this is
+     * the fallback for legacy issued bills that predate that stamp — take the first
+     * received item's type, defaulting to Pharmacy (#22146).
+     */
+    private void stampDepartmentTypeIfMissing(Bill bill) {
+        if (bill.getDepartmentType() != null) {
+            return;
+        }
+        if (issuedBill != null && issuedBill.getDepartmentType() != null) {
+            bill.setDepartmentType(issuedBill.getDepartmentType());
+            return;
+        }
+        if (itemRowList != null && !itemRowList.isEmpty()) {
+            String dt = itemRowList.get(0).getDepartmentType();
+            bill.setDepartmentType(dt != null ? DepartmentType.valueOf(dt) : DepartmentType.Pharmacy);
+        }
     }
 
     private void applyBillNumbers(Bill bill) {
@@ -881,5 +1044,34 @@ public class TransferReceiveNativeSqlController implements Serializable {
 
     public void setSelectedItemRow(TransferReceiveItemRowDto selectedItemRow) {
         this.selectedItemRow = selectedItemRow;
+    }
+
+    /**
+     * Authorization helper method to check Transfer Receive privileges and
+     * audit denied access.
+     *
+     * @param action The action being attempted (SAVE, FINALIZE, APPROVE, CANCEL)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, receivedBillId});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Transfer Receive access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, receivedBillId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " transfer receive requests.");
+            return false;
+        }
+
+        return true;
     }
 }
