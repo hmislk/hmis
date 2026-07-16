@@ -10,6 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.CashBookController;
 import com.divudi.bean.cashTransaction.DenominationController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.channel.BookingController;
 import com.divudi.bean.collectingCentre.CourierController;
@@ -19,6 +20,7 @@ import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.Icon;
 import com.divudi.core.data.IconGroup;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.LoginPage;
 import com.divudi.core.data.UserIconGroup;
 import static com.divudi.core.data.LoginPage.CHANNELLING_QUEUE_PAGE;
 import static com.divudi.core.data.LoginPage.CHANNELLING_TV_DISPLAY;
@@ -41,6 +43,7 @@ import com.divudi.core.entity.UserIcon;
 import com.divudi.core.entity.UserPreference;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.WebUserDashboard;
+import com.divudi.core.entity.WebUserDefaultLoginPage;
 import com.divudi.core.entity.WebUserDepartment;
 import com.divudi.core.entity.WebUserPrivilege;
 import com.divudi.core.entity.WebUserRole;
@@ -50,6 +53,7 @@ import com.divudi.core.facade.LoginsFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.UserPreferenceFacade;
 import com.divudi.core.facade.WebUserDashboardFacade;
+import com.divudi.core.facade.WebUserDefaultLoginPageFacade;
 import com.divudi.core.facade.WebUserDepartmentFacade;
 import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.facade.WebUserPrivilegeFacade;
@@ -126,8 +130,10 @@ public class SessionController implements Serializable, HttpSessionListener {
     WebUserRoleFacade rFacade;
     @EJB
     private WebUserPasswordHistoryFacade webUserPasswordHistoryFacade;
+    @EJB
+    private WebUserDefaultLoginPageFacade webUserDefaultLoginPageFacade;
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private SecurityController securityController;
@@ -163,6 +169,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     private DrawerController drawerController;
     @Inject
     private PharmacySaleController pharmacySaleController;
+    @Inject
+    private FinancialTransactionController financialTransactionController;
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
     @Inject
@@ -1843,14 +1851,38 @@ public class SessionController implements Serializable, HttpSessionListener {
         return true;
     }
 
+    /**
+     * Resolves the login page to navigate to: an active per-user-per-department
+     * {@link WebUserDefaultLoginPage} row takes priority, then the legacy
+     * {@link WebUser#getLoginPage()} value, then HOME.
+     */
+    private LoginPage resolveLoginPage() {
+        if (loggedUser == null) {
+            return LoginPage.HOME;
+        }
+        if (department != null) {
+            Map m = new HashMap();
+            m.put("user", loggedUser);
+            m.put("dept", department);
+            WebUserDefaultLoginPage wuLp = webUserDefaultLoginPageFacade.findFirstByJpql(
+                    "select w from WebUserDefaultLoginPage w where w.webUser=:user and w.department=:dept and w.retired=false order by w.id desc",
+                    m);
+            if (wuLp != null && wuLp.getLoginPage() != null) {
+                return wuLp.getLoginPage();
+            }
+        }
+        if (loggedUser.getLoginPage() != null) {
+            return loggedUser.getLoginPage();
+        }
+        return LoginPage.HOME;
+    }
+
     public String navigateToLoginPageByUsersDefaultLoginPage() {
         if (loggedUser == null) {
             return null;
         }
-        if (loggedUser.getLoginPage() == null) {
-            return "/home?faces-redirect=true";
-        }
-        switch (loggedUser.getLoginPage()) {
+        LoginPage resolvedLoginPage = resolveLoginPage();
+        switch (resolvedLoginPage) {
             case CHANNELLING_QUEUE_PAGE:
                 return bookingController.navigateToChannelQueueFromMenu();
             case CHANNELLING_TV_DISPLAY:
@@ -2136,6 +2168,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         pharmacyBillingAfterShiftStart = null;
         paymentManagementAfterShiftStart = null;
         availableDepartmentTypesForPharmacyTransactions = null;
+        financialTransactionController.resetForLogout();
     }
 
     public WebUser getCurrent() {

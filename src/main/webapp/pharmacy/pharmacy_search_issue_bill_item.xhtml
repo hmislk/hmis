@@ -9,6 +9,10 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyDisposalSearchIssueBillItems')}" >
+                    You are NOT authorized
+                </h:panelGroup>
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueBillItems')}" >
                 <h:form>
                     <p:panel style="height: 100vh">
                         <f:facet name="header" >
@@ -120,6 +124,7 @@
                     </p:panel>
 
                 </h:form>
+                </h:panelGroup>
             </ui:define>
 
 

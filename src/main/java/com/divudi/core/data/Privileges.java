@@ -102,6 +102,10 @@ public enum Privileges {
     InwardSettleFinalBill("Inward Settle Final Bill"),
     InwardSaveProvisionalFinalBill("Inward Save Provisional Final Bill"),
     InwardReport("Inward Report"),
+    InwardLaboratory("Inward Laboratory"),
+    InwardLaboratoryBarcodeGeneration("Inward Laboratory Barcode Generation"),
+    InwardLaboratorySampleManagement("Inward Laboratory Sample Management"),
+    InwardLaboratoryReportSearch("Inward Laboratory Report Search"),
     InwardFinalBillReportEdit("Inward Final Bill Report Edit"),
     InwardAdministration("Inward Administration"),
     InwardFormTemplateAdmin("Inward Form Template Admin"),
@@ -124,6 +128,8 @@ public enum Privileges {
     InwardPharmacyIssueRequestCancel("Inward Pharmacy Issue Request Cancel"),
     InwardPharmacyIssueRequestSearch("Inward Pharmacy Issue Request Search"),
     InwardPharmacyReturnCancel("Inward Pharmacy Return Cancel"),
+    InwardPharmacyReturnSubmit("Inward Pharmacy Return Submit"),
+    InwardPharmacyBhtReceive("Inward Pharmacy BHT Receive"),
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
     TheaterIssueBHT("Theater Issue BHT"),
     InpatientClinicalAssessment("Inpatient Clinical Assessment"),
@@ -132,6 +138,8 @@ public enum Privileges {
     InwardPhysicalDischarge("Inward Physical Discharge"),
     InwardDocumentUpload("Inward Document Upload"),
     InpatientLetter("Inpatient Letter"),
+    InwardPackageAdministration("Inward Package Administration"),
+    InwardPackageAdmission("Inward Package Admission"),
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="Nurse">
@@ -522,8 +530,11 @@ public enum Privileges {
     PharmacyIssueForRequestSave("Pharmacy Issue For Request Save"),
     PharmacyIssueForRequestFinalize("Pharmacy Issue For Request Finalize"),
     PharmacyIssueForRequestApprove("Pharmacy Issue For Request Approve"),
+    PharmacyReceiveSave("Pharmacy Receive Save"),
     PharmacyReceiveFinalize("Pharmacy Receive Finalize"),
     PharmacyReceiveApprove("Pharmacy Receive Approve"),
+    PharmacyTransferIssueCancel("Pharmacy Transfer Issue Cancel"),
+    PharmacyTransferReceiveCancel("Pharmacy Transfer Receive Cancel"),
     // Pharmacy Inpatient medication management
     InpatientMedicationManagementMenue("Inpatient Medication Management Menu"),
     PharmacyDirectIssueToBht("Pharmacy Direct Issue to BHT"),
@@ -568,6 +579,8 @@ public enum Privileges {
     PharmacyDisposalIssue("Pharmacy Disposal Issue"),
     PharmacyDisposalIssueFinalize("Pharmacy Disposal Issue Finalize"),
     PharmacyDisposalIssueApprove("Pharmacy Disposal Issue Approve"),
+    PharmacyDisposalIssueCancel("Pharmacy Disposal Issue Cancel"),
+    PharmacyDiscardCategoryManage("Pharmacy Discard Category Manage"),
     PharmacyDisposalSearchIssueBill("Pharmacy Disposal Search Issue Bill"),
     PharmacyDisposalSearchIssueBillItems("Pharmacy Disposal Search Issue Bill Items"),
     PharmacyDisposalSearchIssueReturnBill("Pharmacy Disposal Search Issue Return Bill"),
@@ -632,6 +645,8 @@ public enum Privileges {
     PharmacyDirectPurchaseFinalize("Pharmacy Direct Purchase Finalize"),
     PharmacyDirectPurchaseApprove("Pharmacy Direct Purchase Approve"),
     PurchaseOrdersApprovel("Purchase Orders Approval"),
+    PurchaseOrderSave("Purchase Order Save"),
+    PurchaseOrderFinalize("Purchase Order Finalize"),
     TransferReciveApproval("Transfer Receive Approval"),
     GoodsRecipt("Goods Receipt"),
     ReturnReceviedGoods("Return Received Goods"),
@@ -650,6 +665,8 @@ public enum Privileges {
     PharmacyGrnSave("Pharmacy GRN Save"),
     PharmacyGrnFinalize("Pharmacy GRN Finalize"),
     PharmacyGrnApprove("Pharmacy GRN Approve"),
+    PharmacyGrnCancel("Pharmacy GRN Cancel"),
+    PharmacyGrnReturnCancel("Pharmacy GRN Return Cancel"),
     PharmacyItemSearch("Pharmacy Item Search"),
     PharmacyGenarateReports("Pharmacy Generate Reports"),
     PharmacySummaryViews("Pharmacy Summary Views"),
@@ -740,6 +757,7 @@ public enum Privileges {
     DrawerAdjustmentRequestApproval("Drawer Adjustment Request Approval"),
     DrawerAdjustmentDirect("Drawer Adjustment Direct (No Approval)"),
     PettyCashCancellationApproval("Petty-Cash Cancellation Approval"),
+    PharmacyRetailSaleReturnApproval("Pharmacy Retail Sale Return Approval"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Float Transfer">
@@ -931,6 +949,8 @@ public enum Privileges {
             case PharmacyBhtRequestForceComplete:
             case PharmacyReturnFromWardForceComplete:
             case InwardPharmacyReturnCancel:
+            case InwardPharmacyReturnSubmit:
+            case InwardPharmacyBhtReceive:
             case PharmacySearchInpatientDirectIssuesbyBill:
             case PharmacySearchInpatientDirectIssuesbyItem:
             case PharmacySearchInpatientDirectIssueReturnsbyBill:
@@ -945,6 +965,8 @@ public enum Privileges {
             case PharmacyDirectPurchaseFinalize:
             case PharmacyDirectPurchaseApprove:
             case PurchaseOrdersApprovel:
+            case PurchaseOrderSave:
+            case PurchaseOrderFinalize:
             case GoodsRecipt:
             case ReturnReceviedGoods:
             case CreateGrnReturn:
@@ -969,8 +991,11 @@ public enum Privileges {
             case PharmacyIssueForRequestSave:
             case PharmacyIssueForRequestFinalize:
             case PharmacyIssueForRequestApprove:
+            case PharmacyReceiveSave:
             case PharmacyReceiveFinalize:
             case PharmacyReceiveApprove:
+            case PharmacyTransferIssueCancel:
+            case PharmacyTransferReceiveCancel:
 
             // Retail Transactions
             case PharmacyRetailTransaction:
@@ -1003,6 +1028,8 @@ public enum Privileges {
             case PharmacyDisposalIssue:
             case PharmacyDisposalIssueFinalize:
             case PharmacyDisposalIssueApprove:
+            case PharmacyDisposalIssueCancel:
+            case PharmacyDiscardCategoryManage:
             case PharmacyDisposalSearchIssueBill:
             case PharmacyDisposalSearchIssueBillItems:
             case PharmacyDisposalSearchIssueReturnBill:
@@ -1039,6 +1066,8 @@ public enum Privileges {
             case PharmacyGrnSave:
             case PharmacyGrnFinalize:
             case PharmacyGrnApprove:
+            case PharmacyGrnCancel:
+            case PharmacyGrnReturnCancel:
             case PrintOriginalPoBillFromReprint:
             case PrintOriginalGrnBillFromReprint:
             case PharmacyItemNameEdit:
@@ -1112,6 +1141,7 @@ public enum Privileges {
             case DrawerAdjustmentRequestApproval:
             case DrawerAdjustmentDirect:
             case PettyCashCancellationApproval:
+            case PharmacyRetailSaleReturnApproval:
                 return "Approval";
 
             case CashierHandoverStatusReport:
@@ -1149,10 +1179,16 @@ public enum Privileges {
             case InwardAddChargesAfterNursingDischarge:
             case InwardDocumentUpload:
             case InpatientLetter:
+            case InwardPackageAdministration:
+            case InwardPackageAdmission:
             case InwardFormTemplateAdmin:
             case InwardFormFill:
             case InwardSettleFinalBill:
             case InwardSaveProvisionalFinalBill:
+            case InwardLaboratory:
+            case InwardLaboratoryBarcodeGeneration:
+            case InwardLaboratorySampleManagement:
+            case InwardLaboratoryReportSearch:
             case TheatreSendPatient:
             case TheatreAcceptPatient:
             case TheatreReturnPatient:

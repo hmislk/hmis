@@ -318,6 +318,8 @@ public class InwardSearch implements Serializable {
                 
                 paymentMethodData = new PaymentMethodData();
                 
+                refillPaymentDetail();
+                
                 return "inward_deposit_cancel_bill_payment?faces-redirect=true";
             case INWARD_DEPOSIT_REFUND:
                 return "inward_deposit_refund_cancel_bill_payment?faces-redirect=true";
@@ -893,6 +895,7 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
+        
         if (getBill().isRefunded()) {
             JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
@@ -902,6 +905,7 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
             return true;
         }
+        
         if (getBill().getPatientEncounter().isDischarged()) {
             JsfUtil.addErrorMessage("You can't cancel. Because this BHT is Already Discharged.");
             return true;
@@ -911,6 +915,7 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("Please select a payment Method.");
             return true;
         }
+        
         if (getComment() == null || getComment().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return true;

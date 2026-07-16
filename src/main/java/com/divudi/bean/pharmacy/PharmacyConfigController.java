@@ -69,6 +69,11 @@ public class PharmacyConfigController implements Serializable {
     private boolean grnReturnReceiptCustom1;
     private boolean grnReturnReceiptCustom2;
 
+    // BHT Issue Receive Settings
+    private boolean bhtIssueReceiveReceiptA4;
+    private boolean bhtIssueReceiveReceiptPos;
+    private boolean bhtIssueReceiveReceiptFiveFive;
+
     // Transfer Receive Settings
     private boolean transferReceiveA4;
     private boolean transferReceiveTemplate;
@@ -201,6 +206,16 @@ public class PharmacyConfigController implements Serializable {
     private boolean bhtIssueFiveFivePaper;
     private boolean bhtIssueA4Paper;
 
+    // Inward Direct Issue Bill — Service Charge/Discount print formats (Issue #22035)
+    private boolean inwardDirectIssueBillA4;
+    private boolean inwardDirectIssueBillFiveFive;
+    private boolean inwardDirectIssueBillPos;
+
+    // BHT Pharmacy Issue Request Receipt print formats
+    private boolean bhtIssueRequestReceiptA4;
+    private boolean bhtIssueRequestReceiptFiveFive;
+    private boolean bhtIssueRequestReceiptPos;
+
     public PharmacyConfigController() {
     }
     
@@ -252,6 +267,11 @@ public class PharmacyConfigController implements Serializable {
         // GRN Return Settings
         grnReturnReceiptCustom1 = configOptionController.getBooleanValueByKey("GRN Return Receipt Paper is Custom 1", false);
         grnReturnReceiptCustom2 = configOptionController.getBooleanValueByKey("GRN Return Receipt Paper is Custom 2", true);
+
+        // BHT Issue Receive Settings
+        bhtIssueReceiveReceiptA4 = configOptionController.getBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is A4", true);
+        bhtIssueReceiveReceiptPos = configOptionController.getBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is POS", false);
+        bhtIssueReceiveReceiptFiveFive = configOptionController.getBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is FiveFive", false);
 
         // Transfer Receive Settings
         transferReceiveA4 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4", true);
@@ -385,6 +405,16 @@ public class PharmacyConfigController implements Serializable {
         bhtIssueFiveFivePaper = configOptionController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is FiveFive Paper", false);
         bhtIssueA4Paper = configOptionController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is A4 Paper", false);
 
+        // Inward Direct Issue Bill print formats (Issue #22035) — application-wide
+        inwardDirectIssueBillA4 = configOptionApplicationController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is A4", false);
+        inwardDirectIssueBillFiveFive = configOptionApplicationController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is FiveFive", true);
+        inwardDirectIssueBillPos = configOptionApplicationController.getBooleanValueByKey("Pharmacy Inward Direct Issue Bill is POS", false);
+
+        // BHT Pharmacy Issue Request Receipt print formats — application-wide
+        bhtIssueRequestReceiptA4 = configOptionApplicationController.getBooleanValueByKey("Pharmacy BHT Issue Request Receipt is A4", false);
+        bhtIssueRequestReceiptFiveFive = configOptionApplicationController.getBooleanValueByKey("Pharmacy BHT Issue Request Receipt is FiveFive", true);
+        bhtIssueRequestReceiptPos = configOptionApplicationController.getBooleanValueByKey("Pharmacy BHT Issue Request Receipt is POS", false);
+
     }
 
     /**
@@ -435,6 +465,11 @@ public class PharmacyConfigController implements Serializable {
             // GRN Return Settings
             configOptionController.setBooleanValueByKey("GRN Return Receipt Paper is Custom 1", grnReturnReceiptCustom1);
             configOptionController.setBooleanValueByKey("GRN Return Receipt Paper is Custom 2", grnReturnReceiptCustom2);
+
+            // BHT Issue Receive Settings
+            configOptionController.setBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is A4", bhtIssueReceiveReceiptA4);
+            configOptionController.setBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is POS", bhtIssueReceiveReceiptPos);
+            configOptionController.setBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is FiveFive", bhtIssueReceiveReceiptFiveFive);
 
             // Transfer Receive Settings
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4", transferReceiveA4);
@@ -905,6 +940,36 @@ public class PharmacyConfigController implements Serializable {
         }
     }
 
+    /**
+     * Save Inward Direct Issue Bill print format configuration changes specifically
+     */
+    public void saveInwardDirectIssueBillPaperConfig() {
+        try {
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Inward Direct Issue Bill is A4", inwardDirectIssueBillA4);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Inward Direct Issue Bill is FiveFive", inwardDirectIssueBillFiveFive);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Inward Direct Issue Bill is POS", inwardDirectIssueBillPos);
+            JsfUtil.addSuccessMessage("Inward Direct Issue Bill print format settings saved");
+            loadCurrentConfig();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving print format settings: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save BHT Pharmacy Issue Request Receipt print format configuration changes
+     */
+    public void saveBhtIssueRequestReceiptConfig() {
+        try {
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy BHT Issue Request Receipt is A4", bhtIssueRequestReceiptA4);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy BHT Issue Request Receipt is FiveFive", bhtIssueRequestReceiptFiveFive);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy BHT Issue Request Receipt is POS", bhtIssueRequestReceiptPos);
+            JsfUtil.addSuccessMessage("BHT Issue Request Receipt print format settings saved");
+            loadCurrentConfig();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving print format settings: " + e.getMessage());
+        }
+    }
+
     // Getters and Setters
     public boolean isPosPaper() {
         return posPaper;
@@ -1114,6 +1179,30 @@ public class PharmacyConfigController implements Serializable {
         this.grnReceiptCustom2 = grnReceiptCustom2;
     }
     
+
+    public boolean isBhtIssueReceiveReceiptA4() {
+        return bhtIssueReceiveReceiptA4;
+    }
+
+    public void setBhtIssueReceiveReceiptA4(boolean bhtIssueReceiveReceiptA4) {
+        this.bhtIssueReceiveReceiptA4 = bhtIssueReceiveReceiptA4;
+    }
+
+    public boolean isBhtIssueReceiveReceiptPos() {
+        return bhtIssueReceiveReceiptPos;
+    }
+
+    public void setBhtIssueReceiveReceiptPos(boolean bhtIssueReceiveReceiptPos) {
+        this.bhtIssueReceiveReceiptPos = bhtIssueReceiveReceiptPos;
+    }
+
+    public boolean isBhtIssueReceiveReceiptFiveFive() {
+        return bhtIssueReceiveReceiptFiveFive;
+    }
+
+    public void setBhtIssueReceiveReceiptFiveFive(boolean bhtIssueReceiveReceiptFiveFive) {
+        this.bhtIssueReceiveReceiptFiveFive = bhtIssueReceiveReceiptFiveFive;
+    }
 
     public boolean isTransferReceiveA4() {
         return transferReceiveA4;
@@ -1865,6 +1954,56 @@ public class PharmacyConfigController implements Serializable {
 
     public void setBhtIssueA4Paper(boolean bhtIssueA4Paper) {
         this.bhtIssueA4Paper = bhtIssueA4Paper;
+    }
+
+    // Inward Direct Issue Bill Getters and Setters
+    public boolean isInwardDirectIssueBillA4() {
+        return inwardDirectIssueBillA4;
+    }
+
+    public void setInwardDirectIssueBillA4(boolean inwardDirectIssueBillA4) {
+        this.inwardDirectIssueBillA4 = inwardDirectIssueBillA4;
+    }
+
+    public boolean isInwardDirectIssueBillFiveFive() {
+        return inwardDirectIssueBillFiveFive;
+    }
+
+    public void setInwardDirectIssueBillFiveFive(boolean inwardDirectIssueBillFiveFive) {
+        this.inwardDirectIssueBillFiveFive = inwardDirectIssueBillFiveFive;
+    }
+
+    public boolean isInwardDirectIssueBillPos() {
+        return inwardDirectIssueBillPos;
+    }
+
+    public void setInwardDirectIssueBillPos(boolean inwardDirectIssueBillPos) {
+        this.inwardDirectIssueBillPos = inwardDirectIssueBillPos;
+    }
+
+    // BHT Pharmacy Issue Request Receipt Getters and Setters
+    public boolean isBhtIssueRequestReceiptA4() {
+        return bhtIssueRequestReceiptA4;
+    }
+
+    public void setBhtIssueRequestReceiptA4(boolean bhtIssueRequestReceiptA4) {
+        this.bhtIssueRequestReceiptA4 = bhtIssueRequestReceiptA4;
+    }
+
+    public boolean isBhtIssueRequestReceiptFiveFive() {
+        return bhtIssueRequestReceiptFiveFive;
+    }
+
+    public void setBhtIssueRequestReceiptFiveFive(boolean bhtIssueRequestReceiptFiveFive) {
+        this.bhtIssueRequestReceiptFiveFive = bhtIssueRequestReceiptFiveFive;
+    }
+
+    public boolean isBhtIssueRequestReceiptPos() {
+        return bhtIssueRequestReceiptPos;
+    }
+
+    public void setBhtIssueRequestReceiptPos(boolean bhtIssueRequestReceiptPos) {
+        this.bhtIssueRequestReceiptPos = bhtIssueRequestReceiptPos;
     }
 
 }

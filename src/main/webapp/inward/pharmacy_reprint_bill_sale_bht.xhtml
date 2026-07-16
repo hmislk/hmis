@@ -21,7 +21,7 @@
 
                                 <!-- LEFT: title + print config -->
                                 <div class="d-flex align-items-center gap-2">
-                                    <h:outputLabel value="Reprint BHT Issue"></h:outputLabel>
+                                    <h:outputLabel value="Manage Direct Issue to BHT"></h:outputLabel>
                                     <p:commandButton
                                         rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
                                         icon="fas fa-cog"
@@ -29,6 +29,13 @@
                                         type="button"
                                         title="Print Format Settings"
                                         onclick="PF('reprintBhtIssuePaperConfigDialog').show();" />
+                                    <p:commandButton
+                                        rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                        icon="fas fa-cog"
+                                        styleClass="ui-button-secondary ui-button-outlined"
+                                        type="button"
+                                        title="Service Charge Print Format Settings"
+                                        onclick="PF('idiBillPaperConfigDialog').show();" />
                                 </div>
 
                                 <!-- CENTER: Back to Interim -->
@@ -168,7 +175,18 @@
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
                                             style="text-align: right;">
                                             <f:facet name="header">
-                                                <h:outputLabel value="Matrix Value"/>
+                                                <h:outputLabel value="Discount"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{bip.discount}">
+                                                <f:convertNumber pattern="#0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
+                                            style="text-align: right;">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Service Charge"/>
                                             </f:facet>
                                             <h:outputLabel value="#{bip.marginValue}">
                                                 <f:convertNumber pattern="#0.00" />
@@ -181,16 +199,16 @@
                                             <f:facet name="header">
                                                 <h:outputLabel value="Net Value"/>
                                             </f:facet>
-                                            <h:outputLabel value="#{bip.grossValue + bip.marginValue}">
+                                            <h:outputLabel value="#{bip.netValue}">
                                                 <f:convertNumber pattern="#0.00" />
                                             </h:outputLabel>
                                         </p:column>
 
                                         <p:columnGroup type="footer">
                                             <p:row>
-                                                <p:column 
+                                                <p:column
                                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Nursing IP Billing - Show Rate and Value', false) and webUserController.hasPrivilege('NursingIPBillingViewRates')}"
-                                                    style="text-align: right;" colspan="4">
+                                                    style="text-align: right;" colspan="5">
                                                     <f:facet name="footer">
                                                         <h:outputLabel value="#{pharmacyBillSearch.bill.total}">
                                                             <f:convertNumber pattern="#0.00" />
@@ -227,19 +245,31 @@
 
                                     <h:panelGroup   id="gpBillPreview" class="mt-2">
 
-                                        <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                        <h:panelGroup   id="gpBillPreviewSingle" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
                                             <ph:issueBill bill="#{pharmacyBillSearch.bill}" duplicate="true" />
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                                        <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper' and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true) and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
                                             <phi:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></phi:saleBill_five_five>
-                                        </h:panelGroup>        
+                                        </h:panelGroup>
 
-                                        <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 
+                                        <h:panelGroup id="gpBillPreviewA4Sc" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is A4', false)}">
+                                            <phi:inward_direct_issue_bill_a4 bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="gpBillPreviewFiveFiveSc" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFive', true)}">
+                                            <phi:inward_direct_issue_bill_five_five_sc bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="gpBillPreviewPosSc" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is POS', false)}">
+                                            <phi:inward_direct_issue_bill_pos bill="#{pharmacyBillSearch.bill}" duplicate="true" />
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',false)}">
                                             <phi:inward_direct_issue_bill_five_five_custom_3 bill="#{pharmacyBillSearch.bill}"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"> 
+                                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',false)}">
                                             <phi:saleBill_Header_Inward bill="#{pharmacyBillSearch.bill}" duplicate="true" />
                                         </h:panelGroup>
 
@@ -287,6 +317,35 @@
                                     onclick="PF('reprintBhtIssuePaperConfigDialog').hide(); return false;"
                                     type="button" />
                             </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+
+                <p:dialog id="idiBillPaperConfigDialog"
+                          header="Direct Issue Bill - Print Format Settings"
+                          widgetVar="idiBillPaperConfigDialog"
+                          modal="true" width="500" resizable="false" closeOnEscape="true">
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="idiBillPaperConfigForm" />
+                    <h:form id="idiBillPaperConfigForm">
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="cbA4" value="#{pharmacyConfigController.inwardDirectIssueBillA4}" />
+                            <h:outputLabel for="cbA4" value="A4 Paper" class="ms-2" />
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="cbFiveFive" value="#{pharmacyConfigController.inwardDirectIssueBillFiveFive}" />
+                            <h:outputLabel for="cbFiveFive" value="5 x 5 Paper" class="ms-2" />
+                        </div>
+                        <div class="mb-3">
+                            <h:selectBooleanCheckbox id="cbPos" value="#{pharmacyConfigController.inwardDirectIssueBillPos}" />
+                            <h:outputLabel for="cbPos" value="POS Paper" class="ms-2" />
+                        </div>
+                        <p:messages showDetail="true" closable="true" />
+                        <div class="d-flex gap-2">
+                            <p:commandButton value="Apply &amp; Close" icon="fas fa-save"
+                                             styleClass="ui-button-success" ajax="false"
+                                             action="#{pharmacyConfigController.saveInwardDirectIssueBillPaperConfig}" />
+                            <p:commandButton value="Cancel" icon="fas fa-times" styleClass="ui-button-secondary"
+                                             onclick="PF('idiBillPaperConfigDialog').hide(); return false;" type="button" />
                         </div>
                     </h:form>
                 </p:dialog>

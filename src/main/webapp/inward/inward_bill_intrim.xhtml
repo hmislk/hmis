@@ -566,7 +566,25 @@
 
                                                 <p:column >
                                                     <f:facet name="header">
+                                                        <h:outputLabel value="Pending Check Count"/>
+                                                    </f:facet>
+                                                </p:column>
+
+                                                <p:column >
+                                                    <f:facet name="header">
                                                         <h:outputLabel value="Inward Charge Type"/>
+                                                    </f:facet>
+                                                </p:column>
+
+                                                <p:column >
+                                                    <f:facet name="header">
+                                                        <h:outputLabel value="Checked By"/>
+                                                    </f:facet>
+                                                </p:column>
+
+                                                <p:column >
+                                                    <f:facet name="header">
+                                                        <h:outputLabel value="Checked At"/>
                                                     </f:facet>
                                                 </p:column>
 
@@ -592,9 +610,24 @@
                                             <p:column styleClass="text-end">
                                                 <h:outputLabel value="#{ser.transCheckedCount}" rendered="#{ser.transBillItemCount ne 0}"/>
                                             </p:column>
+                                            <p:column styleClass="text-end">
+                                                <h:outputLabel value="#{ser.transBillItemCount - ser.transCheckedCount}" rendered="#{ser.transBillItemCount ne 0}">
+                                                    <f:convertNumber pattern="#,##0"/>
+                                                </h:outputLabel>
+                                            </p:column>
                                             <p:column styleClass="text-start">
                                                 <h:outputLabel value="#{ser.inwardChargeType}" rendered="#{ser.transBillItemCount ne 0}"/>
                                             </p:column>
+
+                                            <p:column styleClass="text-start">
+                                                <h:outputLabel value="#{bhtSummeryController.getLatestCheckedBillItem(ser).bill.checkedBy.webUserPerson.name}" rendered="#{ser.transBillItemCount ne 0}"/>
+                                            </p:column>
+                                            <p:column styleClass="text-start">
+                                                <h:outputLabel value="#{bhtSummeryController.getLatestCheckedBillItem(ser).bill.checkeAt}" rendered="#{ser.transBillItemCount ne 0}">
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+                                            </p:column>
+
                                             <p:column styleClass="text-start">
                                                 <p:commandButton 
                                                     ajax="false" 

@@ -64,6 +64,57 @@ public class RequestService {
         return req;
     }
 
+    public Request findApprovedRequestByBillAndType(Bill bill, RequestType type) {
+        if (bill == null || type == null) {
+            return null;
+        }
+
+        String jpql = "Select q from Request q "
+                + " where q.retired =:ret "
+                + " and q.bill =:bill "
+                + " and q.requestType =:type "
+                + " and q.status =:status "
+                + " order by q.id desc";
+
+        HashMap params = new HashMap();
+        params.put("ret", false);
+        params.put("bill", bill);
+        params.put("type", type);
+        params.put("status", RequestStatus.APPROVED);
+
+        Request req = requestFacade.findFirstByJpql(jpql, params);
+
+        return req;
+    }
+
+    public Request findActiveRequestByBillAndType(Bill bill, RequestType type) {
+        if (bill == null || type == null) {
+            return null;
+        }
+
+        List<RequestStatus> availableStatus = new ArrayList<>();
+        availableStatus.add(RequestStatus.PENDING);
+        availableStatus.add(RequestStatus.UNDER_REVIEW);
+        availableStatus.add(RequestStatus.APPROVED);
+
+        String jpql = "Select q from Request q "
+                + " where q.retired =:ret "
+                + " and q.bill =:bill "
+                + " and q.requestType =:type "
+                + " and q.status in :status "
+                + " order by q.id desc";
+
+        HashMap params = new HashMap();
+        params.put("ret", false);
+        params.put("bill", bill);
+        params.put("type", type);
+        params.put("status", availableStatus);
+
+        Request req = requestFacade.findFirstByJpql(jpql, params);
+
+        return req;
+    }
+
     public boolean hasPendingDrawerAdjustmentRequest(WebUser requester) {
         if (requester == null) {
             return false;

@@ -145,6 +145,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ReservationFacade reservationFacade;
     @EJB
     private PatientTransferRequestFacade patientTransferRequestFacade;
+    @EJB
+    private com.divudi.ejb.InpatientPackageApplicationBean inpatientPackageApplicationBean;
+
+    public com.divudi.ejb.InpatientPackageApplicationBean getInpatientPackageApplicationBean() {
+        return inpatientPackageApplicationBean;
+    }
 
     @Inject
     BhtEditController bhtEditController;
@@ -263,6 +269,55 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         metadata.addConfigOption(new ConfigOptionInfo(
                 "Guardian Details Required in Patient Admission",
                 "Require guardian details during admission (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Title is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's title (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Name is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's name (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian NIC is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's NIC/Passport (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Address is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's address (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Mobile Number is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's mobile number (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Home Phone Number is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's home phone number (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Relationship is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's relationship to the patient (default true)",
                 "inward/inward_admission",
                 OptionScope.APPLICATION
         ));
@@ -1664,10 +1719,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         Person person = getPatient().getPerson();
         // DON'T set to null - keep reference throughout
-        
-        if(patientForiegner){
-            getPatient().getPerson().setForeigner(true);
-        }
+
+        // Persist the "Mark as Foreigner" checkbox state onto the patient. This
+        // marks a new (or existing) patient as a foreigner when checked, and
+        // clears the flag when unchecked, keeping the record in sync with the UI.
+        getPatient().getPerson().setForeigner(patientForiegner);
 
         // Save Person first (no flush yet)
         if (person != null) {
@@ -2035,7 +2091,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     return true;
                 }
             }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian Home Phone Number is Required in Patient Admission", true)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Home Phone Number is Required in Patient Admission", false)) {
                 if (getCurrent().getGuardian().getPhone() == null || getCurrent().getGuardian().getPhone().isEmpty()) {
                     JsfUtil.addErrorMessage("Guardian Home Phone Number is Required");
                     return true;
@@ -2356,6 +2412,38 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
 
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
+
+            if (getCurrent().getInpatientPackage() != null) {
+                // The admission and room above were each already committed in their
+                // own EJB transaction (this controller is a CDI bean, not itself
+                // transactional). applyPackageToAdmission runs in a further, separate
+                // transaction, so a failure here cannot be rolled back by the
+                // container - it would otherwise leave a package-linked admission
+                // with none of its locked billing rows. Compensate explicitly by
+                // retiring what was just created and surfacing a clear error instead.
+                try {
+                    getInpatientPackageApplicationBean().applyPackageToAdmission(
+                            getCurrent(), currentPatientRoom, getSessionController().getLoggedUser());
+                } catch (RuntimeException ex) {
+                    logger.log(Level.SEVERE, "Package application failed for admission " + getCurrent().getBhtNo(), ex);
+                    Date now = new Date();
+                    currentPatientRoom.setRetired(true);
+                    currentPatientRoom.setRetireComments("Auto-retired: package application failed - " + ex.getMessage());
+                    currentPatientRoom.setRetirer(getSessionController().getLoggedUser());
+                    currentPatientRoom.setRetiredAt(now);
+                    patientRoomFacade.edit(currentPatientRoom);
+
+                    getCurrent().setRetired(true);
+                    getCurrent().setRetireComments("Auto-retired: package application failed - " + ex.getMessage());
+                    getCurrent().setRetirer(getSessionController().getLoggedUser());
+                    getCurrent().setRetiredAt(now);
+                    getFacade().edit(getCurrent());
+
+                    JsfUtil.addErrorMessage("Package could not be applied to this admission and it has been cancelled. Please retry. (" + ex.getMessage() + ")");
+                    admittingProcessStarted = false;
+                    return;
+                }
+            }
 
             if (!getCurrent().isRoomAdmitted() && currentPatientRoom != null && currentPatientRoom.getRoomFacilityCharge() != null) {
                 PatientTransferRequest handoverRequest = new PatientTransferRequest();
@@ -2787,6 +2875,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (current != null) {
             current.setPatient(patient);
             patientAllergies = clinicalFindingValueController.findClinicalFindingValues(patient, ClinicalFindingValueType.PatientAllergy);
+        }
+        // When a patient is searched/selected, reflect their foreigner status on the
+        // "Mark as Foreigner" checkbox so it is ticked automatically for foreigners.
+        if (patient != null && patient.getPerson() != null) {
+            patientForiegner = patient.getPerson().isForeigner();
+        } else {
+            patientForiegner = false;
         }
         selectPaymentSchemeAsPerPatientMembership();
     }

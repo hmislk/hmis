@@ -73,6 +73,7 @@ public class InwardPriceAdjustmntController implements Serializable {
     private Category roomLocation;
     private Institution creditCompany;
     private AdmissionType admissionType;
+    private Category roomCategory;
 
     private void recreateModel() {
         fromPrice = toPrice + 1;
@@ -80,6 +81,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         margin = 0;
         creditCompany = null;
         admissionType = null;
+        roomCategory = null;
         items = null;
     }
 
@@ -89,6 +91,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         margin = 0;
         creditCompany = null;
         admissionType = null;
+        roomCategory = null;
         items = null;
     }
 
@@ -157,6 +160,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         a.setMargin(margin);
         a.setCreditCompany(creditCompany);
         a.setAdmissionType(admissionType);
+        a.setRoomCategory(roomCategory);
         a.setCreatedAt(new Date());
         a.setCreater(getSessionController().getLoggedUser());
         if (a.getId() == null) {
@@ -195,6 +199,7 @@ public class InwardPriceAdjustmntController implements Serializable {
             a.setMargin(margin);
             a.setCreditCompany(creditCompany);
             a.setAdmissionType(admissionType);
+            a.setRoomCategory(roomCategory);
             a.setCreatedAt(new Date());
             a.setCreater(getSessionController().getLoggedUser());
             if (a.getId() == null) {
@@ -488,6 +493,14 @@ public class InwardPriceAdjustmntController implements Serializable {
 
     public void setAdmissionType(AdmissionType admissionType) {
         this.admissionType = admissionType;
+    }
+
+    public Category getRoomCategory() {
+        return roomCategory;
+    }
+
+    public void setRoomCategory(Category roomCategory) {
+        this.roomCategory = roomCategory;
     }
 
     /**

@@ -350,7 +350,19 @@ public class CapabilityStatementResource {
                         + "Supports filtering by departmentId and query string. "
                         + "DELETE /{id}/departments/{assignmentId} revokes one loggable department. "
                         + "DELETE /{id}/departments/{departmentId}/privileges bulk-revokes all privileges for a department. "
-                        + "POST /{id}/departments/{departmentId}/privileges/all assigns every privilege for a department.",
+                        + "POST /{id}/departments/{departmentId}/privileges/all assigns every privilege for a department. "
+                        + "Role-template operations (roles are admin-time templates; runtime reads user-level records only): "
+                        + "POST /{id}/role/reset resets a user's records for the given aspects/departments to a role template "
+                        + "(roleId optional — defaults to the user's own role; body: {roleId?, departmentIds[], aspects[]?, updateUserRole?, preview?}). "
+                        + "POST /{id}/role/expand and POST /{id}/role/narrow add/strip a role template's records "
+                        + "(body: {roleId, departmentIds[], aspects[]?, preview?}; roleId required). "
+                        + "aspects values: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE (default [\"PRIVILEGES\"]). "
+                        + "preview=true returns counts without writing. "
+                        + "POST /bulk/role-operations applies RESET/EXPAND/NARROW to many users at once (explicit userIds or a role/department filter); "
+                        + "for safety it requires preview=true first, then confirm=true to actually apply. "
+                        + "GET /roles lists active roles with template summary counts (privileges/icons/subscriptions) and template login page. "
+                        + "PUT /{id}/login-page (body: {departmentId, loginPage}) and DELETE /{id}/login-page/{departmentId} manage the "
+                        + "per-user-per-department default login page override.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("User Bulk Privileges", "/api/users/bulk-privileges",

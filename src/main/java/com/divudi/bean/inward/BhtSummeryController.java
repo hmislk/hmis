@@ -157,6 +157,7 @@ public class BhtSummeryController implements Serializable {
     InwardPaymentController inwardPaymentController;
     ////////////////////////
     private List<DepartmentBillItems> departmentBillItems;
+    private Map<Long, BillItem> latestCheckedBillItemsByItem;
     private List<BillFee> profesionallFee;
     private List<BillFee> doctorAndNurseFee;
     private List<BillFee> allDoctorCharges;
@@ -1534,6 +1535,12 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("Room facility charge not set");
             return;
         }
+        if (pr.isFromPackage() && !isPackageRoomDurationExceeded(pr)) {
+            // Package-locked charge stays as set by InpatientPackageApplicationBean.
+            patientRooms = null;
+            createTables();
+            return;
+        }
         RoomFacilityCharge rfc = pr.getRoomFacilityCharge();
         pr.setCurrentRoomCharge(rfc.getRoomCharge() != null ? rfc.getRoomCharge() : 0.0);
         pr.setCurrentMaintananceCharge(rfc.getMaintananceCharge() != null ? rfc.getMaintananceCharge() : 0.0);
@@ -1555,9 +1562,15 @@ public class BhtSummeryController implements Serializable {
             getPatientRoomFacade().create(patientRoom);
         }
 
-        patientRoom.setCurrentRoomCharge(patientRoom.getRoomFacilityCharge().getRoomCharge());
-
-        calCulateRoomCharge(patientRoom);
+        if (patientRoom.isFromPackage() && !isPackageRoomDurationExceeded(patientRoom)) {
+            // Package-locked room: currentRoomCharge already holds the package's fixed
+            // total, not a per-block rate - do not overwrite it with the facility rate
+            // while still within the included duration.
+            patientRoom.setCalculatedRoomCharge(patientRoom.getCurrentRoomCharge() + patientRoom.getAddedRoomCharge());
+        } else {
+            patientRoom.setCurrentRoomCharge(patientRoom.getRoomFacilityCharge().getRoomCharge());
+            calCulateRoomCharge(patientRoom);
+        }
 
         updatePaitentRoomAdjustedTotal();
     }
@@ -1590,6 +1603,44 @@ public class BhtSummeryController implements Serializable {
         charge = roomCharge * getInwardBean().calCount(timedFee, p.getAdmittedAt(), p.getDischargedAt());
 
         p.setCalculatedRoomCharge(charge);
+    }
+
+    private boolean isPackageRoomDurationExceeded(PatientRoom pr) {
+        if (pr.getIncludedRoomDurationHours() == null) {
+            return true;
+        }
+        Date to = pr.getDischargedAt() != null ? pr.getDischargedAt() : new Date();
+        if (pr.getAdmittedAt() == null) {
+            return false;
+        }
+        long stayedHours = java.time.Duration.between(
+                pr.getAdmittedAt().toInstant(), to.toInstant()).toHours();
+        return stayedHours > pr.getIncludedRoomDurationHours();
+    }
+
+    public double getPackageRoomVarianceCharge(PatientRoom pr) {
+        if (pr == null || !pr.isFromPackage() || !isPackageRoomDurationExceeded(pr) || pr.getRoomFacilityCharge() == null) {
+            return 0.0;
+        }
+        // currentRoomCharge holds the package's locked TOTAL for this room, not a
+        // per-block rate, so it must not be used as the multiplicand here (that was
+        // the bug: reusing calCulateRoomCharge(pr), which multiplies
+        // pr.getCurrentRoomCharge() by elapsed blocks). Both sides of this variance
+        // must be derived from the room's real per-block rate, RoomFacilityCharge.roomCharge.
+        Double facilityRoomCharge = pr.getRoomFacilityCharge().getRoomCharge();
+        if (facilityRoomCharge == null) {
+            return 0.0;
+        }
+        TimedItemFee timedFee = pr.getRoomFacilityCharge().getTimedItemFee();
+        double liveEquivalent = facilityRoomCharge * getInwardBean().calCount(timedFee, pr.getAdmittedAt(), pr.getDischargedAt());
+        // RoomFacilityCharge.roomCharge is a rate per TimedItemFee.durationHours block (see
+        // InwardBeanController.calCount: charge = roomCharge * count, where count is the number
+        // of durationHours-sized blocks between admittedAt/dischargedAt). Room-charge TimedItemFee
+        // configs are conventionally 24-hour ("per day") blocks, so we use the actual configured
+        // durationHours here (falling back to 24.0 if unset) rather than hardcoding 24.
+        double blockHours = (timedFee != null && timedFee.getDurationHours() > 0) ? timedFee.getDurationHours() : 24.0;
+        double includedEquivalent = facilityRoomCharge * (pr.getIncludedRoomDurationHours() / blockHours);
+        return Math.max(0.0, liveEquivalent - includedEquivalent);
     }
 
     private boolean checkDischargeTime() {
@@ -2282,12 +2333,28 @@ public class BhtSummeryController implements Serializable {
         if (getPatientEncounter().getAdmissionType() == null) {
             return "";
         }
-
+        
+        System.out.println("Patient Encounter = " + getPatientEncounter());
+        System.out.println("Admission Type = " + getPatientEncounter().getAdmissionType()); 
+        System.out.println("Admission Type Enum = " + getPatientEncounter().getAdmissionType().getAdmissionTypeEnum());
+        
+        System.out.println("Match = " + (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission));
+        
+        System.out.println("Privilege = " + getWebUserController().hasPrivilege("InwardBillSettleWithoutCheck"));
+        
+        System.out.println("Option = " + configOptionApplicationController.getBooleanValueByKey("Need to check inward bills before discharge"));
+        
+        System.out.println("Starting Bills Checking Process.... ");
         if (getPatientEncounter().getAdmissionType().getAdmissionTypeEnum() == AdmissionTypeEnum.Admission && !getWebUserController().hasPrivilege("InwardBillSettleWithoutCheck")) {
+            System.out.println("Checking.... ---> ");
             if (checkBill()) {
                 return "";
             }
+        }else{
+            System.out.println("Ignore Checking.... ---> ");
         }
+        
+        System.out.println("End Bills Checking Process.... ");
 
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             if (getPatientEncounter().getCreditCompany() == null) {
@@ -2494,6 +2561,7 @@ public class BhtSummeryController implements Serializable {
             temBi.setDiscount(cit.getDiscount());
             temBi.setNetValue(cit.getNetTotal());
             temBi.setAdjustedValue(cit.getAdjustedTotal());
+            temBi.setDescreption(cit.getComments());
             temBi.setCreatedAt(new Date());
             temBi.setCreater(getSessionController().getLoggedUser());
 
@@ -2541,6 +2609,7 @@ public class BhtSummeryController implements Serializable {
             temBi.setDiscount(cit.getDiscount());
             temBi.setNetValue(cit.getNetTotal());
             temBi.setAdjustedValue(cit.getAdjustedTotal());
+            temBi.setDescreption(cit.getComments());
             temBi.setCreatedAt(new Date());
             temBi.setCreater(getSessionController().getLoggedUser());
 
@@ -2578,6 +2647,7 @@ public class BhtSummeryController implements Serializable {
             temBi.setDiscount(cit.getDiscount());
             temBi.setNetValue(cit.getNetTotal());
             temBi.setAdjustedValue(cit.getAdjustedTotal());
+            temBi.setDescreption(cit.getComments());
             temBi.setCreatedAt(new Date());
             temBi.setCreater(getSessionController().getLoggedUser());
 
@@ -2876,6 +2946,7 @@ public class BhtSummeryController implements Serializable {
         patientItems = null;
         paymentBill = null;
         departmentBillItems = null;
+        latestCheckedBillItemsByItem = null;
         printPreview = false;
         current = null;
         tmpPI = null;
@@ -3114,6 +3185,25 @@ public class BhtSummeryController implements Serializable {
     private void applyRoomChargeDiscounts(PatientRoom p,
             double roomPct, double maintainPct, double linenPct, double nursingPct,
             double moPct, double adminPct, double medicalCarePct) {
+        if (p.isFromPackage() && !isPackageRoomDurationExceeded(p)) {
+            // Package-locked room: the price is fixed by the package, not subject
+            // to PriceMatrix discount percentages while within the included duration.
+            p.setDiscountRoomCharge(0.0);
+            p.setDiscountMaintainCharge(0.0);
+            p.setDiscountLinenCharge(0.0);
+            p.setDiscountNursingCharge(0.0);
+            p.setDiscountMoCharge(0.0);
+            p.setDiscountAdministrationCharge(0.0);
+            p.setDiscountMedicalCareCharge(0.0);
+            p.setAdjustedRoomCharge(p.getCalculatedRoomCharge());
+            p.setAdjustedMaintainCharge(p.getCalculatedMaintainCharge());
+            p.setAjdustedLinenCharge(p.getCalculatedLinenCharge());
+            p.setAjdustedNursingCharge(p.getCalculatedNursingCharge());
+            p.setAdjustedMoCharge(p.getCalculatedMoCharge());
+            p.setAjdustedAdministrationCharge(p.getCalculatedAdministrationCharge());
+            p.setAjdustedMedicalCareCharge(p.getCalculatedMedicalCareCharge());
+            return;
+        }
         double roomDisc = (roomPct / 100.0) * p.getCalculatedRoomCharge();
         double maintainDisc = (maintainPct / 100.0) * p.getCalculatedMaintainCharge();
         double linenDisc = (linenPct / 100.0) * p.getCalculatedLinenCharge();
@@ -3237,6 +3327,14 @@ public class BhtSummeryController implements Serializable {
 
         if (p.getRoomFacilityCharge() == null || p.getCurrentRoomCharge() == 0) {
             p.setCalculatedRoomCharge(0);
+            return;
+        }
+
+        if (p.isFromPackage() && !isPackageRoomDurationExceeded(p)) {
+            // Package-locked room: currentRoomCharge already holds the package's
+            // fixed total for the room, not a per-block rate — do not multiply
+            // it by elapsed TimedItemFee blocks while within the included duration.
+            p.setCalculatedRoomCharge(p.getCurrentRoomCharge() + p.getAddedRoomCharge());
             return;
         }
 
@@ -3449,6 +3547,25 @@ public class BhtSummeryController implements Serializable {
 
         setNetAdjustValue();
 
+        restoreChargeItemComments();
+
+    }
+
+    private void restoreChargeItemComments() {
+        if (getPatientEncounter() == null
+                || !getPatientEncounter().isPaymentFinalized()
+                || getPatientEncounter().getFinalBill() == null) {
+            return;
+        }
+
+        for (BillItem existing : getPatientEncounter().getFinalBill().getBillItems()) {
+            for (ChargeItemTotal cit : chargeItemTotals) {
+                if (existing.getInwardChargeType() == cit.getInwardChargeType()) {
+                    cit.setComments(existing.getDescreption());
+                    break;
+                }
+            }
+        }
     }
 
     private void setNetAdjustValue() {
@@ -3862,6 +3979,22 @@ public class BhtSummeryController implements Serializable {
 
     public void setDepartmentBillItems(List<DepartmentBillItems> departmentBillItems) {
         this.departmentBillItems = departmentBillItems;
+    }
+
+    /**
+     * Returns the most recently checked inward BillItem for the given service
+     * item of the current patient encounter, or null if none has been checked.
+     * The Service Details tab binds to its {@code bill.checkedBy} /
+     * {@code bill.checkeAt} to show "Checked By" / "Checked At".
+     */
+    public BillItem getLatestCheckedBillItem(Item item) {
+        if (item == null || item.getId() == null) {
+            return null;
+        }
+        if (latestCheckedBillItemsByItem == null) {
+            latestCheckedBillItemsByItem = getInwardBean().getLatestCheckedBillItemsByItem(patientEncounter);
+        }
+        return latestCheckedBillItemsByItem.get(item.getId());
     }
 
     public DepartmentFacade getDepartmentFacade() {

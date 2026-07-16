@@ -457,6 +457,234 @@ test, try the token-based "Sale for Cashier" flow instead — its item-add/quant
 inputs worked fine in this session, only the retail-native page's Settle button was
 unreachable.
 
+## 20. A privilege-gated button that never renders may be a missing DB row, not a session issue
+
+If a `rendered="#{webUserController.hasPrivilege('SomePrivilege')}"` button never
+appears even after the §17 logout/relogin-and-reselect-department trick, the
+`webuserprivilege` row for that (user, department, privilege) triple may simply not
+exist in the local seed data — no amount of re-login fixes a privilege that was never
+granted for that department. Check first:
+
+```sql
+SELECT ID, PRIVILEGE, DEPARTMENT_ID, RETIRED
+FROM webuserprivilege
+WHERE WEBUSER_ID = <id> AND PRIVILEGE = 'SomePrivilege';
+```
+
+If the row for the target department is absent, insert it (`RETIRED = 0`) for that
+`WEBUSER_ID`/`DEPARTMENT_ID`, then follow §17 (logout → login → reselect department)
+to force `SessionController.fillUserPrivileges()` to re-read it — the privilege list is
+cached per session at login and won't pick up a new row otherwise. This came up testing
+`BhtSummeryController.settle()` (`InwardSettleFinalBill`), where the local `buddhika`
+user had the privilege for `Store`/`Main Pharmacy` departments but not `Inward`.
+
+## 21. Inward "Add Services" item picker — the Filter box does not load other departments' items
+
+On `inward/inward_bill_service.xhtml` (and the surgery equivalent) the item selector shows
+a **department button row** (OPD, ETU, Inward, MRI, …) above an "Investigation or Service"
+list. That list is scoped to the **currently selected department button**, defaulting to the
+first (usually OPD). The "Filter" textbox only narrows the *already-loaded* department's list —
+typing an item name that belongs to another department returns nothing. To bill a service
+that lives in a different department (e.g. `CT SCANNING CHARGES` / `SUTURING & DRESSING
+CHARGES` under **ETU**), first click that department's button to load its items, *then* pick
+from the list. Symptom if you skip this: the filter shows "no match" even though the item
+exists and the DB confirms it. Refs churn after the department-button AJAX, so re-`snapshot`
+before clicking the option, and click the visible listbox row (the hidden native `<option>`
+with the same text is not clickable). Verified while testing room-category service margins
+(issue #21977).
+
+## 22. Inward pharmacy margin lookup uses the *inpatient* department, not the issuing pharmacy
+
+When testing the inward price-adjustment (service-charge) margin for **pharmacy** issues to an
+inpatient, the matrix department is resolved by `PharmacySaleBhtController.determineMatrixDepartment()`,
+which is gated by config `"Price Matrix is calculated from Inpatient Department for <issuing dept>"`
+(**default true**). When on, the lookup uses the patient's **current room's facility-charge
+department** — for A/C/Non-A/C rooms in the model DB that is **Inward**, *not* the pharmacy you
+are logged into (e.g. Main Pharmacy). Symptom if you create the matrix row against the pharmacy
+department: the margin resolves to 0 / the wrong row even though the row exists. Fix: create the
+`InwardPriceAdjustment` row for the **room facility charge's department**
+(`SELECT rfc.department_id FROM patientencounter pe JOIN patientroom pr ON pe.currentpatientroom_id=pr.id
+JOIN roomfacilitycharge rfc ON pr.roomfacilitycharge_id=rfc.id WHERE pe.id=<enc>`), and set the
+row's payment method to match the encounter's (`patientencounter.paymentMethod`). Also beware
+**pre-existing overlapping rows** for the same dept/category/price-range/payment-method — they make
+the wildcard-vs-specific comparison ambiguous; temporarily `retired=1` them for a clean A/B test,
+then restore. Fastest confirmation without the full multi-page issue flow:
+`GET /api/inward-price-adjustment/diagnose?itemId=&departmentId=&paymentMethod=&patientEncounterId=&price=`
+with a `Finance` API-key header — it runs the identical `fetchInwardMargin(...)` call the pharmacy
+controllers use and returns the matched row id + margin %. Verified while testing room-category
+pharmacy margins (issue #21981).
+
+## 23. Three authoring gotchas found via E2E on the role-template pages (issue #22023)
+
+Testing `admin/users/user_role_users.xhtml` / `user_role_bulk_operations.xhtml` surfaced
+three silent-failure patterns worth checking on any new admin page:
+
+1. **`p:selectManyCheckbox` over a `List<Entity>` needs an explicit named converter.**
+   The `@FacesConverter(forClass = Department.class)` converter is *not* applied to
+   `UISelectMany` bound to a generic `List` (type erasure — JSF can't detect the element
+   type), so submitted values stay `String`s and the action later dies with
+   `ClassCastException: java.lang.String cannot be cast to ... Department` inside the EJB.
+   Fix: register a named converter (e.g. `userRoleDepartmentConverter`) and set
+   `converter="..."` on the component explicitly.
+2. **`process="cmbA cmbB"` without `@this` silently skips the button's own action.**
+   The AJAX request fires, inputs are applied, the `update` render runs — but the
+   `action` never executes because the button itself wasn't in the execute list.
+   Symptom: "No records found" with no error anywhere. Always write
+   `process="@this cmbA cmbB"`.
+3. **Multi-select checkbox column: this PrimeFaces version wants `selectionMode="multiple"`
+   on the `p:dataTable` + `<p:column selectionBox="true"/>`** — a
+   `<p:column selectionMode="multiple"/>` (the pattern current PF docs show) renders an
+   *empty* cell. Copy the working pattern from `user_remove_multiple.xhtml`.
+
+Also (rendering): a `p:selectOneMenu` bound to `#{bean.current.field}` blows up the whole
+page with `PropertyNotFoundException: Target Unreachable` when `current` is null on first
+GET — unlike `p:inputText`, select components resolve the value expression's *type* during
+render. Guard with `rendered="#{bean.current ne null}"`.
+
+## 24. Granting a privilege that doesn't exist on the checked-out branch silently blanks ALL privileges for that department
+
+If you insert a `webuserprivilege` row for a `Privileges` enum value that exists on
+*another* branch (e.g. one you tested earlier today) but not on the branch currently
+checked out and deployed, the entire menu goes blank and every `hasPrivilege(...)` check
+returns `false` for that user **in that department** — not just the one bad privilege.
+`WebUserPrivilege.privilege` is `@Enumerated(EnumType.STRING)`; EclipseLink converts the
+DB string to the Java enum via `Enum.valueOf(...)` when it hydrates the full result list
+for `SessionController.fillUserPrivileges()`, and a single row whose string isn't a valid
+constant on the *currently running* code silently poisons that entire fetch — with no
+`SEVERE` entry in `server.log` and no visible page error, just empty menus / "not
+authorized" everywhere for that department, while other departments the row doesn't
+affect work fine (a strong tell if you compare departments). A domain restart or a full
+undeploy+redeploy does **not** fix this — it's a data/branch mismatch, not a cache.
+
+Diagnose fast: enable the MySQL general log to a table (`SET GLOBAL log_output='TABLE';
+SET GLOBAL general_log='ON';`) and check `mysql.general_log` for the exact
+`SELECT ... FROM WEBUSERPRIVILEGE WHERE ...` query, run it directly, then diff the
+distinct `PRIVILEGE` values for that user/department against
+`grep -oP '(?<=^    )[A-Za-z0-9_]+(?=\(")' src/main/java/com/divudi/core/data/Privileges.java`
+(note: some enum lines have a trailing `//` comment that breaks a naive end-of-line
+regex — verify any apparent mismatch with a direct `grep` before trusting the diff).
+
+This came up switching from the GRN privilege-guard branch (issue #22019, which added
+`PharmacyGrnCancel`/`PharmacyGrnReturnCancel`) to the PO privilege-guard branch (#22020,
+checked out fresh from `origin/development` since #22019 wasn't merged yet) — rows
+granted while testing #22019 were still sitting in the shared local DB and broke every
+privilege check for that department under the PO branch's code. Fix: delete (or retire)
+the rows for privileges that don't exist on the currently deployed branch, re-grant only
+what the current branch's `Privileges.java` actually declares, then re-login.
+
+## 25. A JPQL path expression through a nullable relationship silently INNER-JOINs and drops rows
+
+Writing `b.patientEncounter.bhtNo` or `b.patient.person.name` directly in a `SELECT`/`WHERE`
+generates an **implicit INNER JOIN** on that relationship. If the relationship is null for
+some rows (e.g. `patientEncounter`/`patient` are null on OPD bills), **every one of those
+rows silently disappears** from the result — no error, no log entry. The report just looks
+"wrong" (too few rows), and it's easy to blame filters/dates first.
+
+Tell: a combined OPD+Inward report showed only the 2 Inward rows (which have a
+`patientEncounter`) and dropped all 20 OPD rows for the same item/date range. DB count
+didn't match the report count. Fix: use explicit `left join b.patientEncounter pe` /
+`left join b.patient pat left join pat.person per` and reference the aliases (`pe.bhtNo`,
+`per.name`) in the projection. Verified on issue #21920 (`fetchItemizedServiceInstanceDTOs`
+in `BillService`). Always cross-check report row count against a direct
+`SELECT ... FROM billitem bi JOIN bill b ...` when a report projects fields from an
+optional relationship.
+
+Related sign gotcha found the same pass: cancellation/refund `BillItem` fee columns
+(`netValue`, `hospitalFee`, …) are **already stored negative** in the DB. A
+`case when billClassType in (cancel, refund) then -bi.netValue else bi.netValue end`
+double-negates them to positive — this is the "fee doubling after cancellation" symptom
+(issue #21918). Use the stored values as-is; only synthesize a sign for the row **count**
+(which has no stored value). Verify by summing `bi.netValue` directly in SQL and matching
+the report's Grand Total.
+
+## 26. Editing a `ConfigOption` via raw SQL is invisible to the running app — use the admin UI
+
+`ConfigOptionApplicationController.getApplicationOption(key)` reads through EclipseLink's
+shared L2 entity cache. A direct `UPDATE configoption SET optionvalue=... WHERE optionkey=...`
+via the `mysql` CLI changes the DB row but the already-cached `ConfigOption` entity in the
+running Payara instance keeps serving the old value — `getLongValueByKey`/`getBooleanValueByKey`
+never see the change, with no error or log entry. This wasted a full test cycle while verifying
+a day-limit config for issue #22055 (two `UPDATE` statements had zero effect on rendered button
+state).
+
+**Fix:** edit config values through `admin/institutions/admin_mange_application_options.xhtml`
+(List Application Options → filter by Key → **Edit Option** → Save). That path goes through
+the entity manager and correctly invalidates the cache, and the change is visible on the very
+next page load — no redeploy or Payara restart needed. Reserve raw SQL for *reading* config
+state (e.g. confirming a key auto-created with the right default on first access), never for
+writing it mid-test.
+
+## 27. Multi-Payara machines: `asadmin` without `--port` may hit ANOTHER USER'S domain
+
+On a box with two Payara installs (e.g. `/home/carecode/payara` domain `rh` admin port **9048**,
+and `/home/buddhika/payara` domain1 on default **4848**), a bare `asadmin redeploy/undeploy/deploy`
+connects to whoever owns 4848 — which can be the *other user's* server. Tells that you're on the
+wrong DAS: `redeploy` fails with **"Cannot determine the path of application"**, `deploy` fails with
+**"File not found"** for a WAR that clearly exists (the other user's Payara process can't traverse
+your 750-mode home directory), and `list-applications` shows an app list that doesn't match your
+domain. An `undeploy` in this state removes the app from the *other* server — before any
+state-changing asadmin call, confirm which process owns the admin port you're about to use
+(`ss -tlnp | grep <port>` + `ps -o user= -p <pid>`), run `asadmin --port <port> list-applications`
+on that same endpoint to confirm the expected app list, and always pass the explicit admin port on
+**every** command (`asadmin --port 9048 redeploy/undeploy/deploy ...` for the local `rh` domain —
+never the bare default).
+
+Recovery after removing the wrong domain's app: copy the WAR to a path the *target* domain's user
+can read (its Payara can't traverse your `0750` home directory) — keep permissions as tight as that
+allows (e.g. a dedicated directory rather than bare `/tmp`, no wider than `0644` on the file),
+rewrite `WEB-INF/classes/META-INF/persistence.xml` inside the copy to that domain's JNDI names via
+`unzip`/`sed`/`zip`, **verify the rewritten `<jta-data-source>` values before deploying**, deploy
+with `--port <that domain's admin port>` and `--name`/`--contextroot` matching what was removed,
+and **delete the staged copy immediately after** the deploy succeeds. (Hit while deploying for
+issue #14863.)
+
+## 28. Claude-in-Chrome on heavy non-AJAX report pages (full-submit + long query)
+
+Verifying `slow_fast_none_movement.xhtml` (multi-minute aggregate queries, `ajax="false"` Process
+button) surfaced these:
+
+- **Screenshots time out while the server renders** (`Page.captureScreenshot ... renderer may be
+  frozen`). Don't retry screenshots in a loop — poll cheaply with `javascript_tool` on
+  `document.readyState` + a marker string in `document.body.innerText`, and screenshot once ready.
+- **`find`-ref and coordinate clicks on the submit button intermittently do nothing** (stale refs
+  after each full reload; overlay panels intercepting clicks). The reliable submit is DOM-level:
+  `[...document.querySelectorAll('button')].find(b=>b.textContent.includes('Process')).click()`.
+- **Set PrimeFaces inputs directly on the hidden native elements before a full submit**: p:selectOneMenu
+  → `select[id$="..._input"].value = '...'`; p:selectCheckboxMenu → toggle
+  `input[name$="billTypes"]` checkboxes; p:datePicker → `PF widget .setDate(new Date(...))`. For a
+  non-AJAX submit only the submitted values matter, so skipping the widget UI is safe and immune to
+  overlay/timing issues. (AJAX listeners do NOT fire this way — only use for full-form submits.)
+- **html2canvas does not capture PrimeFaces overlay panels** (`*_panel` appended near body root render
+  blank/absent) — capture page states instead, or read the panel's `innerText` as textual evidence.
+
+## 29. GRN costing Save→Finalize→Approve: `Difference` guard needs a real keyup on Invoice Total at EVERY step
+
+On `pharmacy_grn_costing_with_save_approve.xhtml` the controller field `difference` (checked by
+`Math.abs(difference) > 1` in the finalize/approve actions) is recomputed **only** by the
+`p:ajax event="keyup"` listener on the Invoice Total input (`insv`) — a DOM-set value applied by an
+`ajax="false"` full submit updates `insTotal` server-side but never recalculates `difference`, so the
+approve fails with "The invoice does not match..! Check again" even though the submitted total is
+correct. Worse, after the Finalize → "To Approve GRNs" → Approve navigation the page reloads with
+Invoice Total rendered as `0.00`, so a value that passed at Save/Finalize is gone at the Approve step.
+Fix in automation: on the approve pass, click into `insv`, `Control+a`, `browser_type` the total
+`slowly: true` (real keyups fire the AJAX), confirm the `diff` input reads `0.00`, then click Approve.
+Everything else on that page (row qty/free-qty/batch/expiry/retail-rate inputs, invoice number/date)
+CAN be set directly on the DOM inputs — the `ajax="false"` Save/Finalize buttons submit and apply them
+(verified while testing issue #22120).
+
+## 30. `ward_pharmacy_bht_issue_request_bill.xhtml` — "New Bill" silently discards unsaved items
+
+On the "Start Pharmacy Request for Inpatients" flow, the "Add Dispense Only" button only stages
+`BillItem`s in the in-memory `PreBill` — nothing is persisted until "Settle Request" is clicked (the
+"Save Draft" button that would otherwise persist an intermediate `PharmacyBhtPre` is `rendered="false"`,
+per a comment in the page noting there's currently no way to resume a saved draft). The "New Bill"
+button (`actionListener="#{pharmacyRequestForBhtController.resetAll}"`) looks like a reasonable "finish
+this request" action but actually **discards all staged items with no confirmation** and resets the form
+to "Start Pharmacy Request for Inpatients". If a Playwright pass adds items and then clicks "New Bill"
+expecting the request to be saved, a DB check afterward will show nothing was created. Always use
+**"Settle Request"** (confirm-dialog-guarded) to actually persist a BHT pharmacy request. Verified while
+testing issue #22153.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

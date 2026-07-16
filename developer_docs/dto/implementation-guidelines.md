@@ -4,24 +4,15 @@
 
 **🚨 These rules MUST be followed when working with DTOs:**
 
-1. **NEVER modify existing constructors** - only add new ones
+1. **NEVER modify existing constructors or attributes** - only add new ones. Don't change parameters, remove constructors, modify existing fields, or change method signatures other code depends on.
 2. **Use direct DTO queries** - avoid entity-to-DTO conversion loops
-3. **JPQL PERSISTED FIELDS ONLY**: NEVER use derived/calculated properties like `nameWithTitle`, `age`, `displayName` in JPQL - only persisted database fields work
+3. **JPQL PERSISTED FIELDS ONLY** - never use derived/calculated properties like `nameWithTitle`, `age`, `displayName` in JPQL; only persisted database fields work (see § Derived/Calculated Properties)
+4. **Use `findLightsByJpql()` with an explicit cast** for DTO constructor queries - never `findByJpql()` (wrong return type) or `findAggregates()` (`Object[]` results only) (see § Correct Facade Method)
 
 ---
 
-## CRITICAL RULES: Avoid Breaking Changes
+## Use Direct DTO Queries - No Entity Conversion
 
-When implementing DTOs to replace entity objects in UI/display components, follow these strict rules to prevent compilation errors and maintain backward compatibility:
-
-### 1. NEVER Modify Existing Constructors or Attributes
-- **❌ DO NOT** change parameters of existing constructors
-- **❌ DO NOT** remove existing constructors  
-- **❌ DO NOT** modify existing class attributes/fields
-- **❌ DO NOT** change method signatures that other code depends on
-- **✅ ONLY ADD** new constructors, new attributes, new methods
-
-### 2. Use Direct DTO Queries - No Entity Conversion
 When replacing entities with DTOs in controllers:
 
 **❌ WRONG APPROACH:**
@@ -54,7 +45,7 @@ String jpql = "SELECT new com.divudi.core.data.dto.StockDTO("
 List<StockDTO> dtos = (List<StockDTO>) facade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 ```
 
-### 2a. Navigation Pattern: Use IDs and Names Instead of Entity References
+### Navigation Pattern: Use IDs and Names Instead of Entity References
 
 **🚨 CRITICAL PATTERN for Navigation Support:**
 
@@ -128,7 +119,7 @@ public String navigateToDetails(OpdSaleSummaryDTO dto) {
 - ✅ Database aggregation stays efficient
 - ✅ Memory footprint minimized
 
-### 3. Safe Entity Property Changes
+### Safe Entity Property Changes
 When changing controller properties from entities to DTOs:
 
 **❌ WRONG - Breaking existing functionality:**
@@ -143,12 +134,12 @@ Stock stock;              // Keep existing for business logic
 StockDTO selectedStockDto; // Add new for UI display
 ```
 
-### 4. XHTML Selection Binding Pattern
+### XHTML Selection Binding Pattern
 When updating XHTML to use DTOs:
 
 **For dataTable with DTO data source:**
 ```xhtml
-<p:dataTable value="#{controller.stockDtoList}" var="i" 
+<p:dataTable value="#{controller.stockDtoList}" var="i"
              selection="#{controller.selectedStockDto}">
     <p:column headerText="Name">
         <h:outputText value="#{i.itemName}" />
@@ -167,9 +158,7 @@ public void setSelectedStockDto(StockDTO dto) {
 }
 ```
 
-### 5. Constructor Addition Guidelines
-
-**When adding new DTO constructors:**
+### Constructor Addition Guidelines
 
 ```java
 // ✅ KEEP existing constructor intact
@@ -179,16 +168,14 @@ public StockDTO(Long id, String itemName, String code, String genericName,
 }
 
 // ✅ ADD new constructors for additional use cases
-public StockDTO(Long id, String itemName, String code, Double retailRate, 
-                Double stockQty, Date dateOfExpire, String batchNo, 
+public StockDTO(Long id, String itemName, String code, Double retailRate,
+                Double stockQty, Date dateOfExpire, String batchNo,
                 Double purchaseRate, Double wholesaleRate) {
     // New constructor with additional fields
 }
 ```
 
-### 6. Reference Implementation Pattern
-
-**Follow this pattern for efficient DTO implementation:**
+### Reference Implementation Pattern
 
 1. **Identify the display use case** - what data does the UI actually need?
 2. **Add new fields to DTO** (never remove existing ones)
@@ -198,17 +185,17 @@ public StockDTO(Long id, String itemName, String code, Double retailRate,
 6. **Update XHTML** to use DTO properties for display
 7. **Maintain entity properties** for business logic operations
 
-### 7. Performance Benefits
+### Performance Benefits
 Direct DTO queries provide:
 - **Memory efficiency**: Only loads required display fields
 - **Database efficiency**: Single optimized query instead of entity + conversion
 - **Network efficiency**: Reduced data transfer
 - **Compilation safety**: No breaking changes to existing code
 
-### 8. Example: StockSearchService Reference
+### Example: StockSearchService Reference
 See `StockSearchService.findStockDtos()` method for the correct pattern of direct DTO querying.
 
-### 9. CRITICAL: Correct Facade Method for DTO Constructor Queries
+## Correct Facade Method for DTO Constructor Queries
 
 **🚨 ALWAYS use `findLightsByJpql()` with explicit cast for DTO constructor queries:**
 
@@ -243,13 +230,11 @@ facade.findLightsByJpql(jpql, params)     // Missing TemporalType when using Dat
 1. **Changing existing constructor signatures** → Compilation errors in dependent code
 2. **Converting entities to DTOs in loops** → Performance degradation
 3. **Removing entity properties used by business logic** → Runtime failures
-4. **Using wrong facade method for DTO queries** → `findByJpql()` instead of `findLightsByJpql()`
-5. **Missing explicit cast** → Type safety issues with DTO constructor queries
-6. **Accessing properties through null relationships** → Silent query failures (most common issue!)
-6a. **`BigDecimal` constructor param for a `double`/`Double` column** → loud `IllegalArgumentException: argument type mismatch` at construction time (see § Numeric Type Mismatch)
-7. **Including cancellation details in list DTOs** → Unnecessary complexity and performance issues
-8. **Using derived/calculated properties in JPQL** → JPQL only supports persisted fields, not getter methods (see below)
-9. **Calling `Staff.getName()` to display a person's name** → returns the `Staff` entity's own (usually unset) `name` field, not the linked person's name — see below
+4. **Missing explicit cast** → Type safety issues with DTO constructor queries
+5. **Accessing properties through null relationships** → Silent query failures (most common issue!)
+5a. **`BigDecimal` constructor param for a `double`/`Double` column** → loud `IllegalArgumentException: argument type mismatch` at construction time (see § Numeric Type Mismatch)
+6. **Including cancellation details in list DTOs** → Unnecessary complexity and performance issues
+7. **Calling `Staff.getName()` to display a person's name** → returns the `Staff` entity's own (usually unset) `name` field, not the linked person's name — see below
 
 ## 🚨 CRITICAL: `Staff.getName()` Does NOT Return the Person's Name
 
@@ -392,11 +377,11 @@ public BillListReportDTO(Long id, ..., Double total, Double netTotal) {
 - **Don't create two constructors of the same arity** that differ only by `BigDecimal`
   vs `Double` numeric params. EclipseLink matches the constructor by **argument count
   first** and may bind the wrong overload, re-introducing the mismatch. Keep exactly **one**
-  constructor per arity. (Per rule #1 you normally never modify an existing constructor —
-  but if it was added for the *current* feature and has no other caller, changing its
-  numeric params from `BigDecimal` to `Double` is the correct fix, not an add-only overload.
-  Verify with a `grep` for `new <DtoName>(` and the JPQL `new ...<DtoName>(` string that it
-  truly has a single caller.)
+  constructor per arity. (Per the constructor-immutability rule you normally never modify an
+  existing constructor — but if it was added for the *current* feature and has no other caller,
+  changing its numeric params from `BigDecimal` to `Double` is the correct fix, not an add-only
+  overload. Verify with a `grep` for `new <DtoName>(` and the JPQL `new ...<DtoName>(` string
+  that it truly has a single caller.)
 - **`COALESCE(b.total, 0)` projects an `Integer` literal type**, which can also mismatch a
   `Double`/`BigDecimal` parameter. Use a typed literal: `COALESCE(b.total, 0.0)`.
 - After applying any automated (CodeRabbit/Codex) numeric fix, re-confirm the entity field's
@@ -454,35 +439,6 @@ String jpql = "SELECT new DTO("
 
 **Note:** Even with LEFT JOIN, you must join EACH level of the relationship chain separately.
 
-### 🚨 Best Practice: Avoid Cancellation Details in List DTOs
-
-**For list/table displays, AVOID including cancellation relationship details:**
-
-- `cancelledBill.createdAt` (cancellation date)
-- `cancelledBill.creater.name` (canceller name)
-- `cancelledBill.comments` (cancellation reason)
-
-**Why:**
-1. **Performance**: These require LEFT JOINs through multiple tables
-2. **Complexity**: Nullable relationships cause silent query failures
-3. **UX**: Users can click through to view full bill details including cancellation info
-4. **Simplicity**: A boolean `cancelled` flag is sufficient for list filtering/display
-
-**✅ Recommended Pattern for List DTOs:**
-```java
-public class PurchaseOrderListDTO {
-    private Long billId;
-    private String deptId;
-    private Date createdAt;
-    private Double netTotal;
-    private Boolean cancelled;    // ✅ Simple boolean flag for display/filtering
-    private Boolean billClosed;
-    // ❌ Don't include: cancelledAt, cancellerName, cancellationReason
-}
-```
-
-**If user needs cancellation details:** Provide a "View Details" action that navigates to the full bill view where all cancellation information is available.
-
 ### ✅ SOLUTION 3 (Standard): COALESCE on every nullable LEFT JOIN String — always apply this
 
 Even when LEFT JOINs are present, a `null` value flowing into a `String` DTO constructor
@@ -514,6 +470,35 @@ String sql = "SELECT new com.divudi.core.data.dto.PharmacySaleSearchDTO("
 **Rule:** Every column from a LEFT-joined table that is a `String` in the DTO constructor
 **must** be wrapped in `COALESCE(expr, '')`. Numeric and boolean fields from the root entity
 (`b.total`, `b.cancelled`) are safe without COALESCE.
+
+### 🚨 Best Practice: Avoid Cancellation Details in List DTOs
+
+**For list/table displays, AVOID including cancellation relationship details:**
+
+- `cancelledBill.createdAt` (cancellation date)
+- `cancelledBill.creater.name` (canceller name)
+- `cancelledBill.comments` (cancellation reason)
+
+**Why:**
+1. **Performance**: These require LEFT JOINs through multiple tables
+2. **Complexity**: Nullable relationships cause silent query failures
+3. **UX**: Users can click through to view full bill details including cancellation info
+4. **Simplicity**: A boolean `cancelled` flag is sufficient for list filtering/display
+
+**✅ Recommended Pattern for List DTOs:**
+```java
+public class PurchaseOrderListDTO {
+    private Long billId;
+    private String deptId;
+    private Date createdAt;
+    private Double netTotal;
+    private Boolean cancelled;    // ✅ Simple boolean flag for display/filtering
+    private Boolean billClosed;
+    // ❌ Don't include: cancelledAt, cancellerName, cancellationReason
+}
+```
+
+**If user needs cancellation details:** Provide a "View Details" action that navigates to the full bill view where all cancellation information is available.
 
 ### Row-limit parameter pattern
 
@@ -555,15 +540,12 @@ approach before implementing.
 1a. **Match the numeric wrapper to the entity field** — primitive `double` → `Double` param, never `BigDecimal` (convert to `BigDecimal` inside the constructor if the field needs it); use `COALESCE(x, 0.0)` not `COALESCE(x, 0)`
 2. **Avoid nullable relationship traversal** - accessing `b.cancelledBill.createdAt` fails silently if `cancelledBill` is null
 3. **Use LEFT JOIN with explicit aliases** if you must access nullable relationships
-4. **Always COALESCE every LEFT JOIN String field** — wrap with `COALESCE(expr, '')` to prevent silent row drops
-5. **Test COUNT separately** to verify data exists before troubleshooting DTO construction
-6. **Add debug logging** when implementing new DTO queries to catch silent failures early
-7. **Match parameter types exactly** - don't rely on implicit conversions with `Object`
-8. **Avoid cancellation details in list DTOs** - use boolean flags, let users navigate to details for full info
-9. **Test with minimal constructor first** - if a 4-param constructor works but 11-param fails, the issue is with the additional fields
-10. **Only use persisted fields in JPQL** - derived properties like `nameWithTitle` are not valid (see below)
-11. **Accept `int maxResult` not `boolean maxNum`** - lets the caller pass `searchController.getMaxResult()` directly
-12. **No subqueries in DTO fetch methods** - discuss alternatives before adding `WHERE b.id IN (SELECT ...)`
+4. **Test COUNT separately** to verify data exists before troubleshooting DTO construction
+5. **Add debug logging** when implementing new DTO queries to catch silent failures early
+6. **Avoid cancellation details in list DTOs** - use boolean flags, let users navigate to details for full info
+7. **Test with minimal constructor first** - if a 4-param constructor works but 11-param fails, the issue is with the additional fields
+8. **Accept `int maxResult` not `boolean maxNum`** - lets the caller pass `searchController.getMaxResult()` directly
+9. **No subqueries in DTO fetch methods** - discuss alternatives before adding `WHERE b.id IN (SELECT ...)`
 
 ## 🚨 CRITICAL: Derived/Calculated Properties Cannot Be Used in JPQL
 
@@ -619,101 +601,5 @@ public String getNameWithTitle() {
 private String name;
 ```
 
-## Navigation-Level DTO/Entity Selection
-When implementing dual DTO/Entity approach:
-
-### Navigation Structure
-1. **Separate navigation entries** for Entity and DTO versions
-   - Example: "Transfer Reports (Entity)" and "Transfer Reports (DTO)" 
-   - Double the navigation buttons, but clearer separation of concerns
-2. **Each page has single purpose** - either Entity OR DTO, not both
-3. **Simple Fill button** on each page - no switching within page
-
-### Page Design Principles
-1. **Entity page**: Contains only entity-based Fill button and entity-specific actions
-2. **DTO page**: Contains only DTO-based Fill button and DTO-specific actions  
-3. **No cross-navigation buttons** within pages - navigation choice made at menu level
-4. **Clear page headers** indicating which approach (Entity vs DTO)
-
-### Recommended Naming Convention
-- Original page: `feature_name.xhtml` (Entity-based for backward compatibility)
-- DTO page: `feature_name_dto.xhtml` (DTO-based, optimized)
-- Navigation labels: "Feature Name" and "Feature Name (DTO - Recommended)"
-
-### Configuration
-1. **DTO approach should be the default** where applicable
-2. **Label DTO version clearly** in navigation to indicate it's the recommended approach
-3. **Maintain entity version** for backward compatibility and business logic needs
-
-### Implementation Example
-
-**Navigation Configuration (pharmacy_analytics.xhtml):**
-```xml
-<!-- Entity Version - Traditional -->
-<p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill')}" 
-                 value="Transfer Issue by Bill (Entity)" 
-                 action="#{reportsTransfer.navigateToTransferIssueByBill}" 
-                 ajax="false" 
-                 icon="fa fa-file-export" 
-                 class="w-100"/>
-
-<!-- DTO Version - Recommended (defaults to enabled) -->
-<p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill (DTO)', true)}" 
-                 value="Transfer Issue by Bill (DTO - Fast)" 
-                 action="/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_dto?faces-redirect=true" 
-                 ajax="false" 
-                 icon="fa fa-rocket" 
-                 class="w-100 ui-button-success"
-                 title="High-performance DTO-based report - Recommended"/>
-```
-
-**Configuration Key Pattern:**
-- **Entity version**: `'Feature Name'` (existing configuration)
-- **DTO version**: `'Feature Name (DTO)'` with `true` as default value
-- This allows administrators to disable DTO versions if needed while defaulting to enabled
-
-**Resulting Navigation Menu Structure:**
-```
-Pharmacy Analytics → Disbursement Reports
-├── Transfer Issue by Bill (Entity)           → pharmacy_report_transfer_issue_bill.xhtml
-└── Transfer Issue by Bill (DTO - Fast)       → pharmacy_report_transfer_issue_bill_dto.xhtml
-```
-
-**Entity Page Content:**
-- Single "Fill" button → `fillDepartmentTransfersIssueByBillEntity()`
-- Excel/Print buttons specific to entity data
-- Uses `#{reportsTransfer.transferBills}` for data binding
-
-**DTO Page Content:**
-- Single "Fill" button → `fillDepartmentTransfersIssueByBillDto()`  
-- Excel/Print buttons specific to DTO data
-- Uses `#{reportsTransfer.transferIssueDtos}` for data binding
-
-**Controller Structure:**
-```java
-// Keep both properties for backward compatibility
-private List<Bill> transferBills;              // For entity approach
-private List<PharmacyTransferIssueDTO> transferIssueDtos; // For DTO approach
-
-// Separate methods for each approach
-public void fillDepartmentTransfersIssueByBillEntity() { ... }
-public void fillDepartmentTransfersIssueByBillDto() { ... }
-
-// Navigation control method
-public boolean isTransferIssueDtoEnabled() { return true; }
-```
-
-**Benefits of Navigation-Level Selection:**
-1. **Clear user choice** before entering report
-2. **No switching confusion** within pages
-3. **Easy configuration control** via controller methods
-4. **Gradual migration path** - can disable DTO option if needed
-5. **Performance awareness** - users can choose fast DTO version consciously
-
-## Testing DTO Changes
-Before committing DTO changes:
-1. **Compile the entire project** to check for breaking changes
-2. **Test the specific feature** that uses the new DTOs
-3. **Verify existing functionality** still works (entities for business logic)
-4. **Check performance improvements** compared to entity approach
-5. **Test both DTO and Entity versions** if dual approach is implemented
+## Related Documentation
+- [Entity/DTO Dual Navigation Pattern](../ui/entity-dto-dual-navigation-pattern.md) - How to expose Entity and DTO versions of the same report side-by-side in navigation menus

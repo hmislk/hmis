@@ -260,8 +260,19 @@ public class InwardDocumentUploadController implements Serializable {
             return;
         }
 
+        Upload persisted = selectedDocument.getId() != null ? uploadFacade.find(selectedDocument.getId()) : null;
+        if (persisted == null || persisted.isRetired() || persisted.getBaImage() == null || persisted.getBaImage().length == 0) {
+            JsfUtil.addErrorMessage("Document content is not available to attach");
+            return;
+        }
+
         String subject = "Document: " + (selectedDocument.getFileName() != null ? selectedDocument.getFileName() : "Attachment");
         String body = buildDocumentEmailHtml();
+
+        com.divudi.core.data.EmailAttachment attachment = new com.divudi.core.data.EmailAttachment(
+                persisted.getFileName(),
+                persisted.getFileType(),
+                java.util.Base64.getEncoder().encodeToString(persisted.getBaImage()));
 
         com.divudi.core.entity.AppEmail email = new com.divudi.core.entity.AppEmail();
         email.setCreatedAt(new Date());
@@ -273,6 +284,7 @@ public class InwardDocumentUploadController implements Serializable {
         email.setInstitution(sessionController.getLoggedUser().getInstitution());
         email.setPatientEncounter(currentEncounter);
         email.setMessageType(com.divudi.core.data.MessageType.InpatientDocumentUpload);
+        email.setAttachment1(persisted.getFileName());
         email.setSentSuccessfully(false);
         email.setPending(true);
         emailFacade.create(email);
@@ -282,7 +294,8 @@ public class InwardDocumentUploadController implements Serializable {
                     java.util.Collections.singletonList(recipient),
                     body,
                     subject,
-                    true
+                    true,
+                    java.util.Collections.singletonList(attachment)
             );
             email.setSentSuccessfully(success);
             email.setPending(!success);
@@ -294,6 +307,8 @@ public class InwardDocumentUploadController implements Serializable {
             }
             emailFacade.edit(email);
         } catch (Exception ex) {
+            java.util.logging.Logger.getLogger(InwardDocumentUploadController.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Failed to send document email", ex);
             JsfUtil.addErrorMessage("Sending Email Failed");
         }
     }
@@ -309,7 +324,7 @@ public class InwardDocumentUploadController implements Serializable {
             sb.append("<tr><td><b>Comments</b></td><td>").append(escapeHtml(selectedDocument.getComments())).append("</td></tr>");
         }
         sb.append("</table>");
-        sb.append("<p><i>Note: The file itself is not attached to this email. Please contact the hospital to obtain a copy of the document.</i></p>");
+        sb.append("<p><i>The document is attached to this email.</i></p>");
         sb.append("</body></html>");
         return sb.toString();
     }

@@ -17,7 +17,7 @@
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h:outputText value="Disposal Issue Return - Reprint" styleClass="fw-bold"/>
+                                    <h:outputText value="Consumption Issue Return - Reprint" styleClass="fw-bold"/>
                                 </div>
                                 <div class="d-flex gap-2">
                                     <p:commandButton
@@ -27,7 +27,7 @@
                                         icon="fas fa-plus-circle"
                                         styleClass="ui-button-info ui-button-outlined"
                                         rendered="#{webUserController.hasPrivilege('CreateDisposalReturn')}"
-                                        title="Create a new Disposal Return Request">
+                                        title="Create a new Consumption Return Request">
                                     </p:commandButton>
                                     <p:commandButton
                                         value="List Returns to Finalize"
@@ -36,7 +36,7 @@
                                         icon="fas fa-tasks"
                                         styleClass="ui-button-info ui-button-outlined"
                                         rendered="#{webUserController.hasPrivilege('FinalizeDisposalReturn')}"
-                                        title="Finalize Disposal Return Requests">
+                                        title="Finalize Consumption Return Requests">
                                     </p:commandButton>
                                     <p:commandButton
                                         value="List Returns To Approve"
@@ -45,7 +45,7 @@
                                         icon="fas fa-check-circle"
                                         styleClass="ui-button-info ui-button-outlined"
                                         rendered="#{webUserController.hasPrivilege('ApproveDisposalReturn')}"
-                                        title="Approve Disposal Return Requests">
+                                        title="Approve Consumption Return Requests">
                                     </p:commandButton>
                                     <p:commandButton
                                         value="Completed Returns"
@@ -54,7 +54,7 @@
                                         icon="fas fa-check-double"
                                         styleClass="ui-button-info ui-button-outlined"
                                         rendered="#{webUserController.hasPrivilege('ViewDisposalReturn')}"
-                                        title="View Completed Disposal Returns">
+                                        title="View Completed Consumption Returns">
                                     </p:commandButton>
                                     <p:commandButton
                                         styleClass="ui-button-info"

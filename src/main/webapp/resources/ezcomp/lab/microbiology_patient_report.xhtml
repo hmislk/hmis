@@ -27,7 +27,25 @@
             }
             .micMemoValue {
                 line-height: 1.45;
+                /* Preserve consecutive spaces typed in the result while still
+                   wrapping long lines, so extra in-line spacing is not collapsed. */
+                white-space: pre-wrap;
             }
+            /* Reproduce the Quill editor's indentation in the printed/preview
+               report. The editor applies these ql-indent-* classes on the block
+               when the indent toolbar buttons are used, but Quill's own CSS that
+               gives them padding is scoped to .ql-editor and is not present here,
+               so the indent is lost. The longhand padding-left overrides the
+               padding:0 reset above (higher specificity). Values match Quill's
+               default of 3em per indent level. */
+            .micMemoValue .ql-indent-1 { padding-left: 3em; }
+            .micMemoValue .ql-indent-2 { padding-left: 6em; }
+            .micMemoValue .ql-indent-3 { padding-left: 9em; }
+            .micMemoValue .ql-indent-4 { padding-left: 12em; }
+            .micMemoValue .ql-indent-5 { padding-left: 15em; }
+            .micMemoValue .ql-indent-6 { padding-left: 18em; }
+            .micMemoValue .ql-indent-7 { padding-left: 21em; }
+            .micMemoValue .ql-indent-8 { padding-left: 24em; }
         </style>
 
         <h:panelGroup rendered="#{patientReportController.currentPatientReport.item.reportType eq 'Microbiology'}"  >
@@ -48,8 +66,10 @@
                 </h:panelGroup>
                 
                 <div style="position: absolute; top: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Lab Report Height')}%; width: 97%; left: 1%; text-align: center; font-family:Cambria, Georgia, serif; font-size: 14px; height: 70%; vertical-align: top;" >
-                    <div id="ixName" >
-                        <h:outputLabel value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}" style="font-weight: bold;font-size: 21px!important; "/>
+                    <div style="margin-left:5%; text-align: left;">
+                        <h:outputLabel 
+                            value="#{patientReportController.currentPatientReport.patientInvestigation.investigation.printName}"
+                            style="font-weight: bold;font-size: 21px!important; text-decoration: underline; "/>
                     </div>
                     <div id="labelsAndValues" style="left:5%; margin-top: 7px; width: 90%; display: inline-block; vertical-align: top; " >
                         <div style="vertical-align: top; width: 100%; padding: 1px;margin: auto;display: inline-block;">
@@ -78,13 +98,13 @@
                                             style="font-size: 15px;"
                                             rendered="#{prv.investigationItem.ixItemType eq 'Antibiotic' and prv.investigationItem.retired ne true and prv.strValue ne '' and prv.strValue ne null  }" >
                                             <div style="float: left;width: 5%; clear: left;" ></div>
-                                            <div style=" float: left; text-align: left; width: 70%; padding-left: 1px; padding-right: 1px; padding-top: 2px; vertical-align: top;">
+                                            <div style=" float: left; text-align: left; width: 61%; padding-left: 1px; padding-right: 1px; padding-top: 2px; vertical-align: top;">
                                                 <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />
                                             </div>
-                                            <div style="float: left;width: 2%;  " ></div>
+                                            <div style="float: left;width: 4%; text-align: center;" >:</div>
                                             <div style=" text-align: left; float:left;width: 30%;padding-left: 1px; padding-right: 1px; padding-top: 2px; vertical-align: top;">
-                                                <h:outputLabel value="#{prv.strValue}" escape="false"
-                                                               style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: uppercase;" />
+                                                <h:outputLabel value="#{fn:toLowerCase(prv.strValue)}" escape="false"
+                                                               style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Antibiotic Result Text Transform (uppercase/lowercase/capitalize/none)', 'uppercase')};" />
                                             </div>
 
                                         </h:panelGroup>
@@ -99,13 +119,13 @@
                                             style="font-size: 16px;"
                                             rendered="#{prv.investigationItem.ixItemType eq 'Antibiotic' and prv.investigationItem.retired ne true and prv.strValue ne '' and prv.strValue ne null  }" >
                                             <div style="float: left;width: 5%; clear: left;" ></div>
-                                            <div style=" float: left; text-align: left; width: 70%; padding-left: 1px; padding-right: 1px; padding-top: 2px; vertical-align: top;">
+                                            <div style=" float: left; text-align: left; width: 61%; padding-left: 1px; padding-right: 1px; padding-top: 2px; vertical-align: top;">
                                                 <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />
                                             </div>
-                                            <div style="float: left;width: 2%;  " ></div>
+                                            <div style="float: left;width: 4%; text-align: center;" >:</div>
                                             <div style=" text-align: left; float:left;width: 30%;padding-left: 1px; padding-right: 1px; padding-top: 2px; vertical-align: top;">
-                                                <h:outputLabel value="#{prv.strValue}" escape="false"
-                                                               style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: uppercase;" />
+                                                <h:outputLabel value="#{fn:toLowerCase(prv.strValue)}" escape="false"
+                                                               style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Antibiotic Result Text Transform (uppercase/lowercase/capitalize/none)', 'uppercase')};" />
                                             </div>
 
                                         </h:panelGroup>
@@ -143,13 +163,13 @@
                                                     style="font-size: 15px;"
                                                     rendered="#{prv.investigationItem.ixItemType eq 'Antibiotic' and prv.investigationItem.retired ne true and prv.strValue ne '' and prv.strValue ne null  }" >
                                                     <div style="float: left;width: 5%; clear: left;" ></div>
-                                                    <div style=" float: left; text-align: left; width: 70%; padding-left: 1px; padding-right: 1px; padding-top: 2px; vertical-align: top;">
+                                                    <div style=" float: left; text-align: left; width: 61%; padding-left: 1px; padding-right: 1px; padding-top: 2px; vertical-align: top;">
                                                         <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />
                                                     </div>
-                                                    <div style="float: left;width: 2%;  " ></div>
+                                                    <div style="float: left;width: 4%; text-align: center;" >:</div>
                                                     <div style=" text-align: left; float:left;width: 30%;padding-left: 1px; padding-right: 1px; padding-top: 2px; vertical-align: top;">
-                                                        <h:outputLabel value="#{prv.strValue}" escape="false"
-                                                                       style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: uppercase;" />
+                                                        <h:outputLabel value="#{fn:toLowerCase(prv.strValue)}" escape="false"
+                                                                       style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Antibiotic Result Text Transform (uppercase/lowercase/capitalize/none)', 'uppercase')};" />
                                                     </div>
 
                                                 </h:panelGroup>
@@ -170,13 +190,13 @@
                                                     style="font-size: 16px;"
                                                     rendered="#{prv.investigationItem.ixItemType eq 'Antibiotic' and prv.investigationItem.retired ne true and prv.strValue ne '' and prv.strValue ne null  }" >
                                                     <div style="float: left;width: 5%; clear: left;" ></div>
-                                                    <div style=" float: left; text-align: left; width: 70%; padding-left: 1px; padding-right: 1px; padding-top: 2px; vertical-align: top;">
+                                                    <div style=" float: left; text-align: left; width: 61%; padding-left: 1px; padding-right: 1px; padding-top: 2px; vertical-align: top;">
                                                         <h:outputLabel value="#{prv.investigationItem.name}"  escape="false" />
                                                     </div>
-                                                    <div style="float: left;width: 2%;  " ></div>
+                                                    <div style="float: left;width: 4%; text-align: center;" >:</div>
                                                     <div style=" text-align: left; float:left;width: 30%;padding-left: 1px; padding-right: 1px; padding-top: 2px; vertical-align: top;">
-                                                        <h:outputLabel value="#{prv.strValue}" escape="false"
-                                                                       style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: uppercase;" />
+                                                        <h:outputLabel value="#{fn:toLowerCase(prv.strValue)}" escape="false"
+                                                                       style="#{prv.strValue eq 'SENSITIVE' ? 'font-weight: bold;' : ''} text-transform: #{configOptionApplicationController.getShortTextValueByKey('Microbiology Antibiotic Result Text Transform (uppercase/lowercase/capitalize/none)', 'uppercase')};" />
                                                     </div>
                                                 </h:panelGroup>
                                             </h:panelGroup>
