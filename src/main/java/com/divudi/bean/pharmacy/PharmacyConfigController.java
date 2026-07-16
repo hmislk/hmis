@@ -69,6 +69,11 @@ public class PharmacyConfigController implements Serializable {
     private boolean grnReturnReceiptCustom1;
     private boolean grnReturnReceiptCustom2;
 
+    // BHT Issue Receive Settings
+    private boolean bhtIssueReceiveReceiptA4;
+    private boolean bhtIssueReceiveReceiptPos;
+    private boolean bhtIssueReceiveReceiptFiveFive;
+
     // Transfer Receive Settings
     private boolean transferReceiveA4;
     private boolean transferReceiveTemplate;
@@ -263,6 +268,11 @@ public class PharmacyConfigController implements Serializable {
         grnReturnReceiptCustom1 = configOptionController.getBooleanValueByKey("GRN Return Receipt Paper is Custom 1", false);
         grnReturnReceiptCustom2 = configOptionController.getBooleanValueByKey("GRN Return Receipt Paper is Custom 2", true);
 
+        // BHT Issue Receive Settings
+        bhtIssueReceiveReceiptA4 = configOptionController.getBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is A4", true);
+        bhtIssueReceiveReceiptPos = configOptionController.getBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is POS", false);
+        bhtIssueReceiveReceiptFiveFive = configOptionController.getBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is FiveFive", false);
+
         // Transfer Receive Settings
         transferReceiveA4 = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4", true);
         transferReceiveTemplate = configOptionController.getBooleanValueByKey("Pharmacy Transfer Receive Bill is Template", false);
@@ -455,6 +465,11 @@ public class PharmacyConfigController implements Serializable {
             // GRN Return Settings
             configOptionController.setBooleanValueByKey("GRN Return Receipt Paper is Custom 1", grnReturnReceiptCustom1);
             configOptionController.setBooleanValueByKey("GRN Return Receipt Paper is Custom 2", grnReturnReceiptCustom2);
+
+            // BHT Issue Receive Settings
+            configOptionController.setBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is A4", bhtIssueReceiveReceiptA4);
+            configOptionController.setBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is POS", bhtIssueReceiveReceiptPos);
+            configOptionController.setBooleanValueByKey("Pharmacy BHT Issue Receive Receipt is FiveFive", bhtIssueReceiveReceiptFiveFive);
 
             // Transfer Receive Settings
             configOptionController.setBooleanValueByKey("Pharmacy Transfer Receive Receipt is A4", transferReceiveA4);
@@ -1164,6 +1179,30 @@ public class PharmacyConfigController implements Serializable {
         this.grnReceiptCustom2 = grnReceiptCustom2;
     }
     
+
+    public boolean isBhtIssueReceiveReceiptA4() {
+        return bhtIssueReceiveReceiptA4;
+    }
+
+    public void setBhtIssueReceiveReceiptA4(boolean bhtIssueReceiveReceiptA4) {
+        this.bhtIssueReceiveReceiptA4 = bhtIssueReceiveReceiptA4;
+    }
+
+    public boolean isBhtIssueReceiveReceiptPos() {
+        return bhtIssueReceiveReceiptPos;
+    }
+
+    public void setBhtIssueReceiveReceiptPos(boolean bhtIssueReceiveReceiptPos) {
+        this.bhtIssueReceiveReceiptPos = bhtIssueReceiveReceiptPos;
+    }
+
+    public boolean isBhtIssueReceiveReceiptFiveFive() {
+        return bhtIssueReceiveReceiptFiveFive;
+    }
+
+    public void setBhtIssueReceiveReceiptFiveFive(boolean bhtIssueReceiveReceiptFiveFive) {
+        this.bhtIssueReceiveReceiptFiveFive = bhtIssueReceiveReceiptFiveFive;
+    }
 
     public boolean isTransferReceiveA4() {
         return transferReceiveA4;

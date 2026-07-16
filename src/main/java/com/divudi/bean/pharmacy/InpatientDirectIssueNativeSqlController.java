@@ -127,6 +127,10 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
             JsfUtil.addErrorMessage("Please select a BHT.");
             return;
         }
+        if (patientEncounter.isNursingDischarged()) {
+            JsfUtil.addErrorMessage("Cannot issue medicines: nursing discharge has already been confirmed for this patient.");
+            return;
+        }
         if (patientEncounter.isDischarged()) {
             JsfUtil.addErrorMessage("Sorry, patient is discharged.");
             return;

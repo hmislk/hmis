@@ -5417,9 +5417,14 @@ public class SearchController implements Serializable {
         }
 
         if (bool != null) {
+            // Batched form of the per-bill checkBillComponent loop — fixes the
+            // N+1 pattern where each row re-ran 3 aggregate queries per line
+            // item. Preserves exact semantics: same "issuable" predicate per
+            // bill, same bs/removeAll behavior and bill ordering. See #22153.
+            Map<Long, Boolean> issuableByBillId = pharmacySaleBhtController.checkBillComponentBatch(bills);
             List<Bill> bs = new ArrayList<>();
             for (Bill b : bills) {
-                if (pharmacySaleBhtController.checkBillComponent(b)) {
+                if (issuableByBillId.getOrDefault(b.getId(), false)) {
                     bs.add(b);
                 }
             }

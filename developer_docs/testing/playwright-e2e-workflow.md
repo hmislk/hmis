@@ -672,6 +672,19 @@ Everything else on that page (row qty/free-qty/batch/expiry/retail-rate inputs, 
 CAN be set directly on the DOM inputs — the `ajax="false"` Save/Finalize buttons submit and apply them
 (verified while testing issue #22120).
 
+## 30. `ward_pharmacy_bht_issue_request_bill.xhtml` — "New Bill" silently discards unsaved items
+
+On the "Start Pharmacy Request for Inpatients" flow, the "Add Dispense Only" button only stages
+`BillItem`s in the in-memory `PreBill` — nothing is persisted until "Settle Request" is clicked (the
+"Save Draft" button that would otherwise persist an intermediate `PharmacyBhtPre` is `rendered="false"`,
+per a comment in the page noting there's currently no way to resume a saved draft). The "New Bill"
+button (`actionListener="#{pharmacyRequestForBhtController.resetAll}"`) looks like a reasonable "finish
+this request" action but actually **discards all staged items with no confirmation** and resets the form
+to "Start Pharmacy Request for Inpatients". If a Playwright pass adds items and then clicks "New Bill"
+expecting the request to be saved, a DB check afterward will show nothing was created. Always use
+**"Settle Request"** (confirm-dialog-guarded) to actually persist a BHT pharmacy request. Verified while
+testing issue #22153.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
