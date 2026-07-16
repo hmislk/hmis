@@ -205,6 +205,13 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </td>
+                                    <h:panelGroup rendered="#{item.vat ne 0.0}">
+                                        <td style="text-align: right">
+                                            <h:outputLabel value="#{item.vat}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </h:panelGroup>
                                 </h:panelGroup>
                             </tr>
                         </ui:repeat>
@@ -273,6 +280,25 @@
                                         </h:outputLabel>
                                     </td>
                                 </tr>
+
+                                <h:panelGroup rendered="#{cc.attrs.bill.vat ne 0.0}">
+                                    <tr>
+                                        <td >VAT</td>
+                                        <td style="text-align: right;">
+                                            <h:outputLabel value="#{cc.attrs.bill.vat}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td >Net Amount + VAT</td>
+                                        <td style="text-align: right;">
+                                            <h:outputLabel value="#{cc.attrs.bill.vatPlusNetTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </h:panelGroup>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter eq null 
                                                       and cc.attrs.billCount eq 1 

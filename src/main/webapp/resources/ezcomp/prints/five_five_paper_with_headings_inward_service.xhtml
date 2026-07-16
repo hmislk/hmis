@@ -294,6 +294,13 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </td>
+                                    <h:panelGroup rendered="#{bip.vat ne 0.0}">
+                                        <td style="text-align: right;">
+                                            <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.vat}"    >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </h:panelGroup>
                                 </h:panelGroup>
                             </tr>
 
@@ -324,6 +331,14 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </td>
+
+                                    <h:panelGroup rendered="#{bip.vat ne 0.0}">
+                                        <td style="text-align: right;">
+                                            <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.vat}"    >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                    </h:panelGroup>
                                 </h:panelGroup>
 
                             </tr>
@@ -350,6 +365,39 @@
                             </td>
                             <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
                                 <h:outputLabel value="#{cc.attrs.bill.total}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{cc.attrs.bill.vat ne 0.0}">
+                        <tr>
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                <h:outputLabel value="Net Total" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                <h:outputLabel value="VAT" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                <h:outputLabel value="#{cc.attrs.bill.vat}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                <h:outputLabel value="Net Total + VAT" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                <h:outputLabel value="#{cc.attrs.bill.vatPlusNetTotal}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>

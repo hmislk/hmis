@@ -223,6 +223,8 @@ public class ServiceApiService implements Serializable {
         service.setMarginNotAllowed(request.isMarginNotAllowed());
         service.setRequestForQuentity(request.isRequestForQuentity());
         service.setPatientNotRequired(request.isPatientNotRequired());
+        service.setVatable(request.isVatable());
+        service.setVatPercentage(request.getVatPercentage());
 
         // Resolve optional associations
         if (request.getCategoryId() != null) {
@@ -331,6 +333,12 @@ public class ServiceApiService implements Serializable {
         }
         if (request.getPatientNotRequired() != null) {
             service.setPatientNotRequired(request.getPatientNotRequired());
+        }
+        if (request.getVatable() != null) {
+            service.setVatable(request.getVatable());
+        }
+        if (request.getVatPercentage() != null) {
+            service.setVatPercentage(request.getVatPercentage());
         }
 
         if (request.getCategoryId() != null) {
@@ -998,6 +1006,8 @@ public class ServiceApiService implements Serializable {
         dto.setMarginNotAllowed(service.isMarginNotAllowed());
         dto.setRequestForQuentity(service.isRequestForQuentity());
         dto.setPatientNotRequired(service.isPatientNotRequired());
+        dto.setVatable(service.isVatable());
+        dto.setVatPercentage(service.getVatPercentage());
         if (service.getInwardChargeType() != null) {
             dto.setInwardChargeType(service.getInwardChargeType().name());
         }

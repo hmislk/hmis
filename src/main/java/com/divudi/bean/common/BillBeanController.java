@@ -4233,6 +4233,17 @@ public class BillBeanController implements Serializable {
 
         b.setNetTotal(val);
 
+        sql = "SELECT sum(b.feeVat)"
+                + " FROM BillFee b "
+                + " WHERE b.retired=false"
+                + " and b.bill=:bill ";
+        hm = new HashMap();
+        hm.put("bill", b);
+        val = getBillFeeFacade().findDoubleByJpql(sql, hm);
+
+        b.setVat(val);
+        b.setVatPlusNetTotal(b.getNetTotal() + b.getVat());
+
         getBillFacade().edit(b);
     }
 
@@ -4480,6 +4491,19 @@ public class BillBeanController implements Serializable {
         val = getBillFeeFacade().findDoubleByJpql(sql, hm);
 
         billItem.setDiscount(val);
+
+        sql = "SELECT sum(b.feeVat) "
+                + " FROM BillFee b "
+                + " WHERE b.retired=false "
+                + " and b.billItem=:bItm ";
+        hm = new HashMap();
+        hm.put("bItm", billItem);
+        val = getBillFeeFacade().findDoubleByJpql(sql, hm);
+
+        billItem.setVat(val);
+        billItem.setVatPlusNetValue(billItem.getNetValue() + billItem.getVat());
+        billItem.setVatPercentage(billItem.getItem() != null && billItem.getItem().isVatable()
+                ? billItem.getItem().getVatPercentage() : 0.0);
 //
 //        billItem.setEditedAt(new Date());
 //        billItem.setEditor(webUser);

@@ -45,6 +45,8 @@ public class InvestigationApiService implements Serializable {
         i.setPrintName(req.getPrintName());
         i.setInactive(Boolean.TRUE.equals(req.getInactive()));
         i.setBypassSampleWorkflow(Boolean.TRUE.equals(req.getBypassSampleWorkflow()));
+        i.setVatable(Boolean.TRUE.equals(req.getVatable()));
+        if (req.getVatPercentage() != null) i.setVatPercentage(req.getVatPercentage());
         if (req.getReportType() != null && !req.getReportType().trim().isEmpty()) i.setReportType(InvestigationReportType.valueOf(req.getReportType().trim()));
         i.setCreater(user); i.setCreatedAt(new Date()); i.setRetired(false);
         investigationFacade.create(i); i.setBilledAs(i); i.setReportedAs(i); investigationFacade.edit(i);
@@ -59,6 +61,8 @@ public class InvestigationApiService implements Serializable {
         if (req.getPrintName() != null) i.setPrintName(req.getPrintName());
         if (req.getInactive() != null) i.setInactive(req.getInactive());
         if (req.getBypassSampleWorkflow() != null) i.setBypassSampleWorkflow(req.getBypassSampleWorkflow());
+        if (req.getVatable() != null) i.setVatable(req.getVatable());
+        if (req.getVatPercentage() != null) i.setVatPercentage(req.getVatPercentage());
         if (req.getReportType() != null && !req.getReportType().trim().isEmpty()) i.setReportType(InvestigationReportType.valueOf(req.getReportType().trim()));
         i.setEditer(user); i.setEditedAt(new Date()); investigationFacade.edit(i);
         return toResponse(i, "Investigation updated successfully");
@@ -70,6 +74,16 @@ public class InvestigationApiService implements Serializable {
     }
 
     private Investigation load(Long id) throws Exception { Investigation i = investigationFacade.find(id); if (i == null || i.isRetired()) throw new Exception("Investigation not found with ID: " + id); return i; }
-    private InvestigationSearchResultDTO toSearch(Investigation i) { return new InvestigationSearchResultDTO(i.getId(), i.getName(), i.getCode(), i.getPrintName(), i.isInactive(), i.getReportType() != null ? i.getReportType().name() : null, i.isBypassSampleWorkflow()); }
-    private InvestigationResponseDTO toResponse(Investigation i, String m) { return new InvestigationResponseDTO(i.getId(), i.getName(), i.getCode(), i.getPrintName(), i.isInactive(), i.getReportType() != null ? i.getReportType().name() : null, i.isBypassSampleWorkflow(), m); }
+    private InvestigationSearchResultDTO toSearch(Investigation i) {
+        InvestigationSearchResultDTO dto = new InvestigationSearchResultDTO(i.getId(), i.getName(), i.getCode(), i.getPrintName(), i.isInactive(), i.getReportType() != null ? i.getReportType().name() : null, i.isBypassSampleWorkflow());
+        dto.setVatable(i.isVatable());
+        dto.setVatPercentage(i.getVatPercentage());
+        return dto;
+    }
+    private InvestigationResponseDTO toResponse(Investigation i, String m) {
+        InvestigationResponseDTO dto = new InvestigationResponseDTO(i.getId(), i.getName(), i.getCode(), i.getPrintName(), i.isInactive(), i.getReportType() != null ? i.getReportType().name() : null, i.isBypassSampleWorkflow(), m);
+        dto.setVatable(i.isVatable());
+        dto.setVatPercentage(i.getVatPercentage());
+        return dto;
+    }
 }

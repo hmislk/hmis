@@ -213,6 +213,7 @@
                             <th>Item Name</th>
                             <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                 <th style="text-align: right">Value</th>
+                                <th style="text-align: right">VAT</th>
                             </h:panelGroup>
                         </tr>
                     </thead>
@@ -229,6 +230,11 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
+                                        <td style="text-align: right">
+                                            <h:outputLabel value="#{item.vat}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
                                     </h:panelGroup>
                                 </tr>
                             </ui:repeat>
@@ -242,6 +248,11 @@
                                     <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                         <td style="text-align: right">
                                             <h:outputLabel value="#{item.netValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </td>
+                                        <td style="text-align: right">
+                                            <h:outputLabel value="#{item.vat}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
@@ -285,6 +296,25 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
+
+                        <h:panelGroup rendered="#{cc.attrs.bill.vat ne 0.0}">
+                            <tr>
+                                <td >VAT:</td>
+                                <td style="text-align: right;">
+                                    <h:outputLabel value="#{cc.attrs.bill.vat}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td >Net Total + VAT:</td>
+                                <td style="text-align: right;">
+                                    <h:outputLabel value="#{cc.attrs.bill.vatPlusNetTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                            </tr>
+                        </h:panelGroup>
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Inward Service Bill - Group Bill Item By Name',false)}">

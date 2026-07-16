@@ -154,6 +154,8 @@ public class BillBhtController implements Serializable {
     private double discount;
     private double marginTotal;
     private double netTotal;
+    private double vat;
+    private double vatPlusNetTotal;
     private double cashPaid;
     private double cashBalance;
     private String creditCardRefNo;
@@ -279,6 +281,8 @@ public class BillBhtController implements Serializable {
         total = 0.0;
         discount = 0.0;
         netTotal = 0.0;
+        vat = 0.0;
+        vatPlusNetTotal = 0.0;
         cashPaid = 0.0;
         cashBalance = 0.0;
         creditCardRefNo = "";
@@ -329,6 +333,8 @@ public class BillBhtController implements Serializable {
         total = 0.0;
         discount = 0.0;
         netTotal = 0.0;
+        vat = 0.0;
+        vatPlusNetTotal = 0.0;
         cashPaid = 0.0;
         cashBalance = 0.0;
         creditCardRefNo = "";
@@ -388,6 +394,8 @@ public class BillBhtController implements Serializable {
         total = 0.0;
         discount = 0.0;
         netTotal = 0.0;
+        vat = 0.0;
+        vatPlusNetTotal = 0.0;
         cashPaid = 0.0;
         cashBalance = 0.0;
         creditCardRefNo = "";
@@ -1041,6 +1049,11 @@ public class BillBhtController implements Serializable {
 
             getInwardBean().setBillFeeMargin(billFee, billItem.getItem(), priceMatrix, patientEncounter);
 
+            if (billItem.getItem().isVatable() && billItem.getItem().getVatPercentage() > 0) {
+                billFee.setFeeVat(roundOff(billFee.getFeeValue() * billItem.getItem().getVatPercentage() / 100));
+            }
+            billFee.setFeeVatPlusValue(billFee.getFeeValue() + billFee.getFeeVat());
+
             billFeeList.add(billFee);
         }
 
@@ -1102,6 +1115,7 @@ public class BillBhtController implements Serializable {
         double tot = 0.0;
         double net = 0.0;
         double margin = 0.0;
+        double vatTotal = 0.0;
 
         for (BillEntry be : getLstBillEntries()) {
             BillItem bi = be.getBillItem();
@@ -1110,6 +1124,7 @@ public class BillBhtController implements Serializable {
             bi.setGrossValue(0.0);
             bi.setNetValue(0.0);
             bi.setMarginValue(0.0);
+            bi.setVat(0.0);
 
             for (BillFee bf : be.getLstBillFees()) {
                 tot += bf.getFeeGrossValue();
@@ -1118,15 +1133,21 @@ public class BillBhtController implements Serializable {
                 bi.setGrossValue(bi.getGrossValue() + bf.getFeeGrossValue());
                 margin += bf.getFeeMargin();
                 bi.setMarginValue(bi.getMarginValue() + bf.getFeeMargin());
+                bi.setVat(bi.getVat() + bf.getFeeVat());
             }
 
             bi.setDiscount(bi.getGrossValue() + bi.getMarginValue() - bi.getNetValue());
+            bi.setVatPercentage(bi.getItem() != null && bi.getItem().isVatable() ? bi.getItem().getVatPercentage() : 0.0);
+            bi.setVatPlusNetValue(bi.getNetValue() + bi.getVat());
+            vatTotal += bi.getVat();
         }
 
         setTotal(tot);
         setMarginTotal(margin);
         setDiscount(tot + margin - net);
         setNetTotal(net);
+        setVat(vatTotal);
+        setVatPlusNetTotal(getNetTotal() + getVat());
     }
 
     public void feeChanged(BillFee bf) {
@@ -1456,6 +1477,31 @@ public class BillBhtController implements Serializable {
 
     public void setNetTotal(double netTotal) {
         this.netTotal = netTotal;
+    }
+
+    public double getVat() {
+        return vat;
+    }
+
+    public void setVat(double vat) {
+        this.vat = vat;
+    }
+
+    public double getVatPlusNetTotal() {
+        return vatPlusNetTotal;
+    }
+
+    public void setVatPlusNetTotal(double vatPlusNetTotal) {
+        this.vatPlusNetTotal = vatPlusNetTotal;
+    }
+
+    private double roundOff(double d) {
+        java.text.DecimalFormat newFormat = new java.text.DecimalFormat("#.##");
+        try {
+            return Double.valueOf(newFormat.format(d));
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public double getCashPaid() {
