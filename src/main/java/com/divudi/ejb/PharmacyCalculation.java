@@ -379,6 +379,115 @@ public class PharmacyCalculation implements Serializable {
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
+    /**
+     * Batched form of {@link #getBilledInwardPharmacyRequest(BillItem, BillType)}.
+     * Computes the billed (issued) quantity for every requesting BillItem in
+     * one grouped query instead of one query per item, to fix the N+1 pattern
+     * in {@code PharmacySaleBhtController.generateIssueBillComponentsForBhtRequest}.
+     * Never modifies/removes the single-item method above — other callers
+     * (e.g. {@code PharmacyRequestForBhtController}) still use it directly.
+     *
+     * @return map of requesting BillItem.id -> summed billed qty (only keys
+     * with a non-null sum are present; callers should use getOrDefault(id, 0.0))
+     */
+    public Map<Long, Double> getBilledInwardPharmacyRequestBatch(List<BillItem> billItems, BillType billType) {
+        if (billItems == null || billItems.isEmpty()) {
+            return new HashMap<>();
+        }
+        String sql = "Select p.referanceBillItem.id, sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
+                + "  p.creater is not null and type(p.bill)=:class and "
+                + " p.referanceBillItem in :bts and p.bill.billType=:btp"
+                + " group by p.referanceBillItem.id";
+
+        Map<String, Object> hm = new HashMap<>();
+        hm.put("bts", billItems);
+        hm.put("class", PreBill.class);
+        hm.put("btp", billType);
+
+        Map<Long, Double> result = new HashMap<>();
+        List<Object[]> rows = getPharmaceuticalBillItemFacade().findObjectArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
+        for (Object[] row : rows) {
+            if (row[0] == null) {
+                continue;
+            }
+            Long billItemId = ((Number) row[0]).longValue();
+            Double qty = row[1] == null ? 0.0 : ((Number) row[1]).doubleValue();
+            result.put(billItemId, qty);
+        }
+        return result;
+    }
+
+    /**
+     * Batched form of {@link #getCancelledInwardPharmacyRequest(BillItem, BillType)}.
+     * Same predicate as {@link #getBilledInwardPharmacyRequestBatch}, plus
+     * {@code p.bill.cancelled=true}. See that method's javadoc for the N+1
+     * context; the single-item method is kept unchanged for other callers.
+     */
+    public Map<Long, Double> getCancelledInwardPharmacyRequestBatch(List<BillItem> billItems, BillType billType) {
+        if (billItems == null || billItems.isEmpty()) {
+            return new HashMap<>();
+        }
+        String sql = "Select p.referanceBillItem.id, sum(p.pharmaceuticalBillItem.qty) "
+                + " from BillItem p where p.creater is not null "
+                + " and type(p.bill)=:class "
+                + " and p.referanceBillItem in :bts "
+                + " and p.bill.billType=:btp "
+                + " and p.bill.cancelled=true "
+                + " group by p.referanceBillItem.id";
+
+        Map<String, Object> hm = new HashMap<>();
+        hm.put("bts", billItems);
+        hm.put("class", PreBill.class);
+        hm.put("btp", billType);
+
+        Map<Long, Double> result = new HashMap<>();
+        List<Object[]> rows = getPharmaceuticalBillItemFacade().findObjectArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
+        for (Object[] row : rows) {
+            if (row[0] == null) {
+                continue;
+            }
+            Long billItemId = ((Number) row[0]).longValue();
+            Double qty = row[1] == null ? 0.0 : ((Number) row[1]).doubleValue();
+            result.put(billItemId, qty);
+        }
+        return result;
+    }
+
+    /**
+     * Batched form of {@link #getRefundedInwardPharmacyRequest(BillItem, BillType)}.
+     * Intentionally filters/groups on {@code p.referanceBillItem.referanceBillItem}
+     * — one chain level deeper than billed/cancelled — matching the single-item
+     * method exactly (a refund bill item's referanceBillItem points at the
+     * billed-issue BillItem, whose own referanceBillItem points at the
+     * original request BillItem).
+     */
+    public Map<Long, Double> getRefundedInwardPharmacyRequestBatch(List<BillItem> billItems, BillType billType) {
+        if (billItems == null || billItems.isEmpty()) {
+            return new HashMap<>();
+        }
+        String sql = "Select p.referanceBillItem.referanceBillItem.id, sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
+                + "  p.creater is not null and type(p.bill)=:class and "
+                + " p.referanceBillItem.referanceBillItem in :bts and p.bill.billType=:btp"
+                + " group by p.referanceBillItem.referanceBillItem.id";
+
+        Map<String, Object> hm = new HashMap<>();
+        hm.put("bts", billItems);
+        hm.put("class", RefundBill.class);
+        hm.put("btp", billType);
+
+        Map<Long, Double> result = new HashMap<>();
+        List<Object[]> rows = getPharmaceuticalBillItemFacade().findObjectArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
+        for (Object[] row : rows) {
+            if (row[0] == null) {
+                continue;
+            }
+            Long billItemId = ((Number) row[0]).longValue();
+            Double qty = row[1] == null ? 0.0 : ((Number) row[1]).doubleValue();
+            result.put(billItemId, qty);
+        }
+        return result;
+    }
+
     public double getTotalQty(BillItem b, BillType billType, Bill refund, Bill cancel) {
         String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
                 + "  (type(p.bill)=:class or type(p.bill)=:class2)and p.creater is not null and"
