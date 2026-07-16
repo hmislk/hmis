@@ -1,0 +1,299 @@
+package com.divudi.bean.lab;
+
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/JSF/JSFManagedBean.java to edit this template
+ */
+
+import javax.inject.Named;
+import javax.enterprise.context.Dependent;
+import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.PatientReportItemValue;
+import com.divudi.core.facade.PatientReportItemValueFacade;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
+import javax.persistence.TemporalType;
+/**
+ *
+ * @author Rashmika
+ */
+
+@Named(value = "organismAntibioticSensitivityReport")
+@SessionScoped
+public class OrganismAntibioticSensitivityReport implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    @EJB
+    private PatientReportItemValueFacade patientReportItemValueFacade;
+
+    private Date fromDate;
+    private Date toDate;
+
+    private Institution institution;
+    private Institution site;
+    private Department department;
+    private Patient patient;
+    private Investigation investigation;
+    private Doctor referringDoctor;
+
+    private String visitType;
+    private String organism;
+    private String antibiotic;
+    private String sensitivity;
+
+    private List<PatientReportItemValue> reportData;
+
+    public OrganismAntibioticSensitivityReport() {
+    }
+
+    public void process() {
+        reportData = new ArrayList<>();
+
+        if (getFromDate() == null || getToDate() == null) {
+            JsfUtil.addErrorMessage("Please select the from date and to date.");
+            return;
+        }
+
+        if (getFromDate().after(getToDate())) {
+            JsfUtil.addErrorMessage(
+                    "The from date cannot be later than the to date."
+            );
+            return;
+        }
+
+        StringBuilder jpql = new StringBuilder();
+
+        jpql.append("select priv ")
+                .append("from PatientReportItemValue priv ")
+                .append("join priv.patientReport pr ")
+                .append("join pr.patientInvestigation pi ")
+                .append("join pi.billItem bi ")
+                .append("join bi.bill b ")
+                .append("where priv.retired = false ")
+                .append("and pr.retired = false ")
+                .append("and pi.retired = false ")
+                .append("and bi.retired = false ")
+                .append("and b.retired = false ")
+                .append("and b.createdAt between :fromDate and :toDate ")
+                .append("and priv.investigationItem.ixItemType = :itemType ");
+
+        Map<String, Object> parameters = new HashMap<>();
+
+        parameters.put("fromDate", getFromDate());
+        parameters.put("toDate", getToDate());
+        parameters.put("itemType", InvestigationItemType.Antibiotic);
+
+        if (institution != null) {
+            jpql.append("and b.department.institution = :institution ");
+            parameters.put("institution", institution);
+        }
+
+        if (site != null) {
+            jpql.append("and b.department.site = :site ");
+            parameters.put("site", site);
+        }
+
+        if (department != null) {
+            jpql.append("and b.department = :department ");
+            parameters.put("department", department);
+        }
+
+        if (patient != null) {
+            jpql.append("and b.patient = :patient ");
+            parameters.put("patient", patient);
+        }
+
+        if (investigation != null) {
+            jpql.append("and pi.investigation = :investigation ");
+            parameters.put("investigation", investigation);
+        }
+
+        if (visitType != null
+                && !visitType.trim().isEmpty()
+                && !"All".equalsIgnoreCase(visitType)) {
+
+            jpql.append("and b.ipOpOrCc = :visitType ");
+            parameters.put("visitType", visitType);
+        }
+
+        /*
+         * Add the referring doctor, organism, antibiotic and sensitivity
+         * conditions after confirming their exact entity property names.
+         */
+
+        jpql.append("order by pi.id desc");
+
+        reportData = patientReportItemValueFacade.findByJpql(
+                jpql.toString(),
+                parameters,
+                TemporalType.TIMESTAMP
+        );
+
+        if (reportData == null) {
+            reportData = new ArrayList<>();
+        }
+
+        if (reportData.isEmpty()) {
+            JsfUtil.addErrorMessage(
+                    "No antibiotic sensitivity records were found."
+            );
+        } else {
+            JsfUtil.addSuccessMessage(
+                    reportData.size() + " records found."
+            );
+        }
+    }
+
+    public void clear() {
+        institution = null;
+        site = null;
+        department = null;
+        patient = null;
+        investigation = null;
+        referringDoctor = null;
+
+        visitType = null;
+        organism = null;
+        antibiotic = null;
+        sensitivity = null;
+
+        reportData = new ArrayList<>();
+
+        fromDate = CommonFunctions.getStartOfDay(new Date());
+        toDate = CommonFunctions.getEndOfDay(new Date());
+    }
+
+    public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay(new Date());
+        }
+        return fromDate;
+    }
+
+    public void setFromDate(Date fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay(new Date());
+        }
+        return toDate;
+    }
+
+    public void setToDate(Date toDate) {
+        this.toDate = toDate;
+    }
+
+    public List<PatientReportItemValue> getReportData() {
+        if (reportData == null) {
+            reportData = new ArrayList<>();
+        }
+        return reportData;
+    }
+
+    public void setReportData(
+            List<PatientReportItemValue> reportData) {
+        this.reportData = reportData;
+    }
+
+    public Institution getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(Institution institution) {
+        this.institution = institution;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Patient getPatient() {
+        if (patient == null) {
+            patient = new Patient();
+        }
+        return patient;
+    }
+
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+
+    public Investigation getInvestigation() {
+        return investigation;
+    }
+
+    public void setInvestigation(Investigation investigation) {
+        this.investigation = investigation;
+    }
+
+    public Doctor getReferringDoctor() {
+        return referringDoctor;
+    }
+
+    public void setReferringDoctor(Doctor referringDoctor) {
+        this.referringDoctor = referringDoctor;
+    }
+
+    public String getVisitType() {
+        return visitType;
+    }
+
+    public void setVisitType(String visitType) {
+        this.visitType = visitType;
+    }
+
+    public String getOrganism() {
+        return organism;
+    }
+
+    public void setOrganism(String organism) {
+        this.organism = organism;
+    }
+
+    public String getAntibiotic() {
+        return antibiotic;
+    }
+
+    public void setAntibiotic(String antibiotic) {
+        this.antibiotic = antibiotic;
+    }
+
+    public String getSensitivity() {
+        return sensitivity;
+    }
+
+    public void setSensitivity(String sensitivity) {
+        this.sensitivity = sensitivity;
+    }
+}

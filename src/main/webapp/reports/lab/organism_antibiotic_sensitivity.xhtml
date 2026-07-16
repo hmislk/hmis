@@ -23,6 +23,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:datePicker id="dpFrom"
+                                                  value="#{organismAntibioticSensitivityReport.fromDate}"
                                                   styleClass="d-block w-100"
                                                   inputStyleClass="form-control"
                                                   showTime="true" 
@@ -39,6 +40,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:datePicker id="dpTo"
+                                                  value="#{organismAntibioticSensitivityReport.toDate}"
                                                   styleClass="d-block w-100"
                                                   inputStyleClass="form-control"
                                                   showTime="true" 
@@ -58,17 +60,17 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdInstitution"
-                                                     value="#{reportController.institution}"
+                                                     value="#{organismAntibioticSensitivityReport.institution}"
                                                      style="width:100%"
-                                                     title="Filter by institution">
-                                        filter="true">
-                                        <f:selectItem itemLabel="Select Institution to filter"/>
+                                                     title="Filter by institution"
+                                                     filter="true">
+                                        <f:selectItem itemLabel="All Institutions" itemValue="#{null}" noSelectionOption="true"/>
                                         <f:selectItems 
                                             value="#{institutionController.companies}" 
                                             var="ins" 
                                             itemLabel="#{ins.name}"
                                             itemValue="#{ins}"/>
-
+                                        <p:ajax process="@this" update="cmdDepartment"/>
                                     </p:selectOneMenu>
 
                                 </div>
@@ -79,7 +81,7 @@
                                 <div class="col-md-4">
                                     <p:selectOneMenu
                                         id="cmdSite"
-                                        value="#{reportController.site}"
+                                        value="#{organismAntibioticSensitivityReport.site}"
                                         style="width:100%"
                                         title="Filter by institution or branch"
                                         filter="true">
@@ -99,7 +101,7 @@
                                 <div class="col-md-4">
                                     <p:selectOneMenu
                                         id="cmdDepartment"
-                                        value="#{reportController.department}"
+                                        value="#{organismAntibioticSensitivityReport.department}"
                                         style="width:100%"
                                         title="Filter by department"
                                         filter="true">
@@ -117,7 +119,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:inputText autocomplete="off" id="txtMrn"
-                                                 value="#{reportController.patient.phn}"
+                                                 value="#{organismAntibioticSensitivityReport.patient.phn}"
                                                  title="Filter by patient MRN"
                                                  styleClass="form-control w-100"/>
                                 </div>
@@ -130,7 +132,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdInvestigation"
-                                                     value="#{reportController.investigation}"
+                                                     value="#{organismAntibioticSensitivityReport.investigation}"
                                                      style="width:100%"
                                                      title="Filter by investigation">
                                         <f:selectItem itemLabel="Select Investigation"/>
@@ -143,7 +145,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdReferingDoctor"
-                                                     value="#{reportController.referingDoctor}"
+                                                     value="#{organismAntibioticSensitivityReport.referringDoctor}"
                                                      style="width:100%"
                                                      title="Filter by referring doctor">
                                         <f:selectItem itemLabel="Select referring doctor"/>
@@ -159,10 +161,10 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdVisitingType"
-                                                     value=""
+                                                     value="#{organismAntibioticSensitivityReport.visitType}"
                                                      style="width:100%"
                                                      title="Filter by visit type">
-                                        <f:selectItem itemLabel="Select Visiting Type"/>
+                                        <f:selectItem itemLabel="All Visiting Types" itemValue="#{null}" noSelectionOption="true"/>
                                         <f:selectItem itemValue="All" itemLabel="All"/>
                                         <f:selectItem itemValue="OP" itemLabel="Out Patients (OP)"/>
                                         <f:selectItem itemValue="IP" itemLabel="In Patients (IP)"/>
@@ -177,7 +179,7 @@
                                 <div class="col-md-4">
                                     <p:selectOneMenu
                                         id="cmdOrganism"
-                                        value=""
+                                        value="#{organismAntibioticSensitivityReport.organism}"
                                         style="width:100%"
                                         title="Filter by organism"
                                         filter="true">
@@ -195,7 +197,7 @@
                                 <div class="col-md-4">
                                     <p:selectOneMenu
                                         id="cmdAntibiotics"
-                                        value=""
+                                        value="#{organismAntibioticSensitivityReport.antibiotic}"
                                         style="width:100%"
                                         title="Filter by antibiotic"
                                         filter="true">
@@ -209,7 +211,7 @@
                                 <div class="col-md-4">
                                     <p:selectOneMenu
                                         id="cmdSensitivity"
-                                        value=""
+                                        value="#{organismAntibioticSensitivityReport.sensitivity}"
                                         style="width:100%"
                                         title="Filter by sensitivity result"
                                         filter="true">
@@ -223,26 +225,31 @@
                                 </div>
                             </div>
 
-                            <div class="row mb-3">
-                                <div class="col-md-12 d-flex justify-content-start" style="gap:8px">
+                            <div class="row mb-0">
+                                <div class="col-md-12 d-flex justify-content-start align-items-start" style="gap:8px">
 
                                     <p:commandButton
                                         id="btnProcess"
-                                        class="ui-button-warning my-4 mx-2"
-                                        style="width: 100px"
-                                        action="#{reportsController.organismAntibioticSensitivityReport}"
-                                        ajax="false"
                                         value="Process"
-                                        icon="fas fa-cogs"/>
+                                        styleClass="ui-button-warning my-4 mx-2"
+                                        style="width: 100px"
+                                        action="#{organismAntibioticSensitivityReport.process}"
+                                        process="@form"
+                                        ajax="false"
+                                        icon="fas fa-cogs"
+                                        update="messages reportPanel"/>
 
                                     <p:commandButton
                                         id="btnPrint"
-                                        class="ui-button-info my-4 mx-2"
+                                        styleClass="ui-button-info my-4 mx-2"
                                         style="width: 100px"
                                         icon="fas fa-print"
                                         ajax="false"
                                         value="Print"
-                                        onclick="hidePaginatorBeforePrint()"/>
+                                        type="button"
+                                        onclick="hidePaginatorBeforePrint()">
+                                        <p:printer target="reportPanel"/>
+                                    </p:commandButton>
 
                                     <h:outputScript>
                                         function hidePaginatorBeforePrint() {
@@ -262,35 +269,39 @@
 
                                     <p:commandButton
                                         id="btnExcel"
-                                        class="ui-button-success my-4 mx-2"
+                                        styleClass="ui-button-success my-4 mx-2"
                                         style="width: 100px"
                                         icon="fas fa-file-excel"
                                         ajax="false"
-                                        value="Excel"/>
-                                    <!-- <p:dataExporter 
+                                        value="Excel"
+                                        >
+                                    <p:dataExporter 
                                          type="xlsx"
-                                         target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
-                                         fileName="organism_antibioti_sensitivity.xlsx"/>-->
-
+                                         target="tblExport1"
+                                         fileName="organism_antibiotic_sensitivity"/>
+                                    </p:commandButton>
+                                    
                                     <p:commandButton
                                         id="btnPdf"
-                                        class="ui-button-danger my-4 mx-2"
+                                        styleClass="ui-button-danger my-4 mx-2"
                                         style="width: 100px"
                                         icon="fas fa-file-pdf"
                                         ajax="false"
-                                        value="PDF"/>
-                                    <!-- <p:dataExporter 
+                                        value="PDF">
+                                    <p:dataExporter 
                                          type="pdf"
-                                         target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
-                                         fileName="organism_antibiotic_sensitivity.pdf"/>-->
+                                         target="tblExport1"
+                                         fileName="organism_antibiotic_sensitivity.pdf"/>
+                                </p:commandButton>
                                 </div>
+                             
                             </div>
 
                         </div>
 
                     </p:panel>
 
-                    <p:panel header="Organism Antibiotic Sensitivity Report" styleClass="mt-3">
+                    <p:panel id="reportPanel" header="Organism Antibiotic Sensitivity Report" styleClass="mt-3">
 
                         <h:panelGrid columns="2"
                                      styleClass="table table-bordered table-sm table-striped w-50"
@@ -337,7 +348,7 @@
 
                         <p:dataTable
                             id="tblExport1"
-                            value="#{reportsController.organismAntibioticSensitivityData}"
+                            value="#{organismAntibioticSensitivityReport.reportData}"
                             var="c"
                             rowIndexVar="n"
                             paginator="true"
