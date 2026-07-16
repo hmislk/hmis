@@ -181,10 +181,20 @@
                                         id="cmdOrganism"
                                         value="#{organismAntibioticSensitivityReport.organism}"
                                         style="width:100%"
-                                        title="Filter by organism"
-                                        filter="true">
-                                        <f:selectItem itemLabel="Select Organism"></f:selectItem>
-                                        <f:selectItems value="#{investigationController.items}" itemLabel="#{d.name}" var="d" itemValue="#{d}"/>
+                                        filter="true"
+                                        filterMatchMode="contains">
+
+                                        <f:selectItem
+                                            itemLabel="All Organisms"
+                                            itemValue="#{null}"
+                                            noSelectionOption="true"/>
+
+                                        <f:selectItems
+                                            value="#{investigationController.items}"
+                                            var="d"
+                                            itemLabel="#{d.name}"
+                                            itemValue="#{d}"/>
+
                                     </p:selectOneMenu>
                                 </div>
                             </div>
@@ -199,9 +209,20 @@
                                         id="cmdAntibiotics"
                                         value="#{organismAntibioticSensitivityReport.antibiotic}"
                                         style="width:100%"
-                                        title="Filter by antibiotic"
-                                        filter="true">
-                                        <f:selectItems value="#{antibioticController.selectedItems}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                                        filter="true"
+                                        filterMatchMode="contains">
+
+                                        <f:selectItem
+                                            itemLabel="All Antibiotics"
+                                            itemValue="#{null}"
+                                            noSelectionOption="true"/>
+
+                                        <f:selectItems
+                                            value="#{antibioticController.selectedItems}"
+                                            var="myItem"
+                                            itemLabel="#{myItem.name}"
+                                            itemValue="#{myItem}"/>
+
                                     </p:selectOneMenu>
                                 </div>
                                 <div class="col-md-2 text-right font-weight-bold">

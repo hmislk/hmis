@@ -4,9 +4,6 @@ package com.divudi.bean.lab;
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSF/JSFManagedBean.java to edit this template
  */
-
-import javax.inject.Named;
-import javax.enterprise.context.Dependent;
 import com.divudi.core.data.InvestigationItemType;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Doctor;
@@ -17,6 +14,7 @@ import com.divudi.core.entity.lab.PatientReportItemValue;
 import com.divudi.core.facade.PatientReportItemValueFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Item;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -29,6 +27,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+
 /**
  *
  * @author Rashmika
@@ -54,8 +53,8 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
     private Doctor referringDoctor;
 
     private String visitType;
-    private String organism;
-    private String antibiotic;
+    private Item organism;
+    private Item antibiotic;
     private String sensitivity;
 
     private List<PatientReportItemValue> reportData;
@@ -115,14 +114,26 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
             parameters.put("department", department);
         }
 
-        if (patient != null) {
-            jpql.append("and b.patient = :patient ");
-            parameters.put("patient", patient);
+        if (patient != null
+                && patient.getPhn() != null
+                && !patient.getPhn().trim().isEmpty()) {
+
+            jpql.append("and upper(b.patient.phn) like :phn ");
+
+            parameters.put(
+                    "phn",
+                    "%" + patient.getPhn().trim().toUpperCase() + "%"
+            );
         }
 
         if (investigation != null) {
             jpql.append("and pi.investigation = :investigation ");
             parameters.put("investigation", investigation);
+        }
+
+        if (antibiotic != null) {
+            jpql.append("and priv.investigationItem = :antibiotic ");
+            parameters.put("antibiotic", antibiotic);
         }
 
         if (visitType != null
@@ -134,10 +145,9 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
         }
 
         /*
-         * Add the referring doctor, organism, antibiotic and sensitivity
-         * conditions after confirming their exact entity property names.
+ * Organism, sensitivity and referringDoctor still require the exact
+ * entity property paths before adding them to JPQL.
          */
-
         jpql.append("order by pi.id desc");
 
         reportData = patientReportItemValueFacade.findByJpql(
@@ -273,19 +283,19 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
         this.visitType = visitType;
     }
 
-    public String getOrganism() {
+    public Item getOrganism() {
         return organism;
     }
 
-    public void setOrganism(String organism) {
+    public void setOrganism(Item organism) {
         this.organism = organism;
     }
 
-    public String getAntibiotic() {
+    public Item getAntibiotic() {
         return antibiotic;
     }
 
-    public void setAntibiotic(String antibiotic) {
+    public void setAntibiotic(Item antibiotic) {
         this.antibiotic = antibiotic;
     }
 
