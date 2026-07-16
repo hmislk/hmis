@@ -976,7 +976,7 @@
                                             id="btnReceiveMedicinesFromPharmacyInpatient"
                                             value="Receive Medicines from Pharmacy"
                                             ajax="false"
-                                            action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingList}"
+                                            action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingListForAdmission(admissionController.current)}"
                                             icon="fa fa-truck-medical"
                                             rendered="#{webUserController.hasPrivilege('InwardPharmacyBhtReceive')}"
                                             class="w-100"/>
