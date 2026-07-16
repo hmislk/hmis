@@ -24,7 +24,6 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.data.Privileges;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.StockQty;
 import com.divudi.core.data.Title;
@@ -242,6 +241,27 @@ public class PharmacySaleBhtController implements Serializable {
     Bill printBill;
     Bill bill;
     private Bill bhtRequestBill;
+
+    @EJB
+    private com.divudi.service.pharmacy.BhtIssueRequestNativeSqlService bhtIssueRequestNativeSqlService;
+
+    private com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto bhtIssueRequestPrintDto;
+    private Long bhtIssueRequestPrintDtoBillId;
+
+    public com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto getBhtIssueRequestPrintDto() {
+        if (bhtRequestBill == null || bhtRequestBill.getId() == null) {
+            return null;
+        }
+        if (!bhtRequestBill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
+            bhtIssueRequestPrintDto = bhtIssueRequestNativeSqlService.loadPrintDtoByBillId(bhtRequestBill.getId());
+            bhtIssueRequestPrintDtoBillId = bhtRequestBill.getId();
+            if (bhtIssueRequestPrintDto == null) {
+                JsfUtil.addErrorMessage("BHT Issue Request not found");
+            }
+        }
+        return bhtIssueRequestPrintDto;
+    }
+
     BillItem billItem;
     Stock replacableStock;
     Item selectedAvailableAmp;
@@ -347,6 +367,7 @@ public class PharmacySaleBhtController implements Serializable {
         selectedAlternative = null;
         preBill = null;
         printBill = null;
+        bhtIssueRequestPrintDtoBillId = null;
         bill = null;
         billItem = null;
         editingBillItem = null;
@@ -400,12 +421,14 @@ public class PharmacySaleBhtController implements Serializable {
         tmp.setQty(tmp.getPharmaceuticalBillItem().getQtyInUnit());
         if (tmp.getPharmaceuticalBillItem().getQtyInUnit() <= 0) {
             setZeroToQty(tmp);
+            recalculateEditedIssueRow(tmp);
             JsfUtil.addErrorMessage("Can not enter a minus value");
             return;
         }
         Stock fetchedStock = tmp.getPharmaceuticalBillItem().getStock();
         if (fetchedStock != null && tmp.getPharmaceuticalBillItem().getQtyInUnit() > fetchedStock.getStock()) {
             setZeroToQty(tmp);
+            recalculateEditedIssueRow(tmp);
             JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return;
         }
@@ -421,6 +444,37 @@ public class PharmacySaleBhtController implements Serializable {
             }
         }
 
+        recalculateEditedIssueRow(tmp);
+    }
+
+    /**
+     * After a row-edit on the BHT issue page, restore the issue sign convention
+     * (unit qty is stored NEGATIVE for issues, exactly as
+     * generateIssueBillComponentsForBhtRequest builds the rows) and recalculate
+     * this row's financials (rate/margin/gross/net) plus the running bill total
+     * for the edited quantity.
+     *
+     * Without this, a partially-issued row settled after a qty edit keeps the
+     * ORIGINAL requested-quantity gross/margin/net values while stock moves by
+     * the edited quantity, and the positive unit qty flips the sign of the
+     * movement in the Cost Of Goods Sold report (found via COGS E2E
+     * verification: request 20, issue 10 → bill said 458.70, stock moved 10,
+     * COGS saw +10 instead of -10).
+     *
+     * Uses qty (not qtyInUnit) because the UI binds directly to qty for editing;
+     * qtyInUnit is not updated by JSF and retains its original value.
+     */
+    private void recalculateEditedIssueRow(BillItem tmp) {
+        if (tmp == null || tmp.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        double editedQty = Math.abs(tmp.getPharmaceuticalBillItem().getQty());
+        tmp.setQty(editedQty);
+        tmp.getPharmaceuticalBillItem().setQtyInUnit((float) (0 - editedQty));
+        tmp.getPharmaceuticalBillItem().setQty(0 - editedQty);
+        calculateRates(tmp);
+        calCurrentBillItemTotal(getBillItems());
+        calTotal();
     }
 
     private void setZeroToQty(BillItem tmp) {
@@ -1632,21 +1686,22 @@ public class PharmacySaleBhtController implements Serializable {
             freshRequestBill.setFullyIssued(true);
             freshRequestBill.setFullyIssuedAt(new Date());
             freshRequestBill.setFullyIssuedBy(sessionController.getLoggedUser());
+            freshRequestBill.setCompleted(true);
+            freshRequestBill.setCompletedAt(freshRequestBill.getFullyIssuedAt());
+            freshRequestBill.setCompletedBy(freshRequestBill.getFullyIssuedBy());
             getBillFacade().edit(freshRequestBill);
             bhtRequestBill.setFullyIssued(true);
             bhtRequestBill.setFullyIssuedAt(freshRequestBill.getFullyIssuedAt());
             bhtRequestBill.setFullyIssuedBy(freshRequestBill.getFullyIssuedBy());
-        }
-
-        //update Bill
-        if (completed && webUserController.hasPrivilege(Privileges.PharmacyBhtRequestForceComplete.toString())) {
             bhtRequestBill.setCompleted(true);
-            bhtRequestBill.setCompletedAt(new Date());
-            bhtRequestBill.setCompletedBy(sessionController.getLoggedUser());
-
-            billFacade.edit(bhtRequestBill);
+            bhtRequestBill.setCompletedAt(freshRequestBill.getCompletedAt());
+            bhtRequestBill.setCompletedBy(freshRequestBill.getCompletedBy());
+            // Invalidate the cached print DTO so a subsequent "Original Request" view
+            // for this same bill id (this bean is session-scoped) re-reads the
+            // now-completed status instead of serving the stale pre-completion snapshot.
+            bhtIssueRequestPrintDtoBillId = null;
         }
-        completed = false;
+
         userNotificationController.userNotificationRequestComplete();
 
     }
@@ -1840,9 +1895,7 @@ public class PharmacySaleBhtController implements Serializable {
     private BillItem itemForSubstitution;
     private Stock selectedSubstituteStock;
     private List<Stock> substituteStocks;
-    
-    private boolean completed;
-    
+
     @Inject
     VmpController vmpController;
     @EJB
@@ -2578,6 +2631,20 @@ public class PharmacySaleBhtController implements Serializable {
             return;
         }
 
+        if (bi.isFromPackage() && bi.getOverriddenRate() != null) {
+            double packageRate = bi.getOverriddenRate();
+            double quantity = bi.getQty() != null ? bi.getQty() : 0.0;
+            bi.setRate(packageRate);
+            bi.setGrossValue(packageRate * quantity);
+            bi.setMarginValue(0.0);
+            bi.setNetValue(packageRate * quantity);
+            bi.setMarginRate(0.0);
+            bi.setNetRate(packageRate);
+            bi.setAdjustedValue(packageRate * quantity);
+            bi.setDiscount(0);
+            return;
+        }
+
         if (selectedStockDto != null
                 && bi.getPharmaceuticalBillItem().getStock() != null
                 && Objects.equals(selectedStockDto.getId(), bi.getPharmaceuticalBillItem().getStock().getId())) {
@@ -2755,7 +2822,10 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("This request has already been fully issued.");
             return "";
         }
-        setCompleted(false);
+        if (bhtRequestBill.isCompleted()) {
+            JsfUtil.addErrorMessage("This request has already been completed.");
+            return "";
+        }
         // The search-list render already initialized patientEncounter (and its
         // nested patient/person/room associations) on the session-stored entity.
         // Preserve it here because loadBillWithItemsFresh() does not join-fetch
@@ -2936,6 +3006,11 @@ public class PharmacySaleBhtController implements Serializable {
                     billItem.setInwardChargeType(InwardChargeType.Medicine);
                     billItem.getPharmaceuticalBillItem().setBillItem(billItem);
                     billItem.setReferanceBillItem(i);
+                    if (i.isFromPackage()) {
+                        billItem.setFromPackage(true);
+                        billItem.setOverriddenRate(i.getOverriddenRate());
+                        billItem.setSourcePackageItem(i.getSourcePackageItem());
+                    }
                     billItem.setSearialNo(getBillItems().size() + 1);
                     if (isSubstitute) {
                         billItem.setAutoSubstituted(true);
@@ -2957,6 +3032,11 @@ public class PharmacySaleBhtController implements Serializable {
                 billItem.setDescreption(i.getDescreption());
                 billItem.setInwardChargeType(InwardChargeType.Medicine);
                 billItem.setReferanceBillItem(i);
+                if (i.isFromPackage()) {
+                    billItem.setFromPackage(true);
+                    billItem.setOverriddenRate(i.getOverriddenRate());
+                    billItem.setSourcePackageItem(i.getSourcePackageItem());
+                }
                 billItem.setSearialNo(getBillItems().size() + 1);
                 billItem.getPharmaceuticalBillItem().setBillItem(billItem);
                 calculateRates(billItem);
@@ -3534,14 +3614,6 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setSubstituteStocks(List<Stock> substituteStocks) {
         this.substituteStocks = substituteStocks;
-    }
-
-    public boolean isCompleted() {
-        return completed;
-    }
-
-    public void setCompleted(boolean completed) {
-        this.completed = completed;
     }
 
     // StockDTO Converter for JSF

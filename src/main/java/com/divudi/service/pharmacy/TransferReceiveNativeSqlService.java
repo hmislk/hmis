@@ -100,7 +100,8 @@ public class TransferReceiveNativeSqlService {
                 + " ib.batchNo, COALESCE(ib.dateOfExpire, pbi.doe) AS dateOfExpire, ib.purcahseRate, ib.retailsaleRate,"
                 + " ib.wholesaleRate, COALESCE(ib.costRate, 0) AS costRate,"
                 + " i.ID AS itemId, i.name AS itemName, COALESCE(i.code, '') AS itemCode,"
-                + " i.DTYPE AS itemDtype, COALESCE(i.dblValue, 1) AS dblValue"
+                + " i.DTYPE AS itemDtype, COALESCE(i.dblValue, 1) AS dblValue,"
+                + " i.departmentType AS departmentType"
                 + " FROM " + billItemTable() + " bi"
                 + " JOIN " + pharmBillItemTable() + " pbi ON pbi.billItem_ID = bi.ID"
                 + " JOIN " + itemBatchTable() + " ib ON ib.ID = pbi.itemBatch_ID"
@@ -148,7 +149,8 @@ public class TransferReceiveNativeSqlService {
             // row[6]=pbi.staffStock_ID, row[7]=pbi.itemBatch_ID, row[8]=pbi.qty(units in stock),
             // row[9]=ib.batchNo, row[10]=COALESCE(ib.dateOfExpire,pbi.doe), row[11]=ib.purcahseRate,
             // row[12]=ib.retailsaleRate, row[13]=ib.wholesaleRate, row[14]=ib.costRate,
-            // row[15]=i.ID, row[16]=i.name, row[17]=i.code, row[18]=i.DTYPE, row[19]=i.dblValue
+            // row[15]=i.ID, row[16]=i.name, row[17]=i.code, row[18]=i.DTYPE, row[19]=i.dblValue,
+            // row[20]=i.departmentType
 
             long biId = ((Number) row[0]).longValue();
 
@@ -196,6 +198,7 @@ public class TransferReceiveNativeSqlService {
             dto.setAmpItemId(((Number) row[15]).longValue()); // may be refined by controller for Ampp items
             dto.setItemName(row[16] != null ? row[16].toString() : "");
             dto.setItemCode(row[17] != null ? row[17].toString() : "");
+            dto.setDepartmentType(row[20] != null ? row[20].toString() : null);
             dto.setBatchNo(row[9] != null ? row[9].toString() : "");
             dto.setDateOfExpire(toDate(row[10]));
             dto.setUnitsPerPack(unitsPerPack);

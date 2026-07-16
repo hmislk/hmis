@@ -20,6 +20,7 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.PaperType;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -104,6 +105,9 @@ public class PharmacyBillSearch implements Serializable {
 
     private static final Logger LOGGER = Logger.getLogger(PharmacyBillSearch.class.getName());
 
+    private static final String DEFAULT_INWARD_PHARMACY_REQUEST_REPRINT_RETURN_PAGE =
+            "/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true";
+
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private StaffService staffBean;
@@ -175,6 +179,13 @@ public class PharmacyBillSearch implements Serializable {
     private String comment;
     private String emailRecipient;
     private Bill bill;
+    /**
+     * The page to navigate to when the Back button on the inward pharmacy
+     * request reprint page is pressed. Callers set this via
+     * f:setPropertyActionListener before navigating to that page; defaults
+     * to the all-requests list if a caller does not set it.
+     */
+    private String returnPage;
     private PaymentMethod paymentMethod;
     private PaymentScheme paymentScheme;
     private RefundBill billForRefund;
@@ -638,6 +649,18 @@ public class PharmacyBillSearch implements Serializable {
     // </editor-fold>
     //////////////////
     ///////////////////
+    /**
+     * Navigates back from the inward pharmacy request reprint page to
+     * wherever the user came from (all-requests list, search results, or a
+     * single patient's request list), rather than always returning to the
+     * all-requests list (#22106 follow-up).
+     */
+    public String navigateBackFromInwardPharmacyRequestReprint() {
+        String dest = returnPage != null ? returnPage : DEFAULT_INWARD_PHARMACY_REQUEST_REPRINT_RETURN_PAGE;
+        returnPage = null;
+        return dest;
+    }
+
     public String editInwardPharmacyRequestBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Not Bill Found !");
@@ -669,7 +692,40 @@ public class PharmacyBillSearch implements Serializable {
         bill.setCancelled(true);
         bill.setCancelledBill(cb);
         billFacade.edit(bill);
-        return "/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true";
+        // Invalidate the cached print DTO so a subsequent "View Request" for this
+        // same bill id (this bean is session-scoped) re-reads the now-cancelled
+        // status instead of serving the stale pre-cancellation snapshot.
+        bhtIssueRequestPrintDtoBillId = null;
+        return navigateBackFromInwardPharmacyRequestReprint();
+    }
+
+    public String markInwardPharmacyRequestComplete() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Not Bill Found !");
+            return "";
+        }
+        if (!webUserController.hasPrivilege(Privileges.PharmacyBhtRequestForceComplete.toString())) {
+            JsfUtil.addErrorMessage("You do not have privilege to force-complete this request.");
+            return "";
+        }
+        if (bill.isCompleted()) {
+            JsfUtil.addErrorMessage("This request is already marked as Completed.");
+            return "";
+        }
+        if (bill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot complete a cancelled request.");
+            return "";
+        }
+        bill.setCompleted(true);
+        bill.setCompletedAt(new Date());
+        bill.setCompletedBy(sessionController.getLoggedUser());
+        billFacade.edit(bill);
+        // Invalidate the cached print DTO so a subsequent "View Request" for this
+        // same bill id (this bean is session-scoped) re-reads the now-completed
+        // status instead of serving the stale pre-completion snapshot.
+        bhtIssueRequestPrintDtoBillId = null;
+        JsfUtil.addSuccessMessage("Request marked as Completed.");
+        return "";
     }
 
     /**
@@ -4174,6 +4230,33 @@ public class PharmacyBillSearch implements Serializable {
 
     }
 
+    @EJB
+    private com.divudi.service.pharmacy.BhtIssueRequestNativeSqlService bhtIssueRequestNativeSqlService;
+
+    private com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto bhtIssueRequestPrintDto;
+    private Long bhtIssueRequestPrintDtoBillId;
+
+    public com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto getBhtIssueRequestPrintDto() {
+        if (bill == null || bill.getId() == null) {
+            return null;
+        }
+        if (!bill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
+            bhtIssueRequestPrintDto = bhtIssueRequestNativeSqlService.loadPrintDtoByBillId(bill.getId());
+            bhtIssueRequestPrintDtoBillId = bill.getId();
+            if (bhtIssueRequestPrintDto == null) {
+                JsfUtil.addErrorMessage("BHT Issue Request not found");
+            }
+        }
+        return bhtIssueRequestPrintDto;
+    }
+
+    public String getReturnPage() {
+        return returnPage;
+    }
+
+    public void setReturnPage(String returnPage) {
+        this.returnPage = returnPage;
+    }
 
     public List<BillEntry> getBillEntrys() {
         return billEntrys;

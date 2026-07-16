@@ -14,6 +14,7 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.dto.TransferReceiveItemRowDto;
 import com.divudi.core.data.dto.TransferReceivePrintDto;
 import com.divudi.core.entity.Bill;
@@ -778,7 +779,28 @@ public class TransferReceiveNativeSqlController implements Serializable {
         bill.setCreater(sessionController.getLoggedUser());
         bill.setCreatedAt(new Date());
         bill.setComments(comments);
+        stampDepartmentTypeIfMissing(bill);
         return bill;
+    }
+
+    /**
+     * Department-type-filtered reports drop bills left NULL (#22056). The issued bill
+     * normally already carries a departmentType (stamped when it was issued); this is
+     * the fallback for legacy issued bills that predate that stamp — take the first
+     * received item's type, defaulting to Pharmacy (#22146).
+     */
+    private void stampDepartmentTypeIfMissing(Bill bill) {
+        if (bill.getDepartmentType() != null) {
+            return;
+        }
+        if (issuedBill != null && issuedBill.getDepartmentType() != null) {
+            bill.setDepartmentType(issuedBill.getDepartmentType());
+            return;
+        }
+        if (itemRowList != null && !itemRowList.isEmpty()) {
+            String dt = itemRowList.get(0).getDepartmentType();
+            bill.setDepartmentType(dt != null ? DepartmentType.valueOf(dt) : DepartmentType.Pharmacy);
+        }
     }
 
     private void applyBillNumbers(Bill bill) {

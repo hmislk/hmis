@@ -1597,9 +1597,9 @@ public class PharmacyIssueController implements Serializable {
                 return 0.0;
             }
         }
-        if (getQty() == null) {
-            errorMessage = "Please enter a quentity";
-            JsfUtil.addErrorMessage("Please enter a quentity");
+        if (getQty() == null || getQty() <= 0) {
+            errorMessage = "Please enter a quantity greater than zero";
+            JsfUtil.addErrorMessage("Please enter a quantity greater than zero");
             return 0.0;
         }
 
@@ -1727,14 +1727,9 @@ public class PharmacyIssueController implements Serializable {
             }
         }
 
-        if (getQty() == null) {
-            errorMessage = "Please enter a quentity";
-            JsfUtil.addErrorMessage("Please enter a quentity");
-            return;
-        }
-        if (getQty() == 0.0) {
-            errorMessage = "Please enter a quentity";
-            JsfUtil.addErrorMessage("Quentity Zero?");
+        if (getQty() == null || getQty() <= 0) {
+            errorMessage = "Please enter a quantity greater than zero";
+            JsfUtil.addErrorMessage("Please enter a quantity greater than zero");
             return;
         }
 
@@ -2967,9 +2962,14 @@ public class PharmacyIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please Select a Department");
             return "";
         }
-        if (Objects.equals(toDepartment, sessionController.getLoggedUser().getDepartment())) {
-            JsfUtil.addErrorMessage("Cannot Make an Issue to the Same Department");
-            return "";
+        if (Objects.equals(toDepartment, sessionController.getDepartment())) {
+            // Check if department preference allows same-department issues
+            boolean allowSameDept = configOptionApplicationController.getBooleanValueByKeyForDepartment(
+                    "Pharmacy - Allow Issue to Same Department", sessionController.getDepartment(), false);
+            if (!allowSameDept) {
+                JsfUtil.addErrorMessage("Your department does not allow pharmacy disposal issues to the same department. Contact your department administrator to enable this feature.");
+                return "";
+            }
         }
         getPreBill().setFromInstitution(sessionController.getInstitution());
         getPreBill().setFromDepartment(sessionController.getDepartment());

@@ -519,6 +519,15 @@ public class Bill implements Serializable, RetirableEntity {
     @Enumerated(EnumType.STRING)
     private Priority priority;
 
+    // Collecting Centre repayment voucher values (recorded at settlement time so
+    // the CC payment voucher can be reprinted with the same figures later).
+    private double ccBalanceBeforeTransaction;
+    private double ccBalanceAfterTransaction;
+    private double ccTotalReceived;
+    private double ccTransactionAmount;
+    private double ccTotalCenterValue;
+    private double ccExcessAmount;
+
     public Bill() {
         if (status == null) {
             status = PatientInvestigationStatus.ORDERED;
@@ -3166,6 +3175,54 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setPriority(Priority priority) {
         this.priority = priority;
+    }
+
+    public double getCcBalanceBeforeTransaction() {
+        return ccBalanceBeforeTransaction;
+    }
+
+    public void setCcBalanceBeforeTransaction(double ccBalanceBeforeTransaction) {
+        this.ccBalanceBeforeTransaction = ccBalanceBeforeTransaction;
+    }
+
+    public double getCcBalanceAfterTransaction() {
+        return ccBalanceAfterTransaction;
+    }
+
+    public void setCcBalanceAfterTransaction(double ccBalanceAfterTransaction) {
+        this.ccBalanceAfterTransaction = ccBalanceAfterTransaction;
+    }
+
+    public double getCcTotalReceived() {
+        return ccTotalReceived;
+    }
+
+    public void setCcTotalReceived(double ccTotalReceived) {
+        this.ccTotalReceived = ccTotalReceived;
+    }
+
+    public double getCcTransactionAmount() {
+        return ccTransactionAmount;
+    }
+
+    public void setCcTransactionAmount(double ccTransactionAmount) {
+        this.ccTransactionAmount = ccTransactionAmount;
+    }
+
+    public double getCcTotalCenterValue() {
+        return ccTotalCenterValue;
+    }
+
+    public void setCcTotalCenterValue(double ccTotalCenterValue) {
+        this.ccTotalCenterValue = ccTotalCenterValue;
+    }
+
+    public double getCcExcessAmount() {
+        return ccExcessAmount;
+    }
+
+    public void setCcExcessAmount(double ccExcessAmount) {
+        this.ccExcessAmount = ccExcessAmount;
     }
 
 }

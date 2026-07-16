@@ -93,6 +93,11 @@ public class TriggerSubscriptionController implements Serializable {
         // Application-wide subscriptions are stored with a null department so they
         // match every department in fillSubscribedUsersByDepartment.
         Department subscriptionDepartment = applicationWide ? null : department;
+
+        if (isSubscriptionAlreadyAdded()) {
+            return;
+        }
+
         double newOrder = getTriggerSubscriptions().size() + 1;
         TriggerSubscription existingTS = findUserSubscriptionByOrder(newOrder);
 
@@ -210,6 +215,9 @@ public class TriggerSubscriptionController implements Serializable {
 
     // Method to validate if the Icon is already added for the user
     public boolean isSubscriptionAlreadyAdded() {
+        if (triggerSubscriptions == null) {
+            return false;
+        }
         for (TriggerSubscription ts : triggerSubscriptions) {
             if (ts.getTriggerType() == triggerType) {
                 JsfUtil.addErrorMessage("Subscription already added");

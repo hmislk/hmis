@@ -125,6 +125,8 @@ public class PharmacyRequestForBhtController implements Serializable {
     com.divudi.ejb.PrescriptionToItemService prescriptionToItemService;
     @EJB
     private PharmacyService pharmacyService;
+    @EJB
+    private com.divudi.core.facade.InpatientPackageItemFacade inpatientPackageItemFacade;
 /////////////////////////
     Item selectedAlternative;
     private PreBill preBill;
@@ -240,6 +242,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         selectedAlternative = null;
         preBill = null;
         printBill = null;
+        bhtIssueRequestPrintDtoBillId = null;
         bill = null;
         billItem = null;
         editingBillItem = null;
@@ -1140,7 +1143,39 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (errorCheck()) {
             return;
         }
+        if (getPreBill() != null && getPreBill().getId() != null && hasNonCancelledIssuingAgainstRequest(getPreBill())) {
+            JsfUtil.addErrorMessage("This request has already been issued (partially or fully) from pharmacy and can no longer be edited.");
+            return;
+        }
         settleEditedBhtIssueRequest(BillType.InwardPharmacyRequest, getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), BillNumberSuffix.PHISSUEREQ);
+    }
+
+    /**
+     * XHTML-facing check so the Settle button can be disabled up front
+     * (server-side re-check on submit still applies via
+     * settleEditedPharmacyBhtIssueRequest()).
+     */
+    public boolean isPreBillAlreadyIssuedAgainstRequest() {
+        return preBill != null && preBill.getId() != null && hasNonCancelledIssuingAgainstRequest(preBill);
+    }
+
+    /**
+     * Mirrors PharmacyBillSearch.hasNonCancelledIssuingAgainstRequest - checks
+     * whether any non-cancelled, non-refunded PharmacyBhtPre bill still
+     * references this request, i.e. pharmacy has already issued (partially or
+     * fully) against it and it should no longer be editable/settleable.
+     */
+    private boolean hasNonCancelledIssuingAgainstRequest(Bill requestBill) {
+        String jpql = "SELECT COUNT(b) FROM Bill b WHERE b.retired = false "
+                + "AND b.billType = :btp "
+                + "AND b.referenceBill = :ref "
+                + "AND b.cancelled = false "
+                + "AND b.refunded = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("btp", BillType.PharmacyBhtPre);
+        params.put("ref", requestBill);
+        Long count = billFacade.findLongByJpql(jpql, params);
+        return count != null && count > 0;
     }
 
     private void settleEditedBhtIssueRequest(BillType btp, Department matrixDepartment, BillNumberSuffix billNumberSuffix) {
@@ -1160,6 +1195,10 @@ public class PharmacyRequestForBhtController implements Serializable {
         // Calculation Margin
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
         setPrintBill(getBillFacade().find(getPreBill().getId()));
+        // This is a re-settle of an existing request (same bill id) with edited
+        // items - invalidate the cached print DTO so the preview re-reads the
+        // updated item list instead of the pre-edit snapshot.
+        bhtIssueRequestPrintDtoBillId = null;
         Bill bill = getBillFacade().find(getPreBill().getId());
         bill.setBillTypeAtomic(BillTypeAtomic.REQUEST_MEDICINE_INWARD);
         bill.setEditedAt(new Date());
@@ -1320,6 +1359,53 @@ public class PharmacyRequestForBhtController implements Serializable {
         return false;
     }
 
+    private Double resolvePackageOverrideRate(com.divudi.core.entity.Item item, double requestedQty) {
+        if (patientEncounter == null || patientEncounter.getInpatientPackage() == null || item == null) {
+            return null;
+        }
+        java.util.Map<String, Object> m = new java.util.HashMap<>();
+        m.put("pkg", patientEncounter.getInpatientPackage());
+        m.put("item", item);
+        m.put("type", com.divudi.core.data.inward.InpatientPackageComponentType.PHARMACY_ITEM);
+        java.util.List<com.divudi.core.entity.inward.InpatientPackageItem> matches = inpatientPackageItemFacade.findByJpql(
+                "SELECT i FROM InpatientPackageItem i"
+                        + " WHERE i.retired = false"
+                        + " AND i.inpatientPackage = :pkg"
+                        + " AND i.item = :item"
+                        + " AND i.componentType = :type",
+                m);
+        if (matches.isEmpty()) {
+            return null;
+        }
+        com.divudi.core.entity.inward.InpatientPackageItem packageItem = matches.get(0);
+
+        java.util.Map<String, Object> qm = new java.util.HashMap<>();
+        qm.put("pe", patientEncounter);
+        qm.put("item", item);
+        Double alreadyIssued = getBillItemFacade().findDoubleByJpql(
+                "SELECT SUM(bi.qty) FROM BillItem bi"
+                        + " WHERE bi.retired = false"
+                        + " AND bi.fromPackage = true"
+                        + " AND bi.patientEncounter = :pe"
+                        + " AND bi.item = :item",
+                qm);
+        double consumed = alreadyIssued != null ? alreadyIssued : 0.0;
+
+        if (getPreBill() != null && getPreBill().getBillItems() != null) {
+            for (BillItem existing : getPreBill().getBillItems()) {
+                if (existing.getId() == null && existing.isFromPackage() && item.equals(existing.getItem())) {
+                    consumed += existing.getQty() != null ? existing.getQty() : 0.0;
+                }
+            }
+        }
+
+        if (consumed + requestedQty > packageItem.getQty()) {
+            return null; // Beyond allocation — bill remaining/extra qty at live rate.
+        }
+
+        return packageItem.getFixedPrice() / packageItem.getQty();
+    }
+
     public void addBillItem() {
 
         if (billItem == null) {
@@ -1365,6 +1451,9 @@ public class PharmacyRequestForBhtController implements Serializable {
         newBillItem.setQty(getQty());
         newBillItem.setInwardChargeType(InwardChargeType.Medicine);
         newBillItem.setBill(getPreBill());
+        // Required so resolvePackageOverrideRate()'s cumulative-quantity JPQL (bi.patientEncounter = :pe)
+        // can find this row on subsequent dispenses of the same package-listed item.
+        newBillItem.setPatientEncounter(patientEncounter);
 
         // Handle prescription only if prescription data is available
         boolean hasPrescriptionData = hasMeaningfulPrescriptionData(billItem.getPrescription(), billItem.getItem());
@@ -1427,6 +1516,13 @@ public class PharmacyRequestForBhtController implements Serializable {
                     return;
                 }
             }
+        }
+
+        Double packageRate = resolvePackageOverrideRate(newBillItem.getItem(), getQty());
+        if (packageRate != null) {
+            newBillItem.setOverriddenRate(packageRate);
+            newBillItem.setRate(packageRate);
+            newBillItem.setFromPackage(true);
         }
 
         newBillItem.setSearialNo(getPreBill().getBillItems().size() + 1);
@@ -2473,6 +2569,26 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public void setPrintBill(Bill printBill) {
         this.printBill = printBill;
+    }
+
+    @EJB
+    private com.divudi.service.pharmacy.BhtIssueRequestNativeSqlService bhtIssueRequestNativeSqlService;
+
+    private com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto bhtIssueRequestPrintDto;
+    private Long bhtIssueRequestPrintDtoBillId;
+
+    public com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto getBhtIssueRequestPrintDto() {
+        if (printBill == null || printBill.getId() == null) {
+            return null;
+        }
+        if (!printBill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
+            bhtIssueRequestPrintDto = bhtIssueRequestNativeSqlService.loadPrintDtoByBillId(printBill.getId());
+            bhtIssueRequestPrintDtoBillId = printBill.getId();
+            if (bhtIssueRequestPrintDto == null) {
+                JsfUtil.addErrorMessage("BHT Issue Request not found");
+            }
+        }
+        return bhtIssueRequestPrintDto;
     }
 
     public PaymentSchemeController getPaymentSchemeController() {

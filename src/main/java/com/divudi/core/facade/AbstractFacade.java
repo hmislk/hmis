@@ -1768,7 +1768,8 @@ public abstract class AbstractFacade<T> {
             }
         }
         try {
-            return (Double) qry.getSingleResult();
+            Double result = (Double) qry.getSingleResult();
+            return result == null ? 0.0 : result;
         } catch (Exception e) {
             return 0.0;
         }
