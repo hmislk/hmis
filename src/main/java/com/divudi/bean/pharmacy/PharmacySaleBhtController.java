@@ -1578,7 +1578,7 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Please add items to the bill.");
             return;
         }
-        if (errorCheck()) {
+        if (errorCheck(true)) {
             return;
         }
         if (hasAllergyConflicts(getPreBill().getBillItems())) {
@@ -1730,6 +1730,10 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     private boolean errorCheck() {
+        return errorCheck(false);
+    }
+
+    private boolean errorCheck(boolean skipNursingDischargeCheck) {
         if (getPatientEncounter() == null || getPatientEncounter().getPatient() == null) {
             JsfUtil.addErrorMessage("Please Select a BHT");
             return true;
@@ -1749,7 +1753,7 @@ public class PharmacySaleBhtController implements Serializable {
 
         }
 
-        if (getPatientEncounter().isNursingDischarged()) {
+        if (!skipNursingDischargeCheck && getPatientEncounter().isNursingDischarged()) {
             JsfUtil.addErrorMessage("Cannot issue medicines: nursing discharge has already been confirmed for this patient.");
             return true;
         }
