@@ -4481,62 +4481,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
 
 
-    private DurationServiceReportDTO toDurationServiceReportDto(PatientItem patientItem) {
-        PatientEncounter encounter = patientItem != null ? patientItem.getPatientEncounter() : null;
-        Patient patient = encounter != null ? encounter.getPatient() : null;
-        Staff consultant = encounter != null ? encounter.getReferringConsultant() : null;
-        Item timedItem = patientItem != null ? patientItem.getItem() : null;
-        Bill bill = patientItem != null ? patientItem.getBill() : null;
-        Bill finalBill = encounter != null ? encounter.getFinalBill() : null;
-
-        Bill displayBill = bill != null ? bill : finalBill;
-        WebUser checkedBy = bill != null && bill.getCheckedBy() != null ? bill.getCheckedBy()
-                : finalBill != null ? finalBill.getCheckedBy() : null;
-        Date checkedAt = bill != null && bill.getCheckeAt() != null ? bill.getCheckeAt()
-                : finalBill != null ? finalBill.getCheckeAt() : null;
-        Date invoiceDate = displayBill != null ? displayBill.getCreatedAt() : null;
-
-        return new DurationServiceReportDTO(
-                patientItem != null ? patientItem.getId() : null,
-                encounter != null ? encounter.getBhtNo() : "",
-                patient != null ? patient.getPhn() : "",
-                personName(consultant != null ? consultant.getPerson() : null),
-                surgeryName(displayBill),
-                timedItem != null && timedItem.getDepartment() != null ? timedItem.getDepartment().getName() : "",
-                timedItem != null ? timedItem.getName() : "",
-                timedItem != null && timedItem.getCategory() != null ? timedItem.getCategory().getName() : "",
-                patientItem != null ? patientItem.getFromTime() : null,
-                patientItem != null ? patientItem.getToTime() : null,
-                patientItem != null ? patientItem.getServiceValue() : 0.0,
-                patientItem != null ? patientItem.getDiscount() : 0.0,
-                patientItem != null ? patientItem.getAdjustedValue() : 0.0,
-                webUserName(patientItem != null ? patientItem.getCreater() : null),
-                webUserName(checkedBy),
-                checkedAt,
-                patientItem != null ? patientItem.getCreatedAt() : null,
-                invoiceDate);
-    }
-
     private String personName(Person person) {
         return person != null && person.getNameWithTitle() != null ? person.getNameWithInitials() : "";
-    }
-
-    private String webUserName(WebUser webUser) {
-        if (webUser == null) {
-            return "";
-        }
-        return personName(webUser.getWebUserPerson());
-    }
-
-    private String surgeryName(Bill bill) {
-        PatientEncounter procedure = bill != null ? bill.getProcedure() : null;
-        if (procedure == null) {
-            return "";
-        }
-        if (procedure.getItem() != null && procedure.getItem().getName() != null) {
-            return procedure.getItem().getName();
-        }
-        return procedure.getName() != null ? procedure.getName() : "";
     }
 
     private void createProfitMatrixSummaryReport() {
