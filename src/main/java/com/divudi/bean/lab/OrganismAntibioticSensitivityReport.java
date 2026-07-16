@@ -143,11 +143,32 @@ public class OrganismAntibioticSensitivityReport implements Serializable {
             jpql.append("and b.ipOpOrCc = :visitType ");
             parameters.put("visitType", visitType);
         }
+        
+        if (visitType != null
+                && !visitType.trim().isEmpty()
+                && !"All".equalsIgnoreCase(visitType)) {
 
-        /*
- * Organism, sensitivity and referringDoctor still require the exact
- * entity property paths before adding them to JPQL.
-         */
+            jpql.append("and b.ipOpOrCc = :visitType ");
+            parameters.put("visitType", visitType);
+        }
+
+        if (organism != null) {
+            jpql.append("and pi.organism = :organism ");
+            parameters.put("organism", organism);
+        }
+
+        if (sensitivity != null && !sensitivity.trim().isEmpty()) {
+            jpql.append("and priv.value = :sensitivity ");
+            parameters.put("sensitivity", sensitivity);
+        }
+
+        if (referringDoctor != null) {
+            jpql.append("and b.referredBy = :referringDoctor ");
+            parameters.put("referringDoctor", referringDoctor);
+        }
+
+        jpql.append("order by pi.id desc");
+
         jpql.append("order by pi.id desc");
 
         reportData = patientReportItemValueFacade.findByJpql(
