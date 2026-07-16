@@ -2915,6 +2915,9 @@ public class PharmacySaleBhtController implements Serializable {
             double cancelledIssue = cancelledMap.getOrDefault(i.getId(), 0.0);
             double refundedIssue = refundedMap.getOrDefault(i.getId(), 0.0);
             double issuableQty = Math.abs(i.getQty()) - (Math.abs(billedIssue) - (Math.abs(cancelledIssue) + Math.abs(refundedIssue)));
+            if (issuableQty <= 0) {
+                continue;
+            }
 
             // Resolve VTM/VMP/AMP/ATM to concrete AMP candidates with stock priority:
             // 1. Exact requested AMP  2. Same-strength sibling AMP  3. Any available AMP

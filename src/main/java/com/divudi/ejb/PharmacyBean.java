@@ -1350,6 +1350,11 @@ public class PharmacyBean {
         if (vmps == null || vmps.isEmpty()) {
             return result;
         }
+        for (Vmp vmp : vmps) {
+            if (vmp != null && vmp.getId() != null) {
+                result.putIfAbsent(vmp.getId(), new ArrayList<>());
+            }
+        }
         Map<String, Object> m = new HashMap<>();
         m.put("vmps", vmps);
         m.put("ret", false);
