@@ -6,7 +6,7 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 <h:head>
-    <title>Disposal Issues — List to Approve</title>
+    <title>Consumption Issues — List to Approve</title>
 </h:head>
 <h:body>
     <ui:composition template="/resources/template/template.xhtml">
@@ -21,7 +21,7 @@
                 <f:facet name="header">
                     <div class="d-flex align-items-center">
                         <h:outputText styleClass="fas fa-check-double text-success me-2"/>
-                        <h:outputText value="Disposal Issues — List to Approve" styleClass="text-success"/>
+                        <h:outputText value="Consumption Issues — List to Approve" styleClass="text-success"/>
                     </div>
                 </f:facet>
                 <h:form>
@@ -65,7 +65,7 @@
                                 paginatorPosition="both"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 rowsPerPageTemplate="10,15,25,50"
-                                emptyMessage="No finalized disposal issues found matching your criteria"
+                                emptyMessage="No finalized consumption issues found matching your criteria"
                                 sortMode="multiple"
                                 resizableColumns="true"
                                 reflow="true"
@@ -96,7 +96,7 @@
                                         styleClass="ui-button-stage-approve"
                                         icon="fas fa-check-double"
                                         value="View / Approve"
-                                        title="View and Approve Disposal Issue #{g.id}"
+                                        title="View and Approve Consumption Issue #{g.id}"
                                         ajax="false"
                                         action="#{pharmacyIssueController.loadFinalizedForApprove(g.id)}"/>
                                     <p:commandButton
@@ -104,9 +104,9 @@
                                         styleClass="ui-button-danger ui-button-outlined ms-1"
                                         icon="fas fa-times"
                                         value="Cancel"
-                                        title="Cancel this finalized disposal issue"
+                                        title="Cancel this finalized consumption issue"
                                         ajax="false"
-                                        onclick="return confirm('Cancel this finalized disposal issue? This cannot be undone.');"
+                                        onclick="return confirm('Cancel this finalized consumption issue? This cannot be undone.');"
                                         action="#{pharmacyIssueController.cancelFinalizedDisposalIssue(g.id)}"/>
                                 </p:column>
                             </p:dataTable>

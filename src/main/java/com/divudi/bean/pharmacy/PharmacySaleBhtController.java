@@ -24,7 +24,6 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.data.Privileges;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.StockQty;
 import com.divudi.core.data.Title;
@@ -242,6 +241,27 @@ public class PharmacySaleBhtController implements Serializable {
     Bill printBill;
     Bill bill;
     private Bill bhtRequestBill;
+
+    @EJB
+    private com.divudi.service.pharmacy.BhtIssueRequestNativeSqlService bhtIssueRequestNativeSqlService;
+
+    private com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto bhtIssueRequestPrintDto;
+    private Long bhtIssueRequestPrintDtoBillId;
+
+    public com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto getBhtIssueRequestPrintDto() {
+        if (bhtRequestBill == null || bhtRequestBill.getId() == null) {
+            return null;
+        }
+        if (!bhtRequestBill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
+            bhtIssueRequestPrintDto = bhtIssueRequestNativeSqlService.loadPrintDtoByBillId(bhtRequestBill.getId());
+            bhtIssueRequestPrintDtoBillId = bhtRequestBill.getId();
+            if (bhtIssueRequestPrintDto == null) {
+                JsfUtil.addErrorMessage("BHT Issue Request not found");
+            }
+        }
+        return bhtIssueRequestPrintDto;
+    }
+
     BillItem billItem;
     Stock replacableStock;
     Item selectedAvailableAmp;
@@ -347,6 +367,7 @@ public class PharmacySaleBhtController implements Serializable {
         selectedAlternative = null;
         preBill = null;
         printBill = null;
+        bhtIssueRequestPrintDtoBillId = null;
         bill = null;
         billItem = null;
         editingBillItem = null;
@@ -439,12 +460,15 @@ public class PharmacySaleBhtController implements Serializable {
      * movement in the Cost Of Goods Sold report (found via COGS E2E
      * verification: request 20, issue 10 → bill said 458.70, stock moved 10,
      * COGS saw +10 instead of -10).
+     *
+     * Uses qty (not qtyInUnit) because the UI binds directly to qty for editing;
+     * qtyInUnit is not updated by JSF and retains its original value.
      */
     private void recalculateEditedIssueRow(BillItem tmp) {
         if (tmp == null || tmp.getPharmaceuticalBillItem() == null) {
             return;
         }
-        double editedQty = Math.abs(tmp.getPharmaceuticalBillItem().getQtyInUnit());
+        double editedQty = Math.abs(tmp.getPharmaceuticalBillItem().getQty());
         tmp.setQty(editedQty);
         tmp.getPharmaceuticalBillItem().setQtyInUnit((float) (0 - editedQty));
         tmp.getPharmaceuticalBillItem().setQty(0 - editedQty);
@@ -1662,21 +1686,22 @@ public class PharmacySaleBhtController implements Serializable {
             freshRequestBill.setFullyIssued(true);
             freshRequestBill.setFullyIssuedAt(new Date());
             freshRequestBill.setFullyIssuedBy(sessionController.getLoggedUser());
+            freshRequestBill.setCompleted(true);
+            freshRequestBill.setCompletedAt(freshRequestBill.getFullyIssuedAt());
+            freshRequestBill.setCompletedBy(freshRequestBill.getFullyIssuedBy());
             getBillFacade().edit(freshRequestBill);
             bhtRequestBill.setFullyIssued(true);
             bhtRequestBill.setFullyIssuedAt(freshRequestBill.getFullyIssuedAt());
             bhtRequestBill.setFullyIssuedBy(freshRequestBill.getFullyIssuedBy());
-        }
-
-        //update Bill
-        if (completed && webUserController.hasPrivilege(Privileges.PharmacyBhtRequestForceComplete.toString())) {
             bhtRequestBill.setCompleted(true);
-            bhtRequestBill.setCompletedAt(new Date());
-            bhtRequestBill.setCompletedBy(sessionController.getLoggedUser());
-
-            billFacade.edit(bhtRequestBill);
+            bhtRequestBill.setCompletedAt(freshRequestBill.getCompletedAt());
+            bhtRequestBill.setCompletedBy(freshRequestBill.getCompletedBy());
+            // Invalidate the cached print DTO so a subsequent "Original Request" view
+            // for this same bill id (this bean is session-scoped) re-reads the
+            // now-completed status instead of serving the stale pre-completion snapshot.
+            bhtIssueRequestPrintDtoBillId = null;
         }
-        completed = false;
+
         userNotificationController.userNotificationRequestComplete();
 
     }
@@ -1870,9 +1895,7 @@ public class PharmacySaleBhtController implements Serializable {
     private BillItem itemForSubstitution;
     private Stock selectedSubstituteStock;
     private List<Stock> substituteStocks;
-    
-    private boolean completed;
-    
+
     @Inject
     VmpController vmpController;
     @EJB
@@ -2799,7 +2822,10 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("This request has already been fully issued.");
             return "";
         }
-        setCompleted(false);
+        if (bhtRequestBill.isCompleted()) {
+            JsfUtil.addErrorMessage("This request has already been completed.");
+            return "";
+        }
         // The search-list render already initialized patientEncounter (and its
         // nested patient/person/room associations) on the session-stored entity.
         // Preserve it here because loadBillWithItemsFresh() does not join-fetch
@@ -3588,14 +3614,6 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setSubstituteStocks(List<Stock> substituteStocks) {
         this.substituteStocks = substituteStocks;
-    }
-
-    public boolean isCompleted() {
-        return completed;
-    }
-
-    public void setCompleted(boolean completed) {
-        this.completed = completed;
     }
 
     // StockDTO Converter for JSF

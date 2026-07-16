@@ -1,5 +1,6 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class PharmacyTransferIssuedListDTO implements Serializable {
     private Boolean fullyIssued;
     private String cancelledByName;
     private Date cancelledAt;
+    private BillTypeAtomic billTypeAtomic;
     private List<PharmacyTransferReceivedListDTO> receivedBills = new ArrayList<>();
     private Long pendingReceiveBillId;
     private Boolean pendingReceiveIsFinalized;
@@ -30,6 +32,14 @@ public class PharmacyTransferIssuedListDTO implements Serializable {
             DepartmentType departmentType, String issuerName, String staffName,
             Date createdAt, Boolean cancelled, Boolean fullyIssued,
             String cancelledByName, Date cancelledAt) {
+        this(billId, deptId, fromDepartmentName, departmentType, issuerName, staffName,
+                createdAt, cancelled, fullyIssued, cancelledByName, cancelledAt, null);
+    }
+
+    public PharmacyTransferIssuedListDTO(Long billId, String deptId, String fromDepartmentName,
+            DepartmentType departmentType, String issuerName, String staffName,
+            Date createdAt, Boolean cancelled, Boolean fullyIssued,
+            String cancelledByName, Date cancelledAt, BillTypeAtomic billTypeAtomic) {
         this.billId = billId;
         this.deptId = deptId;
         this.fromDepartmentName = fromDepartmentName;
@@ -41,10 +51,19 @@ public class PharmacyTransferIssuedListDTO implements Serializable {
         this.fullyIssued = fullyIssued != null ? fullyIssued : false;
         this.cancelledByName = cancelledByName;
         this.cancelledAt = cancelledAt;
+        this.billTypeAtomic = billTypeAtomic;
     }
 
     public String getDepartmentTypeLabel() {
         return departmentType != null ? departmentType.getLabel() : null;
+    }
+
+    public boolean isDirectIssue() {
+        return billTypeAtomic == BillTypeAtomic.PHARMACY_DIRECT_ISSUE;
+    }
+
+    public String getIssueTypeLabel() {
+        return isDirectIssue() ? "Direct Issue" : "Request Issue";
     }
 
     public Long getBillId() {
@@ -133,6 +152,14 @@ public class PharmacyTransferIssuedListDTO implements Serializable {
 
     public void setCancelledAt(Date cancelledAt) {
         this.cancelledAt = cancelledAt;
+    }
+
+    public BillTypeAtomic getBillTypeAtomic() {
+        return billTypeAtomic;
+    }
+
+    public void setBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
+        this.billTypeAtomic = billTypeAtomic;
     }
 
     public List<PharmacyTransferReceivedListDTO> getReceivedBills() {

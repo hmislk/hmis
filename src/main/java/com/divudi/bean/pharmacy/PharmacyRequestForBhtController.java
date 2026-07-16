@@ -242,6 +242,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         selectedAlternative = null;
         preBill = null;
         printBill = null;
+        bhtIssueRequestPrintDtoBillId = null;
         bill = null;
         billItem = null;
         editingBillItem = null;
@@ -1194,6 +1195,10 @@ public class PharmacyRequestForBhtController implements Serializable {
         // Calculation Margin
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
         setPrintBill(getBillFacade().find(getPreBill().getId()));
+        // This is a re-settle of an existing request (same bill id) with edited
+        // items - invalidate the cached print DTO so the preview re-reads the
+        // updated item list instead of the pre-edit snapshot.
+        bhtIssueRequestPrintDtoBillId = null;
         Bill bill = getBillFacade().find(getPreBill().getId());
         bill.setBillTypeAtomic(BillTypeAtomic.REQUEST_MEDICINE_INWARD);
         bill.setEditedAt(new Date());
@@ -2564,6 +2569,26 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public void setPrintBill(Bill printBill) {
         this.printBill = printBill;
+    }
+
+    @EJB
+    private com.divudi.service.pharmacy.BhtIssueRequestNativeSqlService bhtIssueRequestNativeSqlService;
+
+    private com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto bhtIssueRequestPrintDto;
+    private Long bhtIssueRequestPrintDtoBillId;
+
+    public com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto getBhtIssueRequestPrintDto() {
+        if (printBill == null || printBill.getId() == null) {
+            return null;
+        }
+        if (!printBill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
+            bhtIssueRequestPrintDto = bhtIssueRequestNativeSqlService.loadPrintDtoByBillId(printBill.getId());
+            bhtIssueRequestPrintDtoBillId = printBill.getId();
+            if (bhtIssueRequestPrintDto == null) {
+                JsfUtil.addErrorMessage("BHT Issue Request not found");
+            }
+        }
+        return bhtIssueRequestPrintDto;
     }
 
     public PaymentSchemeController getPaymentSchemeController() {
