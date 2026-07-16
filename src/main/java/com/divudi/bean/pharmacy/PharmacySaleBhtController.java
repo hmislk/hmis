@@ -24,7 +24,6 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.data.Privileges;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.StockQty;
 import com.divudi.core.data.Title;
@@ -242,6 +241,27 @@ public class PharmacySaleBhtController implements Serializable {
     Bill printBill;
     Bill bill;
     private Bill bhtRequestBill;
+
+    @EJB
+    private com.divudi.service.pharmacy.BhtIssueRequestNativeSqlService bhtIssueRequestNativeSqlService;
+
+    private com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto bhtIssueRequestPrintDto;
+    private Long bhtIssueRequestPrintDtoBillId;
+
+    public com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto getBhtIssueRequestPrintDto() {
+        if (bhtRequestBill == null || bhtRequestBill.getId() == null) {
+            return null;
+        }
+        if (!bhtRequestBill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
+            bhtIssueRequestPrintDto = bhtIssueRequestNativeSqlService.loadPrintDtoByBillId(bhtRequestBill.getId());
+            bhtIssueRequestPrintDtoBillId = bhtRequestBill.getId();
+            if (bhtIssueRequestPrintDto == null) {
+                JsfUtil.addErrorMessage("BHT Issue Request not found");
+            }
+        }
+        return bhtIssueRequestPrintDto;
+    }
+
     BillItem billItem;
     Stock replacableStock;
     Item selectedAvailableAmp;
@@ -347,6 +367,7 @@ public class PharmacySaleBhtController implements Serializable {
         selectedAlternative = null;
         preBill = null;
         printBill = null;
+        bhtIssueRequestPrintDtoBillId = null;
         bill = null;
         billItem = null;
         editingBillItem = null;
@@ -439,12 +460,15 @@ public class PharmacySaleBhtController implements Serializable {
      * movement in the Cost Of Goods Sold report (found via COGS E2E
      * verification: request 20, issue 10 → bill said 458.70, stock moved 10,
      * COGS saw +10 instead of -10).
+     *
+     * Uses qty (not qtyInUnit) because the UI binds directly to qty for editing;
+     * qtyInUnit is not updated by JSF and retains its original value.
      */
     private void recalculateEditedIssueRow(BillItem tmp) {
         if (tmp == null || tmp.getPharmaceuticalBillItem() == null) {
             return;
         }
-        double editedQty = Math.abs(tmp.getPharmaceuticalBillItem().getQtyInUnit());
+        double editedQty = Math.abs(tmp.getPharmaceuticalBillItem().getQty());
         tmp.setQty(editedQty);
         tmp.getPharmaceuticalBillItem().setQtyInUnit((float) (0 - editedQty));
         tmp.getPharmaceuticalBillItem().setQty(0 - editedQty);
@@ -1554,7 +1578,7 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("Please add items to the bill.");
             return;
         }
-        if (errorCheck()) {
+        if (errorCheck(true)) {
             return;
         }
         if (hasAllergyConflicts(getPreBill().getBillItems())) {
@@ -1662,21 +1686,22 @@ public class PharmacySaleBhtController implements Serializable {
             freshRequestBill.setFullyIssued(true);
             freshRequestBill.setFullyIssuedAt(new Date());
             freshRequestBill.setFullyIssuedBy(sessionController.getLoggedUser());
+            freshRequestBill.setCompleted(true);
+            freshRequestBill.setCompletedAt(freshRequestBill.getFullyIssuedAt());
+            freshRequestBill.setCompletedBy(freshRequestBill.getFullyIssuedBy());
             getBillFacade().edit(freshRequestBill);
             bhtRequestBill.setFullyIssued(true);
             bhtRequestBill.setFullyIssuedAt(freshRequestBill.getFullyIssuedAt());
             bhtRequestBill.setFullyIssuedBy(freshRequestBill.getFullyIssuedBy());
-        }
-
-        //update Bill
-        if (completed && webUserController.hasPrivilege(Privileges.PharmacyBhtRequestForceComplete.toString())) {
             bhtRequestBill.setCompleted(true);
-            bhtRequestBill.setCompletedAt(new Date());
-            bhtRequestBill.setCompletedBy(sessionController.getLoggedUser());
-
-            billFacade.edit(bhtRequestBill);
+            bhtRequestBill.setCompletedAt(freshRequestBill.getCompletedAt());
+            bhtRequestBill.setCompletedBy(freshRequestBill.getCompletedBy());
+            // Invalidate the cached print DTO so a subsequent "Original Request" view
+            // for this same bill id (this bean is session-scoped) re-reads the
+            // now-completed status instead of serving the stale pre-completion snapshot.
+            bhtIssueRequestPrintDtoBillId = null;
         }
-        completed = false;
+
         userNotificationController.userNotificationRequestComplete();
 
     }
@@ -1705,6 +1730,10 @@ public class PharmacySaleBhtController implements Serializable {
     }
 
     private boolean errorCheck() {
+        return errorCheck(false);
+    }
+
+    private boolean errorCheck(boolean skipNursingDischargeCheck) {
         if (getPatientEncounter() == null || getPatientEncounter().getPatient() == null) {
             JsfUtil.addErrorMessage("Please Select a BHT");
             return true;
@@ -1724,7 +1753,7 @@ public class PharmacySaleBhtController implements Serializable {
 
         }
 
-        if (getPatientEncounter().isNursingDischarged()) {
+        if (!skipNursingDischargeCheck && getPatientEncounter().isNursingDischarged()) {
             JsfUtil.addErrorMessage("Cannot issue medicines: nursing discharge has already been confirmed for this patient.");
             return true;
         }
@@ -1870,9 +1899,7 @@ public class PharmacySaleBhtController implements Serializable {
     private BillItem itemForSubstitution;
     private Stock selectedSubstituteStock;
     private List<Stock> substituteStocks;
-    
-    private boolean completed;
-    
+
     @Inject
     VmpController vmpController;
     @EJB
@@ -2799,7 +2826,10 @@ public class PharmacySaleBhtController implements Serializable {
             JsfUtil.addErrorMessage("This request has already been fully issued.");
             return "";
         }
-        setCompleted(false);
+        if (bhtRequestBill.isCompleted()) {
+            JsfUtil.addErrorMessage("This request has already been completed.");
+            return "";
+        }
         // The search-list render already initialized patientEncounter (and its
         // nested patient/person/room associations) on the session-stored entity.
         // Preserve it here because loadBillWithItemsFresh() does not join-fetch
@@ -2842,6 +2872,40 @@ public class PharmacySaleBhtController implements Serializable {
         setPatientEncounter(b.getPatientEncounter());
         billItems = new ArrayList<>();
 
+        // --- Batch pre-computation to avoid the N+1 pattern this loop used to
+        // have (3 aggregate queries + AMP-resolution + stock query per candidate,
+        // per requested BillItem). See issue #22153. Caches are local variables
+        // only (never controller/EJB fields) since this controller is
+        // @SessionScoped and PharmacyBean/PharmacyCalculation are shared beans.
+        Department dept = getSessionController().getDepartment();
+        List<BillItem> allRequestItems = new ArrayList<>();
+        java.util.Set<Vmp> vmpsNeeded = new java.util.HashSet<>();
+        for (BillItem i : b.getBillItems()) {
+            if (i.getItem() == null || i.getQty() == null) {
+                continue;
+            }
+            allRequestItems.add(i);
+            Item requestedItem = i.getItem();
+            if (requestedItem instanceof Amp) {
+                Vmp vmp = ((Amp) requestedItem).getVmp();
+                if (vmp != null) {
+                    vmpsNeeded.add(vmp);
+                }
+            } else if (requestedItem instanceof Vmp) {
+                vmpsNeeded.add((Vmp) requestedItem);
+            } else if (requestedItem instanceof Vmpp) {
+                Vmp vmp = ((Vmpp) requestedItem).getVmp();
+                if (vmp != null) {
+                    vmpsNeeded.add(vmp);
+                }
+            }
+        }
+        Map<Long, List<Amp>> ampsByVmpId = pharmacyBean.findAmpsForVmpsBatch(new ArrayList<>(vmpsNeeded));
+        Map<Long, Double> billedMap = getPharmacyCalculation().getBilledInwardPharmacyRequestBatch(allRequestItems, BillType.PharmacyBhtPre);
+        Map<Long, Double> cancelledMap = getPharmacyCalculation().getCancelledInwardPharmacyRequestBatch(allRequestItems, BillType.PharmacyBhtPre);
+        Map<Long, Double> refundedMap = getPharmacyCalculation().getRefundedInwardPharmacyRequestBatch(allRequestItems, BillType.PharmacyBhtPre);
+        Map<Long, List<Stock>> rawStockByAmpId = new HashMap<>();
+
         for (BillItem i : b.getBillItems()) {
             if (i.getItem() == null) {
                 continue;
@@ -2851,20 +2915,23 @@ public class PharmacySaleBhtController implements Serializable {
             }
             Item requestedItem = i.getItem();
 
-            double billedIssue = getPharmacyCalculation().getBilledInwardPharmacyRequest(i, BillType.PharmacyBhtPre);
-            double cancelledIssue = getPharmacyCalculation().getCancelledInwardPharmacyRequest(i, BillType.PharmacyBhtPre);
-            double refundedIssue = getPharmacyCalculation().getRefundedInwardPharmacyRequest(i, BillType.PharmacyBhtPre);
+            double billedIssue = billedMap.getOrDefault(i.getId(), 0.0);
+            double cancelledIssue = cancelledMap.getOrDefault(i.getId(), 0.0);
+            double refundedIssue = refundedMap.getOrDefault(i.getId(), 0.0);
             double issuableQty = Math.abs(i.getQty()) - (Math.abs(billedIssue) - (Math.abs(cancelledIssue) + Math.abs(refundedIssue)));
+            if (issuableQty <= 0) {
+                continue;
+            }
 
             // Resolve VTM/VMP/AMP/ATM to concrete AMP candidates with stock priority:
             // 1. Exact requested AMP  2. Same-strength sibling AMP  3. Any available AMP
             // For AMP requests also include VMP siblings so substitution can fire when
             // the exact brand is out of stock.
-            List<Amp> candidateAmps = new ArrayList<>(pharmacyBean.resolveAmps(requestedItem));
+            List<Amp> candidateAmps = new ArrayList<>(pharmacyBean.resolveAmps(requestedItem, ampsByVmpId));
             if (requestedItem instanceof Amp) {
                 Vmp vmp = ((Amp) requestedItem).getVmp();
                 if (vmp != null) {
-                    List<Amp> siblings = pharmacyBean.findAmpsForVmp(vmp);
+                    List<Amp> siblings = ampsByVmpId.getOrDefault(vmp.getId(), java.util.Collections.emptyList());
                     if (siblings != null) {
                         for (Amp sibling : siblings) {
                             if (!sibling.getId().equals(requestedItem.getId())) {
@@ -2897,7 +2964,8 @@ public class PharmacySaleBhtController implements Serializable {
                     candidateQty = issuableQty;
                 }
 
-                List<StockQty> stockQtys = pharmacyBean.getStockByQty((Item) candidate, candidateQty, getSessionController().getDepartment());
+                List<Stock> rawStocks = rawStockByAmpId.computeIfAbsent(candidate.getId(), id -> pharmacyBean.getRawStockListForAmp(candidate, dept));
+                List<StockQty> stockQtys = pharmacyBean.depleteStockForQty(rawStocks, candidateQty);
                 if (stockQtys == null || stockQtys.isEmpty()) {
                     continue;
                 }
@@ -3064,6 +3132,60 @@ public class PharmacySaleBhtController implements Serializable {
 
         return flag;
 
+    }
+
+    /**
+     * Batched form of {@link #checkBillComponent(Bill)} — computes the
+     * "has any issuable item" flag for many bills in one pass instead of
+     * calling {@code checkBillComponent} once per displayed row (each call
+     * of which re-ran 3 aggregate queries per line item). Fixes the
+     * secondary N+1 pattern used by
+     * {@code SearchController.createInwardBHTForIssueTable}'s
+     * "Search Not Issued" / "Search Issued Only" filters. See issue #22153.
+     * The single-bill method above is kept unchanged for other callers.
+     *
+     * @return map of Bill.id -> true if any line item on that bill has
+     * issuableQty &gt; 0, matching {@code checkBillComponent}'s formula
+     * exactly; callers should use getOrDefault(billId, false)
+     */
+    public Map<Long, Boolean> checkBillComponentBatch(List<Bill> bills) {
+        if (bills == null || bills.isEmpty()) {
+            return java.util.Collections.emptyMap();
+        }
+
+        List<PharmaceuticalBillItem> items = getPharmaceuticalBillItemFacade().getPharmaceuticalBillItemsForBills(bills);
+        List<BillItem> billItemsForCalc = new ArrayList<>();
+        for (PharmaceuticalBillItem pbi : items) {
+            if (pbi.getBillItem() != null) {
+                billItemsForCalc.add(pbi.getBillItem());
+            }
+        }
+
+        Map<Long, Double> billedMap = getPharmacyCalculation().getBilledInwardPharmacyRequestBatch(billItemsForCalc, BillType.PharmacyBhtPre);
+        Map<Long, Double> cancelledMap = getPharmacyCalculation().getCancelledInwardPharmacyRequestBatch(billItemsForCalc, BillType.PharmacyBhtPre);
+        Map<Long, Double> refundedMap = getPharmacyCalculation().getRefundedInwardPharmacyRequestBatch(billItemsForCalc, BillType.PharmacyBhtPre);
+
+        Map<Long, Boolean> result = new HashMap<>();
+        for (PharmaceuticalBillItem pbi : items) {
+            if (pbi.getBillItem() == null || pbi.getBillItem().getBill() == null) {
+                continue;
+            }
+            Long billId = pbi.getBillItem().getBill().getId();
+            Long billItemId = pbi.getBillItem().getId();
+
+            double billedIssue = billedMap.getOrDefault(billItemId, 0.0);
+            double cancelledIssue = cancelledMap.getOrDefault(billItemId, 0.0);
+            double refundedIssue = refundedMap.getOrDefault(billItemId, 0.0);
+            double issuableQty = Math.abs(pbi.getQtyInUnit()) - (Math.abs(billedIssue) - (Math.abs(cancelledIssue) + Math.abs(refundedIssue)));
+
+            if (issuableQty > 0) {
+                result.put(billId, true);
+            } else {
+                result.putIfAbsent(billId, false);
+            }
+        }
+
+        return result;
     }
 
     public void handleSelectAction() {
@@ -3588,14 +3710,6 @@ public class PharmacySaleBhtController implements Serializable {
 
     public void setSubstituteStocks(List<Stock> substituteStocks) {
         this.substituteStocks = substituteStocks;
-    }
-
-    public boolean isCompleted() {
-        return completed;
-    }
-
-    public void setCompleted(boolean completed) {
-        this.completed = completed;
     }
 
     // StockDTO Converter for JSF

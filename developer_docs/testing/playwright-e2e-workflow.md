@@ -657,6 +657,34 @@ button) surfaced these:
 - **html2canvas does not capture PrimeFaces overlay panels** (`*_panel` appended near body root render
   blank/absent) — capture page states instead, or read the panel's `innerText` as textual evidence.
 
+## 29. GRN costing Save→Finalize→Approve: `Difference` guard needs a real keyup on Invoice Total at EVERY step
+
+On `pharmacy_grn_costing_with_save_approve.xhtml` the controller field `difference` (checked by
+`Math.abs(difference) > 1` in the finalize/approve actions) is recomputed **only** by the
+`p:ajax event="keyup"` listener on the Invoice Total input (`insv`) — a DOM-set value applied by an
+`ajax="false"` full submit updates `insTotal` server-side but never recalculates `difference`, so the
+approve fails with "The invoice does not match..! Check again" even though the submitted total is
+correct. Worse, after the Finalize → "To Approve GRNs" → Approve navigation the page reloads with
+Invoice Total rendered as `0.00`, so a value that passed at Save/Finalize is gone at the Approve step.
+Fix in automation: on the approve pass, click into `insv`, `Control+a`, `browser_type` the total
+`slowly: true` (real keyups fire the AJAX), confirm the `diff` input reads `0.00`, then click Approve.
+Everything else on that page (row qty/free-qty/batch/expiry/retail-rate inputs, invoice number/date)
+CAN be set directly on the DOM inputs — the `ajax="false"` Save/Finalize buttons submit and apply them
+(verified while testing issue #22120).
+
+## 30. `ward_pharmacy_bht_issue_request_bill.xhtml` — "New Bill" silently discards unsaved items
+
+On the "Start Pharmacy Request for Inpatients" flow, the "Add Dispense Only" button only stages
+`BillItem`s in the in-memory `PreBill` — nothing is persisted until "Settle Request" is clicked (the
+"Save Draft" button that would otherwise persist an intermediate `PharmacyBhtPre` is `rendered="false"`,
+per a comment in the page noting there's currently no way to resume a saved draft). The "New Bill"
+button (`actionListener="#{pharmacyRequestForBhtController.resetAll}"`) looks like a reasonable "finish
+this request" action but actually **discards all staged items with no confirmation** and resets the form
+to "Start Pharmacy Request for Inpatients". If a Playwright pass adds items and then clicks "New Bill"
+expecting the request to be saved, a DB check afterward will show nothing was created. Always use
+**"Settle Request"** (confirm-dialog-guarded) to actually persist a BHT pharmacy request. Verified while
+testing issue #22153.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

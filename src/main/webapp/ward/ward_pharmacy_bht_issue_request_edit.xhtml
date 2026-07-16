@@ -31,58 +31,71 @@
                             rendered="#{pharmacyRequestForBhtController.patientEncounter ne null and pharmacyRequestForBhtController.department ne null}"
                             >
                             <f:facet name="header" >
-                                <div class="d-flex justify-content-between">
-                                    <div class="d-flex mt-2">
-                                        <i class="fas fa-exclamation-circle mt-2" />
-                                        <p:spacer width="10" height="1" ></p:spacer>
-                                        <h:outputLabel value="BHT ISSUE REQUEST FOR - "/>
-                                        <h:outputLabel value="#{pharmacyRequestForBhtController.department.name}" class="mx-2" />
-                                    </div>
-                                    <div class="d-flex gap-2">
+                                <div class="d-flex justify-content-between align-items-center w-100">
 
+                                    <!-- LEFT: title -->
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="fas fa-exclamation-circle" />
+                                        <h:outputLabel value="BHT ISSUE REQUEST FOR - "/>
+                                        <h:outputLabel value="#{pharmacyRequestForBhtController.department.name}" />
+                                    </div>
+
+                                    <!-- CENTER: entity navigation -->
+                                    <div class="d-flex gap-2">
                                         <p:commandButton
+                                            id="btnInpatientDashboard"
                                             ajax="false"
                                             icon="fa-solid fa-address-card"
-                                            class="ui-button-secondary "
+                                            styleClass="ui-button-info ui-button-outlined"
                                             value="Inpatient Dashboard"
                                             action="#{bhtSummeryController.navigateToInpatientProfile()}">
                                         </p:commandButton>
 
                                         <p:commandButton
+                                            id="btnLookup"
                                             value="Lookup"
                                             ajax="false"
                                             icon="fa fa-search"
-                                            class="ui-button-warning "
+                                            styleClass="ui-button-info ui-button-outlined"
                                             action="#{patientController.navigateToSearchPatients()}"
                                             >
                                         </p:commandButton>
                                         <p:commandButton
+                                            id="btnProfile"
                                             value="Profile"
                                             ajax="false"
                                             icon="fa fa-user"
-                                            class="ui-button-warning"
+                                            styleClass="ui-button-info ui-button-outlined"
                                             action="#{patientController.navigateToOpdPatientProfile()}"
                                             >
                                             <f:setPropertyActionListener
                                                 value="#{pharmacyRequestForBhtController.patientEncounter.patient}"
                                                 target="#{patientController.current}" ></f:setPropertyActionListener>
                                         </p:commandButton>
+                                    </div>
 
+                                    <!-- RIGHT: actions, left=least important -> right=primary -->
+                                    <div class="d-flex gap-2 align-items-center">
                                         <p:commandButton
+                                            id="btnNewBill"
                                             accesskey="n"
                                             value="New Bill"
                                             ajax="false"
                                             icon="fas fa-file-invoice"
-                                            class="ui-button-warning"
+                                            styleClass="ui-button-warning"
                                             action="pharmacy_bill_issue_bht"
                                             actionListener="#{pharmacyRequestForBhtController.resetAll}"  >
                                         </p:commandButton>
 
                                         <p:commandButton
+                                            id="btnSettle"
                                             value="Settle"
-                                            class="ui-button-success"
-                                            icon="fa fa-check"
+                                            styleClass="ui-button-success"
+                                            style="min-width:120px"
+                                            icon="fa fa-check-circle"
                                             ajax="false"
+                                            disabled="#{pharmacyRequestForBhtController.preBillAlreadyIssuedAgainstRequest}"
+                                            title="#{pharmacyRequestForBhtController.preBillAlreadyIssuedAgainstRequest ? 'This request has already been issued by pharmacy and can no longer be edited' : 'Settle'}"
                                             action="#{pharmacyRequestForBhtController.settleEditedPharmacyBhtIssueRequest}"
                                             actionListener="#{pharmacyRequestForBhtController.calculateAllRates}"  >
                                         </p:commandButton>
@@ -90,6 +103,11 @@
                                 </div>
 
                                 <h:panelGroup id="panelError" >
+                                    <h:panelGroup
+                                        rendered="#{pharmacyRequestForBhtController.preBillAlreadyIssuedAgainstRequest}"
+                                        style="background-color: yellow; color: red; display: block; margin: 2px; border: 1px solid red; padding: 3px; width: 95%;">
+                                        <p:outputLabel value="This request has already been issued (partially or fully) by pharmacy and can no longer be edited." ></p:outputLabel>
+                                    </h:panelGroup>
                                     <h:panelGroup
                                         rendered="#{pharmacyRequestForBhtController.errorMessage ne null and pharmacyRequestForBhtController.errorMessage ne ''}"
                                         style="background-color: yellow; color: red; display: block; margin: 2px; border: 1px solid red; padding: 3px; width: 95%;">
@@ -320,42 +338,30 @@
                 <h:form>
                     <p:panel  rendered="#{pharmacyRequestForBhtController.billPreview}" >
                         <f:facet name="header">
-                            <div class="d-flex justify-content-between">
-                                <div class="col-md-4">
-                                    <h:outputLabel value="View Bill" class="mt-2"/>
+                            <div class="d-flex justify-content-between align-items-center w-100">
+
+                                <!-- LEFT: title -->
+                                <div class="d-flex align-items-center gap-2">
+                                    <h:outputLabel value="View Bill"/>
                                 </div>
+
+                                <!-- CENTER: entity navigation -->
                                 <div class="d-flex gap-2">
                                     <p:commandButton
-                                        accesskey="p"
-                                        id="btnPrint"
-                                        value="Print"
-                                        ajax="false"
-                                        class="ui-button-info"
-                                        icon="fa fa-print"> <!-- Font Awesome icon -->
-                                        <p:printer target="gpBillPreview" ></p:printer>
-                                    </p:commandButton>
-                                    <p:commandButton
-                                        accesskey="n"
-                                        value="New Medicine Request for BHT"
-                                        ajax="false"
-                                        class="ui-button-success"
-                                        action="pharmacy_bill_issue_request"
-                                        actionListener="#{pharmacyRequestForBhtController.resetAll()}"
-                                        icon="fa fa-plus-circle"> <!-- Font Awesome icon -->
-                                    </p:commandButton>
-                                    <p:commandButton
+                                        id="btnLookup"
                                         value="Lookup"
                                         ajax="false"
                                         icon="fa fa-search"
-                                        class="ui-button-warning "
+                                        styleClass="ui-button-info ui-button-outlined"
                                         action="#{patientController.navigateToSearchPatients()}"
                                         >
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnPatientProfile"
                                         value="Patient Profile"
                                         ajax="false"
                                         icon="fa fa-user"
-                                        class="ui-button-warning"
+                                        styleClass="ui-button-info ui-button-outlined"
                                         action="#{patientController.navigateToOpdPatientProfile()}"
                                         >
                                         <f:setPropertyActionListener
@@ -363,14 +369,38 @@
                                             target="#{patientController.current}" ></f:setPropertyActionListener>
                                     </p:commandButton>
                                     <p:commandButton
+                                        id="btnInpatientDashboard"
                                         ajax="false"
                                         icon="fa-solid fa-address-card"
-                                        class="ui-button-secondary "
+                                        styleClass="ui-button-info ui-button-outlined"
                                         value="Inpatient Dashboard"
-                                        style="float: right;"
                                         action="#{admissionController.navigateToAdmissionProfilePage}"
                                         >
                                         <f:setPropertyActionListener value="#{pharmacyRequestForBhtController.patientEncounter}" target="#{admissionController.current}" />
+                                    </p:commandButton>
+                                </div>
+
+                                <!-- RIGHT: actions, left=least important -> right=primary -->
+                                <div class="d-flex gap-2 align-items-center">
+                                    <p:commandButton
+                                        accesskey="p"
+                                        id="btnPrint"
+                                        value="Print"
+                                        ajax="false"
+                                        styleClass="ui-button-secondary"
+                                        icon="fa fa-print">
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        accesskey="n"
+                                        id="btnNewMedicineRequest"
+                                        value="New Medicine Request for BHT"
+                                        ajax="false"
+                                        styleClass="ui-button-success"
+                                        style="min-width:120px"
+                                        action="pharmacy_bill_issue_request"
+                                        actionListener="#{pharmacyRequestForBhtController.resetAll()}"
+                                        icon="fa fa-plus-circle">
                                     </p:commandButton>
                                 </div>
                             </div>

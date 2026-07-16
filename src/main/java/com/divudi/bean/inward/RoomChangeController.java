@@ -576,6 +576,7 @@ public class RoomChangeController implements Serializable {
             return;
         }
         getCurrent().setCurrentPatientRoom(newPatientRoom);
+        getCurrent().setRoomAdmitted(true);
         getEjbFacade().edit(getCurrent());
 
         // Save consultant information
