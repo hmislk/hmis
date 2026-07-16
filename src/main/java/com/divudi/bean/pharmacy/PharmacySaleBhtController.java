@@ -460,12 +460,15 @@ public class PharmacySaleBhtController implements Serializable {
      * movement in the Cost Of Goods Sold report (found via COGS E2E
      * verification: request 20, issue 10 → bill said 458.70, stock moved 10,
      * COGS saw +10 instead of -10).
+     *
+     * Uses qty (not qtyInUnit) because the UI binds directly to qty for editing;
+     * qtyInUnit is not updated by JSF and retains its original value.
      */
     private void recalculateEditedIssueRow(BillItem tmp) {
         if (tmp == null || tmp.getPharmaceuticalBillItem() == null) {
             return;
         }
-        double editedQty = Math.abs(tmp.getPharmaceuticalBillItem().getQtyInUnit());
+        double editedQty = Math.abs(tmp.getPharmaceuticalBillItem().getQty());
         tmp.setQty(editedQty);
         tmp.getPharmaceuticalBillItem().setQtyInUnit((float) (0 - editedQty));
         tmp.getPharmaceuticalBillItem().setQty(0 - editedQty);
