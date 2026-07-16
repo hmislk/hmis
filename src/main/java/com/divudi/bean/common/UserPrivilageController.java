@@ -215,15 +215,6 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelDocuments, "Documents Panel"), dashboardPanelsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelReports, "Reports Panel"), dashboardPanelsNode);
 
-        TreeNode nursingWorkBenchPanelsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Nursing Workbench Panels"), inwardNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelEdit, "Edit Panel"), nursingWorkBenchPanelsNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelClinicalData, "Clinical Data Panel"), nursingWorkBenchPanelsNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelRoomManagement, "Room Management Panel"), nursingWorkBenchPanelsNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelService, "Service Panel"), nursingWorkBenchPanelsNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelOperationTheatre, "Operation Theatre Panel"), nursingWorkBenchPanelsNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelPharmaceuticals, "Pharmaceuticals Panel"), nursingWorkBenchPanelsNode);
-        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelReports, "Reports Panel"), nursingWorkBenchPanelsNode);
-
         TreeNode inwardSurgeryNode = new DefaultTreeNode(new PrivilegeHolder(null, "Surgery"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryAdd, "Add Surgery"), inwardSurgeryNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryManage, "Manage Surgery"), inwardSurgeryNode);
@@ -991,7 +982,15 @@ public class UserPrivilageController implements Serializable {
         TreeNode showDrugCharges = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShowDrugCharges, "Show Drug Charges"), nurseNode);
         TreeNode ShowServiceCharges = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShowServiceCharges, "Show Service Charges"), nurseNode);
         TreeNode ShowTimeServiceCharges = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShowTimeServiceCharges, "Show Time Service Charges"), nurseNode);
-        
+
+        TreeNode nursingWorkBenchPanelsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Nursing Workbench Panels"), nurseNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelEdit, "Edit Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelClinicalData, "Clinical Data Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelRoomManagement, "Room Management Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelService, "Service Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelOperationTheatre, "Operation Theatre Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelPharmaceuticals, "Pharmaceuticals Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelReports, "Reports Panel"), nursingWorkBenchPanelsNode);
 
         // Admin Privileges
         TreeNode superAdminNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.SuperAdmin, "Super Admin"), allNode);
