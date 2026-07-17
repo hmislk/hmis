@@ -163,6 +163,19 @@ dropdown panel.
 
 Type the date string directly or click to open the calendar popup and select.
 
+**JS-set values are silently discarded** (found on `cost_of_goods_sold.xhtml`,
+issue #22011): setting `input.value` via `page.evaluate` + dispatching
+`input`/`change` events looks committed in the DOM, and Playwright's `fill()`
+has the same problem — but on submit the widget re-serializes its own internal
+date, so the report runs with the OLD dates and no error is shown. The only
+reliable pattern is real key events: click the input → `Ctrl+A` →
+`pressSequentially` the date string → `Escape` (closes the overlay without
+resetting the typed value). Verify with a DOM read *after* pressing Escape,
+then submit — and because the DOM can look right while the widget still
+serializes its old internal date, always confirm the intended dates in the
+**result** too (e.g. report rows fall inside the requested window, or the
+server-side query used the right range) before trusting the run.
+
 ### Always add `widgetVar`
 
 Every `p:inputText`, `p:autoComplete`, `p:calendar`, and `p:selectOneMenu`
@@ -740,6 +753,23 @@ Two related traps when checking whether `JsfUtil.addWarningMessage(...)` actuall
   the warning fired correctly on a page whose *unrelated* pre-existing widget-init JS error
   (`TypeError: Cannot read properties of undefined (reading 'hasAttribute')`, present since
   before any interaction) prevented the growl from rendering visually at all.
+
+## 20. Don't `disable` + `enable` the app to clear the L2 cache — restart the domain
+
+The disable→enable trick for flushing a poisoned EclipseLink shared cache (§ noted in
+earlier sessions) loads the whole application a **second time in the same JVM**, and on
+this codebase that reliably ends in `java.lang.OutOfMemoryError: Java heap space` +
+`CDI deployment failure` mid-enable, leaving the app 404 (hit during issue #22011
+verification). Restart the domain instead — slower, but it actually comes back up:
+
+```bash
+asadmin stop-domain <dom>    # "domain is already stopped" is fine — continue
+asadmin start-domain <dom>
+```
+
+Run the two commands separately (not chained with `&&`): if the domain is already
+down, `stop-domain` exits nonzero and a chained `start-domain` would be skipped,
+leaving the app offline.
 
 ## Quick checklist
 
