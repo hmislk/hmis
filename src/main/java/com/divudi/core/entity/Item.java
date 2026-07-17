@@ -326,7 +326,7 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
 
     public double getVatPercentage() {
-        return 0;
+        return vatPercentage;
     }
 
     public void setVatPercentage(double vatPercentage) {
