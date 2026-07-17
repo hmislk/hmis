@@ -15,6 +15,7 @@ import com.divudi.bean.clinical.PhotoCamBean;
 import com.divudi.bean.clinical.PracticeBookingController;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.AdmissionController;
+import com.divudi.bean.inward.InpatientPackageAdmissionController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
@@ -185,6 +186,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     AdmissionController admissionController;
     @Inject
     AppointmentController appointmentController;
+    @Inject
+    InpatientPackageAdmissionController inpatientPackageAdmissionController;
     @Inject
     private PaymentSchemeController paymentSchemeController;
     @Inject
@@ -956,6 +959,16 @@ public class PatientController implements Serializable, ControllerWithPatient {
         appointmentController.getCurrentAppointment().setPatient(getCurrent());
         appointmentController.getCurrentBill().setPatient(getCurrent());
         return "/inward/inward_appointment?faces-redirect=true";
+    }
+
+    public String navigateToPackageAdmitFromPatientProfile() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No patient selected");
+            return "";
+        }
+        inpatientPackageAdmissionController.setPatient(current);
+        inpatientPackageAdmissionController.setInpatientPackage(null);
+        return "/inward/package_admit?faces-redirect=true";
     }
 
     public String navigateToMedicalPakageBillingFromPatientProfile() {
@@ -2003,7 +2016,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
 
         if (searchMrn != null && !searchMrn.trim().equals("")) {
-            j += " and p.phn =:mrn";
+            j += " and p.code =:mrn";
             m.put("mrn", searchMrn);
             atLeastOneCriteriaIsGiven = true;
         }
