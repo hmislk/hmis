@@ -322,6 +322,17 @@ public class IssueReturnController implements Serializable {
         if (disposalReturnAlreadyProcessed()) {
             return;
         }
+        // disposalReturnAlreadyProcessed() does not check checkedBy (settleDisposalIssueReturnBill()
+        // relies on that same helper and requires checkedBy already set), so a queued double-submit
+        // reaching this point after the first call finished would re-finalize and overwrite the
+        // checkeAt/checkedBy/editedAt audit fields (CodeRabbit finding on #22194/PR #22197).
+        if (getReturnBill().getId() != null) {
+            Bill freshForFinalizeCheck = getBillFacade().findWithoutCache(getReturnBill().getId());
+            if (freshForFinalizeCheck != null && freshForFinalizeCheck.getCheckedBy() != null) {
+                JsfUtil.addErrorMessage("This disposal return has already been finalized. Reload the page before continuing.");
+                return;
+            }
+        }
         // Validate return comment is provided
         if (returnBill.getComments() == null || returnBill.getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Return Comment is required. Please provide a reason for the return.");
