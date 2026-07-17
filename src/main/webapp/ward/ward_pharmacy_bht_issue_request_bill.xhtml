@@ -321,19 +321,11 @@
                                             <f:facet name="header" >
                                                 <h:outputText styleClass="fa-solid fa-circle-plus"  />
                                                 <h:outputText value="Prescription" styleClass="mx-4"/>
-<!--
-    Save Draft is hidden for now (rendered="false"). It persists a PharmacyBhtPre
-    PreBill, but there is currently no mechanism on this page to reload a saved
-    draft and continue editing it, so a saved draft cannot be picked up from where
-    it was left off. Until that "resume draft" capability is built, the button is
-    kept in place but not rendered to avoid confusing users. Re-enable once draft
-    retrieval is implemented.
--->
                                                 <p:commandButton
                                                     id="btnSave"
-                                                    rendered="false"
                                                     ajax="false"
                                                     value="Save Draft"
+                                                    title="Save this request as a draft to resume later"
                                                     action="#{pharmacyRequestForBhtController.saveBhtIssueRequestFrompharmacy()}"
                                                     icon="pi pi-save"
                                                     class="ui-button-success"

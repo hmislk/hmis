@@ -5318,11 +5318,64 @@ public class SearchController implements Serializable {
         tmp.put("dep", getSessionController().getDepartment());
         tmp.put("bct", bct);
         tmp.put("bTp", BillType.InwardPharmacyRequest);
+        tmp.put("bta", BillTypeAtomic.REQUEST_MEDICINE_INWARD);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.toDepartment=:dep "
                 + " and b.billClassType not in :bct"
-                + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
+                + " and b.billType= :bTp and b.billTypeAtomic = :bta and b.createdAt between :fromDate and :toDate ";
+
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            sql += " and (((b.insId) like :billNo ) or ((b.deptId) like :billNo )) ";
+            tmp.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
+            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
+            tmp.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
+        }
+
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.bhtNo) like :bht )";
+            tmp.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+        }
+
+        sql += " order by b.createdAt desc  ";
+
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 50);
+
+        for (Bill b : bills) {
+            b.setListOfBill(getBHTIssudBills(b));
+        }
+
+    }
+
+    /**
+     * Lists draft (not yet settled) BHT medicine request bills, i.e. bills
+     * with billTypeAtomic = REQUEST_MEDICINE_INWARD_PRE. Cloned from
+     * {@link #createInwardBHTRequestTable()} for the "Save Draft" feature
+     * (issue #22004) - same From/To date, BHT/bill-no/patient keyword
+     * filters, and toDepartment scoping, but filtered by the draft atomic
+     * instead of the settled billType.
+     */
+    public void createBhtRequestDraftsTable() {
+        Date startTime = new Date();
+        BillClassType[] billClassTypes = {BillClassType.CancelledBill, BillClassType.RefundBill};
+        List<BillClassType> bct = Arrays.asList(billClassTypes);
+
+        String sql;
+
+        HashMap tmp = new HashMap();
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("dep", getSessionController().getDepartment());
+        tmp.put("bct", bct);
+        tmp.put("bta", BillTypeAtomic.REQUEST_MEDICINE_INWARD_PRE);
+
+        sql = "Select b From Bill b where "
+                + " b.retired=false and  b.toDepartment=:dep "
+                + " and b.billClassType not in :bct"
+                + " and b.billTypeAtomic = :bta and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and (((b.insId) like :billNo ) or ((b.deptId) like :billNo )) ";
@@ -5367,11 +5420,13 @@ public class SearchController implements Serializable {
         HashMap tmp = new HashMap();
         tmp.put("admission", getPatientEncounter());
         tmp.put("bTp", BillType.InwardPharmacyRequest);
+        tmp.put("bta", BillTypeAtomic.REQUEST_MEDICINE_INWARD);
         sql = "Select b "
                 + " From Bill b "
                 + " where b.retired=false "
                 + " and  b.toDepartment=:toDep"
                 + " and b.billType=:bTp "
+                + " and b.billTypeAtomic = :bta "
                 + " and b.patientEncounter=:admission ";
         sql += " order by b.createdAt desc  ";
         return getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 100);
@@ -5394,11 +5449,12 @@ public class SearchController implements Serializable {
         tmp.put("toDep", getSessionController().getDepartment());
         tmp.put("bTp", BillType.InwardPharmacyRequest);
         tmp.put("bct", bct);
+        tmp.put("bta", BillTypeAtomic.REQUEST_MEDICINE_INWARD);
 
         sql = "Select b From Bill b where "
                 + " b.retired=false and  b.toDepartment=:toDep"
                 + " and b.billClassType not in :bct"
-                + " and b.billType= :bTp and b.createdAt between :fromDate and :toDate ";
+                + " and b.billType= :bTp and b.billTypeAtomic = :bta and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and (((b.insId) like :billNo ) or ((b.deptId) like :billNo )) ";
@@ -5447,12 +5503,14 @@ public class SearchController implements Serializable {
         tmp.put("fromDate", getFromDate());
         tmp.put("toDep", getSessionController().getDepartment());
         tmp.put("bTp", BillType.InwardPharmacyRequest);
+        tmp.put("bta", BillTypeAtomic.REQUEST_MEDICINE_INWARD);
 
         sql = "Select COUNT(b) From Bill b "
                 + " where b.retired=false "
                 + " and b.toDepartment=:toDep "
                 + " and b.cancelled=false "
                 + " and b.billType= :bTp "
+                + " and b.billTypeAtomic = :bta "
                 + " and b.createdAt between :fromDate and :toDate ";
 
         long count = 0l;
