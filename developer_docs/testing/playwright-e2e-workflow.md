@@ -478,6 +478,15 @@ cached per session at login and won't pick up a new row otherwise. This came up 
 `BhtSummeryController.settle()` (`InwardSettleFinalBill`), where the local `buddhika`
 user had the privilege for `Store`/`Main Pharmacy` departments but not `Inward`.
 
+**`DEPARTMENT_ID` must be the `WebUser`'s home department (`WebUser.department`), not
+the department selected on the login screen.** `SessionController.getUserPrivileges()`
+calls `fillUserPrivileges(getLoggedUser(), getLoggedUser().getDepartment(), false)` —
+that second argument is the user's fixed home department field, and `deptIsNull=false`
+means a `DEPARTMENT_ID IS NULL` row is **never** matched, regardless of which department
+was picked at login. Check `SELECT DEPARTMENT_ID FROM webuser WHERE ID=<id>` first and
+insert the privilege row with that exact `DEPARTMENT_ID` — a NULL-department row silently
+does nothing, even after a full logout/login cycle.
+
 ## 21. Inward "Add Services" item picker — the Filter box does not load other departments' items
 
 On `inward/inward_bill_service.xhtml` (and the surgery equivalent) the item selector shows
