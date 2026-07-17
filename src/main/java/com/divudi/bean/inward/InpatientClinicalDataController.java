@@ -12,6 +12,7 @@ import com.divudi.bean.clinical.*;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.bean.pharmacy.PharmacySaleController;
 import com.divudi.core.data.BillType;
@@ -173,6 +174,8 @@ public class InpatientClinicalDataController implements Serializable {
     com.divudi.bean.common.NotificationController notificationController;
     @Inject
     private MedicationAdministrationController medicationAdministrationController;
+    @Inject
+    private WebUserController webUserController;
 
     /**
      * Properties
@@ -3214,6 +3217,12 @@ public class InpatientClinicalDataController implements Serializable {
     public void addEncounterMedicine() {
         if (current == null || current.getId() == null) {
             JsfUtil.addErrorMessage("Save the assessment before adding medicines.");
+            return;
+        }
+        boolean nursingDischarged = current.isNursingDischarged()
+                || (current.getParentEncounter() != null && current.getParentEncounter().isNursingDischarged());
+        if (nursingDischarged && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
+            JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
             return;
         }
         if (getEncounterMedicine().getPrescription().getItem() == null) {

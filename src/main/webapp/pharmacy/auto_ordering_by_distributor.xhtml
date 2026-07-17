@@ -65,7 +65,8 @@
 
                                         <h:outputLabel value="Bill types" ></h:outputLabel>
                                         <p:selectCheckboxMenu class="w-100 mx-2"  value="#{reorderController.billTypes}" 
-                                                              label="Select Bill Types"  >
+                                                              label="Select Bill Types"
+                                                              updateLabel="true"  >
                                             <f:selectItems value="#{enumController.pharmacyBillTypes}" var="pbt" itemLabel="#{pbt.label}" itemValue="#{pbt}" ></f:selectItems>
                                         </p:selectCheckboxMenu>
 

@@ -52,6 +52,25 @@ public class PharmaceuticalBillItemFacade extends AbstractFacade<PharmaceuticalB
     }
 
     /**
+     * Batched form of {@link #getPharmaceuticalBillItems(Bill)} — fetches
+     * PharmaceuticalBillItems for many bills in a single query, to fix the
+     * N+1 pattern in {@code PharmacySaleBhtController.checkBillComponent}
+     * being called once per bill row on the BHT issue-request list page.
+     */
+    public List<PharmaceuticalBillItem> getPharmaceuticalBillItemsForBills(List<Bill> bills) {
+        if (bills == null || bills.isEmpty()) {
+            return new java.util.ArrayList<>();
+        }
+        String sql = "Select p "
+                + " from PharmaceuticalBillItem p "
+                + " where p.billItem.bill in :bills "
+                + " and p.billItem.retired=false";
+        HashMap hm = new HashMap();
+        hm.put("bills", bills);
+        return findByJpql(sql, hm);
+    }
+
+    /**
      * Fetches PharmaceuticalBillItems for a bill with billItem, item, and
      * item.category eagerly loaded in a single query. Use this in GRN entry
      * flows where all three associations are accessed per item, to avoid

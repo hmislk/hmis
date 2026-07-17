@@ -573,8 +573,8 @@
                                                         class="ui-button-success"
                                                         title="Calculate the dispense item and quantity from the prescription and add it to the dispense request"
                                                         action="#{pharmacyRequestForBhtController.calculateAndAddBillItem}"
-                                                        process="@this acMedicine acItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"
-                                                        update="growl :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acMedicine acItem focusItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"   >
+                                                        process="@this acMedicine acItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtComments txtDrugOrderComments"
+                                                        update="growl :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acMedicine acItem focusItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtComments txtDrugOrderComments"   >
                                                     </p:commandButton>
                                                 </div>
                                             </div>
@@ -658,7 +658,7 @@
                                         <div class="row mt-1">
                                             <div class="col-md-12">
                                                 <p:outputLabel value="Comment" />
-                                                <p:inputTextarea id="txtDrugOrderComments" value="#{pharmacyRequestForBhtController.billItem.prescription.comment}" class="w-100" />
+                                                <p:inputTextarea id="txtDrugOrderComments" value="#{pharmacyRequestForBhtController.billItem.instructions}" class="w-100" />
                                             </div>
                                         </div>
 
@@ -689,6 +689,9 @@
                                                         <h:outputText rendered="#{bi.prescription.duration ne null}" value="Duration: #{bi.prescription.duration} #{bi.prescription.durationUnit.name}" />
                                                     </h:panelGroup>
                                                 </h:panelGroup>
+                                            </p:column>
+                                            <p:column headerText="Comment" width="15em">
+                                                <h:outputText value="#{bi.instructions}" />
                                             </p:column>
                                             <p:column headerText="Edit" width="5em">
                                                 <p:commandButton

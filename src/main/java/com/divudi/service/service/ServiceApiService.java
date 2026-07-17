@@ -223,6 +223,9 @@ public class ServiceApiService implements Serializable {
         service.setMarginNotAllowed(request.isMarginNotAllowed());
         service.setRequestForQuentity(request.isRequestForQuentity());
         service.setPatientNotRequired(request.isPatientNotRequired());
+        service.setVatable(request.isVatable());
+        validateVatPercentage(request.getVatPercentage());
+        service.setVatPercentage(request.getVatPercentage());
 
         // Resolve optional associations
         if (request.getCategoryId() != null) {
@@ -331,6 +334,13 @@ public class ServiceApiService implements Serializable {
         }
         if (request.getPatientNotRequired() != null) {
             service.setPatientNotRequired(request.getPatientNotRequired());
+        }
+        if (request.getVatable() != null) {
+            service.setVatable(request.getVatable());
+        }
+        if (request.getVatPercentage() != null) {
+            validateVatPercentage(request.getVatPercentage());
+            service.setVatPercentage(request.getVatPercentage());
         }
 
         if (request.getCategoryId() != null) {
@@ -895,6 +905,12 @@ public class ServiceApiService implements Serializable {
         return service;
     }
 
+    private void validateVatPercentage(Double vatPercentage) throws Exception {
+        if (vatPercentage != null && (vatPercentage < 0 || vatPercentage > 100)) {
+            throw new Exception("vatPercentage must be between 0 and 100");
+        }
+    }
+
     /**
      * Load an ItemFee by ID, ensuring it belongs to the given service and is not retired.
      */
@@ -998,6 +1014,8 @@ public class ServiceApiService implements Serializable {
         dto.setMarginNotAllowed(service.isMarginNotAllowed());
         dto.setRequestForQuentity(service.isRequestForQuentity());
         dto.setPatientNotRequired(service.isPatientNotRequired());
+        dto.setVatable(service.isVatable());
+        dto.setVatPercentage(service.getVatPercentage());
         if (service.getInwardChargeType() != null) {
             dto.setInwardChargeType(service.getInwardChargeType().name());
         }
