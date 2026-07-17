@@ -1445,12 +1445,18 @@ public class PharmacyRequestForBhtController implements Serializable {
 
         }
 
+        String reorderMsg = pharmacyService.getReorderWarningMessage(patientEncounter, billItem.getItem());
+        if (!reorderMsg.isEmpty()) {
+            JsfUtil.addWarningMessage(reorderMsg);
+        }
+
         // Create a new billItem for the collection to avoid entity state issues
         BillItem newBillItem = new BillItem();
         newBillItem.setItem(billItem.getItem());
         newBillItem.setQty(getQty());
         newBillItem.setInwardChargeType(InwardChargeType.Medicine);
         newBillItem.setBill(getPreBill());
+        newBillItem.setInstructions(billItem.getInstructions());
         // Required so resolvePackageOverrideRate()'s cumulative-quantity JPQL (bi.patientEncounter = :pe)
         // can find this row on subsequent dispenses of the same package-listed item.
         newBillItem.setPatientEncounter(patientEncounter);

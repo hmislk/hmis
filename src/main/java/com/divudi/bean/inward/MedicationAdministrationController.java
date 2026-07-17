@@ -127,6 +127,10 @@ public class MedicationAdministrationController implements Serializable {
             JsfUtil.addErrorMessage("Select a status.");
             return;
         }
+        if (sessionController.getLoggedUser().getStaff() == null) {
+            JsfUtil.addErrorMessage("Your user account is not linked to a staff record; medication administration cannot be recorded.");
+            return;
+        }
         if (administerStatus == MedicationAdministrationStatus.GIVEN) {
             if (selectedStock == null) {
                 JsfUtil.addErrorMessage("Select a batch.");

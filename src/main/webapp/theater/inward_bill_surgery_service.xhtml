@@ -261,6 +261,13 @@
 
                                                 </p:column>
 
+                                                <p:column rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                                    <f:facet name="header">VAT</f:facet>
+                                                    <h:outputLabel value="#{bi.billItem.vat}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </p:column>
+
                                                 <p:column>
                                                     <h:commandButton id="btnRemove" value="X" action="#{billBhtController.removeBillItem(bi)}" >
                                                         <f:setPropertyActionListener  value="#{rowIndex}" target="#{billBhtController.index}" />
@@ -325,6 +332,13 @@
                                                     </h:outputLabel>
                                                 </p:column>
 
+                                                <p:column rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                                    <f:facet name="header">VAT</f:facet>
+                                                    <h:outputLabel value="#{bif.feeVat}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </p:column>
+
                                                 <p:column >
                                                     <f:facet name="header">Speciality</f:facet>
                                                     <h:outputLabel value="#{bif.speciality.name}"/>
@@ -351,6 +365,18 @@
                                         <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
                                             <h:outputLabel value="Total" ></h:outputLabel>
                                             <h:outputLabel id="tot" value="#{billBhtController.total}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Net Total" ></h:outputLabel>
+                                            <h:outputLabel value="#{billBhtController.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="VAT" ></h:outputLabel>
+                                            <h:outputLabel value="#{billBhtController.vat}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Net Total + VAT" ></h:outputLabel>
+                                            <h:outputLabel value="#{billBhtController.vatPlusNetTotal}" >
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </p:panelGrid>
