@@ -1036,6 +1036,20 @@
                                     </div>
                                     <div class="col-6">
                                         <p:commandButton
+                                            id="btnPharmacyRequestDrafts"
+                                            value="Draft Pharmacy Requests"
+                                            action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyRequestDraftsList()}"
+                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
+                                            icon="fa fa-file-pen"
+                                            class="w-100"
+                                            ajax="false">
+                                            <f:setPropertyActionListener
+                                                value="#{admissionController.current}"
+                                                target="#{inwardPharmacyEncounterReportController.patientEncounter}" />
+                                        </p:commandButton>
+                                    </div>
+                                    <div class="col-6">
+                                        <p:commandButton
                                             id="btnDirectIssuesHistory"
                                             value="Direct Issues"
                                             action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyDirectIssuesList()}"
