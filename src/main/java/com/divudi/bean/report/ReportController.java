@@ -4495,6 +4495,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("per.name, ")
                 .append("CASE WHEN type(pe) = Admission THEN 'IP' ELSE 'OPD' END, ")
                 .append("rdPer.name, ")
+                .append("rdPer.title, ")
                 .append("pe.grantTotal, ")
                 .append("rfc.roomCategory, ")
                 .append("pe.netTotal")

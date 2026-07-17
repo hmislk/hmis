@@ -168,6 +168,7 @@ public class ProfitMatrixRowDTO {
             String patientName,
             String visitType,
             String referringDoctorName,
+            Title title,
             double invoiceAmount,
             RoomCategory roomCategory,
             double finalAmount
@@ -178,6 +179,7 @@ public class ProfitMatrixRowDTO {
         this.patientName = patientName;
         this.visitType = visitType;
         this.referringDoctorName = referringDoctorName;
+        this.title = title;
         this.invoiceAmount = invoiceAmount;
         this.roomCategory = roomCategory;
         this.finalAmount = finalAmount;
