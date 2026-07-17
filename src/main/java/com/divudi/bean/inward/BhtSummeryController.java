@@ -2062,6 +2062,17 @@ public class BhtSummeryController implements Serializable {
         if (creditCompanyAllocations == null) {
             creditCompanyAllocations = new ArrayList<>();
         }
+        // Check what is actually registered against the encounter, not just what is
+        // on screen: populateCreditCompanyAllocations() stops allocating once the due
+        // is covered, so a registered company can be absent from the allocation list
+        // and would otherwise be persisted a second time here.
+        for (EncounterCreditCompany registered : fillCreditCompaniesByPatient(patientEncounter)) {
+            if (newEncounterCreditCompany.getInstitution().equals(registered.getInstitution())) {
+                JsfUtil.addErrorMessage(newEncounterCreditCompany.getInstitution().getName()
+                        + " is already registered for this BHT");
+                return false;
+            }
+        }
         for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
             if (!alloc.isPatientPortion()
                     && newEncounterCreditCompany.getInstitution().equals(alloc.getCreditCompany())) {
