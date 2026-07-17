@@ -69,6 +69,7 @@ public class PatientTransferController implements Serializable {
     // Theatre workflow fields
     private Bill selectedSurgeryBill;
     private List<Bill> surgeryBillsForCurrentAdmission;
+    private List<RoomFacilityCharge> theatreRoomsForCurrentInstitution;
     private List<PatientTransferRequest> pendingTheatreRequests;
     private List<PatientTransferRequest> inTheatreRequests;
     private List<PatientTransferRequest> pendingReturnRequests;
@@ -466,6 +467,7 @@ public class PatientTransferController implements Serializable {
         selectedSurgeryBill = null;
         notes = null;
         surgeryBillsForCurrentAdmission = loadSurgeryBillsForAdmission(admission);
+        theatreRoomsForCurrentInstitution = roomFacilityChargeController.findTheatreRoomsForInstitution(sessionController.getInstitution());
         return "/inward/inward_send_to_theatre?faces-redirect=true";
     }
 
@@ -758,6 +760,13 @@ public class PatientTransferController implements Serializable {
             surgeryBillsForCurrentAdmission = new ArrayList<>();
         }
         return surgeryBillsForCurrentAdmission;
+    }
+
+    public List<RoomFacilityCharge> getTheatreRoomsForCurrentInstitution() {
+        if (theatreRoomsForCurrentInstitution == null) {
+            theatreRoomsForCurrentInstitution = new ArrayList<>();
+        }
+        return theatreRoomsForCurrentInstitution;
     }
 
     public Bill getSelectedSurgeryBill() {
