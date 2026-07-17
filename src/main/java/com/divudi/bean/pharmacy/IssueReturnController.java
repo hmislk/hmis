@@ -310,7 +310,12 @@ public class IssueReturnController implements Serializable {
         JsfUtil.addSuccessMessage("Saved");
     }
 
-    public void finalizeDisposalIssueReturnBill() {
+    // synchronized: no double-click guard exists on the Finalize action. Although
+    // disposalReturnAlreadyProcessed() below reads fresh DB state, it is still a
+    // check-then-act sequence - a double-click could race two calls past the check
+    // before either had persisted the bill, duplicating the finalize save (same bug
+    // class as PurchaseOrderController.approve(), issue #22194).
+    public synchronized void finalizeDisposalIssueReturnBill() {
         if (!isAuthorized("FINALIZE", "FinalizeDisposalReturn")) {
             return;
         }
@@ -350,7 +355,11 @@ public class IssueReturnController implements Serializable {
         JsfUtil.addSuccessMessage("Finalized");
     }
 
-    public void settleDisposalIssueReturnBill() {
+    // synchronized: no double-click guard existed prior to #22194. Although
+    // disposalReturnAlreadyProcessed() below reads fresh DB state, it is still a
+    // check-then-act sequence - a double-click could race two calls past the check
+    // before either had persisted the bill, duplicating stock movements/payment.
+    public synchronized void settleDisposalIssueReturnBill() {
         if (!isAuthorized("APPROVE", "ApproveDisposalReturn")) {
             return;
         }
