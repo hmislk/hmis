@@ -754,6 +754,43 @@ Two related traps when checking whether `JsfUtil.addWarningMessage(...)` actuall
   (`TypeError: Cannot read properties of undefined (reading 'hasAttribute')`, present since
   before any interaction) prevented the growl from rendering visually at all.
 
+## 33. Binding a `p:inputText` through a nullable session-scoped entity property crashes on first submit
+
+`ward/issue_for_bht_request_list.xhtml` bound its BHT-No search box to
+`#{searchController.patientEncounter.bhtNo}` — a nested property path through
+`SearchController.patientEncounter`, which is `@SessionScoped` and never
+initialized on this page (nothing sets it before rendering; unlike the 3 lab
+pages that bind `value="#{searchController.patientEncounter}"` — the whole
+object, not a nested field — via `p:autoComplete`/`p:selectOneMenu`, which
+tolerate `null`). Every submit threw `EL: Target Unreachable, 'null' returned
+null` (HTTP 500) during `UIInput.getConvertedValue`, both with and without
+typing into the field — the crash happens on *any* postback of the form, not
+just when the bound property is touched. Fixed for #22196 by rebinding to
+`searchController.searchKeyword.bhtNo` (a plain `String`, default `""`),
+matching the pattern already used by ~28 other pages in this codebase (grep
+`searchController.searchKeyword.bhtNo` across `*.xhtml`). **Lesson**: never
+bind a `p:inputText` through a nested path on a session-scoped controller's
+entity-typed field unless something on the *same* page is guaranteed to have
+set that entity first — bind through a dedicated search-keyword/DTO field
+instead.
+
+## 34. Local dev DB can silently drift behind the entity model — watch for `Unknown column` on unrelated pages
+
+While testing #22196, clicking "View Request" on an inward pharmacy request
+threw `SQLSyntaxErrorException: Unknown column 'VATPERCENTAGE' in 'field
+list'` loading `BillItem` rows — the local `coop` DB's `BILLITEM` table
+predates the `vatPercentage` field added to the `BillItem` entity, and there
+is no DDL/migration step in the local dev workflow that keeps schema in sync
+automatically. This is unrelated to whatever feature is under test and will
+recur for any page that touches `BillItem`. Fix locally with a plain additive
+column matching the sibling `VAT`/`VATPLUSNETVALUE` columns:
+`ALTER TABLE BILLITEM ADD COLUMN VATPERCENTAGE DOUBLE NULL DEFAULT NULL AFTER
+VAT;` — do not add this to a migration script (it's a local-only environment
+gap, not a schema change accompanying a code change). If a fresh
+`Unknown column` error appears on an otherwise-unrelated page, check
+`SHOW COLUMNS FROM <table>` against the entity's fields before assuming the
+feature under test is broken.
+
 ## 20. Don't `disable` + `enable` the app to clear the L2 cache — restart the domain
 
 The disable→enable trick for flushing a poisoned EclipseLink shared cache (§ noted in
