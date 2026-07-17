@@ -201,17 +201,17 @@
                                 </td>
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                     <td style="text-align: right">
-                                        <h:outputLabel value="#{item.netValue}">
+                                        <h:outputText value="#{item.netValue}">
                                             <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </td>
-                                    <h:panelGroup rendered="#{item.vat ne 0.0}">
-                                        <td style="text-align: right">
-                                            <h:outputLabel value="#{item.vat}">
+                                        </h:outputText>
+                                        <ui:fragment rendered="#{item.vat ne 0.0}">
+                                            <br/>
+                                            <h:outputText value="VAT "/>
+                                            <h:outputText value="#{item.vat}">
                                                 <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </td>
-                                    </h:panelGroup>
+                                            </h:outputText>
+                                        </ui:fragment>
+                                    </td>
                                 </h:panelGroup>
                             </tr>
                         </ui:repeat>
@@ -281,24 +281,24 @@
                                     </td>
                                 </tr>
 
-                                <h:panelGroup rendered="#{cc.attrs.bill.vat ne 0.0}">
+                                <ui:fragment rendered="#{cc.attrs.bill.vat ne 0.0}">
                                     <tr>
                                         <td >VAT</td>
                                         <td style="text-align: right;">
-                                            <h:outputLabel value="#{cc.attrs.bill.vat}">
+                                            <h:outputText value="#{cc.attrs.bill.vat}">
                                                 <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
+                                            </h:outputText>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td >Net Amount + VAT</td>
                                         <td style="text-align: right;">
-                                            <h:outputLabel value="#{cc.attrs.bill.vatPlusNetTotal}">
+                                            <h:outputText value="#{cc.attrs.bill.vatPlusNetTotal}">
                                                 <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
+                                            </h:outputText>
                                         </td>
                                     </tr>
-                                </h:panelGroup>
+                                </ui:fragment>
                             </h:panelGroup>
                             <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter eq null 
                                                       and cc.attrs.billCount eq 1 

@@ -4502,8 +4502,6 @@ public class BillBeanController implements Serializable {
 
         billItem.setVat(val);
         billItem.setVatPlusNetValue(billItem.getNetValue() + billItem.getVat());
-        billItem.setVatPercentage(billItem.getItem() != null && billItem.getItem().isVatable()
-                ? billItem.getItem().getVatPercentage() : 0.0);
 //
 //        billItem.setEditedAt(new Date());
 //        billItem.setEditor(webUser);

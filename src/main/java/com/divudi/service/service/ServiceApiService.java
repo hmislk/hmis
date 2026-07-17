@@ -224,6 +224,7 @@ public class ServiceApiService implements Serializable {
         service.setRequestForQuentity(request.isRequestForQuentity());
         service.setPatientNotRequired(request.isPatientNotRequired());
         service.setVatable(request.isVatable());
+        validateVatPercentage(request.getVatPercentage());
         service.setVatPercentage(request.getVatPercentage());
 
         // Resolve optional associations
@@ -338,6 +339,7 @@ public class ServiceApiService implements Serializable {
             service.setVatable(request.getVatable());
         }
         if (request.getVatPercentage() != null) {
+            validateVatPercentage(request.getVatPercentage());
             service.setVatPercentage(request.getVatPercentage());
         }
 
@@ -901,6 +903,12 @@ public class ServiceApiService implements Serializable {
             throw new Exception("Service with ID " + id + " is not an OPD or Inward service");
         }
         return service;
+    }
+
+    private void validateVatPercentage(Double vatPercentage) throws Exception {
+        if (vatPercentage != null && (vatPercentage < 0 || vatPercentage > 100)) {
+            throw new Exception("vatPercentage must be between 0 and 100");
+        }
     }
 
     /**

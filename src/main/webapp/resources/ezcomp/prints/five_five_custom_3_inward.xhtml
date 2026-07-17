@@ -297,24 +297,24 @@
                             </td>
                         </tr>
 
-                        <h:panelGroup rendered="#{cc.attrs.bill.vat ne 0.0}">
+                        <ui:fragment rendered="#{cc.attrs.bill.vat ne 0.0}">
                             <tr>
                                 <td >VAT:</td>
                                 <td style="text-align: right;">
-                                    <h:outputLabel value="#{cc.attrs.bill.vat}">
+                                    <h:outputText value="#{cc.attrs.bill.vat}">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
+                                    </h:outputText>
                                 </td>
                             </tr>
                             <tr>
                                 <td >Net Total + VAT:</td>
                                 <td style="text-align: right;">
-                                    <h:outputLabel value="#{cc.attrs.bill.vatPlusNetTotal}">
+                                    <h:outputText value="#{cc.attrs.bill.vatPlusNetTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
+                                    </h:outputText>
                                 </td>
                             </tr>
-                        </h:panelGroup>
+                        </ui:fragment>
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Inward Service Bill - Group Bill Item By Name',false)}">

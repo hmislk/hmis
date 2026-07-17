@@ -46,6 +46,7 @@ public class InvestigationApiService implements Serializable {
         i.setInactive(Boolean.TRUE.equals(req.getInactive()));
         i.setBypassSampleWorkflow(Boolean.TRUE.equals(req.getBypassSampleWorkflow()));
         i.setVatable(Boolean.TRUE.equals(req.getVatable()));
+        validateVatPercentage(req.getVatPercentage());
         if (req.getVatPercentage() != null) i.setVatPercentage(req.getVatPercentage());
         if (req.getReportType() != null && !req.getReportType().trim().isEmpty()) i.setReportType(InvestigationReportType.valueOf(req.getReportType().trim()));
         i.setCreater(user); i.setCreatedAt(new Date()); i.setRetired(false);
@@ -62,6 +63,7 @@ public class InvestigationApiService implements Serializable {
         if (req.getInactive() != null) i.setInactive(req.getInactive());
         if (req.getBypassSampleWorkflow() != null) i.setBypassSampleWorkflow(req.getBypassSampleWorkflow());
         if (req.getVatable() != null) i.setVatable(req.getVatable());
+        validateVatPercentage(req.getVatPercentage());
         if (req.getVatPercentage() != null) i.setVatPercentage(req.getVatPercentage());
         if (req.getReportType() != null && !req.getReportType().trim().isEmpty()) i.setReportType(InvestigationReportType.valueOf(req.getReportType().trim()));
         i.setEditer(user); i.setEditedAt(new Date()); investigationFacade.edit(i);
@@ -74,6 +76,12 @@ public class InvestigationApiService implements Serializable {
     }
 
     private Investigation load(Long id) throws Exception { Investigation i = investigationFacade.find(id); if (i == null || i.isRetired()) throw new Exception("Investigation not found with ID: " + id); return i; }
+
+    private void validateVatPercentage(Double vatPercentage) throws Exception {
+        if (vatPercentage != null && (vatPercentage < 0 || vatPercentage > 100)) {
+            throw new Exception("vatPercentage must be between 0 and 100");
+        }
+    }
     private InvestigationSearchResultDTO toSearch(Investigation i) {
         InvestigationSearchResultDTO dto = new InvestigationSearchResultDTO(i.getId(), i.getName(), i.getCode(), i.getPrintName(), i.isInactive(), i.getReportType() != null ? i.getReportType().name() : null, i.isBypassSampleWorkflow());
         dto.setVatable(i.isVatable());

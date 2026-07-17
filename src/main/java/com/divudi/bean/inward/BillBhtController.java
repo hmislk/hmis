@@ -1049,10 +1049,7 @@ public class BillBhtController implements Serializable {
 
             getInwardBean().setBillFeeMargin(billFee, billItem.getItem(), priceMatrix, patientEncounter);
 
-            if (billItem.getItem().isVatable() && billItem.getItem().getVatPercentage() > 0) {
-                billFee.setFeeVat(roundOff(billFee.getFeeValue() * billItem.getItem().getVatPercentage() / 100));
-            }
-            billFee.setFeeVatPlusValue(billFee.getFeeValue() + billFee.getFeeVat());
+            recalculateFeeVat(billFee);
 
             billFeeList.add(billFee);
         }
@@ -1172,6 +1169,8 @@ public class BillBhtController implements Serializable {
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), priceMatrix);
 
+        recalculateFeeVat(bf);
+
         calTotals();
     }
 
@@ -1195,7 +1194,19 @@ public class BillBhtController implements Serializable {
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getBatchBill().getFromDepartment(), priceMatrix);
 
+        recalculateFeeVat(bf);
+
         calTotals();
+    }
+
+    private void recalculateFeeVat(BillFee bf) {
+        if (bf.getBillItem() != null && bf.getBillItem().getItem() != null
+                && bf.getBillItem().getItem().isVatable() && bf.getBillItem().getItem().getVatPercentage() > 0) {
+            bf.setFeeVat(roundOff(bf.getFeeValue() * bf.getBillItem().getItem().getVatPercentage() / 100));
+        } else {
+            bf.setFeeVat(0.0);
+        }
+        bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
     }
 
     public void prepareNewBill() {
@@ -1496,12 +1507,7 @@ public class BillBhtController implements Serializable {
     }
 
     private double roundOff(double d) {
-        java.text.DecimalFormat newFormat = new java.text.DecimalFormat("#.##");
-        try {
-            return Double.valueOf(newFormat.format(d));
-        } catch (Exception e) {
-            return 0;
-        }
+        return Math.round(d * 100.0) / 100.0;
     }
 
     public double getCashPaid() {
