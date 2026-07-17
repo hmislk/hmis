@@ -1,5 +1,6 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.Title;
 import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.core.entity.inward.RoomCategory;
 
@@ -11,6 +12,7 @@ public class ProfitMatrixRowDTO {
     private String patientName;
     private String visitType;
     private String referringDoctorName;
+    private Title title;
     private Double invoiceAmount;
     private Double finalAmount;
     private Double profitMargin;
@@ -133,6 +135,7 @@ public class ProfitMatrixRowDTO {
             String patientName,
             String visitType,
             String referringDoctorName,
+            Title title,
             String serviceName,
             String serviceDepartment,
             double invoiceAmount,
@@ -145,6 +148,7 @@ public class ProfitMatrixRowDTO {
         this.patientName = patientName;
         this.visitType = visitType;
         this.referringDoctorName = referringDoctorName;
+        this.title = title;
         this.serviceName = serviceName;
         this.serviceDepartment = serviceDepartment;
         this.invoiceAmount = invoiceAmount;
@@ -242,5 +246,9 @@ public class ProfitMatrixRowDTO {
 
     public void setRoomCategory(RoomCategory roomCategory) {
         this.roomCategory = roomCategory;
+    }
+
+    public Title getTitle() {
+        return title;
     }
 }

@@ -4578,6 +4578,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("per.name, ")
                 .append("CASE WHEN type(pe) = Admission THEN 'IP' ELSE 'OPD' END, ")
                 .append("rdPer.name, ")
+                .append("rdPer.title, ")
                 .append("bi.item.name, ")
                 .append("bi.item.department.name, ")
                 .append("bi.grossValue, ")
