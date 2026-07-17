@@ -163,6 +163,16 @@ dropdown panel.
 
 Type the date string directly or click to open the calendar popup and select.
 
+**JS-set values are silently discarded** (found on `cost_of_goods_sold.xhtml`,
+issue #22011): setting `input.value` via `page.evaluate` + dispatching
+`input`/`change` events looks committed in the DOM, and Playwright's `fill()`
+has the same problem — but on submit the widget re-serializes its own internal
+date, so the report runs with the OLD dates and no error is shown. The only
+reliable pattern is real key events: click the input → `Ctrl+A` →
+`pressSequentially` the date string → `Escape` (closes the overlay without
+resetting the typed value). Verify with a DOM read *after* pressing Escape,
+then submit.
+
 ### Always add `widgetVar`
 
 Every `p:inputText`, `p:autoComplete`, `p:calendar`, and `p:selectOneMenu`
@@ -740,6 +750,15 @@ Two related traps when checking whether `JsfUtil.addWarningMessage(...)` actuall
   the warning fired correctly on a page whose *unrelated* pre-existing widget-init JS error
   (`TypeError: Cannot read properties of undefined (reading 'hasAttribute')`, present since
   before any interaction) prevented the growl from rendering visually at all.
+
+## 20. Don't `disable` + `enable` the app to clear the L2 cache — restart the domain
+
+The disable→enable trick for flushing a poisoned EclipseLink shared cache (§ noted in
+earlier sessions) loads the whole application a **second time in the same JVM**, and on
+this codebase that reliably ends in `java.lang.OutOfMemoryError: Java heap space` +
+`CDI deployment failure` mid-enable, leaving the app 404 (hit during issue #22011
+verification). Use a full `asadmin stop-domain <dom> && asadmin start-domain <dom>`
+instead — slower, but it actually comes back up.
 
 ## Quick checklist
 
