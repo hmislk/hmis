@@ -3441,8 +3441,11 @@ public class PharmacyReportController implements Serializable {
                     + "LEFT JOIN FETCH bi.bill b "
                     + "LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi "
                     + "LEFT JOIN FETCH pbi.itemBatch "
+                    // Only bi.retired is filtered (NOT b.retired) to stay in lockstep with
+                    // retrievePurchaseAndCostValues() — the main COGS row filters only the
+                    // bill item, so filtering the bill here would make the two totals
+                    // diverge for retired bills that still carry non-retired items.
                     + "WHERE bi.retired = false "
-                    + "AND b.retired = false "
                     + "AND b.billTypeAtomic IN :billTypes "
                     // Must match the date basis used by retrievePurchaseAndCostValues()
                     // (the main COGS row), else this drill-down will not reconcile with

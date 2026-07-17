@@ -171,7 +171,10 @@ date, so the report runs with the OLD dates and no error is shown. The only
 reliable pattern is real key events: click the input → `Ctrl+A` →
 `pressSequentially` the date string → `Escape` (closes the overlay without
 resetting the typed value). Verify with a DOM read *after* pressing Escape,
-then submit.
+then submit — and because the DOM can look right while the widget still
+serializes its old internal date, always confirm the intended dates in the
+**result** too (e.g. report rows fall inside the requested window, or the
+server-side query used the right range) before trusting the run.
 
 ### Always add `widgetVar`
 
@@ -757,8 +760,16 @@ The disable→enable trick for flushing a poisoned EclipseLink shared cache (§ 
 earlier sessions) loads the whole application a **second time in the same JVM**, and on
 this codebase that reliably ends in `java.lang.OutOfMemoryError: Java heap space` +
 `CDI deployment failure` mid-enable, leaving the app 404 (hit during issue #22011
-verification). Use a full `asadmin stop-domain <dom> && asadmin start-domain <dom>`
-instead — slower, but it actually comes back up.
+verification). Restart the domain instead — slower, but it actually comes back up:
+
+```bash
+asadmin stop-domain <dom>    # "domain is already stopped" is fine — continue
+asadmin start-domain <dom>
+```
+
+Run the two commands separately (not chained with `&&`): if the domain is already
+down, `stop-domain` exits nonzero and a chained `start-domain` would be skipped,
+leaving the app offline.
 
 ## Quick checklist
 
