@@ -5060,7 +5060,13 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private static final Set<BillTypeAtomic> RETURN_BILL_TYPES = new HashSet<>(Arrays.asList(
             BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
             BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
-            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS
     ));
 
     private List<PharmacySaleDepartmentDTO> buildHierarchy(List<PharmacySaleItemDTO> flatItems) {
