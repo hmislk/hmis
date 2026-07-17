@@ -164,6 +164,7 @@
                                         id="btnEditDraft"
                                         title="Edit Draft #{b.deptId}"
                                         value="Edit Draft"
+                                        rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest')}"
                                         class="ui-button-warning m-1"
                                         ajax="false"
                                         icon="fa-solid fa-pen-to-square"

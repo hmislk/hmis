@@ -106,6 +106,7 @@
                                     <p:commandButton
                                         id="btnEditDraft"
                                         title="Edit Draft #{p.deptId}"
+                                        rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest')}"
                                         ajax="false"
                                         value="Edit Draft"
                                         icon="fa-solid fa-pen-to-square"

@@ -11,6 +11,7 @@ import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
@@ -95,6 +96,8 @@ public class PharmacyRequestForBhtController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     ItemController itemController;
+    @Inject
+    WebUserController webUserController;
 
 ////////////////////////
     @EJB
@@ -1045,10 +1048,16 @@ public class PharmacyRequestForBhtController implements Serializable {
      * concurrency guard bailed out before persisting anything
      */
     private boolean persistBhtRequest(BillTypeAtomic bta, BillType bt, boolean completed) {
-        if (getPreBill().getId() != null && completed) {
+        if (getPreBill().getId() != null) {
+            // Guard applies to BOTH settle and draft-save: without it, a stale
+            // "Save Draft" click on a bill someone else already settled would
+            // silently flip the settled bill back to REQUEST_MEDICINE_INWARD_PRE
+            // / completed=false.
             Bill fresh = billService.reloadBill(getPreBill());
             if (fresh == null || fresh.getBillTypeAtomic() != BillTypeAtomic.REQUEST_MEDICINE_INWARD_PRE) {
-                JsfUtil.addErrorMessage("This request was already settled by another user. Please refresh.");
+                JsfUtil.addErrorMessage(completed
+                        ? "This request was already settled by another user. Please refresh."
+                        : "This draft is no longer editable. Please refresh.");
                 return false;
             }
         }
@@ -2296,17 +2305,24 @@ public class PharmacyRequestForBhtController implements Serializable {
      * on failure
      */
     public String loadDraftForEditing(Bill draftBill) {
+        if (!webUserController.hasPrivilege(com.divudi.core.data.Privileges.InwardPharmacyIssueRequest.toString())) {
+            JsfUtil.addErrorMessage("You do not have privilege to edit pharmacy requests.");
+            return null;
+        }
         if (draftBill == null || draftBill.getId() == null) {
             JsfUtil.addErrorMessage("No draft selected.");
             return null;
         }
         Bill fresh = billService.reloadBill(draftBill);
-        if (fresh == null || fresh.getBillTypeAtomic() != BillTypeAtomic.REQUEST_MEDICINE_INWARD_PRE) {
+        if (fresh == null || fresh.getBillTypeAtomic() != BillTypeAtomic.REQUEST_MEDICINE_INWARD_PRE || fresh.isCancelled()) {
             JsfUtil.addErrorMessage("This is not an editable draft.");
             return null;
         }
 
         setBillPreview(false);
+        // Session-scoped controller: a stale cache from a previously handled
+        // patient must not be used to allergy-check items on this patient's draft.
+        allergyListOfPatient = null;
         setPatientEncounter(fresh.getPatientEncounter());
         // `department` here means the target pharmacy (see line ~1829: "this.department = pharmacy;"),
         // which corresponds to the bill's toDepartment, not fromDepartment (the ward).

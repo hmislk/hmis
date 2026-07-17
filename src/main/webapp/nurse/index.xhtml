@@ -601,7 +601,7 @@
                                                         <p:commandButton
                                                             value="Draft BHT Issue Requests"
                                                             action="/ward/ward_pharmacy_bht_issue_request_drafts_search?faces-redirect=true"
-                                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
+                                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
                                                             icon="pi pi-file-edit"
                                                             class="w-100"
                                                             ajax="false">

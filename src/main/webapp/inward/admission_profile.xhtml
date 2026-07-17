@@ -1039,7 +1039,7 @@
                                             id="btnPharmacyRequestDrafts"
                                             value="Draft Pharmacy Requests"
                                             action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyRequestDraftsList()}"
-                                            rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
+                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
                                             icon="fa fa-file-pen"
                                             class="w-100"
                                             ajax="false">
