@@ -3462,14 +3462,23 @@ public class BhtSummeryController implements Serializable {
         grantTotal = 0;
         discount = 0;
         adjustedTotal = 0;
+        grossTotal = 0;
+        marginTotal = 0;
+        vatTotal = 0;
         for (ChargeItemTotal c : getChargeItemTotals()) {
             grantTotal += c.getTotal();
             discount += c.getDiscount();
             adjustedTotal += c.getAdjustedTotal();
+            grossTotal += c.getGross();
+            marginTotal += c.getMargin();
+            vatTotal += c.getVat();
         }
     }
 
     double adjustedTotal = 0;
+    double grossTotal = 0;
+    double marginTotal = 0;
+    double vatTotal = 0;
 
     public double getGrantTotal() {
         return grantTotal;
@@ -3485,6 +3494,30 @@ public class BhtSummeryController implements Serializable {
 
     public void setDiscount(double discount) {
         this.discount = discount;
+    }
+
+    public double getGrossTotal() {
+        return grossTotal;
+    }
+
+    public void setGrossTotal(double grossTotal) {
+        this.grossTotal = grossTotal;
+    }
+
+    public double getMarginTotal() {
+        return marginTotal;
+    }
+
+    public void setMarginTotal(double marginTotal) {
+        this.marginTotal = marginTotal;
+    }
+
+    public double getVatTotal() {
+        return vatTotal;
+    }
+
+    public void setVatTotal(double vatTotal) {
+        this.vatTotal = vatTotal;
     }
 
     public double getDue() {
@@ -3543,6 +3576,8 @@ public class BhtSummeryController implements Serializable {
 
             setChargeValueFromAdditional();
 
+            setGrossMarginVatBreakdown();
+
         }
 
         setNetAdjustValue();
@@ -3582,6 +3617,74 @@ public class BhtSummeryController implements Serializable {
             double adj = bulkTotals.getOrDefault(cit.getInwardChargeType(), 0.0);
             double tot = cit.getTotal();
             cit.setTotal(tot + adj);
+        }
+    }
+
+    /**
+     * Populates Gross/Service Charge (Margin)/VAT on each ChargeItemTotal so the
+     * "Charges" summary table and the Summary panel can show the full breakdown,
+     * not just the net total. Services/investigations (BillItem-backed) come from
+     * a bulk JPQL sum grouped by InwardChargeType; Professional/Assisting fees
+     * (BillFee-backed, staff fee records) are summed from the lists already
+     * fetched for their respective tabs.
+     */
+    private void setGrossMarginVatBreakdown() {
+        Map<InwardChargeType, double[]> serviceBreakdown = getInwardBean().calServiceBillItemsGrossMarginVatByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
+
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            double[] values = serviceBreakdown.get(cit.getInwardChargeType());
+            if (values != null) {
+                cit.setGross(values[0]);
+                cit.setMargin(values[1]);
+                cit.setVat(values[2]);
+            } else {
+                cit.setGross(cit.getTotal());
+            }
+        }
+
+        double proGross = 0.0;
+        double proMargin = 0.0;
+        double proVat = 0.0;
+        for (BillFee bf : getProfesionallFee()) {
+            proGross += bf.getFeeGrossValue() != null ? bf.getFeeGrossValue() : bf.getFeeValue();
+            proMargin += bf.getFeeMargin();
+            proVat += bf.getFeeVat();
+        }
+
+        double docGross = 0.0;
+        double docMargin = 0.0;
+        double docVat = 0.0;
+        for (BillFee bf : getDoctorAndNurseFee()) {
+            docGross += bf.getFeeGrossValue() != null ? bf.getFeeGrossValue() : bf.getFeeValue();
+            docMargin += bf.getFeeMargin();
+            docVat += bf.getFeeVat();
+        }
+
+        boolean mergedProAndDoc = configOptionApplicationController.getBooleanValueByKey(
+                "Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false);
+
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
+                if (mergedProAndDoc) {
+                    cit.setGross(proGross + docGross);
+                    cit.setMargin(proMargin + docMargin);
+                    cit.setVat(proVat + docVat);
+                } else {
+                    cit.setGross(proGross);
+                    cit.setMargin(proMargin);
+                    cit.setVat(proVat);
+                }
+            } else if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
+                if (mergedProAndDoc) {
+                    cit.setGross(0.0);
+                    cit.setMargin(0.0);
+                    cit.setVat(0.0);
+                } else {
+                    cit.setGross(docGross);
+                    cit.setMargin(docMargin);
+                    cit.setVat(docVat);
+                }
+            }
         }
     }
 

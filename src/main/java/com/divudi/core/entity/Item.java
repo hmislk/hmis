@@ -213,6 +213,16 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     private double transBillItemCount;
     @Transient
     double transCheckedCount;
+    @Transient
+    private double transGrossValue;
+    @Transient
+    private double transDiscount;
+    @Transient
+    private double transMarginValue;
+    @Transient
+    private double transNetValue;
+    @Transient
+    private double transVat;
 
     @Temporal(javax.persistence.TemporalType.DATE)
     Date effectiveFrom;
@@ -387,6 +397,46 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     public void setTransCheckedCount(double transCheckedCount) {
         this.transCheckedCount = transCheckedCount;
+    }
+
+    public double getTransGrossValue() {
+        return transGrossValue;
+    }
+
+    public void setTransGrossValue(double transGrossValue) {
+        this.transGrossValue = transGrossValue;
+    }
+
+    public double getTransDiscount() {
+        return transDiscount;
+    }
+
+    public void setTransDiscount(double transDiscount) {
+        this.transDiscount = transDiscount;
+    }
+
+    public double getTransMarginValue() {
+        return transMarginValue;
+    }
+
+    public void setTransMarginValue(double transMarginValue) {
+        this.transMarginValue = transMarginValue;
+    }
+
+    public double getTransNetValue() {
+        return transNetValue;
+    }
+
+    public void setTransNetValue(double transNetValue) {
+        this.transNetValue = transNetValue;
+    }
+
+    public double getTransVat() {
+        return transVat;
+    }
+
+    public void setTransVat(double transVat) {
+        this.transVat = transVat;
     }
 
     public boolean isMarginNotAllowed() {
