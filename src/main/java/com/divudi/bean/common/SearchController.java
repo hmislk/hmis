@@ -5418,7 +5418,7 @@ public class SearchController implements Serializable {
     public List<Bill> createInwardPharmacyRequests() {
         String sql;
         HashMap tmp = new HashMap();
-        tmp.put("admission", getPatientEncounter());
+        tmp.put("toDep", getSessionController().getDepartment());
         tmp.put("bTp", BillType.InwardPharmacyRequest);
         tmp.put("bta", BillTypeAtomic.REQUEST_MEDICINE_INWARD);
         sql = "Select b "
@@ -5426,8 +5426,11 @@ public class SearchController implements Serializable {
                 + " where b.retired=false "
                 + " and  b.toDepartment=:toDep"
                 + " and b.billType=:bTp "
-                + " and b.billTypeAtomic = :bta "
-                + " and b.patientEncounter=:admission ";
+                + " and b.billTypeAtomic = :bta ";
+        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
+            sql += " and  ((b.patientEncounter.bhtNo) like :bht )";
+            tmp.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
+        }
         sql += " order by b.createdAt desc  ";
         return getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, 100);
     }
