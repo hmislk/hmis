@@ -685,6 +685,49 @@ expecting the request to be saved, a DB check afterward will show nothing was cr
 **"Settle Request"** (confirm-dialog-guarded) to actually persist a BHT pharmacy request. Verified while
 testing issue #22153.
 
+## 31. `ward_pharmacy_bht_issue_request_bill.xhtml`'s "Add Dispense Only" path sets `department`/`toDepartment` backwards
+
+`PharmacyRequestForBhtController`'s no-prescription creation path (the one behind
+"Add Dispense Only" → "Settle Request") sets `getPreBill().setToDepartment(getDepartment())`,
+where `getDepartment()` is the page's *Requesting Department* selector (the ward, e.g.
+"Inward") — the opposite of what the prescription-based "Calculate & Add" path does. The
+resulting bill ends up with `department` = the requesting ward and `toDepartment` = the
+requesting ward too, instead of `toDepartment` = the fulfilling pharmacy. Per §16, the
+pharmacist's "Issue Medicines" list (`ward_pharmacy_bht_issue_request_list_for_issue.xhtml`)
+filters on `toDepartment = session department`, so a request created via "Add Dispense Only"
+silently never appears there — "Search All"/"Search Not Issued" both return "No records
+found." even with the correct BHT number. This looks like a pre-existing, unrelated bug (not
+reproducible via the prescription-based creation path) — found incidentally while testing
+issue #22000; not fixed there since it was out of that issue's scope. If blocked on this
+during a future E2E pass, either use "Calculate & Add" instead of "Add Dispense Only" to
+create the test request, or correct `BILL.DEPARTMENT_ID`/`TODEPARTMENT_ID` directly in the
+local dev DB to unblock testing.
+
+## 32. A `FacesMessage` can be server-confirmed even when the browser never shows it
+
+Two related traps when checking whether `JsfUtil.addWarningMessage(...)` actually fired:
+
+- **A page-local `p:growl` without a `life` attribute never auto-dismisses**, unlike
+  `template.xhtml`'s global growl (`life="3000"`). If a later click lands on where the toast is
+  rendered, Playwright's actionability check reports `<span class="ui-growl-title">...
+  intercepts pointer events` and the click times out. Work around it in a test session with
+  `browser_evaluate`: `() => document.querySelectorAll('.ui-growl-item').forEach(el =>
+  el.remove())` — do not treat this as something the product code needs to fix unless the
+  issue you're working on is specifically about that page's growl behavior.
+- **On an `ajax="false"` (full-postback) button, a `life`-bound growl can auto-hide before you
+  take a snapshot**, making it look like the message never fired even though it did. Don't
+  trust a missed visual — inspect the actual HTTP response instead:
+  `browser_network_requests` (filter on the page's `.xhtml`, `static: true` if needed) to find
+  the POST matching the button's `name` parameter (e.g. `j_idt523%3AbtnAdd=`), then
+  `browser_network_request` with `part: "response-body"` on that index. For an AJAX
+  (`javax.faces.partial.ajax=true`) update, look for `<update id="...:growl">` containing
+  `PrimeFaces.cw("Growl",...,msgs:[{summary:"...",severity:'warn'}]})`. For a full postback,
+  grep the (often huge) HTML response body for the expected message text instead of loading it
+  into context. Verified while testing issue #22000, where this was the deciding evidence that
+  the warning fired correctly on a page whose *unrelated* pre-existing widget-init JS error
+  (`TypeError: Cannot read properties of undefined (reading 'hasAttribute')`, present since
+  before any interaction) prevented the growl from rendering visually at all.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
