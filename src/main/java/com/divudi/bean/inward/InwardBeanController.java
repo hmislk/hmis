@@ -551,6 +551,45 @@ public class InwardBeanController implements Serializable {
         return totalsMap;
     }
 
+    /**
+     * Bulk query to get the Gross/Margin/VAT totals per InwardChargeType for
+     * services/investigations (BillItem-backed), mirroring
+     * {@link #calServiceBillItemsTotalByInwardChargeTypeBulk}. Returns a map of
+     * InwardChargeType -> {gross, margin, vat}.
+     */
+    public Map<InwardChargeType, double[]> calServiceBillItemsGrossMarginVatByInwardChargeTypeBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
+        String sql = "SELECT s.item.inwardChargeType, sum(s.grossValue), sum(s.marginValue), sum(s.vat) "
+                + " FROM BillItem s"
+                + " WHERE s.retired=false "
+                + " AND s.bill.billType=:btp "
+                + " AND s.bill.patientEncounter IN :pe"
+                + " GROUP BY s.item.inwardChargeType";
+
+        HashMap hm = new HashMap();
+        hm.put("btp", BillType.InwardBill);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+
+        List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIMESTAMP);
+
+        Map<InwardChargeType, double[]> totalsMap = new HashMap<>();
+        if (results != null) {
+            for (Object[] row : results) {
+                InwardChargeType chargeType = (InwardChargeType) row[0];
+                double gross = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
+                double margin = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
+                double vat = row[3] != null ? ((Number) row[3]).doubleValue() : 0.0;
+                totalsMap.put(chargeType, new double[]{gross, margin, vat});
+            }
+        }
+
+        return totalsMap;
+    }
+
     public double calculateProfessionalCharges(PatientEncounter patientEncounter, List<PatientEncounter> cpts, boolean isEstimatedBill) {
         HashMap hm = new HashMap();
         String sql = "SELECT sum(bt.feeValue)"
@@ -1894,15 +1933,24 @@ public class InwardBeanController implements Serializable {
                 // BULK QUERY 4: Get all checked counts
                 Map<Long, Long> checkedCounts = getBulkCheckedBillItemCounts(items, patientEncounter);
 
+                // BULK QUERY 5: Get Gross/Discount/Margin/Net/VAT value breakdown
+                Map<Long, double[]> valueBreakdown = getBulkBillItemValueBreakdown(items, pts);
+
                 // Apply the counts to items (no more database queries!)
                 for (Item itm : items) {
                     long billed = billedCounts.getOrDefault(itm.getId(), 0L);
                     long cancelled = cancelledCounts.getOrDefault(itm.getId(), 0L);
                     long refund = refundCounts.getOrDefault(itm.getId(), 0L);
                     long checked = checkedCounts.getOrDefault(itm.getId(), 0L);
+                    double[] values = valueBreakdown.getOrDefault(itm.getId(), new double[5]);
 
                     itm.setTransCheckedCount(checked);
                     itm.setTransBillItemCount(billed - (cancelled + refund));
+                    itm.setTransGrossValue(values[0]);
+                    itm.setTransDiscount(values[1]);
+                    itm.setTransMarginValue(values[2]);
+                    itm.setTransNetValue(values[3]);
+                    itm.setTransVat(values[4]);
                 }
             }
 
@@ -1960,6 +2008,46 @@ public class InwardBeanController implements Serializable {
         }
 
         return countMap;
+    }
+
+    /**
+     * Bulk query to get the Gross/Discount/Margin/Net/VAT value breakdown for
+     * multiple items at once. Returns a map of itemId -> {gross, discount, margin, net, vat}.
+     */
+    private Map<Long, double[]> getBulkBillItemValueBreakdown(List<Item> items, List<PatientEncounter> pts) {
+        if (items == null || items.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        HashMap hm = new HashMap();
+        String sql = "SELECT b.item.id, sum(b.grossValue), sum(b.discount), sum(b.marginValue), sum(b.netValue), sum(b.vat) "
+                + " FROM BillItem b "
+                + " WHERE b.retired=false "
+                + " and b.bill.billType=:btp "
+                + " and b.bill.patientEncounter IN :pe "
+                + " and b.item IN :items "
+                + " GROUP BY b.item.id";
+
+        hm.put("btp", BillType.InwardBill);
+        hm.put("pe", pts);
+        hm.put("items", items);
+
+        List<Object[]> results = getBillItemFacade().findObjectsArrayByJpql(sql, hm, TemporalType.TIME);
+
+        Map<Long, double[]> valueMap = new HashMap<>();
+        if (results != null) {
+            for (Object[] row : results) {
+                Long itemId = (Long) row[0];
+                double gross = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
+                double discount = row[2] != null ? ((Number) row[2]).doubleValue() : 0.0;
+                double margin = row[3] != null ? ((Number) row[3]).doubleValue() : 0.0;
+                double net = row[4] != null ? ((Number) row[4]).doubleValue() : 0.0;
+                double vat = row[5] != null ? ((Number) row[5]).doubleValue() : 0.0;
+                valueMap.put(itemId, new double[]{gross, discount, margin, net, vat});
+            }
+        }
+
+        return valueMap;
     }
 
     /**
