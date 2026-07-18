@@ -10,6 +10,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.TheatreRoom;
 import com.divudi.core.entity.inward.PatientTransferRequest;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.AdmissionFacade;
@@ -556,6 +557,17 @@ public class PatientTransferController implements Serializable {
         persisted.setAcceptedAt(new Date());
         persisted.setAcceptedBy(sessionController.getLoggedUser());
         persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.RECEIVED_IN_THEATRE);
+
+        TheatreRoom theatreRoom = new TheatreRoom();
+        theatreRoom = (TheatreRoom) inwardBean.savePatientRoom(
+                theatreRoom,
+                null,
+                persisted.getToRoomFacilityCharge(),
+                persisted.getAdmission(),
+                persisted.getInitiatedAt(),
+                sessionController.getLoggedUser());
+        persisted.setTheatreRoom(theatreRoom);
+
         patientTransferRequestFacade.edit(persisted);
         loadPendingForTheatre();
         loadInTheatreRequests();
