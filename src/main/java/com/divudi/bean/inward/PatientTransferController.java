@@ -650,9 +650,17 @@ public class PatientTransferController implements Serializable {
         returnReq.setCreater(sessionController.getLoggedUser());
         patientTransferRequestFacade.create(returnReq);
 
+        Date returnedAt = new Date();
         persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.RETURNED_TO_WARD);
         if (persisted.getReturnedToWardAt() == null) {
-            persisted.setReturnedToWardAt(new Date());
+            persisted.setReturnedToWardAt(returnedAt);
+        }
+        if (persisted.getTheatreRoom() != null && !persisted.getTheatreRoom().isDischarged()) {
+            PatientRoom theatreRoom = persisted.getTheatreRoom();
+            theatreRoom.setDischarged(true);
+            theatreRoom.setDischargedAt(returnedAt);
+            theatreRoom.setDischargedBy(sessionController.getLoggedUser());
+            patientRoomFacade.edit(theatreRoom);
         }
         patientTransferRequestFacade.edit(persisted);
 
