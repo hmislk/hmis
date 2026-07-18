@@ -175,7 +175,7 @@
 
                                     <p:commandButton
                                         class="ui-button-success mx-2"
-                                        actionListener="#{inwardPriceAdjustmntController.createCategroyService()}"
+                                        actionListener="#{inwardPriceAdjustmntController.fillPriceMetrixforRoomCategory()}"
                                         ajax="false"
                                         value="Excel"
                                         icon="fa-solid fa-file-excel">
@@ -274,6 +274,7 @@
                                             id="delete"
                                             class="ui-button-danger"
                                             icon=" fa-solid fa-trash"
+                                            ajax="false"
                                             action="#{inwardPriceAdjustmntController.delete}" >
                                             <f:setPropertyActionListener value="#{a}" target="#{inwardPriceAdjustmntController.current}"/>
                                         </p:commandButton>
