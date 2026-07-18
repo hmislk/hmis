@@ -163,6 +163,19 @@ dropdown panel.
 
 Type the date string directly or click to open the calendar popup and select.
 
+**JS-set values are silently discarded** (found on `cost_of_goods_sold.xhtml`,
+issue #22011): setting `input.value` via `page.evaluate` + dispatching
+`input`/`change` events looks committed in the DOM, and Playwright's `fill()`
+has the same problem — but on submit the widget re-serializes its own internal
+date, so the report runs with the OLD dates and no error is shown. The only
+reliable pattern is real key events: click the input → `Ctrl+A` →
+`pressSequentially` the date string → `Escape` (closes the overlay without
+resetting the typed value). Verify with a DOM read *after* pressing Escape,
+then submit — and because the DOM can look right while the widget still
+serializes its old internal date, always confirm the intended dates in the
+**result** too (e.g. report rows fall inside the requested window, or the
+server-side query used the right range) before trusting the run.
+
 ### Always add `widgetVar`
 
 Every `p:inputText`, `p:autoComplete`, `p:calendar`, and `p:selectOneMenu`
@@ -478,6 +491,19 @@ cached per session at login and won't pick up a new row otherwise. This came up 
 `BhtSummeryController.settle()` (`InwardSettleFinalBill`), where the local `buddhika`
 user had the privilege for `Store`/`Main Pharmacy` departments but not `Inward`.
 
+**`WebUser.department` is not a fixed "home department" — `SessionController.selectDepartment()`
+overwrites and persists it (`loggedUser.setDepartment(department); getFacede().edit(loggedUser)`)
+every time the department-selection screen is submitted, which is why it pre-fills with
+whatever was picked last time.** The catch for privilege testing:
+`SessionController.getUserPrivileges()` calls
+`fillUserPrivileges(getLoggedUser(), getLoggedUser().getDepartment(), false)` — by the time
+this runs, `getLoggedUser().getDepartment()` already equals the department just selected for
+*this* login, and `deptIsNull=false` means a `DEPARTMENT_ID IS NULL` privilege row is **never**
+matched, no matter which department that is. Query `SELECT DEPARTMENT_ID FROM webuser WHERE
+ID=<id>` *after* selecting the department you're about to test with, and insert the privilege
+row with that exact `DEPARTMENT_ID` — a NULL-department row silently does nothing, even after
+a full logout/login cycle.
+
 ## 21. Inward "Add Services" item picker — the Filter box does not load other departments' items
 
 On `inward/inward_bill_service.xhtml` (and the surgery equivalent) the item selector shows
@@ -684,6 +710,103 @@ to "Start Pharmacy Request for Inpatients". If a Playwright pass adds items and 
 expecting the request to be saved, a DB check afterward will show nothing was created. Always use
 **"Settle Request"** (confirm-dialog-guarded) to actually persist a BHT pharmacy request. Verified while
 testing issue #22153.
+
+## 31. `ward_pharmacy_bht_issue_request_bill.xhtml`'s "Add Dispense Only" path sets `department`/`toDepartment` backwards
+
+`PharmacyRequestForBhtController`'s no-prescription creation path (the one behind
+"Add Dispense Only" → "Settle Request") sets `getPreBill().setToDepartment(getDepartment())`,
+where `getDepartment()` is the page's *Requesting Department* selector (the ward, e.g.
+"Inward") — the opposite of what the prescription-based "Calculate & Add" path does. The
+resulting bill ends up with `department` = the requesting ward and `toDepartment` = the
+requesting ward too, instead of `toDepartment` = the fulfilling pharmacy. Per §16, the
+pharmacist's "Issue Medicines" list (`ward_pharmacy_bht_issue_request_list_for_issue.xhtml`)
+filters on `toDepartment = session department`, so a request created via "Add Dispense Only"
+silently never appears there — "Search All"/"Search Not Issued" both return "No records
+found." even with the correct BHT number. This looks like a pre-existing, unrelated bug (not
+reproducible via the prescription-based creation path) — found incidentally while testing
+issue #22000; not fixed there since it was out of that issue's scope. If blocked on this
+during a future E2E pass, either use "Calculate & Add" instead of "Add Dispense Only" to
+create the test request, or correct `BILL.DEPARTMENT_ID`/`TODEPARTMENT_ID` directly in the
+local dev DB to unblock testing.
+
+## 32. A `FacesMessage` can be server-confirmed even when the browser never shows it
+
+Two related traps when checking whether `JsfUtil.addWarningMessage(...)` actually fired:
+
+- **A page-local `p:growl` without a `life` attribute never auto-dismisses**, unlike
+  `template.xhtml`'s global growl (`life="3000"`). If a later click lands on where the toast is
+  rendered, Playwright's actionability check reports `<span class="ui-growl-title">...
+  intercepts pointer events` and the click times out. Work around it in a test session with
+  `browser_evaluate`: `() => document.querySelectorAll('.ui-growl-item').forEach(el =>
+  el.remove())` — do not treat this as something the product code needs to fix unless the
+  issue you're working on is specifically about that page's growl behavior.
+- **On an `ajax="false"` (full-postback) button, a `life`-bound growl can auto-hide before you
+  take a snapshot**, making it look like the message never fired even though it did. Don't
+  trust a missed visual — inspect the actual HTTP response instead:
+  `browser_network_requests` (filter on the page's `.xhtml`, `static: true` if needed) to find
+  the POST matching the button's `name` parameter (e.g. `j_idt523%3AbtnAdd=`), then
+  `browser_network_request` with `part: "response-body"` on that index. For an AJAX
+  (`javax.faces.partial.ajax=true`) update, look for `<update id="...:growl">` containing
+  `PrimeFaces.cw("Growl",...,msgs:[{summary:"...",severity:'warn'}]})`. For a full postback,
+  grep the (often huge) HTML response body for the expected message text instead of loading it
+  into context. Verified while testing issue #22000, where this was the deciding evidence that
+  the warning fired correctly on a page whose *unrelated* pre-existing widget-init JS error
+  (`TypeError: Cannot read properties of undefined (reading 'hasAttribute')`, present since
+  before any interaction) prevented the growl from rendering visually at all.
+
+## 33. Binding a `p:inputText` through a nullable session-scoped entity property crashes on first submit
+
+`ward/issue_for_bht_request_list.xhtml` bound its BHT-No search box to
+`#{searchController.patientEncounter.bhtNo}` — a nested property path through
+`SearchController.patientEncounter`, which is `@SessionScoped` and never
+initialized on this page (nothing sets it before rendering; unlike the 3 lab
+pages that bind `value="#{searchController.patientEncounter}"` — the whole
+object, not a nested field — via `p:autoComplete`/`p:selectOneMenu`, which
+tolerate `null`). Every submit threw `EL: Target Unreachable, 'null' returned
+null` (HTTP 500) during `UIInput.getConvertedValue`, both with and without
+typing into the field — the crash happens on *any* postback of the form, not
+just when the bound property is touched. Fixed for #22196 by rebinding to
+`searchController.searchKeyword.bhtNo` (a plain `String`, default `""`),
+matching the pattern already used by ~28 other pages in this codebase (grep
+`searchController.searchKeyword.bhtNo` across `*.xhtml`). **Lesson**: never
+bind a `p:inputText` through a nested path on a session-scoped controller's
+entity-typed field unless something on the *same* page is guaranteed to have
+set that entity first — bind through a dedicated search-keyword/DTO field
+instead.
+
+## 34. Local dev DB can silently drift behind the entity model — watch for `Unknown column` on unrelated pages
+
+While testing #22196, clicking "View Request" on an inward pharmacy request
+threw `SQLSyntaxErrorException: Unknown column 'VATPERCENTAGE' in 'field
+list'` loading `BillItem` rows — the local `coop` DB's `BILLITEM` table
+predates the `vatPercentage` field added to the `BillItem` entity, and there
+is no DDL/migration step in the local dev workflow that keeps schema in sync
+automatically. This is unrelated to whatever feature is under test and will
+recur for any page that touches `BillItem`. Fix locally with a plain additive
+column matching the sibling `VAT`/`VATPLUSNETVALUE` columns:
+`ALTER TABLE BILLITEM ADD COLUMN VATPERCENTAGE DOUBLE NULL DEFAULT NULL AFTER
+VAT;` — do not add this to a migration script (it's a local-only environment
+gap, not a schema change accompanying a code change). If a fresh
+`Unknown column` error appears on an otherwise-unrelated page, check
+`SHOW COLUMNS FROM <table>` against the entity's fields before assuming the
+feature under test is broken.
+
+## 20. Don't `disable` + `enable` the app to clear the L2 cache — restart the domain
+
+The disable→enable trick for flushing a poisoned EclipseLink shared cache (§ noted in
+earlier sessions) loads the whole application a **second time in the same JVM**, and on
+this codebase that reliably ends in `java.lang.OutOfMemoryError: Java heap space` +
+`CDI deployment failure` mid-enable, leaving the app 404 (hit during issue #22011
+verification). Restart the domain instead — slower, but it actually comes back up:
+
+```bash
+asadmin stop-domain <dom>    # "domain is already stopped" is fine — continue
+asadmin start-domain <dom>
+```
+
+Run the two commands separately (not chained with `&&`): if the domain is already
+down, `stop-domain` exits nonzero and a chained `start-domain` would be skipped,
+leaving the app offline.
 
 ## Quick checklist
 

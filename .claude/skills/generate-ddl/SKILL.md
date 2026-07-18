@@ -200,8 +200,15 @@ if [ -d "$WIKI_DIR" ]; then
   git stash --include-untracked
   git pull --rebase origin master || true
   git stash pop || true
-  # Re-apply our version of the DDL page (in case of rebase conflict)
-  git checkout --theirs Database-Schema-DDL-Generation-Guide.md 2>/dev/null || true
+  # Only touch --theirs if the pop actually left an unmerged (conflicted)
+  # entry for this file. Outside a real conflict `git checkout --theirs`
+  # on a fully-merged path checks it out from HEAD/index, silently
+  # discarding the working-tree content stash pop just restored — which
+  # then makes the "diff --cached --quiet" check below wrongly conclude
+  # there's nothing to commit.
+  if git ls-files -u -- Database-Schema-DDL-Generation-Guide.md | grep -q .; then
+    git checkout --theirs Database-Schema-DDL-Generation-Guide.md
+  fi
   git add Database-Schema-DDL-Generation-Guide.md
   git rebase --continue 2>/dev/null || true
   # Commit (skip if nothing staged, e.g. rebase already applied it)

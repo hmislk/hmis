@@ -140,13 +140,48 @@ public enum Privileges {
     InpatientLetter("Inpatient Letter"),
     InwardPackageAdministration("Inward Package Administration"),
     InwardPackageAdmission("Inward Package Admission"),
+    InwardEditPatientDetailsFromAdmission("Inward Edit Patient Details From Admission"),
+    InwardEditPaymentDetails("Inward Edit Payment Details"),
+    InwardManageAllergies("Inward Manage Allergies"),
+    InwardDoctorPaymentAccess("Inward Doctor Payment Access"),
+    InwardSurgeryAdd("Inward Surgery Add"),
+    InwardSurgeryManage("Inward Surgery Manage"),
+    InwardPatientHistoryView("Inward Patient History View"),
+    InwardClinicalNotesView("Inward Clinical Notes View"),
+    InwardWardMedicationsView("Inward Ward Medications View"),
+    InwardDischargeMedicationsView("Inward Discharge Medications View"),
+    InwardInvestigationsView("Inward Investigations View"),
+    InwardImagesView("Inward Images View"),
+    InwardDiagnosisCardView("Inward Diagnosis Card View"),
     //</editor-fold>
-    
+
+    //<editor-fold defaultstate="collapsed" desc="Inpatient Dashboard Panels">
+    InpatientDashboardPanelAdmission("Inpatient Dashboard - Admission Panel"),
+    InpatientDashboardPanelBilling("Inpatient Dashboard - Billing Panel"),
+    InpatientDashboardPanelServices("Inpatient Dashboard - Services Panel"),
+    InpatientDashboardPanelRoomManagement("Inpatient Dashboard - Room Management Panel"),
+    InpatientDashboardPanelOperationTheatre("Inpatient Dashboard - Operation Theatre Panel"),
+    InpatientDashboardPanelClinicalData("Inpatient Dashboard - Clinical Data Panel"),
+    InpatientDashboardPanelPharmaceuticals("Inpatient Dashboard - Pharmaceuticals Panel"),
+    InpatientDashboardPanelDocuments("Inpatient Dashboard - Documents Panel"),
+    InpatientDashboardPanelReports("Inpatient Dashboard - Reports Panel"),
+    //</editor-fold>
+
     //<editor-fold defaultstate="collapsed" desc="Nurse">
     NursingWorkBench("Nursing Work Bench"),
     ShowDrugCharges("Show Drug Charges"),
     ShowServiceCharges("Show Service Charges"),
     ShowTimeServiceCharges("Show Time Service Charges"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Nursing Workbench Panels">
+    NursingWorkBenchPanelEdit("Nursing Workbench - Edit Panel"),
+    NursingWorkBenchPanelClinicalData("Nursing Workbench - Clinical Data Panel"),
+    NursingWorkBenchPanelRoomManagement("Nursing Workbench - Room Management Panel"),
+    NursingWorkBenchPanelService("Nursing Workbench - Service Panel"),
+    NursingWorkBenchPanelOperationTheatre("Nursing Workbench - Operation Theatre Panel"),
+    NursingWorkBenchPanelPharmaceuticals("Nursing Workbench - Pharmaceuticals Panel"),
+    NursingWorkBenchPanelReports("Nursing Workbench - Reports Panel"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Finance">
@@ -1164,8 +1199,15 @@ public enum Privileges {
             case ShowDrugCharges:
             case ShowServiceCharges:
             case ShowTimeServiceCharges:
+            case NursingWorkBenchPanelEdit:
+            case NursingWorkBenchPanelClinicalData:
+            case NursingWorkBenchPanelRoomManagement:
+            case NursingWorkBenchPanelService:
+            case NursingWorkBenchPanelOperationTheatre:
+            case NursingWorkBenchPanelPharmaceuticals:
+            case NursingWorkBenchPanelReports:
                 return "Nursing Work Bench";
-                
+
             case WatingRoomAdmitPatient:
             case InwardAppointmentMenu:
             case AddInwardAppointment:
@@ -1195,6 +1237,28 @@ public enum Privileges {
             case WardAcceptTheatreReturn:
             case InwardServiceItemRequestApproval:
             case InwardServiceItemRequestRejection:
+            case InpatientDashboardPanelAdmission:
+            case InpatientDashboardPanelBilling:
+            case InpatientDashboardPanelServices:
+            case InpatientDashboardPanelRoomManagement:
+            case InpatientDashboardPanelOperationTheatre:
+            case InpatientDashboardPanelClinicalData:
+            case InpatientDashboardPanelPharmaceuticals:
+            case InpatientDashboardPanelDocuments:
+            case InpatientDashboardPanelReports:
+            case InwardEditPatientDetailsFromAdmission:
+            case InwardEditPaymentDetails:
+            case InwardManageAllergies:
+            case InwardDoctorPaymentAccess:
+            case InwardSurgeryAdd:
+            case InwardSurgeryManage:
+            case InwardPatientHistoryView:
+            case InwardClinicalNotesView:
+            case InwardWardMedicationsView:
+            case InwardDischargeMedicationsView:
+            case InwardInvestigationsView:
+            case InwardImagesView:
+            case InwardDiagnosisCardView:
                 return "Inward";
 
             case AdminInactivePatients:

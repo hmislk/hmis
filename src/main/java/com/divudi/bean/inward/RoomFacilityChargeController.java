@@ -11,6 +11,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.inward.RoomFacility;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.util.JsfUtil;
@@ -114,6 +115,21 @@ public class RoomFacilityChargeController implements Serializable {
                 + "WHERE rm.retired = false "
                 + "AND rm.department.departmentType = :deptType "
                 + "AND UPPER(rm.name) LIKE :q "
+                + "ORDER BY rm.name";
+        return getFacade().findByJpql(sql, hm);
+    }
+
+    public List<RoomFacilityCharge> findTheatreRoomsForInstitution(Institution institution) {
+        if (institution == null) {
+            return new ArrayList<>();
+        }
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("deptType", DepartmentType.Theatre);
+        hm.put("institution", institution);
+        String sql = "SELECT rm FROM RoomFacilityCharge rm "
+                + "WHERE rm.retired = false "
+                + "AND rm.department.departmentType = :deptType "
+                + "AND rm.department.institution = :institution "
                 + "ORDER BY rm.name";
         return getFacade().findByJpql(sql, hm);
     }
