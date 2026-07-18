@@ -632,6 +632,14 @@
                                                             </h:outputLabel>
                                                         </p:column>
 
+                                                        <p:column width="8em" class="text-end"
+                                                                  rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                                            <f:facet name="header">VAT</f:facet>
+                                                            <h:outputLabel value="#{bi.billItem.vat}">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </p:column>
+
                                                         <p:column width="3em">
                                                             <p:commandButton
                                                                 id="btnRemove"
@@ -746,6 +754,14 @@
                                                                 id="feeValue"
                                                                 value="#{bif.feeValue}"
                                                                 class="text-end w-100">
+                                                                <f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputLabel>
+                                                        </p:column>
+
+                                                        <p:column width="8em" class="text-end"
+                                                                  rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
+                                                            <f:facet name="header">VAT</f:facet>
+                                                            <h:outputLabel value="#{bif.feeVat}" class="text-end w-100">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </p:column>
@@ -871,6 +887,22 @@
                                                 <div class="d-flex justify-content-between p-3 m-2" style="font-size: 18px; font-weight: 700;" >
                                                     <h:outputLabel value="Net Total" ></h:outputLabel>
                                                     <h:outputLabel value="#{billBhtController.netTotal}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </div>
+                                            </div>
+                                            <div class="card my-2">
+                                                <div class="d-flex justify-content-between p-3 m-2" style="font-size: 18px; font-weight: 700;" >
+                                                    <h:outputLabel value="VAT" ></h:outputLabel>
+                                                    <h:outputLabel value="#{billBhtController.vat}" >
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </div>
+                                            </div>
+                                            <div class="card">
+                                                <div class="d-flex justify-content-between p-3 m-2" style="font-size: 18px; font-weight: 700;" >
+                                                    <h:outputLabel value="Net Total + VAT" ></h:outputLabel>
+                                                    <h:outputLabel value="#{billBhtController.vatPlusNetTotal}" >
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputLabel>
                                                 </div>

@@ -668,7 +668,9 @@ public class PharmacyBillSearch implements Serializable {
         }
         pharmacyRequestForBhtController.setBillPreview(false);
         pharmacyRequestForBhtController.setPatientEncounter(bill.getPatientEncounter());
-        pharmacyRequestForBhtController.setDepartment(bill.getFromDepartment());
+        // `department` on PharmacyRequestForBhtController means the target pharmacy
+        // (toDepartment), not the ward (fromDepartment) — see loadDraftForEditing().
+        pharmacyRequestForBhtController.setDepartment(bill.getToDepartment());
         pharmacyRequestForBhtController.setPreBill((PreBill) bill);
         billFacade.edit(bill);
         return "/ward/ward_pharmacy_bht_issue_request_edit?faces-redirect=true";

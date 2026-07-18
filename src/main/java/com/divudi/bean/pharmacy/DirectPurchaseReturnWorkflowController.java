@@ -248,7 +248,11 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         }
     }
 
-    public String cancelCurrentReturn() {
+    // synchronized: no double-click guard exists on the Cancel action. A double-click
+    // could race two calls through this session-scoped bean past the guards below before
+    // either had persisted currentBill.cancelled, both attempting to cancel the same bill
+    // (same bug class as PurchaseOrderController.approve(), issue #22194).
+    public synchronized String cancelCurrentReturn() {
         // Validate bill exists and is persisted
         if (currentBill == null || currentBill.getId() == null) {
             JsfUtil.addErrorMessage("Cannot cancel: No valid Direct Purchase Return found.");
@@ -341,13 +345,26 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         JsfUtil.addSuccessMessage("Direct Purchase Return Request Saved Successfully");
     }
 
-    public void finalizeRequest() {
+    // synchronized: no double-click guard exists on the Finalize action. A double-click
+    // could race two calls through this session-scoped bean past validateFinalization()
+    // (which never checks whether the bill was already finalized) before either had
+    // persisted currentBill.checkedBy, duplicating the finalize save (same bug class as
+    // PurchaseOrderController.approve(), issue #22194).
+    public synchronized void finalizeRequest() {
         if (!isAuthorized("FINALIZE", "FinalizeDirectPurchaseReturn")) {
             return;
         }
 
         if (currentBill == null) {
             JsfUtil.addErrorMessage("No bill selected to finalize");
+            return;
+        }
+
+        // Check if this return request is already finalized to prevent a queued
+        // double-submit (blocked on the synchronized lock above) from finalizing it
+        // a second time.
+        if (currentBill.getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("This return request is already finalized");
             return;
         }
 
@@ -466,7 +483,12 @@ public class DirectPurchaseReturnWorkflowController implements Serializable {
         return allMatch;
     }
 
-    public void approve() {
+    // synchronized: no double-click guard exists on the Approve action. validateApproval()'s
+    // already-approved check reads the session-scoped currentBill rather than fresh DB
+    // state, so it is non-atomic - a double-click could race two calls past it before either
+    // had persisted currentBill.completed, duplicating stock deduction/payment creation
+    // (same bug class as PurchaseOrderController.approve(), issue #22194).
+    public synchronized void approve() {
         if (!isAuthorized("APPROVE", "ApproveDirectPurchaseReturn")) {
             return;
         }

@@ -92,6 +92,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.PrimeFaces;
 import org.primefaces.event.ReorderEvent;
 import org.primefaces.event.RowEditEvent;
 
@@ -173,6 +174,7 @@ public class BhtSummeryController implements Serializable {
     private List<ChargeItemTotal> chargeItemTotals;
     List<PatientRoom> patientRooms;
     private List<CreditCompanyAllocation> creditCompanyAllocations;
+    private EncounterCreditCompany newEncounterCreditCompany;
     //////////////////////////
     private double grantTotal = 0.0;
     private double discount;
@@ -2016,6 +2018,128 @@ public class BhtSummeryController implements Serializable {
     }
 
     /**
+     * Adds a credit company to this BHT from the final bill page. The
+     * EncounterCreditCompany is persisted immediately — it becomes part of the
+     * encounter's permanent company list, exactly as when added at admission —
+     * and an allocation row is added so the cashier can settle against it right
+     * away. The company takes up to its credit limit out of the patient's
+     * remaining co-payment share.
+     */
+    public void addNewCreditCompany() {
+        boolean added = false;
+        try {
+            added = addNewCreditCompanyInternal();
+        } finally {
+            // Tell the client whether the add passed so the dialog closes only on
+            // success (see btnAddCreditCompany oncomplete).
+            if (PrimeFaces.current().isAjaxRequest()) {
+                PrimeFaces.current().ajax().addCallbackParam("creditCompanyAdded", added);
+            }
+        }
+    }
+
+    /**
+     * @return true when the company was persisted and allocated; false when a
+     * validation check rejected the input.
+     */
+    private boolean addNewCreditCompanyInternal() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No admission selected");
+            return false;
+        }
+        if (patientEncounter.getPaymentMethod() != PaymentMethod.Credit) {
+            JsfUtil.addErrorMessage("Credit companies can only be added to a credit admission");
+            return false;
+        }
+        if (newEncounterCreditCompany == null || newEncounterCreditCompany.getInstitution() == null) {
+            JsfUtil.addErrorMessage("Please select a credit company");
+            return false;
+        }
+        if (newEncounterCreditCompany.getCreditLimit() <= 0) {
+            JsfUtil.addErrorMessage("Please enter a credit limit greater than zero");
+            return false;
+        }
+        if (creditCompanyAllocations == null) {
+            creditCompanyAllocations = new ArrayList<>();
+        }
+        // Check what is actually registered against the encounter, not just what is
+        // on screen: populateCreditCompanyAllocations() stops allocating once the due
+        // is covered, so a registered company can be absent from the allocation list
+        // and would otherwise be persisted a second time here.
+        for (EncounterCreditCompany registered : fillCreditCompaniesByPatient(patientEncounter)) {
+            if (newEncounterCreditCompany.getInstitution().equals(registered.getInstitution())) {
+                JsfUtil.addErrorMessage(newEncounterCreditCompany.getInstitution().getName()
+                        + " is already registered for this BHT");
+                return false;
+            }
+        }
+        for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
+            if (!alloc.isPatientPortion()
+                    && newEncounterCreditCompany.getInstitution().equals(alloc.getCreditCompany())) {
+                JsfUtil.addErrorMessage(newEncounterCreditCompany.getInstitution().getName()
+                        + " is already allocated for this BHT");
+                return false;
+            }
+        }
+
+        newEncounterCreditCompany.setPatientEncounter(patientEncounter);
+        newEncounterCreditCompany.setCreatedAt(new Date());
+        newEncounterCreditCompany.setCreater(sessionController.getLoggedUser());
+        newEncounterCreditCompany.setRetired(false);
+        encounterCreditCompanyFacade.create(newEncounterCreditCompany);
+
+        double expected = Math.max(0.0, (grantTotal - discount) - paidByPatient - paidByCompany);
+        double ccSum = 0.0;
+        for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
+            if (!alloc.isPatientPortion()) {
+                ccSum += alloc.getAllocatedAmount();
+            }
+        }
+        double allocatable = Math.max(0.0, Math.min(expected - ccSum, newEncounterCreditCompany.getCreditLimit()));
+        creditCompanyAllocations.add(new CreditCompanyAllocation(newEncounterCreditCompany, allocatable));
+        moveCompanyRowsAbovePatientRow();
+        recalculatePatientPortion();
+
+        JsfUtil.addSuccessMessage(newEncounterCreditCompany.getInstitution().getName() + " added");
+        newEncounterCreditCompany = new EncounterCreditCompany();
+        return true;
+    }
+
+    /**
+     * Clears the add-credit-company form so the popup opens blank rather than
+     * showing whatever was typed the last time it was cancelled.
+     */
+    public void prepareNewCreditCompany() {
+        newEncounterCreditCompany = new EncounterCreditCompany();
+    }
+
+    /**
+     * Keeps every credit company row grouped together at the top of the
+     * allocation table with the patient co-payment row displayed last. A newly
+     * added company is appended to the end of the list, which would otherwise
+     * push it below the patient row created earlier by
+     * {@link #populateCreditCompanyAllocations()}. The sort is stable, so the
+     * existing company order is preserved.
+     */
+    private void moveCompanyRowsAbovePatientRow() {
+        if (creditCompanyAllocations == null) {
+            return;
+        }
+        creditCompanyAllocations.sort(Comparator.comparing(CreditCompanyAllocation::isPatientPortion));
+    }
+
+    public EncounterCreditCompany getNewEncounterCreditCompany() {
+        if (newEncounterCreditCompany == null) {
+            newEncounterCreditCompany = new EncounterCreditCompany();
+        }
+        return newEncounterCreditCompany;
+    }
+
+    public void setNewEncounterCreditCompany(EncounterCreditCompany newEncounterCreditCompany) {
+        this.newEncounterCreditCompany = newEncounterCreditCompany;
+    }
+
+    /**
      * Recalculates the patient co-payment row so it always equals: net due –
      * sum of all CC company allocations. Called via p:ajax whenever a CC
      * company amount is changed by the user.
@@ -2954,6 +3078,7 @@ public class BhtSummeryController implements Serializable {
         toTime = null;
         patientRooms = null;
         creditCompanyAllocations = null;
+        newEncounterCreditCompany = null;
         estimatedBillView = false;
     }
 
@@ -3462,14 +3587,23 @@ public class BhtSummeryController implements Serializable {
         grantTotal = 0;
         discount = 0;
         adjustedTotal = 0;
+        grossTotal = 0;
+        marginTotal = 0;
+        vatTotal = 0;
         for (ChargeItemTotal c : getChargeItemTotals()) {
             grantTotal += c.getTotal();
             discount += c.getDiscount();
             adjustedTotal += c.getAdjustedTotal();
+            grossTotal += c.getGross();
+            marginTotal += c.getMargin();
+            vatTotal += c.getVat();
         }
     }
 
     double adjustedTotal = 0;
+    double grossTotal = 0;
+    double marginTotal = 0;
+    double vatTotal = 0;
 
     public double getGrantTotal() {
         return grantTotal;
@@ -3485,6 +3619,30 @@ public class BhtSummeryController implements Serializable {
 
     public void setDiscount(double discount) {
         this.discount = discount;
+    }
+
+    public double getGrossTotal() {
+        return grossTotal;
+    }
+
+    public void setGrossTotal(double grossTotal) {
+        this.grossTotal = grossTotal;
+    }
+
+    public double getMarginTotal() {
+        return marginTotal;
+    }
+
+    public void setMarginTotal(double marginTotal) {
+        this.marginTotal = marginTotal;
+    }
+
+    public double getVatTotal() {
+        return vatTotal;
+    }
+
+    public void setVatTotal(double vatTotal) {
+        this.vatTotal = vatTotal;
     }
 
     public double getDue() {
@@ -3543,6 +3701,8 @@ public class BhtSummeryController implements Serializable {
 
             setChargeValueFromAdditional();
 
+            setGrossMarginVatBreakdown();
+
         }
 
         setNetAdjustValue();
@@ -3582,6 +3742,74 @@ public class BhtSummeryController implements Serializable {
             double adj = bulkTotals.getOrDefault(cit.getInwardChargeType(), 0.0);
             double tot = cit.getTotal();
             cit.setTotal(tot + adj);
+        }
+    }
+
+    /**
+     * Populates Gross/Service Charge (Margin)/VAT on each ChargeItemTotal so the
+     * "Charges" summary table and the Summary panel can show the full breakdown,
+     * not just the net total. Services/investigations (BillItem-backed) come from
+     * a bulk JPQL sum grouped by InwardChargeType; Professional/Assisting fees
+     * (BillFee-backed, staff fee records) are summed from the lists already
+     * fetched for their respective tabs.
+     */
+    private void setGrossMarginVatBreakdown() {
+        Map<InwardChargeType, double[]> serviceBreakdown = getInwardBean().calServiceBillItemsGrossMarginVatByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
+
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            double[] values = serviceBreakdown.get(cit.getInwardChargeType());
+            if (values != null) {
+                cit.setGross(values[0]);
+                cit.setMargin(values[1]);
+                cit.setVat(values[2]);
+            } else {
+                cit.setGross(cit.getTotal());
+            }
+        }
+
+        double proGross = 0.0;
+        double proMargin = 0.0;
+        double proVat = 0.0;
+        for (BillFee bf : getProfesionallFee()) {
+            proGross += bf.getFeeGrossValue() != null ? bf.getFeeGrossValue() : bf.getFeeValue();
+            proMargin += bf.getFeeMargin();
+            proVat += bf.getFeeVat();
+        }
+
+        double docGross = 0.0;
+        double docMargin = 0.0;
+        double docVat = 0.0;
+        for (BillFee bf : getDoctorAndNurseFee()) {
+            docGross += bf.getFeeGrossValue() != null ? bf.getFeeGrossValue() : bf.getFeeValue();
+            docMargin += bf.getFeeMargin();
+            docVat += bf.getFeeVat();
+        }
+
+        boolean mergedProAndDoc = configOptionApplicationController.getBooleanValueByKey(
+                "Professional Fee and Assisting Fees are shown as one charge type on the final bill.", false);
+
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            if (cit.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
+                if (mergedProAndDoc) {
+                    cit.setGross(proGross + docGross);
+                    cit.setMargin(proMargin + docMargin);
+                    cit.setVat(proVat + docVat);
+                } else {
+                    cit.setGross(proGross);
+                    cit.setMargin(proMargin);
+                    cit.setVat(proVat);
+                }
+            } else if (cit.getInwardChargeType() == InwardChargeType.DoctorAndNurses) {
+                if (mergedProAndDoc) {
+                    cit.setGross(0.0);
+                    cit.setMargin(0.0);
+                    cit.setVat(0.0);
+                } else {
+                    cit.setGross(docGross);
+                    cit.setMargin(docMargin);
+                    cit.setVat(docVat);
+                }
+            }
         }
     }
 

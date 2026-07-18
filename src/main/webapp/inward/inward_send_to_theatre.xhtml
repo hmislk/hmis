@@ -54,28 +54,19 @@
 
                     <!-- Theatre Room -->
                     <div class="col-md-6">
-                        <h:outputLabel for="acTheatreRoom" value="Theatre Room" styleClass="fw-bold mb-1"/>
+                        <h:outputLabel for="selTheatreRoom" value="Theatre Room" styleClass="fw-bold mb-1"/>
                         <div>
-                            <p:autoComplete
-                                id="acTheatreRoom"
-                                widgetVar="wTheatreRoom"
-                                forceSelection="true"
+                            <p:selectOneMenu
+                                id="selTheatreRoom"
                                 value="#{patientTransferController.targetRoomFacilityCharge}"
-                                completeMethod="#{roomFacilityChargeController.completeTheatreRoom}"
-                                var="tr"
-                                itemLabel="#{tr.name}"
-                                itemValue="#{tr}"
-                                placeholder="Type theatre room name..."
-                                minQueryLength="1"
-                                maxResults="10"
                                 style="width:100%">
-                                <p:column headerText="Room">
-                                    <h:outputText value="#{tr.name}"/>
-                                </p:column>
-                                <p:column headerText="Department">
-                                    <h:outputText value="#{tr.department.name}"/>
-                                </p:column>
-                            </p:autoComplete>
+                                <f:selectItem itemLabel="— Select Theatre Room —" itemValue="#{null}"/>
+                                <f:selectItems
+                                    value="#{patientTransferController.theatreRoomsForCurrentInstitution}"
+                                    var="tr"
+                                    itemLabel="#{tr.name}"
+                                    itemValue="#{tr}"/>
+                            </p:selectOneMenu>
                         </div>
                     </div>
 

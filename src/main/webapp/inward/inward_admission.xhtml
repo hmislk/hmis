@@ -305,7 +305,7 @@
                                         <p:panel header="Other">                           
                                             <p:tabView class="p-0">
                                                 <p:tab title="Guardian Detail">
-                                                    <h:panelGrid columns="2">
+                                                    <h:panelGrid columns="2" styleClass="w-100" columnClasses="col-4,col-8">
                                                         <p:outputLabel value="Title"/>
                                                         <p:selectOneMenu 
                                                             id="cmbTitle" 
@@ -321,13 +321,13 @@
                                                         <p:outputLabel value="NIC / Passport"/>
                                                         <p:inputText class="mx-2 w-100" id="gnic" maxlength="12" autocomplete="off" value="#{admissionController.current.guardian.nic}"/>
                                                         <p:outputLabel value="Address" />
-                                                        <h:panelGrid columns="2">
+                                                        <h:panelGrid columns="2" styleClass="w-100">
                                                             <p:inputText class="mx-2 w-100" id="gadd" autocomplete="off"  value="#{admissionController.current.guardian.address}"  />
                                                             <p:commandButton id="btnCopyAdd" class="ui-button-warning mx-2" icon="fas fa-paste" process="btnCopyAdd :#{p:resolveClientId('@id(txtAddress)', view)}" update="gadd " action="#{admissionController.copyPatientAddressToGurdian}"/>
                                                         </h:panelGrid>
 
                                                         <p:outputLabel value="Mobile No" />
-                                                        <h:panelGrid columns="2">
+                                                        <h:panelGrid columns="2" styleClass="w-100">
                                                             <p:inputText class="mx-2 w-100" id="gmno"    value="#{admissionController.current.guardian.mobile}"  />
                                                             <p:commandButton id="btnCopyPho" class="ui-button-warning mx-2" icon="fas fa-paste" process="btnCopyPho :#{p:resolveClientId('@id(txtMobile)', view)}" update="gmno" action="#{admissionController.copyPatientPhoneNumberToGurdian}"/>
                                                             <p:spacer />
@@ -350,14 +350,17 @@
                                                     </h:panelGrid>
                                                 </p:tab>
                                                 <p:tab title="Appointment" >
-                                                    <p:autoComplete 
+                                                    <p:autoComplete
                                                         forceSelection="true"
-                                                        id="aBill" 
-                                                        value="#{admissionController.appointmentBill}" 
-                                                        completeMethod="#{billController.completeAppointmentBill}" 
-                                                        var="apt2" 
-                                                        itemLabel="#{apt2.patient.person.nameWithTitle}" 
-                                                        itemValue="#{apt2}" >
+                                                        id="aBill"
+                                                        value="#{admissionController.appointmentBill}"
+                                                        completeMethod="#{billController.completeAppointmentBill}"
+                                                        var="apt2"
+                                                        itemLabel="#{apt2.patient.person.nameWithTitle}"
+                                                        itemValue="#{apt2}"
+                                                        class="w-100 form-control"
+                                                        styleClass="w-100"
+                                                        inputStyleClass="w-100">
                                                         <p:ajax event="itemSelect" process="aBill" update="panSearch2 :#{p:resolveFirstComponentWithId('ptd',view).clientId} @all" listener="#{admissionController.listnerForAppoimentSelect(admissionController.appointmentBill)}" />
                                                         <p:column>
                                                             #{apt2.deptId}
