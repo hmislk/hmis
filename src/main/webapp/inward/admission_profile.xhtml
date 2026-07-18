@@ -765,6 +765,7 @@
                                         rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')}"
                                         value="Accept Theatre Patient"
                                         ajax="false"
+                                        disabled="#{not patientTransferController.hasPendingTheatreRequestsForDepartment}"
                                         action="#{patientTransferController.navigateToTheatreAccept()}"
                                         icon="fa fa-hospital"
                                         class="w-100 ui-button-info">
