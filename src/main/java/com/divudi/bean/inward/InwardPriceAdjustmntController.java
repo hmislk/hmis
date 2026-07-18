@@ -170,6 +170,53 @@ public class InwardPriceAdjustmntController implements Serializable {
         recreateModel();
 //        createItems();
     }
+    
+    public void savePriceMetrixforRoomCategory() {
+
+        if (fromPrice == toPrice) {
+            JsfUtil.addErrorMessage("Check prices");
+            return;
+        }
+        if (toPrice == 0) {
+            JsfUtil.addErrorMessage("Check prices");
+            return;
+        }
+
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+
+        if (roomCategory == null) {
+            JsfUtil.addErrorMessage("Please select a Room Category");
+            return;
+        }
+
+        PriceMatrix a = new InwardPriceAdjustment();
+
+        a.setInstitution(department.getInstitution());
+        a.setDepartment(department);
+        a.setAdmissionType(admissionType);
+        a.setRoomCategory(roomCategory);
+        a.setPaymentMethod(paymentMethod);
+        a.setFromPrice(fromPrice);
+        a.setToPrice(toPrice);
+        a.setMargin(margin);
+        a.setCreatedAt(new Date());
+        a.setCreater(getSessionController().getLoggedUser());
+        if (a.getId() == null) {
+            getFacade().create(a);
+        }
+        JsfUtil.addSuccessMessage("Saved Successfully");
+        recreateModel();
+        fillPriceMetrixforRoomCategory();
+
+    }
+
+    public void prepareRoomCategoryPriceMatrixPage() {
+        preparedAdd();
+        fillPriceMetrixforRoomCategory();
+    }
 
     public void addForAllCategory() {
 
@@ -364,6 +411,18 @@ public class InwardPriceAdjustmntController implements Serializable {
         hm.put("sub", ServiceSubCategory.class);
         items = getFacade().findByJpql(sql, hm);
 
+    }
+    
+    public void fillPriceMetrixforRoomCategory() {
+        filterItems = null;
+        String sql;
+        HashMap hm = new HashMap();
+        sql = "select a from InwardPriceAdjustment a"
+                + " where a.retired=false "
+                + " and a.category is null "
+                + " and a.roomCategory is not null "
+                + " order by a.department.name,a.fromPrice";
+        items = getFacade().findByJpql(sql, hm);
     }
 
     public void createCategroyServicePharmacy() {
