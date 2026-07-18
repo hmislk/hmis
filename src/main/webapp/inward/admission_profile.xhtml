@@ -835,6 +835,18 @@
                                             styleClass="w-100 #{admissionController.current.physicalDischarged ? 'ui-button-success' : 'ui-button-warning'}">
                                         </p:commandButton>
                                     </div>
+                                    <div class="col-6">
+                                        <p:commandButton
+                                            id="btnHoldProfessionalPayments"
+                                            value="Hold Professional Payments"
+                                            ajax="false"
+                                            action="#{professionalPaymentHoldController.navigateToProfessionalPaymentHold(admissionController.current)}"
+                                            icon="fa fa-hand-paper"
+                                            title="Navigate to Hold Professional Payments"
+                                            rendered="#{webUserController.hasPrivilege('InwardHoldProfessionalPayments')}"
+                                            styleClass="w-100 #{admissionController.current.professionalPaymentsOnHold ? 'ui-button-danger' : 'ui-button-secondary'}">
+                                        </p:commandButton>
+                                    </div>
                                 </div>
                             </div>
 

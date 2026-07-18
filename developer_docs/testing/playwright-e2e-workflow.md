@@ -837,6 +837,40 @@ reach the page under test by clicking through the real navigation chain (search 
 dashboard button → target page) rather than pasting/typing the target URL directly,
 especially right after an action that's supposed to change what that page displays.
 
+## 37. A required `p:selectOneMenu` with no default silently swallows an entire non-AJAX submit — no network request, no error
+
+On `inward/inward_bill_professional_payment.xhtml` (and likely the surgery
+equivalent), the "Find Due Payments" button (`type="submit"`, `onclick=""`,
+plain `ajax="false"` postback — verified via `outerHTML`) does **nothing
+at all** when the "WHT Calculation" dropdown is left at its default empty
+"Select" option — no `browser_network_requests` entry appears, no MySQL
+`general_log` query fires, no visible error, and the page doesn't even
+reload. `browser_click` and a JS `.click()` on the button both silently
+no-op. The accessibility snapshot's only tell is the dropdown rendering as
+`combobox "Select" [invalid]` — client-side JSF validation
+(`PrimeFaces.settings.validateEmptyFields=true`) blocks the *entire* form
+submit before it reaches the network layer, exactly like the required-field
+gotcha in §5/§12 but with **zero observable signal** beyond that one
+`[invalid]` accessibility attribute (this button isn't even in the same
+visual section as the required field, so it's easy to miss).
+
+**Diagnosis technique that worked**: enable the MySQL general query log
+(`SET GLOBAL log_output='TABLE'; SET GLOBAL general_log='ON';`,
+`TRUNCATE TABLE mysql.general_log;`), click the button, then check
+`SELECT event_time, argument FROM mysql.general_log ORDER BY event_time DESC`
+— if the expected query never appears at all (not even a failed one), the
+submit never reached the server, which points at client-side validation
+rather than a bean/JPQL bug. Remember to `SET GLOBAL general_log='OFF'`
+afterward.
+
+**Fix**: before clicking any non-AJAX submit button on this page, first
+select a real option in every required dropdown on the same form (here:
+click the "WHT Calculation" combobox → click e.g. "Include Withholding
+Tax" from the listbox), even if that dropdown looks unrelated to the
+button you're about to click — required-field validation on a JSF
+`ajax="false"` postback applies to the whole `<h:form>`, not just the
+fields near the button.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

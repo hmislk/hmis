@@ -90,6 +90,8 @@ public enum Privileges {
     InwardServiceItemRequestApproval("Inward Service/Item Request Approval"),
     InwardServiceItemRequestRejection("Inward Service/Item Request Rejection"),
     InwardAddChargesAfterNursingDischarge("Inward Add Charges After Nursing Discharge"),
+    InwardHoldProfessionalPayments("Hold Professional Payments"),
+    InwardPayProfessionalFeesWhileOnHold("Pay Professional Fees While On Hold"),
     InwardBilling("Inward Billing"),
     InwardBillingInterimBill("Inward Interim Bill"),
     InwardBillingInterimBillSearch("Inward Interim Bill Search"),
@@ -1219,6 +1221,8 @@ public enum Privileges {
             case InwardNursingDischarge:
             case InwardPhysicalDischarge:
             case InwardAddChargesAfterNursingDischarge:
+            case InwardHoldProfessionalPayments:
+            case InwardPayProfessionalFeesWhileOnHold:
             case InwardDocumentUpload:
             case InpatientLetter:
             case InwardPackageAdministration:
