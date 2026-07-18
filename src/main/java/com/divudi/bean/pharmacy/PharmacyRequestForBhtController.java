@@ -1012,7 +1012,7 @@ public class PharmacyRequestForBhtController implements Serializable {
             }
         }
 
-        if (!persistBhtRequest(BillTypeAtomic.REQUEST_MEDICINE_INWARD, BillType.InwardPharmacyRequest, true)) {
+        if (!persistBhtRequest(BillTypeAtomic.REQUEST_MEDICINE_INWARD, BillType.InwardPharmacyRequest)) {
             return;
         }
 
@@ -1028,34 +1028,40 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     /**
      * Persists the BHT medicine request bill header and its bill items,
-     * shared by both the "Settle Request" flow (completed = true, atomic
-     * REQUEST_MEDICINE_INWARD) and the "Save Draft" flow (completed = false,
-     * atomic REQUEST_MEDICINE_INWARD_PRE).
+     * shared by both the "Settle Request" flow (atomic
+     * REQUEST_MEDICINE_INWARD) and the "Save Draft" flow (atomic
+     * REQUEST_MEDICINE_INWARD_PRE).
      *
-     * <p>When editing a bill that already has an id and the target is a
-     * settle (completed == true), the bill is re-fetched fresh from the DB
-     * first and its current billTypeAtomic is checked: if it is no longer
-     * REQUEST_MEDICINE_INWARD_PRE, someone else already settled this draft
-     * concurrently, so we bail out with an error instead of persisting.
-     * Mirrors the concurrency guard in
+     * <p>{@code Bill.completed} is NOT touched here: it means "fully issued
+     * by pharmacy" (set later in PharmacySaleBhtController once every item
+     * on the request has been dispensed), which is a distinct concept from
+     * "submitted vs draft" — that distinction is carried entirely by {@code
+     * bta}. Setting completed=true at submission time previously caused the
+     * pharmacy "Issue" action to reject freshly submitted requests with
+     * "This request has already been completed" before anything was ever
+     * issued (#22215).
+     *
+     * <p>When editing a bill that already has an id, the bill is re-fetched
+     * fresh from the DB first and its current billTypeAtomic is checked: if
+     * it is no longer REQUEST_MEDICINE_INWARD_PRE, someone else already
+     * settled this draft concurrently, so we bail out with an error instead
+     * of persisting. Mirrors the concurrency guard in
      * {@link PharmacyDirectPurchaseController#finalizeDraftDirectPurchase()}.
      *
      * @param bta the BillTypeAtomic to set on the bill
      * @param bt the BillType to set on the bill
-     * @param completed whether this persist represents a completed
-     * (settled) request (true) or an incomplete draft (false)
      * @return true if the bill (and its items) were persisted, false if the
      * concurrency guard bailed out before persisting anything
      */
-    private boolean persistBhtRequest(BillTypeAtomic bta, BillType bt, boolean completed) {
+    private boolean persistBhtRequest(BillTypeAtomic bta, BillType bt) {
+        boolean settling = bta == BillTypeAtomic.REQUEST_MEDICINE_INWARD;
         if (getPreBill().getId() != null) {
             // Guard applies to BOTH settle and draft-save: without it, a stale
             // "Save Draft" click on a bill someone else already settled would
-            // silently flip the settled bill back to REQUEST_MEDICINE_INWARD_PRE
-            // / completed=false.
+            // silently flip the settled bill back to REQUEST_MEDICINE_INWARD_PRE.
             Bill fresh = billService.reloadBill(getPreBill());
             if (fresh == null || fresh.getBillTypeAtomic() != BillTypeAtomic.REQUEST_MEDICINE_INWARD_PRE) {
-                JsfUtil.addErrorMessage(completed
+                JsfUtil.addErrorMessage(settling
                         ? "This request was already settled by another user. Please refresh."
                         : "This draft is no longer editable. Please refresh.");
                 return false;
@@ -1085,18 +1091,8 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (getPreBill().getId() == null) {
             getPreBill().setCreatedAt(new Date());
             getPreBill().setCreater(sessionController.getLoggedUser());
-            getPreBill().setCompleted(completed);
-            if (completed) {
-                getPreBill().setCompletedAt(new Date());
-                getPreBill().setCompletedBy(sessionController.getLoggedUser());
-            }
             billFacade.create(getPreBill());
         } else {
-            getPreBill().setCompleted(completed);
-            if (completed) {
-                getPreBill().setCompletedAt(new Date());
-                getPreBill().setCompletedBy(sessionController.getLoggedUser());
-            }
             billFacade.edit(getPreBill());
         }
         for (BillItem savingBillItem : getPreBill().getBillItems()) {
@@ -2282,7 +2278,7 @@ public class PharmacyRequestForBhtController implements Serializable {
             return;
         }
 
-        if (!persistBhtRequest(BillTypeAtomic.REQUEST_MEDICINE_INWARD_PRE, BillType.InwardPharmacyRequest, false)) {
+        if (!persistBhtRequest(BillTypeAtomic.REQUEST_MEDICINE_INWARD_PRE, BillType.InwardPharmacyRequest)) {
             return;
         }
 
