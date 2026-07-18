@@ -48,6 +48,7 @@ import com.divudi.core.entity.inward.GuardianRoom;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.PatientRoomTimedItemCharge;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
+import com.divudi.core.entity.inward.TheatreRoom;
 import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.entity.inward.TimedItemFee;
 import com.divudi.core.entity.membership.InwardMemberShipDiscount;
@@ -328,6 +329,9 @@ public class BhtSummeryController implements Serializable {
         // Ward room bars (same colour logic as getRoomGanttBars)
         for (PatientRoom r : rooms) {
             if (r.getAdmittedAt() == null) {
+                continue;
+            }
+            if (r instanceof TheatreRoom) {
                 continue;
             }
             Date barEnd = r.getDischargedAt() != null ? r.getDischargedAt() : now;

@@ -558,15 +558,17 @@ public class PatientTransferController implements Serializable {
         persisted.setAcceptedBy(sessionController.getLoggedUser());
         persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.RECEIVED_IN_THEATRE);
 
-        TheatreRoom theatreRoom = new TheatreRoom();
-        theatreRoom = (TheatreRoom) inwardBean.savePatientRoom(
-                theatreRoom,
-                null,
-                persisted.getToRoomFacilityCharge(),
-                persisted.getAdmission(),
-                persisted.getInitiatedAt(),
-                sessionController.getLoggedUser());
-        persisted.setTheatreRoom(theatreRoom);
+        if (persisted.getTheatreRoom() == null) {
+            TheatreRoom theatreRoom = new TheatreRoom();
+            theatreRoom = (TheatreRoom) inwardBean.savePatientRoom(
+                    theatreRoom,
+                    null,
+                    persisted.getToRoomFacilityCharge(),
+                    persisted.getAdmission(),
+                    persisted.getInitiatedAt(),
+                    sessionController.getLoggedUser());
+            persisted.setTheatreRoom(theatreRoom);
+        }
 
         patientTransferRequestFacade.edit(persisted);
         loadPendingForTheatre();
