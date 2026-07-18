@@ -1,0 +1,377 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
+
+    <h:body>
+
+        <ui:composition template="/inward/inward_administration.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form id="mainForm">
+                    <p:panel header="Inward Price Adjustment Matrix - Room Facility Category" id="reportPrint" class="row w-100">
+                        <p:panel>
+                            <f:facet name="header">
+                                <h:outputLabel value="Add new Matrix"  class="mt-2"/>
+                                <p:commandButton
+                                    id="btnAdd"
+                                    value="Add"
+                                    class="ui-button-success"
+                                    icon="fa fa-plus"
+                                    style="float: right;"
+                                    ajax="false"
+                                    update="inwd"
+                                    action="#{inwardPriceAdjustmntController.savePriceMetrixforRoomCategory()}"  >
+                                </p:commandButton>
+
+                            </f:facet>
+
+                            <div class="row w-100 d-flex ml-2">
+                                <div class="row">
+                                    <div class="col-2">
+                                        <h:outputLabel value="Department " class="mt-1"/>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:autoComplete
+                                            value="#{inwardPriceAdjustmntController.department}"
+                                            forceSelection="true"
+                                            completeMethod="#{departmentController.completeDept}"
+                                            var="dep"
+                                            placeholder="Select the Room Department"
+                                            inputStyleClass="form-control"
+                                            class="w-100"
+                                            maxResults="20"
+                                            itemLabel="#{dep.name}"
+                                            itemValue="#{dep}" >
+                                            <p:column style="padding: 6px; width: 8em;">
+                                                <h:outputLabel value="#{dep.name}"/>
+                                            </p:column>
+                                            <p:column style="padding: 6px; width: 12em;">
+                                                <h:outputLabel value="#{dep.institution.name}"/>
+                                            </p:column>
+                                        </p:autoComplete>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2">
+                                        <h:outputLabel value="Payment Type" class="mt-2"/>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:selectOneMenu
+                                            class="w-100"
+                                            id="cmbPs"
+                                            value="#{inwardPriceAdjustmntController.paymentMethod}"  >
+                                            <f:selectItem itemLabel="Select" />
+                                            <f:selectItems value="#{enumController.paymentMethodForAdmission}" />
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2">
+                                        <h:outputLabel value="Admission Type" class="mt-2"/>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:selectOneMenu
+                                            class="w-100"
+                                            id="cmbAdmissionType"
+                                            value="#{inwardPriceAdjustmntController.admissionType}">
+                                            <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" />
+                                            <f:selectItems 
+                                                value="#{admissionTypeController.items}"
+                                                var="at" 
+                                                itemValue="#{at}" 
+                                                itemLabel="#{at.name}" >
+                                            </f:selectItems>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2">
+                                        <h:outputLabel value="Room Category" class="mt-2"/>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:selectOneMenu
+                                            class="w-100"
+                                            id="cmbRoomCategory"
+                                            value="#{inwardPriceAdjustmntController.roomCategory}">
+                                            <f:selectItem itemLabel="All Room Categories" itemValue="#{null}" />
+                                            <f:selectItems 
+                                                value="#{roomCategoryController.items}" 
+                                                var="rc"
+                                                itemValue="#{rc}" 
+                                                itemLabel="#{rc.name}" >
+                                            </f:selectItems>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2">
+                                        <h:outputLabel value="From" class="mt-2"></h:outputLabel>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:inputText
+                                            class="w-100"
+                                            autocomplete="off"
+                                            onfocus="this.select()"
+                                            value="#{inwardPriceAdjustmntController.fromPrice}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </p:inputText>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2">
+                                        <h:outputLabel value="To" class="mt-2"></h:outputLabel>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:inputText
+                                            class="w-100"
+                                            onfocus="this.select()"
+                                            autocomplete="off"
+                                            value="#{inwardPriceAdjustmntController.toPrice}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </p:inputText>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-1">
+                                    <div class="col-2">
+                                        <h:outputLabel value="Margin" class="mt-2"></h:outputLabel>
+                                    </div>
+                                    <div class="col-4">
+                                        <p:inputText
+                                            class="w-100"
+                                            onfocus="this.select()"
+                                            autocomplete="off"
+                                            value="#{inwardPriceAdjustmntController.margin}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </p:inputText>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </p:panel>
+
+                        <p:panel class="mt-2" id="priceMatrixDataPreview">
+                            <f:facet name="header">
+                                <h:outputLabel value="Price Matrix"  class="mt-2"/>
+                                <div class="d-flex" style="float: right">
+                                    <p:commandButton
+                                        ajax="false"
+                                        icon="fa fa-fill"
+                                        class="ui-button-warning"
+                                        value="Fill"
+                                        action="#{inwardPriceAdjustmntController.fillPriceMetrixforRoomCategory()}">
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="ui-button-success mx-2"
+                                        actionListener="#{inwardPriceAdjustmntController.createCategroyService()}"
+                                        ajax="false"
+                                        value="Excel"
+                                        icon="fa-solid fa-file-excel">
+                                        <p:dataExporter
+                                            type="xlsx"
+                                            target="inwd"
+                                            fileName="Price_metrix_room_category"  />
+                                    </p:commandButton>
+
+                                    <p:commandButton
+                                        class="w-100 ui-button-info"
+                                        ajax="false"
+                                        icon="fa fa-print"
+                                        value="Print">
+                                        <p:printer target="priceMatrixDataPreview"/>
+                                    </p:commandButton>
+                                </div>
+
+                            </f:facet>
+
+                            <p:dataTable
+                                id="inwd"
+                                value="#{inwardPriceAdjustmntController.items}"
+                                filteredValue="#{inwardPriceAdjustmntController.filterItems}"
+                                var="a"
+                                editable="true"
+                                scrollable="true">
+
+                                <p:column headerText="ID" style="width: 5em;">
+                                    #{a.id}
+                                </p:column>
+
+                                <p:column
+                                    filterBy="#{a.department.name}"
+                                    filterMatchMode="contains"
+                                    headerText="Department Name"
+                                    exportable="false">
+                                    <p:outputLabel value="#{a.department.name}"/>
+                                </p:column>
+
+                                <p:column
+                                    headerText="Payment Method"
+                                    width="10%"
+                                    filterMatchMode="contains"
+                                    filterBy="#{a.paymentMethod}">
+                                    <p:outputLabel value="#{a.paymentMethod}"/>
+                                </p:column>
+
+                                <p:column
+                                    headerText="Admission Type"
+                                    filterBy="#{empty a.admissionType ? '' : a.admissionType.name}"
+                                    filterMatchMode="contains"
+                                    exportValue="#{empty a.admissionType ? 'All Admission Types' : a.admissionType.name}">
+                                    <h:outputText value="#{empty a.admissionType ? 'All Admission Types' : a.admissionType.name}"/>
+                                </p:column>
+
+                                <p:column
+                                    headerText="Room Category"
+                                    filterBy="#{empty a.roomCategory ? '' : a.roomCategory.name}"
+                                    filterMatchMode="contains"
+                                    exportValue="#{empty a.roomCategory ? 'All Room Categories' : a.roomCategory.name}">
+                                    <h:outputText value="#{empty a.roomCategory ? 'All Room Categories' : a.roomCategory.name}"/>
+                                </p:column>
+
+                                <p:column headerText="From Price" width="8%">
+                                    <h:outputText value="#{a.fromPrice}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column  headerText="To Price" width="8%">
+                                    <h:outputText value="#{a.toPrice}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column  headerText="Margin" width="8%">
+                                    <h:outputText value="#{a.margin}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column headerText="Action" width="5em;" >
+                                    <div class="d-flex">
+                                        <p:commandButton
+                                            id="edit"
+                                            icon="fa fa-pencil"
+                                            class="ui-button-success mx-1"
+                                            process="@this"
+                                            update=":dlgEditForm"
+                                            oncomplete="PF('dlgEdit').show()"
+                                            action="#{inwardPriceAdjustmntController.prepareEdit(a)}" >
+                                        </p:commandButton>
+
+                                        <p:commandButton
+                                            id="delete"
+                                            class="ui-button-danger"
+                                            icon=" fa-solid fa-trash"
+                                            action="#{inwardPriceAdjustmntController.delete}" >
+                                            <f:setPropertyActionListener value="#{a}" target="#{inwardPriceAdjustmntController.current}"/>
+                                        </p:commandButton>
+                                    </div>
+
+                                    <p:tooltip for="edit" value="Edit"  showDelay="0" hideDelay="0"></p:tooltip>
+                                    <p:tooltip for="delete" value="Delete"  showDelay="0" hideDelay="0"></p:tooltip>
+                                </p:column>
+
+                            </p:dataTable>
+                        </p:panel>
+                    </p:panel>
+                </h:form>
+
+                <p:dialog 
+                    header="Edit Price Matrix" 
+                    widgetVar="dlgEdit" 
+                    modal="true"
+                    resizable="false" 
+                    width="680" 
+                    id="dlgEdit">
+
+                    <h:form id="dlgEditForm">
+                        <h:panelGrid columns="3" cellpadding="5" rendered="#{not empty inwardPriceAdjustmntController.current}">
+                            <h:outputLabel value="Department"/>
+                            <p:spacer width="40"/>
+                            <h:outputText value="#{inwardPriceAdjustmntController.current.department.name}"/>
+
+                            <h:outputLabel value="Payment Method"/>
+                            <p:spacer width="40"/>
+                            <h:outputText value="#{inwardPriceAdjustmntController.current.paymentMethod}"/>
+
+                            <h:outputLabel value="Admission Type"/>
+                            <p:spacer width="40"/>
+                            <p:selectOneMenu value="#{inwardPriceAdjustmntController.current.admissionType}" class="w-100">
+                                <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" />
+                                <f:selectItems 
+                                    value="#{admissionTypeController.items}" 
+                                    var="at"
+                                    itemValue="#{at}" 
+                                    itemLabel="#{at.name}" />
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="Room Category"/>
+                            <p:spacer width="40"/>
+                            <p:selectOneMenu value="#{inwardPriceAdjustmntController.current.roomCategory}" class="w-100">
+                                <f:selectItem itemLabel="All Room Categories" itemValue="#{null}" />
+                                <f:selectItems 
+                                    value="#{roomCategoryController.items}" 
+                                    var="rc"
+                                    itemValue="#{rc}" 
+                                    itemLabel="#{rc.name}" />
+                            </p:selectOneMenu>
+
+                            <h:outputLabel value="From Price"/>
+                            <p:spacer width="40"/>
+                            <p:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.current.fromPrice}" onfocus="this.select()">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </p:inputText>
+
+                            <h:outputLabel value="To Price"/>
+                            <p:spacer width="40"/>
+                            <p:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.current.toPrice}" onfocus="this.select()">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </p:inputText>
+
+                            <h:outputLabel value="Margin"/>
+                            <p:spacer width="20"/>
+                            <p:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.current.margin}" onfocus="this.select()">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </p:inputText>
+
+
+                        </h:panelGrid>
+
+                        <div class="d-flex justify-content-end mt-3">
+                            <p:commandButton 
+                                id="dlgSave" 
+                                value="Save" 
+                                icon="fa fa-save"
+                                class="ui-button-success mx-1"
+                                action="#{inwardPriceAdjustmntController.saveEdit}"
+                                update=":dlgEditForm :mainForm:inwd"
+                                oncomplete="PF('dlgEdit').hide()">
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                id="dlgCancel" 
+                                value="Cancel" 
+                                icon="fa fa-times"
+                                class="ui-button-secondary mx-1"
+                                type="button"
+                                onclick="PF('dlgEdit').hide()">
+                            </p:commandButton>
+                        </div>
+                    </h:form>
+                </p:dialog>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
