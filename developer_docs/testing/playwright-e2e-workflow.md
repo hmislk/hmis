@@ -854,14 +854,19 @@ gotcha in §5/§12 but with **zero observable signal** beyond that one
 `[invalid]` accessibility attribute (this button isn't even in the same
 visual section as the required field, so it's easy to miss).
 
-**Diagnosis technique that worked**: enable the MySQL general query log
-(`SET GLOBAL log_output='TABLE'; SET GLOBAL general_log='ON';`,
-`TRUNCATE TABLE mysql.general_log;`), click the button, then check
+**Diagnosis technique for local dev DBs only — never on staging/production**:
+`mysql.general_log` captures every statement verbatim, including patient
+identifiers and payment values, and adds real overhead while active, so only
+enable it against your own local dev database, for the shortest possible
+window. Enable it (`SET GLOBAL log_output='TABLE'; SET GLOBAL
+general_log='ON';`, `TRUNCATE TABLE mysql.general_log;`), click the button,
+then check
 `SELECT event_time, argument FROM mysql.general_log ORDER BY event_time DESC`
 — if the expected query never appears at all (not even a failed one), the
 submit never reached the server, which points at client-side validation
-rather than a bean/JPQL bug. Remember to `SET GLOBAL general_log='OFF'`
-afterward.
+rather than a bean/JPQL bug. Immediately run `SET GLOBAL general_log='OFF'`
+afterward and truncate the table again to avoid leaving captured rows
+sitting around.
 
 **Fix**: before clicking any non-AJAX submit button on this page, first
 select a real option in every required dropdown on the same form (here:
