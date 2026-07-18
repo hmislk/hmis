@@ -10,6 +10,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.TheatreRoom;
 import com.divudi.core.entity.inward.PatientTransferRequest;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.AdmissionFacade;
@@ -556,6 +557,19 @@ public class PatientTransferController implements Serializable {
         persisted.setAcceptedAt(new Date());
         persisted.setAcceptedBy(sessionController.getLoggedUser());
         persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.RECEIVED_IN_THEATRE);
+
+        if (persisted.getTheatreRoom() == null) {
+            TheatreRoom theatreRoom = new TheatreRoom();
+            theatreRoom = (TheatreRoom) inwardBean.savePatientRoom(
+                    theatreRoom,
+                    null,
+                    persisted.getToRoomFacilityCharge(),
+                    persisted.getAdmission(),
+                    persisted.getInitiatedAt(),
+                    sessionController.getLoggedUser());
+            persisted.setTheatreRoom(theatreRoom);
+        }
+
         patientTransferRequestFacade.edit(persisted);
         loadPendingForTheatre();
         loadInTheatreRequests();
@@ -638,9 +652,17 @@ public class PatientTransferController implements Serializable {
         returnReq.setCreater(sessionController.getLoggedUser());
         patientTransferRequestFacade.create(returnReq);
 
+        Date returnedAt = persisted.getReturnedToWardAt() != null ? persisted.getReturnedToWardAt() : new Date();
         persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.RETURNED_TO_WARD);
         if (persisted.getReturnedToWardAt() == null) {
-            persisted.setReturnedToWardAt(new Date());
+            persisted.setReturnedToWardAt(returnedAt);
+        }
+        if (persisted.getTheatreRoom() != null && !persisted.getTheatreRoom().isDischarged()) {
+            PatientRoom theatreRoom = persisted.getTheatreRoom();
+            theatreRoom.setDischarged(true);
+            theatreRoom.setDischargedAt(returnedAt);
+            theatreRoom.setDischargedBy(sessionController.getLoggedUser());
+            patientRoomFacade.edit(theatreRoom);
         }
         patientTransferRequestFacade.edit(persisted);
 

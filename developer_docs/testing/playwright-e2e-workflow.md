@@ -808,6 +808,35 @@ Run the two commands separately (not chained with `&&`): if the domain is alread
 down, `stop-domain` exits nonzero and a chained `start-domain` would be skipped,
 leaving the app offline.
 
+## 35. Department-scoped dashboards need the department actually switched, not just full privileges
+
+While verifying #22213 (theatre stay billing), the Theatre Dashboard's "Awaiting
+Theatre Acceptance" / "Pending Return to Ward" lists showed **0** rows even though
+a request definitely existed (confirmed via direct DB query) and the logged-in
+user had every relevant privilege. Root cause: `PatientTransferController`'s
+loader methods (`loadPendingForTheatre()`, `loadInTheatreRequests()`, etc.) filter
+on `r.toRoomFacilityCharge.department = sessionController.getDepartment()` — the
+**currently selected** department, not "any department the user has access to."
+Being logged in under "Inward" and merely navigating to a Theatre page renders it
+fine but shows empty lists. Fix: log out and back in, and on the Select Department
+screen explicitly pick the department the workflow actually belongs to (here,
+"THEATRE") before testing department-scoped actions — the app remembers your last
+selection and will silently keep applying it across unrelated page navigations.
+
+## 36. `@SessionScoped` bean data can go stale after a direct URL hit — navigate through the real action chain
+
+Also during #22213 verification: after completing a theatre "return to ward" action
+(via a proper button click with a bound `action="..."` method), directly typing the
+URL for `/inward/inward_patient_room_details.xhtml` showed the just-discharged room
+still as "Active" — the underlying DB was already correct (verified via SQL), but
+`BhtSummeryController` (`@SessionScoped`) lazily caches `patientRooms` on first
+access and only a handful of specific action methods actually refresh it. A raw URL
+navigation skips whatever `action="..."` a genuine button click would have invoked,
+so it reads the stale in-memory list from earlier in the session. Fix: always
+reach the page under test by clicking through the real navigation chain (search →
+dashboard button → target page) rather than pasting/typing the target URL directly,
+especially right after an action that's supposed to change what that page displays.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

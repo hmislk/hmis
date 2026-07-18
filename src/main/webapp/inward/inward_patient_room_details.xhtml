@@ -127,6 +127,9 @@
                                                 <h:panelGroup rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.GuardianRoom'}">
                                                     <p:badge value="Guardian" severity="success"/>
                                                 </h:panelGroup>
+                                                <h:panelGroup rendered="#{rm.patientRoomClass eq 'class com.divudi.core.entity.inward.TheatreRoom'}">
+                                                    <p:badge value="Theatre" severity="danger"/>
+                                                </h:panelGroup>
                                                 <h:panelGroup rendered="#{rm.discharged}">
                                                     <p:badge value="Left" severity="info"/>
                                                 </h:panelGroup>
