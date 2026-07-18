@@ -250,6 +250,9 @@ public class BhtSummeryController implements Serializable {
             if (r.getAdmittedAt() == null) {
                 continue;
             }
+            if (r instanceof TheatreRoom) {
+                continue;
+            }
             Date barEnd = r.getDischargedAt() != null ? r.getDischargedAt() : now;
             long offsetMs = r.getAdmittedAt().getTime() - spanStart.getTime();
             long durationMs = barEnd.getTime() - r.getAdmittedAt().getTime();

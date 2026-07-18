@@ -652,7 +652,7 @@ public class PatientTransferController implements Serializable {
         returnReq.setCreater(sessionController.getLoggedUser());
         patientTransferRequestFacade.create(returnReq);
 
-        Date returnedAt = new Date();
+        Date returnedAt = persisted.getReturnedToWardAt() != null ? persisted.getReturnedToWardAt() : new Date();
         persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.RETURNED_TO_WARD);
         if (persisted.getReturnedToWardAt() == null) {
             persisted.setReturnedToWardAt(returnedAt);
