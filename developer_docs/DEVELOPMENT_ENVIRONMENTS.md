@@ -22,6 +22,10 @@ This document records the development environment setups used by team members to
 - **OS**: Linux Ubuntu 24.04
 - **JDK**: OpenJDK 11 (`/usr/lib/jvm/java-11-openjdk-amd64`)
 - **Payara Server**: `/home/buddhika/payara`
+- **Payara Domain**: _[To be documented]_
+- **Payara Admin Port**: _[To be documented]_
+- **Payara HTTP Port**: _[To be documented]_
+- **Deployed App Name / Context Root**: _[To be documented]_
 
 #### hiud (Reference Name)
 - **Actual Computer Name**: _[To be documented - run `hostname` command]_
@@ -29,6 +33,7 @@ This document records the development environment setups used by team members to
 - **Maven Location**: _[To be documented]_
 - **IDE**: _[To be documented]_
 - **OS**: _[To be documented]_
+- **Payara Domain / Admin Port / HTTP Port**: _[To be documented]_
 
 #### ccd (Reference Name)
 - **Actual Computer Name**: _[To be documented - run `hostname` command]_
@@ -36,6 +41,41 @@ This document records the development environment setups used by team members to
 - **Maven Location**: _[To be documented]_
 - **IDE**: _[To be documented]_
 - **OS**: _[To be documented]_
+- **Payara Domain / Admin Port / HTTP Port**: _[To be documented]_
+
+#### BuddhikaDesktop (Reference Name)
+- **Actual Computer Name**: `BuddhikaDesktop`
+- **User**: `Buddhika`
+- **Maven Location**: `D:\Program Files\NetBeans-18\netbeans\java\maven`
+- **IDE**: NetBeans 18 (Maven bundled)
+- **OS**: Windows 10
+- **JDK for Payara/build**: JDK 11 (Eclipse Adoptium), `C:\Program Files\Eclipse Adoptium\jdk-11.0.23.9-hotspot` - **note**: `where java`/`JAVA_HOME` on this machine can resolve to a JDK 17 install instead; always verify the resolved `JAVA_HOME` against `pom.xml`'s `<release>` value (11 as of this writing) before building, since JDK 17 has been observed to crash under sandboxed execution here.
+- **Payara Server**: `D:\Payara`
+- **Payara Domain**: `domain1`
+- **Payara Admin Port**: `4848` (default)
+- **Payara HTTP Port**: `8080` (default)
+- **Deployed App Name / Context Root**: `rh-3.0.0` (deployed by an earlier bare `asadmin deploy` without `--name`, so the name was derived from the WAR filename - this is a live, real-world instance of the name/context-root collision bug described in [local-sync-redeploy-script-guide.md](deployment/local-sync-redeploy-script-guide.md#app-name--context-root-collision-on-deploy))
+
+#### carecode (Reference Name)
+- **Actual Computer Name**: _[To be documented]_
+- **User**: `carecode`
+- **OS**: Linux Ubuntu
+- **Payara Server**: `/home/carecode/payara`
+- **Payara Domain**: `rh`
+- **Payara Admin Port**: `9048` (not the default 4848)
+- **Payara HTTP Port**: `9080` (not the default 8080)
+- **Deployed App Name / Context Root**: `rh` / `/rh` - see the collision bug in
+  [local-sync-redeploy-script-guide.md](deployment/local-sync-redeploy-script-guide.md#app-name--context-root-collision-on-deploy)
+  for what happens if a redeploy omits `--name`/`--contextroot` on this machine
+
+## Local Sync-and-Redeploy Script
+
+For a personal script that fetches `origin/development`, restores your local
+JNDI settings, builds, and redeploys to your own Payara domain in one
+command, see
+[Local Sync-and-Redeploy Script Guide](deployment/local-sync-redeploy-script-guide.md)
+and run `scripts/generate-sync-redeploy-script.sh` (Linux) or
+`scripts\generate-sync-redeploy-script.bat` (Windows) once per machine.
 
 ## Auto-Detection Scripts
 
