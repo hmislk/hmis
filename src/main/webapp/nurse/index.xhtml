@@ -423,6 +423,7 @@
                                                             icon="fa fa-check-circle"
                                                             ajax="false"
                                                             rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')}"
+                                                            disabled="#{not patientTransferController.hasPendingTheatreRequestsForDepartment}"
                                                             action="#{patientTransferController.navigateToTheatreAccept()}"
                                                             class="w-100 ui-button-success">
                                                         </p:commandButton>
