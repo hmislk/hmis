@@ -11,7 +11,7 @@
 
                 <h:form id="formEventHistory">
 
-                    <p:panel class="m-1">
+                    <p:panel class="m-1" rendered="#{webUserController.hasPrivilege('InwardEventHistoryView')}">
                         <f:facet name="header">
                             <h:outputText value="Inpatient Event History" />
                             <h:outputText
