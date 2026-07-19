@@ -228,14 +228,22 @@
                         </h:panelGroup>
 
                         <p:outputLabel value="Main Database Results" rendered="#{dataAdministrationController.runOnMainDatabase and not empty dataAdministrationController.mainDatabaseExecutionFeedback}"/>
-                        <h:outputText escape="false" rendered="#{dataAdministrationController.runOnMainDatabase and not empty dataAdministrationController.mainDatabaseExecutionFeedback}">
-                            <textarea readonly="readonly" rows="4" class="form-control w-100" style="resize: none;">#{dataAdministrationController.mainDatabaseExecutionFeedback}</textarea>
-                        </h:outputText>
+                        <p:inputTextarea
+                            value="#{dataAdministrationController.mainDatabaseExecutionFeedback}"
+                            readonly="true"
+                            rows="4"
+                            autoResize="false"
+                            class="w-100"
+                            rendered="#{dataAdministrationController.runOnMainDatabase and not empty dataAdministrationController.mainDatabaseExecutionFeedback}"/>
 
                         <p:outputLabel value="Audit Database Results" rendered="#{dataAdministrationController.runOnAuditDatabase and not empty dataAdministrationController.auditDatabaseExecutionFeedback}"/>
-                        <h:outputText escape="false" rendered="#{dataAdministrationController.runOnAuditDatabase and not empty dataAdministrationController.auditDatabaseExecutionFeedback}">
-                            <textarea readonly="readonly" rows="4" class="form-control w-100" style="resize: none;">#{dataAdministrationController.auditDatabaseExecutionFeedback}</textarea>
-                        </h:outputText>
+                        <p:inputTextarea
+                            value="#{dataAdministrationController.auditDatabaseExecutionFeedback}"
+                            readonly="true"
+                            rows="4"
+                            autoResize="false"
+                            class="w-100"
+                            rendered="#{dataAdministrationController.runOnAuditDatabase and not empty dataAdministrationController.auditDatabaseExecutionFeedback}"/>
                     </p:panelGrid>
 
                 </p:tab>

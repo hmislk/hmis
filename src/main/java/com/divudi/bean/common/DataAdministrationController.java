@@ -2849,7 +2849,7 @@ public class DataAdministrationController implements Serializable {
             List<String> altered = databaseMigrationFacade.applyAutoIncrementToAllEntityTables();
             return formatAutoIncrementResult("Main Database", altered);
         } catch (Exception e) {
-            return "=== Main Database ===<br/>ERROR: " + getExceptionMessage(e);
+            return "=== Main Database ===\nERROR: " + getExceptionMessage(e);
         }
     }
 
@@ -2858,15 +2858,15 @@ public class DataAdministrationController implements Serializable {
             List<String> altered = auditDatabaseFacade.applyAutoIncrementToAllEntityTables();
             return formatAutoIncrementResult("Audit Database", altered);
         } catch (Exception e) {
-            return "=== Audit Database ===<br/>ERROR: " + getExceptionMessage(e);
+            return "=== Audit Database ===\nERROR: " + getExceptionMessage(e);
         }
     }
 
     private String formatAutoIncrementResult(String databaseName, List<String> altered) {
         if (altered.isEmpty()) {
-            return "=== " + databaseName + " ===<br/>No tables needed fixing — AUTO_INCREMENT already present on every ID primary key.";
+            return "=== " + databaseName + " ===\nNo tables needed fixing — AUTO_INCREMENT already present on every ID primary key.";
         }
-        return "=== " + databaseName + " ===<br/>Fixed AUTO_INCREMENT on: " + String.join(", ", altered);
+        return "=== " + databaseName + " ===\nFixed AUTO_INCREMENT on: " + String.join(", ", altered);
     }
 
     private void fixMissingFieldsForDatabase(AbstractFacade<?> facade, String databaseName) {
