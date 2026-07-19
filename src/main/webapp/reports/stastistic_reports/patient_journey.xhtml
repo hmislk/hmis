@@ -126,8 +126,7 @@
                             <p:commandButton style="width: 150px" ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success mx-2" >
                                 <p:dataExporter fileName="Patient_Journey_Report" type="xlsx" target="dtaPr" />
                             </p:commandButton>
-                            <p:commandButton style="width: 150px" ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" >
-                                <p:dataExporter fileName="Patient_Journey_Report" type="pdf" target="dtaPr" />
+                            <p:commandButton style="width: 150px" ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" action="#{reportController.exportPatientJourneyReportToPDF}" >
                             </p:commandButton>
                         </h:panelGrid>
 
