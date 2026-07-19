@@ -201,9 +201,16 @@ database structure.
 > Always use the raw file linked above; never copy the SQL from a rendered
 > wiki page.
 
-To apply it: download the file, open it in a text editor, copy the entire
-contents, and paste into **Menu > Administration > Manage Metadata > Add
-Missing Fields** as described in step 6 above.
+To apply it, go to **Menu > Administration > Manage Metadata > Add Missing
+Fields** and click **Load Latest DDL from Wiki** — the server downloads the
+file above directly, then click **Update Database**. This is the recommended
+path: pasting the full ~650 KB script into the text area can exceed the
+server's maximum POST size and fail with a "Post too large" error.
+
+On older application versions that do not have the **Load Latest DDL from
+Wiki** button, download the file and paste its contents into the text area
+as described in step 6 above — and if you get a "Post too large" error,
+upgrade the application or apply the script in smaller parts.
 WIKI_HEADER
   echo "Wiki page written: $WIKI_FILE"
   echo "DDL file written:  $WIKI_DIR/files/createDDL.sql"
