@@ -10,6 +10,19 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
 
+                <style type="text/css">
+                    @media print {
+                        /* Hide PrimeFaces column filter inputs when printing */
+                        .no-print-filters .ui-column-filter,
+                        .no-print-filters thead tr.ui-filter-row,
+                        .no-print-filters .ui-datatable-header,
+                        .no-print-filters .ui-paginator {
+                            display: none !important;
+                            visibility: hidden !important;
+                        }
+                    }
+                </style>
+
                 <h:form >
 
                     <p:panel>
@@ -121,7 +134,7 @@
                         <p:dataTable id="dtaPr"
                                      rowIndexVar="count"
                                      value="#{reportController.patientJourneyRows}"
-                                     var="row" class="my-2">
+                                     var="row" class="my-2 no-print-filters">
                             <f:facet name="header">
                                 <h:outputLabel value="Patient Journey Report" />
                             </f:facet>
