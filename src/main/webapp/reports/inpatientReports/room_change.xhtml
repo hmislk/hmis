@@ -220,7 +220,7 @@
                                                 <p:column rowspan="2" headerText="Patient Name" styleClass="border"/>
                                                 <p:column rowspan="2" headerText="Age" styleClass="border"/>
                                                 <p:column rowspan="2" headerText="Gender" styleClass="border"/>
-                                                <p:column rowspan="2" headerText="Visit" styleClass="border"/>
+                                                <p:column rowspan="2" headerText="Visit" styleClass="border" style="width:200px; min-width:200px;"/>
                                                 <p:column rowspan="2" headerText="Admission Date" styleClass="border"/>
                                                 <p:column rowspan="2" headerText="Admission Time" styleClass="border"/>
                                                 <p:column rowspan="2" headerText="Transfer Request No." styleClass="border"/>
@@ -252,7 +252,9 @@
                                         <p:column><h:outputLabel value="#{detail.patientName}" /></p:column>
                                         <p:column><h:outputLabel value="#{detail.patientAge}" /></p:column>
                                         <p:column><h:outputLabel value="#{detail.patientSex}" /></p:column>
-                                        <p:column><h:outputLabel value="#{detail.bhtNo}" /></p:column>
+                                        <p:column style="width:200px; min-width:200px; white-space:nowrap;">
+                                            <h:outputLabel value="#{detail.bhtNo}" />
+                                        </p:column>
                                         <p:column><h:outputLabel value="#{detail.dateOfAdmission}"><f:convertDateTime pattern="M/d/yyyy" /></h:outputLabel></p:column>
                                         <p:column><h:outputLabel value="#{detail.dateOfAdmission}"><f:convertDateTime pattern="HH:mm" /></h:outputLabel></p:column>
                                         <p:column><h:outputLabel value="#{detail.transferRequestId}" /></p:column>
