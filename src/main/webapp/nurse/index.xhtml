@@ -551,7 +551,8 @@
                                                             id="btnReturnMedicinesToPharmacy"
                                                             value="Return Medicines to Pharmacy"
                                                             ajax="false"
-                                                            action="#{wardPharmacyReturnToPharmacyController.navigateToReturn}"
+                                                            action="#{wardPharmacyReturnToPharmacyController.navigateToReturn(admissionController.current)}"
+                                                            disabled="#{admissionController.current eq null}"
                                                             icon="fa fa-truck-ramp-box"
                                                             rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
                                                             class="w-100">
