@@ -131,12 +131,26 @@ public class DischargeController implements Serializable {
         if (getCurrent().getId() == null || getCurrent().getId() == 0) {
             JsfUtil.addSuccessMessage("No Patient Data Found");
         } else {
+            // Read the persisted state for the audit before-snapshot; the
+            // session entity may already carry the new discharge date set by
+            // the calling flow (e.g. BhtSummeryController date change).
+            java.util.Map<String, Object> before = new java.util.LinkedHashMap<>();
+            Admission persisted = getEjbFacade().findWithoutCache(getCurrent().getId());
+            if (persisted != null) {
+                before.put("discharged", persisted.isDischarged());
+                before.put("dateOfDischarge", persisted.getDateOfDischarge());
+            }
             //  getCurrent().setLastPatientRoom(getPatientRoom().get(getPatientRoom().size() - 1));
             getCurrent().setDischarged(Boolean.TRUE);
             if (getCurrent().getDateOfDischarge() == null) {
                 getCurrent().setDateOfDischarge(new Date());
             }
             getEjbFacade().edit(getCurrent());
+            java.util.Map<String, Object> after = new java.util.LinkedHashMap<>();
+            after.put("discharged", getCurrent().isDischarged());
+            after.put("dateOfDischarge", getCurrent().getDateOfDischarge());
+            auditService.logEncounterAudit(getCurrent(), "Discharge",
+                    before, after, getSessionController().getLoggedUser());
             notificationController.createNotification(getCurrent(), "FinalDischarge");
             JsfUtil.addSuccessMessage("Discharged");
 
