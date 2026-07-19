@@ -131,7 +131,7 @@
                                 sortBy="#{row.transactionDate}"
                                 filterBy="#{row.transactionDate}">
                                 <h:outputText value="#{row.transactionDate}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm"/>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Visit No" filterMatchMode="contains" sortBy="#{row.visitNo}" filterBy="#{row.visitNo}">
