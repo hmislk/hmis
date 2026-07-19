@@ -1706,9 +1706,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (getCurrent().getId() == null || getCurrent().getId() == 0) {
             JsfUtil.addSuccessMessage("No Patient Data Found");
         } else {
+            Map<String, Object> before = new LinkedHashMap<>();
+            Admission persisted = getEjbFacade().findWithoutCache(getCurrent().getId());
+            if (persisted != null) {
+                before.put("discharged", persisted.isDischarged());
+                before.put("dateOfDischarge", persisted.getDateOfDischarge());
+            }
             getCurrent().setDischarged(Boolean.TRUE);
             getCurrent().setDateOfDischarge(new Date());
             getEjbFacade().edit(current);
+            Map<String, Object> after = new LinkedHashMap<>();
+            after.put("discharged", getCurrent().isDischarged());
+            after.put("dateOfDischarge", getCurrent().getDateOfDischarge());
+            auditService.logEncounterAudit(getCurrent(), "Discharge",
+                    before, after, getSessionController().getLoggedUser());
         }
 
     }

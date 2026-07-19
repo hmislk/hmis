@@ -143,6 +143,8 @@ public class BhtSummeryController implements Serializable {
     @Inject
     PriceMatrixController priceMatrixController;
     //////////////////////////
+    @EJB
+    private com.divudi.service.AuditService auditService;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -2217,9 +2219,20 @@ public class BhtSummeryController implements Serializable {
             }
         }
 
+        Map<String, Object> before = new LinkedHashMap<>();
+        before.put("discharged", patientEncounter.isDischarged());
+        before.put("dateOfDischarge", patientEncounter.getDateOfDischarge());
+
         patientEncounter.setDischarged(false);
         patientEncounter.setDateOfDischarge(null);
         getPatientEncounterFacade().edit(patientEncounter);
+
+        Map<String, Object> after = new LinkedHashMap<>();
+        after.put("discharged", patientEncounter.isDischarged());
+        after.put("dateOfDischarge", patientEncounter.getDateOfDischarge());
+        auditService.logEncounterAudit(patientEncounter, "Discharge Cancelled",
+                before, after, sessionController.getLoggedUser());
+
         JsfUtil.addSuccessMessage("Discharge Cancelled Successfully");
 
     }
