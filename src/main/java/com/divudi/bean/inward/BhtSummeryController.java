@@ -32,6 +32,7 @@ import com.divudi.ejb.BillNumberGenerator;
 
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Item;
@@ -79,6 +80,7 @@ import com.divudi.core.facade.EncounterCreditCompanyFacade;
 import com.divudi.core.util.CommonFunctions;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -2536,11 +2538,19 @@ public class BhtSummeryController implements Serializable {
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());
 
+        writeDiscountBreakdownToFinanceDetails(getCurrent());
         if (getCurrent().getId() == null) {
             getBillFacade().create(getCurrent());
         } else {
             getBillFacade().edit(getCurrent());
         }
+    }
+
+    private void writeDiscountBreakdownToFinanceDetails(Bill bill) {
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        bfd.setBillDiscount(BigDecimal.valueOf(billLevelDiscount));
+        bfd.setLineDiscount(BigDecimal.valueOf(itemDiscountTotal + chargeTypeDiscountTotal));
+        bfd.setTotalDiscount(BigDecimal.valueOf(discount));
     }
 
     private void saveTempBill() {
@@ -2567,6 +2577,7 @@ public class BhtSummeryController implements Serializable {
         getTempBill().setCreatedAt(new Date());
         getTempBill().setCreater(getSessionController().getLoggedUser());
 
+        writeDiscountBreakdownToFinanceDetails(getTempBill());
     }
 
     private void saveOriginalBill() {
@@ -2596,6 +2607,7 @@ public class BhtSummeryController implements Serializable {
         getOriginalBill().setCreatedAt(new Date());
         getOriginalBill().setCreater(getSessionController().getLoggedUser());
 
+        writeDiscountBreakdownToFinanceDetails(getOriginalBill());
         if (getOriginalBill().getId() == null) {
             getBillFacade().create(getOriginalBill());
         } else {
@@ -2678,7 +2690,8 @@ public class BhtSummeryController implements Serializable {
             temBi.setBill(getCurrent());
             temBi.setInwardChargeType(cit.getInwardChargeType());
             temBi.setGrossValue(cit.getTotal());
-            temBi.setDiscount(cit.getDiscount());
+            temBi.setDiscount(cit.getDiscount() + cit.getChargeTypeDiscount());
+            temBi.setChargeTypeDiscount(cit.getChargeTypeDiscount());
             temBi.setNetValue(cit.getNetTotal());
             temBi.setAdjustedValue(cit.getAdjustedTotal());
             temBi.setDescreption(cit.getComments());
@@ -2726,7 +2739,8 @@ public class BhtSummeryController implements Serializable {
             temBi.setBill(getTempBill());
             temBi.setInwardChargeType(cit.getInwardChargeType());
             temBi.setGrossValue(cit.getTotal());
-            temBi.setDiscount(cit.getDiscount());
+            temBi.setDiscount(cit.getDiscount() + cit.getChargeTypeDiscount());
+            temBi.setChargeTypeDiscount(cit.getChargeTypeDiscount());
             temBi.setNetValue(cit.getNetTotal());
             temBi.setAdjustedValue(cit.getAdjustedTotal());
             temBi.setDescreption(cit.getComments());
@@ -2764,7 +2778,8 @@ public class BhtSummeryController implements Serializable {
             temBi.setBill(getOriginalBill());
             temBi.setInwardChargeType(cit.getInwardChargeType());
             temBi.setGrossValue(cit.getTotal());
-            temBi.setDiscount(cit.getDiscount());
+            temBi.setDiscount(cit.getDiscount() + cit.getChargeTypeDiscount());
+            temBi.setChargeTypeDiscount(cit.getChargeTypeDiscount());
             temBi.setNetValue(cit.getNetTotal());
             temBi.setAdjustedValue(cit.getAdjustedTotal());
             temBi.setDescreption(cit.getComments());
