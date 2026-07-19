@@ -143,6 +143,8 @@ public class BhtSummeryController implements Serializable {
     @Inject
     PriceMatrixController priceMatrixController;
     //////////////////////////
+    @EJB
+    private com.divudi.service.AuditService auditService;
     @Inject
     private SessionController sessionController;
     @Inject
@@ -490,7 +492,36 @@ public class BhtSummeryController implements Serializable {
         this.toDate = toDate;
     }
 
+    /**
+     * Snapshot of a room's per-charge discount values for audit events (#22238).
+     */
+    private Map<String, Object> roomDiscountAuditMap(PatientRoom pr) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        if (pr == null) {
+            return m;
+        }
+        m.put("room", pr.getRoomFacilityCharge() != null ? pr.getRoomFacilityCharge().getName() : null);
+        m.put("discountRoomCharge", pr.getDiscountRoomCharge());
+        m.put("discountMaintainCharge", pr.getDiscountMaintainCharge());
+        m.put("discountLinenCharge", pr.getDiscountLinenCharge());
+        m.put("discountMedicalCareCharge", pr.getDiscountMedicalCareCharge());
+        m.put("discountAdministrationCharge", pr.getDiscountAdministrationCharge());
+        m.put("discountNursingCharge", pr.getDiscountNursingCharge());
+        m.put("discountMoCharge", pr.getDiscountMoCharge());
+        return m;
+    }
+
+    private void auditRoomDiscountChange(Map<String, Object> before, PatientRoom pr) {
+        auditService.logEncounterAudit(getPatientEncounter(), "Room Discount Changed",
+                before, roomDiscountAuditMap(pr), sessionController.getLoggedUser(),
+                "PatientRoom", pr.getId());
+    }
+
     public void changeDiscountListener(ChargeItemTotal cit) {
+        Map<String, Object> before = new LinkedHashMap<>();
+        before.put("chargeType", cit.getInwardChargeType());
+        before.put("total", cit.getTotal());
+        before.put("requestedDiscount", cit.getDiscount());
         double discountPercent = (cit.getDiscount() * 100) / cit.getTotal();
         double disValue = 0;
         switch (cit.getInwardChargeType()) {
@@ -522,9 +553,18 @@ public class BhtSummeryController implements Serializable {
 //        cit.setAdjustedTotal(cit.getTotal());
 
         updateTotal();
+
+        Map<String, Object> after = new LinkedHashMap<>();
+        after.put("chargeType", cit.getInwardChargeType());
+        after.put("total", cit.getTotal());
+        after.put("appliedDiscount", cit.getDiscount());
+        after.put("adjustedTotal", cit.getAdjustedTotal());
+        auditService.logEncounterAudit(getPatientEncounter(), "Settlement Discount Changed",
+                before, after, sessionController.getLoggedUser());
     }
 
     public void changeDiscountListenerPatientRoomRoomCharge(PatientRoom pR) {
+        Map<String, Object> before = roomDiscountAuditMap(getPatientRoomFacade().findWithoutCache(pR.getId()));
         getPatientRoomFacade().edit(pR);
         double disCountPercent = 0;
 
@@ -535,11 +575,13 @@ public class BhtSummeryController implements Serializable {
         }
 
         updateRoomChargeTypeTotal();
+        auditRoomDiscountChange(before, pR);
 
         patientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
     }
 
     public void changeDiscountListenerPatientRoomMaintain(PatientRoom pR) {
+        Map<String, Object> before = roomDiscountAuditMap(getPatientRoomFacade().findWithoutCache(pR.getId()));
         getPatientRoomFacade().edit(pR);
         double disCountPercent = 0;
 
@@ -550,11 +592,13 @@ public class BhtSummeryController implements Serializable {
         }
 
         updateRoomChargeTypeTotal();
+        auditRoomDiscountChange(before, pR);
 
         patientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
     }
 
     public void changeDiscountListenerPatientRoomLinen(PatientRoom pR) {
+        Map<String, Object> before = roomDiscountAuditMap(getPatientRoomFacade().findWithoutCache(pR.getId()));
         getPatientRoomFacade().edit(pR);
         double disCountPercent = 0;
 
@@ -565,11 +609,13 @@ public class BhtSummeryController implements Serializable {
         }
 
         updateRoomChargeTypeTotal();
+        auditRoomDiscountChange(before, pR);
 
         patientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
     }
 
     public void changeDiscountListenerPatientRoomMedicalCare(PatientRoom pR) {
+        Map<String, Object> before = roomDiscountAuditMap(getPatientRoomFacade().findWithoutCache(pR.getId()));
         getPatientRoomFacade().edit(pR);
         double disCountPercent = 0;
 
@@ -580,11 +626,13 @@ public class BhtSummeryController implements Serializable {
         }
 
         updateRoomChargeTypeTotal();
+        auditRoomDiscountChange(before, pR);
 
         patientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
     }
 
     public void changeDiscountListenerPatientRoomAdministration(PatientRoom pR) {
+        Map<String, Object> before = roomDiscountAuditMap(getPatientRoomFacade().findWithoutCache(pR.getId()));
         getPatientRoomFacade().edit(pR);
         double disCountPercent = 0;
         //Administration Charge
@@ -594,11 +642,13 @@ public class BhtSummeryController implements Serializable {
         }
 
         updateRoomChargeTypeTotal();
+        auditRoomDiscountChange(before, pR);
 
         patientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
     }
 
     public void changeDiscountListenerPatientRoomNursing(PatientRoom pR) {
+        Map<String, Object> before = roomDiscountAuditMap(getPatientRoomFacade().findWithoutCache(pR.getId()));
         getPatientRoomFacade().edit(pR);
         double disCountPercent = 0;
 
@@ -609,11 +659,13 @@ public class BhtSummeryController implements Serializable {
         }
 
         updateRoomChargeTypeTotal();
+        auditRoomDiscountChange(before, pR);
 
         patientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
     }
 
     public void changeDiscountListenerPatientRoomMo(PatientRoom pR) {
+        Map<String, Object> before = roomDiscountAuditMap(getPatientRoomFacade().findWithoutCache(pR.getId()));
         getPatientRoomFacade().edit(pR);
         double disCountPercent = 0;
 
@@ -624,6 +676,7 @@ public class BhtSummeryController implements Serializable {
         }
 
         updateRoomChargeTypeTotal();
+        auditRoomDiscountChange(before, pR);
 
         patientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter(), childPatientEncouters);
     }
@@ -1811,6 +1864,23 @@ public class BhtSummeryController implements Serializable {
         getBillFacade().edit(getCurrent());
 
         updatePaymentBillList();
+
+        Map<String, Object> settlementState = new LinkedHashMap<>();
+        settlementState.put("finalBillId", getCurrent().getId());
+        settlementState.put("grantTotal", getCurrent().getGrantTotal());
+        settlementState.put("discount", getCurrent().getDiscount());
+        settlementState.put("netTotal", getCurrent().getNetTotal());
+        if (chargeItemTotals != null) {
+            for (ChargeItemTotal cit : chargeItemTotals) {
+                if (cit.getDiscount() != 0) {
+                    settlementState.put("discount_" + cit.getInwardChargeType(), cit.getDiscount());
+                }
+            }
+        }
+        auditService.logEncounterAudit(getPatientEncounter(), "Final Bill Settled",
+                null, settlementState, sessionController.getLoggedUser(),
+                "Bill", getCurrent().getId());
+
         JsfUtil.addSuccessMessage("Bill Saved");
 
         showOrginalBill = false;
@@ -2217,9 +2287,20 @@ public class BhtSummeryController implements Serializable {
             }
         }
 
+        Map<String, Object> before = new LinkedHashMap<>();
+        before.put("discharged", patientEncounter.isDischarged());
+        before.put("dateOfDischarge", patientEncounter.getDateOfDischarge());
+
         patientEncounter.setDischarged(false);
         patientEncounter.setDateOfDischarge(null);
         getPatientEncounterFacade().edit(patientEncounter);
+
+        Map<String, Object> after = new LinkedHashMap<>();
+        after.put("discharged", patientEncounter.isDischarged());
+        after.put("dateOfDischarge", patientEncounter.getDateOfDischarge());
+        auditService.logEncounterAudit(patientEncounter, "Discharge Cancelled",
+                before, after, sessionController.getLoggedUser());
+
         JsfUtil.addSuccessMessage("Discharge Cancelled Successfully");
 
     }
