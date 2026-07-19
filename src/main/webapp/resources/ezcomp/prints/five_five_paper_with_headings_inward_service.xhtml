@@ -290,9 +290,16 @@
                                 </td>
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('ShowServiceCharges')}">
                                     <td style="text-align: right;" >
-                                        <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
+                                        <h:outputText class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
                                             <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
+                                        </h:outputText>
+                                        <ui:fragment rendered="#{bip.vat ne 0.0}">
+                                            <br/>
+                                            <h:outputText class="itemsBlockRightFiveFive" value="VAT "/>
+                                            <h:outputText class="itemsBlockRightFiveFive"   value="#{bip.vat}"    >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </ui:fragment>
                                     </td>
                                 </h:panelGroup>
                             </tr>
@@ -320,9 +327,16 @@
                                     </td>
 
                                     <td style="text-align: right;" >
-                                        <h:outputLabel class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
+                                        <h:outputText class="itemsBlockRightFiveFive"   value="#{bip.grossValue}"    >
                                             <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
+                                        </h:outputText>
+                                        <ui:fragment rendered="#{bip.vat ne 0.0}">
+                                            <br/>
+                                            <h:outputText class="itemsBlockRightFiveFive" value="VAT "/>
+                                            <h:outputText class="itemsBlockRightFiveFive"   value="#{bip.vat}"    >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </ui:fragment>
                                     </td>
                                 </h:panelGroup>
 
@@ -355,6 +369,39 @@
                             </td>
                         </tr>
                     </h:panelGroup>
+
+                    <ui:fragment rendered="#{cc.attrs.bill.vat ne 0.0}">
+                        <tr>
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                <h:outputText value="Net Total" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                <h:outputText value="#{cc.attrs.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                <h:outputText value="VAT" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                <h:outputText value="#{cc.attrs.bill.vat}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="totalsBlock" style="text-align: left; width: 60%;">
+                                <h:outputText value="Net Total + VAT" />
+                            </td>
+                            <td  class="totalsBlock" style="text-align: right!important; width: 40%; padding-right: 30px;">
+                                <h:outputText value="#{cc.attrs.bill.vatPlusNetTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </td>
+                        </tr>
+                    </ui:fragment>
 
                 </table>
 

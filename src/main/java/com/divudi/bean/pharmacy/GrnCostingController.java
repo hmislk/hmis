@@ -3050,8 +3050,21 @@ public class GrnCostingController implements Serializable {
         JsfUtil.addSuccessMessage("GRN Saved");
     }
 
-    public void finalizeGrnWithSaveApprove() {
+    // synchronized: the Finalize button on pharmacy_grn_costing_with_save_approve.xhtml
+    // has only a confirm() dialog and a rendered="#{!completed}" button-hide that depends
+    // on a full-page re-render to take effect - it does not stop a fast double-click before
+    // the re-render lands. A double-click raced two calls through this session-scoped bean
+    // before either had persisted the completed flag, duplicating the GRN save/finalize
+    // (same bug class as PurchaseOrderController.approve() / TransferRequestController
+    // .approveTransferRequestBill(), issue #22194).
+    public synchronized void finalizeGrnWithSaveApprove() {
         if (!isAuthorized("FINALIZE_GRN_WITH_SAVE_APPROVE", "PharmacyGrnFinalize")) {
+            return;
+        }
+        // Check if this GRN is already finalized to prevent a queued double-submit
+        // (blocked on the synchronized lock above) from finalizing it a second time.
+        if (getCurrentGrnBillPre().isCompleted()) {
+            JsfUtil.addErrorMessage("This GRN is already finalized");
             return;
         }
         // Apply same validations as authorize button
@@ -3224,8 +3237,20 @@ public class GrnCostingController implements Serializable {
         return false;
     }
 
-    public void approveGrnWithSaveApprove() {
+    // synchronized: the Approve button on pharmacy_grn_costing_with_save_approve.xhtml
+    // has only a confirm() dialog, no double-click guard. A double-click raced two calls
+    // through this session-scoped bean before either had persisted billTypeAtomic as
+    // PHARMACY_GRN, duplicating the GRN item batch/stock creation (same bug class as
+    // PurchaseOrderController.approve() / TransferRequestController
+    // .approveTransferRequestBill(), issue #22194).
+    public synchronized void approveGrnWithSaveApprove() {
         if (!isAuthorized("APPROVE_GRN_WITH_SAVE_APPROVE", "PharmacyGrnApprove")) {
+            return;
+        }
+        // Check if this GRN is already approved to prevent a queued double-submit
+        // (blocked on the synchronized lock above) from approving it a second time.
+        if (getCurrentGrnBillPre().getBillTypeAtomic() == BillTypeAtomic.PHARMACY_GRN) {
+            JsfUtil.addErrorMessage("This GRN is already approved");
             return;
         }
         // Always use bill's invoice number, ignore controller reference

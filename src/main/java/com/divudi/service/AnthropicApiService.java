@@ -845,7 +845,70 @@ public class AnthropicApiService implements Serializable {
                                         .add("description", "InvestigationReportType enum value (e.g. General). Optional."))
                                 .add("bypassSampleWorkflow", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "'true' to skip sample collection and allow direct result entry after billing. Optional.")))
+                                        .add("description", "'true' to skip sample collection and allow direct result entry after billing. Optional."))
+                                .add("vatable", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'true' to charge VAT on this investigation, 'false' to exempt it. Optional."))
+                                .add("vatPercentage", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "VAT percentage applied when vatable is true (e.g. '18'). Optional.")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
+        JsonObject manageServicesTool = Json.createObjectBuilder()
+                .add("name", "manage_services")
+                .add("description",
+                        "Search, retrieve, create, update, activate, or deactivate service master records "
+                        + "(billable OPD or Inward services, e.g. consultations, procedures, room charges). "
+                        + "Use GET to search by name/code/printName, optionally filtered by serviceType or categoryId. "
+                        + "Use POST to create a new service (returns already_exists with the existing id if a "
+                        + "duplicate name is found). Use PUT to update metadata. "
+                        + "Use ACTIVATE/DEACTIVATE to toggle the inactive flag.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Operation: GET=search, GET_BY_ID=fetch one, POST=create, PUT=update, ACTIVATE=set inactive=false, DEACTIVATE=set inactive=true. Required."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Service ID. Required for GET_BY_ID, PUT, ACTIVATE, DEACTIVATE."))
+                                .add("query", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Search text matched against name, code, and printName (case-insensitive). Used with GET."))
+                                .add("serviceType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'OPD' or 'Inward'. Required for POST. Optional filter for GET."))
+                                .add("categoryId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Filter by service category ID. Used with GET."))
+                                .add("inactive", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Filter by active/inactive status: 'true' or 'false'. Omit to return both. Used with GET."))
+                                .add("limit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max results to return (1–100). Defaults to 20. Used with GET."))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Service name. Required for POST; optional for PUT."))
+                                .add("code", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Short code. Auto-generated from name if omitted on POST. Optional for PUT."))
+                                .add("printName", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Print/display name shown on reports and bills. Optional."))
+                                .add("fullName", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Full descriptive name. Optional."))
+                                .add("inwardChargeType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "InwardChargeType enum value. Required when serviceType=Inward on POST."))
+                                .add("vatable", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'true' to charge VAT on this service, 'false' to exempt it. Optional."))
+                                .add("vatPercentage", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "VAT percentage applied when vatable is true (e.g. '18'). Optional.")))
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
@@ -1687,6 +1750,7 @@ public class AnthropicApiService implements Serializable {
                 .add(inwardRoomsTool)
                 .add(bedBoardSvgTool)
                 .add(manageInvestigationsTool)
+                .add(manageServicesTool)
                 .add(manageInvestigationFormatTool)
                 .add(manageFormsTool)
                 .add(manageSubscriptionsTool)
@@ -1855,7 +1919,26 @@ public class AnthropicApiService implements Serializable {
                     String printName = toolInput.containsKey("printName") ? toolInput.getString("printName", "") : "";
                     String reportType = toolInput.containsKey("reportType") ? toolInput.getString("reportType", "") : "";
                     String bypass = toolInput.containsKey("bypassSampleWorkflow") ? toolInput.getString("bypassSampleWorkflow", "") : "";
-                    return callInvestigationApi(method, id, query, inactive, limit, name, code, printName, reportType, bypass, hmisBaseUrl, hmisApiKey);
+                    String vatable = toolInput.containsKey("vatable") ? toolInput.getString("vatable", "") : "";
+                    String vatPercentage = toolInput.containsKey("vatPercentage") ? toolInput.getString("vatPercentage", "") : "";
+                    return callInvestigationApi(method, id, query, inactive, limit, name, code, printName, reportType, bypass, vatable, vatPercentage, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_services": {
+                    String method = toolInput.getString("method", "GET");
+                    String id = toolInput.containsKey("id") ? toolInput.getString("id", "") : "";
+                    String query = toolInput.containsKey("query") ? toolInput.getString("query", "") : "";
+                    String serviceType = toolInput.containsKey("serviceType") ? toolInput.getString("serviceType", "") : "";
+                    String categoryId = toolInput.containsKey("categoryId") ? toolInput.getString("categoryId", "") : "";
+                    String inactive = toolInput.containsKey("inactive") ? toolInput.getString("inactive", "") : "";
+                    String limit = toolInput.containsKey("limit") ? toolInput.getString("limit", "20") : "20";
+                    String name = toolInput.containsKey("name") ? toolInput.getString("name", "") : "";
+                    String code = toolInput.containsKey("code") ? toolInput.getString("code", "") : "";
+                    String printName = toolInput.containsKey("printName") ? toolInput.getString("printName", "") : "";
+                    String fullName = toolInput.containsKey("fullName") ? toolInput.getString("fullName", "") : "";
+                    String inwardChargeType = toolInput.containsKey("inwardChargeType") ? toolInput.getString("inwardChargeType", "") : "";
+                    String vatable = toolInput.containsKey("vatable") ? toolInput.getString("vatable", "") : "";
+                    String vatPercentage = toolInput.containsKey("vatPercentage") ? toolInput.getString("vatPercentage", "") : "";
+                    return callServiceApi(method, id, query, serviceType, categoryId, inactive, limit, name, code, printName, fullName, inwardChargeType, vatable, vatPercentage, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_investigation_format": {
                     String resourceType = toolInput.getString("resource_type", "ITEM");
@@ -3712,7 +3795,7 @@ public class AnthropicApiService implements Serializable {
      * @param userHmisApiKey  The logged-in user's active HMIS API key value
      * @param githubBranch    The GitHub branch for documentation links (e.g. "development")
      */
-    private String callInvestigationApi(String method, String id, String query, String inactive, String limit, String name, String code, String printName, String reportType, String bypassSampleWorkflow, String hmisBaseUrl, String hmisApiKey) {
+    private String callInvestigationApi(String method, String id, String query, String inactive, String limit, String name, String code, String printName, String reportType, String bypassSampleWorkflow, String vatable, String vatPercentage, String hmisBaseUrl, String hmisApiKey) {
         try {
             String root = (hmisBaseUrl != null) ? hmisBaseUrl.trim().replaceAll("/+$", "") : "";
             if (root.isEmpty()) return "Error: HMIS base URL is not configured.";
@@ -3727,6 +3810,8 @@ public class AnthropicApiService implements Serializable {
             else if ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method)) {
                 javax.json.JsonObjectBuilder b = Json.createObjectBuilder().add("name", name==null?"":name);
                 if(code!=null&&!code.isEmpty()) b.add("code", code); if(printName!=null&&!printName.isEmpty()) b.add("printName", printName); if(reportType!=null&&!reportType.isEmpty()) b.add("reportType", reportType); if(bypassSampleWorkflow!=null&&!bypassSampleWorkflow.isEmpty()) b.add("bypassSampleWorkflow", Boolean.parseBoolean(bypassSampleWorkflow));
+                if(vatable!=null&&!vatable.isEmpty()) b.add("vatable", Boolean.parseBoolean(vatable));
+                if(vatPercentage!=null&&!vatPercentage.isEmpty()) b.add("vatPercentage", Double.parseDouble(vatPercentage));
                 String u = "POST".equalsIgnoreCase(method) ? root+"/api/investigations" : root+"/api/investigations/"+id;
                 rb = HttpRequest.newBuilder().uri(URI.create(u)).method("POST".equalsIgnoreCase(method)?"POST":"PUT", HttpRequest.BodyPublishers.ofString(b.build().toString())).header("Content-Type", "application/json");
             } else if ("ACTIVATE".equalsIgnoreCase(method) || "DEACTIVATE".equalsIgnoreCase(method)) {
@@ -3740,6 +3825,45 @@ public class AnthropicApiService implements Serializable {
             }
             if(!key.isEmpty()) rb.header("Finance", key); HttpResponse<String> resp=client.send(rb.build(), HttpResponse.BodyHandlers.ofString()); return "HTTP "+resp.statusCode()+"\n"+resp.body();
         } catch (Exception e) { return "Investigation API error: "+e.getMessage(); }
+    }
+
+    private String callServiceApi(String method, String id, String query, String serviceType, String categoryId, String inactive, String limit, String name, String code, String printName, String fullName, String inwardChargeType, String vatable, String vatPercentage, String hmisBaseUrl, String hmisApiKey) {
+        try {
+            String root = (hmisBaseUrl != null) ? hmisBaseUrl.trim().replaceAll("/+$", "") : "";
+            if (root.isEmpty()) return "Error: HMIS base URL is not configured.";
+            String key = (hmisApiKey != null) ? hmisApiKey.trim() : "";
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+            HttpRequest.Builder rb;
+            if ("GET".equalsIgnoreCase(method)) {
+                String url = root+"/api/services/search?query="+URLEncoder.encode(query, StandardCharsets.UTF_8)+"&limit="+URLEncoder.encode(limit, StandardCharsets.UTF_8);
+                if(serviceType!=null&&!serviceType.isEmpty()) url += "&serviceType="+URLEncoder.encode(serviceType, StandardCharsets.UTF_8);
+                if(categoryId!=null&&!categoryId.isEmpty()) url += "&categoryId="+URLEncoder.encode(categoryId, StandardCharsets.UTF_8);
+                if(inactive!=null&&!inactive.isEmpty()) url += "&inactive="+URLEncoder.encode(inactive, StandardCharsets.UTF_8);
+                rb = HttpRequest.newBuilder().uri(URI.create(url)).GET();
+            } else if ("GET_BY_ID".equalsIgnoreCase(method)) { rb = HttpRequest.newBuilder().uri(URI.create(root+"/api/services/"+id)).GET(); }
+            else if ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method)) {
+                javax.json.JsonObjectBuilder b = Json.createObjectBuilder().add("name", name==null?"":name);
+                if(serviceType!=null&&!serviceType.isEmpty()) b.add("serviceType", serviceType);
+                if(code!=null&&!code.isEmpty()) b.add("code", code);
+                if(printName!=null&&!printName.isEmpty()) b.add("printName", printName);
+                if(fullName!=null&&!fullName.isEmpty()) b.add("fullName", fullName);
+                if(categoryId!=null&&!categoryId.isEmpty()) b.add("categoryId", Long.parseLong(categoryId));
+                if(inwardChargeType!=null&&!inwardChargeType.isEmpty()) b.add("inwardChargeType", inwardChargeType);
+                if(vatable!=null&&!vatable.isEmpty()) b.add("vatable", Boolean.parseBoolean(vatable));
+                if(vatPercentage!=null&&!vatPercentage.isEmpty()) b.add("vatPercentage", Double.parseDouble(vatPercentage));
+                String u = "POST".equalsIgnoreCase(method) ? root+"/api/services" : root+"/api/services/"+id;
+                rb = HttpRequest.newBuilder().uri(URI.create(u)).method("POST".equalsIgnoreCase(method)?"POST":"PUT", HttpRequest.BodyPublishers.ofString(b.build().toString())).header("Content-Type", "application/json");
+            } else if ("ACTIVATE".equalsIgnoreCase(method) || "DEACTIVATE".equalsIgnoreCase(method)) {
+                String u = root + "/api/services/" + id
+                        + ("ACTIVATE".equalsIgnoreCase(method) ? "/activate" : "/deactivate");
+                rb = HttpRequest.newBuilder().uri(URI.create(u))
+                        .method("PATCH", HttpRequest.BodyPublishers.noBody());
+            } else {
+                return "Error: Unsupported method for manage_services: " + method
+                        + ". Allowed methods are GET, GET_BY_ID, POST, PUT, ACTIVATE, DEACTIVATE.";
+            }
+            if(!key.isEmpty()) rb.header("Finance", key); HttpResponse<String> resp=client.send(rb.build(), HttpResponse.BodyHandlers.ofString()); return "HTTP "+resp.statusCode()+"\n"+resp.body();
+        } catch (Exception e) { return "Service API error: "+e.getMessage(); }
     }
 
     private String callInvestigationFormatApi(String resourceType, String method,
@@ -5115,8 +5239,20 @@ public class AnthropicApiService implements Serializable {
           .append("Use GET to search by name, code, or printName. ")
           .append("Use POST to create — returns 'already_exists' with the existing id when a duplicate name is found, ")
           .append("so always check before creating to avoid duplicates. ")
-          .append("Use PUT to update name, code, printName, reportType, or bypassSampleWorkflow. ")
+          .append("Use PUT to update name, code, printName, reportType, bypassSampleWorkflow, vatable, or vatPercentage. ")
+          .append("Set vatable=true and vatPercentage (e.g. 18) to charge VAT automatically wherever this investigation is billed; ")
+          .append("vatable=false or vatPercentage=0 means no VAT. ")
           .append("Always confirm with the user before POST or PUT — these changes affect live investigation billing.\n\n");
+        sb.append("### manage_services\n");
+        sb.append("Search, retrieve, create, update, activate, or deactivate service master records ")
+          .append("(billable OPD or Inward services, e.g. consultations, procedures, room charges). ")
+          .append("Use GET to search by name, code, or printName, optionally filtered by serviceType ('OPD'/'Inward') or categoryId. ")
+          .append("Use POST to create — serviceType and name are required, inwardChargeType is required when serviceType=Inward. ")
+          .append("Returns 'already_exists' with the existing id when a duplicate name is found, so always check before creating. ")
+          .append("Use PUT to update name, code, printName, fullName, categoryId, inwardChargeType, vatable, or vatPercentage. ")
+          .append("Set vatable=true and vatPercentage (e.g. 18) to charge VAT automatically wherever this service is billed; ")
+          .append("vatable=false or vatPercentage=0 means no VAT. ")
+          .append("Always confirm with the user before POST or PUT — these changes affect live service billing.\n\n");
         sb.append("### manage_investigation_format\n");
         sb.append("Manage the internal report format of an investigation: items (report fields like labels, values, ")
           .append("calculations, flags), item values (dropdown options for List-type items), calculations (formulas ")

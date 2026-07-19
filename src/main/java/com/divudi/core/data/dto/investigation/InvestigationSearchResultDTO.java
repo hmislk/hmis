@@ -8,6 +8,8 @@ public class InvestigationSearchResultDTO {
     private Boolean inactive;
     private String reportType;
     private Boolean bypassSampleWorkflow;
+    private Boolean vatable;
+    private Double vatPercentage;
 
     public InvestigationSearchResultDTO() {}
 
@@ -34,4 +36,8 @@ public class InvestigationSearchResultDTO {
     public void setReportType(String reportType) { this.reportType = reportType; }
     public Boolean getBypassSampleWorkflow() { return bypassSampleWorkflow; }
     public void setBypassSampleWorkflow(Boolean bypassSampleWorkflow) { this.bypassSampleWorkflow = bypassSampleWorkflow; }
+    public Boolean getVatable() { return vatable; }
+    public void setVatable(Boolean vatable) { this.vatable = vatable; }
+    public Double getVatPercentage() { return vatPercentage; }
+    public void setVatPercentage(Double vatPercentage) { this.vatPercentage = vatPercentage; }
 }
