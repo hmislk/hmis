@@ -56,6 +56,8 @@ public class InwardPriceAdjustmntController implements Serializable {
     @Inject
     PharmaceuticalItemCategoryController pharmaceuticalItemCategoryController;
     @EJB
+    private com.divudi.service.AuditService auditService;
+    @EJB
     private PriceMatrixFacade ejbFacade;
     @Enumerated(EnumType.STRING)
     PaymentMethod paymentMethod;
@@ -83,6 +85,34 @@ public class InwardPriceAdjustmntController implements Serializable {
         admissionType = null;
         roomCategory = null;
         items = null;
+    }
+
+    /**
+     * Snapshot of an inward price adjustment (PriceMatrix) for audit events
+     * (#22238). Price adjustments are institution-level master data, so the
+     * event is not linked to a patient encounter.
+     */
+    private java.util.Map<String, Object> priceAdjustmentAuditMap(PriceMatrix a) {
+        java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+        if (a == null) {
+            return m;
+        }
+        m.put("department", a.getDepartment() != null ? a.getDepartment().getName() : null);
+        m.put("category", a.getCategory() != null ? a.getCategory().getName() : null);
+        m.put("roomCategory", a.getRoomCategory() != null ? a.getRoomCategory().getName() : null);
+        m.put("paymentMethod", a.getPaymentMethod());
+        m.put("admissionType", a.getAdmissionType() != null ? a.getAdmissionType().getName() : null);
+        m.put("creditCompany", a.getCreditCompany() != null ? a.getCreditCompany().getName() : null);
+        m.put("fromPrice", a.getFromPrice());
+        m.put("toPrice", a.getToPrice());
+        m.put("margin", a.getMargin());
+        return m;
+    }
+
+    private void auditPriceAdjustmentAdded(PriceMatrix a) {
+        auditService.logEncounterAudit(null, "Inward Price Adjustment Added",
+                null, priceAdjustmentAuditMap(a), getSessionController().getLoggedUser(),
+                "PriceMatrix", a.getId());
     }
 
     public void preparedAdd() {
@@ -165,6 +195,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         a.setCreater(getSessionController().getLoggedUser());
         if (a.getId() == null) {
             getFacade().create(a);
+            auditPriceAdjustmentAdded(a);
         }
         JsfUtil.addSuccessMessage("Saved Successfully");
         recreateModel();
@@ -206,6 +237,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         a.setCreater(getSessionController().getLoggedUser());
         if (a.getId() == null) {
             getFacade().create(a);
+            auditPriceAdjustmentAdded(a);
         }
         JsfUtil.addSuccessMessage("Saved Successfully");
         recreateModel();
@@ -251,6 +283,7 @@ public class InwardPriceAdjustmntController implements Serializable {
             a.setCreater(getSessionController().getLoggedUser());
             if (a.getId() == null) {
                 getFacade().create(a);
+                auditPriceAdjustmentAdded(a);
             }
         }
 
