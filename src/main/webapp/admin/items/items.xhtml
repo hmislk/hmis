@@ -240,16 +240,22 @@
                                             </h:panelGrid>
 
                                         </p:tab>
-                                        <p:tab rendered="false" title="Depricated" >
-                                            <h:outputText id="lblVatPercentage" value="VAT Percentage" ></h:outputText>
-                                            <p:inputText styleClass="longText pdInputText" autocomplete="off"   
-                                                         value="#{itemController.current.vatPercentage}"  class="form-control"></p:inputText>
+                                        <p:tab title="VAT" >
+                                            <p:panelGrid columns="2" layout="tabular" class="w-100" columnClasses="w-25, w-75">
+                                                <p:outputLabel for="chkVatable" value="VATable"/>
+                                                <p:selectBooleanCheckbox id="chkVatable" value="#{itemController.current.vatable}" itemLabel="Charge VAT on this item">
+                                                    <p:ajax update="txtVatPercentage"/>
+                                                </p:selectBooleanCheckbox>
 
-
-                                            <h:outputText value="VATable" ></h:outputText>
-                                            <p:selectBooleanCheckbox  value="#{itemController.current.vatable}" >
-                                            </p:selectBooleanCheckbox>
-
+                                                <p:outputLabel for="txtVatPercentage" value="VAT Percentage"/>
+                                                <p:inputNumber id="txtVatPercentage"
+                                                               value="#{itemController.current.vatPercentage}"
+                                                               decimalPlaces="2"
+                                                               minValue="0"
+                                                               maxValue="100"
+                                                               disabled="#{not itemController.current.vatable}"
+                                                               class="w-100 m-1"/>
+                                            </p:panelGrid>
                                         </p:tab>
                                     </p:tabView>
                                 </h:panelGrid>

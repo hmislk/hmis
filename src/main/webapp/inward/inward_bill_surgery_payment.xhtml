@@ -142,9 +142,12 @@
                                 <p:column headerText="BHT No" filterBy="#{bf.bill.patientEncounter.bhtNo}" filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="BHT No"/>
-                                    </f:facet>                                        
+                                    </f:facet>
                                     <h:outputLabel value="#{bf.bill.patientEncounter.bhtNo}">
                                     </h:outputLabel>
+                                    <h:panelGroup layout="block" rendered="#{bf.patienEncounter.professionalPaymentsOnHold}">
+                                        <span class="ui-tag ui-tag-danger" title="Professional payments are on hold for this BHT">On Hold</span>
+                                    </h:panelGroup>
                                 </p:column>
 
                                 <p:column headerText="Surgery Fee" width="7em;" class="text-end">

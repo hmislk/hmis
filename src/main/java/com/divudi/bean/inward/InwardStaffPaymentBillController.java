@@ -3,6 +3,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.PaymentMethod;
@@ -97,6 +98,8 @@ public class InwardStaffPaymentBillController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    private WebUserController webUserController;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private List<BillComponent> billComponents;
@@ -1464,6 +1467,16 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     private boolean errorCheck() {
+        if (getPayingBillFees() != null) {
+            for (BillFee bf : getPayingBillFees()) {
+                com.divudi.core.entity.PatientEncounter pe = bf.getPatienEncounter();
+                if (pe != null && Boolean.TRUE.equals(pe.getProfessionalPaymentsOnHold())
+                        && !webUserController.hasPrivilege("InwardPayProfessionalFeesWhileOnHold")) {
+                    JsfUtil.addErrorMessage("Cannot pay: professional payments are on hold for BHT " + pe.getBhtNo() + ".");
+                    return true;
+                }
+            }
+        }
         if (currentStaff == null) {
             JsfUtil.addErrorMessage("Please select a Staff Memeber");
             return true;

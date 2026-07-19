@@ -10,6 +10,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.TheatreRoom;
 import com.divudi.core.entity.inward.PatientTransferRequest;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.AdmissionFacade;
@@ -69,6 +70,7 @@ public class PatientTransferController implements Serializable {
     // Theatre workflow fields
     private Bill selectedSurgeryBill;
     private List<Bill> surgeryBillsForCurrentAdmission;
+    private List<RoomFacilityCharge> theatreRoomsForCurrentInstitution;
     private List<PatientTransferRequest> pendingTheatreRequests;
     private List<PatientTransferRequest> inTheatreRequests;
     private List<PatientTransferRequest> pendingReturnRequests;
@@ -295,6 +297,11 @@ public class PatientTransferController implements Serializable {
         if (req == null) {
             return;
         }
+        if (req.getTheatreTransferType() == TheatreTransferType.SEND_TO_THEATRE) {
+            JsfUtil.addErrorMessage("This is a theatre transfer request. Use \"Accept Theatre Patient\" instead.");
+            loadPendingForDepartment();
+            return;
+        }
 
         Date effectiveAt = req.getAcceptedAt() != null ? req.getAcceptedAt() : new Date();
         req.setAcceptedAt(effectiveAt);
@@ -362,6 +369,30 @@ public class PatientTransferController implements Serializable {
         String jpql = "SELECT r FROM PatientTransferRequest r "
                 + "WHERE r.status = :status "
                 + "AND r.toRoomFacilityCharge.department = :department "
+                + "AND r.theatreTransferType IS NULL "
+                + "AND r.retired = false";
+        List<PatientTransferRequest> result = patientTransferRequestFacade.findByJpql(jpql, params, 1);
+        return result != null && !result.isEmpty();
+    }
+
+    /**
+     * True if there are any PENDING theatre-bound (SEND_TO_THEATRE) transfer
+     * requests targeting the logged-in user's department. Used to enable/
+     * disable the Accept Theatre Patient button.
+     */
+    public boolean isHasPendingTheatreRequestsForDepartment() {
+        Department userDept = sessionController.getDepartment();
+        if (userDept == null) {
+            return false;
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("status", TransferRequestStatus.PENDING);
+        params.put("type", TheatreTransferType.SEND_TO_THEATRE);
+        params.put("department", userDept);
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.status = :status "
+                + "AND r.theatreTransferType = :type "
+                + "AND r.toRoomFacilityCharge.department = :department "
                 + "AND r.retired = false";
         List<PatientTransferRequest> result = patientTransferRequestFacade.findByJpql(jpql, params, 1);
         return result != null && !result.isEmpty();
@@ -374,6 +405,7 @@ public class PatientTransferController implements Serializable {
         String jpql = "SELECT r FROM PatientTransferRequest r "
                 + "WHERE r.status = :status "
                 + "AND r.toRoomFacilityCharge.department = :department "
+                + "AND r.theatreTransferType IS NULL "
                 + "AND r.retired = false "
                 + "ORDER BY r.initiatedAt";
         pendingRequests = patientTransferRequestFacade.findByJpql(jpql, params);
@@ -466,6 +498,7 @@ public class PatientTransferController implements Serializable {
         selectedSurgeryBill = null;
         notes = null;
         surgeryBillsForCurrentAdmission = loadSurgeryBillsForAdmission(admission);
+        theatreRoomsForCurrentInstitution = roomFacilityChargeController.findTheatreRoomsForInstitution(sessionController.getInstitution());
         return "/inward/inward_send_to_theatre?faces-redirect=true";
     }
 
@@ -524,6 +557,19 @@ public class PatientTransferController implements Serializable {
         persisted.setAcceptedAt(new Date());
         persisted.setAcceptedBy(sessionController.getLoggedUser());
         persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.RECEIVED_IN_THEATRE);
+
+        if (persisted.getTheatreRoom() == null) {
+            TheatreRoom theatreRoom = new TheatreRoom();
+            theatreRoom = (TheatreRoom) inwardBean.savePatientRoom(
+                    theatreRoom,
+                    null,
+                    persisted.getToRoomFacilityCharge(),
+                    persisted.getAdmission(),
+                    persisted.getInitiatedAt(),
+                    sessionController.getLoggedUser());
+            persisted.setTheatreRoom(theatreRoom);
+        }
+
         patientTransferRequestFacade.edit(persisted);
         loadPendingForTheatre();
         loadInTheatreRequests();
@@ -606,9 +652,17 @@ public class PatientTransferController implements Serializable {
         returnReq.setCreater(sessionController.getLoggedUser());
         patientTransferRequestFacade.create(returnReq);
 
+        Date returnedAt = persisted.getReturnedToWardAt() != null ? persisted.getReturnedToWardAt() : new Date();
         persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.RETURNED_TO_WARD);
         if (persisted.getReturnedToWardAt() == null) {
-            persisted.setReturnedToWardAt(new Date());
+            persisted.setReturnedToWardAt(returnedAt);
+        }
+        if (persisted.getTheatreRoom() != null && !persisted.getTheatreRoom().isDischarged()) {
+            PatientRoom theatreRoom = persisted.getTheatreRoom();
+            theatreRoom.setDischarged(true);
+            theatreRoom.setDischargedAt(returnedAt);
+            theatreRoom.setDischargedBy(sessionController.getLoggedUser());
+            patientRoomFacade.edit(theatreRoom);
         }
         patientTransferRequestFacade.edit(persisted);
 
@@ -758,6 +812,13 @@ public class PatientTransferController implements Serializable {
             surgeryBillsForCurrentAdmission = new ArrayList<>();
         }
         return surgeryBillsForCurrentAdmission;
+    }
+
+    public List<RoomFacilityCharge> getTheatreRoomsForCurrentInstitution() {
+        if (theatreRoomsForCurrentInstitution == null) {
+            theatreRoomsForCurrentInstitution = new ArrayList<>();
+        }
+        return theatreRoomsForCurrentInstitution;
     }
 
     public Bill getSelectedSurgeryBill() {

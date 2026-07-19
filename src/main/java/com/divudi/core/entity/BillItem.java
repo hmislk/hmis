@@ -80,6 +80,9 @@ public class BillItem implements Serializable, RetirableEntity {
     @Transient
     private double absoluteNetValue;
     private double vatPlusNetValue;
+    // Snapshot of item.vatPercentage at billing time, so later changes to the
+    // item's VAT % don't retroactively alter historical bills/prints/reports.
+    private double vatPercentage;
 
     private double marginValue;
     private double adjustedValue;
@@ -234,6 +237,14 @@ public class BillItem implements Serializable, RetirableEntity {
         this.vat = vat;
     }
 
+    public double getVatPercentage() {
+        return vatPercentage;
+    }
+
+    public void setVatPercentage(double vatPercentage) {
+        this.vatPercentage = vatPercentage;
+    }
+
     public double getHospitalFee() {
         return hospitalFee;
     }
@@ -297,6 +308,7 @@ public class BillItem implements Serializable, RetirableEntity {
         agentRefNo = billItem.getAgentRefNo();
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
+        vatPercentage = billItem.getVatPercentage();
         collectingCentreFee = billItem.getCollectingCentreFee();
         consideredForCosting = billItem.isConsideredForCosting();
         primaryStaff = billItem.getPrimaryStaff();
@@ -343,6 +355,7 @@ public class BillItem implements Serializable, RetirableEntity {
         agentRefNo = billItem.getAgentRefNo();
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
+        vatPercentage = billItem.getVatPercentage();
         collectingCentreFee = billItem.getCollectingCentreFee();
         consideredForCosting = billItem.isConsideredForCosting();
         primaryStaff = billItem.getPrimaryStaff();
@@ -402,6 +415,7 @@ public class BillItem implements Serializable, RetirableEntity {
         marginValue = 0.0;
         vat = 0.0;
         vatPlusNetValue = 0.0;
+        vatPercentage = 0.0;
     }
 
     public BillItem() {
@@ -434,6 +448,8 @@ public class BillItem implements Serializable, RetirableEntity {
         hospitalFee = 0 - billItem.getHospitalFee();
         vat = 0 - billItem.getVat();
         vatPlusNetValue = 0 - billItem.getVatPlusNetValue();
+        // Percentage rate, not a value - stays positive like Rate/netRate/marginRate above
+        vatPercentage = billItem.getVatPercentage();
         collectingCentreFee = 0 - billItem.getCollectingCentreFee();
         otherFee = 0 - billItem.getOtherFee();
         reagentFee = 0 - billItem.getReagentFee();

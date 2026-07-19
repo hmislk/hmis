@@ -21,6 +21,9 @@ public class ChargeItemTotal {
     private double discount = 0;
     private double netTotal = 0;
     private double adjustedTotal = 0.0;
+    private double gross = 0;
+    private double margin = 0;
+    private double vat = 0;
     private String comments;
     private List<PatientRoom> patientRooms;
     List<BillFee> billFees;
@@ -70,6 +73,30 @@ public class ChargeItemTotal {
 
     public void setAdjustedTotal(double adjustedTotal) {
         this.adjustedTotal = adjustedTotal;
+    }
+
+    public double getGross() {
+        return gross;
+    }
+
+    public void setGross(double gross) {
+        this.gross = gross;
+    }
+
+    public double getMargin() {
+        return margin;
+    }
+
+    public void setMargin(double margin) {
+        this.margin = margin;
+    }
+
+    public double getVat() {
+        return vat;
+    }
+
+    public void setVat(double vat) {
+        this.vat = vat;
     }
 
     public String getComments() {
