@@ -220,7 +220,11 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
         }
 
         try {
-            // Create audit record BEFORE making the change
+            // Update the admission's patient reference
+            current.setPatient(newPatient);
+            admissionFacade.edit(current);
+
+            // Record audit only after the change has successfully persisted
             auditService.logEncounterAudit(
                 current,
                 "Patient changed for BHT: " + current.getBhtNo() +
@@ -234,10 +238,6 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
                 "Admission Patient Change",
                 current.getId()
             );
-
-            // Update the admission's patient reference
-            current.setPatient(newPatient);
-            admissionFacade.edit(current);
 
             JsfUtil.addSuccessMessage("Patient changed successfully. " +
                 "BHT: " + current.getBhtNo() +

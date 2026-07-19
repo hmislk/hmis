@@ -417,7 +417,8 @@ public class RoomChangeController implements Serializable {
                     sessionController.getInstitution() != null ? sessionController.getInstitution().getId() : null,
                     sessionController.getDepartment() != null ? sessionController.getDepartment().getId() : null);
         } catch (Exception e) {
-            // Silently fail - audit failure should not block the user action
+            // Audit failure should not block the user action, but leave a trace
+            e.printStackTrace();
         }
     }
 
