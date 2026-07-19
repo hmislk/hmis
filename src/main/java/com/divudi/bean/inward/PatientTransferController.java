@@ -279,7 +279,7 @@ public class PatientTransferController implements Serializable {
         req.setCreatedAt(new Date());
         req.setCreater(sessionController.getLoggedUser());
         req.setNotes(notes);
-        patientTransferRequestFacade.create(req);
+        patientTransferRequestFacade.createAndFlush(req);
         lastInitiatedRequest = req;
         auditTransfer(req, "Transfer Initiated", null);
 
@@ -568,7 +568,7 @@ public class PatientTransferController implements Serializable {
         req.setInitiatedBy(sessionController.getLoggedUser());
         req.setCreatedAt(new Date());
         req.setCreater(sessionController.getLoggedUser());
-        patientTransferRequestFacade.create(req);
+        patientTransferRequestFacade.createAndFlush(req);
         lastInitiatedRequest = req;
         auditTransfer(req, "Sent To Theatre", null);
         JsfUtil.addSuccessMessage("Patient sent to theatre successfully.");
@@ -690,7 +690,7 @@ public class PatientTransferController implements Serializable {
         returnReq.setInitiatedBy(sessionController.getLoggedUser());
         returnReq.setCreatedAt(new Date());
         returnReq.setCreater(sessionController.getLoggedUser());
-        patientTransferRequestFacade.create(returnReq);
+        patientTransferRequestFacade.createAndFlush(returnReq);
         auditTransfer(returnReq, "Return To Ward Initiated", null);
 
         Date returnedAt = persisted.getReturnedToWardAt() != null ? persisted.getReturnedToWardAt() : new Date();

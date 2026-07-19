@@ -194,7 +194,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         a.setCreatedAt(new Date());
         a.setCreater(getSessionController().getLoggedUser());
         if (a.getId() == null) {
-            getFacade().create(a);
+            getFacade().createAndFlush(a);
             auditPriceAdjustmentAdded(a);
         }
         JsfUtil.addSuccessMessage("Saved Successfully");
@@ -236,7 +236,7 @@ public class InwardPriceAdjustmntController implements Serializable {
         a.setCreatedAt(new Date());
         a.setCreater(getSessionController().getLoggedUser());
         if (a.getId() == null) {
-            getFacade().create(a);
+            getFacade().createAndFlush(a);
             auditPriceAdjustmentAdded(a);
         }
         JsfUtil.addSuccessMessage("Saved Successfully");
@@ -282,7 +282,7 @@ public class InwardPriceAdjustmntController implements Serializable {
             a.setCreatedAt(new Date());
             a.setCreater(getSessionController().getLoggedUser());
             if (a.getId() == null) {
-                getFacade().create(a);
+                getFacade().createAndFlush(a);
                 auditPriceAdjustmentAdded(a);
             }
         }
