@@ -439,6 +439,21 @@ even when that exact condition is what's blocking login."
 
 ---
 
+**Post-implementation note (Task 4):** live Playwright verification found that
+Task 3's specified feedback markup — `h:outputText escape="false"` wrapping a
+raw `<textarea>#{expr}</textarea>`, copied from this page's sibling tabs —
+never actually rendered its content into the DOM, despite the paired
+`p:outputLabel` correctly appearing. Commit `328498a5d1` replaced it with
+`p:inputTextarea` bound directly via `value`, matching this same page's
+already-working "Combined Errors" field, and changed the feedback-string
+builders from `<br/>` to `\n` accordingly (plain-text rendering, not HTML).
+Scoped to the new tab only — the three pre-existing tabs still use the old
+(also-broken) pattern, left untouched as out of scope. See that commit for
+the exact shipped code; the snippets above reflect the original plan, not
+the final rendering approach.
+
+---
+
 ### Task 4: End-to-end verification
 
 **Files:** none (verification only — no code changes)
