@@ -346,12 +346,17 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         }
 
         //Net to check if Any Payment Paid for this BHT
+        Map<String, Object> beforeCancel = new HashMap<>();
+        admissionToAuditMap(beforeCancel, current);
+        beforeCancel.put("retired", current.isRetired());
+        int retiredRoomCount = 0;
         for (PatientRoom pr : getPatientRoom()) {
             pr.setRetired(true);
             pr.setDischarged(true);
             pr.setRetiredAt(new Date());
             pr.setRetirer(getSessionController().getLoggedUser());
             getPatientRoomFacade().edit(pr);
+            retiredRoomCount++;
         }
         current.setRetired(true);
         current.setRetireComments("BHT Cancel");
@@ -359,6 +364,14 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         current.setRetirer(getSessionController().getLoggedUser());
         current.setComments(comment);
         getEjbFacade().edit(current);
+
+        Map<String, Object> afterCancel = new HashMap<>();
+        admissionToAuditMap(afterCancel, current);
+        afterCancel.put("retired", current.isRetired());
+        afterCancel.put("cancellationReason", comment);
+        afterCancel.put("retiredRoomCount", retiredRoomCount);
+        auditService.logEncounterAudit(current, "Admission Cancelled",
+                beforeCancel, afterCancel, sessionController.getLoggedUser());
 
         JsfUtil.addSuccessMessage("Bht Successfully Cancelled");
         prepereForNew();
@@ -451,10 +464,18 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     public void delete() {
 
         if (getCurrent() != null) {
+            Map<String, Object> before = new HashMap<>();
+            admissionToAuditMap(before, getCurrent());
+            before.put("retired", getCurrent().isRetired());
             getCurrent().setRetired(true);
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
+            Map<String, Object> after = new HashMap<>();
+            admissionToAuditMap(after, getCurrent());
+            after.put("retired", getCurrent().isRetired());
+            auditService.logEncounterAudit(getCurrent(), "Admission Deleted",
+                    before, after, sessionController.getLoggedUser());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
             JsfUtil.addErrorMessage("Nothing to Delete");

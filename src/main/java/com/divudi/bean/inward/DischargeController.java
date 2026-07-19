@@ -50,6 +50,8 @@ public class DischargeController implements Serializable {
     @Inject
     NotificationController notificationController;
     @EJB
+    private com.divudi.service.AuditService auditService;
+    @EJB
     private AdmissionFacade ejbFacade;
     @EJB
     private PersonFacade personFacade;
@@ -81,10 +83,20 @@ public class DischargeController implements Serializable {
     public void delete() {
 
         if (getCurrent() != null) {
+            java.util.Map<String, Object> before = new java.util.LinkedHashMap<>();
+            before.put("bhtNo", getCurrent().getBhtNo());
+            before.put("retired", getCurrent().isRetired());
+            before.put("discharged", getCurrent().isDischarged());
             getCurrent().setRetired(true);
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
+            java.util.Map<String, Object> after = new java.util.LinkedHashMap<>();
+            after.put("bhtNo", getCurrent().getBhtNo());
+            after.put("retired", getCurrent().isRetired());
+            after.put("discharged", getCurrent().isDischarged());
+            auditService.logEncounterAudit(getCurrent(), "Admission Deleted",
+                    before, after, getSessionController().getLoggedUser());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
             JsfUtil.addErrorMessage("Nothing to Delete");
