@@ -221,16 +221,18 @@ public class AdmissionPatientChangeController implements Serializable, Controlle
 
         try {
             // Create audit record BEFORE making the change
-            auditService.logAudit(
-                originalPatient,
-                newPatient,
-                sessionController.getLoggedUser(),
-                "Admission Patient Change",
+            auditService.logEncounterAudit(
+                current,
                 "Patient changed for BHT: " + current.getBhtNo() +
                 " from " + originalPatient.getPerson().getName() +
                 " (ID: " + originalPatient.getId() + ")" +
                 " to " + newPatient.getPerson().getName() +
-                " (ID: " + newPatient.getId() + ")"
+                " (ID: " + newPatient.getId() + ")",
+                originalPatient,
+                newPatient,
+                sessionController.getLoggedUser(),
+                "Admission Patient Change",
+                current.getId()
             );
 
             // Update the admission's patient reference
