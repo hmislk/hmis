@@ -1,6 +1,7 @@
 package com.divudi.core.data.dto;
 
 import com.divudi.core.data.Title;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.core.entity.inward.RoomCategory;
 
@@ -19,6 +20,7 @@ public class ProfitMatrixRowDTO {
     private RoomCategory roomCategory;
 
     private String serviceName;
+    private InwardChargeType inwardChargeType;
     private String serviceDepartment;
     private Double serviceValue;
     private Double matrixPercentage;
@@ -137,10 +139,12 @@ public class ProfitMatrixRowDTO {
             String referringDoctorName,
             Title title,
             String serviceName,
+            InwardChargeType inwardChargeType,
             String serviceDepartment,
-            double invoiceAmount,
-            double serviceValue,
-            double finalAmount
+            Double invoiceAmount,
+            Double serviceValue,
+            Double finalAmount,
+            Double profitMargin
     ) {
         this.invoiceNo = invoiceNo;
         this.admissionNo = admissionNo;
@@ -150,15 +154,18 @@ public class ProfitMatrixRowDTO {
         this.referringDoctorName = referringDoctorName;
         this.title = title;
         this.serviceName = serviceName;
+        this.inwardChargeType = inwardChargeType;
         this.serviceDepartment = serviceDepartment;
         this.invoiceAmount = invoiceAmount;
         this.serviceValue = serviceValue;
         this.finalAmount = finalAmount;
+        this.profitMargin = profitMargin;
 
-        this.profitMargin = invoiceAmount - finalAmount;
-        this.matrixPercentage = invoiceAmount != 0.0
-                ? (this.profitMargin * 100.0 / invoiceAmount)
-                : null;
+        if (this.serviceValue != null && this.profitMargin != null) {
+            this.matrixPercentage = (this.profitMargin/ this.serviceValue) * 100;
+        } else {
+            this.matrixPercentage = 0.0;
+        }
     }
 
     public ProfitMatrixRowDTO(
@@ -169,9 +176,9 @@ public class ProfitMatrixRowDTO {
             String visitType,
             String referringDoctorName,
             Title title,
-            double invoiceAmount,
+            Double invoiceAmount,
             RoomCategory roomCategory,
-            double finalAmount
+            Double finalAmount
     ) {
         this.invoiceNo = invoiceNo;
         this.admissionNo = admissionNo;
@@ -184,47 +191,14 @@ public class ProfitMatrixRowDTO {
         this.roomCategory = roomCategory;
         this.finalAmount = finalAmount;
 
-        this.profitMargin = invoiceAmount - finalAmount;
-        this.matrixPercentage = invoiceAmount != 0.0
-                ? (this.profitMargin * 100.0 / invoiceAmount)
-                : null;
-    }
-
-    public ProfitMatrixRowDTO(
-            String invoiceNo,
-            String admissionNo,
-            String mrn,
-            String patientName,
-            String visitType,
-            String referringDoctorName,
-            Title title,
-            String serviceName,
-            String serviceDepartment,
-            Double invoiceAmount,
-            Double serviceValue,
-            Double finalAmount,
-            Double matrixPercentage
-    ) {
-        this.invoiceNo = invoiceNo;
-        this.admissionNo = admissionNo;
-        this.mrn = mrn;
-        this.patientName = patientName;
-        this.visitType = visitType;
-        this.referringDoctorName = referringDoctorName;
-        this.title = title;
-        this.serviceName = serviceName;
-        this.serviceDepartment = serviceDepartment;
-        this.invoiceAmount = invoiceAmount;
-        this.serviceValue = serviceValue;
-        this.finalAmount = finalAmount;
-        this.matrixPercentage = matrixPercentage;
-
-        if (this.serviceValue != null && this.matrixPercentage != null) {
-            this.profitMargin = this.serviceValue * (this.matrixPercentage / 100.0);
+        if (this.invoiceAmount != null && this.finalAmount != null) {
+            this.profitMargin = this.finalAmount - this.invoiceAmount;
         } else {
-            this.profitMargin = null;
+            this.profitMargin = 0.0;
         }
     }
+
+
 
     public String getInvoiceNo() {
         return invoiceNo;
@@ -288,5 +262,25 @@ public class ProfitMatrixRowDTO {
 
     public Title getTitle() {
         return title;
+    }
+
+    public void setInvoiceAmount(Double invoiceAmount) {
+        this.invoiceAmount = invoiceAmount;
+    }
+
+    public void setFinalAmount(Double finalAmount) {
+        this.finalAmount = finalAmount;
+    }
+
+    public void setProfitMargin(Double profitMargin) {
+        this.profitMargin = profitMargin;
+    }
+
+    public void setMatrixPercentage(Double matrixPercentage) {
+        this.matrixPercentage = matrixPercentage;
+    }
+
+    public InwardChargeType getInwardChargeType() {
+        return inwardChargeType;
     }
 }
