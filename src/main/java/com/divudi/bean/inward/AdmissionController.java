@@ -378,8 +378,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
         try {
+            Map<String, Object> before = new LinkedHashMap<>();
+            before.put("allergy", pa.getItemValue() != null ? pa.getItemValue().getName() : null);
+            before.put("retired", pa.isRetired());
             pa.setRetired(true);
             clinicalFindingValueFacade.edit(pa);
+            Map<String, Object> after = new LinkedHashMap<>();
+            after.put("allergy", pa.getItemValue() != null ? pa.getItemValue().getName() : null);
+            after.put("retired", pa.isRetired());
+            auditService.logEncounterAudit(current, "Patient Allergy Removed",
+                    before, after, getSessionController().getLoggedUser(),
+                    "ClinicalFindingValue", pa.getId());
             getPatientAllergies().remove(pa);
             JsfUtil.addSuccessMessage("Allergy removed successfully");
         } catch (Exception e) {

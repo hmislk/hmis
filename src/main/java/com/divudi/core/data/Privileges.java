@@ -155,6 +155,7 @@ public enum Privileges {
     InwardInvestigationsView("Inward Investigations View"),
     InwardImagesView("Inward Images View"),
     InwardDiagnosisCardView("Inward Diagnosis Card View"),
+    InwardEventHistoryView("Inward Event History View"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Inpatient Dashboard Panels">
@@ -1263,6 +1264,7 @@ public enum Privileges {
             case InwardInvestigationsView:
             case InwardImagesView:
             case InwardDiagnosisCardView:
+            case InwardEventHistoryView:
                 return "Inward";
 
             case AdminInactivePatients:
