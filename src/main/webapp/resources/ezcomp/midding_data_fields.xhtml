@@ -197,6 +197,49 @@
 
                 </p:tab>
 
+                <p:tab title="Fix Missing AUTO_INCREMENT" >
+                    <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
+                        <f:facet name="header">
+                            <i class="fa fa-search"/>
+                            <h:outputLabel value="Fix Missing AUTO_INCREMENT" class="mx-2"/>
+                            <p:spacer height="2" width="20" ></p:spacer>
+                            <p:commandButton
+                                ajax="false"
+                                action="#{dataAdministrationController.fixMissingAutoIncrement()}"
+                                value="Fix AUTO_INCREMENT"
+                                styleClass="ui-button-success w-25 ml-2"
+                                title="Scans every table for a BIGINT ID primary key missing AUTO_INCREMENT and re-adds it. Safe to run repeatedly — a no-op on a healthy database."
+                                />
+                        </f:facet>
+
+                        <p:outputLabel value="Instructions" />
+                        <p>A database restored from a dump can lose the AUTO_INCREMENT attribute on ID primary keys, which makes every INSERT into the affected table fail with MySQL error 1364 ("Field 'ID' doesn't have a default value") — including the login-audit insert, which blocks login itself. Click "Fix AUTO_INCREMENT" to scan and repair every affected table on the selected database(s) below.</p>
+
+                        <p:outputLabel value="Database Selection" />
+                        <h:panelGroup layout="block" class="d-flex">
+                            <p:selectBooleanCheckbox
+                                value="#{dataAdministrationController.runOnMainDatabase}"
+                                class="mr-2"/>
+                            <h:outputText value="Main Database (hmisPU)" class="mr-3"/>
+                            <p:selectBooleanCheckbox
+                                value="#{dataAdministrationController.runOnAuditDatabase}"
+                                class="mr-2"/>
+                            <h:outputText value="Audit Database (hmisAuditPU)"/>
+                        </h:panelGroup>
+
+                        <p:outputLabel value="Main Database Results" rendered="#{dataAdministrationController.runOnMainDatabase and not empty dataAdministrationController.mainDatabaseExecutionFeedback}"/>
+                        <h:outputText escape="false" rendered="#{dataAdministrationController.runOnMainDatabase and not empty dataAdministrationController.mainDatabaseExecutionFeedback}">
+                            <textarea readonly="readonly" rows="4" class="form-control w-100" style="resize: none;">#{dataAdministrationController.mainDatabaseExecutionFeedback}</textarea>
+                        </h:outputText>
+
+                        <p:outputLabel value="Audit Database Results" rendered="#{dataAdministrationController.runOnAuditDatabase and not empty dataAdministrationController.auditDatabaseExecutionFeedback}"/>
+                        <h:outputText escape="false" rendered="#{dataAdministrationController.runOnAuditDatabase and not empty dataAdministrationController.auditDatabaseExecutionFeedback}">
+                            <textarea readonly="readonly" rows="4" class="form-control w-100" style="resize: none;">#{dataAdministrationController.auditDatabaseExecutionFeedback}</textarea>
+                        </h:outputText>
+                    </p:panelGrid>
+
+                </p:tab>
+
                 <p:tab title="Run Custom SQL Commands" >
 
                     <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
