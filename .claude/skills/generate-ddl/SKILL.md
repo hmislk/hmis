@@ -153,6 +153,13 @@ Write the updated wiki page. The wiki lives in the sibling `../hmis.wiki`
 repo. If that directory does not exist, print a warning and skip steps 8–9
 (the DDL file is still useful locally).
 
+**The SQL must NOT be inlined into the wiki page.** The script is ~650 KB,
+which exceeds GitHub's page-rendering limit (~512 KiB) — GitHub silently
+truncates the *rendered* page mid-statement, so anyone copying the SQL from
+the page would apply an incomplete script. Instead, commit the DDL as a
+plain file (`files/createDDL.sql`) in the wiki repo and have the page link
+to its raw URL, which always serves the complete file.
+
 ```bash
 WIKI_DIR="$(git rev-parse --show-toplevel)/../hmis.wiki"
 WIKI_FILE="$WIKI_DIR/Database-Schema-DDL-Generation-Guide.md"
@@ -162,7 +169,9 @@ AUTHOR="$(git config user.name | awk '{print $NF}')"   # last name only
 if [ ! -d "$WIKI_DIR" ]; then
   echo "WARNING: wiki repo not found at $WIKI_DIR — skipping wiki publish"
 else
-  # Write header + fresh DDL wrapped in a sql fence
+  mkdir -p "$WIKI_DIR/files"
+  cp "$DDL_DIR/createDDL.jdbc" "$WIKI_DIR/files/createDDL.sql"
+
   cat > "$WIKI_FILE" << WIKI_HEADER
 This page explains how to generate and apply the full database schema for the
 application, including all missing tables and fields. This is especially
@@ -177,17 +186,27 @@ database structure.
 4. Run the application once. This will generate the full database schema as a DDL script in the specified file location.
 5. Open the generated DDL file and copy its contents.
 6. In the application where you want to update the database, go to **Menu > Administration > Manage Metadata > Add Missing Fields**, paste the copied DDL content into the provided text area, and click the **Update Database** button.
-7. The contents of the latest version of the ddl file is given below so that you need not to generate it yourself.
+7. The latest version of the DDL file is available for download below so that you need not generate it yourself.
 
 ## Last Update - $UPDATE_TS - ($AUTHOR)
 
-## Full DDL File Contents
+## Download the Full DDL File
 
-\`\`\`sql
+**[Download createDDL.sql](https://raw.githubusercontent.com/wiki/hmislk/hmis/files/createDDL.sql)**
+
+> **Why a download link instead of inline SQL?** The full script is ~650 KB —
+> larger than GitHub's page-rendering limit — so when it was pasted into this
+> page, GitHub silently truncated the displayed SQL mid-statement. Anyone
+> copying from the rendered page would have applied an incomplete script.
+> Always use the raw file linked above; never copy the SQL from a rendered
+> wiki page.
+
+To apply it: download the file, open it in a text editor, copy the entire
+contents, and paste into **Menu > Administration > Manage Metadata > Add
+Missing Fields** as described in step 6 above.
 WIKI_HEADER
-  cat "$DDL_DIR/createDDL.jdbc" >> "$WIKI_FILE"
-  printf '\n```\n' >> "$WIKI_FILE"
   echo "Wiki page written: $WIKI_FILE"
+  echo "DDL file written:  $WIKI_DIR/files/createDDL.sql"
 fi
 ```
 
@@ -206,10 +225,10 @@ if [ -d "$WIKI_DIR" ]; then
   # discarding the working-tree content stash pop just restored — which
   # then makes the "diff --cached --quiet" check below wrongly conclude
   # there's nothing to commit.
-  if git ls-files -u -- Database-Schema-DDL-Generation-Guide.md | grep -q .; then
-    git checkout --theirs Database-Schema-DDL-Generation-Guide.md
+  if git ls-files -u -- Database-Schema-DDL-Generation-Guide.md files/createDDL.sql | grep -q .; then
+    git checkout --theirs Database-Schema-DDL-Generation-Guide.md files/createDDL.sql 2>/dev/null || true
   fi
-  git add Database-Schema-DDL-Generation-Guide.md
+  git add Database-Schema-DDL-Generation-Guide.md files/createDDL.sql
   git rebase --continue 2>/dev/null || true
   # Commit (skip if nothing staged, e.g. rebase already applied it)
   git diff --cached --quiet || git commit -m "docs(wiki): update DDL generation guide with $(date '+%Y-%m-%d') schema"
