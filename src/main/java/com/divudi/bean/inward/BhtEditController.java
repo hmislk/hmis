@@ -568,7 +568,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             
             getEjbFacade().editAndFlush(current);    // SINGLE flush for ALL entities
             
-            auditService.logAudit(originalAdmission, updatedAdmission, sessionController.getLoggedUser(), "PatientEncounter", "UpdateAdmission", current.getId());
+            auditService.logEncounterAudit(current, "UpdateAdmission", originalAdmission, updatedAdmission, sessionController.getLoggedUser());
             if (originalAdmission == null) {
                 originalAdmission = new HashMap<>();
             }
