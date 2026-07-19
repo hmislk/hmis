@@ -61,7 +61,14 @@ never committed to this repo.
 
 ### 1. Operating System
 
-- Linux/Mac/Git Bash: `uname -s`
+This generator targets **Windows and Linux/Ubuntu only** (the two OSes this
+issue asked for) - it has not been made portable to macOS/BSD, and the
+`.sh` script intentionally uses GNU-specific commands (`stat -c%s`,
+`mapfile`, `sed -i` without a backup extension, `readlink -f`) that are
+correct for Ubuntu but will not run under macOS's BSD userland or its
+default Bash 3.2.
+
+- Linux/Git Bash: `uname -s`
 - Windows (native `.bat`): the script *is* the OS-specific branch, so no
   runtime detection is needed there; `%OS%` (`Windows_NT`) is checked only as
   a sanity guard.

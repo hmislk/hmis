@@ -59,7 +59,7 @@ if "%STASHED_PERSISTENCE%"=="1" (
     bash "%REPO_ROOT%\scripts\restore-local-jndi.sh"
 ) else (
     echo Setting local JNDI from generator config...
-    powershell -NoProfile -Command "(Get-Content -Raw '%PERSISTENCE_FILE%') -replace [regex]::Escape('${JDBC_DATASOURCE}'), '%MAIN_JNDI%' -replace [regex]::Escape('${JDBC_AUDIT_DATASOURCE}'), '%AUDIT_JNDI%' | Set-Content '%PERSISTENCE_FILE%'"
+    powershell -NoProfile -File "%REPO_ROOT%\scripts\set-local-jndi.ps1" -PersistenceFile "%PERSISTENCE_FILE%" -MainJndi "%MAIN_JNDI%" -AuditJndi "%AUDIT_JNDI%"
 )
 
 REM 5. Build.

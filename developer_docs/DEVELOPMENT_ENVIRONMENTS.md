@@ -44,8 +44,8 @@ This document records the development environment setups used by team members to
 - **Payara Domain / Admin Port / HTTP Port**: _[To be documented]_
 
 #### BuddhikaDesktop (Reference Name)
-- **Actual Computer Name**: `BuddhikaDesktop`
-- **User**: `Buddhika`
+- **Actual Computer Name**: _[Do not document actual hostname per security guidelines]_
+- **User**: _[Do not document actual username per security guidelines]_
 - **Maven Location**: `D:\Program Files\NetBeans-18\netbeans\java\maven`
 - **IDE**: NetBeans 18 (Maven bundled)
 - **OS**: Windows 10
@@ -57,8 +57,8 @@ This document records the development environment setups used by team members to
 - **Deployed App Name / Context Root**: `rh-3.0.0` (deployed by an earlier bare `asadmin deploy` without `--name`, so the name was derived from the WAR filename - this is a live, real-world instance of the name/context-root collision bug described in [local-sync-redeploy-script-guide.md](deployment/local-sync-redeploy-script-guide.md#app-name--context-root-collision-on-deploy))
 
 #### carecode (Reference Name)
-- **Actual Computer Name**: _[To be documented]_
-- **User**: `carecode`
+- **Actual Computer Name**: _[Do not document actual hostname per security guidelines]_
+- **User**: _[Do not document actual username per security guidelines]_
 - **OS**: Linux Ubuntu
 - **Payara Server**: `/home/carecode/payara`
 - **Payara Domain**: `rh`
