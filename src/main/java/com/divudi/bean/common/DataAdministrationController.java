@@ -2821,6 +2821,54 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    /**
+     * Fix any table whose BIGINT ID primary key is missing AUTO_INCREMENT.
+     * Available on the no-login mf.xhtml bootstrap page because this exact
+     * condition can block login itself: SessionController.recordLogin()
+     * inserts a Logins audit row on every login, and ConfigOptionApplicationController's
+     * @PostConstruct creates missing ConfigOption rows on nearly every page —
+     * both fail with MySQL error 1364 on a database missing AUTO_INCREMENT,
+     * which otherwise makes it impossible to log in and reach the normal
+     * authenticated admin tooling to fix it.
+     */
+    public void fixMissingAutoIncrement() {
+        executionFeedback = "";
+        mainDatabaseExecutionFeedback = "";
+        auditDatabaseExecutionFeedback = "";
+
+        if (runOnMainDatabase) {
+            mainDatabaseExecutionFeedback = fixAutoIncrementForMainDatabase();
+        }
+        if (runOnAuditDatabase) {
+            auditDatabaseExecutionFeedback = fixAutoIncrementForAuditDatabase();
+        }
+    }
+
+    private String fixAutoIncrementForMainDatabase() {
+        try {
+            List<String> altered = databaseMigrationFacade.applyAutoIncrementToAllEntityTables();
+            return formatAutoIncrementResult("Main Database", altered);
+        } catch (Exception e) {
+            return "=== Main Database ===\nERROR: " + getExceptionMessage(e);
+        }
+    }
+
+    private String fixAutoIncrementForAuditDatabase() {
+        try {
+            List<String> altered = auditDatabaseFacade.applyAutoIncrementToAllEntityTables();
+            return formatAutoIncrementResult("Audit Database", altered);
+        } catch (Exception e) {
+            return "=== Audit Database ===\nERROR: " + getExceptionMessage(e);
+        }
+    }
+
+    private String formatAutoIncrementResult(String databaseName, List<String> altered) {
+        if (altered.isEmpty()) {
+            return "=== " + databaseName + " ===\nNo tables needed fixing — AUTO_INCREMENT already present on every ID primary key.";
+        }
+        return "=== " + databaseName + " ===\nFixed AUTO_INCREMENT on: " + String.join(", ", altered);
+    }
+
     private void fixMissingFieldsForDatabase(AbstractFacade<?> facade, String databaseName) {
         StringBuilder executionResults = new StringBuilder();
         executionResults.append("=== ").append(databaseName).append(" ===<br/>");
