@@ -143,7 +143,7 @@ public class InwardDocumentUploadController implements Serializable {
             upload.setCreatedAt(new Date());
             upload.setCreater(sessionController.getLoggedUser());
             upload.setRetired(false);
-            uploadFacade.create(upload);
+            uploadFacade.createAndFlush(upload);
             auditService.logEncounterAudit(currentEncounter, "Document Uploaded",
                     null, documentAuditMap(upload), sessionController.getLoggedUser(),
                     "Upload", upload.getId());
@@ -200,7 +200,7 @@ public class InwardDocumentUploadController implements Serializable {
             upload.setCreatedAt(new Date());
             upload.setCreater(sessionController.getLoggedUser());
             upload.setRetired(false);
-            uploadFacade.create(upload);
+            uploadFacade.createAndFlush(upload);
             auditService.logEncounterAudit(currentEncounter, "Document Uploaded",
                     null, documentAuditMap(upload), sessionController.getLoggedUser(),
                     "Upload", upload.getId());

@@ -164,7 +164,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         if (currentPatientAllergy.getClinicalFindingValueType() == null) {
             currentPatientAllergy.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
         }
-        clinicalFindingValueFacade.create(currentPatientAllergy);
+        clinicalFindingValueFacade.createAndFlush(currentPatientAllergy);
         auditService.logEncounterAudit(current, "Patient Allergy Added",
                 null, allergyAuditMap(currentPatientAllergy), sessionController.getLoggedUser(),
                 "ClinicalFindingValue", currentPatientAllergy.getId());
