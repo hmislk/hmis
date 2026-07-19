@@ -24,27 +24,27 @@ public class BhtIssueRequestNativeSqlService {
 
     public BhtIssueRequestPrintDto loadPrintDtoByBillId(long billId) {
         try {
-            String sql = "SELECT "
-                    + "fd.PRINTINGNAME, fd.NAME, fd.ADDRESS, fd.TELEPHONE1, fd.TELEPHONE2, fd.FAX, "
-                    + "td.NAME, "
-                    + "b.DEPTID, b.CREATEDAT, "
-                    + "pe.BHTNO, pp.NAME, pp.TITLE, pt.PHN, rfc.NAME, "
-                    + "rp.NAME, rp.TITLE, wu.NAME, "
-                    + "b.COMMENTS, b.COMPLETED, b.CANCELLED "
-                    + "FROM bill b "
-                    + "LEFT JOIN department fd ON fd.ID = b.FROMDEPARTMENT_ID "
-                    + "LEFT JOIN department td ON td.ID = b.TODEPARTMENT_ID "
-                    + "LEFT JOIN patientencounter pe ON pe.ID = b.PATIENTENCOUNTER_ID "
-                    + "LEFT JOIN patient pt ON pt.ID = pe.PATIENT_ID "
-                    + "LEFT JOIN person pp ON pp.ID = pt.PERSON_ID "
-                    + "LEFT JOIN patientroom pr ON pr.ID = pe.CURRENTPATIENTROOM_ID "
-                    + "LEFT JOIN roomfacilitycharge rfc ON rfc.ID = pr.ROOMFACILITYCHARGE_ID "
-                    + "LEFT JOIN webuser wu ON wu.ID = b.CREATER_ID "
-                    + "LEFT JOIN person rp ON rp.ID = wu.WEBUSERPERSON_ID "
-                    + "WHERE b.ID = ?1 AND b.RETIRED = 0";
+            String jpql = "SELECT "
+                    + "fd.printingName, fd.name, fd.address, fd.telephone1, fd.telephone2, fd.fax, "
+                    + "td.name, "
+                    + "b.deptId, b.createdAt, "
+                    + "pe.bhtNo, pp.name, pp.title, pt.phn, rfc.name, "
+                    + "rp.name, rp.title, wu.name, "
+                    + "b.comments, b.completed, b.cancelled "
+                    + "FROM Bill b "
+                    + "LEFT JOIN b.fromDepartment fd "
+                    + "LEFT JOIN b.toDepartment td "
+                    + "LEFT JOIN b.patientEncounter pe "
+                    + "LEFT JOIN pe.patient pt "
+                    + "LEFT JOIN pt.person pp "
+                    + "LEFT JOIN pe.currentPatientRoom pr "
+                    + "LEFT JOIN pr.roomFacilityCharge rfc "
+                    + "LEFT JOIN b.creater wu "
+                    + "LEFT JOIN wu.webUserPerson rp "
+                    + "WHERE b.id = :billId AND b.retired = false";
 
             @SuppressWarnings("unchecked")
-            List<Object[]> rows = em.createNativeQuery(sql).setParameter(1, billId).getResultList();
+            List<Object[]> rows = em.createQuery(jpql).setParameter("billId", billId).getResultList();
             if (rows.isEmpty()) {
                 return null;
             }
@@ -90,12 +90,12 @@ public class BhtIssueRequestNativeSqlService {
     @SuppressWarnings("unchecked")
     private List<BhtIssueRequestItemPrintDto> loadItems(long billId) {
         List<BhtIssueRequestItemPrintDto> items = new ArrayList<>();
-        String sql = "SELECT i.NAME, bi.QTY, bi.DESCREPTION "
-                + "FROM billitem bi "
-                + "LEFT JOIN item i ON i.ID = bi.ITEM_ID "
-                + "WHERE bi.BILL_ID = ?1 AND bi.RETIRED = 0 "
-                + "ORDER BY bi.ID";
-        List<Object[]> rows = em.createNativeQuery(sql).setParameter(1, billId).getResultList();
+        String jpql = "SELECT i.name, bi.qty, bi.descreption "
+                + "FROM BillItem bi "
+                + "LEFT JOIN bi.item i "
+                + "WHERE bi.bill.id = :billId AND bi.retired = false "
+                + "ORDER BY bi.id";
+        List<Object[]> rows = em.createQuery(jpql).setParameter("billId", billId).getResultList();
         for (Object[] r : rows) {
             int col = 0;
             BhtIssueRequestItemPrintDto item = new BhtIssueRequestItemPrintDto();
