@@ -938,6 +938,17 @@
                                             class="w-100">
                                         </p:commandButton>
                                     </div>
+                                    <div class="col-6">
+                                        <p:commandButton
+                                            value="Event History"
+                                            ajax="false"
+                                            rendered="#{webUserController.hasPrivilege('InwardEventHistoryView')}"
+                                            action="#{inpatientEventHistoryController.navigateToEventHistory(admissionController.current)}"
+                                            icon="fa fa-stream"
+                                            title="Full chronological story of this admission — bills and audited actions"
+                                            class="w-100">
+                                        </p:commandButton>
+                                    </div>
                                 </div>
                             </div>
                         </p:panel>

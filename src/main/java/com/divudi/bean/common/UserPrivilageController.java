@@ -229,6 +229,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardInvestigationsView, "Investigations View"), clinicalDataViewNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardImagesView, "Images View"), clinicalDataViewNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardDiagnosisCardView, "Diagnosis Card View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardEventHistoryView, "Event History View"), clinicalDataViewNode);
 
         TreeNode inwardPharmacyNode = new DefaultTreeNode(new PrivilegeHolder(null, "Pharmacy"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyMenu, "Pharmacy Menu"), inwardPharmacyNode);
