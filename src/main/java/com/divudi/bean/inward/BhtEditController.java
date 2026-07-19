@@ -165,16 +165,37 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             currentPatientAllergy.setClinicalFindingValueType(ClinicalFindingValueType.PatientAllergy);
         }
         clinicalFindingValueFacade.create(currentPatientAllergy);
+        auditService.logEncounterAudit(current, "Patient Allergy Added",
+                null, allergyAuditMap(currentPatientAllergy), sessionController.getLoggedUser(),
+                "ClinicalFindingValue", currentPatientAllergy.getId());
         patientAllergies.add(currentPatientAllergy);
         currentPatientAllergy = null;
+    }
+
+    /**
+     * Snapshot of a patient allergy for audit events (#22239).
+     */
+    private Map<String, Object> allergyAuditMap(ClinicalFindingValue pa) {
+        Map<String, Object> m = new HashMap<>();
+        if (pa == null) {
+            return m;
+        }
+        m.put("allergy", pa.getItemValue() != null ? pa.getItemValue().getName() : null);
+        m.put("value", pa.getStringValue());
+        m.put("retired", pa.isRetired());
+        return m;
     }
 
     public void removePatientAllergy(ClinicalFindingValue pa) {
         if (pa == null) {
             return;
         }
+        Map<String, Object> before = allergyAuditMap(pa);
         pa.setRetired(true);
         clinicalFindingValueFacade.edit(pa);
+        auditService.logEncounterAudit(current, "Patient Allergy Removed",
+                before, allergyAuditMap(pa), sessionController.getLoggedUser(),
+                "ClinicalFindingValue", pa.getId());
         patientAllergies.remove(pa);
     }
 
@@ -1191,6 +1212,15 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         m.put("creditLimit", o.getCreditLimit());
         m.put("policyNo", o.getPolicyNo());
         m.put("claimable", o.isClaimable());
+        if (o.getGuardian() != null) {
+            m.put("guardian_nic", o.getGuardian().getNic());
+            m.put("guardian_phone", o.getGuardian().getPhone());
+            m.put("guardian_mobile", o.getGuardian().getMobile());
+            m.put("guardian_address", o.getGuardian().getAddress());
+        }
+        if (o.getGuardianRelationshipToPatient() != null) {
+            m.put("guardian_relationship", o.getGuardianRelationshipToPatient().getName());
+        }
 
         if (o.getReferringConsultant() != null) {
             m.put("consultant", o.getReferringConsultant().toString());
