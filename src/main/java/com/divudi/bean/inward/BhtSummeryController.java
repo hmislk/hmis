@@ -37,6 +37,7 @@ import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.PriceMatrix;
@@ -47,6 +48,7 @@ import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.GuardianRoom;
 import com.divudi.core.entity.inward.PatientRoom;
 import com.divudi.core.entity.inward.PatientRoomTimedItemCharge;
+import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.entity.inward.TheatreRoom;
 import com.divudi.core.entity.inward.TimedItem;
@@ -3361,10 +3363,38 @@ public class BhtSummeryController implements Serializable {
         p.setAjdustedMedicalCareCharge(p.getCalculatedMedicalCareCharge() - medicalCareDisc);
     }
 
+    /**
+     * Margin (positive or negative) from the room-category price-adjustment
+     * matrix (InwardPriceAdjustment rows configured on the room facility
+     * category price-matrix admin page) for a single room-related charge
+     * amount of a given PatientRoom. Returns 0 when the room has no
+     * department/room-category context or no matching matrix row exists.
+     */
+    private double roomChargeMatrixMargin(PatientRoom p, double chargeValue) {
+        if (p.getRoomFacilityCharge() == null || chargeValue == 0.0) {
+            return 0.0;
+        }
+        Department department = p.getRoomFacilityCharge().getDepartment();
+        if (department == null) {
+            return 0.0;
+        }
+        RoomCategory roomCategory = p.getRoomFacilityCharge().getRoomCategory();
+        PatientEncounter encounter = getPatientEncounter();
+        PaymentMethod paymentMethod = encounter == null ? null : encounter.getPaymentMethod();
+        AdmissionType admissionType = encounter == null ? null : encounter.getAdmissionType();
+        Institution creditCompany = resolveSingleCreditCompany(encounter);
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchRoomChargeMargin(department, chargeValue, paymentMethod, creditCompany, admissionType, roomCategory);
+        if (priceMatrix == null) {
+            return 0.0;
+        }
+        return (chargeValue * priceMatrix.getMargin()) / 100.0;
+    }
+
     private void calculateLinenCharge(PatientRoom p) {
 
         if (p.getRoomFacilityCharge() == null || p.getCurrentLinenCharge() == 0.0) {
             p.setCalculatedLinenCharge(0);
+            p.setMarginLinenCharge(0.0);
             return;
         }
 
@@ -3377,88 +3407,107 @@ public class BhtSummeryController implements Serializable {
         }
 
         double extra = p.getAddedLinenCharge();
+        double calculated;
         ////System.out.println("extra = " + extra);
         if (CommonFunctions.checkToDateAreInSameDay(p.getAdmittedAt(), dischargedAt)) {
             if (p.getAdmittedAt().equals(dischargedAt)) {
-                p.setCalculatedLinenCharge(0 + extra);
-                ////System.out.println("1.1 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
+                calculated = 0 + extra;
             } else {
-                p.setCalculatedLinenCharge(linen + extra);
-                ////System.out.println("1.2 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
+                calculated = linen + extra;
             }
         } else {
-            p.setCalculatedLinenCharge((linen * CommonFunctions.getDayCount(p.getAdmittedAt(), dischargedAt)) + extra);
-            ////System.out.println("2 p.getCalculatedLinenCharge() = " + p.getCalculatedLinenCharge());
+            calculated = (linen * CommonFunctions.getDayCount(p.getAdmittedAt(), dischargedAt)) + extra;
         }
+
+        double linenMargin = configOptionApplicationController.getBooleanValueByKey("Inward Room Price Matrix - Exclude Linen Charge", false)
+                ? 0.0 : roomChargeMatrixMargin(p, calculated);
+        p.setMarginLinenCharge(linenMargin);
+        p.setCalculatedLinenCharge(calculated + linenMargin);
     }
 
     private void calculateMoCharge(PatientRoom p) {
 
         if (p.getRoomFacilityCharge() == null || p.getCurrentMoCharge() == 0.0) {
             p.setCalculatedMoCharge(0);
+            p.setMarginMoCharge(0.0);
             return;
         }
 
+        double calculated;
         if (!sessionController.getApplicationPreference().isInwardMoChargeCalculateInitialTime()) {
             double mo = p.getCurrentMoCharge();
-            double calculated = getCharge(p, mo) + p.getAddedMoCharge();
-            p.setCalculatedMoCharge(calculated);
+            calculated = getCharge(p, mo) + p.getAddedMoCharge();
         } else {
             Date dischargedAt = p.getDischargedAt();
             long dCount = CommonFunctions.getDayCount(p.getAdmittedAt(), dischargedAt);
 
             if (dCount <= p.getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge()) {
-                double calculated = p.getCurrentMoCharge() + p.getAddedMoCharge();
-                p.setCalculatedMoCharge(calculated);
+                calculated = p.getCurrentMoCharge() + p.getAddedMoCharge();
             } else {
                 long extra = dCount - p.getRoomFacilityCharge().getTimedItemFee().getDurationDaysForMoCharge();
-                double calculated = (p.getCurrentMoChargeForAfterDuration() * extra) + p.getCurrentMoCharge();
-                p.setCalculatedMoCharge(calculated);
+                calculated = (p.getCurrentMoChargeForAfterDuration() * extra) + p.getCurrentMoCharge();
             }
         }
+
+        double moMargin = configOptionApplicationController.getBooleanValueByKey("Inward Room Price Matrix - Exclude MO Charge", false)
+                ? 0.0 : roomChargeMatrixMargin(p, calculated);
+        p.setMarginMoCharge(moMargin);
+        p.setCalculatedMoCharge(calculated + moMargin);
     }
 
     private void calculateAdministrationCharge(PatientRoom p) {
 
         if (p.getRoomFacilityCharge() == null || p.getCurrentAdministrationCharge() == 0.0) {
             p.setCalculatedAdministrationCharge(0);
+            p.setMarginAdministrationCharge(0.0);
             return;
         }
 
         double adm = p.getCurrentAdministrationCharge();
         double calculated = getCharge(p, adm) + p.getAddedAdministrationCharge();
-        p.setCalculatedAdministrationCharge(calculated);
+        double adminMargin = configOptionApplicationController.getBooleanValueByKey("Inward Room Price Matrix - Exclude Administration Charge", false)
+                ? 0.0 : roomChargeMatrixMargin(p, calculated);
+        p.setMarginAdministrationCharge(adminMargin);
+        p.setCalculatedAdministrationCharge(calculated + adminMargin);
     }
 
     private void calculateMedicalCareCharge(PatientRoom p) {
 
         if (p.getRoomFacilityCharge() == null || p.getCurrentMedicalCareCharge() == 0.0) {
             p.setCalculatedMedicalCareCharge(0);
+            p.setMarginMedicalCareCharge(0.0);
             return;
         }
 
         double med = p.getCurrentMedicalCareCharge();
         double calculated = getCharge(p, med) + p.getAddedMedicalCareCharge();
-        p.setCalculatedMedicalCareCharge(calculated);
+        double medicalCareMargin = configOptionApplicationController.getBooleanValueByKey("Inward Room Price Matrix - Exclude Medical Care Charge", false)
+                ? 0.0 : roomChargeMatrixMargin(p, calculated);
+        p.setMarginMedicalCareCharge(medicalCareMargin);
+        p.setCalculatedMedicalCareCharge(calculated + medicalCareMargin);
     }
 
     private void calculateNursingCharge(PatientRoom p) {
 
         if (p.getRoomFacilityCharge() == null || p.getCurrentNursingCharge() == 0) {
             p.setCalculatedNursingCharge(0);
+            p.setMarginNursingCharge(0.0);
             return;
         }
 
         double nursing = p.getCurrentNursingCharge();
         double calculated = getCharge(p, nursing) + p.getAddedNursingCharge();
-
-        p.setCalculatedNursingCharge(calculated);
+        double nursingMargin = configOptionApplicationController.getBooleanValueByKey("Inward Room Price Matrix - Exclude Nursing Charge", false)
+                ? 0.0 : roomChargeMatrixMargin(p, calculated);
+        p.setMarginNursingCharge(nursingMargin);
+        p.setCalculatedNursingCharge(calculated + nursingMargin);
     }
 
     private void calculateRoomCharge(PatientRoom p) {
 
         if (p.getRoomFacilityCharge() == null || p.getCurrentRoomCharge() == 0) {
             p.setCalculatedRoomCharge(0);
+            p.setMarginRoomCharge(0.0);
             return;
         }
 
@@ -3467,6 +3516,7 @@ public class BhtSummeryController implements Serializable {
             // fixed total for the room, not a per-block rate — do not multiply
             // it by elapsed TimedItemFee blocks while within the included duration.
             p.setCalculatedRoomCharge(p.getCurrentRoomCharge() + p.getAddedRoomCharge());
+            p.setMarginRoomCharge(0.0);
             return;
         }
 
@@ -3475,7 +3525,10 @@ public class BhtSummeryController implements Serializable {
         double calculated = getCharge(p, roomCharge) + p.getAddedRoomCharge();
         ////System.out.println("calculated = " + calculated);
 
-        p.setCalculatedRoomCharge(calculated);
+        double roomMargin = roomChargeMatrixMargin(p, calculated);
+        p.setMarginRoomCharge(roomMargin);
+
+        p.setCalculatedRoomCharge(calculated + roomMargin);
     }
 
     private double getCharge(PatientRoom patientRoom, double value) {
@@ -3506,12 +3559,15 @@ public class BhtSummeryController implements Serializable {
     private void calculateMaintananceCharge(PatientRoom p) {
         if (p.getRoomFacilityCharge() == null || p.getCurrentMaintananceCharge() == 0) {
             p.setCalculatedMaintainCharge(0);
+            p.setMarginMaintainCharge(0.0);
             return;
         }
         double maintanance = p.getCurrentMaintananceCharge();
         double calculated = getCharge(p, maintanance) + p.getAddedMaintainCharge();
-
-        p.setCalculatedMaintainCharge(calculated);
+        double maintainMargin = configOptionApplicationController.getBooleanValueByKey("Inward Room Price Matrix - Exclude Maintenance Charge", false)
+                ? 0.0 : roomChargeMatrixMargin(p, calculated);
+        p.setMarginMaintainCharge(maintainMargin);
+        p.setCalculatedMaintainCharge(calculated + maintainMargin);
     }
 
     private void calculateTimedItemCharges(PatientRoom p) {
@@ -4431,6 +4487,22 @@ public class BhtSummeryController implements Serializable {
 
         return new RoomDurationBreakdown(totalMinutes, slotMinutes, completeSlots,
                 remainderMinutes, overshootMinutes, extraSlotCharged, billedSlots);
+    }
+
+    /**
+     * The room-category price-matrix margin percentage applied to this room's
+     * Room Charge, derived from the already-computed calculated/margin fields
+     * (set by calculateRoomCharge()). Returns null when no matrix row applied.
+     */
+    public Double getRoomMatrixPercent(PatientRoom pr) {
+        if (pr == null || pr.getMarginRoomCharge() == 0.0) {
+            return null;
+        }
+        double slotRate = pr.getCalculatedRoomCharge() - pr.getMarginRoomCharge();
+        if (slotRate == 0.0) {
+            return null;
+        }
+        return (pr.getMarginRoomCharge() / slotRate) * 100.0;
     }
 
     public List<BillFee> getAllDoctorCharges() {
