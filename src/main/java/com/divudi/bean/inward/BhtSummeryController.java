@@ -181,6 +181,9 @@ public class BhtSummeryController implements Serializable {
     //////////////////////////
     private double grantTotal = 0.0;
     private double discount;
+    private double billLevelDiscount = 0.0;
+    private double itemDiscountTotal = 0.0;
+    private double chargeTypeDiscountTotal = 0.0;
     private double due;
     private double paid;
     private double paidByPatient;
@@ -491,36 +494,15 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void changeDiscountListener(ChargeItemTotal cit) {
-        double discountPercent = (cit.getDiscount() * 100) / cit.getTotal();
-        double disValue = 0;
-        switch (cit.getInwardChargeType()) {
-            case MaintainCharges:
-                break;
-            case MOCharges:
-                break;
-            case NursingCharges:
-                break;
-            case RoomCharges:
-                break;
-            case MedicalCareICU:
-                break;
-            case AdministrationCharge:
-                break;
-            case LinenCharges:
-                break;
-            case Medicine:
-                disValue = updateIssueBillFees(cit.getInwardChargeType(), discountPercent, BillType.PharmacyBhtPre);
-                break;
-            case GeneralIssuing:
-                disValue = updateIssueBillFees(cit.getInwardChargeType(), discountPercent, BillType.StoreBhtPre);
-                break;
-            default:
-                disValue = discountSet(cit, discountPercent);
+        if (cit.getChargeTypeDiscount() < 0) {
+            cit.setChargeTypeDiscount(0);
+            JsfUtil.addErrorMessage("Charge type discount cannot be negative");
         }
-
-        cit.setDiscount(disValue);
-//        cit.setAdjustedTotal(cit.getTotal());
-
+        double maxAllowed = cit.getTotal() - cit.getDiscount();
+        if (cit.getChargeTypeDiscount() > maxAllowed) {
+            cit.setChargeTypeDiscount(0);
+            JsfUtil.addErrorMessage("Charge type discount cannot exceed the remaining net for this charge type");
+        }
         updateTotal();
     }
 
@@ -2321,6 +2303,11 @@ public class BhtSummeryController implements Serializable {
             return true;
         }
 
+        if (discount > grantTotal) {
+            JsfUtil.addErrorMessage("Total discount (" + discount + ") exceeds total charges (" + grantTotal + ")");
+            return true;
+        }
+
         return false;
 
     }
@@ -3069,6 +3056,9 @@ public class BhtSummeryController implements Serializable {
     public void makeNull() {
         changed = false;
         chargeItemTotals = null;
+        billLevelDiscount = 0;
+        itemDiscountTotal = 0;
+        chargeTypeDiscountTotal = 0;
         grantTotal = 0.0;
         discount = 0.0;
         due = 0.0;
@@ -3648,19 +3638,22 @@ public class BhtSummeryController implements Serializable {
 
     public void calFinalValue() {
         grantTotal = 0;
-        discount = 0;
+        itemDiscountTotal = 0;
+        chargeTypeDiscountTotal = 0;
         adjustedTotal = 0;
         grossTotal = 0;
         marginTotal = 0;
         vatTotal = 0;
         for (ChargeItemTotal c : getChargeItemTotals()) {
             grantTotal += c.getTotal();
-            discount += c.getDiscount();
+            itemDiscountTotal += c.getDiscount();
+            chargeTypeDiscountTotal += c.getChargeTypeDiscount();
             adjustedTotal += c.getAdjustedTotal();
             grossTotal += c.getGross();
             marginTotal += c.getMargin();
             vatTotal += c.getVat();
         }
+        discount = itemDiscountTotal + chargeTypeDiscountTotal + billLevelDiscount;
     }
 
     double adjustedTotal = 0;
@@ -3682,6 +3675,30 @@ public class BhtSummeryController implements Serializable {
 
     public void setDiscount(double discount) {
         this.discount = discount;
+    }
+
+    public double getBillLevelDiscount() {
+        return billLevelDiscount;
+    }
+
+    public void setBillLevelDiscount(double billLevelDiscount) {
+        this.billLevelDiscount = billLevelDiscount;
+    }
+
+    public double getItemDiscountTotal() {
+        return itemDiscountTotal;
+    }
+
+    public void setItemDiscountTotal(double itemDiscountTotal) {
+        this.itemDiscountTotal = itemDiscountTotal;
+    }
+
+    public double getChargeTypeDiscountTotal() {
+        return chargeTypeDiscountTotal;
+    }
+
+    public void setChargeTypeDiscountTotal(double chargeTypeDiscountTotal) {
+        this.chargeTypeDiscountTotal = chargeTypeDiscountTotal;
     }
 
     public double getGrossTotal() {
@@ -3746,6 +3763,14 @@ public class BhtSummeryController implements Serializable {
     EnumController enumController;
 
     private void createChargeItemTotals() {
+        Map<InwardChargeType, Double> previousTypeDiscounts = new HashMap<>();
+        if (chargeItemTotals != null) {
+            for (ChargeItemTotal old : chargeItemTotals) {
+                if (old.getChargeTypeDiscount() != 0) {
+                    previousTypeDiscounts.put(old.getInwardChargeType(), old.getChargeTypeDiscount());
+                }
+            }
+        }
         chargeItemTotals = new ArrayList<>();
 
         for (InwardChargeType i : enumController.getInwardChargeTypesForSetting()) {
@@ -3772,6 +3797,13 @@ public class BhtSummeryController implements Serializable {
 
         restoreChargeItemComments();
 
+        for (ChargeItemTotal cit : chargeItemTotals) {
+            Double previous = previousTypeDiscounts.get(cit.getInwardChargeType());
+            if (previous != null) {
+                cit.setChargeTypeDiscount(previous);
+            }
+        }
+
     }
 
     private void restoreChargeItemComments() {
@@ -3781,10 +3813,16 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
+        if (getPatientEncounter().getFinalBill().getBillFinanceDetails() != null
+                && getPatientEncounter().getFinalBill().getBillFinanceDetails().getBillDiscount() != null) {
+            billLevelDiscount = getPatientEncounter().getFinalBill().getBillFinanceDetails().getBillDiscount().doubleValue();
+        }
+
         for (BillItem existing : getPatientEncounter().getFinalBill().getBillItems()) {
             for (ChargeItemTotal cit : chargeItemTotals) {
                 if (existing.getInwardChargeType() == cit.getInwardChargeType()) {
                     cit.setComments(existing.getDescreption());
+                    cit.setChargeTypeDiscount(existing.getChargeTypeDiscount());
                     break;
                 }
             }
@@ -3928,6 +3966,16 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void listnerDiscontAmmountChanged() {
+        if (billLevelDiscount < 0) {
+            billLevelDiscount = 0;
+            JsfUtil.addErrorMessage("Bill level discount cannot be negative");
+        }
+        discount = itemDiscountTotal + chargeTypeDiscountTotal + billLevelDiscount;
+        if (discount > grantTotal) {
+            billLevelDiscount = 0;
+            discount = itemDiscountTotal + chargeTypeDiscountTotal;
+            JsfUtil.addErrorMessage("Total discount cannot exceed total charges");
+        }
         due = (grantTotal - discount) - paid;
     }
 
