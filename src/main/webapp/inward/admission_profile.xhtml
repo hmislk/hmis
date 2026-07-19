@@ -1008,7 +1008,7 @@
                                             id="btnReturnMedicinesToPharmacyInpatient"
                                             value="Return Medicines to Pharmacy"
                                             ajax="false"
-                                            action="#{wardPharmacyReturnToPharmacyController.navigateToReturn}"
+                                            action="#{wardPharmacyReturnToPharmacyController.navigateToReturn(admissionController.current)}"
                                             icon="fa fa-truck-ramp-box"
                                             rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
                                             class="w-100"/>
