@@ -39,12 +39,15 @@ import com.divudi.core.facade.PatientEncounterFacade;
 import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StaffFacade;
+import com.divudi.service.AuditService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -110,6 +113,8 @@ public class SurgeryBillController implements Serializable {
     BhtSummeryController bhtSummeryController;
     @Inject
     AuditEventController auditEventController;
+    @EJB
+    private AuditService auditService;
 
     public InwardTimedItemController getInwardTimedItemController() {
         return inwardTimedItemController;
@@ -587,9 +592,8 @@ public class SurgeryBillController implements Serializable {
                 beforeName = nameResult.get(0);
             }
         }
-        String beforeJson = "{\"surgeryName\": \"" + beforeName.replace("\"", "\\\"") + "\"}";
-        com.divudi.core.entity.AuditEvent auditEvent = auditEventController.createNewAuditEvent(
-                "Edit Surgery", beforeJson, billId, "Bill");
+        Map<String, Object> beforeState = new LinkedHashMap<>();
+        beforeState.put("surgeryName", beforeName);
 
         saveProcedure();
         saveSurgeryBill();
@@ -598,8 +602,12 @@ public class SurgeryBillController implements Serializable {
         String afterName = (surgeryBill != null && surgeryBill.getProcedure() != null
                 && surgeryBill.getProcedure().getItem() != null)
                 ? surgeryBill.getProcedure().getItem().getName() : "";
-        String afterJson = "{\"surgeryName\": \"" + afterName.replace("\"", "\\\"") + "\"}";
-        auditEventController.completeAuditEvent(auditEvent, afterJson);
+        Map<String, Object> afterState = new LinkedHashMap<>();
+        afterState.put("surgeryName", afterName);
+        auditService.logEncounterAudit(
+                surgeryBill != null ? surgeryBill.getPatientEncounter() : null,
+                "Edit Surgery", beforeState, afterState,
+                sessionController.getLoggedUser(), "Bill", billId);
 
         return auditEventController.navigateToAllAuditEventsForBill(billId);
     }
