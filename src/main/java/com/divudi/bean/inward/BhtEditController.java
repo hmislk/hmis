@@ -211,11 +211,31 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         current.setCreditCompany(ecc.getInstitution());
     }
 
+    /**
+     * Snapshot of an EncounterCreditCompany for credit-detail audit events (#22237).
+     */
+    private Map<String, Object> creditCompanyAuditMap(EncounterCreditCompany ecc) {
+        Map<String, Object> m = new HashMap<>();
+        if (ecc == null) {
+            return m;
+        }
+        m.put("creditCompany", ecc.getInstitution() != null ? ecc.getInstitution().getName() : null);
+        m.put("creditLimit", ecc.getCreditLimit());
+        m.put("policyNo", ecc.getPolicyNo());
+        m.put("referenceNo", ecc.getReferanceNo());
+        m.put("retired", ecc.isRetired());
+        return m;
+    }
+
     public void removeCreditCompany(EncounterCreditCompany ecc) {
         for (EncounterCreditCompany e : encounterCreditCompanys) {
             if (e == ecc) {
+                Map<String, Object> before = creditCompanyAuditMap(e);
                 e.setRetired(true);
                 encounterCreditCompanyFacade.edit(e);
+                auditService.logEncounterAudit(current, "Credit Company Removed",
+                        before, creditCompanyAuditMap(e), sessionController.getLoggedUser(),
+                        "EncounterCreditCompany", e.getId());
             }
         }
         current.setCreditCompany(null);
@@ -248,6 +268,10 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         newEncounterCreditCompany.setCreater(sessionController.getLoggedUser());
         newEncounterCreditCompany.setRetired(false);
         encounterCreditCompanyFacade.create(newEncounterCreditCompany);
+        auditService.logEncounterAudit(current, "Credit Company Added",
+                null, creditCompanyAuditMap(newEncounterCreditCompany),
+                sessionController.getLoggedUser(),
+                "EncounterCreditCompany", newEncounterCreditCompany.getId());
         encounterCreditCompanys.add(newEncounterCreditCompany);
         newEncounterCreditCompany = new EncounterCreditCompany();
         JsfUtil.addSuccessMessage("Credit company added");
@@ -257,7 +281,19 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         if (ecc == null) {
             return;
         }
+        // Session entity already carries the edited values; read the persisted
+        // row for the audit before-snapshot
+        Map<String, Object> before = null;
+        if (ecc.getId() != null) {
+            EncounterCreditCompany persisted = encounterCreditCompanyFacade.findWithoutCache(ecc.getId());
+            if (persisted != null) {
+                before = creditCompanyAuditMap(persisted);
+            }
+        }
         encounterCreditCompanyFacade.edit(ecc);
+        auditService.logEncounterAudit(current, "Credit Company Updated",
+                before, creditCompanyAuditMap(ecc), sessionController.getLoggedUser(),
+                "EncounterCreditCompany", ecc.getId());
         JsfUtil.addSuccessMessage("Saved");
     }
 
@@ -1149,7 +1185,13 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         m.put("bhtNo", o.getBhtNo());
         m.put("encounterType", o.getEncounterType());
         m.put("dateOfAdmission", o.getDateOfAdmission());
-        
+        m.put("paymentMethod", o.getPaymentMethod());
+        m.put("paymentScheme", o.getPaymentScheme() != null ? o.getPaymentScheme().getName() : null);
+        m.put("creditCompany", o.getCreditCompany() != null ? o.getCreditCompany().getName() : null);
+        m.put("creditLimit", o.getCreditLimit());
+        m.put("policyNo", o.getPolicyNo());
+        m.put("claimable", o.isClaimable());
+
         if (o.getReferringConsultant() != null) {
             m.put("consultant", o.getReferringConsultant().toString());
         }

@@ -438,11 +438,26 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
 
+        Map<String, Object> before = new LinkedHashMap<>();
+        before.put("creditCompany", patientEncounter.getCreditCompany() != null
+                ? patientEncounter.getCreditCompany().getName() : null);
+        before.put("creditLimit", patientEncounter.getCreditLimit());
+        before.put("creditPaidAmount", patientEncounter.getCreditPaidAmount());
+        before.put("creditUsedAmount", patientEncounter.getCreditUsedAmount());
+
         patientEncounter.setCreditCompany(null);
         patientEncounter.setCreditLimit(0);
         patientEncounter.setCreditPaidAmount(0);
         patientEncounter.setCreditUsedAmount(0);
         getPatientEncounterFacade().edit(patientEncounter);
+
+        Map<String, Object> after = new LinkedHashMap<>();
+        after.put("creditCompany", null);
+        after.put("creditLimit", 0);
+        after.put("creditPaidAmount", 0);
+        after.put("creditUsedAmount", 0);
+        auditService.logEncounterAudit(patientEncounter, "Credit Detail Reset",
+                before, after, getSessionController().getLoggedUser());
     }
 
     public String navigateToInpatientClinicalData() {
@@ -2727,6 +2742,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 ecc.setCreater(sessionController.getLoggedUser());
                 if (ecc.getInstitution() != null) {
                     getEncounterCreditCompanyFacade().create(ecc);
+                    Map<String, Object> eccState = new LinkedHashMap<>();
+                    eccState.put("creditCompany", ecc.getInstitution().getName());
+                    eccState.put("creditLimit", ecc.getCreditLimit());
+                    eccState.put("policyNo", ecc.getPolicyNo());
+                    eccState.put("referenceNo", ecc.getReferanceNo());
+                    auditService.logEncounterAudit(current, "Credit Company Added",
+                            null, eccState, getSessionController().getLoggedUser(),
+                            "EncounterCreditCompany", ecc.getId());
                     // Upsert back to patient-level insurance profile
                     patientInsuranceController.upsertFromEncounter(
                             current.getPatient(),
