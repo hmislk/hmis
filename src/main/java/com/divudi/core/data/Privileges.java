@@ -90,6 +90,8 @@ public enum Privileges {
     InwardServiceItemRequestApproval("Inward Service/Item Request Approval"),
     InwardServiceItemRequestRejection("Inward Service/Item Request Rejection"),
     InwardAddChargesAfterNursingDischarge("Inward Add Charges After Nursing Discharge"),
+    InwardHoldProfessionalPayments("Hold Professional Payments"),
+    InwardPayProfessionalFeesWhileOnHold("Pay Professional Fees While On Hold"),
     InwardBilling("Inward Billing"),
     InwardBillingInterimBill("Inward Interim Bill"),
     InwardBillingInterimBillSearch("Inward Interim Bill Search"),
@@ -153,6 +155,7 @@ public enum Privileges {
     InwardInvestigationsView("Inward Investigations View"),
     InwardImagesView("Inward Images View"),
     InwardDiagnosisCardView("Inward Diagnosis Card View"),
+    InwardEventHistoryView("Inward Event History View"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Inpatient Dashboard Panels">
@@ -1219,6 +1222,8 @@ public enum Privileges {
             case InwardNursingDischarge:
             case InwardPhysicalDischarge:
             case InwardAddChargesAfterNursingDischarge:
+            case InwardHoldProfessionalPayments:
+            case InwardPayProfessionalFeesWhileOnHold:
             case InwardDocumentUpload:
             case InpatientLetter:
             case InwardPackageAdministration:
@@ -1259,6 +1264,7 @@ public enum Privileges {
             case InwardInvestigationsView:
             case InwardImagesView:
             case InwardDiagnosisCardView:
+            case InwardEventHistoryView:
                 return "Inward";
 
             case AdminInactivePatients:

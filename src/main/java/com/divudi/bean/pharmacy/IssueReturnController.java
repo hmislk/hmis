@@ -310,12 +310,28 @@ public class IssueReturnController implements Serializable {
         JsfUtil.addSuccessMessage("Saved");
     }
 
-    public void finalizeDisposalIssueReturnBill() {
+    // synchronized: no double-click guard exists on the Finalize action. Although
+    // disposalReturnAlreadyProcessed() below reads fresh DB state, it is still a
+    // check-then-act sequence - a double-click could race two calls past the check
+    // before either had persisted the bill, duplicating the finalize save (same bug
+    // class as PurchaseOrderController.approve(), issue #22194).
+    public synchronized void finalizeDisposalIssueReturnBill() {
         if (!isAuthorized("FINALIZE", "FinalizeDisposalReturn")) {
             return;
         }
         if (disposalReturnAlreadyProcessed()) {
             return;
+        }
+        // disposalReturnAlreadyProcessed() does not check checkedBy (settleDisposalIssueReturnBill()
+        // relies on that same helper and requires checkedBy already set), so a queued double-submit
+        // reaching this point after the first call finished would re-finalize and overwrite the
+        // checkeAt/checkedBy/editedAt audit fields (CodeRabbit finding on #22194/PR #22197).
+        if (getReturnBill().getId() != null) {
+            Bill freshForFinalizeCheck = getBillFacade().findWithoutCache(getReturnBill().getId());
+            if (freshForFinalizeCheck != null && freshForFinalizeCheck.getCheckedBy() != null) {
+                JsfUtil.addErrorMessage("This disposal return has already been finalized. Reload the page before continuing.");
+                return;
+            }
         }
         // Validate return comment is provided
         if (returnBill.getComments() == null || returnBill.getComments().trim().isEmpty()) {
@@ -350,7 +366,11 @@ public class IssueReturnController implements Serializable {
         JsfUtil.addSuccessMessage("Finalized");
     }
 
-    public void settleDisposalIssueReturnBill() {
+    // synchronized: no double-click guard existed prior to #22194. Although
+    // disposalReturnAlreadyProcessed() below reads fresh DB state, it is still a
+    // check-then-act sequence - a double-click could race two calls past the check
+    // before either had persisted the bill, duplicating stock movements/payment.
+    public synchronized void settleDisposalIssueReturnBill() {
         if (!isAuthorized("APPROVE", "ApproveDisposalReturn")) {
             return;
         }

@@ -275,6 +275,17 @@
                                                             rendered="#{webUserController.hasPrivilege('InwardPhysicalDischarge')}"
                                                             styleClass="w-100 #{admissionController.current.physicalDischarged ? 'ui-button-success' : 'ui-button-warning'}">
                                                         </p:commandButton>
+
+                                                        <p:commandButton
+                                                            id="btnHoldProfessionalPayments"
+                                                            value="Hold Professional Payments"
+                                                            ajax="false"
+                                                            action="#{professionalPaymentHoldController.navigateToProfessionalPaymentHold(admissionController.current)}"
+                                                            icon="fa fa-hand-paper"
+                                                            title="Navigate to Hold Professional Payments"
+                                                            rendered="#{webUserController.hasPrivilege('InwardHoldProfessionalPayments')}"
+                                                            styleClass="w-100 #{admissionController.current.professionalPaymentsOnHold ? 'ui-button-danger' : 'ui-button-secondary'}">
+                                                        </p:commandButton>
                                                     </div>
                                                 </p:panel>
                                             </div>
@@ -423,6 +434,7 @@
                                                             icon="fa fa-check-circle"
                                                             ajax="false"
                                                             rendered="#{webUserController.hasPrivilege('TheatreAcceptPatient')}"
+                                                            disabled="#{not patientTransferController.hasPendingTheatreRequestsForDepartment}"
                                                             action="#{patientTransferController.navigateToTheatreAccept()}"
                                                             class="w-100 ui-button-success">
                                                         </p:commandButton>
@@ -539,7 +551,8 @@
                                                             id="btnReturnMedicinesToPharmacy"
                                                             value="Return Medicines to Pharmacy"
                                                             ajax="false"
-                                                            action="#{wardPharmacyReturnToPharmacyController.navigateToReturn}"
+                                                            action="#{wardPharmacyReturnToPharmacyController.navigateToReturn(admissionController.current)}"
+                                                            disabled="#{admissionController.current eq null}"
                                                             icon="fa fa-truck-ramp-box"
                                                             rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
                                                             class="w-100">
@@ -589,11 +602,20 @@
                                                             ajax="false">
                                                         </p:commandButton>
 
-                                                        <p:commandButton 
+                                                        <p:commandButton
                                                             value="View Pharmacy Requests"
-                                                            action="#{admissionController.navigateToSearchInwardBills}" 
+                                                            action="#{admissionController.navigateToSearchInwardBills}"
                                                             rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
-                                                            icon="pi pi-check" 
+                                                            icon="pi pi-check"
+                                                            class="w-100"
+                                                            ajax="false">
+                                                        </p:commandButton>
+
+                                                        <p:commandButton
+                                                            value="Draft BHT Issue Requests"
+                                                            action="/ward/ward_pharmacy_bht_issue_request_drafts_search?faces-redirect=true"
+                                                            rendered="#{webUserController.hasPrivilege('InwardPharmacyIssueRequest') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
+                                                            icon="pi pi-file-edit"
                                                             class="w-100"
                                                             ajax="false">
                                                         </p:commandButton>

@@ -163,6 +163,19 @@ dropdown panel.
 
 Type the date string directly or click to open the calendar popup and select.
 
+**JS-set values are silently discarded** (found on `cost_of_goods_sold.xhtml`,
+issue #22011): setting `input.value` via `page.evaluate` + dispatching
+`input`/`change` events looks committed in the DOM, and Playwright's `fill()`
+has the same problem — but on submit the widget re-serializes its own internal
+date, so the report runs with the OLD dates and no error is shown. The only
+reliable pattern is real key events: click the input → `Ctrl+A` →
+`pressSequentially` the date string → `Escape` (closes the overlay without
+resetting the typed value). Verify with a DOM read *after* pressing Escape,
+then submit — and because the DOM can look right while the widget still
+serializes its old internal date, always confirm the intended dates in the
+**result** too (e.g. report rows fall inside the requested window, or the
+server-side query used the right range) before trusting the run.
+
 ### Always add `widgetVar`
 
 Every `p:inputText`, `p:autoComplete`, `p:calendar`, and `p:selectOneMenu`
@@ -478,6 +491,19 @@ cached per session at login and won't pick up a new row otherwise. This came up 
 `BhtSummeryController.settle()` (`InwardSettleFinalBill`), where the local `buddhika`
 user had the privilege for `Store`/`Main Pharmacy` departments but not `Inward`.
 
+**`WebUser.department` is not a fixed "home department" — `SessionController.selectDepartment()`
+overwrites and persists it (`loggedUser.setDepartment(department); getFacede().edit(loggedUser)`)
+every time the department-selection screen is submitted, which is why it pre-fills with
+whatever was picked last time.** The catch for privilege testing:
+`SessionController.getUserPrivileges()` calls
+`fillUserPrivileges(getLoggedUser(), getLoggedUser().getDepartment(), false)` — by the time
+this runs, `getLoggedUser().getDepartment()` already equals the department just selected for
+*this* login, and `deptIsNull=false` means a `DEPARTMENT_ID IS NULL` privilege row is **never**
+matched, no matter which department that is. Query `SELECT DEPARTMENT_ID FROM webuser WHERE
+ID=<id>` *after* selecting the department you're about to test with, and insert the privilege
+row with that exact `DEPARTMENT_ID` — a NULL-department row silently does nothing, even after
+a full logout/login cycle.
+
 ## 21. Inward "Add Services" item picker — the Filter box does not load other departments' items
 
 On `inward/inward_bill_service.xhtml` (and the surgery equivalent) the item selector shows
@@ -727,6 +753,167 @@ Two related traps when checking whether `JsfUtil.addWarningMessage(...)` actuall
   the warning fired correctly on a page whose *unrelated* pre-existing widget-init JS error
   (`TypeError: Cannot read properties of undefined (reading 'hasAttribute')`, present since
   before any interaction) prevented the growl from rendering visually at all.
+
+## 33. Binding a `p:inputText` through a nullable session-scoped entity property crashes on first submit
+
+`ward/issue_for_bht_request_list.xhtml` bound its BHT-No search box to
+`#{searchController.patientEncounter.bhtNo}` — a nested property path through
+`SearchController.patientEncounter`, which is `@SessionScoped` and never
+initialized on this page (nothing sets it before rendering; unlike the 3 lab
+pages that bind `value="#{searchController.patientEncounter}"` — the whole
+object, not a nested field — via `p:autoComplete`/`p:selectOneMenu`, which
+tolerate `null`). Every submit threw `EL: Target Unreachable, 'null' returned
+null` (HTTP 500) during `UIInput.getConvertedValue`, both with and without
+typing into the field — the crash happens on *any* postback of the form, not
+just when the bound property is touched. Fixed for #22196 by rebinding to
+`searchController.searchKeyword.bhtNo` (a plain `String`, default `""`),
+matching the pattern already used by ~28 other pages in this codebase (grep
+`searchController.searchKeyword.bhtNo` across `*.xhtml`). **Lesson**: never
+bind a `p:inputText` through a nested path on a session-scoped controller's
+entity-typed field unless something on the *same* page is guaranteed to have
+set that entity first — bind through a dedicated search-keyword/DTO field
+instead.
+
+## 34. Local dev DB can silently drift behind the entity model — watch for `Unknown column` on unrelated pages
+
+While testing #22196, clicking "View Request" on an inward pharmacy request
+threw `SQLSyntaxErrorException: Unknown column 'VATPERCENTAGE' in 'field
+list'` loading `BillItem` rows — the local `coop` DB's `BILLITEM` table
+predates the `vatPercentage` field added to the `BillItem` entity, and there
+is no DDL/migration step in the local dev workflow that keeps schema in sync
+automatically. This is unrelated to whatever feature is under test and will
+recur for any page that touches `BillItem`. Fix locally with a plain additive
+column matching the sibling `VAT`/`VATPLUSNETVALUE` columns:
+`ALTER TABLE BILLITEM ADD COLUMN VATPERCENTAGE DOUBLE NULL DEFAULT NULL AFTER
+VAT;` — do not add this to a migration script (it's a local-only environment
+gap, not a schema change accompanying a code change). If a fresh
+`Unknown column` error appears on an otherwise-unrelated page, check
+`SHOW COLUMNS FROM <table>` against the entity's fields before assuming the
+feature under test is broken.
+
+## 20. Don't `disable` + `enable` the app to clear the L2 cache — restart the domain
+
+The disable→enable trick for flushing a poisoned EclipseLink shared cache (§ noted in
+earlier sessions) loads the whole application a **second time in the same JVM**, and on
+this codebase that reliably ends in `java.lang.OutOfMemoryError: Java heap space` +
+`CDI deployment failure` mid-enable, leaving the app 404 (hit during issue #22011
+verification). Restart the domain instead — slower, but it actually comes back up:
+
+```bash
+asadmin stop-domain <dom>    # "domain is already stopped" is fine — continue
+asadmin start-domain <dom>
+```
+
+Run the two commands separately (not chained with `&&`): if the domain is already
+down, `stop-domain` exits nonzero and a chained `start-domain` would be skipped,
+leaving the app offline.
+
+## 35. Department-scoped dashboards need the department actually switched, not just full privileges
+
+While verifying #22213 (theatre stay billing), the Theatre Dashboard's "Awaiting
+Theatre Acceptance" / "Pending Return to Ward" lists showed **0** rows even though
+a request definitely existed (confirmed via direct DB query) and the logged-in
+user had every relevant privilege. Root cause: `PatientTransferController`'s
+loader methods (`loadPendingForTheatre()`, `loadInTheatreRequests()`, etc.) filter
+on `r.toRoomFacilityCharge.department = sessionController.getDepartment()` — the
+**currently selected** department, not "any department the user has access to."
+Being logged in under "Inward" and merely navigating to a Theatre page renders it
+fine but shows empty lists. Fix: log out and back in, and on the Select Department
+screen explicitly pick the department the workflow actually belongs to (here,
+"THEATRE") before testing department-scoped actions — the app remembers your last
+selection and will silently keep applying it across unrelated page navigations.
+
+## 36. `@SessionScoped` bean data can go stale after a direct URL hit — navigate through the real action chain
+
+Also during #22213 verification: after completing a theatre "return to ward" action
+(via a proper button click with a bound `action="..."` method), directly typing the
+URL for `/inward/inward_patient_room_details.xhtml` showed the just-discharged room
+still as "Active" — the underlying DB was already correct (verified via SQL), but
+`BhtSummeryController` (`@SessionScoped`) lazily caches `patientRooms` on first
+access and only a handful of specific action methods actually refresh it. A raw URL
+navigation skips whatever `action="..."` a genuine button click would have invoked,
+so it reads the stale in-memory list from earlier in the session. Fix: always
+reach the page under test by clicking through the real navigation chain (search →
+dashboard button → target page) rather than pasting/typing the target URL directly,
+especially right after an action that's supposed to change what that page displays.
+
+## 37. A required `p:selectOneMenu` with no default silently swallows an entire non-AJAX submit — no network request, no error
+
+On `inward/inward_bill_professional_payment.xhtml` (and likely the surgery
+equivalent), the "Find Due Payments" button (`type="submit"`, `onclick=""`,
+plain `ajax="false"` postback — verified via `outerHTML`) does **nothing
+at all** when the "WHT Calculation" dropdown is left at its default empty
+"Select" option — no `browser_network_requests` entry appears, no MySQL
+`general_log` query fires, no visible error, and the page doesn't even
+reload. `browser_click` and a JS `.click()` on the button both silently
+no-op. The accessibility snapshot's only tell is the dropdown rendering as
+`combobox "Select" [invalid]` — client-side JSF validation
+(`PrimeFaces.settings.validateEmptyFields=true`) blocks the *entire* form
+submit before it reaches the network layer, exactly like the required-field
+gotcha in §5/§12 but with **zero observable signal** beyond that one
+`[invalid]` accessibility attribute (this button isn't even in the same
+visual section as the required field, so it's easy to miss).
+
+**Diagnosis technique for local dev DBs only — never on staging/production**:
+`mysql.general_log` captures every statement verbatim, including patient
+identifiers and payment values, and adds real overhead while active, so only
+enable it against your own local dev database, for the shortest possible
+window. Enable it (`SET GLOBAL log_output='TABLE'; SET GLOBAL
+general_log='ON';`, `TRUNCATE TABLE mysql.general_log;`), click the button,
+then check
+`SELECT event_time, argument FROM mysql.general_log ORDER BY event_time DESC`
+— if the expected query never appears at all (not even a failed one), the
+submit never reached the server, which points at client-side validation
+rather than a bean/JPQL bug. Immediately run `SET GLOBAL general_log='OFF'`
+afterward and truncate the table again to avoid leaving captured rows
+sitting around.
+
+**Fix**: before clicking any non-AJAX submit button on this page, first
+select a real option in every required dropdown on the same form (here:
+click the "WHT Calculation" combobox → click e.g. "Include Withholding
+Tax" from the listbox), even if that dropdown looks unrelated to the
+button you're about to click — required-field validation on a JSF
+`ajax="false"` postback applies to the whole `<h:form>`, not just the
+fields near the button.
+
+## 38. A local dev DB missing columns for an already-shipped entity field surfaces as a hung page, and `ALTER TABLE` alone doesn't fix it — the pool needs a flush
+
+Entity fields that were added to the codebase a while ago (e.g.
+`PatientEncounter.professionalPaymentsOnHold` / `...HoldDateTime` /
+`...HoldBy` / `...HoldNotes`) can be **missing from a local dev database**
+that was never migrated, even though nothing about the current change
+touches those fields. Symptoms are confusing because EclipseLink issues a
+`SELECT *`-style query for the whole entity on any page that touches it, so
+the failure isn't localized to the field you'd expect:
+
+- Direct-navigating to a page via URL (bypassing the app's normal
+  click-through flow) can appear to **hang indefinitely** in Playwright
+  (`browserBackend.callTool` timeouts on `navigate`/`snapshot`/even
+  `tabs list`) rather than showing an error — the request never actually
+  hangs server-side, but an error response mid-navigation can leave the
+  MCP browser bridge stuck. If a normal in-app link/button navigation to
+  the same destination works cleanly and shows the real `SQLSyntaxErrorException:
+  Unknown column '...' in 'field list'` page, that confirms it's this
+  gotcha, not a broken browser.
+- The fix is a plain `ALTER TABLE ... ADD COLUMN ...` matching the
+  entity's field type (check the `@Column`/type in the entity class), but
+  **the running Payara connection pool caches connections/statement
+  metadata from before the ALTER** — re-hitting the page immediately after
+  the ALTER still throws the identical "Unknown column" error. Flush the
+  pool before retrying:
+  `asadmin flush-connection-pool <poolName>` (find the pool name via
+  `grep -B2 'jndi-name="jdbc/coop"' domain.xml` → look for the
+  `<jdbc-resource pool-name="...">` line, e.g. `poolCoopLocal` for
+  `jdbc/coop`).
+- Combining this with §20's privilege-row gotcha: if panels are still
+  missing after the schema+pool fix, check privileges next — they're
+  independent causes of the same "content silently doesn't render" symptom.
+
+Verified while testing the Inward Dashboard "Manage Allergies" /
+"Hold Professional Payments" button relocation (issue #22248), where the
+local `coop.patientencounter` table was missing all four
+`professionalpayments*` columns and `patienttransferrequest` was missing
+`theatreroom_id`.
 
 ## Quick checklist
 
