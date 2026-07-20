@@ -1833,6 +1833,18 @@ public class BhtSummeryController implements Serializable {
         saveBill();
         saveBillItem();
 
+        // Scoped here (not in the shared saveBill()) because saveBill() is also called by
+        // saveProvisionalBill() for a bill that is about to become BillType.InwardProvisionalBill,
+        // not a final bill — flipping confirmedFinalBill there would wrongly unconfirm the real
+        // confirmed version on every provisional save.
+        getCurrent().setConfirmedFinalBill(true);
+        if (getPatientEncounter().getFinalBill() != null && !getPatientEncounter().getFinalBill().getId().equals(getCurrent().getId())) {
+            Bill oldConfirmed = getPatientEncounter().getFinalBill();
+            oldConfirmed.setConfirmedFinalBill(false);
+            getBillFacade().edit(oldConfirmed);
+        }
+        getBillFacade().edit(getCurrent());
+
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
             for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
@@ -2690,26 +2702,6 @@ public class BhtSummeryController implements Serializable {
 
     }
 
-    /**
-     * Computes the next final-bill version serial for this admission. Serials
-     * are never reused, even for cancelled bills, so the count intentionally
-     * does not filter on cancelled/retired status. billTypeAtomic (not just
-     * billType) is required — the cancellation-record Bill created by
-     * createCancelBill() copies billType=InwardFinalBill from the bill it
-     * cancels, so filtering on billType alone would count cancellation
-     * records as extra versions.
-     */
-    private int computeNextVersionSerial(PatientEncounter pe) {
-        String jpql = "select count(b) from Bill b where b.patientEncounter = :pe and b.billType = :billType"
-                + " and b.billTypeAtomic = :atomic";
-        Map<String, Object> params = new HashMap<>();
-        params.put("pe", pe);
-        params.put("billType", BillType.InwardFinalBill);
-        params.put("atomic", BillTypeAtomic.INWARD_FINAL_BILL);
-        long count = getBillFacade().findLongByJpql(jpql, params);
-        return (int) count + 1;
-    }
-
     private void saveBill() {
 
         getCurrent().setGrantTotal(grantTotal);
@@ -2724,11 +2716,6 @@ public class BhtSummeryController implements Serializable {
         getCurrent().setCreditCompany(getPatientEncounter().getCreditCompany());
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL);
-        int versionSerial = computeNextVersionSerial(patientEncounter);
-        getCurrent().setFinalBillVersionSerial(versionSerial);
-        getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
-        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
-
         getCurrent().setBillType(BillType.InwardFinalBill);
 
         getCurrent().setBillDate(new Date());
@@ -2741,18 +2728,23 @@ public class BhtSummeryController implements Serializable {
 
         writeDiscountBreakdownToFinanceDetails(getCurrent());
 
-        getCurrent().setConfirmedFinalBill(true);
-        if (patientEncounter.getFinalBill() != null && (getCurrent().getId() == null || !patientEncounter.getFinalBill().getId().equals(getCurrent().getId()))) {
-            Bill oldConfirmed = patientEncounter.getFinalBill();
-            oldConfirmed.setConfirmedFinalBill(false);
-            getBillFacade().edit(oldConfirmed);
-        }
+        // Version-serial assignment and persist are done under a per-encounter lock
+        // (held for the read-count-then-write span, not just the read) so two
+        // concurrent final-bill saves for the same admission cannot both compute
+        // the same serial before either insert commits.
+        getBillNumberBean().withFinalBillVersionLock(patientEncounter, () -> {
+            int versionSerial = getBillNumberBean().computeNextFinalBillVersionSerial(patientEncounter);
+            getCurrent().setFinalBillVersionSerial(versionSerial);
+            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
+            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
 
-        if (getCurrent().getId() == null) {
-            getBillFacade().create(getCurrent());
-        } else {
-            getBillFacade().edit(getCurrent());
-        }
+            if (getCurrent().getId() == null) {
+                getBillFacade().create(getCurrent());
+            } else {
+                getBillFacade().edit(getCurrent());
+            }
+            return null;
+        });
     }
 
     private void writeDiscountBreakdownToFinanceDetails(Bill bill) {
