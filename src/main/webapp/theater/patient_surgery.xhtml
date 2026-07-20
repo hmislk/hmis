@@ -436,6 +436,14 @@
                                         icon="fa fa-notes-medical"
                                         class="w-100">
                                     </p:commandButton>
+
+                                    <p:commandButton
+                                        value="Surgery Bill Summary / Validate"
+                                        ajax="false"
+                                        action="#{surgeryBillController.navigateToSurgeryBillSummary(surgeryBillController.surgeryBill)}"
+                                        icon="fa fa-clipboard-check"
+                                        class="w-100">
+                                    </p:commandButton>
                                 </div>
                             </p:panel>
 
