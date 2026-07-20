@@ -290,7 +290,25 @@
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
 
+                                                <h:outputLabel value="Item Discounts"/>
+                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value="#{bhtSummeryController.itemDiscountTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+
+                                                <h:outputLabel value="Charge Type Discounts"/>
+                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value="#{bhtSummeryController.chargeTypeDiscountTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+
                                                 <h:outputLabel value="Bill Level Discount"/>
+                                                <h:outputLabel value=":" class="mx-2"/>
+                                                <h:outputLabel value="#{bhtSummeryController.billLevelDiscount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+
+                                                <h:outputLabel value="Total Discount"/>
                                                 <h:outputLabel value=":" class="mx-2"/>
                                                 <h:outputLabel value="#{bhtSummeryController.discount}">
                                                     <f:convertNumber pattern="#,##0.00"/>
