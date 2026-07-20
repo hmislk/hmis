@@ -310,7 +310,102 @@ EOF
 
 ---
 
-### Task 4: Full build, redeploy, and Playwright + DB verification
+### Task 4: Guard the interim/estimated bill pages against direct navigation with a baby encounter loaded
+
+**Files:**
+- Modify: `src/main/java/com/divudi/bean/inward/BhtSummeryController.java` (new method, placed immediately before `createIntrimBillTable()` at line 3133)
+- Modify: `src/main/webapp/inward/inward_bill_intrim.xhtml` (add `f:event` inside `f:metadata` near the top of the page)
+- Modify: `src/main/webapp/inward/inward_bill_intrim_estimate.xhtml` (same)
+
+**Context — why this task exists:** Task 1 guards the three action methods (`createIntrimBillTable()`, `createTablesWithEstimatedProfessionalFees()`, `navigateToIntrimBillFromPatientProfile()`). Found during Task 4 Playwright verification: `inward_bill_intrim.xhtml:475` binds its Room Details table directly to `#{bhtSummeryController.patientRooms}`, whose getter (`BhtSummeryController.java:448-451`) lazily self-populates via `createPatientRooms()` on first access — bypassing all three guarded methods. Since `AdmissionController.navigateToAdmissionProfilePage()` unconditionally mirrors `admissionController.current` into `bhtSummeryController.patientEncounter` (confirmed in the original investigation) every time *any* Inpatient Dashboard is viewed, `bhtSummeryController.patientEncounter` ends up pointing at a baby merely from visiting the baby's own dashboard — no button click required. A user who then reaches `inward_bill_intrim.xhtml` by browser back/forward, a stale tab, or a bookmark (not via the guarded action methods) sees the baby's charges computed and rendered anyway.
+
+**Interfaces:**
+- Consumes: `patientEncounter.getParentEncounter()` (same as Task 1), `com.divudi.core.util.JsfUtil.addErrorMessage(String)` (existing, already imported in `BhtSummeryController.java`).
+- Produces: `public void redirectIfEncounterIsBabyAdmission()` on `BhtSummeryController` — a `void`, no-arg method callable from JSF EL as an `f:event` listener. Uses `javax.faces.context.FacesContext` (not yet imported in this file — add the import).
+
+This follows the exact existing precedent at `FinancialTransactionController.java:358-379` (`redirectIfShiftNotStarted()`), which already uses `f:event type="preRenderView"` as a pure validation/redirect guard (not state initialization) on a `@SessionScoped` bean — the one documented exception to this project's "never use `f:viewAction`/`preRenderView` for init on `@SessionScoped` beans" rule (see `.claude/skills/jsf-ajax/SKILL.md` § Navigation Pattern). Skip the check on postbacks (AJAX form submits within the page) exactly like the precedent does, since the encounter was already validated on the initial GET.
+
+- [ ] **Step 1: Add the guard method to `BhtSummeryController.java`**
+
+Add this import near the other `javax.faces.*` imports (check with `grep -n "^import javax.faces" src/main/java/com/divudi/bean/inward/BhtSummeryController.java` first — add only if missing):
+
+```java
+import javax.faces.context.FacesContext;
+```
+
+Add this method immediately before `createIntrimBillTable()` (`BhtSummeryController.java:3133`):
+
+```java
+    /**
+     * Guards inward_bill_intrim.xhtml / inward_bill_intrim_estimate.xhtml against
+     * being reached (e.g. via browser back/forward or a stale tab) while
+     * patientEncounter still points at a baby (child) admission — closes the gap
+     * where visiting any Inpatient Dashboard unconditionally mirrors the current
+     * admission into patientEncounter, independent of the createIntrimBillTable()/
+     * createTablesWithEstimatedProfessionalFees()/navigateToIntrimBillFromPatientProfile()
+     * guards. Safe to call on every page load.
+     */
+    public void redirectIfEncounterIsBabyAdmission() {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        if (fc.isPostback()) {
+            return;
+        }
+        if (patientEncounter == null || patientEncounter.getParentEncounter() == null) {
+            return;
+        }
+        try {
+            fc.getExternalContext().getFlash().setKeepMessages(true);
+            JsfUtil.addErrorMessage("Interim/Estimated bills can only be generated for the parent (mother) encounter. "
+                    + "Generate it from the mother's admission — it will automatically include this baby's charges.");
+            fc.getExternalContext().redirect(
+                    fc.getExternalContext().getRequestContextPath() + "/faces/inward/admission_profile.xhtml");
+        } catch (java.io.IOException e) {
+            // redirect failed — nothing further we can do at render time
+        }
+    }
+```
+
+- [ ] **Step 2: Wire the guard into `inward_bill_intrim.xhtml`**
+
+Find this file's `<ui:define name="content">` (or equivalent) opening section — check with `grep -n "ui:define\|f:metadata" src/main/webapp/inward/inward_bill_intrim.xhtml` first. Add, as the first child inside the `<ui:define name="content">` block (mirroring exactly how `inward_bill_payment.xhtml:17` places its `f:event`, i.e. NOT inside `f:metadata` — the existing precedent places it directly in the content body):
+
+```xhtml
+        <f:event type="preRenderView" listener="#{bhtSummeryController.redirectIfEncounterIsBabyAdmission()}"/>
+```
+
+- [ ] **Step 3: Wire the guard into `inward_bill_intrim_estimate.xhtml`**
+
+Same single line, in the same relative position, in `src/main/webapp/inward/inward_bill_intrim_estimate.xhtml`.
+
+- [ ] **Step 4: Compile to verify no syntax/type errors**
+
+Run: `mvn -q -pl . compile`
+Expected: `BUILD SUCCESS`, no errors referencing `BhtSummeryController.java`.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/main/java/com/divudi/bean/inward/BhtSummeryController.java src/main/webapp/inward/inward_bill_intrim.xhtml src/main/webapp/inward/inward_bill_intrim_estimate.xhtml
+git commit -m "$(cat <<'EOF'
+fix(inward): block interim/estimated bill pages when loaded with a baby encounter
+
+Task 1's guards on createIntrimBillTable()/createTablesWithEstimatedProfessionalFees()/
+navigateToIntrimBillFromPatientProfile() don't cover the case where a
+user reaches these pages directly (back/forward, stale tab, bookmark)
+after bhtSummeryController.patientEncounter was already set to a baby
+by simply viewing the baby's own Inpatient Dashboard — the page's Room
+Details table lazily self-populates via getPatientRooms(), bypassing
+all three action-method guards. Adds a preRenderView redirect guard,
+following the existing redirectIfShiftNotStarted() precedent.
+
+Found during Playwright verification. Refs #22294
+EOF
+)"
+```
+
+---
+
+### Task 5: Full build, redeploy, and Playwright + DB verification
 
 **Files:** none (verification only, no code changes).
 
