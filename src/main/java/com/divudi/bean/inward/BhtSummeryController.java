@@ -2431,6 +2431,12 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
+        if (getPatientEncounter().getParentEncounter() != null) {
+            JsfUtil.addErrorMessage("Final bills can only be settled for the parent (mother) encounter. "
+                    + "Settle it from the mother's admission — it will automatically include this baby's charges.");
+            return;
+        }
+
         if (getPatientEncounter().isDischarged()) {
             JsfUtil.addErrorMessage("Patient Already Discharged");
             return;
