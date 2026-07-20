@@ -10,7 +10,45 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
 
-                <h:form>
+                <h:form id="tatHourlyReportForm">
+
+                    <style type="text/css">
+                        @media print {
+
+                            body * {
+                                visibility: hidden !important;
+                            }
+
+                            .tat-hourly-print,
+                            .tat-hourly-print * {
+                                visibility: visible !important;
+                            }
+
+                            .tat-hourly-print {
+                                position: absolute !important;
+                                top: 0 !important;
+                                left: 0 !important;
+                                width: 100% !important;
+                                margin: 0 !important;
+                                padding: 0 !important;
+                                border: none !important;
+                            }
+
+                            .tat-hourly-print .ui-paginator {
+                                display: none !important;
+                            }
+
+                            .no-print {
+                                display: none !important;
+                            }
+
+                            @page {
+                                size: A4 landscape;
+                                margin: 8mm;
+                            }
+                        }
+                    </style>
+
                     <p:panel header="Turn Around Time (Hourly) Report">
 
                         <!-- Filter Fields -->
@@ -23,6 +61,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:datePicker id="dpFrom"
+                                                  value="#{tatHourlyReport.fromDate}"
                                                   styleClass="d-block w-100"
                                                   inputStyleClass="form-control"
                                                   showTime="true" 
@@ -39,6 +78,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:datePicker id="dpTo"
+                                                  value="#{tatHourlyReport.toDate}"
                                                   styleClass="d-block w-100"
                                                   inputStyleClass="form-control"
                                                   showTime="true" 
@@ -58,7 +98,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdInstitution"
-                                                     value="#{reportController.institution}"
+                                                     value="#{tatHourlyReport.institution}"
                                                      style="width:100%"
                                                      title="Filter by institution"
                                                      filter="true">
@@ -80,7 +120,7 @@
                                 <div class="col-md-4">
                                     <p:selectOneMenu
                                         id="cmdSite"
-                                        value="#{reportController.site}"
+                                        value="#{tatHourlyReport.site}"
                                         style="width:100%"
                                         title="Filter by institution or branch"
                                         filter="true">
@@ -100,7 +140,7 @@
                                 <div class="col-md-4">
                                     <p:selectOneMenu
                                         id="cmdDepartment"
-                                        value="#{reportController.department}"
+                                        value="#{tatHourlyReport.department}"
                                         style="width:100%"
                                         title="Filter by department"
                                         filter="true">
@@ -158,7 +198,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdInvestigation"
-                                                     value="#{reportController.investigation}"
+                                                     value="#{tatHourlyReport.investigation}"
                                                      style="width:100%"
                                                      title="Filter by investigation"
                                                      filter="true">
@@ -176,7 +216,7 @@
                                 <div class="col-md-4">
                                     <p:selectOneMenu
                                         id="cmdLaboratoryDepartment"
-                                        value="#{patientInvestigationController.department}"
+                                        value="#{tatHourlyReport.laboratoryDepartment}"
                                         style="width:100%"
                                         title="Filter by Laboratory Department"
                                         filter="true">
@@ -214,7 +254,7 @@
                                 <div class="col-md-4">
                                     <p:selectOneMenu
                                         id="cmdResultStatus"
-                                        value=""
+                                        value="#{tatHourlyReport.resultStatus}"
                                         style="width:100%"
                                         title="Filter by Result Status"
                                         filter="true">
@@ -230,7 +270,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <p:selectOneMenu id="cmdVisitingType"
-                                                     value=""
+                                                     value="#{tatHourlyReport.visitType}"
                                                      style="width:100%"
                                                      title="Filter by visit type"
                                                      filter="true">
@@ -251,59 +291,43 @@
                                         id="btnProcess"
                                         class="ui-button-warning my-4 mx-2"
                                         style="width: 100px"
-                                        action="#{reportsController.turnAroundTimeHourlyReport}"
-                                        ajax="false"
+                                        action="#{tatHourlyReport.process}"
+                                        process="@form"
+                                        update="messages reportPanel"
+                                        ajax="true"
                                         value="Process"
                                         icon="fas fa-cogs"/>
 
                                     <p:commandButton
                                         id="btnPrint"
-                                        class="ui-button-info my-4 mx-2"
+                                        styleClass="ui-button-info my-4 mx-2"
                                         style="width: 100px"
                                         icon="fas fa-print"
-                                        ajax="false"
+                                        type="button"
                                         value="Print"
-                                        onclick="hidePaginatorBeforePrint()"/>
-
-                                    <h:outputScript>
-                                        function hidePaginatorBeforePrint() {
-                                        let paginators = document.querySelectorAll('.ui-paginator');
-                                        paginators.forEach(el => el.style.display = 'none');
-                                        }
-
-                                        function restorePaginatorAfterPrint() {
-                                        let paginators = document.querySelectorAll('.ui-paginator');
-                                        paginators.forEach(el => el.style.display = '');
-                                        }
-
-                                        window.onafterprint = function () {
-                                        restorePaginatorAfterPrint();
-                                        };
-                                    </h:outputScript>
+                                        onclick="printTatHourlyReport(); return false;"/>
 
                                     <p:commandButton
                                         id="btnExcel"
-                                        class="ui-button-success my-4 mx-2"
+                                        styleClass="ui-button-success my-4 mx-2"
                                         style="width: 100px"
                                         icon="fas fa-file-excel"
                                         ajax="false"
+                                        immediate="true"
+                                        process="@this"
+                                        action="#{tatHourlyReport.exportExcel}"
                                         value="Excel"/>
-                                    <!-- <p:dataExporter 
-                                         type="xlsx"
-                                         target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
-                                         fileName="organism_antibioti_sensitivity.xlsx"/>-->
 
                                     <p:commandButton
                                         id="btnPdf"
-                                        class="ui-button-danger my-4 mx-2"
+                                        styleClass="ui-button-danger my-4 mx-2"
                                         style="width: 100px"
                                         icon="fas fa-file-pdf"
                                         ajax="false"
-                                        value="PDF"/>
-                                    <!-- <p:dataExporter 
-                                         type="pdf"
-                                         target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
-                                         fileName="organism_antibiotic_sensitivity.pdf"/>-->
+                                        immediate="true"
+                                        process="@this"
+                                        value="PDF"
+                                        action="#{tatHourlyReport.exportPdf}"/>
                                 </div>
                             </div>
 
@@ -311,7 +335,7 @@
 
                     </p:panel>
 
-                    <p:panel header="Turn Around Time (Hourly) Report" styleClass="mt-3">
+                    <p:panel id="reportPanel" header="Turn Around Time (Hourly) Report" styleClass="mt-3 tat-hourly-print">
 
                         <h:panelGrid columns="2"
                                      styleClass="table table-bordered table-sm table-striped w-50"
@@ -328,7 +352,7 @@
                             <h:outputLabel value="Investigation"/>
                             <h:outputLabel value="">
                             </h:outputLabel>
-                            
+
                             <h:outputLabel value="Service Center"/>
                             <h:outputLabel value="">
                             </h:outputLabel>
@@ -351,7 +375,7 @@
                             scrollable="true"
                             scrollWidth="100%"
                             style="width:150%; table-layout:auto;"
-                            value="" 
+                            value="#{tatHourlyReport.reportData}"
                             var="c"
                             rowIndexVar="n"
                             paginator="true"
@@ -518,6 +542,22 @@
 
 
                 </h:form>
+
+                <h:outputScript target="body">
+                    function printTatHourlyReport() {
+                    var reportPanel = document.getElementById(
+                    'tatHourlyReportForm:reportPanel'
+                    );
+
+                    if (!reportPanel) {
+                    console.error('Report panel was not found.');
+                    return false;
+                    }
+
+                    window.print();
+                    return false;
+                    }
+                </h:outputScript> 
 
             </ui:define>
         </ui:composition>
