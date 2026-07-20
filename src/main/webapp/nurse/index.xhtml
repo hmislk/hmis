@@ -275,6 +275,17 @@
                                                             rendered="#{webUserController.hasPrivilege('InwardPhysicalDischarge')}"
                                                             styleClass="w-100 #{admissionController.current.physicalDischarged ? 'ui-button-success' : 'ui-button-warning'}">
                                                         </p:commandButton>
+
+                                                        <p:commandButton
+                                                            id="btnHoldProfessionalPayments"
+                                                            value="Hold Professional Payments"
+                                                            ajax="false"
+                                                            action="#{professionalPaymentHoldController.navigateToProfessionalPaymentHold(admissionController.current)}"
+                                                            icon="fa fa-hand-paper"
+                                                            title="Navigate to Hold Professional Payments"
+                                                            rendered="#{webUserController.hasPrivilege('InwardHoldProfessionalPayments')}"
+                                                            styleClass="w-100 #{admissionController.current.professionalPaymentsOnHold ? 'ui-button-danger' : 'ui-button-secondary'}">
+                                                        </p:commandButton>
                                                     </div>
                                                 </p:panel>
                                             </div>
@@ -540,7 +551,8 @@
                                                             id="btnReturnMedicinesToPharmacy"
                                                             value="Return Medicines to Pharmacy"
                                                             ajax="false"
-                                                            action="#{wardPharmacyReturnToPharmacyController.navigateToReturn}"
+                                                            action="#{wardPharmacyReturnToPharmacyController.navigateToReturn(admissionController.current)}"
+                                                            disabled="#{admissionController.current eq null}"
                                                             icon="fa fa-truck-ramp-box"
                                                             rendered="#{webUserController.hasPrivilege('InwardPharmacyReturnSubmit')}"
                                                             class="w-100">

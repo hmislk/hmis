@@ -10,6 +10,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.inward.Admission;
 import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.inward.TheatreRoom;
 import com.divudi.core.entity.inward.PatientTransferRequest;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.facade.AdmissionFacade;
@@ -46,6 +47,8 @@ public class PatientTransferController implements Serializable {
     @Inject
     private AdmissionController admissionController;
 
+    @EJB
+    private com.divudi.service.AuditService auditService;
     @EJB
     private AdmissionFacade admissionFacade;
     @EJB
@@ -216,6 +219,30 @@ public class PatientTransferController implements Serializable {
         return true;
     }
 
+    /**
+     * Snapshot of a transfer request for audit events (#22239).
+     */
+    private java.util.Map<String, Object> transferAuditMap(PatientTransferRequest req) {
+        java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+        if (req == null) {
+            return m;
+        }
+        m.put("status", req.getStatus());
+        m.put("theatreTransferType", req.getTheatreTransferType());
+        m.put("theatreOccupancyStatus", req.getTheatreOccupancyStatus());
+        m.put("fromRoom", req.getFromPatientRoom() != null && req.getFromPatientRoom().getRoomFacilityCharge() != null
+                ? req.getFromPatientRoom().getRoomFacilityCharge().getName() : null);
+        m.put("toRoom", req.getToRoomFacilityCharge() != null ? req.getToRoomFacilityCharge().getName() : null);
+        m.put("notes", req.getNotes());
+        return m;
+    }
+
+    private void auditTransfer(PatientTransferRequest req, String trigger, java.util.Map<String, Object> before) {
+        auditService.logEncounterAudit(req != null ? req.getAdmission() : null, trigger,
+                before, transferAuditMap(req), sessionController.getLoggedUser(),
+                "PatientTransferRequest", req != null ? req.getId() : null);
+    }
+
     public void initiateTransfer() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select a patient first.");
@@ -252,8 +279,9 @@ public class PatientTransferController implements Serializable {
         req.setCreatedAt(new Date());
         req.setCreater(sessionController.getLoggedUser());
         req.setNotes(notes);
-        patientTransferRequestFacade.create(req);
+        patientTransferRequestFacade.createAndFlush(req);
         lastInitiatedRequest = req;
+        auditTransfer(req, "Transfer Initiated", null);
 
         JsfUtil.addSuccessMessage("Transfer initiated successfully.");
         targetRoomFacilityCharge = null;
@@ -277,10 +305,12 @@ public class PatientTransferController implements Serializable {
             JsfUtil.addErrorMessage("This transfer request is no longer pending and cannot be cancelled.");
             return;
         }
+        java.util.Map<String, Object> beforeCancel = transferAuditMap(persisted);
         persisted.setStatus(TransferRequestStatus.CANCELLED);
         persisted.setCancelledAt(new Date());
         persisted.setCancelledBy(sessionController.getLoggedUser());
         patientTransferRequestFacade.edit(persisted);
+        auditTransfer(persisted, "Transfer Cancelled", beforeCancel);
         lastInitiatedRequest = null;
         loadCurrentAdmissionRequests();
         JsfUtil.addSuccessMessage("Transfer request cancelled. You may now initiate a new one.");
@@ -302,6 +332,7 @@ public class PatientTransferController implements Serializable {
             return;
         }
 
+        java.util.Map<String, Object> beforeAccept = transferAuditMap(req);
         Date effectiveAt = req.getAcceptedAt() != null ? req.getAcceptedAt() : new Date();
         req.setAcceptedAt(effectiveAt);
 
@@ -336,6 +367,7 @@ public class PatientTransferController implements Serializable {
         req.setStatus(TransferRequestStatus.ACCEPTED);
         req.setAcceptedBy(sessionController.getLoggedUser());
         patientTransferRequestFacade.edit(req);
+        auditTransfer(req, "Transfer Accepted", beforeAccept);
 
         loadPendingForDepartment();
         JsfUtil.addSuccessMessage("Patient accepted successfully.");
@@ -345,10 +377,12 @@ public class PatientTransferController implements Serializable {
         if (req == null) {
             return;
         }
+        java.util.Map<String, Object> beforeCancel = transferAuditMap(req);
         req.setStatus(TransferRequestStatus.CANCELLED);
         req.setCancelledAt(new Date());
         req.setCancelledBy(sessionController.getLoggedUser());
         patientTransferRequestFacade.edit(req);
+        auditTransfer(req, "Transfer Cancelled", beforeCancel);
         loadPendingForDepartment();
         JsfUtil.addSuccessMessage("Transfer request cancelled.");
     }
@@ -534,8 +568,9 @@ public class PatientTransferController implements Serializable {
         req.setInitiatedBy(sessionController.getLoggedUser());
         req.setCreatedAt(new Date());
         req.setCreater(sessionController.getLoggedUser());
-        patientTransferRequestFacade.create(req);
+        patientTransferRequestFacade.createAndFlush(req);
         lastInitiatedRequest = req;
+        auditTransfer(req, "Sent To Theatre", null);
         JsfUtil.addSuccessMessage("Patient sent to theatre successfully.");
         targetRoomFacilityCharge = null;
         selectedSurgeryBill = null;
@@ -552,11 +587,26 @@ public class PatientTransferController implements Serializable {
             loadPendingForTheatre();
             return;
         }
+        java.util.Map<String, Object> beforeTheatreAccept = transferAuditMap(persisted);
         persisted.setStatus(TransferRequestStatus.ACCEPTED);
         persisted.setAcceptedAt(new Date());
         persisted.setAcceptedBy(sessionController.getLoggedUser());
         persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.RECEIVED_IN_THEATRE);
+
+        if (persisted.getTheatreRoom() == null) {
+            TheatreRoom theatreRoom = new TheatreRoom();
+            theatreRoom = (TheatreRoom) inwardBean.savePatientRoom(
+                    theatreRoom,
+                    null,
+                    persisted.getToRoomFacilityCharge(),
+                    persisted.getAdmission(),
+                    persisted.getInitiatedAt(),
+                    sessionController.getLoggedUser());
+            persisted.setTheatreRoom(theatreRoom);
+        }
+
         patientTransferRequestFacade.edit(persisted);
+        auditTransfer(persisted, "Theatre Patient Accepted", beforeTheatreAccept);
         loadPendingForTheatre();
         loadInTheatreRequests();
         JsfUtil.addSuccessMessage("Patient accepted in theatre.");
@@ -574,11 +624,13 @@ public class PatientTransferController implements Serializable {
             JsfUtil.addErrorMessage("Patient must be in RECEIVED_IN_THEATRE status to mark as In Theatre.");
             return;
         }
+        java.util.Map<String, Object> beforeInTheatre = transferAuditMap(persisted);
         persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.IN_THEATRE);
         if (persisted.getProcedureStartAt() == null) {
             persisted.setProcedureStartAt(new Date());
         }
         patientTransferRequestFacade.edit(persisted);
+        auditTransfer(persisted, "Marked In Theatre", beforeInTheatre);
         loadPendingForTheatre();
         loadInTheatreRequests();
         JsfUtil.addSuccessMessage("Patient marked as In Theatre.");
@@ -596,11 +648,13 @@ public class PatientTransferController implements Serializable {
             JsfUtil.addErrorMessage("Patient must be IN_THEATRE status to mark procedure as completed.");
             return;
         }
+        java.util.Map<String, Object> beforeCompleted = transferAuditMap(persisted);
         persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.PROCEDURE_COMPLETED);
         if (persisted.getProcedureEndAt() == null) {
             persisted.setProcedureEndAt(new Date());
         }
         patientTransferRequestFacade.edit(persisted);
+        auditTransfer(persisted, "Procedure Completed", beforeCompleted);
         loadPendingForTheatre();
         loadInTheatreRequests();
         JsfUtil.addSuccessMessage("Procedure marked as completed.");
@@ -636,11 +690,20 @@ public class PatientTransferController implements Serializable {
         returnReq.setInitiatedBy(sessionController.getLoggedUser());
         returnReq.setCreatedAt(new Date());
         returnReq.setCreater(sessionController.getLoggedUser());
-        patientTransferRequestFacade.create(returnReq);
+        patientTransferRequestFacade.createAndFlush(returnReq);
+        auditTransfer(returnReq, "Return To Ward Initiated", null);
 
+        Date returnedAt = persisted.getReturnedToWardAt() != null ? persisted.getReturnedToWardAt() : new Date();
         persisted.setTheatreOccupancyStatus(TheatreOccupancyStatus.RETURNED_TO_WARD);
         if (persisted.getReturnedToWardAt() == null) {
-            persisted.setReturnedToWardAt(new Date());
+            persisted.setReturnedToWardAt(returnedAt);
+        }
+        if (persisted.getTheatreRoom() != null && !persisted.getTheatreRoom().isDischarged()) {
+            PatientRoom theatreRoom = persisted.getTheatreRoom();
+            theatreRoom.setDischarged(true);
+            theatreRoom.setDischargedAt(returnedAt);
+            theatreRoom.setDischargedBy(sessionController.getLoggedUser());
+            patientRoomFacade.edit(theatreRoom);
         }
         patientTransferRequestFacade.edit(persisted);
 
@@ -660,10 +723,12 @@ public class PatientTransferController implements Serializable {
             loadPendingReturnsForWard();
             return;
         }
+        java.util.Map<String, Object> beforeReturnAccept = transferAuditMap(persisted);
         persisted.setStatus(TransferRequestStatus.ACCEPTED);
         persisted.setAcceptedAt(new Date());
         persisted.setAcceptedBy(sessionController.getLoggedUser());
         patientTransferRequestFacade.edit(persisted);
+        auditTransfer(persisted, "Return To Ward Accepted", beforeReturnAccept);
 
         // Update the master SEND_TO_THEATRE record's returnedToWardAt if not already set
         PatientTransferRequest theatreReq = findActiveSendToTheatreRequestForReturn(persisted);

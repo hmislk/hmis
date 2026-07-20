@@ -130,6 +130,14 @@ public class PatientEncounter implements Serializable, RetirableEntity {
     private WebUser nursingDischargedBy;
     @Lob
     private String nursingDischargeNotes;
+    // Professional payments hold — blocks professional fee payment (not charge entry) for this BHT
+    private Boolean professionalPaymentsOnHold = false;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date professionalPaymentsHoldDateTime;
+    @ManyToOne
+    private WebUser professionalPaymentsHoldBy;
+    @Lob
+    private String professionalPaymentsHoldNotes;
     // Physical discharge (stage 5) — nurse marks time patient physically leaves the hospital
     private Boolean physicalDischarged = false;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
@@ -1032,6 +1040,42 @@ public class PatientEncounter implements Serializable, RetirableEntity {
 
     public void setNursingDischargeNotes(String nursingDischargeNotes) {
         this.nursingDischargeNotes = nursingDischargeNotes;
+    }
+
+    public Boolean getProfessionalPaymentsOnHold() {
+        return professionalPaymentsOnHold;
+    }
+
+    public boolean isProfessionalPaymentsOnHold() {
+        return Boolean.TRUE.equals(professionalPaymentsOnHold);
+    }
+
+    public void setProfessionalPaymentsOnHold(Boolean professionalPaymentsOnHold) {
+        this.professionalPaymentsOnHold = professionalPaymentsOnHold;
+    }
+
+    public Date getProfessionalPaymentsHoldDateTime() {
+        return professionalPaymentsHoldDateTime;
+    }
+
+    public void setProfessionalPaymentsHoldDateTime(Date professionalPaymentsHoldDateTime) {
+        this.professionalPaymentsHoldDateTime = professionalPaymentsHoldDateTime;
+    }
+
+    public WebUser getProfessionalPaymentsHoldBy() {
+        return professionalPaymentsHoldBy;
+    }
+
+    public void setProfessionalPaymentsHoldBy(WebUser professionalPaymentsHoldBy) {
+        this.professionalPaymentsHoldBy = professionalPaymentsHoldBy;
+    }
+
+    public String getProfessionalPaymentsHoldNotes() {
+        return professionalPaymentsHoldNotes;
+    }
+
+    public void setProfessionalPaymentsHoldNotes(String professionalPaymentsHoldNotes) {
+        this.professionalPaymentsHoldNotes = professionalPaymentsHoldNotes;
     }
 
     public Boolean getPhysicalDischarged() {

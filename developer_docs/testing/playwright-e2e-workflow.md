@@ -808,6 +808,113 @@ Run the two commands separately (not chained with `&&`): if the domain is alread
 down, `stop-domain` exits nonzero and a chained `start-domain` would be skipped,
 leaving the app offline.
 
+## 35. Department-scoped dashboards need the department actually switched, not just full privileges
+
+While verifying #22213 (theatre stay billing), the Theatre Dashboard's "Awaiting
+Theatre Acceptance" / "Pending Return to Ward" lists showed **0** rows even though
+a request definitely existed (confirmed via direct DB query) and the logged-in
+user had every relevant privilege. Root cause: `PatientTransferController`'s
+loader methods (`loadPendingForTheatre()`, `loadInTheatreRequests()`, etc.) filter
+on `r.toRoomFacilityCharge.department = sessionController.getDepartment()` — the
+**currently selected** department, not "any department the user has access to."
+Being logged in under "Inward" and merely navigating to a Theatre page renders it
+fine but shows empty lists. Fix: log out and back in, and on the Select Department
+screen explicitly pick the department the workflow actually belongs to (here,
+"THEATRE") before testing department-scoped actions — the app remembers your last
+selection and will silently keep applying it across unrelated page navigations.
+
+## 36. `@SessionScoped` bean data can go stale after a direct URL hit — navigate through the real action chain
+
+Also during #22213 verification: after completing a theatre "return to ward" action
+(via a proper button click with a bound `action="..."` method), directly typing the
+URL for `/inward/inward_patient_room_details.xhtml` showed the just-discharged room
+still as "Active" — the underlying DB was already correct (verified via SQL), but
+`BhtSummeryController` (`@SessionScoped`) lazily caches `patientRooms` on first
+access and only a handful of specific action methods actually refresh it. A raw URL
+navigation skips whatever `action="..."` a genuine button click would have invoked,
+so it reads the stale in-memory list from earlier in the session. Fix: always
+reach the page under test by clicking through the real navigation chain (search →
+dashboard button → target page) rather than pasting/typing the target URL directly,
+especially right after an action that's supposed to change what that page displays.
+
+## 37. A required `p:selectOneMenu` with no default silently swallows an entire non-AJAX submit — no network request, no error
+
+On `inward/inward_bill_professional_payment.xhtml` (and likely the surgery
+equivalent), the "Find Due Payments" button (`type="submit"`, `onclick=""`,
+plain `ajax="false"` postback — verified via `outerHTML`) does **nothing
+at all** when the "WHT Calculation" dropdown is left at its default empty
+"Select" option — no `browser_network_requests` entry appears, no MySQL
+`general_log` query fires, no visible error, and the page doesn't even
+reload. `browser_click` and a JS `.click()` on the button both silently
+no-op. The accessibility snapshot's only tell is the dropdown rendering as
+`combobox "Select" [invalid]` — client-side JSF validation
+(`PrimeFaces.settings.validateEmptyFields=true`) blocks the *entire* form
+submit before it reaches the network layer, exactly like the required-field
+gotcha in §5/§12 but with **zero observable signal** beyond that one
+`[invalid]` accessibility attribute (this button isn't even in the same
+visual section as the required field, so it's easy to miss).
+
+**Diagnosis technique for local dev DBs only — never on staging/production**:
+`mysql.general_log` captures every statement verbatim, including patient
+identifiers and payment values, and adds real overhead while active, so only
+enable it against your own local dev database, for the shortest possible
+window. Enable it (`SET GLOBAL log_output='TABLE'; SET GLOBAL
+general_log='ON';`, `TRUNCATE TABLE mysql.general_log;`), click the button,
+then check
+`SELECT event_time, argument FROM mysql.general_log ORDER BY event_time DESC`
+— if the expected query never appears at all (not even a failed one), the
+submit never reached the server, which points at client-side validation
+rather than a bean/JPQL bug. Immediately run `SET GLOBAL general_log='OFF'`
+afterward and truncate the table again to avoid leaving captured rows
+sitting around.
+
+**Fix**: before clicking any non-AJAX submit button on this page, first
+select a real option in every required dropdown on the same form (here:
+click the "WHT Calculation" combobox → click e.g. "Include Withholding
+Tax" from the listbox), even if that dropdown looks unrelated to the
+button you're about to click — required-field validation on a JSF
+`ajax="false"` postback applies to the whole `<h:form>`, not just the
+fields near the button.
+
+## 38. A local dev DB missing columns for an already-shipped entity field surfaces as a hung page, and `ALTER TABLE` alone doesn't fix it — the pool needs a flush
+
+Entity fields that were added to the codebase a while ago (e.g.
+`PatientEncounter.professionalPaymentsOnHold` / `...HoldDateTime` /
+`...HoldBy` / `...HoldNotes`) can be **missing from a local dev database**
+that was never migrated, even though nothing about the current change
+touches those fields. Symptoms are confusing because EclipseLink issues a
+`SELECT *`-style query for the whole entity on any page that touches it, so
+the failure isn't localized to the field you'd expect:
+
+- Direct-navigating to a page via URL (bypassing the app's normal
+  click-through flow) can appear to **hang indefinitely** in Playwright
+  (`browserBackend.callTool` timeouts on `navigate`/`snapshot`/even
+  `tabs list`) rather than showing an error — the request never actually
+  hangs server-side, but an error response mid-navigation can leave the
+  MCP browser bridge stuck. If a normal in-app link/button navigation to
+  the same destination works cleanly and shows the real `SQLSyntaxErrorException:
+  Unknown column '...' in 'field list'` page, that confirms it's this
+  gotcha, not a broken browser.
+- The fix is a plain `ALTER TABLE ... ADD COLUMN ...` matching the
+  entity's field type (check the `@Column`/type in the entity class), but
+  **the running Payara connection pool caches connections/statement
+  metadata from before the ALTER** — re-hitting the page immediately after
+  the ALTER still throws the identical "Unknown column" error. Flush the
+  pool before retrying:
+  `asadmin flush-connection-pool <poolName>` (find the pool name via
+  `grep -B2 'jndi-name="jdbc/coop"' domain.xml` → look for the
+  `<jdbc-resource pool-name="...">` line, e.g. `poolCoopLocal` for
+  `jdbc/coop`).
+- Combining this with §20's privilege-row gotcha: if panels are still
+  missing after the schema+pool fix, check privileges next — they're
+  independent causes of the same "content silently doesn't render" symptom.
+
+Verified while testing the Inward Dashboard "Manage Allergies" /
+"Hold Professional Payments" button relocation (issue #22248), where the
+local `coop.patientencounter` table was missing all four
+`professionalpayments*` columns and `patienttransferrequest` was missing
+`theatreroom_id`.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

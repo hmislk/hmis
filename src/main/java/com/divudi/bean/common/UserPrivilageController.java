@@ -194,6 +194,8 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServicesAndItemsAddProfessionalFee, "Add Professional Fee"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServicesAndItemsAddTimedServices, "Add Timed Services"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAddChargesAfterNursingDischarge, "Add Charges After Nursing Discharge"), servicesItemsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardHoldProfessionalPayments, "Hold Professional Payments"), servicesItemsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPayProfessionalFeesWhileOnHold, "Pay Professional Fees While On Hold"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServiceItemRequestApproval, "Approve Service/Item Requests"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServiceItemRequestRejection, "Reject Service/Item Requests"), servicesItemsNode);
 
@@ -227,6 +229,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardInvestigationsView, "Investigations View"), clinicalDataViewNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardImagesView, "Images View"), clinicalDataViewNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardDiagnosisCardView, "Diagnosis Card View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardEventHistoryView, "Event History View"), clinicalDataViewNode);
 
         TreeNode inwardPharmacyNode = new DefaultTreeNode(new PrivilegeHolder(null, "Pharmacy"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyMenu, "Pharmacy Menu"), inwardPharmacyNode);

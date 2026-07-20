@@ -1,0 +1,132 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form id="formProfessionalPaymentHold"
+                        onkeydown="if(event.key==='Enter'&amp;&amp;event.target.tagName!=='TEXTAREA'){event.preventDefault();return false;}">
+
+                    <p:growl id="growl" life="4000"/>
+
+                    <!-- Navigation bar -->
+                    <div class="row">
+                        <div class="col-12 px-4">
+                            <p:commandButton
+                                id="btnDashboard"
+                                value="Inpatient Dashboard"
+                                ajax="false"
+                                action="#{admissionController.navigateToAdmissionProfilePage}"
+                                icon="fa fa-id-card"
+                                class="p-0 m-1">
+                                <f:setPropertyActionListener
+                                    value="#{professionalPaymentHoldController.currentEncounter}"
+                                    target="#{admissionController.current}" />
+                            </p:commandButton>
+                        </div>
+                    </div>
+
+                    <!-- Access denied panel -->
+                    <h:panelGroup id="pnlAccessDenied" layout="block" rendered="#{not webUserController.hasPrivilege('InwardHoldProfessionalPayments')}">
+                        <div class="row px-4">
+                            <div class="col-12">
+                                <p:panel class="m-1">
+                                    <h:outputText value="You do not have permission to hold or release professional payments." />
+                                </p:panel>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- Main content -->
+                    <h:panelGroup id="pnlMain" layout="block" rendered="#{webUserController.hasPrivilege('InwardHoldProfessionalPayments')}">
+
+                        <!-- Hold status banner -->
+                        <h:panelGroup id="pnlHoldStatusBanner" layout="block"
+                                      rendered="#{professionalPaymentHoldController.currentEncounter.professionalPaymentsOnHold}">
+                            <div class="row px-4 pt-2">
+                                <div class="col-12">
+                                    <div class="alert alert-danger" role="alert">
+                                        <i class="fa fa-lock mr-2"/>
+                                        Professional payments are on hold for BHT
+                                        <strong>#{professionalPaymentHoldController.currentEncounter.bhtNo}</strong>,
+                                        held by
+                                        <strong>#{professionalPaymentHoldController.currentEncounter.professionalPaymentsHoldBy.name}</strong>
+                                        on
+                                        <h:outputText value="#{professionalPaymentHoldController.currentEncounter.professionalPaymentsHoldDateTime}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                        <h:panelGroup layout="block" rendered="#{not empty professionalPaymentHoldController.currentEncounter.professionalPaymentsHoldNotes}">
+                                            <span class="font-weight-bold">Notes:</span>
+                                            <span>#{professionalPaymentHoldController.currentEncounter.professionalPaymentsHoldNotes}</span>
+                                        </h:panelGroup>
+                                    </div>
+                                </div>
+                            </div>
+                        </h:panelGroup>
+
+                        <div class="row px-4 py-2">
+                            <div class="col-12">
+
+                                <!-- Hold panel: shown when NOT currently on hold -->
+                                <h:panelGroup layout="block" rendered="#{not professionalPaymentHoldController.currentEncounter.professionalPaymentsOnHold}">
+                                    <p:panel class="w-100 m-1 p-0 mb-2">
+                                        <f:facet name="header">
+                                            <i class="fa fa-hand-paper mr-2"/>
+                                            <h:outputText value="Hold Professional Payments" />
+                                        </f:facet>
+                                        <div class="container-fluid">
+                                            <div class="row my-2">
+                                                <div class="col-12">
+                                                    <p:outputLabel for="txtProfessionalPaymentHoldNotes" value="Hold Notes:" styleClass="font-weight-bold" />
+                                                    <p:inputTextarea
+                                                        id="txtProfessionalPaymentHoldNotes"
+                                                        value="#{professionalPaymentHoldController.currentEncounter.professionalPaymentsHoldNotes}"
+                                                        class="w-100"
+                                                        autoResize="true"
+                                                        rows="6"
+                                                        placeholder="Reason for holding professional payments on this BHT, e.g. pending investigation, billing dispute, awaiting clarification, etc." />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </p:panel>
+                                </h:panelGroup>
+
+                                <!-- Action buttons -->
+                                <h:panelGroup id="pnlActionButtons" layout="block"
+                                              styleClass="d-flex justify-content-end my-2 mb-4">
+                                    <h:panelGroup rendered="#{not professionalPaymentHoldController.currentEncounter.professionalPaymentsOnHold}">
+                                        <p:commandButton
+                                            id="btnConfirmProfessionalPaymentHold"
+                                            value="Confirm Hold"
+                                            ajax="false"
+                                            action="#{professionalPaymentHoldController.confirmHold()}"
+                                            icon="fa fa-lock"
+                                            class="ui-button-danger mx-1"
+                                            onclick="return confirm('Are you sure you want to hold professional payments for this BHT? Professional fee payments will be blocked until the hold is released.')" />
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{professionalPaymentHoldController.currentEncounter.professionalPaymentsOnHold}">
+                                        <p:commandButton
+                                            id="btnReleaseProfessionalPaymentHold"
+                                            value="Release Hold"
+                                            ajax="false"
+                                            action="#{professionalPaymentHoldController.releaseHold()}"
+                                            icon="fa fa-unlock"
+                                            class="ui-button-success mx-1"
+                                            onclick="return confirm('Are you sure you want to release the hold on professional payments for this BHT?')" />
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
