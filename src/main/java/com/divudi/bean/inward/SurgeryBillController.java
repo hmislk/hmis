@@ -13,6 +13,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.FeeType;
 import com.divudi.core.data.dataStructure.DepartmentBillItems;
 import com.divudi.core.data.inward.PatientEncounterComponentType;
 import com.divudi.core.data.inward.SurgeryBillType;
@@ -22,6 +23,7 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Consultant;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.PreBill;
@@ -167,6 +169,16 @@ public class SurgeryBillController implements Serializable {
         return "/theater/surgery_edit?faces-redirect=true";
     }
 
+    public String navigateToSurgeryBillSummary(Bill surgery) {
+        this.surgeryBill = surgery;
+        surgeryProfessionalFees = null;
+        surgeryAssistingFees = null;
+        surgeryServiceDepartmentItems = null;
+        surgeryMedicineIssues = null;
+        surgeryStoreIssues = null;
+        return "/theater/surgery_bill_summary?faces-redirect=true";
+    }
+
     // -------------------------------------------------------------------------
     // Surgery list & delete
     // -------------------------------------------------------------------------
@@ -174,6 +186,12 @@ public class SurgeryBillController implements Serializable {
     private List<Bill> surgeryList;
     private Bill selectedSurgeryToDelete;
     private List<Bill> blockingBillsForDelete;
+    private List<BillFee> surgeryProfessionalFees;
+    private List<BillFee> surgeryAssistingFees;
+    private List<DepartmentBillItems> surgeryServiceDepartmentItems;
+    private List<Bill> surgeryMedicineIssues;
+    private List<Bill> surgeryStoreIssues;
+    private String revertReason;
 
     public List<Bill> getSurgeryList() {
         if (surgeryList == null && getSurgeryBill().getPatientEncounter() != null) {
@@ -225,6 +243,83 @@ public class SurgeryBillController implements Serializable {
         HashMap<String, Object> params = new HashMap<>();
         params.put("surg", surgery);
         return getBillFacade().findByJpql(jpql, params);
+    }
+
+    public List<BillFee> getSurgeryProfessionalFees() {
+        if (surgeryProfessionalFees == null && getSurgeryBill().getId() != null) {
+            String jpql = "SELECT bt FROM BillFee bt WHERE bt.retired=false "
+                    + " and type(bt.staff)=:class "
+                    + " and bt.fee.feeType=:ftp "
+                    + " and bt.bill.billType=:btp "
+                    + " and bt.bill.forwardReferenceBill=:surg "
+                    + " order by bt.feeAdjusted desc";
+            HashMap<String, Object> hm = new HashMap<>();
+            hm.put("class", Consultant.class);
+            hm.put("ftp", FeeType.Staff);
+            hm.put("btp", BillType.InwardProfessional);
+            hm.put("surg", getSurgeryBill());
+            surgeryProfessionalFees = getBillFeeFacade().findByJpql(jpql, hm);
+        }
+        return surgeryProfessionalFees;
+    }
+
+    public List<BillFee> getSurgeryAssistingFees() {
+        if (surgeryAssistingFees == null && getSurgeryBill().getId() != null) {
+            String jpql = "SELECT bt FROM BillFee bt WHERE bt.retired=false "
+                    + " and type(bt.staff)!=:class "
+                    + " and bt.fee.feeType=:ftp "
+                    + " and bt.bill.billType=:btp "
+                    + " and bt.bill.forwardReferenceBill=:surg";
+            HashMap<String, Object> hm = new HashMap<>();
+            hm.put("class", Consultant.class);
+            hm.put("ftp", FeeType.Staff);
+            hm.put("btp", BillType.InwardProfessional);
+            hm.put("surg", getSurgeryBill());
+            surgeryAssistingFees = getBillFeeFacade().findByJpql(jpql, hm);
+        }
+        return surgeryAssistingFees;
+    }
+
+    public List<DepartmentBillItems> getSurgeryServiceDepartmentItems() {
+        if (surgeryServiceDepartmentItems == null && getSurgeryBill().getId() != null) {
+            surgeryServiceDepartmentItems = getInwardBean().createDepartmentBillItemsOptimized(
+                    getSurgeryBill().getPatientEncounter(), getSurgeryBill(), new ArrayList<>());
+        }
+        return surgeryServiceDepartmentItems;
+    }
+
+    public List<Bill> getSurgeryMedicineIssues() {
+        if (surgeryMedicineIssues == null && getSurgeryBill().getId() != null) {
+            surgeryMedicineIssues = findIssuesByForwardRef(BillType.PharmacyBhtPre);
+        }
+        return surgeryMedicineIssues;
+    }
+
+    public List<Bill> getSurgeryStoreIssues() {
+        if (surgeryStoreIssues == null && getSurgeryBill().getId() != null) {
+            surgeryStoreIssues = findIssuesByForwardRef(BillType.StoreBhtPre);
+        }
+        return surgeryStoreIssues;
+    }
+
+    private List<Bill> findIssuesByForwardRef(BillType billType) {
+        String jpql = "SELECT b FROM Bill b WHERE b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.forwardReferenceBill=:surg "
+                + " and (type(b)=:preClass or type(b)=:refundClass)";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("btp", billType);
+        hm.put("surg", getSurgeryBill());
+        hm.put("preClass", PreBill.class);
+        hm.put("refundClass", RefundBill.class);
+        return getBillFacade().findByJpql(jpql, hm);
+    }
+
+    public Bill getSurgeryTimedServiceBill() {
+        if (getSurgeryBill().getId() == null) {
+            return null;
+        }
+        return getBillBean().fetchByForwardBill(getSurgeryBill(), SurgeryBillType.TimedService);
     }
 
     private void retireSurgeryBill(Bill surgery) {
@@ -385,6 +480,11 @@ public class SurgeryBillController implements Serializable {
         clinicalEncounterComponent = null;
         clinicalEncounterComponents = null;
         clinicalSpeciality = null;
+        surgeryProfessionalFees = null;
+        surgeryAssistingFees = null;
+        surgeryServiceDepartmentItems = null;
+        surgeryMedicineIssues = null;
+        surgeryStoreIssues = null;
     }
 
     public void saveProcedure() {
@@ -909,6 +1009,102 @@ public class SurgeryBillController implements Serializable {
         this.proEncounterComponent = proEncounterComponent;
     }
 
+    public boolean isAllSurgeryBillsChecked() {
+        return getUncheckedSurgeryBillCount() == 0;
+    }
+
+    public long getUncheckedSurgeryBillCount() {
+        if (getSurgeryBill().getId() == null) {
+            return 0;
+        }
+        String jpql = "SELECT COUNT(b) FROM Bill b WHERE b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.forwardReferenceBill=:surg "
+                + " and b.checkeAt IS NULL";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("surg", getSurgeryBill());
+        return getBillFacade().findLongByJpql(jpql, hm);
+    }
+
+    public void validateSurgery() {
+        if (getSurgeryBill().getId() == null) {
+            JsfUtil.addErrorMessage("Select Surgery");
+            return;
+        }
+        if (!webUserController.hasPrivilege("InwardSurgeryValidate")) {
+            JsfUtil.addErrorMessage("You are not authorized to validate this surgery.");
+            return;
+        }
+        if (!isAllSurgeryBillsChecked()) {
+            JsfUtil.addErrorMessage("Cannot validate: " + getUncheckedSurgeryBillCount()
+                    + " bill(s) under this surgery are not yet checked.");
+            return;
+        }
+        Map<String, Object> before = new LinkedHashMap<>();
+        before.put("completed", surgeryBill.isCompleted());
+
+        surgeryBill.setCompleted(true);
+        surgeryBill.setCompletedBy(sessionController.getLoggedUser());
+        surgeryBill.setCompletedAt(new Date());
+        getBillFacade().edit(surgeryBill);
+
+        Map<String, Object> after = new LinkedHashMap<>();
+        after.put("completed", true);
+        after.put("completedBy", sessionController.getLoggedUser().getWebUserPerson().getName());
+
+        auditService.logEncounterAudit(surgeryBill.getPatientEncounter(), "Validate Surgery",
+                before, after, sessionController.getLoggedUser(), "Bill", surgeryBill.getId());
+
+        JsfUtil.addSuccessMessage("Surgery validated.");
+    }
+
+    public String getRevertReason() {
+        return revertReason;
+    }
+
+    public void setRevertReason(String revertReason) {
+        this.revertReason = revertReason;
+    }
+
+    public void revertSurgeryValidation() {
+        if (getSurgeryBill().getId() == null) {
+            JsfUtil.addErrorMessage("Select Surgery");
+            return;
+        }
+        if (!webUserController.hasPrivilege("InwardSurgeryValidationRevert")) {
+            JsfUtil.addErrorMessage("You are not authorized to revert surgery validation.");
+            return;
+        }
+        if (!surgeryBill.isCompleted()) {
+            JsfUtil.addErrorMessage("Surgery is not currently validated.");
+            return;
+        }
+        Map<String, Object> before = new LinkedHashMap<>();
+        before.put("completed", true);
+        before.put("completedBy", surgeryBill.getCompletedBy() != null
+                ? surgeryBill.getCompletedBy().getWebUserPerson().getName() : null);
+
+        surgeryBill.setCompleted(false);
+        surgeryBill.setCompletedBy(null);
+        surgeryBill.setCompletedAt(null);
+        getBillFacade().edit(surgeryBill);
+
+        Map<String, Object> after = new LinkedHashMap<>();
+        after.put("completed", false);
+        after.put("revertedBy", sessionController.getLoggedUser().getWebUserPerson().getName());
+        after.put("reason", revertReason);
+
+        auditService.logEncounterAudit(surgeryBill.getPatientEncounter(), "Revert Surgery Validation",
+                before, after, sessionController.getLoggedUser(), "Bill", surgeryBill.getId());
+
+        revertReason = null;
+        JsfUtil.addSuccessMessage("Surgery validation reverted.");
+    }
+
+    public boolean isSurgeryLockedForAdditions(Bill surgery) {
+        return surgery != null && surgery.isCompleted();
+    }
+
     private boolean generalChecking() {
         if (getSurgeryBill().getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("Admission ?");
@@ -927,6 +1123,11 @@ public class SurgeryBillController implements Serializable {
         if (getSurgeryBill().getPatientEncounter().isNursingDischarged()
                 && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
             JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
+            return true;
+        }
+
+        if (getSurgeryBill().isCompleted()) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
             return true;
         }
 
