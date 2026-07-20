@@ -95,6 +95,7 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.PrimeFaces;
@@ -3128,6 +3129,34 @@ public class BhtSummeryController implements Serializable {
 
         bItem.setBillFees(list);
 
+    }
+
+    /**
+     * Guards inward_bill_intrim.xhtml / inward_bill_intrim_estimate.xhtml against
+     * being reached (e.g. via browser back/forward or a stale tab) while
+     * patientEncounter still points at a baby (child) admission — closes the gap
+     * where visiting any Inpatient Dashboard unconditionally mirrors the current
+     * admission into patientEncounter, independent of the createIntrimBillTable()/
+     * createTablesWithEstimatedProfessionalFees()/navigateToIntrimBillFromPatientProfile()
+     * guards. Safe to call on every page load.
+     */
+    public void redirectIfEncounterIsBabyAdmission() {
+        FacesContext fc = FacesContext.getCurrentInstance();
+        if (fc.isPostback()) {
+            return;
+        }
+        if (patientEncounter == null || patientEncounter.getParentEncounter() == null) {
+            return;
+        }
+        try {
+            fc.getExternalContext().getFlash().setKeepMessages(true);
+            JsfUtil.addErrorMessage("Interim/Estimated bills can only be generated for the parent (mother) encounter. "
+                    + "Generate it from the mother's admission — it will automatically include this baby's charges.");
+            fc.getExternalContext().redirect(
+                    fc.getExternalContext().getRequestContextPath() + "/faces/inward/admission_profile.xhtml");
+        } catch (java.io.IOException e) {
+            // redirect failed — nothing further we can do at render time
+        }
     }
 
     public String createIntrimBillTable() {
