@@ -380,6 +380,15 @@ public class WebUser implements Serializable {
         return lastPasswordResetAt;
     }
 
+    /**
+     * Returns the raw persisted value without the self-initializing side effect
+     * of {@link #getLastPasswordResetAt()}. Use this when null needs to be
+     * distinguished from "never reset" (e.g. password expiration checks).
+     */
+    public Date getLastPasswordResetAtRaw() {
+        return lastPasswordResetAt;
+    }
+
     public void setLastPasswordResetAt(Date lastPasswordResetAt) {
         this.lastPasswordResetAt = lastPasswordResetAt;
     }
