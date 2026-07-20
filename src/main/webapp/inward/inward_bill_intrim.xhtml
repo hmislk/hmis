@@ -19,6 +19,7 @@
 
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <f:event type="preRenderView" listener="#{bhtSummeryController.redirectIfEncounterIsBabyAdmission()}"/>
                 <h:form id="pageForm" >
 
                     <p:panel rendered="#{bhtSummeryController.patientEncounter eq null}" styleClass="shadow-sm">
