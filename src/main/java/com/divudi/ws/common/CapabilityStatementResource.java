@@ -362,7 +362,11 @@ public class CapabilityStatementResource {
                         + "for safety it requires preview=true first, then confirm=true to actually apply. "
                         + "GET /roles lists active roles with template summary counts (privileges/icons/subscriptions) and template login page. "
                         + "PUT /{id}/login-page (body: {departmentId, loginPage}) and DELETE /{id}/login-page/{departmentId} manage the "
-                        + "per-user-per-department default login page override.",
+                        + "per-user-per-department default login page override. "
+                        + "POST /{id}/force-password-reset flags needToResetPassword=true without requiring a new password value "
+                        + "(distinct from /reset-password, which sets an actual password). "
+                        + "GET /password-status (optional ?from=&to=, yyyy-MM-dd) reports lastPasswordResetAt and needToResetPassword "
+                        + "per active user; omitted range returns all users including those who have never reset.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("User Bulk Privileges", "/api/users/bulk-privileges",

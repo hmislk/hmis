@@ -298,6 +298,74 @@ public class UserManagementApi {
         }
     }
 
+    /**
+     * POST /api/users/{id}/force-password-reset
+     * Flags the user for a mandatory password reset on next login (respected by the
+     * "Allow admin to force password change" config option), without requiring the
+     * caller to supply or know a new password value. Distinct from /reset-password,
+     * which sets an actual new password. Audit-logged via ApiKey attribution, unlike
+     * a direct database update.
+     */
+    @POST
+    @Path("/{id}/force-password-reset")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response forcePasswordReset(@PathParam("id") Long id) {
+        WebUser apiUser = validateApiUser();
+        if (apiUser == null) return errorResponse("Not a valid key", 401);
+        if (!isAdmin(apiUser)) return errorResponse("Insufficient privileges", 403);
+        WebUser u = webUserFacade.find(id);
+        if (u == null || u.isRetired()) return errorResponse("User not found", 404);
+        u.setNeedToResetPassword(true);
+        webUserFacade.edit(u);
+        return successResponse(toUserMap(u));
+    }
+
+    /**
+     * GET /api/users/password-status
+     * Optional query params: from, to (yyyy-MM-dd) — filters the list to users whose
+     * lastPasswordResetAt falls within the (inclusive) range. Omitting both returns
+     * every active user, including those who have never reset their password
+     * (lastPasswordResetAt: null).
+     */
+    @GET
+    @Path("/password-status")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response listPasswordStatus() {
+        WebUser apiUser = validateApiUser();
+        if (apiUser == null) return errorResponse("Not a valid key", 401);
+        if (!isAdmin(apiUser)) return errorResponse("Insufficient privileges", 403);
+
+        String fromStr = value("from");
+        String toStr = value("to");
+        Date from = parseDateParam(fromStr);
+        if (fromStr != null && !fromStr.trim().isEmpty() && from == null) {
+            return errorResponse("Invalid 'from' date, expected yyyy-MM-dd", 400);
+        }
+        Date to = parseDateParam(toStr);
+        if (toStr != null && !toStr.trim().isEmpty() && to == null) {
+            return errorResponse("Invalid 'to' date, expected yyyy-MM-dd", 400);
+        }
+        if (to != null) {
+            to = new Date(to.getTime() + 24L * 60 * 60 * 1000 - 1); // make 'to' inclusive of the whole day
+        }
+
+        List<WebUser> users = webUserFacade.findByJpql("select w from WebUser w where w.retired=false order by w.name");
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (WebUser u : users) {
+            Date lastReset = u.getLastPasswordResetAtRaw();
+            if (from != null && (lastReset == null || lastReset.before(from))) continue;
+            if (to != null && (lastReset == null || lastReset.after(to))) continue;
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("userId", u.getId());
+            m.put("name", u.getName());
+            m.put("personName", u.getWebUserPerson() != null ? u.getWebUserPerson().getName() : null);
+            m.put("lastPasswordResetAt", lastReset);
+            m.put("needToResetPassword", u.isNeedToResetPassword());
+            out.add(m);
+        }
+        return successResponse(out);
+    }
+
     @GET
     @Path("/{id}/privileges")
     @Produces(MediaType.APPLICATION_JSON)
@@ -1526,6 +1594,15 @@ public class UserManagementApi {
     private int parseInt(String v, int d) { try { return v == null ? d : Integer.parseInt(v); } catch (Exception e) { return d; } }
 
     private Long parseLong(String v, Long d) { try { return v == null ? d : Long.parseLong(v); } catch (Exception e) { return d; } }
+
+    private Date parseDateParam(String v) {
+        if (v == null || v.trim().isEmpty()) return null;
+        try {
+            return new java.text.SimpleDateFormat("yyyy-MM-dd").parse(v.trim());
+        } catch (java.text.ParseException e) {
+            return null;
+        }
+    }
 
     private WebUser validateApiUser() {
         String key = requestContext.getHeader("Finance");
