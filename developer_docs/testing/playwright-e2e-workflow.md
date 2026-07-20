@@ -876,6 +876,45 @@ button you're about to click — required-field validation on a JSF
 `ajax="false"` postback applies to the whole `<h:form>`, not just the
 fields near the button.
 
+## 38. A local dev DB missing columns for an already-shipped entity field surfaces as a hung page, and `ALTER TABLE` alone doesn't fix it — the pool needs a flush
+
+Entity fields that were added to the codebase a while ago (e.g.
+`PatientEncounter.professionalPaymentsOnHold` / `...HoldDateTime` /
+`...HoldBy` / `...HoldNotes`) can be **missing from a local dev database**
+that was never migrated, even though nothing about the current change
+touches those fields. Symptoms are confusing because EclipseLink issues a
+`SELECT *`-style query for the whole entity on any page that touches it, so
+the failure isn't localized to the field you'd expect:
+
+- Direct-navigating to a page via URL (bypassing the app's normal
+  click-through flow) can appear to **hang indefinitely** in Playwright
+  (`browserBackend.callTool` timeouts on `navigate`/`snapshot`/even
+  `tabs list`) rather than showing an error — the request never actually
+  hangs server-side, but an error response mid-navigation can leave the
+  MCP browser bridge stuck. If a normal in-app link/button navigation to
+  the same destination works cleanly and shows the real `SQLSyntaxErrorException:
+  Unknown column '...' in 'field list'` page, that confirms it's this
+  gotcha, not a broken browser.
+- The fix is a plain `ALTER TABLE ... ADD COLUMN ...` matching the
+  entity's field type (check the `@Column`/type in the entity class), but
+  **the running Payara connection pool caches connections/statement
+  metadata from before the ALTER** — re-hitting the page immediately after
+  the ALTER still throws the identical "Unknown column" error. Flush the
+  pool before retrying:
+  `asadmin flush-connection-pool <poolName>` (find the pool name via
+  `grep -B2 'jndi-name="jdbc/coop"' domain.xml` → look for the
+  `<jdbc-resource pool-name="...">` line, e.g. `poolCoopLocal` for
+  `jdbc/coop`).
+- Combining this with §20's privilege-row gotcha: if panels are still
+  missing after the schema+pool fix, check privileges next — they're
+  independent causes of the same "content silently doesn't render" symptom.
+
+Verified while testing the Inward Dashboard "Manage Allergies" /
+"Hold Professional Payments" button relocation (issue #22248), where the
+local `coop.patientencounter` table was missing all four
+`professionalpayments*` columns and `patienttransferrequest` was missing
+`theatreroom_id`.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
