@@ -150,6 +150,8 @@ public enum Privileges {
     InwardDoctorPaymentAccess("Inward Doctor Payment Access"),
     InwardSurgeryAdd("Inward Surgery Add"),
     InwardSurgeryManage("Inward Surgery Manage"),
+    InwardSurgeryValidate("Inward Surgery Validate"),
+    InwardSurgeryValidationRevert("Inward Surgery Validation Revert"),
     InwardPatientHistoryView("Inward Patient History View"),
     InwardClinicalNotesView("Inward Clinical Notes View"),
     InwardWardMedicationsView("Inward Ward Medications View"),
@@ -1261,6 +1263,8 @@ public enum Privileges {
             case InwardDoctorPaymentAccess:
             case InwardSurgeryAdd:
             case InwardSurgeryManage:
+            case InwardSurgeryValidate:
+            case InwardSurgeryValidationRevert:
             case InwardPatientHistoryView:
             case InwardClinicalNotesView:
             case InwardWardMedicationsView:

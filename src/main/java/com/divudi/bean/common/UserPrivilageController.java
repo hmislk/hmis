@@ -220,6 +220,8 @@ public class UserPrivilageController implements Serializable {
         TreeNode inwardSurgeryNode = new DefaultTreeNode(new PrivilegeHolder(null, "Surgery"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryAdd, "Add Surgery"), inwardSurgeryNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryManage, "Manage Surgery"), inwardSurgeryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryValidate, "Validate Surgery"), inwardSurgeryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryValidationRevert, "Revert Surgery Validation"), inwardSurgeryNode);
 
         TreeNode clinicalDataViewNode = new DefaultTreeNode(new PrivilegeHolder(null, "Clinical Data Access"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPatientHistoryView, "Patient History View"), clinicalDataViewNode);
