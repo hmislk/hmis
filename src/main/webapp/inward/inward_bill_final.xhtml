@@ -39,7 +39,7 @@
                                 <p:commandButton 
                                     update="dList tot @all settle saveProvisional" 
                                     value="Process"
-                                    actionListener="#{bhtSummeryController.updateTotal()}"
+                                    actionListener="#{bhtSummeryController.processFinalBill()}"
                                     process="@this"
                                     class="ui-button-warning mx-1" 
                                     icon="fas fa-cog"
@@ -157,9 +157,9 @@
                                         <h:outputLabel value="Discount Details"/>
                                     </f:facet>
                                     <h:panelGrid columns="3" class="w-100">
-                                        <h:outputLabel value="Discount Amount           "/>
-                                        <h:outputLabel value=" :     "/>
-                                        <p:inputText value="#{bhtSummeryController.discount}">
+                                        <h:outputLabel value="Bill Level Discount        "/>
+                                        <h:outputLabel value=" :     "/>
+                                        <p:inputText id="billLevelDiscountInput" value="#{bhtSummeryController.billLevelDiscount}">
                                             <p:ajax process="@this" update="@all" event="change" listener="#{bhtSummeryController.listnerDiscontAmmountChanged()}"/>
                                         </p:inputText>
                                     </h:panelGrid>
@@ -183,7 +183,19 @@
                                         <h:outputLabel value="#{bhtSummeryController.grantTotal}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                        <h:outputLabel value="Discount" style="font-weight: bold"/>
+                                        <h:outputLabel value="Item Discounts" style="font-weight: bold"/>
+                                        <h:outputLabel value="#{bhtSummeryController.itemDiscountTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Charge Type Discounts" style="font-weight: bold"/>
+                                        <h:outputLabel value="#{bhtSummeryController.chargeTypeDiscountTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Bill Level Discount" style="font-weight: bold"/>
+                                        <h:outputLabel value="#{bhtSummeryController.billLevelDiscount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Total Discount" style="font-weight: bold"/>
                                         <h:outputLabel value="#{bhtSummeryController.discount}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
@@ -579,25 +591,23 @@
                                 </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Discount" class="text-end" width="14em;">
-                                <p:inputText 
-                                    autocomplete="off" 
-                                    id="catDiscount" 
+                            <p:column headerText="Item Discounts" class="text-end" width="12em;">
+                                <h:outputLabel value="#{c.discount}" class="w-100 text-end">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </p:column>
+
+                            <p:column headerText="Type Discount" class="text-end" width="12em;">
+                                <p:inputText
+                                    autocomplete="off"
+                                    id="catTypeDiscount"
                                     class="w-100 text-end"
-                                    value="#{c.discount}"
-                                    disabled="#{c.inwardChargeType eq 'RoomCharges'
-                                                or c.inwardChargeType eq 'MOCharges'
-                                                or c.inwardChargeType eq 'MaintainCharges'
-                                                or c.inwardChargeType eq 'NursingCharges'
-                                                or c.inwardChargeType eq 'LinenCharges'
-                                                or c.inwardChargeType eq 'MedicalCareICU'
-                                                or c.inwardChargeType eq 'AdministrationCharge'
-                                                or c.inwardChargeType eq 'ProfessionalCharge'
-                                                or c.inwardChargeType eq 'MedicalCare' 
-                                                or c.total eq 0}">
+                                    title="Charge type discount for #{c.inwardChargeType.name}"
+                                    value="#{c.chargeTypeDiscount}"
+                                    disabled="#{c.total eq 0}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                     <p:ajax process="@this"
-                                            update="@this catNetTotal :#{p:resolveFirstComponentWithId('tot',view).clientId}  "
+                                            update="@this catNetTotal :#{p:resolveFirstComponentWithId('tot',view).clientId}"
                                             event="blur"
                                             listener="#{bhtSummeryController.changeDiscountListener(c)}"/>
                                     <p:ajax process="@this" event="keyup"
@@ -654,7 +664,16 @@
                     <p:panel id="creditAllocationPanel" styleClass="mx-1 mt-3" rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit' and not empty bhtSummeryController.creditCompanyAllocations}">
                         <f:facet name="header">
                             <div class="d-flex align-items-center justify-content-between">
-                                <h:outputLabel value="Credit Company Allocation" />
+                                <h:panelGroup>
+                                    <h:outputLabel value="Credit Company Allocation" />
+                                    <h:outputLabel styleClass="ms-3" style="font-weight:normal;color:#555;"
+                                                   value="Net Due to Allocate: ">
+                                    </h:outputLabel>
+                                    <h:outputText value="#{bhtSummeryController.creditDueToAllocate}"
+                                                  style="font-weight:bold;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </h:panelGroup>
                                 <p:commandButton
                                     id="viewAddCreditCompanyDlg"
                                     value="Add Credit Company"
@@ -694,6 +713,9 @@
                                                  onfocus="this.select()"
                                                  title="Patient co-payment portion">
                                         <f:convertNumber pattern="#,##0.00"/>
+                                        <p:ajax event="change"
+                                                process="@this"
+                                                update=":#{p:resolveFirstComponentWithId('creditAllocationPanel',view).clientId}"/>
                                     </p:inputText>
                                     <h:outputLabel value=" (patient co-payment)"
                                                    style="color:#888;font-size:0.82em;margin-left:4px;"/>
