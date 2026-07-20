@@ -4,19 +4,41 @@
                 template="/resources/template/template.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
-                xmlns:f="http://xmlns.jcp.org/jsf/core">
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:phe="http://xmlns.jcp.org/jsf/composite/pharmacy/inward">
 
     <ui:define name="content">
         <h:form id="wardPharmacyBhtIssueReceiveForm" onkeypress="if(event.keyCode == 13 &amp;&amp; event.target.type != 'textarea') { return false; }">
 
             <p:panel rendered="#{!wardPharmacyBhtIssueReceiveController.printPreview}">
                 <f:facet name="header">
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <div>
                             <h:outputText styleClass="fa-solid fa-truck-medical"/>
                             <p:outputLabel value="Receive Medicines - Bill #{wardPharmacyBhtIssueReceiveController.issuedBill.deptId}" class="mx-4"/>
                         </div>
-                        <div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <p:commandButton
+                                id="btnInpatientDashboard"
+                                value="Inpatient Dashboard"
+                                icon="fa fa-id-card"
+                                ajax="false"
+                                class="ui-button-secondary"
+                                rendered="#{wardPharmacyBhtIssueReceiveController.issuedBill ne null}"
+                                action="#{admissionController.navigateToAdmissionProfilePage}">
+                                <f:setPropertyActionListener
+                                    value="#{wardPharmacyBhtIssueReceiveController.issuedBill.patientEncounter}"
+                                    target="#{admissionController.current}"/>
+                            </p:commandButton>
+                            <p:commandButton
+                                id="btnNursingWorkBenchView"
+                                value="Nursing WorkBench"
+                                title="Back to the nursing workbench"
+                                rendered="#{webUserController.hasPrivilege('NursingWorkBench')}"
+                                action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
+                                ajax="false"
+                                class="ui-button-info ui-button-outlined"
+                                icon="fa fa-arrow-left"/>
                             <p:commandButton
                                 id="btnBackToPendingList"
                                 value="Back to List"
@@ -31,6 +53,7 @@
                                 ajax="false"
                                 class="ui-button-success"
                                 action="#{wardPharmacyBhtIssueReceiveController.settle}"
+                                disabled="#{not webUserController.hasPrivilege('InwardPharmacyBhtReceive')}"
                                 onclick="return confirm('Confirm that these medicines have been physically received into this ward?');"/>
                         </div>
                     </div>
@@ -93,59 +116,131 @@
 
                 <p:messages showDetail="true"/>
 
-                <div class="row mb-3">
-                    <div class="col-md-3">
-                        <h:outputLabel value="BHT No" class="fw-bold"/>
-                        <p:outputLabel value="#{wardPharmacyBhtIssueReceiveController.receivedBill.patientEncounter.bhtNo}" class="d-block"/>
-                    </div>
-                    <div class="col-md-3">
-                        <h:outputLabel value="Patient" class="fw-bold"/>
-                        <p:outputLabel value="#{wardPharmacyBhtIssueReceiveController.receivedBill.patientEncounter.patient.person.nameWithTitle}" class="d-block"/>
-                    </div>
-                    <div class="col-md-3">
-                        <h:outputLabel value="Received Into" class="fw-bold"/>
-                        <p:outputLabel value="#{wardPharmacyBhtIssueReceiveController.receivedBill.department.name}" class="d-block"/>
-                    </div>
-                    <div class="col-md-3">
-                        <h:outputLabel value="Received At" class="fw-bold"/>
-                        <p:outputLabel value="#{wardPharmacyBhtIssueReceiveController.receivedBill.createdAt}" class="d-block">
-                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                        </p:outputLabel>
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <p:commandButton
+                        id="btnBackToPendingListAfterReceive"
+                        value="Back to Pending List"
+                        icon="fas fa-arrow-left"
+                        ajax="false"
+                        class="ui-button-secondary"
+                        action="#{wardPharmacyBhtIssueReceiveController.navigateBackToPendingList}"/>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        <p:commandButton
+                            id="btnInpatientDashboardAfterReceive"
+                            value="Inpatient Dashboard"
+                            icon="fa fa-id-card"
+                            ajax="false"
+                            class="ui-button-secondary"
+                            action="#{admissionController.navigateToAdmissionProfilePage}">
+                            <f:setPropertyActionListener
+                                value="#{wardPharmacyBhtIssueReceiveController.receivedBill.patientEncounter}"
+                                target="#{admissionController.current}"/>
+                        </p:commandButton>
+                        <p:commandButton
+                            id="btnNursingWorkBenchViewAfterReceive"
+                            value="Nursing WorkBench"
+                            title="Back to the nursing workbench"
+                            rendered="#{webUserController.hasPrivilege('NursingWorkBench')}"
+                            action="#{nursingWorkBenchController.navigateToBackNursingWorkBench()}"
+                            ajax="false"
+                            class="ui-button-info ui-button-outlined"
+                            icon="fa fa-arrow-left"/>
+                        <p:commandButton
+                            id="btnBhtIssueReceivePrintConfig"
+                            rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                            value="Settings"
+                            icon="fas fa-cog"
+                            class="ui-button-secondary"
+                            type="button"
+                            onclick="PF('bhtIssueReceiveConfigDialog').show();"/>
+                        <p:commandButton
+                            id="btnPrintReceivedBill"
+                            value="Print"
+                            icon="fas fa-print"
+                            class="ui-button-info"
+                            ajax="false"
+                            action="#">
+                            <p:printer target="gpBhtIssueReceiveBillPreview"/>
+                        </p:commandButton>
                     </div>
                 </div>
 
-                <p:dataTable
-                    id="receivedItemTable"
-                    rowKey="#{i.id}"
-                    value="#{wardPharmacyBhtIssueReceiveController.receivedBill.billItems}"
-                    var="i"
-                    class="w-100">
+                <h:panelGroup id="gpBhtIssueReceiveBillPreview">
 
-                    <p:column headerText="Item">
-                        <h:outputText value="#{i.item.name}"/>
-                    </p:column>
+                    <h:panelGroup
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy BHT Issue Receive Receipt is A4', true)}"
+                        styleClass="noBorder">
+                        <phe:bhtIssueReceiveA4 bill="#{wardPharmacyBhtIssueReceiveController.receivedBill}"/>
+                    </h:panelGroup>
 
-                    <p:column headerText="Batch No">
-                        <h:outputText value="#{i.pharmaceuticalBillItem.itemBatch.batchNo}"/>
-                    </p:column>
+                    <h:panelGroup
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy BHT Issue Receive Receipt is POS', false)}"
+                        styleClass="noBorder">
+                        <phe:bhtIssueReceivePos bill="#{wardPharmacyBhtIssueReceiveController.receivedBill}"/>
+                    </h:panelGroup>
 
-                    <p:column headerText="Received Quantity">
-                        <h:outputText value="#{i.pharmaceuticalBillItem.qty}">
-                            <f:convertNumber pattern="#,##0.00"/>
-                        </h:outputText>
-                    </p:column>
+                    <h:panelGroup
+                        rendered="#{configOptionController.getBooleanValueByKey('Pharmacy BHT Issue Receive Receipt is FiveFive', false)}"
+                        styleClass="noBorder">
+                        <phe:bhtIssueReceiveFiveFive bill="#{wardPharmacyBhtIssueReceiveController.receivedBill}"/>
+                    </h:panelGroup>
 
-                </p:dataTable>
-
-                <p:commandButton
-                    id="btnBackToPendingListAfterReceive"
-                    value="Back to Pending List"
-                    icon="fas fa-arrow-left"
-                    ajax="false"
-                    class="ui-button-secondary mt-3"
-                    action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingList}"/>
+                </h:panelGroup>
 
             </p:panel>
+
+            <!-- BHT Issue Receive Print Configuration Dialog -->
+            <p:dialog id="bhtIssueReceiveConfigDialog"
+                      header="BHT Issue Receive Printer Configuration"
+                      widgetVar="bhtIssueReceiveConfigDialog"
+                      modal="true"
+                      width="500"
+                      resizable="false"
+                      closeOnEscape="true">
+
+                <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="bhtIssueReceiveConfigForm"/>
+
+                <h:form id="bhtIssueReceiveConfigForm">
+                    <div class="mb-3">
+                        <h:selectBooleanCheckbox
+                            id="cbBhtIssueReceiveA4"
+                            value="#{pharmacyConfigController.bhtIssueReceiveReceiptA4}"/>
+                        <h:outputLabel for="cbBhtIssueReceiveA4" value="A4 Paper" class="ms-2"/>
+                    </div>
+                    <div class="mb-3">
+                        <h:selectBooleanCheckbox
+                            id="cbBhtIssueReceivePos"
+                            value="#{pharmacyConfigController.bhtIssueReceiveReceiptPos}"/>
+                        <h:outputLabel for="cbBhtIssueReceivePos" value="POS Paper" class="ms-2"/>
+                    </div>
+                    <div class="mb-3">
+                        <h:selectBooleanCheckbox
+                            id="cbBhtIssueReceiveFiveFive"
+                            value="#{pharmacyConfigController.bhtIssueReceiveReceiptFiveFive}"/>
+                        <h:outputLabel for="cbBhtIssueReceiveFiveFive" value="5 x 5 Paper" class="ms-2"/>
+                    </div>
+
+                    <p:messages showDetail="true" closable="true"/>
+
+                    <div class="d-flex gap-2">
+                        <p:commandButton
+                            id="btnApplyBhtIssueReceiveConfig"
+                            value="Apply &amp; Close"
+                            icon="fas fa-save"
+                            class="ui-button-success"
+                            ajax="false"
+                            action="#{pharmacyConfigController.saveConfig}"/>
+                        <p:commandButton
+                            id="btnCancelBhtIssueReceiveConfig"
+                            value="Cancel"
+                            icon="fas fa-times"
+                            class="ui-button-secondary"
+                            onclick="PF('bhtIssueReceiveConfigDialog').hide(); return false;"
+                            type="button"/>
+                    </div>
+                </h:form>
+            </p:dialog>
         </h:form>
     </ui:define>
 

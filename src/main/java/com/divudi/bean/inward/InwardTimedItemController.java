@@ -259,6 +259,18 @@ public class InwardTimedItemController implements Serializable {
             return;
         }
 
+        PatientItem newPatientItem = getTimedEncounterComponent().getBillFee().getPatientItem();
+        if (newPatientItem.getToTime() != null && newPatientItem.getFromTime() != null) {
+            if (newPatientItem.getToTime().before(newPatientItem.getFromTime())) {
+                JsfUtil.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
+                return;
+            }
+            if (newPatientItem.getToTime().getTime() == newPatientItem.getFromTime().getTime()) {
+                JsfUtil.addErrorMessage("Service Start Time & End Time Can't Be Equal");
+                return;
+            }
+        }
+
         timedEncounterComponent.setPatientEncounter(getBatchBill().getPatientEncounter());
         timedEncounterComponent.setChildEncounter(getBatchBill().getProcedure());
         timedEncounterComponent.setOrderNo(getTimedEncounterComponents().size());
@@ -313,7 +325,7 @@ public class InwardTimedItemController implements Serializable {
         if (generalChecking()) {
             return;
         }
-        if (bf.getPatientItem().getToTime() != null) {
+        if (bf.getPatientItem().getToTime() != null && bf.getPatientItem().getFromTime() != null) {
             if (bf.getPatientItem().getToTime().before(bf.getPatientItem().getFromTime())) {
                 JsfUtil.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
                 return;
@@ -336,6 +348,10 @@ public class InwardTimedItemController implements Serializable {
 
     public void removeTimedEncFromDbase(EncounterComponent encounterComponent) {
         if (generalChecking()) {
+            return;
+        }
+        if (encounterComponent.getBillItem() != null && encounterComponent.getBillItem().isFromPackage()) {
+            JsfUtil.addErrorMessage("This item is included in the admission's package and cannot be removed.");
             return;
         }
 
@@ -369,6 +385,10 @@ public class InwardTimedItemController implements Serializable {
     }
 
     public void removePatientItem(PatientItem patientItem) {
+        if (patientItem != null && patientItem.getBillItem() != null && patientItem.getBillItem().isFromPackage()) {
+            JsfUtil.addErrorMessage("This item is included in the admission's package and cannot be removed.");
+            return;
+        }
         if (patientItem != null) {
             patientItem.setRetirer(getSessionController().getLoggedUser());
             patientItem.setRetiredAt(new Date());
@@ -568,6 +588,13 @@ public class InwardTimedItemController implements Serializable {
         return "/theater/inward_timed_service_consume_surgery?faces-redirect=true";
     }
 
+    public String navigateToSurgeryTimedServices(Bill surgeryBill) {
+        makeNull();
+        batchBill = surgeryBill;
+        selectSurgeryBillListener();
+        return "/theater/inward_timed_service_consume_surgery?faces-redirect=true";
+    }
+
     private boolean errorCheck() {
         if (getCurrent().getPatientEncounter() == null) {
             JsfUtil.addErrorMessage("Please Select BHT");
@@ -618,8 +645,12 @@ public class InwardTimedItemController implements Serializable {
     }
 
     public void finalizeService(PatientItem pic) {
+        if (pic != null && pic.getBillItem() != null && pic.getBillItem().isFromPackage()) {
+            JsfUtil.addErrorMessage("This item is included in the admission's package and its charge cannot be changed.");
+            return;
+        }
         PatientItem temPi;
-        if (pic.getToTime() != null) {
+        if (pic.getToTime() != null && pic.getFromTime() != null) {
             if (pic.getToTime().before(pic.getFromTime())) {
                 JsfUtil.addErrorMessage("Service Not Finalize check Service Start Time & End Time");
                 return;

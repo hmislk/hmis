@@ -931,6 +931,44 @@ public class BillNumberGenerator {
         this.patientFacade = patientFacade;
     }
 
+    /**
+     * Runs {@code action} (computing the next final-bill version serial and
+     * persisting the bill that uses it) under a per-encounter lock, so two
+     * concurrent final-bill saves for the same admission cannot interleave
+     * between reading the count and committing their insert — a bare
+     * count-then-insert without this would let both reads see the same count.
+     * Mirrors this class's existing lockMap/ReentrantLock pattern; the lock
+     * lives here (a @Singleton EJB) rather than on the @SessionScoped
+     * BhtSummeryController because only a singleton's lockMap is guaranteed
+     * shared across different users' sessions.
+     */
+    public <T> T withFinalBillVersionLock(com.divudi.core.entity.PatientEncounter pe, java.util.function.Supplier<T> action) {
+        String lockKey = "finalBillVersionSerial-" + pe.getId();
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            return action.get();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Counts existing final-bill versions for the admission. Must only be
+     * called while holding the lock from {@link #withFinalBillVersionLock}
+     * — on its own this count-then-caller-increments pattern is racy.
+     */
+    public int computeNextFinalBillVersionSerial(com.divudi.core.entity.PatientEncounter pe) {
+        String jpql = "select count(b) from Bill b where b.patientEncounter = :pe and b.billType = :billType"
+                + " and b.billTypeAtomic = :atomic";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("pe", pe);
+        params.put("billType", BillType.InwardFinalBill);
+        params.put("atomic", BillTypeAtomic.INWARD_FINAL_BILL);
+        long count = billFacade.findLongByJpql(jpql, params);
+        return (int) count + 1;
+    }
+
     public synchronized String institutionBillNumberGenerator(Institution ins, BillType billType, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
         BillNumber billNumber = fetchLastBillNumber(ins, billType, billClassType);
         StringBuilder result = new StringBuilder();

@@ -98,6 +98,7 @@ public class CreditCompanyDebtorGroupedReportController implements Serializable 
                 + " where b.retired=false"
                 + " and (b.cancelled=false or b.cancelled is null)"
                 + " and b.billTypeAtomic=:bta"
+                + " and b.referenceBill.confirmedFinalBill=true"
                 + " and " + dateField + " between :frm and :to";
 
         if (institution != null) {

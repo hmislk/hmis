@@ -13,7 +13,7 @@ user-invocable: true
 
 For detailed pharmacy development, refer to these files:
 
-- [Pharmaceutical Management API](../../../developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md) - REST API for managing VTM, ATM, VMP, AMP, VMPP, AMPP, categories, dosage forms, and measurement units
+- [Pharmaceutical Management API](../../../developer_docs/api/API_PHARMACEUTICAL_MANAGEMENT.md) - REST API for managing VTM, ATM, VMP, AMP, VMPP, AMPP, categories, dosage forms, and measurement units
 - [GRN Fixes](../../../developer_docs/pharmacy/grn-fully-issued-fix.md) - GRN completion patterns
 - [Multi-Window Sales](../../../developer_docs/pharmacy/PHARMACY_RETAIL_SALE_MULTI_WINDOW_GUIDE.md) - Multi-window handling
 - [Cost Accounting Signs](../../../developer_docs/pharmacy/cost-accounting-sign-conventions.md) - Sign normalization
@@ -21,6 +21,7 @@ For detailed pharmacy development, refer to these files:
 - [Quantity Decimals](../../../developer_docs/pharmacy/quantity-decimal-validation-guide.md) - Decimal validation
 - [Transfer Disbursement](../../../developer_docs/PHARMACY_TRANSFER_DISBURSEMENT_DOCUMENTATION.md) - Transfer workflow
 - [Purchase Order Workflow](../../../developer_docs/po-workflow-documentation.md) - PO workflow
+- [Bulk Stock Verification Adjustment](../../../developer_docs/pharmacy/bulk-stock-verification-adjustment-guide.md) - Reconciling a physical stock count spreadsheet against system stock at scale via the adjustment/batch-creation APIs
 
 ## Configuration Options
 

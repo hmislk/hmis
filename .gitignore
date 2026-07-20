@@ -119,3 +119,6 @@ pm/
 
 # AI prompt scratch files
 prompts/
+
+# Superpowers subagent-driven-development scratch state
+.superpowers/

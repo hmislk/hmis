@@ -9,6 +9,10 @@
 
 
     <ui:define name="subcontent">
+        <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyDiscardCategoryManage')}" >
+            You are NOT authorized
+        </h:panelGroup>
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyDiscardCategoryManage')}" >
         <h:form>
 
             <p:growl id="msg"/>
@@ -26,13 +30,14 @@
                                          action="#{discardCategoryController.prepareAdd()}" >
 
                         </p:commandButton>
-                        <p:commandButton id="btnDelete" 
+                        <p:commandButton id="btnDelete"
                                          onclick="if (!confirm('Are you sure you want to delete this record?'))
                                                      return false;"
-                                         action="#{discardCategoryController.delete()}" 
+                                         action="#{discardCategoryController.delete()}"
                                          icon="fas fa-trash"
                                          update="lstSelect gpDetail msg" process="btnDelete"
                                          class=" m-1 ui-button-danger w-25"
+                                         disabled="#{not webUserController.hasPrivilege('PharmacyDiscardCategoryManage')}"
                                          value="Delete"  >
                         </p:commandButton>
                         <p:selectOneListbox  id="lstSelect" value="#{discardCategoryController.current}" 
@@ -51,11 +56,12 @@
 
                             </h:panelGrid>
 
-                            <p:commandButton ajax="false" id="btnSave" value="Save" 
-                                             action="#{discardCategoryController.saveSelected()}" 
-                                             process="btnSave gpDetail" 
-                                             update="lstSelect msg" 
+                            <p:commandButton ajax="false" id="btnSave" value="Save"
+                                             action="#{discardCategoryController.saveSelected()}"
+                                             process="btnSave gpDetail"
+                                             update="lstSelect msg"
                                              class=" m-1 ui-button-warning w-25"
+                                             disabled="#{not webUserController.hasPrivilege('PharmacyDiscardCategoryManage')}"
                                              icon="fas fa-save">
                             </p:commandButton>
                             <p:defaultCommand target="btnSave"/>
@@ -68,6 +74,7 @@
 
 
         </h:form>
+        </h:panelGroup>
 
     </ui:define>
 

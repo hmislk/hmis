@@ -269,6 +269,12 @@ public class RequestController implements Serializable {
             case PETTYCASH_APROVEL:
                 pettyCashBillController.setCurrentRequest(currentRequest);
                 break;
+            case PHARMACY_RETAIL_SALE_RETURN_APPROVAL:
+                if (!webUserController.hasPrivilege("PharmacyRetailSaleReturnApproval")) {
+                    JsfUtil.addErrorMessage("You are not authorized to approve pharmacy retail sale return requests.");
+                    return "";
+                }
+                break;
             default:
                 JsfUtil.addErrorMessage("Approval is not supported for this request type.");
                 return "";
@@ -332,6 +338,15 @@ public class RequestController implements Serializable {
                 pettyCashPayeeType = resolvePettyCashPayeeType(currentRequest.getBill());
                 comment = null;
                 navigation = "/common/request/petty_cash_bill_cancellation_request?faces-redirect=true";
+                break;
+            case PHARMACY_RETAIL_SALE:
+            case PHARMACY_RETAIL_SALE_PRE:
+            case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
+            case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
+                bills.add(currentRequest.getBill());
+                patient = currentRequest.getBill().getPatient();
+                comment = null;
+                navigation = "/common/request/pharmacy_retail_sale_return_request_approvel?faces-redirect=true";
                 break;
             default:
                 navigation = "";
@@ -569,6 +584,54 @@ public class RequestController implements Serializable {
         printPreview = true;
     }
 
+    public void createRequestForPharmacyRetailSaleReturn(Bill saleBill) {
+        if (saleBill == null) {
+            JsfUtil.addErrorMessage("Bill not found for Create Request");
+            return;
+        }
+        if (comment == null || comment.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a comment explaining the return request.");
+            return;
+        }
+
+        Request existing = requestService.findActiveRequestByBillAndType(saleBill, RequestType.PHARMACY_RETAIL_SALE_RETURN_APPROVAL);
+        if (existing != null) {
+            JsfUtil.addErrorMessage("There is already a pending or approved return request for this bill.");
+            return;
+        }
+
+        Request newlyRequest = new Request();
+
+        newlyRequest.setBill(saleBill);
+        newlyRequest.setRequester(sessionController.getLoggedUser());
+        newlyRequest.setRequestAt(new Date());
+        newlyRequest.setRequestReason(comment);
+        newlyRequest.setRequestType(RequestType.PHARMACY_RETAIL_SALE_RETURN_APPROVAL);
+        newlyRequest.setStatus(RequestStatus.PENDING);
+
+        newlyRequest.setInstitution(sessionController.getInstitution());
+        newlyRequest.setDepartment(sessionController.getDepartment());
+
+        String reqNo = billNumberGenerator.departmentRequestNumberGeneratorYearly(sessionController.getDepartment(), RequestType.PHARMACY_RETAIL_SALE_RETURN_APPROVAL);
+        newlyRequest.setRequestNo(reqNo);
+
+        requestService.save(newlyRequest, sessionController.getLoggedUser());
+
+        saleBill.setCurrentRequest(newlyRequest);
+        billFacade.edit(saleBill);
+
+        comment = null;
+        JsfUtil.addSuccessMessage("Approval request submitted.");
+    }
+
+    public void createRequestForPharmacyRetailSaleReturnById(Long saleBillId) {
+        if (saleBillId == null) {
+            JsfUtil.addErrorMessage("No Bill ID provided.");
+            return;
+        }
+        createRequestForPharmacyRetailSaleReturn(billFacade.find(saleBillId));
+    }
+
     public void createRequestforInpatientServiceBill() {
         if (batchBill == null) {
             JsfUtil.addErrorMessage("Bill not found for Create Request ");
@@ -778,6 +841,41 @@ public class RequestController implements Serializable {
 
     }
 
+    public void approvePharmacyRetailSaleReturnRequest() {
+        if (currentRequest == null) {
+            JsfUtil.addErrorMessage("Request not found for approval");
+            return;
+        }
+
+        if (currentRequest.getRequestType() != RequestType.PHARMACY_RETAIL_SALE_RETURN_APPROVAL) {
+            JsfUtil.addErrorMessage("Invalid request type for pharmacy retail sale return approval.");
+            return;
+        }
+
+        if (currentRequest.getStatus() != RequestStatus.PENDING && currentRequest.getStatus() != RequestStatus.UNDER_REVIEW) {
+            JsfUtil.addErrorMessage("Only pending or under-review requests can be approved.");
+            return;
+        }
+
+        if (currentRequest.getBill() == null) {
+            JsfUtil.addErrorMessage("Bill not found for request");
+            return;
+        }
+
+        if (!webUserController.hasPrivilege("PharmacyRetailSaleReturnApproval")) {
+            JsfUtil.addErrorMessage("You are not authorized to approve this request.");
+            return;
+        }
+
+        currentRequest.setApproved(true);
+        currentRequest.setApprovedAt(new Date());
+        currentRequest.setApprovedBy(sessionController.getLoggedUser());
+        currentRequest.setStatus(RequestStatus.APPROVED);
+        requestService.save(currentRequest, sessionController.getLoggedUser());
+
+        JsfUtil.addSuccessMessage("Successfully Approved");
+    }
+
     public void approveDrawerAdjustmentRequest() {
         if (currentRequest == null) {
             JsfUtil.addErrorMessage("Request not found for approval");
@@ -902,6 +1000,8 @@ public class RequestController implements Serializable {
             canReject = true;
         } else if (currentRequest.getRequestType() == RequestType.PETTYCASH_CANCELLATION) {
             canReject = webUserController.hasPrivilege("PettyCashCancellationApproval");
+        } else if (currentRequest.getRequestType() == RequestType.PHARMACY_RETAIL_SALE_RETURN_APPROVAL) {
+            canReject = webUserController.hasPrivilege("PharmacyRetailSaleReturnApproval");
         } else {
             canReject = webUserController.hasPrivilege("BillCancelRequestApproval");
         }

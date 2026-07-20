@@ -194,6 +194,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 + " b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.billType=:btp "
+                + " and b.confirmedFinalBill=true "
                 + " and b.patientEncounter=:pe "
                 + " order by b.id desc";
         HashMap hm = new HashMap();
@@ -217,6 +218,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
                 + " b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.billType=:btp "
+                + " and b.confirmedFinalBill=true "
                 + " and b.patientEncounter=:pe "
                 + " order by b.id desc";
         HashMap hm = new HashMap();
@@ -875,6 +877,7 @@ public class InwardPaymentController implements Serializable, ControllerWithMult
         getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), getCurrent().getBillType(), BillClassType.BilledBill, BillNumberSuffix.INWPAY));
         getCurrent().setBillDate(new Date());
         getCurrent().setBillTime(new Date());
+        getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
 
         getCurrent().setCreatedAt(new Date());
         getCurrent().setCreater(getSessionController().getLoggedUser());

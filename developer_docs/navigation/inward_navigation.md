@@ -1,4 +1,4 @@
-# Inward (Inpatient) Module — Developer Reference
+﻿# Inward (Inpatient) Module — Developer Reference
 
 This document covers the pages, navigation paths, controllers, and workflow for the Inward (IP) module. It is intended as a quick reference so that developers do not need to rediscover file locations and flow for each issue.
 
@@ -104,6 +104,18 @@ The top-level menu entry is **Inpatient** (privilege: `Inward`).
 | Return Medicines to Pharmacy | `/ward/ward_pharmacy_return_to_pharmacy.xhtml` | `WardPharmacyReturnToPharmacyController` | Ward returns unused stock to pharmacy via porter |
 | Deduct from Ward Stock | `/ward/ward_medication_administration_settle.xhtml` | `MedicationAdministrationStockSettlementController` | Bulk-deduct administered medicines from ward stock |
 
+### Pharmacy Reports & History (dashboard-only, encounter-scoped — issue #21852)
+
+These 3 pages live under "Pharmacy Reports & History" in the admission profile's Pharmacy panel. Unlike the general Pharmacy menu items above, they take no date-range/department filter — each is pre-loaded for the current `patientEncounter` only, replacing 6 old dashboard buttons that wrongly pointed at the general, all-patient, date-filtered pages.
+
+| Menu Item | Page | Controller | Notes |
+|---|---|---|---|
+| Pharmacy Requests | `/inward/reports/inpatient_pharmacy_requests_list.xhtml` | `InwardPharmacyEncounterReportController.navigateToInpatientPharmacyRequestsList()` | Replaces "BHT Issue Requests" + "View Pharmacy Requests"; entity-based (needs `Bill.isFullyIssued()`); expandable row shows fulfilling issue bill(s) |
+| Direct Issues | `/inward/reports/inpatient_pharmacy_direct_issues_list.xhtml` | `InwardPharmacyEncounterReportController.navigateToInpatientPharmacyDirectIssuesList()` | Replaces "Search Direct Issues by Bill/Item"; `BillListReportDTO` bill-level rows + `InpatientPharmacyBillItemDTO` expandable item rows |
+| Issue Returns | `/inward/reports/inpatient_pharmacy_returns_list.xhtml` | `InwardPharmacyEncounterReportController.navigateToInpatientPharmacyReturnsList()` | Replaces "Search Issue Returns by Bill/Item" (the "by Item" variant never existed before this); same DTO pattern as Direct Issues, over `RefundBill` |
+
+`InwardPharmacyEncounterReportController` is `@SessionScoped` (not `@ViewScoped`) — see `developer_docs/jsf/navigation-patterns.md` for why this matters when a bean receives state via `f:setPropertyActionListener` from a different page.
+
 ### Clinical Data (privilege: varies)
 
 | Menu Item | Page | Controller | Notes |
@@ -194,8 +206,8 @@ Patients pay deposits during or after admission. Deposits are deducted from the 
 
 | Page | Purpose | Controller |
 |---|---|---|
-| `/theater/inward_bill_surgery.xhtml` | Surgery billing — **legacy, replaced by `surgery_workbench.xhtml`** | `SurgeryBillController` |
-| `/theater/surgery_workbench.xhtml` | Surgery workbench (current page) | `SurgeryBillController` |
+| `/theater/inward_bill_surgery.xhtml` | Surgery billing — **legacy, replaced by `patient_surgery.xhtml`** | `SurgeryBillController` |
+| `/theater/patient_surgery.xhtml` | Surgery workbench (current page) | `SurgeryBillController` |
 | `/theater/surgery_professional_fees.xhtml` | Add surgery professional fees (bill-per-session) | `InwardProfessionalBillController.navigateToSurgeryProfessionalFees(Bill)` |
 | `/theater/surgery_professional_fees_list.xhtml` | List of professional fee bills for a surgery | `InwardProfessionalBillController.navigateToSurgeryProfessionalFeesList(Bill)` |
 | `/theater/surgery_professional_fees_cancel.xhtml` | Cancel a professional fee bill (with reason + print) | `InwardProfessionalBillController.navigateToSurgeryProfessionalFeeCancel(Bill)` |
@@ -283,6 +295,7 @@ Accessed via **Admin → Manage Inpatient Services** → `/inward/inward_adminis
 | `NursingWorkBenchController` | `com.divudi.bean.inward` | Nursing workbench (under development) |
 | `InwardReportController` | `com.divudi.bean.inward` | Inward reports |
 | `InwardReportControllerBht` | `com.divudi.bean.inward` | BHT-level reports |
+| `InwardPharmacyEncounterReportController` | `com.divudi.bean.inward` | Encounter-scoped pharmacy history (Requests/Direct Issues/Returns) for the dashboard's "Pharmacy Reports & History" panel (#21852) |
 | `AdmissionTypeController` | `com.divudi.bean.inward` | Admission type master data |
 | `InwardPriceAdjustmntController` | `com.divudi.bean.inward` | Price adjustments (note: typo in class name is intentional — DB compatibility) |
 | `WardPharmacyBhtIssueReceiveController` | `com.divudi.bean.pharmacy` | Ward-side confirmation of medicines received from porter (#21468) |

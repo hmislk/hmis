@@ -3,6 +3,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
+import com.divudi.core.data.MedicationAdministrationStatus;
 import com.divudi.core.data.Privileges;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -11,15 +12,18 @@ import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.MedicationAdministrationRecordFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -30,18 +34,25 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.primefaces.event.RowEditEvent;
 
 /**
  * Ward-side return of unused ward-held pharmacy stock back to the originating
  * pharmacy via a porter (#21470, part of #21466).
  *
- * <p>Mirrors {@code PharmacySaleBhtController#transferIssuedStockToPorter}
- * (#21467) but in reverse: ward staff free-select ward-held stock
- * items/batches/quantities, pick a destination pharmacy department and a
- * porter, and on confirm the quantities are deducted from ward department
- * stock and credited to the porter's staff stock (with stock history). The
- * resulting bill is {@link BillTypeAtomic#RETURN_MEDICINE_INWARD}. Pharmacy
- * staff later receive the goods from the porter (#21471,
+ * <p>Scoped to specific pharmacy receive bills (#22224): for the active
+ * patient encounter (BHT), ward staff pick one of the encounter's
+ * {@link BillTypeAtomic#ACCEPT_ISSUED_MEDICINE_INWARD} receive bills that
+ * still has a returnable balance, then enter per-line return quantities
+ * clamped to {@code [0, returnable]} where
+ * {@code returnable = receivedQty - alreadyReturnedQty - administeredQty},
+ * floored at 0 and capped by live ward department stock. On confirm the
+ * quantities are deducted from ward department stock and credited to the
+ * porter's staff stock (with stock history), and each return line records
+ * {@code BillItem.referanceBillItem} pointing to the receive bill item for
+ * traceability. The resulting bill is
+ * {@link BillTypeAtomic#RETURN_MEDICINE_INWARD}. Pharmacy staff later receive
+ * the goods from the porter (#21471,
  * {@link BillTypeAtomic#ACCEPT_RETURN_MEDICINE_INWARD}).</p>
  */
 @Named
@@ -57,9 +68,13 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
     @EJB
     private StockFacade stockFacade;
     @EJB
+    private MedicationAdministrationRecordFacade medicationAdministrationRecordFacade;
+    @EJB
     private PharmacyBean pharmacyBean;
     @EJB
     private BillNumberGenerator billNumberBean;
+    @EJB
+    private BillService billService;
 
     @Inject
     private SessionController sessionController;
@@ -68,73 +83,314 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
     @Inject
     private WebUserController webUserController;
 
+    private PatientEncounter patientEncounter;
+    private List<Bill> receiveBills;
+    private Bill selectedReceiveBill;
+    private List<ReturnLine> returnLines;
+    private Bill previewBill;
+    private List<ReturnLine> previewLines;
+
     private Bill returnBill;
-    private List<BillItem> returnItems;
-    private Stock tmpStock;
-    private Double qty;
     private Staff porter;
     private Department toDepartment;
     private boolean printPreview;
     private boolean settling;
     private String comment;
 
-    public String navigateToReturn() {
+    /**
+     * One editable line of the scoped return, wrapping the transient return
+     * {@link BillItem} (whose {@code referanceBillItem} points to the receive
+     * bill item) together with the quantities that determine how much can
+     * still be returned. Quantities are computed once when the line is built
+     * to avoid re-running the netting queries on every EL evaluation.
+     */
+    public static class ReturnLine implements Serializable {
+
+        private static final long serialVersionUID = 1L;
+
+        private BillItem returnItem;
+        private double receivedQty;
+        private double alreadyReturnedQty;
+        private double administeredQty;
+        private double returnableQty;
+
+        public BillItem getReturnItem() {
+            return returnItem;
+        }
+
+        public void setReturnItem(BillItem returnItem) {
+            this.returnItem = returnItem;
+        }
+
+        public double getReceivedQty() {
+            return receivedQty;
+        }
+
+        public void setReceivedQty(double receivedQty) {
+            this.receivedQty = receivedQty;
+        }
+
+        public double getAlreadyReturnedQty() {
+            return alreadyReturnedQty;
+        }
+
+        public void setAlreadyReturnedQty(double alreadyReturnedQty) {
+            this.alreadyReturnedQty = alreadyReturnedQty;
+        }
+
+        public double getAdministeredQty() {
+            return administeredQty;
+        }
+
+        public void setAdministeredQty(double administeredQty) {
+            this.administeredQty = administeredQty;
+        }
+
+        public double getReturnableQty() {
+            return returnableQty;
+        }
+
+        public void setReturnableQty(double returnableQty) {
+            this.returnableQty = returnableQty;
+        }
+    }
+
+    public String navigateToReturn(PatientEncounter encounter) {
+        if (encounter == null || encounter.getId() == null) {
+            JsfUtil.addErrorMessage("Select an admission first.");
+            return null;
+        }
+        patientEncounter = encounter;
         printPreview = false;
-        returnItems = new ArrayList<>();
-        tmpStock = null;
-        qty = null;
+        selectedReceiveBill = null;
+        returnLines = new ArrayList<>();
+        previewBill = null;
+        previewLines = new ArrayList<>();
         porter = null;
         toDepartment = null;
         comment = null;
         returnBill = new BilledBill();
+        loadReceiveBills();
         return "/ward/ward_pharmacy_return_to_pharmacy?faces-redirect=true";
     }
 
-    public void addItem() {
-        if (tmpStock == null || tmpStock.getId() == null) {
-            JsfUtil.addErrorMessage("Select an item.");
-            return;
-        }
-        if (qty == null || qty <= 0) {
-            JsfUtil.addErrorMessage("Enter a quantity greater than zero.");
-            return;
-        }
-        if (qty > tmpStock.getStock()) {
-            JsfUtil.addErrorMessage("Quantity exceeds available ward stock (" + tmpStock.getStock() + ").");
-            return;
-        }
-        double alreadyQueued = 0.0;
-        for (BillItem queuedItem : getReturnItems()) {
-            PharmaceuticalBillItem queuedPbi = queuedItem.getPharmaceuticalBillItem();
-            if (queuedPbi.getItemBatch() != null && queuedPbi.getItemBatch().getId() != null
-                    && queuedPbi.getItemBatch().getId().equals(tmpStock.getItemBatch().getId())) {
-                alreadyQueued += queuedItem.getQty();
-            }
-        }
-        if (qty + alreadyQueued > tmpStock.getStock()) {
-            JsfUtil.addErrorMessage("Total queued quantity (" + (qty + alreadyQueued) + ") exceeds available ward stock (" + tmpStock.getStock() + ").");
-            return;
-        }
-
-        BillItem bi = new BillItem();
-        bi.setItem(tmpStock.getItemBatch().getItem());
-        bi.setQty(qty);
-
-        PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
-        pbi.setBillItem(bi);
-        pbi.setItemBatch(tmpStock.getItemBatch());
-        pbi.setStock(tmpStock);
-        pbi.setQty(qty);
-        bi.setPharmaceuticalBillItem(pbi);
-
-        getReturnItems().add(bi);
-
-        tmpStock = null;
-        qty = null;
+    /**
+     * Restarts the return flow for the same admission after a settle, from
+     * the print-preview panel's "New Return" button.
+     */
+    public String navigateToNewReturn() {
+        return navigateToReturn(patientEncounter);
     }
 
-    public void removeItem(BillItem item) {
-        getReturnItems().remove(item);
+    /**
+     * Loads the encounter's non-cancelled
+     * {@link BillTypeAtomic#ACCEPT_ISSUED_MEDICINE_INWARD} receive bills that
+     * still have a returnable balance on at least one line. Bills with
+     * nothing left to return (fully administered and/or fully returned) are
+     * dropped (#22224).
+     */
+    public void loadReceiveBills() {
+        receiveBills = new ArrayList<>();
+        if (patientEncounter == null || patientEncounter.getId() == null) {
+            return;
+        }
+        String jpql = "SELECT b FROM Bill b WHERE b.billTypeAtomic = :bta "
+                + "AND b.patientEncounter = :enc "
+                + "AND b.cancelled = false "
+                + "AND (b.retired = false OR b.retired IS NULL) "
+                + "ORDER BY b.createdAt DESC";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
+        params.put("enc", patientEncounter);
+        List<Bill> candidates = billFacade.findByJpql(jpql, params);
+        for (Bill b : candidates) {
+            if (hasReturnableBalance(b)) {
+                receiveBills.add(b);
+            }
+        }
+    }
+
+    private boolean hasReturnableBalance(Bill receiveBill) {
+        for (BillItem receiveItem : billService.fetchBillItems(receiveBill)) {
+            if (computeReturnableQty(receiveItem) > 0.001) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Quantity of a receive bill line already returned to the pharmacy -
+     * a 1-hop netting over non-cancelled
+     * {@link BillTypeAtomic#RETURN_MEDICINE_INWARD} bill items whose
+     * {@code referanceBillItem} points to the receive bill item. Mirrors
+     * {@code PharmacyReturnFromWardReceiveController#getRemainingQuantityForReturnItem}
+     * (#21510).
+     */
+    public double getAlreadyReturnedQty(BillItem receiveItem) {
+        if (receiveItem == null || receiveItem.getId() == null) {
+            return 0.0;
+        }
+        String jpql = "SELECT SUM(ABS(bi.qty)) FROM BillItem bi "
+                + "WHERE bi.referanceBillItem.id = :refId "
+                + "AND bi.bill.billTypeAtomic = :returnBta "
+                + "AND (bi.bill.retired = false OR bi.bill.retired IS NULL) "
+                + "AND bi.bill.cancelled = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("refId", receiveItem.getId());
+        params.put("returnBta", BillTypeAtomic.RETURN_MEDICINE_INWARD);
+        return billItemFacade.findDoubleByJpql(jpql, params);
+    }
+
+    /**
+     * Quantity already administered to the patient for the same
+     * item/batch/encounter as the receive bill line, counted as soon as the
+     * stage-1 {@code MedicationAdministrationRecord} exists (status GIVEN),
+     * regardless of whether the stage-2 stock settlement has run (#22224).
+     */
+    public double getAdministeredQty(BillItem receiveItem) {
+        if (receiveItem == null || receiveItem.getId() == null) {
+            return 0.0;
+        }
+        PharmaceuticalBillItem receivePbi = receiveItem.getPharmaceuticalBillItem();
+        if (receivePbi == null || receivePbi.getItemBatch() == null) {
+            return 0.0;
+        }
+        PatientEncounter enc = receiveItem.getBill() != null
+                ? receiveItem.getBill().getPatientEncounter()
+                : patientEncounter;
+        if (enc == null) {
+            return 0.0;
+        }
+        String jpql = "SELECT SUM(m.qty) FROM MedicationAdministrationRecord m "
+                + "WHERE m.patientEncounter = :enc "
+                + "AND m.item = :item "
+                + "AND m.itemBatch = :batch "
+                + "AND m.status = :given "
+                + "AND m.retired = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("enc", enc);
+        params.put("item", receiveItem.getItem());
+        params.put("batch", receivePbi.getItemBatch());
+        params.put("given", MedicationAdministrationStatus.GIVEN);
+        return medicationAdministrationRecordFacade.findDoubleByJpql(jpql, params);
+    }
+
+    /**
+     * How much of a receive bill line can still be returned:
+     * {@code receivedQty - alreadyReturnedQty - administeredQty}, floored at
+     * 0 and capped by live ward department stock as a backstop (#22224).
+     */
+    public double computeReturnableQty(BillItem receiveItem) {
+        if (receiveItem == null) {
+            return 0.0;
+        }
+        PharmaceuticalBillItem receivePbi = receiveItem.getPharmaceuticalBillItem();
+        if (receivePbi == null || receivePbi.getItemBatch() == null) {
+            return 0.0;
+        }
+        double received = Math.abs(receivePbi.getQty());
+        double netReturnable = Math.max(0.0, received - getAlreadyReturnedQty(receiveItem) - getAdministeredQty(receiveItem));
+        Stock wardStock = findWardStock(receivePbi.getItemBatch());
+        double available = wardStock == null ? 0.0 : wardStock.getStock();
+        return Math.min(netReturnable, available);
+    }
+
+    private List<ReturnLine> buildReturnLines(Bill receiveBill, boolean includeNonReturnable) {
+        List<ReturnLine> lines = new ArrayList<>();
+        if (receiveBill == null || receiveBill.getId() == null) {
+            return lines;
+        }
+        for (BillItem receiveItem : billService.fetchBillItems(receiveBill)) {
+            PharmaceuticalBillItem receivePbi = receiveItem.getPharmaceuticalBillItem();
+            if (receivePbi == null || receivePbi.getItemBatch() == null) {
+                continue;
+            }
+            double received = Math.abs(receivePbi.getQty());
+            double alreadyReturned = getAlreadyReturnedQty(receiveItem);
+            double administered = getAdministeredQty(receiveItem);
+            double netReturnable = Math.max(0.0, received - alreadyReturned - administered);
+            Stock wardStock = findWardStock(receivePbi.getItemBatch());
+            double available = wardStock == null ? 0.0 : wardStock.getStock();
+            double returnable = Math.min(netReturnable, available);
+            if (!includeNonReturnable && returnable <= 0.001) {
+                continue;
+            }
+
+            BillItem bi = new BillItem();
+            bi.setItem(receiveItem.getItem());
+            bi.setQty(0.0);
+            bi.setPatientEncounter(receiveItem.getPatientEncounter());
+            bi.setReferanceBillItem(receiveItem);
+
+            PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
+            pbi.copy(receivePbi);
+            pbi.setBillItem(bi);
+            pbi.setQty(0);
+            // The copy above inherits the receive bill's stock binding. A
+            // return must only ever touch ward department stock (deducted,
+            // bound on settle) and the porter's staff stock (added).
+            pbi.setStock(null);
+            pbi.setStaffStock(null);
+            bi.setPharmaceuticalBillItem(pbi);
+
+            ReturnLine line = new ReturnLine();
+            line.setReturnItem(bi);
+            line.setReceivedQty(received);
+            line.setAlreadyReturnedQty(alreadyReturned);
+            line.setAdministeredQty(administered);
+            line.setReturnableQty(returnable);
+            lines.add(line);
+        }
+        return lines;
+    }
+
+    public void selectReceiveBill(Bill receiveBill) {
+        selectedReceiveBill = receiveBill;
+        returnLines = buildReturnLines(receiveBill, false);
+        if (receiveBill != null && receiveBill.getFromDepartment() != null) {
+            toDepartment = receiveBill.getFromDepartment();
+        }
+        if (returnLines.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing left to return on this received bill.");
+        }
+    }
+
+    public void previewReceiveBill(Bill receiveBill) {
+        previewBill = receiveBill;
+        previewLines = buildReturnLines(receiveBill, true);
+    }
+
+    /**
+     * Row-edit listener for the editable "Return Quantity" column, clamping
+     * the entered quantity to {@code [0, returnable]}. Mirrors
+     * {@code PharmacyReturnFromWardReceiveController#onEditing}.
+     */
+    public void onEditing(RowEditEvent event) {
+        Object rowObject = event.getObject();
+        if (!(rowObject instanceof ReturnLine)) {
+            return;
+        }
+        ReturnLine line = (ReturnLine) rowObject;
+        BillItem bi = line.getReturnItem();
+        PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+
+        if (pbi.getQty() < 0) {
+            pbi.setQty(0);
+            bi.setQty(0.0);
+            JsfUtil.addErrorMessage("Can not enter a minus value");
+            return;
+        }
+
+        if (pbi.getQty() > line.getReturnableQty()) {
+            JsfUtil.addErrorMessage("Cannot return " + pbi.getQty() + " units of " + bi.getItem().getName()
+                    + ". Only " + line.getReturnableQty() + " units are returnable.");
+            pbi.setQty(line.getReturnableQty());
+            bi.setQty(line.getReturnableQty());
+            return;
+        }
+
+        bi.setQty(pbi.getQty());
     }
 
     /**
@@ -227,6 +483,10 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
     }
 
     public void settle() {
+        if (!webUserController.hasPrivilege(Privileges.InwardPharmacyReturnSubmit.name())) {
+            JsfUtil.addErrorMessage("You do not have the privilege to submit this return.");
+            return;
+        }
         if (settling) {
             return;
         }
@@ -240,8 +500,12 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
 
     private void doSettle() {
         printPreview = false;
-        if (getReturnItems().isEmpty()) {
-            JsfUtil.addErrorMessage("Add at least one item to return.");
+        if (selectedReceiveBill == null || selectedReceiveBill.getId() == null) {
+            JsfUtil.addErrorMessage("Select a received bill to return against.");
+            return;
+        }
+        if (getReturnLines().isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to return on the selected received bill.");
             return;
         }
         if (porter == null) {
@@ -252,7 +516,47 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
             JsfUtil.addErrorMessage("Select the destination pharmacy department.");
             return;
         }
-        if (!wardStockCoversAllLines()) {
+
+        List<BillItem> itemsToReturn = new ArrayList<>();
+        for (ReturnLine line : getReturnLines()) {
+            BillItem bi = line.getReturnItem();
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            double requestedQty = pbi.getQty();
+            if (requestedQty < 0) {
+                JsfUtil.addErrorMessage("Can not enter a minus value");
+                pbi.setQty(0);
+                bi.setQty(0.0);
+                continue;
+            }
+            if (requestedQty <= 0) {
+                continue;
+            }
+            // Recompute against the latest DB state - the line's returnable
+            // quantity is a snapshot from when the bill was selected, and
+            // another return/administration may have happened since.
+            double freshReturnable = computeReturnableQty(bi.getReferanceBillItem());
+            if (freshReturnable <= 0.0001) {
+                JsfUtil.addErrorMessage("Item " + (bi.getItem() != null ? bi.getItem().getName() : "?")
+                        + " no longer has a returnable balance - nothing returned for this line.");
+                pbi.setQty(0);
+                bi.setQty(0.0);
+                continue;
+            }
+            double qtyToReturn = Math.min(requestedQty, freshReturnable);
+            if (qtyToReturn + 0.0001 < requestedQty) {
+                JsfUtil.addErrorMessage("Only " + qtyToReturn + " of " + requestedQty + " units of " + bi.getItem().getName()
+                        + " can be returned now - returning the returnable quantity.");
+            }
+            pbi.setQty(qtyToReturn);
+            bi.setQty(qtyToReturn);
+            itemsToReturn.add(bi);
+        }
+
+        if (itemsToReturn.isEmpty()) {
+            JsfUtil.addErrorMessage("Enter a return quantity for at least one item.");
+            return;
+        }
+        if (!wardStockCoversAllLines(itemsToReturn)) {
             return;
         }
 
@@ -266,6 +570,9 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
         bill.setFromDepartment(wardDept);
         bill.setToDepartment(toDepartment);
         bill.setToStaff(porter);
+        bill.setPatient(selectedReceiveBill.getPatient());
+        bill.setPatientEncounter(selectedReceiveBill.getPatientEncounter());
+        bill.setReferenceBill(selectedReceiveBill);
         bill.setCreatedAt(new Date());
         bill.setCreater(sessionController.getLoggedUser());
 
@@ -276,7 +583,7 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
         billFacade.create(bill);
 
         int serial = 1;
-        for (BillItem bi : getReturnItems()) {
+        for (BillItem bi : itemsToReturn) {
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
             double lineQty = bi.getQty();
 
@@ -301,7 +608,7 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
             }
         }
 
-        bill.setBillItems(getReturnItems());
+        bill.setBillItems(itemsToReturn);
         returnBill = bill;
         printPreview = true;
         JsfUtil.addSuccessMessage("Stock returned to pharmacy via porter.");
@@ -320,10 +627,10 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
      * written, mirroring
      * {@code MedicationAdministrationStockSettlementController#wardStockCoversAllLines}.
      */
-    private boolean wardStockCoversAllLines() {
+    private boolean wardStockCoversAllLines(List<BillItem> itemsToReturn) {
         Map<Long, Double> requiredByBatch = new HashMap<>();
         Map<Long, BillItem> sampleByBatch = new HashMap<>();
-        for (BillItem bi : getReturnItems()) {
+        for (BillItem bi : itemsToReturn) {
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
             if (pbi.getItemBatch() == null || pbi.getItemBatch().getId() == null) {
                 JsfUtil.addErrorMessage("Item " + (bi.getItem() != null ? bi.getItem().getName() : "?") + " has no batch - cannot return.");
@@ -373,7 +680,7 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
     /**
      * Validates that the porter still holds ENOUGH staff stock for EVERY
      * settled return line before cancellation reverses any stock, mirroring
-     * {@link #wardStockCoversAllLines()}.
+     * {@link #wardStockCoversAllLines(List)}.
      */
     private boolean porterStockCoversAllLines(Bill bill) {
         Staff toStaff = bill.getToStaff();
@@ -418,6 +725,63 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
         return departmentController.getPharmacies();
     }
 
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
+    }
+
+    public List<Bill> getReceiveBills() {
+        if (receiveBills == null) {
+            receiveBills = new ArrayList<>();
+        }
+        return receiveBills;
+    }
+
+    public void setReceiveBills(List<Bill> receiveBills) {
+        this.receiveBills = receiveBills;
+    }
+
+    public Bill getSelectedReceiveBill() {
+        return selectedReceiveBill;
+    }
+
+    public void setSelectedReceiveBill(Bill selectedReceiveBill) {
+        this.selectedReceiveBill = selectedReceiveBill;
+    }
+
+    public List<ReturnLine> getReturnLines() {
+        if (returnLines == null) {
+            returnLines = new ArrayList<>();
+        }
+        return returnLines;
+    }
+
+    public void setReturnLines(List<ReturnLine> returnLines) {
+        this.returnLines = returnLines;
+    }
+
+    public Bill getPreviewBill() {
+        return previewBill;
+    }
+
+    public void setPreviewBill(Bill previewBill) {
+        this.previewBill = previewBill;
+    }
+
+    public List<ReturnLine> getPreviewLines() {
+        if (previewLines == null) {
+            previewLines = new ArrayList<>();
+        }
+        return previewLines;
+    }
+
+    public void setPreviewLines(List<ReturnLine> previewLines) {
+        this.previewLines = previewLines;
+    }
+
     public Bill getReturnBill() {
         if (returnBill == null) {
             returnBill = new BilledBill();
@@ -427,33 +791,6 @@ public class WardPharmacyReturnToPharmacyController implements Serializable {
 
     public void setReturnBill(Bill returnBill) {
         this.returnBill = returnBill;
-    }
-
-    public List<BillItem> getReturnItems() {
-        if (returnItems == null) {
-            returnItems = new ArrayList<>();
-        }
-        return returnItems;
-    }
-
-    public void setReturnItems(List<BillItem> returnItems) {
-        this.returnItems = returnItems;
-    }
-
-    public Stock getTmpStock() {
-        return tmpStock;
-    }
-
-    public void setTmpStock(Stock tmpStock) {
-        this.tmpStock = tmpStock;
-    }
-
-    public Double getQty() {
-        return qty;
-    }
-
-    public void setQty(Double qty) {
-        this.qty = qty;
     }
 
     public Staff getPorter() {

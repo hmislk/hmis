@@ -20,13 +20,14 @@
                         <p:ajax event="tabChange" process="@this"/>
 
                         <p:tab title="Issue">
-                            <p:panelGrid columns="1">
+                            <div class="d-grid gap-2">
                                 <p:commandButton
-                                    value="New Disposal Issue"
+                                    value="New Consumption Issue"
                                     ajax="false"
                                     action="/pharmacy/pharmacy_issue?faces-redirect=true"
                                     actionListener="#{pharmacyIssueController.resetAll()}"
-                                    class="ui-button-success w-100"
+                                    styleClass="ui-button-stage-save w-100"
+                                    style="text-align: left"
                                     icon="fas fa-trash"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssue')}" />
                                 <p:commandButton
@@ -34,16 +35,18 @@
                                     ajax="false"
                                     action="/pharmacy/pharmacy_disposal_issue_list_to_finalize?faces-redirect=true"
                                     actionListener="#{searchController.makeListNull()}"
-                                    class="ui-button-warning w-100"
-                                    icon="fas fa-tasks"
+                                    styleClass="ui-button-stage-finalize w-100"
+                                    style="text-align: left"
+                                    icon="fas fa-lock"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}" />
                                 <p:commandButton
                                     value="Approve Issues"
                                     ajax="false"
                                     action="/pharmacy/pharmacy_disposal_issue_list_to_approve?faces-redirect=true"
                                     actionListener="#{searchController.makeListNull()}"
-                                    class="ui-button-info w-100"
-                                    icon="fas fa-check-circle"
+                                    styleClass="ui-button-stage-approve w-100"
+                                    style="text-align: left"
+                                    icon="fas fa-check-double"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssueApprove')}" />
                                 <p:commandButton
                                     value="Search Issue Bill"
@@ -51,6 +54,7 @@
                                     action="/pharmacy/pharmacy_search_issue_bill?faces-redirect=true"
                                     actionListener="#{searchController.makeListNull()}"
                                     class="ui-button-info w-100"
+                                    style="text-align: left"
                                     icon="fas fa-search"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueBill')}" />
                                 <p:commandButton
@@ -59,6 +63,7 @@
                                     action="/pharmacy/pharmacy_search_issue_bill_item?faces-redirect=true"
                                     actionListener="#{searchController.makeListNull()}"
                                     class="ui-button-info w-100"
+                                    style="text-align: left"
                                     icon="fas fa-list"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueBillItems')}" />
                                 <p:commandButton
@@ -67,42 +72,47 @@
                                     action="/pharmacy/pharmacy_search_issue_bill_return?faces-redirect=true"
                                     actionListener="#{searchController.makeListNull()}"
                                     class="ui-button-info w-100"
+                                    style="text-align: left"
                                     icon="fas fa-undo"
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisposalSearchIssueReturnBill')}" />
-                            </p:panelGrid>
+                            </div>
                         </p:tab>
 
                         <p:tab title="Returns">
-                            <p:panelGrid columns="1">
+                            <div class="d-grid gap-2">
                                 <p:commandButton
                                     value="Create Return"
                                     ajax="false"
                                     action="#{disposalReturnWorkflowController.navigateToCreateDisposalReturn()}"
-                                    class="ui-button-success w-100"
+                                    styleClass="ui-button-stage-save w-100"
+                                    style="text-align: left"
                                     icon="fas fa-recycle"
                                     rendered="#{webUserController.hasPrivilege('CreateDisposalReturn')}" />
                                 <p:commandButton
                                     value="Finalize Returns"
                                     ajax="false"
                                     action="#{disposalReturnWorkflowController.navigateToFinalizeDisposalReturn()}"
-                                    class="ui-button-warning w-100"
-                                    icon="fas fa-tasks"
+                                    styleClass="ui-button-stage-finalize w-100"
+                                    style="text-align: left"
+                                    icon="fas fa-lock"
                                     rendered="#{webUserController.hasPrivilege('FinalizeDisposalReturn')}" />
                                 <p:commandButton
                                     value="Approve Returns"
                                     ajax="false"
                                     action="#{disposalReturnWorkflowController.navigateToApproveDisposalReturn()}"
-                                    class="ui-button-info w-100"
-                                    icon="fas fa-check-circle"
+                                    styleClass="ui-button-stage-approve w-100"
+                                    style="text-align: left"
+                                    icon="fas fa-check-double"
                                     rendered="#{webUserController.hasPrivilege('ApproveDisposalReturn')}" />
                                 <p:commandButton
                                     value="Completed Returns"
                                     ajax="false"
                                     action="#{disposalReturnWorkflowController.navigateToCompletedDisposalReturns()}"
                                     class="ui-button-secondary w-100"
+                                    style="text-align: left"
                                     icon="fas fa-check-double"
                                     rendered="#{webUserController.hasPrivilege('ViewDisposalReturn')}" />
-                            </p:panelGrid>
+                            </div>
                         </p:tab>
 
                     </p:accordionPanel>
@@ -110,19 +120,19 @@
             </div>
             <div class="col-10">
                 <ui:insert name="subcontent">
-                    <p:panel header="Disposal Management">
+                    <p:panel header="Consumption Management">
                         <div class="text-center p-5">
-                            <h3>Welcome to Disposal Management</h3>
+                            <h3><h:outputText value="Welcome to Consumption Management"/></h3>
                             <p class="mt-3">
-                                Please select a function from the left menu to get started.
+                                <h:outputText value="Please select a function from the left menu to get started."/>
                             </p>
                             <div class="mt-4">
                                 <p:panelGrid columns="2" styleClass="mx-auto" style="max-width: 600px;">
                                     <h:outputText value="Issue" styleClass="font-weight-bold"/>
-                                    <h:outputText value="Create disposal issue bills and search existing bills"/>
+                                    <h:outputText value="Create consumption issue bills and search existing bills"/>
 
                                     <h:outputText value="Returns" styleClass="font-weight-bold"/>
-                                    <h:outputText value="Create, finalize, approve, and view completed disposal returns"/>
+                                    <h:outputText value="Create, finalize, approve, and view completed consumption returns"/>
                                 </p:panelGrid>
                             </div>
                         </div>

@@ -6,7 +6,9 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:phe="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
-                xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy">
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
+                xmlns:phprint="http://xmlns.jcp.org/jsf/composite/pharmacy/print">
 
     <ui:define name="content">
         <h:form>
@@ -41,11 +43,16 @@
                                 action="#{inpatientClinicalDataController.navigateToInwardMedicinesFromAdmission(pharmacySaleBhtController.bhtRequestBill.patientEncounter)}">
                             </p:commandButton>
 
-                            <p:selectBooleanCheckbox
-                                itemLabel="Complete the Request"
-                                value="#{pharmacySaleBhtController.completed}"
-                                disabled="#{!webUserController.hasPrivilege('PharmacyBhtRequestForceComplete')}" >
-                            </p:selectBooleanCheckbox>
+                            <p:commandButton
+                                id="btnViewRequest"
+                                value="View Request"
+                                icon="fa fa-file-alt"
+                                type="button"
+                                class="ui-button-help"
+                                title="View the original request with comments"
+                                rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}"
+                                onclick="PF('viewRequestDialog').show();">
+                            </p:commandButton>
 
                             <p:commandButton
                                 id="btnIssue"
@@ -108,11 +115,10 @@
                                                             styleClass="w-100"
                                                             inputStyleClass="w-100 form-control">
                                                 <p:column headerText="Item" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                    <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
-                                                        &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ':
-                                                                                 commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
-                                                                     severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
-                                                    </h:outputLabel>
+                                                    <h:outputText value="#{i.itemBatch.item.name}" style="width: 300px!important;" />
+                                                    &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime gt i.itemBatch.dateOfExpire or commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime gt i.itemBatch.dateOfExpire}"
+                                                                 value="#{commonFunctionsProxy.currentDateTime gt i.itemBatch.dateOfExpire ? 'Expired' : 'Expiring Soon'}"
+                                                                 severity="#{commonFunctionsProxy.currentDateTime gt i.itemBatch.dateOfExpire ? 'danger' : 'warning'}" />
                                                 </p:column>
                                                 <p:column headerText="Code" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
                                                                                                                commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
@@ -490,8 +496,19 @@
 
             </p:panel>
 
-
-
+            <p:dialog
+                id="viewRequestDlg"
+                widgetVar="viewRequestDialog"
+                header="Original Request"
+                modal="true"
+                appendTo="@(body)"
+                width="60%"
+                fitViewport="true"
+                position="top"
+                rendered="#{pharmacySaleBhtController.bhtRequestBill ne null}">
+                <phprint:bht_issue_request_receipt
+                    dto="#{pharmacySaleBhtController.bhtIssueRequestPrintDto}" />
+            </p:dialog>
 
         </h:form>
     </ui:define>

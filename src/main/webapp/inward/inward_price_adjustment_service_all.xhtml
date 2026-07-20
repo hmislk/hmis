@@ -12,7 +12,7 @@
         <ui:composition template="/resources/template/template.xhtml">
 
             <ui:define name="content">
-                <h:form>
+                <h:form id="mainForm">
                     <p:panel header="Inward Price Adjustment Matrix " id="reportPrint">
 
                         <p:panel header="Add new adjustment" >
@@ -59,6 +59,12 @@
                                 <p:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.toPrice}" />
                                 <h:outputLabel value="Margin" ></h:outputLabel>
                                 <p:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.margin}" />
+                                <h:outputLabel value="Admission Type" ></h:outputLabel>
+                                <p:selectOneMenu id="cmbAdmissionType" value="#{inwardPriceAdjustmntController.admissionType}">
+                                    <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" />
+                                    <f:selectItems value="#{admissionTypeController.items}" var="at"
+                                                   itemValue="#{at}" itemLabel="#{at.name}" />
+                                </p:selectOneMenu>
                                 <h:outputLabel value="" ></h:outputLabel>
                                 <p:commandButton id="btnAdd" value="Add" ajax="false"
                                                 action="#{inwardPriceAdjustmntController.saveSelected}"  >
@@ -83,61 +89,38 @@
                                          var="a" editable="true" scrollable="true" scrollHeight="500">
 
                                 <p:column filterBy="#{a.department.name}" filterMatchMode="contains" headerText="Department Name">
-<!--                                    <h:inputText autocomplete="off" value="#{a.department.name}" />-->
-
-                                    <p:autoComplete id="dep" forceSelection="true" value="#{a.department}"
-                                                    completeMethod="#{departmentController.completeDept}"
-                                                    var="dep" itemLabel="#{dep.name}" itemValue="#{dep}" >
-                                        <p:column>
-                                            <h:outputLabel value="#{dep.name}"/>
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputLabel value="#{dep.institution.name}"/>
-                                        </p:column>
-                                    </p:autoComplete>
-
+                                    <h:outputText value="#{a.department.name}"/>
                                 </p:column>
 
 
                                 <p:column filterBy="#{a.category.name}"
                                           filterMatchMode="contains" headerText="Category Name">
-                                    <p:autoComplete id="cat" forceSelection="true" value="#{a.category}"
-                                                    completeMethod="#{categoryController.completeCategoryServicePharmacy}"
-                                                    var="cat" itemLabel="#{cat.name} #{cat.parentCategory.name}" itemValue="#{cat}" >
-                                        <p:column>
-                                            <h:outputLabel value="#{cat.name}"/>
-                                        </p:column>
-                                        <p:column>
-                                            <h:outputLabel value="#{cat.parentCategory.name}"/>
-                                        </p:column>
-                                        <p:column headerText="TYPE">
-                                            <h:outputLabel value="Parent Category"
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceCategory'}"/>
-                                            <h:outputLabel value="Child Category"
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceSubCategory'}"/>
-                                            <h:outputLabel value="Investigation Category"
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.InventoryCategory'}"/>
-                                        </p:column>
-
-                                    </p:autoComplete>
+                                    <h:outputText value="#{a.category.name}"/>
                                 </p:column>
                                 <p:column headerText="From Price">
-                                    <h:inputText autocomplete="off" id="frm" value="#{a.fromPrice}" >
+                                    <h:outputText value="#{a.fromPrice}">
                                         <f:convertNumber pattern="#,##0.00"/>
-                                    </h:inputText>
+                                    </h:outputText>
                                 </p:column>
                                 <p:column  headerText="To Price">
-                                    <h:inputText autocomplete="off" id="to" value="#{a.toPrice}" >
+                                    <h:outputText value="#{a.toPrice}">
                                         <f:convertNumber pattern="#,##0.00"/>
-                                    </h:inputText>
+                                    </h:outputText>
                                 </p:column>
                                 <p:column  headerText="Margin">
-                                    <h:inputText autocomplete="off" id="mg" value="#{a.margin}" >
+                                    <h:outputText value="#{a.margin}">
                                         <f:convertNumber pattern="#,##0.00"/>
-                                    </h:inputText>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Admission Type">
+                                    <h:outputText value="#{empty a.admissionType ? 'All Admission Types' : a.admissionType.name}"/>
                                 </p:column>
                                 <p:column>
-                                    <p:commandButton ajax="false" value="Update" action="#{inwardPriceAdjustmntController.onEdit(a)}"  />
+                                    <p:commandButton value="Edit" icon="fa fa-pencil"
+                                                     process="@this"
+                                                     update=":dlgEditForm"
+                                                     oncomplete="PF('dlgEdit').show()"
+                                                     action="#{inwardPriceAdjustmntController.prepareEdit(a)}"/>
                                 </p:column>
                                 <p:column>
                                     <p:commandButton value="Delete" action="#{inwardPriceAdjustmntController.delete}">
@@ -153,6 +136,56 @@
                     </p:panel>
 
                 </h:form>
+
+                <p:dialog header="Edit Price Adjustment" widgetVar="dlgEdit" modal="true"
+                          resizable="false" width="480" id="dlgEdit">
+                    <h:form id="dlgEditForm">
+                        <h:panelGrid columns="2" cellpadding="5" rendered="#{not empty inwardPriceAdjustmntController.current}">
+                            <h:outputLabel value="Department"/>
+                            <h:outputText value="#{inwardPriceAdjustmntController.current.department.name}"/>
+
+                            <h:outputLabel value="Category"/>
+                            <h:outputText value="#{inwardPriceAdjustmntController.current.category.name}"/>
+
+                            <h:outputLabel value="Payment Method"/>
+                            <h:outputText value="#{inwardPriceAdjustmntController.current.paymentMethod}"/>
+
+                            <h:outputLabel value="From Price"/>
+                            <h:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.current.fromPrice}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:inputText>
+
+                            <h:outputLabel value="To Price"/>
+                            <h:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.current.toPrice}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:inputText>
+
+                            <h:outputLabel value="Margin"/>
+                            <h:inputText autocomplete="off" value="#{inwardPriceAdjustmntController.current.margin}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:inputText>
+
+                            <h:outputLabel value="Admission Type"/>
+                            <p:selectOneMenu value="#{inwardPriceAdjustmntController.current.admissionType}" class="w-100">
+                                <f:selectItem itemLabel="All Admission Types" itemValue="#{null}" />
+                                <f:selectItems value="#{admissionTypeController.items}" var="at"
+                                               itemValue="#{at}" itemLabel="#{at.name}" />
+                            </p:selectOneMenu>
+                        </h:panelGrid>
+
+                        <div class="d-flex justify-content-end mt-3">
+                            <p:commandButton id="dlgSave" value="Save" icon="fa fa-save"
+                                             class="ui-button-success mx-1"
+                                             action="#{inwardPriceAdjustmntController.saveEdit}"
+                                             update=":dlgEditForm :mainForm:inwd"
+                                             oncomplete="PF('dlgEdit').hide()"/>
+                            <p:commandButton id="dlgCancel" value="Cancel" icon="fa fa-times"
+                                             class="ui-button-secondary mx-1"
+                                             type="button"
+                                             onclick="PF('dlgEdit').hide()"/>
+                        </div>
+                    </h:form>
+                </p:dialog>
             </ui:define>
 
 

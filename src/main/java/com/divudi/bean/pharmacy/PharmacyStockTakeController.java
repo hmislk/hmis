@@ -821,9 +821,8 @@ public class PharmacyStockTakeController implements Serializable {
                 cId.setCellValue(dto.getBillItemId() != null ? dto.getBillItemId() : 0L);
                 cId.setCellStyle(integerLocked);
 
-                // Code — not stored in SnapshotBillItemDTO
                 Cell cCode = row.createCell(c++);
-                cCode.setCellValue("");
+                cCode.setCellValue(dto.getItemCode() != null ? dto.getItemCode() : "");
                 cCode.setCellStyle(textLocked);
 
                 Cell cName = row.createCell(c++);
@@ -2827,7 +2826,7 @@ public class PharmacyStockTakeController implements Serializable {
             // so EAGER relationships (billFees, patientInvestigation, etc.) never fire.
             String jpql = "SELECT bi.id, bi.qty, bi.descreption, bi.catId, bi.netValue, "
                     + "pbi.costRate, pbi.purchaseRate, pbi.retailRate, "
-                    + "pbi.doe, pbi.stringValue, pbi.description, i.departmentType "
+                    + "pbi.doe, pbi.stringValue, pbi.description, i.departmentType, i.code "
                     + "FROM BillItem bi "
                     + "LEFT JOIN bi.pharmaceuticalBillItem pbi "
                     + "LEFT JOIN bi.item i "
@@ -2853,6 +2852,7 @@ public class PharmacyStockTakeController implements Serializable {
                         toLong(r[0]),          // billItemId
                         toDouble(r[1]),        // qty
                         r[2] != null ? r[2].toString() : null,  // itemName
+                        r[12] != null ? r[12].toString() : null, // itemCode
                         r[3] != null ? r[3].toString() : null,  // categoryName
                         toDouble(r[4]),        // netValue
                         toDouble(r[5]),        // costRate
@@ -4392,9 +4392,9 @@ public class PharmacyStockTakeController implements Serializable {
                 cId.setCellValue(dto.getBillItemId() != null ? dto.getBillItemId() : 0L);
                 cId.setCellStyle(integerLocked);
 
-                // Code — not stored in SnapshotBillItemDTO, leave blank
+                // Code
                 Cell cCode = row.createCell(c++);
-                cCode.setCellValue("");
+                cCode.setCellValue(dto.getItemCode() != null ? dto.getItemCode() : "");
                 cCode.setCellStyle(textLocked);
 
                 // Category

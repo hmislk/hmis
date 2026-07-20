@@ -212,6 +212,16 @@ public class CapabilityStatementResource {
                         + "timedItemFeeDurationDaysForMoCharge.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Item Requests", "/api/itemrequests",
+                        "External systems submit item/service requests (meals like Breakfast/Lunch/Dinner as "
+                        + "InwardService items, and stock items like Water Bottle/Tea/Milk/Sugar) against a patient's "
+                        + "active BHT. Requests are saved Pending (no charge, no stock movement) and routed to a "
+                        + "target department's in-app approval queue. A department user approves (charges the BHT and "
+                        + "deducts stock atomically, failing the whole approval if any line has insufficient stock) or "
+                        + "rejects (records a reason) the request via the JSF approval page — this API does not expose "
+                        + "approve/reject. External systems poll GET /{id} for status: PENDING, APPROVED, REJECTED, CANCELLED.",
+                        "API Key",
+                        "GET", "POST", "PUT"))
                 .add(resource("LIMS", "/api/lims",
                         "Laboratory Information Management System integrations",
                         "API Key",
@@ -268,9 +278,33 @@ public class CapabilityStatementResource {
                         "API Key (Finance header)",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Pharmacy Adjustments", "/api/pharmacy_adjustments",
-                        "Pharmacy stock and adjustment operations",
+                        "Pharmacy stock and adjustment operations. "
+                        + "POST /backfill_finance_details is an admin-only, idempotent backfill: recomputes "
+                        + "BillFinanceDetails + bill totals for adjustment bills created before this fix existed, "
+                        + "using each bill's own stored before/after audit values. Bills that already have "
+                        + "BillFinanceDetails are skipped, not overwritten. Body: departmentId, fromDate, toDate "
+                        + "(yyyy-MM-dd), apply (false = dry run).",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Pharmacy Discounts", "/api/pharmacy/discounts",
+                        "Manage PaymentSchemeDiscount rows that control per-category discount percentages "
+                        + "applied during pharmacy billing for a given payment scheme. "
+                        + "POST /api/pharmacy/discounts/bulk creates or updates a discount % across "
+                        + "all pharmacy item categories at once (idempotent). "
+                        + "GET lists rows (filter: paymentSchemeId, paymentSchemeName, billType, limit). "
+                        + "POST creates a single row. PUT /{id} updates discountPercent. DELETE /{id} soft-retires.",
+                        "API Key (Finance header)",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Payment Schemes", "/api/payment-scheme",
+                        "List and update PaymentScheme records. "
+                        + "GET lists all active schemes (optional ?query=name-filter&limit=). "
+                        + "Response includes all billing-scope flags: validForInpatientBills, validForPharmacy, "
+                        + "validForBilledBills, validForChanneling, and eligibility flags "
+                        + "(staffMemberRequired, membershipRequired, staffRequired, staffOrFamilyRequired, "
+                        + "memberRequired, memberOrFamilyRequired, seniorCitizenRequired, pregnantMotherRequired). "
+                        + "PUT /{id} performs a partial update — only fields present in the request body are changed.",
+                        "API Key (Finance header)",
+                        "GET", "PUT"))
                 .add(resource("Pharmacy Search", "/api/pharmacy_adjustments/search",
                         "Pharmacy stock search",
                         "API Key",
@@ -316,7 +350,19 @@ public class CapabilityStatementResource {
                         + "Supports filtering by departmentId and query string. "
                         + "DELETE /{id}/departments/{assignmentId} revokes one loggable department. "
                         + "DELETE /{id}/departments/{departmentId}/privileges bulk-revokes all privileges for a department. "
-                        + "POST /{id}/departments/{departmentId}/privileges/all assigns every privilege for a department.",
+                        + "POST /{id}/departments/{departmentId}/privileges/all assigns every privilege for a department. "
+                        + "Role-template operations (roles are admin-time templates; runtime reads user-level records only): "
+                        + "POST /{id}/role/reset resets a user's records for the given aspects/departments to a role template "
+                        + "(roleId optional — defaults to the user's own role; body: {roleId?, departmentIds[], aspects[]?, updateUserRole?, preview?}). "
+                        + "POST /{id}/role/expand and POST /{id}/role/narrow add/strip a role template's records "
+                        + "(body: {roleId, departmentIds[], aspects[]?, preview?}; roleId required). "
+                        + "aspects values: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE (default [\"PRIVILEGES\"]). "
+                        + "preview=true returns counts without writing. "
+                        + "POST /bulk/role-operations applies RESET/EXPAND/NARROW to many users at once (explicit userIds or a role/department filter); "
+                        + "for safety it requires preview=true first, then confirm=true to actually apply. "
+                        + "GET /roles lists active roles with template summary counts (privileges/icons/subscriptions) and template login page. "
+                        + "PUT /{id}/login-page (body: {departmentId, loginPage}) and DELETE /{id}/login-page/{departmentId} manage the "
+                        + "per-user-per-department default login page override.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
                 .add(resource("User Bulk Privileges", "/api/users/bulk-privileges",

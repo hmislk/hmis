@@ -11,6 +11,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
@@ -23,6 +24,7 @@ import com.divudi.core.entity.pharmacy.Vtm;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.facade.AmpFacade;
 import com.divudi.core.facade.AmppFacade;
+import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.service.BillService;
 import java.util.ArrayList;
@@ -52,6 +54,9 @@ public class PharmacyService {
 
     @EJB
     private AmpFacade ampFacade;
+
+    @EJB
+    private BillItemFacade billItemFacade;
 
     public List<ClinicalFindingValue> getAllergyListForPatient(Patient patient) {
 
@@ -273,6 +278,59 @@ public class PharmacyService {
             }
         }
         return "";
+    }
+
+    /**
+     * Checks whether the given item already has an ACTIVE (non-cancelled,
+     * non-retired) prior order somewhere earlier in the same admission
+     * (patient encounter). This is a soft/informational check only - it does
+     * NOT block re-ordering, since doctors legitimately re-order the same
+     * medicine multiple times within one admission (e.g. reverting to an
+     * earlier antibiotic after culture/ABST results come back).
+     *
+     * @param patientEncounter the current inward admission
+     * @param item the medicine item being added
+     * @return true if an active prior order for this item exists in this
+     * admission
+     */
+    public boolean hasActiveInwardMedicineOrder(PatientEncounter patientEncounter, Item item) {
+        if (patientEncounter == null || patientEncounter.getId() == null
+                || item == null || item.getId() == null) {
+            return false;
+        }
+        String jpql = "SELECT COUNT(bi) FROM BillItem bi "
+                + "WHERE bi.retired = false "
+                + "AND bi.bill.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.bill.patientEncounter = :pe "
+                + "AND bi.item = :item "
+                + "AND bi.bill.billTypeAtomic IN :atomics";
+        Map<String, Object> params = new HashMap<>();
+        params.put("pe", patientEncounter);
+        params.put("item", item);
+        params.put("atomics", Arrays.asList(
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.REQUEST_MEDICINE_INWARD,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD));
+        return billItemFacade.findLongByJpql(jpql, params) > 0;
+    }
+
+    /**
+     * Builds a soft, non-blocking warning message when the given item
+     * already has an active prior order earlier in the same admission.
+     *
+     * @param patientEncounter the current inward admission
+     * @param item the medicine item being added
+     * @return a warning message, or an empty string if there is no prior
+     * active order
+     */
+    public String getReorderWarningMessage(PatientEncounter patientEncounter, Item item) {
+        if (!hasActiveInwardMedicineOrder(patientEncounter, item)) {
+            return "";
+        }
+        return "NOTE: " + item.getName()
+                + " has already been ordered earlier during this admission. "
+                + "Re-ordering is allowed if clinically appropriate.";
     }
 
     public void addBillItemInstructions(BillItem billItem) {
@@ -724,6 +782,7 @@ public class PharmacyService {
                 BillTypeAtomic.PHARMACY_WHOLESALE_RATE_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_STOCK_ADJUSTMENT_BILL,
+                BillTypeAtomic.PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT,
                 BillTypeAtomic.PHARMACY_ADJUSTMENT_CANCELLED
         );
