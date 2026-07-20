@@ -538,6 +538,7 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("Charge type discount cannot exceed the remaining net for this charge type");
         }
         updateTotal();
+        rebuildCreditCompanyAllocations();
 
         Map<String, Object> after = new LinkedHashMap<>();
         after.put("chargeType", cit.getInwardChargeType());
@@ -2006,6 +2007,32 @@ public class BhtSummeryController implements Serializable {
 
     public void saveCreditBillForCreditCompany(PatientEncounter pe, EncounterCreditCompany ecc, Double value) {
         saveCCBill(pe, ecc, value);
+    }
+
+    /**
+     * Discards the on-screen credit-company allocation split and rebuilds it
+     * from the present net due (total − discounts − paid). Called when
+     * Process is clicked or any discount is changed so the allocation always
+     * follows the latest discounts. Cashier-entered splits are intentionally
+     * reset here — their total no longer matches the new net due.
+     */
+    private void rebuildCreditCompanyAllocations() {
+        if (getPatientEncounter() == null
+                || getPatientEncounter().getPaymentMethod() != PaymentMethod.Credit) {
+            return;
+        }
+        creditCompanyAllocations = null;
+        populateCreditCompanyAllocations();
+    }
+
+    /**
+     * Action for the Process button on the final bill page: recalculates all
+     * totals and re-splits the credit company allocations against the
+     * recalculated net due.
+     */
+    public void processFinalBill() {
+        updateTotal();
+        rebuildCreditCompanyAllocations();
     }
 
     private void populateCreditCompanyAllocations() {
@@ -4081,6 +4108,7 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("Total discount cannot exceed total charges");
         }
         due = (grantTotal - discount) - paid;
+        rebuildCreditCompanyAllocations();
     }
 
     public boolean isShowOrginalBill() {
