@@ -664,7 +664,16 @@
                     <p:panel id="creditAllocationPanel" styleClass="mx-1 mt-3" rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit' and not empty bhtSummeryController.creditCompanyAllocations}">
                         <f:facet name="header">
                             <div class="d-flex align-items-center justify-content-between">
-                                <h:outputLabel value="Credit Company Allocation" />
+                                <h:panelGroup>
+                                    <h:outputLabel value="Credit Company Allocation" />
+                                    <h:outputLabel styleClass="ms-3" style="font-weight:normal;color:#555;"
+                                                   value="Net Due to Allocate: ">
+                                    </h:outputLabel>
+                                    <h:outputText value="#{bhtSummeryController.creditDueToAllocate}"
+                                                  style="font-weight:bold;">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </h:panelGroup>
                                 <p:commandButton
                                     id="viewAddCreditCompanyDlg"
                                     value="Add Credit Company"
@@ -704,6 +713,9 @@
                                                  onfocus="this.select()"
                                                  title="Patient co-payment portion">
                                         <f:convertNumber pattern="#,##0.00"/>
+                                        <p:ajax event="change"
+                                                process="@this"
+                                                update=":#{p:resolveFirstComponentWithId('creditAllocationPanel',view).clientId}"/>
                                     </p:inputText>
                                     <h:outputLabel value=" (patient co-payment)"
                                                    style="color:#888;font-size:0.82em;margin-left:4px;"/>

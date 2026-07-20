@@ -2048,24 +2048,22 @@ public class BhtSummeryController implements Serializable {
             eccs.sort(Comparator.comparing(
                     ecc -> ecc.getInstitution() != null ? ecc.getInstitution().getName() : "",
                     Comparator.nullsLast(Comparator.naturalOrder())));
+            // Every registered company gets a row (0.00 when the due is already
+            // covered) so the cashier can redistribute freely. Auto-split honours
+            // each company's credit limit; manual edits afterwards are not capped.
             for (EncounterCreditCompany ecc : eccs) {
-                if (remaining <= 0) {
-                    break;
-                }
-                double alloc = Math.min(remaining, ecc.getCreditLimit());
+                double alloc = Math.min(Math.max(0.0, remaining), ecc.getCreditLimit());
                 creditCompanyAllocations.add(new CreditCompanyAllocation(ecc, alloc));
                 remaining -= alloc;
             }
-            // Any amount not covered by companies is the patient's co-payment share
-            if (remaining > 0.01) {
-                creditCompanyAllocations.add(new CreditCompanyAllocation(remaining, true));
-            }
-        } else if (remaining > 0 && patientEncounter.getCreditCompany() != null) {
-            creditCompanyAllocations.add(new CreditCompanyAllocation(patientEncounter.getCreditCompany(), remaining));
-        } else if (remaining > 0.01) {
-            // No companies registered at all — full amount falls on the patient
-            creditCompanyAllocations.add(new CreditCompanyAllocation(remaining, true));
+        } else if (patientEncounter.getCreditCompany() != null) {
+            creditCompanyAllocations.add(new CreditCompanyAllocation(patientEncounter.getCreditCompany(),
+                    Math.max(0.0, remaining)));
+            remaining = 0;
         }
+        // The patient co-payment row is ALWAYS shown (even at 0.00) so it can be
+        // adjusted by hand against the company rows.
+        creditCompanyAllocations.add(new CreditCompanyAllocation(Math.max(0.0, remaining), true));
     }
 
     private boolean checkCreditAllocationTotal() {
@@ -2078,39 +2076,22 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("Please allocate the full credit due amount before settlement");
             return true;
         }
-        // Sum CC company rows and locate the patient row
-        double companyAllocated = 0.0;
-        CreditCompanyAllocation patientAllocation = null;
+        // Credit limits are enforced only when auto-generating the split; the
+        // cashier may exceed them when adjusting by hand. The only hard rules at
+        // settlement: no negative rows, and the rows must add up to the net due.
+        double totalAllocated = 0.0;
         for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
             if (alloc.getAllocatedAmount() < 0) {
                 JsfUtil.addErrorMessage("Allocated amounts cannot be negative");
                 return true;
             }
-            if (alloc.isPatientPortion()) {
-                patientAllocation = alloc;
-            } else {
-                if (alloc.getEncounterCreditCompany() != null
-                        && alloc.getAllocatedAmount() - alloc.getEncounterCreditCompany().getCreditLimit() > 0.01) {
-                    JsfUtil.addErrorMessage("Allocation for " + alloc.getCompanyName()
-                            + " exceeds its credit limit ("
-                            + String.format("%.2f", alloc.getEncounterCreditCompany().getCreditLimit()) + ")");
-                    return true;
-                }
-                companyAllocated += alloc.getAllocatedAmount();
-            }
+            totalAllocated += alloc.getAllocatedAmount();
         }
-        // CC rows must not exceed the expected total
-        if (companyAllocated - expected > 0.01) {
-            JsfUtil.addErrorMessage("Credit company allocation (" + String.format("%.2f", companyAllocated)
-                    + ") exceeds the net due amount (" + String.format("%.2f", expected) + ")");
+        if (Math.abs(totalAllocated - expected) > 0.01) {
+            JsfUtil.addErrorMessage("Total allocation (" + String.format("%.2f", totalAllocated)
+                    + ") must equal the net due amount (" + String.format("%.2f", expected)
+                    + "). Difference: " + String.format("%.2f", totalAllocated - expected));
             return true;
-        }
-        // Auto-sync the patient row so total always equals expected
-        double patientShare = Math.max(0.0, expected - companyAllocated);
-        if (patientAllocation != null) {
-            patientAllocation.setAllocatedAmount(patientShare);
-        } else if (patientShare > 0.01) {
-            creditCompanyAllocations.add(new CreditCompanyAllocation(patientShare, true));
         }
         return false;
     }
@@ -4134,6 +4115,14 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void onEdit(RowEditEvent event) {
+    }
+
+    /**
+     * The amount the allocation rows (companies + patient) must add up to:
+     * net total after all discounts, less what is already paid.
+     */
+    public double getCreditDueToAllocate() {
+        return Math.max(0.0, (grantTotal - discount) - paidByPatient - paidByCompany);
     }
 
     public List<CreditCompanyAllocation> getCreditCompanyAllocations() {
