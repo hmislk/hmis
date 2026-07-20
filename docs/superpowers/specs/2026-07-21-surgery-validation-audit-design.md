@@ -86,18 +86,33 @@ Structure mirrors `inward_bill_intrim.xhtml`'s tabbed layout, but every query
 filters by `forwardReferenceBill = surgeryBill` instead of
 `patientEncounter = admission`. Tabs:
 
-- Room Details (theatre/surgery room charges)
 - Timed Service
 - Service Details
 - Medicine Issue
 - Store Issue
-- Medicines & Surgical Supplies
 - Professional Fees
 - Assisting Fees
-- Payments
 
 ("Out Side Charge Details" is intentionally omitted — it's an admission-level
-concept, not tied to a specific surgery.)
+concept, not tied to a specific surgery. "Medicines & Surgical Supplies" is
+a config-gated alternate split view of the same Medicine Issue bills, not a
+distinct bill type — not duplicated here.)
+
+**Room Details and Payments are intentionally omitted.** Investigation
+confirmed:
+- `TheatreRoom` charges (added in #22213) are linked to the admission's
+  theatre *visit* via `PatientTransferRequest.theatreRoom`, not to a specific
+  `SurgeryBill`.
+- Payment bills are recorded against the admission (`PatientEncounter`) via
+  `InwardBeanController.fetchPaymentBill(patientEncounter, ...)`, not linked
+  via `forwardReferenceBill` to any one surgery.
+
+Neither has a clean FK to a single surgery, so attributing them to one
+surgery here would risk misattribution when an admission has multiple
+surgeries or shared payments. Both remain checkable only from the existing
+per-admission interim bill. This also keeps the "all bills checked" gate for
+Validate unambiguous — it only needs to check bills reachable via
+`forwardReferenceBill = surgeryBill`.
 
 Each row shows `checkeAt` / `checkedBy` (read-only, same as interim bill) and
 a "View Bill" link using the same `f:setPropertyActionListener` /
@@ -132,10 +147,13 @@ is non-null and is itself a `SurgeryBill`. Action navigates to
   unchecked if the user tries anyway.
 - Action: `surgeryBill.setCompleted(true)`, `setCompletedBy(loggedUser)`,
   `setCompletedAt(now)`; `billFacade.edit(...)`.
-- Audit: `auditService.logEncounterAudit(surgeryBill.getPatientEncounter().getParentEncounter() /* admission-level PE */, "Validate Surgery", before, after, loggedUser, "Bill", surgeryBill.getId())` —
-  logged against the **admission-level** `PatientEncounter` (not the
-  surgery's own `procedure` sub-encounter) so it surfaces in the existing
-  Patient Story / Inpatient Event History timeline for free.
+- Audit: `auditService.logEncounterAudit(surgeryBill.getPatientEncounter(), "Validate Surgery", before, after, loggedUser, "Bill", surgeryBill.getId())` —
+  `surgeryBill.getPatientEncounter()` is already the admission-level
+  `PatientEncounter` (distinct from `surgeryBill.getProcedure()`, the
+  surgery's own sub-encounter); this is the exact pattern the existing
+  `SurgeryBillController.edit()` audit call already uses (line ~607-610), so
+  the event surfaces in the existing Patient Story / Inpatient Event History
+  timeline for free.
 
 ### 5. Revert action
 
