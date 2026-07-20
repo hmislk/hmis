@@ -46,6 +46,7 @@ import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
+
 /**
  * Investigation Wise Laboratory Report.
  *
@@ -300,213 +301,211 @@ public class InvestigationWiseReport implements Serializable {
 
     public void exportExcel() {
 
-    FacesContext facesContext = FacesContext.getCurrentInstance();
-    ExternalContext externalContext = facesContext.getExternalContext();
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = facesContext.getExternalContext();
 
-    HttpServletResponse response
-            = (HttpServletResponse) externalContext.getResponse();
-
-    response.reset();
-    response.setContentType(
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
-    response.setHeader(
-            "Content-Disposition",
-            "attachment; filename=\"investigation_wise_report.xlsx\""
-    );
-    response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-    response.setHeader("Pragma", "no-cache");
-    response.setDateHeader("Expires", 0);
-
-    try (Workbook workbook = new XSSFWorkbook()) {
-
-        Sheet sheet = workbook.createSheet("Investigation Wise Report");
-
-        CellStyle titleStyle = createTitleStyle(workbook);
-        CellStyle headerStyle = createHeaderStyle(workbook);
-
-        int rowIndex = 0;
-
-        Row titleRow = sheet.createRow(rowIndex);
-        Cell titleCell = titleRow.createCell(0);
-
-        titleCell.setCellValue("Investigation Wise Report");
-        titleCell.setCellStyle(titleStyle);
-
-        sheet.addMergedRegion(
-                new CellRangeAddress(rowIndex, rowIndex, 0, 8)
-        );
-
-        rowIndex += 2;
-
-        rowIndex = createFilterRow(sheet, rowIndex, "From Date", formatDate(getFromDate()));
-        rowIndex = createFilterRow(sheet, rowIndex, "To Date", formatDate(getToDate()));
-        rowIndex = createFilterRow(sheet, rowIndex, "Institution",
-                institution == null ? "All" : safeString(institution.getName()));
-        rowIndex = createFilterRow(sheet, rowIndex, "Site",
-                site == null ? "All" : safeString(site.getName()));
-        rowIndex = createFilterRow(sheet, rowIndex, "Department",
-                department == null ? "All" : safeString(department.getName()));
-        rowIndex = createFilterRow(sheet, rowIndex, "Laboratory",
-                laboratory == null ? "All" : safeString(laboratory.getName()));
-        rowIndex = createFilterRow(sheet, rowIndex, "Investigation",
-                investigation == null ? "All" : safeString(investigation.getName()));
-        rowIndex = createFilterRow(sheet, rowIndex, "Gender",
-                isBlank(gender) ? "All" : gender);
-        rowIndex = createFilterRow(sheet, rowIndex, "Visit Type",
-                isBlank(visitType) ? "All" : visitType);
-
-        rowIndex++;
-
-        String[] headers = {
-            "No.", "MRN", "Visit Type", "Laboratory", "Gender",
-            "Name", "Age", "Investigation", "Created Date"
-        };
-
-        Row headerRow = sheet.createRow(rowIndex++);
-
-        for (int i = 0; i < headers.length; i++) {
-            Cell cell = headerRow.createCell(i);
-            cell.setCellValue(headers[i]);
-            cell.setCellStyle(headerStyle);
-        }
-
-        if (getReportData().isEmpty()) {
-            // NOTE: export the header-only sheet with an explicit
-            // "no records" row instead of blocking the export.
-            Row emptyRow = sheet.createRow(rowIndex++);
-            Cell emptyCell = emptyRow.createCell(0);
-            emptyCell.setCellValue("No investigation records found for the selected filters.");
-            sheet.addMergedRegion(
-                    new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 8)
-            );
-        } else {
-            int number = 1;
-
-            for (InvestigationWiseRow reportRow : getReportData()) {
-
-                Row excelRow = sheet.createRow(rowIndex++);
-
-                excelRow.createCell(0).setCellValue(number++);
-                excelRow.createCell(1).setCellValue(safeString(reportRow.getMrn()));
-                excelRow.createCell(2).setCellValue(safeString(reportRow.getVisitType()));
-                excelRow.createCell(3).setCellValue(safeString(reportRow.getLaboratoryName()));
-                excelRow.createCell(4).setCellValue(safeString(reportRow.getGender()));
-                excelRow.createCell(5).setCellValue(safeString(reportRow.getPatientName()));
-                excelRow.createCell(6).setCellValue(safeString(reportRow.getAge()));
-                excelRow.createCell(7).setCellValue(safeString(reportRow.getInvestigationName()));
-                excelRow.createCell(8).setCellValue(formatDate(reportRow.getCreatedAt()));
-            }
-        }
-
-        for (int i = 0; i < headers.length; i++) {
-            sheet.autoSizeColumn(i);
-
-            if (sheet.getColumnWidth(i) > 15000) {
-                sheet.setColumnWidth(i, 15000);
-            }
-        }
-
-        workbook.write(response.getOutputStream());
-        response.getOutputStream().flush();
-
-        facesContext.responseComplete();
-
-    } catch (Exception e) {
-        e.printStackTrace();
-
-        if (!facesContext.getResponseComplete()) {
-            JsfUtil.addErrorMessage("Excel export failed: " + e.getMessage());
-        }
-    }
-}
-    
-    public void exportPdf() {
-
-    FacesContext facesContext = FacesContext.getCurrentInstance();
-    ExternalContext externalContext = facesContext.getExternalContext();
-    HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
-
-    try {
-        Document document = new Document(PageSize.A4.rotate(), 20, 20, 20, 20);
+        HttpServletResponse response
+                = (HttpServletResponse) externalContext.getResponse();
 
         response.reset();
-        response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition",
-                "attachment; filename=\"investigation_wise_report.pdf\"");
+        response.setContentType(
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+        response.setHeader(
+                "Content-Disposition",
+                "attachment; filename=\"investigation_wise_report.xlsx\""
+        );
         response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         response.setHeader("Pragma", "no-cache");
         response.setDateHeader("Expires", 0);
 
-        PdfWriter.getInstance(document, response.getOutputStream());
-        document.open();
+        try (Workbook workbook = new XSSFWorkbook()) {
 
-        document.add(new Paragraph("Investigation Wise Report"));
-        document.add(new Paragraph(" "));
-        document.add(new Paragraph("From Date: " + formatDate(getFromDate())));
-        document.add(new Paragraph("To Date: " + formatDate(getToDate())));
-        document.add(new Paragraph("Institution: "
-                + (institution == null ? "All" : safeString(institution.getName()))));
-        document.add(new Paragraph("Site: "
-                + (site == null ? "All" : safeString(site.getName()))));
-        document.add(new Paragraph("Department: "
-                + (department == null ? "All" : safeString(department.getName()))));
-        document.add(new Paragraph("Laboratory: "
-                + (laboratory == null ? "All" : safeString(laboratory.getName()))));
-        document.add(new Paragraph("Investigation: "
-                + (investigation == null ? "All" : safeString(investigation.getName()))));
-        document.add(new Paragraph("Gender: " + (isBlank(gender) ? "All" : gender)));
-        document.add(new Paragraph("Visit Type: " + (isBlank(visitType) ? "All" : visitType)));
-        document.add(new Paragraph(" "));
+            Sheet sheet = workbook.createSheet("Investigation Wise Report");
 
-        if (getReportData().isEmpty()) {
-            // NOTE: export a document with just the filters and a
-            // "no records" note instead of blocking export.
-            document.add(new Paragraph("No investigation records found for the selected filters."));
-        } else {
-            PdfPTable table = new PdfPTable(9);
-            table.setWidthPercentage(100);
+            CellStyle titleStyle = createTitleStyle(workbook);
+            CellStyle headerStyle = createHeaderStyle(workbook);
+
+            int rowIndex = 0;
+
+            Row titleRow = sheet.createRow(rowIndex);
+            Cell titleCell = titleRow.createCell(0);
+
+            titleCell.setCellValue("Investigation Wise Report");
+            titleCell.setCellStyle(titleStyle);
+
+            sheet.addMergedRegion(
+                    new CellRangeAddress(rowIndex, rowIndex, 0, 8)
+            );
+
+            rowIndex += 2;
+
+            rowIndex = createFilterRow(sheet, rowIndex, "From Date", formatDate(getFromDate()));
+            rowIndex = createFilterRow(sheet, rowIndex, "To Date", formatDate(getToDate()));
+            rowIndex = createFilterRow(sheet, rowIndex, "Institution",
+                    institution == null ? "All" : safeString(institution.getName()));
+            rowIndex = createFilterRow(sheet, rowIndex, "Site",
+                    site == null ? "All" : safeString(site.getName()));
+            rowIndex = createFilterRow(sheet, rowIndex, "Department",
+                    department == null ? "All" : safeString(department.getName()));
+            rowIndex = createFilterRow(sheet, rowIndex, "Laboratory",
+                    laboratory == null ? "All" : safeString(laboratory.getName()));
+            rowIndex = createFilterRow(sheet, rowIndex, "Investigation",
+                    investigation == null ? "All" : safeString(investigation.getName()));
+            rowIndex = createFilterRow(sheet, rowIndex, "Gender",
+                    isBlank(gender) ? "All" : gender);
+            rowIndex = createFilterRow(sheet, rowIndex, "Visit Type",
+                    isBlank(visitType) ? "All" : visitType);
+
+            rowIndex++;
 
             String[] headers = {
                 "No.", "MRN", "Visit Type", "Laboratory", "Gender",
                 "Name", "Age", "Investigation", "Created Date"
             };
 
-            for (String h : headers) {
-                table.addCell(new Phrase(h));
+            Row headerRow = sheet.createRow(rowIndex++);
+
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
             }
 
-            int number = 1;
+            if (getReportData().isEmpty()) {
+                // NOTE: export the header-only sheet with an explicit
+                // "no records" row instead of blocking the export.
+                Row emptyRow = sheet.createRow(rowIndex++);
+                Cell emptyCell = emptyRow.createCell(0);
+                emptyCell.setCellValue("No investigation records found for the selected filters.");
+                sheet.addMergedRegion(
+                        new CellRangeAddress(rowIndex - 1, rowIndex - 1, 0, 8)
+                );
+            } else {
+                int number = 1;
 
-            for (InvestigationWiseRow row : getReportData()) {
-                table.addCell(String.valueOf(number++));
-                table.addCell(safeString(row.getMrn()));
-                table.addCell(safeString(row.getVisitType()));
-                table.addCell(safeString(row.getLaboratoryName()));
-                table.addCell(safeString(row.getGender()));
-                table.addCell(safeString(row.getPatientName()));
-                table.addCell(safeString(row.getAge()));
-                table.addCell(safeString(row.getInvestigationName()));
-                table.addCell(formatDate(row.getCreatedAt()));
+                for (InvestigationWiseRow reportRow : getReportData()) {
+
+                    Row excelRow = sheet.createRow(rowIndex++);
+
+                    excelRow.createCell(0).setCellValue(number++);
+                    excelRow.createCell(1).setCellValue(safeString(reportRow.getMrn()));
+                    excelRow.createCell(2).setCellValue(safeString(reportRow.getVisitType()));
+                    excelRow.createCell(3).setCellValue(safeString(reportRow.getLaboratoryName()));
+                    excelRow.createCell(4).setCellValue(safeString(reportRow.getGender()));
+                    excelRow.createCell(5).setCellValue(safeString(reportRow.getPatientName()));
+                    excelRow.createCell(6).setCellValue(safeString(reportRow.getAge()));
+                    excelRow.createCell(7).setCellValue(safeString(reportRow.getInvestigationName()));
+                    excelRow.createCell(8).setCellValue(formatDate(reportRow.getCreatedAt()));
+                }
             }
 
-            document.add(table);
-        }
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
 
-        document.close();
-        facesContext.responseComplete();
+                if (sheet.getColumnWidth(i) > 15000) {
+                    sheet.setColumnWidth(i, 15000);
+                }
+            }
 
-    } catch (Exception e) {
-        e.printStackTrace();
+            workbook.write(response.getOutputStream());
+            response.getOutputStream().flush();
 
-        if (!facesContext.getResponseComplete()) {
-            JsfUtil.addErrorMessage("Error exporting PDF file: " + e.getMessage());
+            facesContext.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            if (!facesContext.getResponseComplete()) {
+                JsfUtil.addErrorMessage("Excel export failed: " + e.getMessage());
+            }
         }
     }
-}
 
-    
-    
+    public void exportPdf() {
+
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = facesContext.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        try {
+            Document document = new Document(PageSize.A4.rotate(), 20, 20, 20, 20);
+
+            response.reset();
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition",
+                    "attachment; filename=\"investigation_wise_report.pdf\"");
+            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            response.setHeader("Pragma", "no-cache");
+            response.setDateHeader("Expires", 0);
+
+            PdfWriter.getInstance(document, response.getOutputStream());
+            document.open();
+
+            document.add(new Paragraph("Investigation Wise Report"));
+            document.add(new Paragraph(" "));
+            document.add(new Paragraph("From Date: " + formatDate(getFromDate())));
+            document.add(new Paragraph("To Date: " + formatDate(getToDate())));
+            document.add(new Paragraph("Institution: "
+                    + (institution == null ? "All" : safeString(institution.getName()))));
+            document.add(new Paragraph("Site: "
+                    + (site == null ? "All" : safeString(site.getName()))));
+            document.add(new Paragraph("Department: "
+                    + (department == null ? "All" : safeString(department.getName()))));
+            document.add(new Paragraph("Laboratory: "
+                    + (laboratory == null ? "All" : safeString(laboratory.getName()))));
+            document.add(new Paragraph("Investigation: "
+                    + (investigation == null ? "All" : safeString(investigation.getName()))));
+            document.add(new Paragraph("Gender: " + (isBlank(gender) ? "All" : gender)));
+            document.add(new Paragraph("Visit Type: " + (isBlank(visitType) ? "All" : visitType)));
+            document.add(new Paragraph(" "));
+
+            if (getReportData().isEmpty()) {
+                // NOTE: export a document with just the filters and a
+                // "no records" note instead of blocking export.
+                document.add(new Paragraph("No investigation records found for the selected filters."));
+            } else {
+                PdfPTable table = new PdfPTable(9);
+                table.setWidthPercentage(100);
+
+                String[] headers = {
+                    "No.", "MRN", "Visit Type", "Laboratory", "Gender",
+                    "Name", "Age", "Investigation", "Created Date"
+                };
+
+                for (String h : headers) {
+                    table.addCell(new Phrase(h));
+                }
+
+                int number = 1;
+
+                for (InvestigationWiseRow row : getReportData()) {
+                    table.addCell(String.valueOf(number++));
+                    table.addCell(safeString(row.getMrn()));
+                    table.addCell(safeString(row.getVisitType()));
+                    table.addCell(safeString(row.getLaboratoryName()));
+                    table.addCell(safeString(row.getGender()));
+                    table.addCell(safeString(row.getPatientName()));
+                    table.addCell(safeString(row.getAge()));
+                    table.addCell(safeString(row.getInvestigationName()));
+                    table.addCell(formatDate(row.getCreatedAt()));
+                }
+
+                document.add(table);
+            }
+
+            document.close();
+            facesContext.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            if (!facesContext.getResponseComplete()) {
+                JsfUtil.addErrorMessage("Error exporting PDF file: " + e.getMessage());
+            }
+        }
+    }
+
     private CellStyle createTitleStyle(Workbook workbook) {
         CellStyle style = workbook.createCellStyle();
 
