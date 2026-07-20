@@ -4110,6 +4110,17 @@ public class BhtSummeryController implements Serializable {
                 childPatientEncouters = getInwardBean().fetchChildPatientEncounter(getPatientEncounter());
             }
             createChargeItemTotals();
+            // This lazy path runs at render time when no action recomputed the
+            // totals (e.g. the page is redisplayed after a validation failure).
+            // Without recomputing here the charge tables show values while the
+            // summary (gross/discount/total/due) stays at 0.
+            calFinalValue();
+            if (getPatientEncounter() != null) {
+                paidByPatient = getInwardBean().getPaidByPatientValue(getPatientEncounter());
+                paidByCompany = getInwardBean().getPaidByCompanyValue(getPatientEncounter());
+                paid = paidByPatient + paidByCompany;
+                due = (grantTotal - discount) - paid;
+            }
         }
         return chargeItemTotals;
     }
