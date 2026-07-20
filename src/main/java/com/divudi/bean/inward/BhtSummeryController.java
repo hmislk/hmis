@@ -182,6 +182,7 @@ public class BhtSummeryController implements Serializable {
     List<PatientRoom> patientRooms;
     private List<CreditCompanyAllocation> creditCompanyAllocations;
     private EncounterCreditCompany newEncounterCreditCompany;
+    private boolean creatingNewVersion;
     //////////////////////////
     private double grantTotal = 0.0;
     private double discount;
@@ -1832,6 +1833,18 @@ public class BhtSummeryController implements Serializable {
         saveBill();
         saveBillItem();
 
+        // Scoped here (not in the shared saveBill()) because saveBill() is also called by
+        // saveProvisionalBill() for a bill that is about to become BillType.InwardProvisionalBill,
+        // not a final bill — flipping confirmedFinalBill there would wrongly unconfirm the real
+        // confirmed version on every provisional save.
+        getCurrent().setConfirmedFinalBill(true);
+        if (getPatientEncounter().getFinalBill() != null && !getPatientEncounter().getFinalBill().getId().equals(getCurrent().getId())) {
+            Bill oldConfirmed = getPatientEncounter().getFinalBill();
+            oldConfirmed.setConfirmedFinalBill(false);
+            getBillFacade().edit(oldConfirmed);
+        }
+        getBillFacade().edit(getCurrent());
+
         if (getPatientEncounter().getPaymentMethod() == PaymentMethod.Credit) {
             getInwardBean().updateCreditDetail(getPatientEncounter(), getCurrent().getNetTotal());
             for (CreditCompanyAllocation alloc : creditCompanyAllocations) {
@@ -1879,6 +1892,7 @@ public class BhtSummeryController implements Serializable {
         showOrginalBill = false;
         printPreview = true;
         originalBill = null;
+        creatingNewVersion = false;
     }
 
     /**
@@ -1957,6 +1971,13 @@ public class BhtSummeryController implements Serializable {
             createCreditBillForCreditCompany(getPatientEncounter(), getCurrent().getNetTotal());
         }
 
+        getCurrent().setConfirmedFinalBill(true);
+        if (getPatientEncounter().getFinalBill() != null && !getPatientEncounter().getFinalBill().getId().equals(getCurrent().getId())) {
+            Bill oldConfirmed = getPatientEncounter().getFinalBill();
+            oldConfirmed.setConfirmedFinalBill(false);
+            getBillFacade().edit(oldConfirmed);
+        }
+
         getPatientEncounter().setFinalBill(getCurrent());
         getPatientEncounter().setGrantTotal(getCurrent().getGrantTotal());
         getPatientEncounter().setDiscount(getCurrent().getDiscount());
@@ -1974,6 +1995,72 @@ public class BhtSummeryController implements Serializable {
         originalBill = null;
 
         return "inward_bill_final?faces-redirect=true";
+    }
+
+    /**
+     * Starts a brand-new final bill version for the same admission, seeded
+     * from {@code sourceBill}'s discount and credit-company allocations, but
+     * recomputing all live charge tables fresh (the source bill's exact
+     * BillItems are not frozen/replayed).
+     */
+    public String createNewVersionFromBill(Bill sourceBill) {
+        creatingNewVersion = true;
+        setPatientEncounter(sourceBill.getPatientEncounter());
+
+        createTables();
+        calculateDiscount();
+        updateTotal();
+
+        if (sourceBill.getBillFinanceDetails() != null
+                && sourceBill.getBillFinanceDetails().getBillDiscount() != null
+                && sourceBill.getBillFinanceDetails().getBillDiscount().doubleValue() != 0) {
+            billLevelDiscount = sourceBill.getBillFinanceDetails().getBillDiscount().doubleValue();
+            // Recompute discount/due for the restored bill-level discount, mirroring
+            // listnerDiscontAmmountChanged() — done manually (not via that listener)
+            // because creditCompanyAllocations isn't seeded yet at this point and the
+            // listener would rebuild it from live data before rebuildAllocationsFromSourceBill runs.
+            discount = itemDiscountTotal + chargeTypeDiscountTotal + billLevelDiscount;
+            due = (grantTotal - discount) - paid;
+        }
+
+        creditCompanyAllocations = rebuildAllocationsFromSourceBill(sourceBill);
+
+        // Initializes `originalBill` (mirrors toSettle()'s sequence) — settle() requires
+        // it to be non-null; without this call it stays null on the create-version path.
+        settleOriginalBill();
+
+        getCurrent().setPreviousVersion(sourceBill);
+
+        return "inward_bill_final?faces-redirect=true";
+    }
+
+    /**
+     * Rebuilds the on-screen credit-company allocation split from the CC
+     * commitment bills recorded against {@code sourceBill}, so a new version
+     * starts from the same split rather than forcing the cashier to
+     * re-allocate from scratch.
+     */
+    private List<CreditCompanyAllocation> rebuildAllocationsFromSourceBill(Bill sourceBill) {
+        List<CreditCompanyAllocation> allocations = new ArrayList<>();
+        String jpql = "select b from Bill b where b.referenceBill = :sourceBill and b.billTypeAtomic = :atomic and b.cancelled = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("sourceBill", sourceBill);
+        params.put("atomic", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+        List<Bill> ccBills = getBillFacade().findByJpql(jpql, params);
+
+        double allocatedSoFar = 0.0;
+        if (ccBills != null) {
+            for (Bill ccBill : ccBills) {
+                allocations.add(new CreditCompanyAllocation(ccBill.getCreditCompany(), ccBill.getNetTotal()));
+                allocatedSoFar += ccBill.getNetTotal();
+            }
+        }
+
+        double newLiveNetDue = Math.max(0.0, (grantTotal - discount) - paidByPatient - paidByCompany);
+        double patientPortion = Math.max(0.0, newLiveNetDue - allocatedSoFar);
+        allocations.add(new CreditCompanyAllocation(patientPortion, true));
+
+        return allocations;
     }
 
     public void createCreditBillForCreditCompany(PatientEncounter patientEncounter, Double netTotal) {
@@ -2021,7 +2108,14 @@ public class BhtSummeryController implements Serializable {
                 || getPatientEncounter().getPaymentMethod() != PaymentMethod.Credit) {
             return;
         }
-        creditCompanyAllocations = null;
+        // When creating a new final bill version, the allocation list was already
+        // seeded from the source bill's credit-company split (see
+        // createNewVersionFromBill/rebuildAllocationsFromSourceBill) — clicking
+        // Process here must not discard that starting point. In the normal
+        // interim-settle flow, always rebuild from live data.
+        if (!creatingNewVersion) {
+            creditCompanyAllocations = null;
+        }
         populateCreditCompanyAllocations();
     }
 
@@ -2389,7 +2483,7 @@ public class BhtSummeryController implements Serializable {
             return true;
         }
 
-        if (getPatientEncounter().isPaymentFinalized()) {
+        if (getPatientEncounter().isPaymentFinalized() && !creatingNewVersion) {
             JsfUtil.addErrorMessage("Payment is Finalized U need to cancel Previuios Final Bill of This Bht");
             return true;
         }
@@ -2622,9 +2716,6 @@ public class BhtSummeryController implements Serializable {
         getCurrent().setCreditCompany(getPatientEncounter().getCreditCompany());
         getCurrent().setInstitution(getSessionController().getInstitution());
         getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_FINAL_BILL);
-        getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL));
-        getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL));
-
         getCurrent().setBillType(BillType.InwardFinalBill);
 
         getCurrent().setBillDate(new Date());
@@ -2636,11 +2727,24 @@ public class BhtSummeryController implements Serializable {
         getCurrent().setCreater(getSessionController().getLoggedUser());
 
         writeDiscountBreakdownToFinanceDetails(getCurrent());
-        if (getCurrent().getId() == null) {
-            getBillFacade().create(getCurrent());
-        } else {
-            getBillFacade().edit(getCurrent());
-        }
+
+        // Version-serial assignment and persist are done under a per-encounter lock
+        // (held for the read-count-then-write span, not just the read) so two
+        // concurrent final-bill saves for the same admission cannot both compute
+        // the same serial before either insert commits.
+        getBillNumberBean().withFinalBillVersionLock(patientEncounter, () -> {
+            int versionSerial = getBillNumberBean().computeNextFinalBillVersionSerial(patientEncounter);
+            getCurrent().setFinalBillVersionSerial(versionSerial);
+            getCurrent().setDeptId(getBillNumberBean().departmentBillNumberGenerator(getSessionController().getDepartment(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
+            getCurrent().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.InwardFinalBill, BillClassType.BilledBill, BillNumberSuffix.INWFINAL) + "/" + versionSerial);
+
+            if (getCurrent().getId() == null) {
+                getBillFacade().create(getCurrent());
+            } else {
+                getBillFacade().edit(getCurrent());
+            }
+            return null;
+        });
     }
 
     private void writeDiscountBreakdownToFinanceDetails(Bill bill) {

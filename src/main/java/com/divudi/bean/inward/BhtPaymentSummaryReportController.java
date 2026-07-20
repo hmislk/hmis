@@ -245,6 +245,7 @@ public class BhtPaymentSummaryReportController implements Serializable {
                 + " where b.retired = false"
                 + " and b.cancelled = false"
                 + " and b.billType = :bt"
+                + " and b.confirmedFinalBill = true"
                 + " and b.patientEncounter = :enc"
                 + " order by b.id desc";
         Map<String, Object> params = new HashMap<>();
