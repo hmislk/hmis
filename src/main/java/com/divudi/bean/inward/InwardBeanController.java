@@ -2159,6 +2159,7 @@ public class InwardBeanController implements Serializable {
                 + " where b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.billType=:btp "
+                + " and b.confirmedFinalBill=true "
                 + " and b.patientEncounter=:pe"
                 + " order by b.id desc";
         HashMap hm = new HashMap();
@@ -2173,6 +2174,7 @@ public class InwardBeanController implements Serializable {
                 + " where b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.billType=:btp "
+                + " and b.confirmedFinalBill=true "
                 + " and b.patientEncounter.paymentFinalized=true";
         HashMap hm = new HashMap();
         hm.put("btp", BillType.InwardFinalBill);
