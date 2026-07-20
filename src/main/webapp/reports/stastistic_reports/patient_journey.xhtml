@@ -10,6 +10,19 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
 
+                <style type="text/css">
+                    @media print {
+                        /* Hide PrimeFaces column filter inputs when printing */
+                        .no-print-filters .ui-column-filter,
+                        .no-print-filters thead tr.ui-filter-row,
+                        .no-print-filters .ui-datatable-header,
+                        .no-print-filters .ui-paginator {
+                            display: none !important;
+                            visibility: hidden !important;
+                        }
+                    }
+                </style>
+
                 <h:form >
 
                     <p:panel>
@@ -113,15 +126,14 @@
                             <p:commandButton style="width: 150px" ajax="false" value="Excel" icon="fas fa-file-excel" class="ui-button-success mx-2" >
                                 <p:dataExporter fileName="Patient_Journey_Report" type="xlsx" target="dtaPr" />
                             </p:commandButton>
-                            <p:commandButton style="width: 150px" ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" >
-                                <p:dataExporter fileName="Patient_Journey_Report" type="pdf" target="dtaPr" />
+                            <p:commandButton style="width: 150px" ajax="false" value="PDF" icon="fas fa-file-pdf" class="ui-button-danger mx-1" action="#{reportController.exportPatientJourneyReportToPDF}" >
                             </p:commandButton>
                         </h:panelGrid>
 
                         <p:dataTable id="dtaPr"
                                      rowIndexVar="count"
                                      value="#{reportController.patientJourneyRows}"
-                                     var="row" class="my-2">
+                                     var="row" class="my-2 no-print-filters">
                             <f:facet name="header">
                                 <h:outputLabel value="Patient Journey Report" />
                             </f:facet>
@@ -131,7 +143,7 @@
                                 sortBy="#{row.transactionDate}"
                                 filterBy="#{row.transactionDate}">
                                 <h:outputText value="#{row.transactionDate}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm"/>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Visit No" filterMatchMode="contains" sortBy="#{row.visitNo}" filterBy="#{row.visitNo}">
