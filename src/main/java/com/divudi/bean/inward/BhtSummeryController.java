@@ -3135,6 +3135,12 @@ public class BhtSummeryController implements Serializable {
             JsfUtil.addErrorMessage("No Admission Selected");
             return "";
         }
+        if (patientEncounter.getParentEncounter() != null) {
+            JsfUtil.addErrorMessage("Interim bills can only be generated for the parent (mother) encounter. "
+                    + "Generate it from the mother's admission — it will automatically include this baby's charges.");
+            clear();
+            return "";
+        }
         if (configOptionApplicationController.getBooleanValueByKey("Restrict Access to Intrim Bill if Provisional Bill is Created")) {
             if (admissionController.isAddmissionHaveProvisionalBill((Admission) patientEncounter)) {
                 JsfUtil.addErrorMessage("There is a Provisional Bill For This Admission");
@@ -3192,6 +3198,12 @@ public class BhtSummeryController implements Serializable {
         estimatedBillView = true;
 
         if (patientEncounter == null) {
+            return;
+        }
+        if (patientEncounter.getParentEncounter() != null) {
+            JsfUtil.addErrorMessage("Estimated bills can only be generated for the parent (mother) encounter. "
+                    + "Generate it from the mother's admission — it will automatically include this baby's charges.");
+            clear();
             return;
         }
 
@@ -3394,6 +3406,12 @@ public class BhtSummeryController implements Serializable {
     }
 
     public String navigateToIntrimBillFromPatientProfile() {
+        if (patientEncounter != null && patientEncounter.getParentEncounter() != null) {
+            JsfUtil.addErrorMessage("Interim bills can only be generated for the parent (mother) encounter. "
+                    + "Generate it from the mother's admission — it will automatically include this baby's charges.");
+            clear();
+            return "";
+        }
         childPatientEncouters = null;
         createTables();
         return "/inward/inward_bill_intrim?faces-redirect=true";
