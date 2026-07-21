@@ -953,6 +953,64 @@ AND (a.VMP_ID IS NULL OR a.VMP_ID NOT IN (
 ```
 Verified while testing issue #22312.
 
+## 41. A local dev DB with an empty `TRIGGERSUBSCRIPTION` table means notification-generating actions silently produce zero `UserNotification` rows
+
+Discharging a patient, changing a room, etc. always creates a `Notification`
+row, but the actual per-user `UserNotification` rows (what the bell icon and
+`/Notification/user_notifications.xhtml` show) only get created for webusers
+who hold a matching `TriggerSubscription`
+(`NotificationController.createNotification(...)` →
+`userNotificationController.createUserNotifications(nn)` →
+`TriggerSubscriptionController.fillSubscribedUsersByDepartment(...)`). A
+freshly-restored or never-fully-seeded local DB can have **zero rows in
+`TRIGGERSUBSCRIPTION`**, in which case discharging any number of patients
+produces `Notification` rows but no `UserNotification` rows for anyone —
+this looks identical to "the feature doesn't work" but is actually missing
+test-fixture data, not a bug.
+
+- Diagnose with `SELECT COUNT(*) FROM TRIGGERSUBSCRIPTION;` — 0 confirms this.
+- Fix through the UI, not SQL (per this doc's "use the admin UI" pattern,
+  §26): Admin → Manage Users → select the target user → **Manage User
+  Subscriptions** → tick **Application-wide** → pick the relevant
+  `TriggerType` (e.g. "Inward Patient Room Discharge - System Notification")
+  → **Add Subscription**.
+- The **Application-wide** checkbox's visible box intercepts Playwright's
+  normal click on the underlying `p:selectBooleanCheckbox` input — click via
+  a selector scoped to its own JSF id (`chkApplicationWide` in
+  `admin/users/user_subscription.xhtml`), not a bare `.ui-chkbox-box` index,
+  which picks whichever checkbox happens to be first/nth on the page and can
+  silently toggle the wrong control if the page has more than one:
+  `document.querySelector('[id$="chkApplicationWide"] .ui-chkbox-box')`.
+
+Found while verifying issue #21538 (discharge notifications routing to the
+wrong patient) — the fix couldn't be end-to-end tested at all until this was
+discovered and worked around.
+
+## 42. PrimeFaces bare `update="someId"` can 500 from inside a `p:dataTable`/`ui:repeat` row even though the id exists on the page
+
+A `p:commandButton update="someId"` where `someId` is a **sibling id
+declared outside** the enclosing `p:dataTable`/`ui:repeat`/`p:column` throws
+a hard 500 (`javax.faces.component.search.ComponentNotFoundException:
+Cannot find component for expressions "someId"`) as soon as that button is
+rendered for any row — not just on click, since PrimeFaces builds the ajax
+request descriptor (including resolving `update`) during **encode**, not
+decode. It can appear to work for row 0 by coincidence and break only from
+row 1 onward, or break for every row once a row's content changes (e.g. a
+row toggling into "retired" state and rendering a previously-`rendered=false`
+button for the first time) — so it can look like a row-index-specific bug
+rather than a general one.
+
+Fix: don't rely on plain-id resolution reaching outside the table/repeat.
+Use `update="@form"` (safe/simple when refreshing the whole form is
+acceptable) or an absolute id path — this project's `jsf-ajax` skill already
+documents `@this`/`@form`/`:#{p:resolveFirstComponentWithId(...)}` as the
+required patterns for exactly this reason.
+
+Found while fixing issue #21538: `Notification/user_notifications.xhtml`'s
+"Restore" button (`update="reNot"`, `reNot` being the `h:panelGroup`
+wrapping the whole list) crashed the page load itself once a retired
+notification was shown in a row other than the first.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
