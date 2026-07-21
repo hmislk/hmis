@@ -370,9 +370,6 @@ public class SurgeryCountReportController implements Serializable {
         "255, 99, 255", "99, 255, 132", "220, 20, 60", "65, 105, 225"
     };
 
-    // =========================================================
-// EXCEL EXPORT (table + selected chart)
-// =========================================================
     public void downloadExcelWithChart() {
         if (surgeryCountTypeList == null || surgeryCountTypeList.isEmpty()) {
             JsfUtil.addErrorMessage("No data to export. Please process the report first.");
@@ -494,9 +491,6 @@ public class SurgeryCountReportController implements Serializable {
         drawing.createPicture(anchor, pictureIdx);
     }
 
-    // =========================================================
-// PDF EXPORT (table + selected chart)
-// =========================================================
     public void downloadPdfWithChart() {
         if (surgeryCountTypeList == null || surgeryCountTypeList.isEmpty()) {
             JsfUtil.addErrorMessage("No data to export. Please process the report first.");
@@ -590,9 +584,6 @@ public class SurgeryCountReportController implements Serializable {
         table.addCell(cell);
     }
 
-    // =========================================================
-// Shared helper: decode whichever chart the user has selected
-// =========================================================
     private byte[] resolveChartImageBytes() {
         String base64 = null;
         if ("bar".equalsIgnoreCase(surgeryCountChartType)) {

@@ -184,9 +184,6 @@
                     </p:panel>
                     <h:outputScript>
                         function captureChartImages() {
-                        // Use attribute-ends-with selectors instead of a hardcoded full client id,
-                        // so this keeps working even if this fragment ends up nested inside
-                        // another NamingContainer (e.g. the /reports/index.xhtml template).
                         try {
                         var barWidget = PF('surgeryCountBarWV');
                         var barInput = document.querySelector('input[id$=":barChartImageData"]');
