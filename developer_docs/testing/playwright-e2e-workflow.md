@@ -915,6 +915,44 @@ local `coop.patientencounter` table was missing all four
 `professionalpayments*` columns and `patienttransferrequest` was missing
 `theatreroom_id`.
 
+## 39. Local dev DB has no `FrequencyUnit`/`DurationUnit`/`DoseUnit` seed rows — the prescription "Calculate & Add" path is untestable locally
+
+`ward_pharmacy_bht_issue_request_bill.xhtml`'s Prescription section (Dose/Dose
+Unit/Frequency/Duration/Duration Unit → "Calculate & Add") requires selecting
+a `FrequencyUnit` and `DurationUnit` — both are `Category` subclasses stored
+in the single-table `category` (via `@Inheritance` with no strategy = default
+`SINGLE_TABLE`, discriminated by `DTYPE`). The local `coop` DB has **zero**
+rows with `DTYPE` in (`FrequencyUnit`, `DurationUnit`, `DoseUnit`) — confirmed
+via `SELECT DISTINCT DTYPE FROM category`. Both dropdowns render as
+`combobox "Select"` with no other options, and submitting anyway fails with
+`"Calculation Error: Incomplete prescription: dose, frequency, duration and
+duration unit are required"`. **Workaround**: use the "Dispense Request" →
+"+ Add Dispense Only" path instead (item autocomplete + plain qty field, no
+prescription fields) — but that path has the toDepartment bug from §31, so
+still fix `TODEPARTMENT_ID` via SQL afterward. Verified while testing issue
+#22312.
+
+## 40. Auto-substitution can silently turn a "zero stock" test case into "issued in full"
+
+When testing a BHT/pharmacy-request stock-shortfall feature, don't assume an
+item with 0 stock at the issuing department will exercise the "no stock"
+code path — `PharmacySaleBhtController.generateIssueBillComponentsForBhtRequest`
+(and similar issuing flows) auto-substitutes to a same-VMP sibling AMP with
+stock before falling back to "no stock". An item whose exact AMP has 0 stock
+but has an in-stock sibling under the same VMP (e.g. `Levo 500mg Tablet` →
+`EVITRA 500MG`) will be silently issued in full via the substitute, hiding the
+zero-stock code path entirely. To reliably hit "no stock at all", pick an item
+with **no in-stock siblings under its VMP either** — verify first:
+```sql
+SELECT a.ID, a.NAME, a.VMP_ID FROM item a WHERE a.DTYPE='Amp'
+AND a.ID NOT IN (SELECT ib.ITEM_ID FROM stock s JOIN itembatch ib ON s.ITEMBATCH_ID=ib.ID
+                 WHERE s.DEPARTMENT_ID=<dept> AND s.STOCK>0)
+AND (a.VMP_ID IS NULL OR a.VMP_ID NOT IN (
+  SELECT a2.VMP_ID FROM item a2 JOIN itembatch ib2 ON ib2.ITEM_ID=a2.ID
+  JOIN stock s2 ON s2.ITEMBATCH_ID=ib2.ID WHERE s2.DEPARTMENT_ID=<dept> AND s2.STOCK>0 AND a2.DTYPE='Amp');
+```
+Verified while testing issue #22312.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
