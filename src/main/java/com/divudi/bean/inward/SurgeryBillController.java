@@ -28,6 +28,7 @@ import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PatientItem;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Item;
 import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.entity.inward.TimedItem;
 import com.divudi.core.entity.inward.TimedItemFee;
@@ -170,12 +171,8 @@ public class SurgeryBillController implements Serializable {
     }
 
     public String navigateToSurgeryBillSummary(Bill surgery) {
+        resetSurgeryBillValues();
         this.surgeryBill = surgery;
-        surgeryProfessionalFees = null;
-        surgeryAssistingFees = null;
-        surgeryServiceDepartmentItems = null;
-        surgeryMedicineIssues = null;
-        surgeryStoreIssues = null;
         return "/theater/surgery_bill_summary?faces-redirect=true";
     }
 
@@ -251,6 +248,7 @@ public class SurgeryBillController implements Serializable {
                     + " and type(bt.staff)=:class "
                     + " and bt.fee.feeType=:ftp "
                     + " and bt.bill.billType=:btp "
+                    + " and bt.bill.cancelled=false "
                     + " and bt.bill.forwardReferenceBill=:surg "
                     + " order by bt.feeAdjusted desc";
             HashMap<String, Object> hm = new HashMap<>();
@@ -269,6 +267,7 @@ public class SurgeryBillController implements Serializable {
                     + " and type(bt.staff)!=:class "
                     + " and bt.fee.feeType=:ftp "
                     + " and bt.bill.billType=:btp "
+                    + " and bt.bill.cancelled=false "
                     + " and bt.bill.forwardReferenceBill=:surg";
             HashMap<String, Object> hm = new HashMap<>();
             hm.put("class", Consultant.class);
@@ -284,8 +283,45 @@ public class SurgeryBillController implements Serializable {
         if (surgeryServiceDepartmentItems == null && getSurgeryBill().getId() != null) {
             surgeryServiceDepartmentItems = getInwardBean().createDepartmentBillItemsOptimized(
                     getSurgeryBill().getPatientEncounter(), getSurgeryBill(), new ArrayList<>());
+            applySurgeryScopedCheckedCounts(surgeryServiceDepartmentItems);
         }
         return surgeryServiceDepartmentItems;
+    }
+
+    /**
+     * createDepartmentBillItemsOptimized's "Checked Count" is computed by
+     * InwardBeanController.getBulkCheckedBillItemCounts(items, patientEncounter),
+     * which is hard-scoped to admission-wide BillType.InwardBill and ignores
+     * forwardReferenceBill entirely — so it can show counts unrelated to this
+     * surgery. Override each item's transCheckedCount with a surgery-scoped
+     * count so the tab agrees with the forwardReferenceBill-based Validate gate.
+     */
+    private void applySurgeryScopedCheckedCounts(List<DepartmentBillItems> departmentBillItems) {
+        if (departmentBillItems == null || departmentBillItems.isEmpty()) {
+            return;
+        }
+        String jpql = "SELECT bi.item.id, COUNT(bi) FROM BillItem bi WHERE bi.retired=false "
+                + " and bi.bill.forwardReferenceBill=:surg "
+                + " and bi.bill.checkeAt IS NOT NULL "
+                + " GROUP BY bi.item.id";
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("surg", getSurgeryBill());
+        List<Object[]> rows = getBillItemFacade().findObjectsArrayByJpql(jpql, hm, null);
+        Map<Long, Long> checkedCountByItemId = new HashMap<>();
+        if (rows != null) {
+            for (Object[] row : rows) {
+                checkedCountByItemId.put((Long) row[0], (Long) row[1]);
+            }
+        }
+        for (DepartmentBillItems dep : departmentBillItems) {
+            if (dep.getItems() == null) {
+                continue;
+            }
+            for (Item item : dep.getItems()) {
+                Long checked = checkedCountByItemId.get(item.getId());
+                item.setTransCheckedCount(checked != null ? checked : 0);
+            }
+        }
     }
 
     public List<Bill> getSurgeryMedicineIssues() {
@@ -1077,6 +1113,10 @@ public class SurgeryBillController implements Serializable {
         }
         if (!surgeryBill.isCompleted()) {
             JsfUtil.addErrorMessage("Surgery is not currently validated.");
+            return;
+        }
+        if (revertReason == null || revertReason.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please provide a reason for reverting validation.");
             return;
         }
         Map<String, Object> before = new LinkedHashMap<>();
