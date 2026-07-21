@@ -10,67 +10,89 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
 
-                <!-- Shared print stylesheet: defines .paper, .table, th/td borders, .header -->
                 <h:outputStylesheet library="css" name="printing/reportprint.css"/>
 
                 <h:form>
                     <style>
                         @media screen, print {
-                            /* Override paper width for landscape A3 wide table */
                             .paper {
                                 width: 420mm !important;
                             }
 
-                            /* Column width budget  (must sum to 100%) */
-                            .col-sno          { width: 1.5%; }
-                            .col-mrno         { width: 4%;   }
-                            .col-patient-name { width: 6%;   }
-                            .col-age          { width: 2%;   }
-                            .col-gender       { width: 2%;   }
-                            .col-visit        { width: 4%;   }
-                            .col-adm-date     { width: 4%;   }
-                            .col-adm-time     { width: 3%;   }
-                            .col-req-no       { width: 4%;   }
-                            .col-status       { width: 5%;   }
-                            /* FROM group  (7 cols, ~31%) */
-                            .col-f-hosp       { width: 5%;   }
-                            .col-f-dept       { width: 5%;   }
-                            .col-f-pcon       { width: 5%;   }
-                            .col-f-con        { width: 3%;   }
-                            .col-f-ward       { width: 5%;   }
-                            .col-f-bed        { width: 4%;   }
-                            .col-f-btype      { width: 4%;   }
-                            /* TO group    (7 cols, ~31%) */
-                            .col-t-hosp       { width: 5%;   }
-                            .col-t-dept       { width: 5%;   }
-                            .col-t-pcon       { width: 5%;   }
-                            .col-t-con        { width: 3%;   }
-                            .col-t-ward       { width: 5%;   }
-                            .col-t-bed        { width: 4%;   }
-                            .col-t-btype      { width: 4%;   }
-                            /* Transfer tail */
-                            .col-tf-date      { width: 3.5%; }
-                            .col-tf-time      { width: 3%;   }
-                            .col-tf-by        { width: 5%;   }
-                            .col-tf-reason    { width: 5%;   }
+                            /* ===== Column width budget (sums to 100%) ===== */
+                            .col-sno      { width: 2%;  }
+                            .col-mrno     { width: 4%;  }
+                            .col-name     { width: 8%;  }
+                            .col-agesex   { width: 3%;  }
+                            .col-visit    { width: 4%;  }
+                            .col-adm      { width: 5%;  }
+                            .col-req      { width: 3%;  }
+                            .col-status   { width: 5%;  }
 
-                            /* Group header rows */
+                            .col-f-hosp   { width: 6%;  }
+                            .col-f-dept   { width: 6%;  }
+                            .col-f-con    { width: 6%;  }
+                            .col-f-room   { width: 7%;  }
+
+                            .col-t-hosp   { width: 6%;  }
+                            .col-t-dept   { width: 6%;  }
+                            .col-t-con    { width: 6%;  }
+                            .col-t-room   { width: 7%;  }
+
+                            .col-tf       { width: 5%;  }
+                            .col-tf-by    { width: 6%;  }
+                            .col-tf-reason{ width: 5%;  }
+
+                            /* ===== Header rows ===== */
                             .grp-header th {
-                                background-color: #d9e1f2 !important;
+                                background-color: #ccd7ec !important;
                                 text-align: center !important;
-                                font-size: 8pt !important;
+                                font-size: 8.5pt !important;
+                                font-weight: 700;
+                                padding: 4px 3px !important;
+                                border: 1px solid #333 !important;
                             }
                             .sub-header th {
-                                background-color: #e9ecef !important;
+                                background-color: #e6eaf2 !important;
                                 text-align: center !important;
-                                font-size: 7pt !important;
+                                font-size: 7.5pt !important;
+                                font-weight: 600;
+                                padding: 3px !important;
+                                border: 1px solid #333 !important;
                             }
-                            /* Override white-space for cells so long values wrap */
-                            .table th, .table td {
+
+                            /* ===== Body cells ===== */
+                            .table {
+                                border-collapse: collapse !important;
+                            }
+                            .table td {
+                                font-size: 7.5pt !important;
+                                line-height: 1.25 !important;
+                                padding: 3px 4px !important;
+                                border: 1px solid #999 !important;
                                 white-space: normal !important;
                                 overflow-wrap: break-word !important;
                                 word-break: break-word !important;
+                                vertical-align: top !important;
                             }
+                            .table td.center { text-align: center !important; }
+
+                            /* Zebra striping to help the eye track a row across 19 columns */
+                            .table tbody tr:nth-child(even) td {
+                                background-color: #f5f6f8 !important;
+                                -webkit-print-color-adjust: exact !important;
+                                print-color-adjust: exact !important;
+                            }
+                            .grp-header th, .sub-header th {
+                                -webkit-print-color-adjust: exact !important;
+                                print-color-adjust: exact !important;
+                            }
+
+                            /* Visual separators between the patient block / FROM / TO / transfer block */
+                            .divider-left  { border-left: 2px solid #444 !important; }
+
+                            .stacked { display: block; }
+                            .stacked .line2 { color: #444; font-size: 7pt; }
                         }
 
                         @media print {
@@ -81,7 +103,6 @@
                         }
                     </style>
 
-                    <!-- Panel header with Print and Back buttons -->
                     <p:panel header="Room Change Print" styleClass="my-2">
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
@@ -107,11 +128,9 @@
                         </f:facet>
                     </p:panel>
 
-                    <!-- Printable area -->
                     <h:panelGroup id="report" class="d-flex justify-content-center">
                         <div class="paper">
 
-                            <!-- Report header -->
                             <div class="header">
                                 <div class="d-flex justify-content-center" style="font-weight:700; font-size:18px;">
                                     <h:outputText value="#{sessionController.institution.name}"/>
@@ -149,136 +168,120 @@
                                 </div>
                             </div>
 
-                            <!-- Native HTML table — never clipped by browser print dialog -->
                             <h:panelGroup rendered="#{not empty roomChangeReportController.roomChangeReportDtoList}">
                                 <table class="table" style="table-layout:fixed; width:99.9%;">
                                     <colgroup>
                                         <col class="col-sno"/>
                                         <col class="col-mrno"/>
-                                        <col class="col-patient-name"/>
-                                        <col class="col-age"/>
-                                        <col class="col-gender"/>
+                                        <col class="col-name"/>
+                                        <col class="col-agesex"/>
                                         <col class="col-visit"/>
-                                        <col class="col-adm-date"/>
-                                        <col class="col-adm-time"/>
-                                        <col class="col-req-no"/>
+                                        <col class="col-adm"/>
+                                        <col class="col-req"/>
                                         <col class="col-status"/>
                                         <!-- FROM -->
                                         <col class="col-f-hosp"/>
                                         <col class="col-f-dept"/>
-                                        <col class="col-f-pcon"/>
                                         <col class="col-f-con"/>
-                                        <col class="col-f-ward"/>
-                                        <col class="col-f-bed"/>
-                                        <col class="col-f-btype"/>
+                                        <col class="col-f-room"/>
                                         <!-- TO -->
                                         <col class="col-t-hosp"/>
                                         <col class="col-t-dept"/>
-                                        <col class="col-t-pcon"/>
                                         <col class="col-t-con"/>
-                                        <col class="col-t-ward"/>
-                                        <col class="col-t-bed"/>
-                                        <col class="col-t-btype"/>
+                                        <col class="col-t-room"/>
                                         <!-- Tail -->
-                                        <col class="col-tf-date"/>
-                                        <col class="col-tf-time"/>
+                                        <col class="col-tf"/>
                                         <col class="col-tf-by"/>
                                         <col class="col-tf-reason"/>
                                     </colgroup>
                                     <thead>
-                                        <!-- ROW 1: top-level groups -->
                                         <tr class="grp-header">
-                                            <th rowspan="2">S.No</th>
-                                            <th rowspan="2">MRNO</th>
+                                            <th rowspan="2">#</th>
+                                            <th rowspan="2">MRN</th>
                                             <th rowspan="2">Patient Name</th>
-                                            <th rowspan="2">Age</th>
-                                            <th rowspan="2">Gender</th>
+                                            <th rowspan="2">Age/<br/>Sex</th>
                                             <th rowspan="2">Visit</th>
-                                            <th rowspan="2">Adm. Date</th>
-                                            <th rowspan="2">Adm. Time</th>
+                                            <th rowspan="2">Admission</th>
                                             <th rowspan="2">Req. No.</th>
                                             <th rowspan="2">Status</th>
-                                            <th colspan="7">FROM</th>
-                                            <th colspan="7">TO</th>
-                                            <th rowspan="2">Transfer Date</th>
-                                            <th rowspan="2">Transfer Time</th>
+                                            <th colspan="4" class="divider-left">FROM</th>
+                                            <th colspan="4" class="divider-left">TO</th>
+                                            <th rowspan="2" class="divider-left">Transfer<br/>Date/Time</th>
                                             <th rowspan="2">Transfer By</th>
                                             <th rowspan="2">Reason</th>
                                         </tr>
-                                        <!-- ROW 2: sub-column headers for FROM and TO groups -->
                                         <tr class="sub-header">
-                                            <!-- FROM sub-headers -->
-                                            <th>Hospital</th>
+                                            <th class="divider-left">Hospital</th>
                                             <th>Department</th>
-                                            <th>Primary Consultant</th>
                                             <th>Consultant</th>
-                                            <th>Ward</th>
-                                            <th>Bed No</th>
-                                            <th>Bed Type</th>
-                                            <!-- TO sub-headers -->
-                                            <th>Hospital</th>
+                                            <th>Ward / Bed Type</th>
+
+                                            <th class="divider-left">Hospital</th>
                                             <th>Department</th>
-                                            <th>Primary Consultant</th>
                                             <th>Consultant</th>
-                                            <th>Ward</th>
-                                            <th>Bed No</th>
-                                            <th>Bed Type</th>
+                                            <th>Ward / Bed Type</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <ui:repeat value="#{roomChangeReportController.roomChangeReportDtoList}" var="detail" varStatus="loop">
                                             <tr>
-                                                <td><h:outputText value="#{loop.index + 1}"/></td>
-                                                <td><h:outputText value="#{detail.patientPhn}"/></td>
-                                                <td><h:outputText value="#{detail.patientName}"/></td>
-                                                <td><h:outputText value="#{detail.patientAge}"/></td>
-                                                <td><h:outputText value="#{detail.patientSex}"/></td>
-                                                <td><h:outputText value="#{detail.bhtNo}"/></td>
+                                                <td class="center">#{loop.index + 1}</td>
+                                                <td>#{detail.patientPhn}</td>
+                                                <td>#{detail.patientName}</td>
+                                                <td class="center">#{detail.patientAge}/#{detail.patientSex}</td>
+                                                <td>#{detail.bhtNo}</td>
                                                 <td>
-                                                    <h:outputText value="#{detail.dateOfAdmission}">
-                                                        <f:convertDateTime pattern="M/d/yyyy"/>
-                                                    </h:outputText>
+                                                    <span class="stacked">
+                                                        <h:outputText value="#{detail.dateOfAdmission}">
+                                                            <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                                        </h:outputText>
+                                                        <span class="line2">
+                                                            <h:outputText value="#{detail.dateOfAdmission}">
+                                                                <f:convertDateTime pattern="HH:mm"/>
+                                                            </h:outputText>
+                                                        </span>
+                                                    </span>
                                                 </td>
-                                                <td>
-                                                    <h:outputText value="#{detail.dateOfAdmission}">
-                                                        <f:convertDateTime pattern="HH:mm"/>
-                                                    </h:outputText>
-                                                </td>
-                                                <td><h:outputText value="#{detail.transferRequestId}"/></td>
-                                                <td><h:outputText value="#{detail.status}"/></td>
+                                                <td class="center">#{detail.transferRequestId}</td>
+                                                <td>#{detail.status}</td>
+
                                                 <!-- FROM -->
-                                                <td><h:outputText value="#{detail.fromHospital}"/></td>
-                                                <td><h:outputText value="#{detail.fromDepartment}"/></td>
-                                                <td><h:outputText value="#{detail.fromPrimaryConsultant}"/></td>
-                                                <td></td><!-- from consultant: no source field yet -->
-                                                <td><h:outputText value="#{detail.fromDepartment}"/></td>
-                                                <td><h:outputText value="#{detail.fromWardRoomName}"/></td>
-                                                <td><h:outputText value="#{detail.fromBedType}"/></td>
+                                                <td class="divider-left">#{detail.fromHospital}</td>
+                                                <td>#{detail.fromDepartment}</td>
+                                                <td>#{detail.fromPrimaryConsultant}</td>
+                                                <td>#{detail.fromWardRoomName} / #{detail.fromBedType}</td>
+
                                                 <!-- TO -->
-                                                <td><h:outputText value="#{detail.toHospital}"/></td>
-                                                <td><h:outputText value="#{detail.toDepartment}"/></td>
-                                                <td><h:outputText value="#{detail.toPrimaryConsultant}"/></td>
-                                                <td></td><!-- to consultant: no source field yet -->
-                                                <td><h:outputText value="#{detail.toDepartment}"/></td>
-                                                <td><h:outputText value="#{detail.toWardRoomName}"/></td>
-                                                <td><h:outputText value="#{detail.toBedType}"/></td>
+                                                <td class="divider-left">#{detail.toHospital}</td>
+                                                <td>#{detail.toDepartment}</td>
+                                                <td>#{detail.toPrimaryConsultant}</td>
+                                                <td>#{detail.toWardRoomName} / #{detail.toBedType}</td>
+
                                                 <!-- Transfer tail -->
-                                                <td>
-                                                    <h:outputText value="#{detail.acceptedAt}">
-                                                        <f:convertDateTime pattern="M/d/yyyy"/>
-                                                    </h:outputText>
+                                                <td class="divider-left">
+                                                    <span class="stacked">
+                                                        <h:outputText value="#{detail.acceptedAt}">
+                                                            <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                                        </h:outputText>
+                                                        <span class="line2">
+                                                            <h:outputText value="#{detail.acceptedAt}">
+                                                                <f:convertDateTime pattern="HH:mm"/>
+                                                            </h:outputText>
+                                                        </span>
+                                                    </span>
                                                 </td>
-                                                <td>
-                                                    <h:outputText value="#{detail.acceptedAt}">
-                                                        <f:convertDateTime pattern="HH:mm"/>
-                                                    </h:outputText>
-                                                </td>
-                                                <td><h:outputText value="#{detail.acceptedByName}"/></td>
-                                                <td><h:outputText value="#{detail.notes}"/></td>
+                                                <td>#{detail.acceptedByName}</td>
+                                                <td>#{detail.notes}</td>
                                             </tr>
                                         </ui:repeat>
                                     </tbody>
                                 </table>
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{empty roomChangeReportController.roomChangeReportDtoList}">
+                                <div class="d-flex justify-content-center my-4" style="font-size:12pt; color:#666;">
+                                    <h:outputText value="No records found for the selected criteria."/>
+                                </div>
                             </h:panelGroup>
 
                         </div>
