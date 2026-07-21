@@ -417,6 +417,10 @@
                                 </div>
                             </h:panelGroup>
 
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosHeaderPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Request Issue Bill is PosHeaderPaper',true)}">
+                                <phi:saleBill_Header_Inward bill="#{pharmacyRequestForBhtController.printBill}"></phi:saleBill_Header_Inward>
+                            </h:panelGroup>
+
                         </h:panelGroup>
 
                     </p:panel>
