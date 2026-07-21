@@ -19,6 +19,7 @@ public class ChargeItemTotal {
     private InwardChargeType inwardChargeType;
     private double total = 0;
     private double discount = 0;
+    private double chargeTypeDiscount = 0;
     private double netTotal = 0;
     private double adjustedTotal = 0.0;
     private double gross = 0;
@@ -52,6 +53,14 @@ public class ChargeItemTotal {
         this.discount = discount;
     }
 
+    public double getChargeTypeDiscount() {
+        return chargeTypeDiscount;
+    }
+
+    public void setChargeTypeDiscount(double chargeTypeDiscount) {
+        this.chargeTypeDiscount = chargeTypeDiscount;
+    }
+
     public double getTotal() {
         return total;
     }
@@ -61,7 +70,7 @@ public class ChargeItemTotal {
     }
 
     public double getNetTotal() {
-        netTotal = total - discount;
+        netTotal = total - discount - chargeTypeDiscount;
         return netTotal;
     }
 

@@ -75,6 +75,10 @@ public class BillItem implements Serializable, RetirableEntity {
 
     double grossValue;
     double discount;
+    // Manual discount entered at inward-charge-type level on the final bill
+    // (level 2 of 3). `discount` on final-bill lines holds the combined
+    // item-level + charge-type-level value.
+    double chargeTypeDiscount;
     double vat;
     double netValue;
     @Transient
@@ -291,6 +295,7 @@ public class BillItem implements Serializable, RetirableEntity {
         grossValue = billItem.getGrossValue();
         netValue = billItem.getNetValue();
         discount = billItem.getDiscount();
+        chargeTypeDiscount = billItem.getChargeTypeDiscount();
         adjustedValue = billItem.getAdjustedValue();
         discountRate = billItem.getDiscountRate();
         staffFee = billItem.getStaffFee();
@@ -338,6 +343,7 @@ public class BillItem implements Serializable, RetirableEntity {
         grossValue = billItem.getGrossValue();
         netValue = billItem.getNetValue();
         discount = billItem.getDiscount();
+        chargeTypeDiscount = billItem.getChargeTypeDiscount();
         adjustedValue = billItem.getAdjustedValue();
         discountRate = billItem.getDiscountRate();
         staffFee = billItem.getStaffFee();
@@ -369,7 +375,7 @@ public class BillItem implements Serializable, RetirableEntity {
             clonedFinanceDetails.setBillItem(this);
             this.setBillItemFinanceDetails(clonedFinanceDetails);
         }
-        
+
         PharmaceuticalBillItem clonedPharmaceuticalBillItem = new PharmaceuticalBillItem();
         clonedPharmaceuticalBillItem.copy(billItem.getPharmaceuticalBillItem());
         clonedPharmaceuticalBillItem.setBillItem(this);
@@ -404,6 +410,7 @@ public class BillItem implements Serializable, RetirableEntity {
         grossValue = 0;
         netValue = 0;
         discount = 0;
+        chargeTypeDiscount = 0;
         adjustedValue = 0;
         discountRate = 0.0;
         staffFee = 0.0;
@@ -438,6 +445,7 @@ public class BillItem implements Serializable, RetirableEntity {
         // Rates should remain positive - they are unit prices, not values
         Rate = billItem.getRate();
         discount = 0 - billItem.getDiscount();
+        chargeTypeDiscount = 0 - billItem.getChargeTypeDiscount();
         netRate = billItem.getNetRate();
         marginRate = billItem.getMarginRate();
         grossValue = 0 - billItem.getGrossValue();
@@ -463,6 +471,7 @@ public class BillItem implements Serializable, RetirableEntity {
         // Rates should remain positive - they are unit prices, not values
         // Rate = 0 - getRate(); // Do not invert rates
         discount = 0 - getDiscount();
+        chargeTypeDiscount = 0 - getChargeTypeDiscount();
         // netRate = 0 - getNetRate(); // Do not invert rates
         grossValue = 0 - getGrossValue();
         marginValue = 0 - getMarginValue();
@@ -572,6 +581,14 @@ public class BillItem implements Serializable, RetirableEntity {
 
     public void setDiscount(double discount) {
         this.discount = discount;
+    }
+
+    public double getChargeTypeDiscount() {
+        return chargeTypeDiscount;
+    }
+
+    public void setChargeTypeDiscount(double chargeTypeDiscount) {
+        this.chargeTypeDiscount = chargeTypeDiscount;
     }
 
     public double getNetValue() {

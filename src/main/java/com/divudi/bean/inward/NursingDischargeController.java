@@ -268,7 +268,10 @@ public class NursingDischargeController implements Serializable {
             JsfUtil.addErrorMessage("Cannot confirm physical discharge: nursing discharge has not been completed.");
             return;
         }
-        if (!Boolean.TRUE.equals(currentEncounter.getDischarged())) {
+        boolean administrativelyDischarged = Boolean.TRUE.equals(currentEncounter.getDischarged())
+                || (currentEncounter.getParentEncounter() != null
+                    && Boolean.TRUE.equals(currentEncounter.getParentEncounter().getDischarged()));
+        if (!administrativelyDischarged) {
             JsfUtil.addErrorMessage("Cannot confirm physical discharge: administrative discharge (final bill) has not been completed.");
             return;
         }
