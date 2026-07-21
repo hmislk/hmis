@@ -343,7 +343,7 @@
                                 <phi:pharmacy_disposal_bill_five_five bill="#{pharmacyIssueController.printBill}"/>
                             </h:panelGroup>
 
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}" >
+                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType ne 'FiveFivePaper'}" >
                                 <phi:pharmacy_disposal_bill_pos bill="#{pharmacyIssueController.printBill}"/>
                             </h:panelGroup>
 

@@ -525,7 +525,7 @@
 
                         </h:panelGroup>
 
-                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}">
+                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosHeaderPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}">
                             <phi:saleBill_Header_Inward bill="#{pharmacySaleBhtController.printBill}" />
                         </h:panelGroup>
 

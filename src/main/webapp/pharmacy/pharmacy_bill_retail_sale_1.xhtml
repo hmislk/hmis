@@ -745,7 +745,7 @@
                                 <phi:saleBill_five_five bill="#{pharmacySaleController1.printBill}"></phi:saleBill_five_five>
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}">
+                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosHeaderPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}">
 
                                 <phi:saleBill_Header bill="#{pharmacySaleController1.printBill}"></phi:saleBill_Header>
 
