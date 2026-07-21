@@ -1801,7 +1801,11 @@ public class PharmacySaleBhtController implements Serializable {
                 return true;
             }
             if (bi.getPharmaceuticalBillItem().getStock() == null) {
-                JsfUtil.addErrorMessage("Requested item not found" + bi.getItem().getName());
+                double requestedQtyForCheck = Math.abs(bi.getPharmaceuticalBillItem().getQty());
+                JsfUtil.addErrorMessage("No stock available for " + bi.getItem().getName()
+                        + ". Available: 0, Requested: " + requestedQtyForCheck
+                        + ", Remaining not issued: " + requestedQtyForCheck
+                        + ". Please select a substitute or check pharmacy stock.");
                 return true;
             }
             if (bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) {
@@ -2135,13 +2139,6 @@ public class PharmacySaleBhtController implements Serializable {
             }
             Stock tbiStock = tbi.getPharmaceuticalBillItem().getStock();
             double requestedQtyForSettle = Math.abs(tbi.getPharmaceuticalBillItem().getQty());
-            if (tbiStock == null) {
-                JsfUtil.addErrorMessage("No stock available for " + tbi.getItem().getName()
-                        + ". Available: 0, Requested: " + requestedQtyForSettle
-                        + ", Remaining not issued: " + requestedQtyForSettle
-                        + ". Please select a substitute or check pharmacy stock.");
-                return false;
-            }
             if (requestedQtyForSettle > tbiStock.getStock()) {
                 double availableQty = tbiStock.getStock();
                 JsfUtil.addErrorMessage("Not Enough Stock for " + tbi.getItem().getName()
