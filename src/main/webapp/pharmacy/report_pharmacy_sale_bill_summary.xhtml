@@ -72,7 +72,7 @@
                     </div>
 
                     <h:panelGroup id="gpBillPreview">
-                        <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                        <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType ne 'A4Paper'}">
                             <prints:pharmacySaleBillSummaryPos billSearch="#{billSearch}"/>
                         </h:panelGroup>
                         <h:panelGroup id="gpBillPreviewA4" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper'}">
