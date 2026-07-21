@@ -4993,8 +4993,8 @@ public class InwardReportController implements Serializable {
                 + "WHERE b.retired = false "
                 + "AND b.cancelled = false "
                 + "AND b.billType = :bt "
-                + "AND b.patientEncounter.id IN :ids "
-                + "ORDER BY b.patientEncounter.id, b.id DESC";
+                + "AND b.confirmedFinalBill = true "
+                + "AND b.patientEncounter.id IN :ids";
 
         Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.InwardFinalBill);
@@ -5005,7 +5005,7 @@ public class InwardReportController implements Serializable {
         if (bills != null) {
             for (Bill bill : bills) {
                 if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getId() != null) {
-                    result.putIfAbsent(bill.getPatientEncounter().getId(), bill);
+                    result.put(bill.getPatientEncounter().getId(), bill);
                 }
             }
         }

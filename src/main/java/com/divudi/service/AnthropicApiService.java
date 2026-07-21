@@ -1229,6 +1229,7 @@ public class AnthropicApiService implements Serializable {
                 .add("description",
                         "Manage HMIS users, passwords, loggable departments, and department-scoped privileges.\n\n"
                         + "method: LIST | GET | POST | PUT | DELETE | RESET_PASSWORD | CHANGE_PASSWORD | "
+                        + "FORCE_PASSWORD_RESET | PASSWORD_STATUS | "
                         + "LIST_PRIVILEGES | ASSIGN_PRIVILEGES | REVOKE_PRIVILEGE | LIST_DEPARTMENTS | ASSIGN_DEPARTMENTS | "
                         + "LIST_AVAILABLE_PRIVILEGES | BULK_ASSIGN_PRIVILEGES | ASSIGN_PRIVILEGE_CATEGORIES | "
                         + "ASSIGN_ALL_PRIVILEGES_MULTI_DEPT\n\n"
@@ -1236,7 +1237,10 @@ public class AnthropicApiService implements Serializable {
                         + "ASSIGN_ALL_PRIVILEGES_MULTI_DEPT grants every privilege across supplied departmentIds (or all user's loggable depts if omitted). "
                         + "POST supports optional staffId to pre-link a Staff record at creation. "
                         + "Use LIST_AVAILABLE_PRIVILEGES before assigning explicit privilege names. "
-                        + "Always confirm with the user before POST, PUT, DELETE, RESET_PASSWORD, CHANGE_PASSWORD, "
+                        + "FORCE_PASSWORD_RESET flags the account for a mandatory reset on next login without setting an actual new "
+                        + "password (requires id only). PASSWORD_STATUS reports lastPasswordResetAt/needToResetPassword for every "
+                        + "active user, optionally filtered by from/to (yyyy-MM-dd) — read-only, no id required. "
+                        + "Always confirm with the user before POST, PUT, DELETE, RESET_PASSWORD, CHANGE_PASSWORD, FORCE_PASSWORD_RESET, "
                         + "ASSIGN_PRIVILEGES, REVOKE_PRIVILEGE, ASSIGN_DEPARTMENTS, BULK_ASSIGN_PRIVILEGES, "
                         + "ASSIGN_PRIVILEGE_CATEGORIES, or ASSIGN_ALL_PRIVILEGES_MULTI_DEPT.")
                 .add("input_schema", Json.createObjectBuilder()
@@ -1246,6 +1250,7 @@ public class AnthropicApiService implements Serializable {
                                         .add("enum", Json.createArrayBuilder()
                                                 .add("LIST").add("GET").add("POST").add("PUT").add("DELETE")
                                                 .add("RESET_PASSWORD").add("CHANGE_PASSWORD")
+                                                .add("FORCE_PASSWORD_RESET").add("PASSWORD_STATUS")
                                                 .add("LIST_PRIVILEGES").add("ASSIGN_PRIVILEGES").add("REVOKE_PRIVILEGE")
                                                 .add("LIST_DEPARTMENTS").add("ASSIGN_DEPARTMENTS")
                                                 .add("LIST_AVAILABLE_PRIVILEGES").add("BULK_ASSIGN_PRIVILEGES")
@@ -1276,7 +1281,9 @@ public class AnthropicApiService implements Serializable {
                                 .add("userIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated user IDs for BULK_ASSIGN_PRIVILEGES"))
                                 .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs for ASSIGN_DEPARTMENTS or ASSIGN_ALL_PRIVILEGES_MULTI_DEPT"))
                                 .add("staffId", Json.createObjectBuilder().add("type", "string").add("description", "Staff ID to link to the user on POST or via PUT /{id}/staff"))
-                                .add("retireComments", Json.createObjectBuilder().add("type", "string")))
+                                .add("retireComments", Json.createObjectBuilder().add("type", "string"))
+                                .add("from", Json.createObjectBuilder().add("type", "string").add("description", "PASSWORD_STATUS filter: lastPasswordResetAt on/after this date (yyyy-MM-dd)"))
+                                .add("to", Json.createObjectBuilder().add("type", "string").add("description", "PASSWORD_STATUS filter: lastPasswordResetAt on/before this date (yyyy-MM-dd)")))
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
@@ -4490,6 +4497,14 @@ public class AnthropicApiService implements Serializable {
                     addString(change, "currentPassword", jsonString(input, "currentPassword"));
                     body = change.build().toString();
                     break;
+                case "FORCE_PASSWORD_RESET":
+                    httpMethod = "POST";
+                    url = base + "/" + requireText(id, "id") + "/force-password-reset";
+                    break;
+                case "PASSWORD_STATUS":
+                    url = base + "/password-status?" + queryParam("from", jsonString(input, "from"))
+                            + "&" + queryParam("to", jsonString(input, "to"));
+                    break;
                 case "LIST_PRIVILEGES":
                     url = base + "/" + requireText(id, "id") + "/privileges";
                     break;
@@ -5586,7 +5601,12 @@ public class AnthropicApiService implements Serializable {
                 + "Bulk operations (POST /users/bulk/role-operations) target either explicit userIds or a {roleId?, departmentId?} filter "
                 + "(userIds wins) and use a two-step safety gate: call once with preview=true to see the resolved user count and per-aspect "
                 + "totals (capped at first 200 users), then repeat the identical call with confirm=true to actually apply — calling with "
-                + "neither preview nor confirm is rejected. GET /users/roles lists active roles with template summary counts.",
+                + "neither preview nor confirm is rejected. GET /users/roles lists active roles with template summary counts.\n\n"
+                + "POST /users/{id}/force-password-reset flags needToResetPassword=true without requiring a new password value — "
+                + "use this to force a specific account to reset on next login when you don't want to set (or don't know) an actual "
+                + "new password; distinct from /reset-password. GET /users/password-status (optional ?from=&to=, yyyy-MM-dd) reports "
+                + "lastPasswordResetAt and needToResetPassword for every active user, for auditing password-expiration policy coverage "
+                + "or answering 'who has reset within this period' questions.",
                 githubUrl(branch, "developer_docs/api/API_USER_MANAGEMENT.md"),
                 new String[][]{
                     {"GET",    "/users",                          "List users. Filters: query, departmentId, page, size"},
@@ -5615,7 +5635,9 @@ public class AnthropicApiService implements Serializable {
                     {"POST",   "/users/bulk/role-operations",     "Bulk RESET/EXPAND/NARROW for many users; preview=true then confirm=true"},
                     {"GET",    "/users/roles",                    "List active roles with template summary counts (privileges/icons/subscriptions, template login page)"},
                     {"PUT",    "/users/{id}/login-page",          "Upsert the user's default login page for a department (body: {departmentId, loginPage})"},
-                    {"DELETE", "/users/{id}/login-page/{departmentId}", "Retire the user's default login-page override for a department"}
+                    {"DELETE", "/users/{id}/login-page/{departmentId}", "Retire the user's default login-page override for a department"},
+                    {"POST",   "/users/{id}/force-password-reset", "Flag needToResetPassword=true without supplying a new password (distinct from reset-password)"},
+                    {"GET",    "/users/password-status",          "Report lastPasswordResetAt and needToResetPassword per active user. Filters: from, to (yyyy-MM-dd)"}
                 });
 
         appendModule(sb, "User Roles", "/user-roles",

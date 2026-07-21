@@ -148,6 +148,8 @@ public class BillBhtController implements Serializable {
     private BillNumberGenerator billNumberBean;
     @Inject
     BillController billController;
+    @Inject
+    private SurgeryBillController surgeryBillController;
     ///////////////////
 
     private double total;
@@ -690,6 +692,12 @@ public class BillBhtController implements Serializable {
         Date toDate = null;
 
         if (getBatchBill() == null) {
+            return;
+        }
+
+        if (batchBill.getBillType() == BillType.SurgeryBill
+                && surgeryBillController.isSurgeryLockedForAdditions(batchBill)) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
             return;
         }
 
