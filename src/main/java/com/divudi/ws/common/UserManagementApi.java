@@ -1586,6 +1586,7 @@ public class UserManagementApi {
         m.put("siteId", u.getSite() != null ? u.getSite().getId() : null);
         m.put("roleId", u.getRole() != null ? u.getRole().getId() : null);
         m.put("personName", u.getWebUserPerson() != null ? u.getWebUserPerson().getName() : null);
+        m.put("needToResetPassword", u.isNeedToResetPassword());
         return m;
     }
 
