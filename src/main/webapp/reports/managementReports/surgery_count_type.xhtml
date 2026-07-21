@@ -21,7 +21,7 @@
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="fromDate"
-                                value="#{inwardReportController.fromYearStartDate}"
+                                value="#{surgeryCountReportController.fromYearStartDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 />
 
@@ -37,7 +37,7 @@
                                 styleClass="w-100"
                                 inputStyleClass="w-100 form-control"
                                 id="toDate"
-                                value="#{inwardReportController.toYearEndDate}"
+                                value="#{surgeryCountReportController.toYearEndDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                 />
 
@@ -45,7 +45,7 @@
                                 <h:outputText value="&#xf080;" styleClass="fa mr-2"/> 
                                 <p:outputLabel value="Chart Type" for="chartType" styleClass="m-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="chartType" value="#{inwardReportController.surgeryCountChartType}" styleClass="w-100">
+                            <p:selectOneMenu id="chartType" value="#{surgeryCountReportController.surgeryCountChartType}" styleClass="w-100">
                                 <f:selectItem itemLabel="Select Chart Type" itemValue="" noSelectionOption="true"/>
                                 <f:selectItem itemLabel="Bar Chart" itemValue="bar"/>
                                 <f:selectItem itemLabel="Line Chart" itemValue="line"/>
@@ -59,7 +59,7 @@
                                 class="ui-button-warning mx-1"
                                 icon="fas fa-cogs"
                                 ajax="false"
-                                action="#{inwardReportController.processSurgeryCountTypeReport()}"
+                                action="#{surgeryCountReportController.processSurgeryCountTypeReport()}"
                                 value="Process" />
 
                             <p:commandButton
@@ -93,7 +93,7 @@
 
 
                         <p:dataTable id="tb"
-                                     value="#{inwardReportController.surgeryCountTypeList}"
+                                     value="#{surgeryCountReportController.surgeryCountTypeList}"
                                      var="var"
                                      rowIndexVar="n"
                                      paginator="true"
@@ -112,17 +112,17 @@
                                 </f:facet>
                             </p:column>
 
-                            <p:columns value="#{inwardReportController.surgeryCategoryNames}" var="cat" headerText="#{cat}" style="text-align: right;">
+                            <p:columns value="#{surgeryCountReportController.surgeryCategoryNames}" var="cat" headerText="#{cat}" style="text-align: right;">
                                 <h:outputText value="#{var.getCount(cat)}" />
                                 <f:facet name="footer">
-                                    <h:outputText value="#{inwardReportController.totalCategoryCounts[cat]}" />
+                                    <h:outputText value="#{surgeryCountReportController.totalCategoryCounts[cat]}" />
                                 </f:facet>
                             </p:columns>
 
                             <p:column headerText="TOTAL" style="text-align: right; font-weight: bold;">
                                 <h:outputText value="#{var.totalCount}" />
                                 <f:facet name="footer">
-                                    <h:outputText value="#{inwardReportController.totalAllSurgeryCount}" />
+                                    <h:outputText value="#{surgeryCountReportController.totalAllSurgeryCount}" />
                                 </f:facet>
                             </p:column>
 
@@ -131,17 +131,17 @@
                         <!-- Charts Section -->
                         <h:panelGroup id="chartPanel" layout="block">
                             <h:panelGroup layout="block" 
-                                          rendered="#{not empty inwardReportController.surgeryCountTypeList 
-                                                      and not empty inwardReportController.surgeryCountChartType}">
+                                          rendered="#{not empty surgeryCountReportController.surgeryCountTypeList 
+                                                      and not empty surgeryCountReportController.surgeryCountChartType}">
 
                                 <!-- Bar Chart -->
                                 <h:panelGroup layout="block" 
-                                              rendered="#{inwardReportController.surgeryCountChartType eq 'bar' 
-                                                          and inwardReportController.surgeryCountBarChartModel ne null}"
+                                              rendered="#{surgeryCountReportController.surgeryCountChartType eq 'bar' 
+                                                          and surgeryCountReportController.surgeryCountBarChartModel ne null}"
                                               styleClass="my-3">
-                                    <p:panel header="Surgery Count - Bar Chart (#{inwardReportController.selectedYear})">
+                                    <p:panel header="Surgery Count - Bar Chart (#{surgeryCountReportController.selectedYear})">
                                         <h:panelGroup layout="block" style="width:100%; height:500px;">
-                                            <p:chart value="#{inwardReportController.surgeryCountBarChartModel}" 
+                                            <p:chart value="#{surgeryCountReportController.surgeryCountBarChartModel}" 
                                                      widgetVar="surgeryCountBarWV"
                                                      style="width:100%; height:100%;" />
                                         </h:panelGroup>
@@ -150,12 +150,12 @@
 
                                 <!-- Line Chart -->
                                 <h:panelGroup layout="block" 
-                                              rendered="#{inwardReportController.surgeryCountChartType eq 'line' 
-                                                          and inwardReportController.surgeryCountLineChartModel ne null}"
+                                              rendered="#{surgeryCountReportController.surgeryCountChartType eq 'line' 
+                                                          and surgeryCountReportController.surgeryCountLineChartModel ne null}"
                                               styleClass="my-3">
-                                    <p:panel header="Surgery Count - Line Chart (#{inwardReportController.selectedYear})">
+                                    <p:panel header="Surgery Count - Line Chart (#{surgeryCountReportController.selectedYear})">
                                         <h:panelGroup layout="block" style="width:100%; height:500px;">
-                                            <p:chart value="#{inwardReportController.surgeryCountLineChartModel}" 
+                                            <p:chart value="#{surgeryCountReportController.surgeryCountLineChartModel}" 
                                                      widgetVar="surgeryCountLineWV"
                                                      style="width:100%; height:100%;" />
                                         </h:panelGroup>
@@ -166,8 +166,8 @@
 
                             <!-- Message when no chart type selected but data exists -->
                             <h:panelGroup layout="block" 
-                                          rendered="#{not empty inwardReportController.surgeryCountTypeList 
-                                                      and empty inwardReportController.surgeryCountChartType}"
+                                          rendered="#{not empty surgeryCountReportController.surgeryCountTypeList 
+                                                      and empty surgeryCountReportController.surgeryCountChartType}"
                                           styleClass="my-3 text-center">
                                 <h:outputText value="Please select a Chart Type above to view the chart." 
                                               styleClass="text-muted"/>
@@ -175,6 +175,27 @@
                         </h:panelGroup>
 
                     </p:panel>
+                    <h:outputScript>
+                        function captureChartsForDownload() {
+                            var pairs = [
+                                { wv: 'expOtRoomBarWV',  id: 'otRoomForm:otRoomBarChartImg' },
+                                { wv: 'expOtRoomLineWV', id: 'otRoomForm:otRoomLineChartImg' }
+                            ];
+                            pairs.forEach(function(pair) {
+                                try {
+                                    var widget = PF(pair.wv);
+                                    if (widget &amp;&amp; widget.chart) {
+                                        var input = document.getElementById(pair.id);
+                                        if (input) {
+                                            input.value = widget.chart.toBase64Image('image/png', 1);
+                                        }
+                                    }
+                                } catch(e) {
+                                    console.warn('Chart export capture failed: ' + pair.wv, e);
+                                }
+                            });
+                        }
+                    </h:outputScript>
 
                 </h:form>
 
