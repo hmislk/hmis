@@ -42,10 +42,6 @@ import software.xdev.chartjs.model.options.scale.Scales;
 import software.xdev.chartjs.model.options.scale.cartesian.linear.LinearScaleOptions;
 import software.xdev.chartjs.model.options.scale.cartesian.linear.LinearTickOptions;
 
-/**
- *
- * @author pubudupiyankara
- */
 @Named
 @SessionScoped
 public class SurgeryCountReportController implements Serializable {

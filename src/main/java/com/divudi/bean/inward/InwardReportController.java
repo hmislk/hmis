@@ -335,10 +335,6 @@ public class InwardReportController implements Serializable {
 
     private String surgeryWiseLineChartModel;
     private String surgeryWiseBarChartModel;
-    
-    private String surgeryCountChartType;
-    private String surgeryCountBarChartModel;
-    private String surgeryCountLineChartModel;
 
     private String specialtyLineChartImage;
     private String specialtyBarChartImage;
@@ -709,30 +705,6 @@ public class InwardReportController implements Serializable {
 
     public void setSurgeryCostEstimationReportType(String surgeryCostEstimationReportType) {
         this.surgeryCostEstimationReportType = surgeryCostEstimationReportType;
-    }
-
-    public String getSurgeryCountChartType() {
-        return surgeryCountChartType;
-    }
-
-    public void setSurgeryCountChartType(String surgeryCountChartType) {
-        this.surgeryCountChartType = surgeryCountChartType;
-    }
-
-    public String getSurgeryCountBarChartModel() {
-        return surgeryCountBarChartModel;
-    }
-
-    public void setSurgeryCountBarChartModel(String surgeryCountBarChartModel) {
-        this.surgeryCountBarChartModel = surgeryCountBarChartModel;
-    }
-
-    public String getSurgeryCountLineChartModel() {
-        return surgeryCountLineChartModel;
-    }
-
-    public void setSurgeryCountLineChartModel(String surgeryCountLineChartModel) {
-        this.surgeryCountLineChartModel = surgeryCountLineChartModel;
     }
 
     private static final class ReportLookups {
@@ -3624,46 +3596,6 @@ public class InwardReportController implements Serializable {
                 }
             }
         }
-    }
-
-    
-
-    private List<SurgeryCountTypeWiseDTO> surgeryCountTypeList;
-    private List<String> surgeryCategoryNames;
-    private Map<String, Integer> totalCategoryCounts;
-    private int totalAllSurgeryCount;
-    
-
-    public List<SurgeryCountTypeWiseDTO> getSurgeryCountTypeList() {
-        return surgeryCountTypeList;
-    }
-
-    public void setSurgeryCountTypeList(List<SurgeryCountTypeWiseDTO> surgeryCountTypeList) {
-        this.surgeryCountTypeList = surgeryCountTypeList;
-    }
-
-    public List<String> getSurgeryCategoryNames() {
-        return surgeryCategoryNames;
-    }
-
-    public void setSurgeryCategoryNames(List<String> surgeryCategoryNames) {
-        this.surgeryCategoryNames = surgeryCategoryNames;
-    }
-
-    public Map<String, Integer> getTotalCategoryCounts() {
-        return totalCategoryCounts;
-    }
-
-    public void setTotalCategoryCounts(Map<String, Integer> totalCategoryCounts) {
-        this.totalCategoryCounts = totalCategoryCounts;
-    }
-
-    public int getTotalAllSurgeryCount() {
-        return totalAllSurgeryCount;
-    }
-
-    public void setTotalAllSurgeryCount(int totalAllSurgeryCount) {
-        this.totalAllSurgeryCount = totalAllSurgeryCount;
     }
 
     private List<SurgeryCountSurgeryWiseDTO> surgeryCountSurgeryWiseList;
