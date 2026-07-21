@@ -57,8 +57,8 @@ public class RoomChangeReportController implements Serializable {
     private Institution site;
     private Department department;
 
-    private RoomFacilityCharge fromWard;
-    private RoomFacilityCharge toWard;
+    private Department fromWard;
+    private Department toWard;
 
     private Date fromDate;
     private Date toDate;
@@ -128,12 +128,12 @@ public class RoomChangeReportController implements Serializable {
         }
 
         if (fromWard != null) {
-            jpql.append(" and fromRfc = :fw ");
+            jpql.append(" and fromDept = :fw ");
             params.put("fw", fromWard);
         }
 
         if (toWard != null) {
-            jpql.append(" and toRfc = :tw ");
+            jpql.append(" and toDept = :tw ");
             params.put("tw", toWard);
         }
 
@@ -460,19 +460,19 @@ public class RoomChangeReportController implements Serializable {
         this.department = department;
     }
 
-    public RoomFacilityCharge getFromWard() {
+    public Department getFromWard() {
         return fromWard;
     }
 
-    public void setFromWard(RoomFacilityCharge fromWard) {
+    public void setFromWard(Department fromWard) {
         this.fromWard = fromWard;
     }
 
-    public RoomFacilityCharge getToWard() {
+    public Department getToWard() {
         return toWard;
     }
 
-    public void setToWard(RoomFacilityCharge toWard) {
+    public void setToWard(Department toWard) {
         this.toWard = toWard;
     }
 

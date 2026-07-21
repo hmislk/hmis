@@ -117,18 +117,21 @@
                                 <p:outputLabel value="From Ward" class="m-3"/>
                             </h:panelGroup>
 
-                            <p:autoComplete 
-                                forceSelection="true"
-                                id="frwrd"
-                                inputStyleClass="w-100"
-                                class="m-1 w-100"
-                                value="#{roomChangeReportController.fromWard}" 
-                                completeMethod="#{roomFacilityChargeController.completeRoom}"
-                                maxResults="10"
-                                var="rf"
-                                itemLabel="#{rf.name}"
-                                itemValue="#{rf}"
-                                size="30" />
+                             <p:autoComplete id="fwdbd"
+                                            value="#{roomChangeReportController.fromWard}"
+                                            styleClass="w-100"
+                                            inputStyleClass="w-100 form-control"
+                                            placeholder="From Ward"
+                                            completeMethod="#{departmentController.completeInwardDepartments}"
+                                            forceSelection="true"
+                                            maxResults="10"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}">
+                                <p:column headerText="Ward Name">
+                                    <h:outputText value="#{dept.name}"/>
+                                </p:column>
+                            </p:autoComplete>
 
                             <p:spacer width="20"/>
                             <!-- To ward -->
@@ -137,18 +140,21 @@
                                 <p:outputLabel value="To Ward" class="m-3"/>
                             </h:panelGroup>
 
-                            <p:autoComplete 
-                                forceSelection="true"
-                                id="towrd"
-                                inputStyleClass="w-100"
-                                class="m-1 w-100"
-                                value="#{roomChangeReportController.toWard}" 
-                                completeMethod="#{roomFacilityChargeController.completeRoom}"
-                                maxResults="10"
-                                var="rf"
-                                itemLabel="#{rf.name}"
-                                itemValue="#{rf}"
-                                size="30" />
+                            <p:autoComplete id="twdbdSelect"
+                                            value="#{roomChangeReportController.toWard}"
+                                            styleClass="w-100"
+                                            inputStyleClass="w-100 form-control"
+                                            placeholder="To Ward"
+                                            completeMethod="#{departmentController.completeInwardDepartments}"
+                                            forceSelection="true"
+                                            maxResults="10"
+                                            var="dept"
+                                            itemLabel="#{dept.name}"
+                                            itemValue="#{dept}">
+                                <p:column headerText="Ward Name">
+                                    <h:outputText value="#{dept.name}"/>
+                                </p:column>
+                            </p:autoComplete>
 
                         </h:panelGrid>
 
