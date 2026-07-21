@@ -8,7 +8,7 @@
     <h:body>
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
-                <h:form >
+                <h:form id="surgeryCountForm">
                     <p:panel header="Surgery Count(According to Surgery Type)" styleClass="my-2" >
                         <h:panelGrid columns="5" class="w-100">
 
@@ -55,6 +55,9 @@
 
                         <div class="d-flex align-items-center my-4">
 
+                            <h:inputHidden id="barChartImageData" value="#{surgeryCountReportController.barChartImageBase64}" />
+                            <h:inputHidden id="lineChartImageData" value="#{surgeryCountReportController.lineChartImageBase64}" />
+
                             <p:commandButton 
                                 class="ui-button-warning mx-1"
                                 icon="fas fa-cogs"
@@ -72,21 +75,25 @@
                             </p:commandButton>
 
                             <p:commandButton
-                                id="btnDownloadExcel"
+                                id="btnDownloadExcelChart"
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
-                                value="Download">
-                                <p:dataExporter type="xlsx" target="tb" fileName="Surgery_Count_Surgery_Type_Wise"/>
+                                onclick="captureChartImages();"
+                                value="Download Excel (Report + Chart)"
+                                action="#{surgeryCountReportController.downloadExcelWithChart}">
+                                <p:fileDownload value="#{surgeryCountReportController.downloadedFile}" />
                             </p:commandButton>
 
                             <p:commandButton
-                                id="btnDownloadPdf"
+                                id="btnDownloadPdfChart"
                                 class="ui-button-danger mx-1"
                                 icon="fas fa-file-pdf"
                                 ajax="false"
-                                value="PDF">
-                                <p:dataExporter type="pdf" target="tb" fileName="Surgery_Count_Surgery_Type_Wise"/>
+                                onclick="captureChartImages();"
+                                value="Download PDF (Report + Chart)"
+                                action="#{surgeryCountReportController.downloadPdfWithChart}">
+                                <p:fileDownload value="#{surgeryCountReportController.downloadedFile}" />
                             </p:commandButton>
 
                         </div>
@@ -127,7 +134,7 @@
                             </p:column>
 
                         </p:dataTable>
-                        
+
                         <!-- Charts Section -->
                         <h:panelGroup id="chartPanel" layout="block">
                             <h:panelGroup layout="block" 
@@ -176,24 +183,32 @@
 
                     </p:panel>
                     <h:outputScript>
-                        function captureChartsForDownload() {
-                            var pairs = [
-                                { wv: 'expOtRoomBarWV',  id: 'otRoomForm:otRoomBarChartImg' },
-                                { wv: 'expOtRoomLineWV', id: 'otRoomForm:otRoomLineChartImg' }
-                            ];
-                            pairs.forEach(function(pair) {
-                                try {
-                                    var widget = PF(pair.wv);
-                                    if (widget &amp;&amp; widget.chart) {
-                                        var input = document.getElementById(pair.id);
-                                        if (input) {
-                                            input.value = widget.chart.toBase64Image('image/png', 1);
-                                        }
-                                    }
-                                } catch(e) {
-                                    console.warn('Chart export capture failed: ' + pair.wv, e);
-                                }
-                            });
+                        function captureChartImages() {
+                        // Use attribute-ends-with selectors instead of a hardcoded full client id,
+                        // so this keeps working even if this fragment ends up nested inside
+                        // another NamingContainer (e.g. the /reports/index.xhtml template).
+                        try {
+                        var barWidget = PF('surgeryCountBarWV');
+                        var barInput = document.querySelector('input[id$=":barChartImageData"]');
+                        if (barWidget &amp;&amp; barWidget.chart &amp;&amp; barInput) {
+                        barInput.value = barWidget.chart.toBase64Image('image/png', 1);
+                        } else if (!barInput) {
+                        console.warn('barChartImageData hidden field not found in DOM');
+                        }
+                        } catch (e) {
+                        console.warn('Bar chart capture failed', e);
+                        }
+                        try {
+                        var lineWidget = PF('surgeryCountLineWV');
+                        var lineInput = document.querySelector('input[id$=":lineChartImageData"]');
+                        if (lineWidget &amp;&amp; lineWidget.chart &amp;&amp; lineInput) {
+                        lineInput.value = lineWidget.chart.toBase64Image('image/png', 1);
+                        } else if (!lineInput) {
+                        console.warn('lineChartImageData hidden field not found in DOM');
+                        }
+                        } catch (e) {
+                        console.warn('Line chart capture failed', e);
+                        }
                         }
                     </h:outputScript>
 

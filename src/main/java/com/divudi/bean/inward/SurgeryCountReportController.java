@@ -42,6 +42,40 @@ import software.xdev.chartjs.model.options.scale.Scales;
 import software.xdev.chartjs.model.options.scale.cartesian.linear.LinearScaleOptions;
 import software.xdev.chartjs.model.options.scale.cartesian.linear.LinearTickOptions;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.util.Base64;
+
+// POI (Excel) — Font intentionally NOT imported; fully-qualified in createBoldStyle()
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.ClientAnchor;
+import org.apache.poi.ss.usermodel.Drawing;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+
+// iText (PDF)
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+
 @Named
 @SessionScoped
 public class SurgeryCountReportController implements Serializable {
@@ -69,6 +103,11 @@ public class SurgeryCountReportController implements Serializable {
     private List<String> surgeryCategoryNames;
     private Map<String, Integer> totalCategoryCounts;
     private int totalAllSurgeryCount;
+
+    private String barChartImageBase64;
+    private String lineChartImageBase64;
+
+    private StreamedContent downloadedFile;
 
     public void processSurgeryCountTypeReport() {
         resetState();
@@ -330,6 +369,245 @@ public class SurgeryCountReportController implements Serializable {
         "153, 102, 255", "255, 159, 64", "199, 199, 199", "83, 102, 255",
         "255, 99, 255", "99, 255, 132", "220, 20, 60", "65, 105, 225"
     };
+
+    // =========================================================
+// EXCEL EXPORT (table + selected chart)
+// =========================================================
+    public void downloadExcelWithChart() {
+        if (surgeryCountTypeList == null || surgeryCountTypeList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            downloadedFile = null;
+            return;
+        }
+
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Surgery Count");
+
+            int nextFreeRow = writeSurgeryCountExcelTable(workbook, sheet);
+
+            byte[] chartImage = resolveChartImageBytes();
+            if (chartImage != null) {
+                embedImageInSheet(workbook, sheet, chartImage, nextFreeRow + 2);
+            } else if (surgeryCountChartType != null && !surgeryCountChartType.isEmpty()) {
+                JsfUtil.addErrorMessage("Chart image could not be captured; "
+                        + "downloaded Excel contains table data only. "
+                        + "Make sure the chart has fully rendered before downloading.");
+            }
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            workbook.write(out);
+            InputStream is = new ByteArrayInputStream(out.toByteArray());
+
+            downloadedFile = DefaultStreamedContent.builder()
+                    .name("Surgery_Count_Report_" + getSelectedYear() + ".xlsx")
+                    .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                    .stream(() -> is)
+                    .build();
+
+        } catch (Exception ex) {
+            JsfUtil.addErrorMessage("Failed to generate Excel report: " + ex.getMessage());
+            downloadedFile = null;
+        }
+    }
+
+    private int writeSurgeryCountExcelTable(Workbook workbook, Sheet sheet) {
+        CellStyle titleStyle = createBoldStyle(workbook, (short) 14, false);
+        CellStyle headerStyle = createBoldStyle(workbook, (short) 11, true);
+        CellStyle totalStyle = createBoldStyle(workbook, (short) 11, true);
+
+        int rowIdx = 0;
+
+        Row titleRow = sheet.createRow(rowIdx++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("Surgery Count Report - Year " + getSelectedYear());
+        titleCell.setCellStyle(titleStyle);
+        rowIdx++; // spacer
+
+        Row headerRow = sheet.createRow(rowIdx++);
+        int col = 0;
+        setHeaderCell(headerRow, col++, "Month", headerStyle);
+        for (String cat : surgeryCategoryNames) {
+            setHeaderCell(headerRow, col++, cat, headerStyle);
+        }
+        setHeaderCell(headerRow, col, "Total", headerStyle);
+
+        for (SurgeryCountTypeWiseDTO dto : surgeryCountTypeList) {
+            Row row = sheet.createRow(rowIdx++);
+            col = 0;
+            row.createCell(col++).setCellValue(dto.getMonthString());
+            for (String cat : surgeryCategoryNames) {
+                row.createCell(col++).setCellValue(dto.getCount(cat));
+            }
+            row.createCell(col).setCellValue(dto.getTotalCount());
+        }
+
+        Row totalRow = sheet.createRow(rowIdx++);
+        col = 0;
+        Cell totalLabel = totalRow.createCell(col++);
+        totalLabel.setCellValue("Total");
+        totalLabel.setCellStyle(totalStyle);
+        for (String cat : surgeryCategoryNames) {
+            Cell c = totalRow.createCell(col++);
+            c.setCellValue(totalCategoryCounts.getOrDefault(cat, 0));
+            c.setCellStyle(totalStyle);
+        }
+        Cell grandTotal = totalRow.createCell(col);
+        grandTotal.setCellValue(totalAllSurgeryCount);
+        grandTotal.setCellStyle(totalStyle);
+
+        for (int i = 0; i <= surgeryCategoryNames.size() + 1; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        return rowIdx;
+    }
+
+    private void setHeaderCell(Row row, int col, String value, CellStyle style) {
+        Cell cell = row.createCell(col);
+        cell.setCellValue(value);
+        cell.setCellStyle(style);
+    }
+
+    private CellStyle createBoldStyle(Workbook workbook, short fontSize, boolean withBorder) {
+        org.apache.poi.ss.usermodel.Font font = workbook.createFont();
+        font.setBold(true);
+        font.setFontHeightInPoints(fontSize);
+        CellStyle style = workbook.createCellStyle();
+        style.setFont(font);
+        if (withBorder) {
+            style.setBorderBottom(BorderStyle.THIN);
+            style.setBorderTop(BorderStyle.THIN);
+            style.setBorderLeft(BorderStyle.THIN);
+            style.setBorderRight(BorderStyle.THIN);
+        }
+        return style;
+    }
+
+    private void embedImageInSheet(Workbook workbook, Sheet sheet, byte[] imageBytes, int startRow) {
+        int pictureIdx = workbook.addPicture(imageBytes, Workbook.PICTURE_TYPE_PNG);
+        Drawing<?> drawing = sheet.createDrawingPatriarch();
+        ClientAnchor anchor = workbook.getCreationHelper().createClientAnchor();
+        anchor.setCol1(0);
+        anchor.setRow1(startRow);
+        anchor.setCol2(10);
+        anchor.setRow2(startRow + 25);
+        drawing.createPicture(anchor, pictureIdx);
+    }
+
+    // =========================================================
+// PDF EXPORT (table + selected chart)
+// =========================================================
+    public void downloadPdfWithChart() {
+        if (surgeryCountTypeList == null || surgeryCountTypeList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            downloadedFile = null;
+            return;
+        }
+
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            Document document = new Document(PageSize.A4.rotate(), 24, 24, 24, 24);
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            document.add(new Paragraph("Surgery Count Report - Year " + getSelectedYear(),
+                    FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new Paragraph(" "));
+
+            addSurgeryCountPdfTable(document);
+
+            byte[] chartImage = resolveChartImageBytes();
+            if (chartImage != null) {
+                document.newPage();
+                Image img = Image.getInstance(chartImage);
+                img.scaleToFit(760, 500);
+                img.setAlignment(Image.ALIGN_CENTER);
+                document.add(img);
+            }
+
+            document.close();
+            InputStream is = new ByteArrayInputStream(out.toByteArray());
+
+            downloadedFile = DefaultStreamedContent.builder()
+                    .name("Surgery_Count_Report_" + getSelectedYear() + ".pdf")
+                    .contentType("application/pdf")
+                    .stream(() -> is)
+                    .build();
+
+        } catch (Exception ex) {
+            JsfUtil.addErrorMessage("Failed to generate PDF report: " + ex.getMessage());
+            downloadedFile = null;
+        }
+    }
+
+    private void addSurgeryCountPdfTable(Document document) throws DocumentException {
+        int numCols = surgeryCategoryNames.size() + 2;
+        PdfPTable table = new PdfPTable(numCols);
+        table.setWidthPercentage(100);
+
+        Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, BaseColor.WHITE);
+        Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+        Font totalFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9);
+        BaseColor headerBg = new BaseColor(52, 73, 94);
+        BaseColor totalBg = new BaseColor(230, 230, 230);
+
+        addPdfHeaderCell(table, "Month", headerFont, headerBg);
+        for (String cat : surgeryCategoryNames) {
+            addPdfHeaderCell(table, cat, headerFont, headerBg);
+        }
+        addPdfHeaderCell(table, "Total", headerFont, headerBg);
+
+        for (SurgeryCountTypeWiseDTO dto : surgeryCountTypeList) {
+            table.addCell(new Phrase(dto.getMonthString(), cellFont));
+            for (String cat : surgeryCategoryNames) {
+                table.addCell(new Phrase(String.valueOf(dto.getCount(cat)), cellFont));
+            }
+            table.addCell(new Phrase(String.valueOf(dto.getTotalCount()), cellFont));
+        }
+
+        addPdfHeaderCell(table, "Total", totalFont, totalBg);
+        for (String cat : surgeryCategoryNames) {
+            addPdfTotalsCell(table, String.valueOf(totalCategoryCounts.getOrDefault(cat, 0)), totalFont, totalBg);
+        }
+        addPdfTotalsCell(table, String.valueOf(totalAllSurgeryCount), totalFont, totalBg);
+
+        document.add(table);
+    }
+
+    private void addPdfHeaderCell(PdfPTable table, String text, Font font, BaseColor bg) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setBackgroundColor(bg);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setPadding(5);
+        table.addCell(cell);
+    }
+
+    private void addPdfTotalsCell(PdfPTable table, String text, Font font, BaseColor bg) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setBackgroundColor(bg);
+        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        cell.setPadding(5);
+        table.addCell(cell);
+    }
+
+    // =========================================================
+// Shared helper: decode whichever chart the user has selected
+// =========================================================
+    private byte[] resolveChartImageBytes() {
+        String base64 = null;
+        if ("bar".equalsIgnoreCase(surgeryCountChartType)) {
+            base64 = barChartImageBase64;
+        } else if ("line".equalsIgnoreCase(surgeryCountChartType)) {
+            base64 = lineChartImageBase64;
+        }
+        if (base64 == null || base64.isEmpty()) {
+            return null;
+        }
+        int comma = base64.indexOf(',');
+        String pureBase64 = comma >= 0 ? base64.substring(comma + 1) : base64;
+        return Base64.getDecoder().decode(pureBase64);
+    }
+
     public Date getFromYearStartDate() {
         if (fromYearStartDate == null) {
             Calendar cal = Calendar.getInstance();
@@ -467,5 +745,29 @@ public class SurgeryCountReportController implements Serializable {
 
     public void setSurgeryItem(Item surgeryItem) {
         this.surgeryItem = surgeryItem;
+    }
+
+    public String getBarChartImageBase64() {
+        return barChartImageBase64;
+    }
+
+    public void setBarChartImageBase64(String barChartImageBase64) {
+        this.barChartImageBase64 = barChartImageBase64;
+    }
+
+    public String getLineChartImageBase64() {
+        return lineChartImageBase64;
+    }
+
+    public void setLineChartImageBase64(String lineChartImageBase64) {
+        this.lineChartImageBase64 = lineChartImageBase64;
+    }
+
+    public StreamedContent getDownloadedFile() {
+        return downloadedFile;
+    }
+
+    public void setDownloadedFile(StreamedContent downloadedFile) {
+        this.downloadedFile = downloadedFile;
     }
 }
