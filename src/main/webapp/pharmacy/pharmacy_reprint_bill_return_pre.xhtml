@@ -38,8 +38,8 @@
                                         value="Cancel"
                                         icon="fas fa-ban"
                                         class="ui-button-danger mx-2"
-                                        action="pharmacy_cancel_bill_return_pre?faces-redirect=true" 
-                                        disabled="#{pharmacyBillSearch.bill.cancelled}">                           
+                                        action="pharmacy_cancel_bill_return_pre?faces-redirect=true"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.hasActiveReturnCashBill()}">
                                     </p:commandButton>
                                 </h:panelGroup>
                             </div>
