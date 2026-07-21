@@ -49,6 +49,10 @@
                     <p:commandButton class="ui-button-success" icon="fas fa-file-excel" actionListener="#{serviceSummery.createInvestigationCategorySummery()}" value="Excel" ajax="false">
                         <p:dataExporter type="xlsx" target="opd" fileName="Investigation_Summery_By_Category"  />
                     </p:commandButton>
+
+                    <p:commandButton class="ui-button-danger mx-2" icon="fas fa-file-pdf" actionListener="#{serviceSummery.createInvestigationCategorySummery()}" value="PDF" ajax="false">
+                        <p:dataExporter type="pdf" target="opd" fileName="Investigation_Summery_By_Category"  />
+                    </p:commandButton>
                 </h:panelGrid>
 
 
