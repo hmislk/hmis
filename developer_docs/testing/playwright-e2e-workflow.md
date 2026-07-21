@@ -976,8 +976,11 @@ test-fixture data, not a bug.
   → **Add Subscription**.
 - The **Application-wide** checkbox's visible box intercepts Playwright's
   normal click on the underlying `p:selectBooleanCheckbox` input — click via
-  `document.querySelector('.ui-chkbox-box')` (or the right index if there
-  are several checkboxes on the page) instead of the accessibility-tree ref.
+  a selector scoped to its own JSF id (`chkApplicationWide` in
+  `admin/users/user_subscription.xhtml`), not a bare `.ui-chkbox-box` index,
+  which picks whichever checkbox happens to be first/nth on the page and can
+  silently toggle the wrong control if the page has more than one:
+  `document.querySelector('[id$="chkApplicationWide"] .ui-chkbox-box')`.
 
 Found while verifying issue #21538 (discharge notifications routing to the
 wrong patient) — the fix couldn't be end-to-end tested at all until this was
