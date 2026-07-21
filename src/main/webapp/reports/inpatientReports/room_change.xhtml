@@ -177,8 +177,8 @@
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
-                                value="Download">
-                                <p:dataExporter type="xlsx" target="detailWise" fileName="Room_Change_Detail"/>
+                                value="Download"
+                                action="#{roomChangeReportController.downloadRoomChangeReportExcel()}">
                             </p:commandButton>
 
                             <p:commandButton
