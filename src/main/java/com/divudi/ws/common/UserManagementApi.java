@@ -325,7 +325,9 @@ public class UserManagementApi {
      * Optional query params: from, to (yyyy-MM-dd) — filters the list to users whose
      * lastPasswordResetAt falls within the (inclusive) range. Omitting both returns
      * every active user, including those who have never reset their password
-     * (lastPasswordResetAt: null).
+     * (lastPasswordResetAt: null). A 'from' bound always excludes never-reset users
+     * (they haven't reset since anything). A 'to'-only bound (no 'from') includes
+     * never-reset users - they are, by definition, at least as overdue as any date.
      */
     @GET
     @Path("/password-status")
@@ -354,7 +356,7 @@ public class UserManagementApi {
         for (WebUser u : users) {
             Date lastReset = u.getLastPasswordResetAtRaw();
             if (from != null && (lastReset == null || lastReset.before(from))) continue;
-            if (to != null && (lastReset == null || lastReset.after(to))) continue;
+            if (to != null && lastReset != null && lastReset.after(to)) continue;
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("userId", u.getId());
             m.put("name", u.getName());
