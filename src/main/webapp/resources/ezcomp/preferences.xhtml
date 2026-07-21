@@ -99,6 +99,7 @@
 
                             <h:outputLabel value="Pharmacy Bill Paper" ></h:outputLabel>
                             <p:selectOneMenu value="#{sessionController.currentPreference.pharmacyBillPaperType}" >
+                                <f:converter converterId="javax.faces.Enum" />
                                 <f:selectItem itemLabel="Please Select Paper Type" />
                                 <f:selectItems value="#{enumController.paperTypes}" ></f:selectItems>
                             </p:selectOneMenu>

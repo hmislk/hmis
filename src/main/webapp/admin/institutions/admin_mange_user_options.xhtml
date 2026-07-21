@@ -47,6 +47,7 @@
                                         <p:inputTextarea value="#{sessionController.departmentPreference.pharmacyWholesaleBillTemplate}" />
                                         <h:outputLabel value="Pharmacy Bill Paper" ></h:outputLabel>
                                         <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" >
+                                            <f:converter converterId="javax.faces.Enum" />
                                             <f:selectItem itemLabel="Please Select Paper Type" />
                                             <f:selectItems var="t" itemLabel="#{t.label}" itemValue="#{t}" value="#{enumController.paperTypes}" ></f:selectItems>
                                         </p:selectOneMenu>
