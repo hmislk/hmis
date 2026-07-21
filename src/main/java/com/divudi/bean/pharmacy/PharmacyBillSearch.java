@@ -1924,7 +1924,7 @@ public class PharmacyBillSearch implements Serializable {
         if (getBill() == null) {
             return false;
         }
-        String sql = "Select b From Bill b where b.retired=false "
+        String sql = "Select count(b) From Bill b where b.retired=false "
                 + " and b.cancelled=false "
                 + " and b.billType=:bt "
                 + " and b.referenceBill=:ref "
@@ -1932,8 +1932,8 @@ public class PharmacyBillSearch implements Serializable {
         HashMap hm = new HashMap();
         hm.put("ref", getBill());
         hm.put("bt", BillType.PharmacySale);
-        List<Bill> tmp = getBillFacade().findByJpql(sql, hm);
-        return !tmp.isEmpty();
+        Long count = getBillFacade().findLongByJpql(sql, hm);
+        return count != null && count > 0;
     }
 
     private boolean checkSaleReturn(Bill b) {
