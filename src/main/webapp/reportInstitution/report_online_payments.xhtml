@@ -43,7 +43,11 @@
 
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="on_line_settle_bills"  />
-                            </p:commandButton>  
+                            </p:commandButton>
+
+                            <p:commandButton ajax="false" value="PDF" class="ui-button-danger mx-1" icon="fas fa-file-pdf" styleClass="noPrintButton" style="float: right;" >
+                                <p:dataExporter type="pdf" target="tbl" fileName="on_line_settle_bills"  />
+                            </p:commandButton>
                         </h:panelGrid>
 
 
