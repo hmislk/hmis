@@ -273,6 +273,7 @@ public class Bill implements Serializable, RetirableEntity {
     //Id's
     private String deptId;
     private String insId;
+    private Long voucherNo;
     private String catId;
     private String sessionId;
     @Deprecated
@@ -1761,6 +1762,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setDeptId(String deptId) {
         this.deptId = deptId;
+    }
+
+    public Long getVoucherNo() {
+        return voucherNo;
+    }
+
+    public void setVoucherNo(Long voucherNo) {
+        this.voucherNo = voucherNo;
     }
 
     public String getInsId() {
