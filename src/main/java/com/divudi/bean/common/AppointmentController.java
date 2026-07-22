@@ -428,8 +428,8 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         } else {
             // For non-room types (Procedure, Consultant, etc.)
             reservedRoom = null;
-            reservedFromDate = currentAppointment.getAppointmentTimeFrom();
-            reservedToDate = currentAppointment.getAppointmentTimeTo();
+            reservedFromDate = combineDateAndTime(currentAppointment.getAppointmentDate(), currentAppointment.getAppointmentTimeFrom());
+            reservedToDate = combineDateAndTime(currentAppointment.getAppointmentDate(), currentAppointment.getAppointmentTimeTo());
         }
 
         patient = patientFacade.find(currentAppointment.getPatient().getId());
