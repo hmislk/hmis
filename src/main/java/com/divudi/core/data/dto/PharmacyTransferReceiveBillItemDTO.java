@@ -10,6 +10,7 @@ import java.util.Date;
  * cancelled receive bill items in reports.
  */
 public class PharmacyTransferReceiveBillItemDTO implements Serializable {
+    private Long billId;
     private String billClassSimpleName; // ADDED for Issue #15797: Simple class name (e.g., "Bill", "CancelledBill")
     private String deptId;
     private Date createdAt;
@@ -72,13 +73,24 @@ public class PharmacyTransferReceiveBillItemDTO implements Serializable {
     /**
      * NEW Constructor for Issue #15797: Includes TYPE(b) to distinguish cancelled receive items.
      */
-    public PharmacyTransferReceiveBillItemDTO(Object billClass, String deptId, Date createdAt, String itemName, String itemCode,
-                                            Double qty, Double costRate, java.math.BigDecimal costValue,
-                                            Double retailRate, java.math.BigDecimal retailValue,
-                                            Double purchaseRate, java.math.BigDecimal purchaseValue,
-                                            java.math.BigDecimal transferRate, java.math.BigDecimal transferValue) {
+    public PharmacyTransferReceiveBillItemDTO(Long billId,
+                                              Object billClass,
+                                              String deptId,
+                                              Date createdAt,
+                                              String itemName,
+                                              String itemCode,
+                                              Double qty,
+                                              Double costRate,
+                                              java.math.BigDecimal costValue,
+                                              Double retailRate,
+                                              java.math.BigDecimal retailValue,
+                                              Double purchaseRate,
+                                              java.math.BigDecimal purchaseValue,
+                                              java.math.BigDecimal transferRate,
+                                              java.math.BigDecimal transferValue) {
         // Extract simple class name from TYPE(b)
         this.billClassSimpleName = extractSimpleClassName(billClass);
+        this.billId = billId;
         this.deptId = deptId;
         this.createdAt = createdAt;
         this.itemName = itemName;
@@ -114,7 +126,15 @@ public class PharmacyTransferReceiveBillItemDTO implements Serializable {
 
         return fullClassName;
     }
+    
+    public Long getBillId() {
+        return billId;
+    }
 
+    public void setBillId(Long billId) {
+        this.billId = billId;
+    }
+    
     public String getDeptId() {
         return deptId;
     }

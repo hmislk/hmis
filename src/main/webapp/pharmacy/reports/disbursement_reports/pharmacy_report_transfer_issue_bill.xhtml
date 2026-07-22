@@ -105,7 +105,12 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"  style="padding: 0px!important; margin: 0px!important;" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.deptId}"  style="padding: 0px!important; margin: 0px!important;"/>
+                                    <p:commandLink
+                                        ajax="false"
+                                        value="#{i.deptId}"
+                                        title="View issue #{i.deptId}"
+                                        styleClass="text-primary text-decoration-underline"
+                                        action="#{transferIssueNativeSqlController.viewByBillId(i.id)}"/>
                                 </p:column>
 
 

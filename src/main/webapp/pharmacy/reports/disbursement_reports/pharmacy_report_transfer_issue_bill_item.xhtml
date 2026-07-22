@@ -164,7 +164,12 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="Bill No"/>
                                 </f:facet>
-                                <h:outputLabel value="#{i.deptId}" ></h:outputLabel>
+                                <p:commandLink
+                                    ajax="false"
+                                    value="#{i.deptId}"
+                                    title="View issue #{i.deptId}"
+                                    styleClass="text-primary text-decoration-underline"
+                                    action="#{transferIssueNativeSqlController.viewByBillId(i.billId)}"/>
                             </p:column>
 
                             <p:column headerText="Date"

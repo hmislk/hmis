@@ -85,6 +85,7 @@ public class ReportsTransfer implements Serializable {
 
     @Inject
     private ReportTimerController reportTimerController;
+    private Bill selectedTransferBill;
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -543,6 +544,14 @@ public class ReportsTransfer implements Serializable {
         previewBill = null;
         return "/pharmacy/pharmacy_report_bht_issue_bill?faces-redirect=true";
     }
+    
+    public Bill getSelectedTransferBill() {
+        return selectedTransferBill;
+    }
+
+    public void setSelectedTransferBill(Bill selectedTransferBill) {
+        this.selectedTransferBill = selectedTransferBill;
+    }
 
     /**
      * Methods
@@ -852,6 +861,7 @@ public class ReportsTransfer implements Serializable {
 
         jpql.append("select new com.divudi.core.data.dto.PharmacyTransferIssueBillItemDTO(")
                 .append("TYPE(b), ")
+                .append("b.id, ")
                 .append("b.deptId, b.createdAt, it.name, it.code,")
                 .append(" bi.qty, ib.costRate, bfd.valueAtCostRate,")
                 .append(" p.retailRate, bfd.valueAtRetailRate,")
@@ -915,7 +925,6 @@ public class ReportsTransfer implements Serializable {
                 }
             }
         }
-
     }
 
     public void fillDepartmentTransfersReceiveByBillItem() {
@@ -932,6 +941,7 @@ public class ReportsTransfer implements Serializable {
         StringBuilder jpql = new StringBuilder();
 
         jpql.append("select new com.divudi.core.data.dto.PharmacyTransferReceiveBillItemDTO(")
+                .append("b.id, ")
                 .append("TYPE(b), ")  // ADDED: Bill class discriminator to identify CancelledBill
                 .append("b.deptId, b.createdAt, it.name, it.code,")
                 .append(" bi.qty, ib.costRate, bfd.valueAtCostRate,")
@@ -996,7 +1006,6 @@ public class ReportsTransfer implements Serializable {
                 }
             }
         }
-
     }
 
 
@@ -3818,6 +3827,24 @@ public class ReportsTransfer implements Serializable {
 
     public void setDisposalIssueBillItemDtos(List<PharmacyItemPurchaseDTO> disposalIssueBillItemDtos) {
         this.disposalIssueBillItemDtos = disposalIssueBillItemDtos;
+    }
+    
+    public String navigateToTransferBill(Long billId) {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("Bill could not be identified.");
+            return null;
+        }
+
+        Bill bill = BillFacade.find(billId);
+
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Bill could not be found.");
+            return null;
+        }
+
+        selectedTransferBill = bill;
+
+        return "/pharmacy/pharmacy_transfer_issue_bill_view?faces-redirect=true";
     }
 
 }

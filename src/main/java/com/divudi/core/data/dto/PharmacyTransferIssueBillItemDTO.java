@@ -7,6 +7,7 @@ import java.util.Date;
  * DTO for Pharmacy Transfer Issue Bill Items
  */
 public class PharmacyTransferIssueBillItemDTO implements Serializable {
+    private Long billId;
     private String billClassSimpleName; // Simple name of Bill class for row styling
     private String deptId;
     private Date createdAt;
@@ -73,12 +74,22 @@ public class PharmacyTransferIssueBillItemDTO implements Serializable {
     // TYPE(b), b.deptId, b.createdAt, it.name, it.code, bi.qty, ib.costRate, bfd.valueAtCostRate,
     // p.retailRate, bfd.valueAtRetailRate, p.purchaseRate, bfd.valueAtPurchaseRate, bfd.lineGrossRate, bfd.lineGrossTotal
     public PharmacyTransferIssueBillItemDTO(Object billClass,
-                                            String deptId, Date createdAt, String itemName, String itemCode,
-                                            Double qty, Double costRate, java.math.BigDecimal costValue,
-                                            Double retailRate, java.math.BigDecimal retailValue,
-                                            Double purchaseRate, java.math.BigDecimal purchaseValue,
-                                            java.math.BigDecimal transferRate, java.math.BigDecimal transferValue) {
+                                            Long billId,
+                                            String deptId,
+                                            Date createdAt,
+                                            String itemName,
+                                            String itemCode,
+                                            Double qty,
+                                            Double costRate,
+                                            java.math.BigDecimal costValue,
+                                            Double retailRate,
+                                            java.math.BigDecimal retailValue,
+                                            Double purchaseRate,
+                                            java.math.BigDecimal purchaseValue,
+                                            java.math.BigDecimal transferRate,
+                                            java.math.BigDecimal transferValue) {
         this.billClassSimpleName = extractSimpleClassName(billClass);
+        this.billId = billId;
         this.deptId = deptId;
         this.createdAt = createdAt;
         this.itemName = itemName;
@@ -93,7 +104,15 @@ public class PharmacyTransferIssueBillItemDTO implements Serializable {
         this.transferRate = transferRate != null ? transferRate.doubleValue() : null;
         this.transferValue = transferValue != null ? transferValue.doubleValue() : null;
     }
+    
+    public Long getBillId() {
+        return billId;
+    }
 
+    public void setBillId(Long billId) {
+        this.billId = billId;
+    }
+    
     public String getDeptId() {
         return deptId;
     }
