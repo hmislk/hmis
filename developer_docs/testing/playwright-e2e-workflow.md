@@ -1036,6 +1036,11 @@ Then `browser_take_screenshot` — this shows exactly what would print (hidden
 ever touching `window.print()`. Verified while fixing issue #22316 (Time
 Service Report print truncation).
 
+**Scope of this check**: this only proves `@media print` visibility/layout
+rules apply correctly — it does not verify pagination, page-fit, or page
+breaks across multiple printed pages. For reports where those matter, follow
+up with an actual PDF export or a manual print-preview pass.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

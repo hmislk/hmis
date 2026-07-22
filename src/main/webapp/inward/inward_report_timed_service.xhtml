@@ -289,17 +289,17 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>BHT Number</th>
-                                        <th>Service Name</th>
-                                        <th>Service Name</th>
-                                        <th>Inward Charge Type</th>
-                                        <th>Start Time</th>
-                                        <th>Stopped Time</th>
-                                        <th>Time(Min.)</th>
-                                        <th>Discount</th>
-                                        <th>Adjusted Value</th>
-                                        <th>Total</th>
-                                        <th>Creator</th>
+                                        <th><h:outputText value="BHT Number"/></th>
+                                        <th><h:outputText value="Service Name"/></th>
+                                        <th><h:outputText value="Service Name"/></th>
+                                        <th><h:outputText value="Inward Charge Type"/></th>
+                                        <th><h:outputText value="Start Time"/></th>
+                                        <th><h:outputText value="Stopped Time"/></th>
+                                        <th><h:outputText value="Time(Min.)"/></th>
+                                        <th><h:outputText value="Discount"/></th>
+                                        <th><h:outputText value="Adjusted Value"/></th>
+                                        <th><h:outputText value="Total"/></th>
+                                        <th><h:outputText value="Creator"/></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -338,7 +338,7 @@
                                 <tfoot>
                                     <tr>
                                         <td colspan="5" style="text-align: right; font-weight: bold;">Total</td>
-                                        <td style="text-align: right; font-weight: bold;">
+                                        <td colspan="2" style="text-align: right; font-weight: bold;">
                                             <h:outputText value="#{inwardTimedItemController.totalMins}"/>
                                         </td>
                                         <td colspan="2"></td>
