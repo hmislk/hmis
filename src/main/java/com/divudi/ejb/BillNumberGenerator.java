@@ -3799,6 +3799,9 @@ public class BillNumberGenerator {
      */
     public Object[] resetAdmissionNumber(AdmissionType admissionType, Institution institution,
             boolean institutionBased, Long newLastAdmissionNumber, Long expectedLastAdmissionNumber) {
+        if (institutionBased && institution == null) {
+            throw new IllegalArgumentException("Institution is required when institutionBased is true.");
+        }
         String lockKey = getBhtLockKey(admissionType, institution, institutionBased);
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
         lock.lock();
