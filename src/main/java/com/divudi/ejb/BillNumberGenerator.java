@@ -775,6 +775,65 @@ public class BillNumberGenerator {
         return next;
     }
 
+    private String getVoucherLockKey(Department department, BillTypeAtomic billTypeAtomic) {
+        String departmentId = department != null ? department.getId().toString() : "null";
+        String billTypeLabel = billTypeAtomic != null ? billTypeAtomic.name() : "null";
+        return "voucher-" + departmentId + "-" + billTypeLabel;
+    }
+
+    /**
+     * Returns the next number in a never-resetting, per-department voucher number
+     * sequence for the given bill type. Unlike the deptId/insId bill numbers, this
+     * counter does not reset yearly. If no counter exists yet for this
+     * (department, billTypeAtomic) pair, it is seeded so that the first number
+     * returned equals startingNumber (defaults to 1 when null or less than 1).
+     */
+    public Long fetchNextVoucherNumber(Department department, BillTypeAtomic billTypeAtomic, Long startingNumber) {
+        String lockKey = getVoucherLockKey(department, billTypeAtomic);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            return incrementAndFlushVoucherNumber(department, billTypeAtomic, startingNumber);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private Long incrementAndFlushVoucherNumber(Department department, BillTypeAtomic billTypeAtomic, Long startingNumber) {
+        BillNumber billNumber = fetchVoucherNumberRecord(department, billTypeAtomic, startingNumber);
+        Long next = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(next);
+        billNumberFacade.editAndFlush(billNumber);
+        return next;
+    }
+
+    private BillNumber fetchVoucherNumberRecord(Department department, BillTypeAtomic billTypeAtomic, Long startingNumber) {
+        String jpql = "SELECT b FROM BillNumber b "
+                + " WHERE b.retired=false "
+                + " AND b.voucherNumber=true "
+                + " AND b.billTypeAtomic=:bTp "
+                + " AND b.department=:dept";
+
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bTp", billTypeAtomic);
+        hm.put("dept", department);
+
+        BillNumber billNumber = billNumberFacade.findFirstByJpql(jpql, hm);
+
+        if (billNumber == null) {
+            billNumber = new BillNumber();
+            billNumber.setVoucherNumber(true);
+            billNumber.setBillTypeAtomic(billTypeAtomic);
+            billNumber.setDepartment(department);
+
+            long seed = (startingNumber == null || startingNumber < 1L) ? 0L : (startingNumber - 1L);
+            billNumber.setLastBillNumber(seed);
+            billNumberFacade.createAndFlush(billNumber);
+        }
+
+        return billNumber;
+    }
+
     // Special synchronized method for Single Number strategy only
     private BillNumber fetchLastBillNumberSynchronizedSingleNumber(Department department, List<BillTypeAtomic> billTypes) {
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
