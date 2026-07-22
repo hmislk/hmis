@@ -191,6 +191,10 @@
                                                      class="ui-button-success mr-2"
                                                      actionListener="#{creditCompanyDebtorGroupedReportController.downloadExcel}"
                                                      ajax="false" />
+                                    <p:commandButton value="PDF" icon="fas fa-file-pdf"
+                                                     class="ui-button-danger mx-1"
+                                                     actionListener="#{creditCompanyDebtorGroupedReportController.downloadPdf}"
+                                                     ajax="false" />
                                     <p:commandButton value="Print" icon="fas fa-print"
                                                      class="ui-button-info ml-1" ajax="false">
                                         <p:printer target="debtorGroupedTable" />

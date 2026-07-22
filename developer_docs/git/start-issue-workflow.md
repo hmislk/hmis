@@ -14,11 +14,7 @@ Use the `/start-issue` skill to automate all of these steps.
 
 ## Branch Naming
 
-Format: `<issueNumber>-<short-kebab-case-description>`
-
-Examples:
-- `20408-fix-cashier-bill-total-calculation`
-- `19887-collection-center-receipt-pdf`
+See [Commit Conventions § Feature Branches](commit-conventions.md#feature-branches) for the naming format. Always branch from `origin/development`, never `master`.
 
 ## Persistence.xml Swap
 

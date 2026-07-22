@@ -77,6 +77,11 @@ public class InwardPharmacyEncounterReportController implements Serializable {
     private List<Bill> pharmacyRequestBillsToPatientEncounter;
     private double pharmacyRequestBillsToPatientEncounterNetTotal;
 
+    // 1b) Pharmacy Request Drafts list (InwardPharmacyRequest bills with
+    // billTypeAtomic = REQUEST_MEDICINE_INWARD_PRE, i.e. not yet settled)
+    private List<Bill> pharmacyRequestDraftBillsToPatientEncounter;
+    private double pharmacyRequestDraftBillsToPatientEncounterNetTotal;
+
     // 2) Direct Issues list (PharmacyBhtPre PreBill sale bills, merged with their
     // RefundBill returns so the whole picture is visible on one page)
     private List<BillListReportDTO> directIssueBillsToPatientEncounter;
@@ -85,8 +90,8 @@ public class InwardPharmacyEncounterReportController implements Serializable {
     private double directIssueBillsToPatientEncounterMargin;
     private double directIssueBillsToPatientEncounterDiscount;
     private List<InpatientPharmacyBillItemDTO> directIssueBillItemsToPatientEncounter;
-    private List<InpatientPharmacyItemSummaryDTO> directIssueItemSummary;
-    private List<InpatientPharmacyDepartmentSummaryDTO> directIssueDepartmentSummary;
+    private List<InpatientPharmacyItemSummaryDTO> directIssueItemSummary = new ArrayList<>();
+    private List<InpatientPharmacyDepartmentSummaryDTO> directIssueDepartmentSummary = new ArrayList<>();
 
     // 3) Issue Returns list (PharmacyBhtPre RefundBill bills)
     private List<BillListReportDTO> returnBillsToPatientEncounter;
@@ -123,12 +128,57 @@ public class InwardPharmacyEncounterReportController implements Serializable {
     private List<Bill> fetchPharmacyRequestBills() {
         String jpql = "SELECT b FROM Bill b "
                 + "WHERE b.billType = :billType "
+                + "AND b.billTypeAtomic = :bta "
                 + "AND b.retired = false "
                 + "AND b.patientEncounter = :pe "
                 + "ORDER BY b.createdAt DESC";
 
         Map<String, Object> params = new HashMap<>();
         params.put("billType", BillType.InwardPharmacyRequest);
+        params.put("bta", BillTypeAtomic.REQUEST_MEDICINE_INWARD);
+        params.put("pe", patientEncounter);
+
+        List<Bill> result = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    /**
+     * Lists all draft (not yet settled) InwardPharmacyRequest bills for this
+     * patientEncounter, i.e. bills with billTypeAtomic =
+     * REQUEST_MEDICINE_INWARD_PRE. Companion to
+     * {@link #navigateToInpatientPharmacyRequestsList()} for the "Save
+     * Draft" feature (issue #22004).
+     */
+    public String navigateToInpatientPharmacyRequestDraftsList() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        pharmacyRequestDraftBillsToPatientEncounter = new ArrayList<>();
+        pharmacyRequestDraftBillsToPatientEncounterNetTotal = 0.0;
+        try {
+            pharmacyRequestDraftBillsToPatientEncounter = fetchPharmacyRequestDraftBills();
+            for (Bill b : pharmacyRequestDraftBillsToPatientEncounter) {
+                pharmacyRequestDraftBillsToPatientEncounterNetTotal += b.getNetTotal();
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardPharmacyEncounterReportController.class.getName())
+                    .log(Level.SEVERE, "Error loading pharmacy request draft bills", e);
+            JsfUtil.addErrorMessage("Error loading pharmacy request draft data");
+            return null;
+        }
+        return "/inward/reports/inpatient_pharmacy_request_drafts_list?faces-redirect=true";
+    }
+
+    private List<Bill> fetchPharmacyRequestDraftBills() {
+        String jpql = "SELECT b FROM Bill b "
+                + "WHERE b.billTypeAtomic = :bta "
+                + "AND b.retired = false "
+                + "AND b.patientEncounter = :pe "
+                + "ORDER BY b.createdAt DESC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("bta", BillTypeAtomic.REQUEST_MEDICINE_INWARD_PRE);
         params.put("pe", patientEncounter);
 
         List<Bill> result = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
@@ -556,6 +606,22 @@ public class InwardPharmacyEncounterReportController implements Serializable {
         this.pharmacyRequestBillsToPatientEncounterNetTotal = pharmacyRequestBillsToPatientEncounterNetTotal;
     }
 
+    public List<Bill> getPharmacyRequestDraftBillsToPatientEncounter() {
+        return pharmacyRequestDraftBillsToPatientEncounter;
+    }
+
+    public void setPharmacyRequestDraftBillsToPatientEncounter(List<Bill> pharmacyRequestDraftBillsToPatientEncounter) {
+        this.pharmacyRequestDraftBillsToPatientEncounter = pharmacyRequestDraftBillsToPatientEncounter;
+    }
+
+    public double getPharmacyRequestDraftBillsToPatientEncounterNetTotal() {
+        return pharmacyRequestDraftBillsToPatientEncounterNetTotal;
+    }
+
+    public void setPharmacyRequestDraftBillsToPatientEncounterNetTotal(double pharmacyRequestDraftBillsToPatientEncounterNetTotal) {
+        this.pharmacyRequestDraftBillsToPatientEncounterNetTotal = pharmacyRequestDraftBillsToPatientEncounterNetTotal;
+    }
+
     public List<BillListReportDTO> getDirectIssueBillsToPatientEncounter() {
         return directIssueBillsToPatientEncounter;
     }
@@ -618,6 +684,86 @@ public class InwardPharmacyEncounterReportController implements Serializable {
 
     public void setDirectIssueDepartmentSummary(List<InpatientPharmacyDepartmentSummaryDTO> directIssueDepartmentSummary) {
         this.directIssueDepartmentSummary = directIssueDepartmentSummary;
+    }
+
+    public double getDirectIssueItemSummaryQtyTotal() {
+        double sum = 0.0;
+        for (InpatientPharmacyItemSummaryDTO s : directIssueItemSummary) {
+            sum += s.getQty();
+        }
+        return sum;
+    }
+
+    public double getDirectIssueItemSummaryTotal() {
+        double sum = 0.0;
+        for (InpatientPharmacyItemSummaryDTO s : directIssueItemSummary) {
+            sum += s.getTotal();
+        }
+        return sum;
+    }
+
+    public double getDirectIssueItemSummaryMargin() {
+        double sum = 0.0;
+        for (InpatientPharmacyItemSummaryDTO s : directIssueItemSummary) {
+            sum += s.getMargin();
+        }
+        return sum;
+    }
+
+    public double getDirectIssueItemSummaryDiscount() {
+        double sum = 0.0;
+        for (InpatientPharmacyItemSummaryDTO s : directIssueItemSummary) {
+            sum += s.getDiscount();
+        }
+        return sum;
+    }
+
+    public double getDirectIssueItemSummaryNetTotal() {
+        double sum = 0.0;
+        for (InpatientPharmacyItemSummaryDTO s : directIssueItemSummary) {
+            sum += s.getNetTotal();
+        }
+        return sum;
+    }
+
+    public double getDirectIssueDepartmentSummaryQtyTotal() {
+        double sum = 0.0;
+        for (InpatientPharmacyDepartmentSummaryDTO s : directIssueDepartmentSummary) {
+            sum += s.getQty();
+        }
+        return sum;
+    }
+
+    public double getDirectIssueDepartmentSummaryTotal() {
+        double sum = 0.0;
+        for (InpatientPharmacyDepartmentSummaryDTO s : directIssueDepartmentSummary) {
+            sum += s.getTotal();
+        }
+        return sum;
+    }
+
+    public double getDirectIssueDepartmentSummaryMargin() {
+        double sum = 0.0;
+        for (InpatientPharmacyDepartmentSummaryDTO s : directIssueDepartmentSummary) {
+            sum += s.getMargin();
+        }
+        return sum;
+    }
+
+    public double getDirectIssueDepartmentSummaryDiscount() {
+        double sum = 0.0;
+        for (InpatientPharmacyDepartmentSummaryDTO s : directIssueDepartmentSummary) {
+            sum += s.getDiscount();
+        }
+        return sum;
+    }
+
+    public double getDirectIssueDepartmentSummaryNetTotal() {
+        double sum = 0.0;
+        for (InpatientPharmacyDepartmentSummaryDTO s : directIssueDepartmentSummary) {
+            sum += s.getNetTotal();
+        }
+        return sum;
     }
 
     public List<BillListReportDTO> getReturnBillsToPatientEncounter() {

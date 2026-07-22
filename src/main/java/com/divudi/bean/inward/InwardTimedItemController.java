@@ -82,6 +82,8 @@ public class InwardTimedItemController implements Serializable {
     private InwardBeanController inwardBean;
     @Inject
     BillBeanController billBean;
+    @Inject
+    private SurgeryBillController surgeryBillController;
     @EJB
     BillFeeFacade billFeeFacade;
     @EJB
@@ -350,6 +352,10 @@ public class InwardTimedItemController implements Serializable {
         if (generalChecking()) {
             return;
         }
+        if (encounterComponent.getBillItem() != null && encounterComponent.getBillItem().isFromPackage()) {
+            JsfUtil.addErrorMessage("This item is included in the admission's package and cannot be removed.");
+            return;
+        }
 
         retiredEncounterComponent(encounterComponent);
         retiredBillFee(encounterComponent.getBillFee());
@@ -381,6 +387,10 @@ public class InwardTimedItemController implements Serializable {
     }
 
     public void removePatientItem(PatientItem patientItem) {
+        if (patientItem != null && patientItem.getBillItem() != null && patientItem.getBillItem().isFromPackage()) {
+            JsfUtil.addErrorMessage("This item is included in the admission's package and cannot be removed.");
+            return;
+        }
         if (patientItem != null) {
             patientItem.setRetirer(getSessionController().getLoggedUser());
             patientItem.setRetiredAt(new Date());
@@ -514,6 +524,11 @@ public class InwardTimedItemController implements Serializable {
     }
 
     public void saveSurgeryTimedService() {
+        if (batchBill != null && surgeryBillController.isSurgeryLockedForAdditions(batchBill)) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
+            return;
+        }
+
         if (generalChecking()) {
             return;
         }
@@ -637,6 +652,10 @@ public class InwardTimedItemController implements Serializable {
     }
 
     public void finalizeService(PatientItem pic) {
+        if (pic != null && pic.getBillItem() != null && pic.getBillItem().isFromPackage()) {
+            JsfUtil.addErrorMessage("This item is included in the admission's package and its charge cannot be changed.");
+            return;
+        }
         PatientItem temPi;
         if (pic.getToTime() != null && pic.getFromTime() != null) {
             if (pic.getToTime().before(pic.getFromTime())) {

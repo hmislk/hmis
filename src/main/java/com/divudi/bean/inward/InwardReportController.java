@@ -65,9 +65,21 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.common.EnumController;
 import com.divudi.core.data.dto.AdmissionDischargeDTO;
+import com.divudi.core.data.dto.PatientEncounterDto;
 import com.divudi.core.data.dto.RoomCategoryOccupancyDTO;
 import com.divudi.core.data.dto.RoomOccupancyRowDTO;
+import com.divudi.core.data.dto.SurgeryCostEstimationDTO;
+import com.divudi.core.data.dto.SurgeryCostSummaryDTO;
+import com.divudi.core.data.dto.SurgeryCountTypeWiseDTO;
+import com.divudi.core.data.inward.PatientEncounterComponentType;
+import com.divudi.core.data.inward.SurgeryBillType;
+import com.divudi.core.data.inward.TheatreOccupancyStatus;
+import com.divudi.core.entity.inward.EncounterComponent;
+import com.divudi.core.entity.inward.PatientTransferRequest;
+import com.divudi.core.entity.inward.RoomFacilityCharge;
+import com.divudi.core.facade.EncounterComponentFacade;
 import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.PatientTransferRequestFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -165,6 +177,14 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import javax.imageio.ImageIO;
 import java.awt.Color;
+import java.text.DecimalFormat;
+import java.time.Month;
+import java.time.format.TextStyle;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.TreeSet;
+
 /**
  *
  * @author pdhs
@@ -193,6 +213,10 @@ public class InwardReportController implements Serializable {
     BillFeeFacade billFeeFacade;
     @EJB
     PatientRoomFacade patientRoomFacade;
+    @EJB
+    EncounterComponentFacade encounterComponentFacade;
+    @EJB
+    PatientTransferRequestFacade patientTransferRequestFacade;
 
     @Inject
     SessionController sessionController;
@@ -203,7 +227,8 @@ public class InwardReportController implements Serializable {
     @Inject
     InwardBeanController inwardBeanController;
     @Inject
-    EnumController enumController;;
+    EnumController enumController;
+    ;
     @Inject
     RoomCategoryController roomCategoryController;
 
@@ -310,6 +335,10 @@ public class InwardReportController implements Serializable {
 
     private String surgeryWiseLineChartModel;
     private String surgeryWiseBarChartModel;
+    
+    private String surgeryCountChartType;
+    private String surgeryCountBarChartModel;
+    private String surgeryCountLineChartModel;
 
     private String specialtyLineChartImage;
     private String specialtyBarChartImage;
@@ -333,6 +362,1081 @@ public class InwardReportController implements Serializable {
     }
     double netTotal;
     double netPaid;
+
+    private List<SurgeryCostEstimationDTO> surgeryCostEstimationList;
+    private List<SurgeryCostSummaryDTO> surgeryCostSummaryList;
+    private PatientEncounterDto selectedPatient;
+    private Staff selectedAdmitDoctor;
+    private Staff selectedSurgeon;
+    private Staff selectedAssistantSurgeon;
+    private RoomFacilityCharge selectedOtRoom;
+    private TheatreOccupancyStatus selectedSurgeryStatus;
+    private String surgeryCostEstimationReportType;
+
+    public TheatreOccupancyStatus[] getTheatreOccupancyStatusValues() {
+        return TheatreOccupancyStatus.values();
+    }
+
+    public String getTheatreOccupancyStatusLabel(TheatreOccupancyStatus status) {
+        if (status == null) {
+            return "";
+        }
+        switch (status) {
+            case SCHEDULED:
+                return "Scheduled";
+            case SENT_TO_THEATRE:
+                return "Sent to Theatre";
+            case RECEIVED_IN_THEATRE:
+                return "Received in Theatre";
+            case IN_THEATRE:
+                return "In Theatre";
+            case PROCEDURE_COMPLETED:
+                return "Procedure Completed";
+            case IN_RECOVERY:
+                return "In Recovery";
+            case RETURNED_TO_WARD:
+                return "Returned to Ward";
+            case CANCELLED:
+                return "Cancelled";
+            default:
+                return status.name();
+        }
+    }
+
+    private static final int IN_CLAUSE_BATCH_SIZE = 1000;
+
+    public void processSurgeryCostEstimationReport() {
+        surgeryCostEstimationList = new ArrayList<>();
+        surgeryCostSummaryList = new ArrayList<>();
+
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select both From and To dates.");
+            return;
+        }
+
+        boolean isSummaryMode = surgeryCostEstimationReportType != null
+                && !surgeryCostEstimationReportType.isEmpty()
+                && !"detail".equals(surgeryCostEstimationReportType);
+
+        if (isSummaryMode) {
+            fetchSurgeryCostSummary(surgeryCostEstimationReportType);
+            return;
+        }
+
+        // ---- Detail mode ----
+        List<SurgeryCostEstimationDTO> list = fetchBaseSurgeryCostEstimationList();
+        if (list == null || list.isEmpty()) {
+            JsfUtil.addErrorMessage("No records found.");
+            return;
+        }
+
+        ReportLookups lookups = buildLookups(list);
+
+        enrichSurgeonsAndAssistants(lookups.procIds, lookups.dtosByProcId);
+        enrichOtRoomAndStatus(lookups.billIds, lookups.dtoByBillId);
+        enrichChildBillCharges(lookups.billIds, lookups.dtoByBillId);
+        enrichRoomCharges(lookups.peIds, lookups.dtosByPeId);
+        enrichDrugCharges(lookups.peIds, lookups.dtosByPeId);
+
+        computeTotals(list);
+
+        surgeryCostEstimationList = list;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<SurgeryCostEstimationDTO> fetchBaseSurgeryCostEstimationList() {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder(1024);
+
+        jpql.append("SELECT new com.divudi.core.data.dto.SurgeryCostEstimationDTO( ")
+                .append("sb.id, proc.id, admission.patient.phn, admission.patient.person.name, ")
+                .append("admission.bhtNo, admission.dateOfAdmission, room.name, ")
+                .append("item.name, cat.name, admission.id) ")
+                .append("FROM BilledBill sb ")
+                .append("JOIN sb.procedure proc ")
+                .append("JOIN proc.item item ")
+                .append("LEFT JOIN item.category cat ")
+                .append("JOIN sb.patientEncounter admission ")
+                .append("LEFT JOIN admission.currentPatientRoom room ")
+                .append("WHERE sb.retired = false ")
+                .append("AND sb.cancelled = false ")
+                .append("AND sb.billType = :surgeryBillType ")
+                .append("AND admission.discharged = true ")
+                .append("AND admission.dateOfDischarge BETWEEN :fromDate AND :toDate ")
+                .append("AND NOT EXISTS ( ")
+                .append("  SELECT cb.id FROM CancelledBill cb ")
+                .append("  WHERE cb.retired = false AND cb.billedBill = sb) ");
+
+        params.put("surgeryBillType", BillType.SurgeryBill);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        appendOptionalFilters(jpql, params);
+
+        jpql.append(" ORDER BY admission.dateOfDischarge ASC ");
+
+        return (List<SurgeryCostEstimationDTO>) billFacade.findDTOsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
+    private void appendOptionalFilters(StringBuilder jpql, Map<String, Object> params) {
+        if (institution != null) {
+            jpql.append(" AND sb.institution = :institution ");
+            params.put("institution", institution);
+        }
+        if (site != null) {
+            jpql.append(" AND sb.department.site = :site ");
+            params.put("site", site);
+        }
+        if (department != null) {
+            jpql.append(" AND sb.department = :department ");
+            params.put("department", department);
+        }
+        if (surgeryType != null) {
+            jpql.append(" AND item.category = :surgeryType ");
+            params.put("surgeryType", surgeryType);
+        }
+        if (surgeryItem != null) {
+            jpql.append(" AND item = :surgeryItem ");
+            params.put("surgeryItem", surgeryItem);
+        }
+
+        String patientSearchTerm = resolvePatientSearchTerm();
+        if (patientSearchTerm != null) {
+            jpql.append(" AND (LOWER(admission.patient.person.name) LIKE :pn ")
+                    .append("     OR LOWER(admission.patient.phn) LIKE :pn) ");
+            params.put("pn", "%" + patientSearchTerm + "%");
+        }
+
+        if (selectedAdmitDoctor != null) {
+            jpql.append(" AND admission.referringDoctor = :selectedAdmitDoctor ");
+            params.put("selectedAdmitDoctor", selectedAdmitDoctor);
+        }
+        if (selectedSurgeon != null) {
+            jpql.append(" AND EXISTS (SELECT ec.id FROM EncounterComponent ec ")
+                    .append("   WHERE ec.patientEncounter = proc AND ec.retired = false ")
+                    .append("     AND ec.patientEncounterComponentType = com.divudi.core.data.inward.PatientEncounterComponentType.Performed_By ")
+                    .append("     AND ec.staff = :selectedSurgeon) ");
+            params.put("selectedSurgeon", selectedSurgeon);
+        }
+        if (selectedAssistantSurgeon != null) {
+            jpql.append(" AND EXISTS (SELECT ec.id FROM EncounterComponent ec ")
+                    .append("   WHERE ec.patientEncounter = proc AND ec.retired = false ")
+                    .append("     AND ec.patientEncounterComponentType = com.divudi.core.data.inward.PatientEncounterComponentType.Assisted_by ")
+                    .append("     AND ec.staff = :selectedAssistantSurgeon) ");
+            params.put("selectedAssistantSurgeon", selectedAssistantSurgeon);
+        }
+        if (selectedOtRoom != null) {
+            jpql.append(" AND EXISTS (SELECT ptr.id FROM PatientTransferRequest ptr ")
+                    .append("   WHERE ptr.surgeryBill = sb AND ptr.retired = false ")
+                    .append("     AND ptr.toRoomFacilityCharge = :selectedOtRoom) ");
+            params.put("selectedOtRoom", selectedOtRoom);
+        }
+        if (selectedSurgeryStatus != null) {
+            jpql.append(" AND EXISTS (SELECT ptr.id FROM PatientTransferRequest ptr ")
+                    .append("   WHERE ptr.surgeryBill = sb AND ptr.retired = false ")
+                    .append("     AND ptr.theatreOccupancyStatus = :selectedSurgeryStatus) ");
+            params.put("selectedSurgeryStatus", selectedSurgeryStatus);
+        }
+    }
+
+    private String resolvePatientSearchTerm() {
+        if (selectedPatient == null) {
+            return null;
+        }
+        if (selectedPatient.getPatientName() != null && !selectedPatient.getPatientName().trim().isEmpty()) {
+            return selectedPatient.getPatientName().trim().toLowerCase();
+        }
+        if (selectedPatient.getPhn() != null && !selectedPatient.getPhn().trim().isEmpty()) {
+            return selectedPatient.getPhn().trim().toLowerCase();
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void fetchSurgeryCostSummary(String type) {
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder(1024);
+        switch (type) {
+            case "bySurgeon":
+                jpql.append("SELECT new com.divudi.core.data.dto.SurgeryCostSummaryDTO(p.person.name, COUNT(DISTINCT sb.id)) ")
+                        .append("FROM BilledBill sb ")
+                        .append("LEFT JOIN sb.staff p ")
+                        .append("JOIN sb.patientEncounter admission ");
+                appendSummaryWhereClause(jpql, params);
+                jpql.append(" GROUP BY p.id, p.person.name ORDER BY COUNT(DISTINCT sb.id) DESC");
+                break;
+
+            case "bySurgeryType":
+                jpql.append("SELECT new com.divudi.core.data.dto.SurgeryCostSummaryDTO(cat.name, COUNT(DISTINCT sb.id)) ")
+                        .append("FROM BilledBill sb ")
+                        .append("JOIN sb.procedure proc ")
+                        .append("JOIN proc.item item ")
+                        .append("LEFT JOIN item.category cat ")
+                        .append("JOIN sb.patientEncounter admission ");
+                appendSummaryWhereClause(jpql, params);
+                jpql.append(" GROUP BY cat.id, cat.name ORDER BY COUNT(DISTINCT sb.id) DESC");
+                break;
+
+            case "bySurgeonAndService":
+                jpql.append("SELECT new com.divudi.core.data.dto.SurgeryCostSummaryDTO(p.person.name, item.name, COUNT(DISTINCT sb.id)) ")
+                        .append("FROM BilledBill sb ")
+                        .append("JOIN sb.procedure proc ")
+                        .append("JOIN proc.item item ")
+                        .append("LEFT JOIN sb.staff p ")
+                        .append("JOIN sb.patientEncounter admission ");
+                appendSummaryWhereClause(jpql, params, BillType.InwardBill, BillTypeAtomic.INWARD_SERVICE_BILL);
+                jpql.append(" GROUP BY p.id, p.person.name, item.id, item.name ORDER BY p.person.name ASC, COUNT(DISTINCT sb.id) DESC");
+                break;
+
+            case "byOtRoom":
+                jpql.append("SELECT new com.divudi.core.data.dto.SurgeryCostSummaryDTO(room.name, COUNT(DISTINCT sb.id)) ")
+                        .append("FROM BilledBill sb ")
+                        .append("JOIN sb.procedure proc ")
+                        .append("JOIN proc.item item ")
+                        .append("JOIN sb.patientEncounter admission ")
+                        .append("LEFT JOIN PatientTransferRequest ptr ON ptr.surgeryBill = sb AND ptr.retired = false ")
+                        .append("   AND ptr.id = (SELECT MAX(ptr2.id) FROM PatientTransferRequest ptr2 ")
+                        .append("                 WHERE ptr2.retired = false AND ptr2.surgeryBill = sb) ")
+                        .append("LEFT JOIN ptr.toRoomFacilityCharge room ");
+                appendSummaryWhereClause(jpql, params);
+                jpql.append(" GROUP BY room.id, room.name ORDER BY COUNT(DISTINCT sb.id) DESC");
+                break;
+
+            default:
+                JsfUtil.addErrorMessage("Unsupported summary type: " + type);
+                return;
+        }
+
+        surgeryCostSummaryList = (List<SurgeryCostSummaryDTO>) billFacade.findDTOsByJpql(
+                jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
+    private void appendSummaryWhereClause(StringBuilder jpql, Map<String, Object> params) {
+        appendSummaryWhereClause(jpql, params, BillType.SurgeryBill, null);
+    }
+
+    private void appendSummaryWhereClause(StringBuilder jpql, Map<String, Object> params,
+            BillType billType, BillTypeAtomic billTypeAtomic) {
+        jpql.append("WHERE sb.retired = false ")
+                .append("AND sb.cancelled = false ")
+                .append("AND sb.billType = :surgeryBillType ");
+        params.put("surgeryBillType", billType);
+
+        if (billTypeAtomic != null) {
+            jpql.append("AND sb.billTypeAtomic = :surgeryBillTypeAtomic ");
+            params.put("surgeryBillTypeAtomic", billTypeAtomic);
+        }
+
+        jpql.append("AND admission.discharged = true ")
+                .append("AND admission.dateOfDischarge BETWEEN :fromDate AND :toDate ")
+                .append("AND NOT EXISTS ( ")
+                .append("  SELECT cb.id FROM CancelledBill cb ")
+                .append("  WHERE cb.retired = false AND cb.billedBill = sb) ");
+
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        appendOptionalFilters(jpql, params);
+    }
+
+    public List<SurgeryCostEstimationDTO> getSurgeryCostEstimationList() {
+        return surgeryCostEstimationList;
+    }
+
+    public void setSurgeryCostEstimationList(List<SurgeryCostEstimationDTO> surgeryCostEstimationList) {
+        this.surgeryCostEstimationList = surgeryCostEstimationList;
+    }
+
+    public List<SurgeryCostSummaryDTO> getSurgeryCostSummaryList() {
+        return surgeryCostSummaryList;
+    }
+
+    public void setSurgeryCostSummaryList(List<SurgeryCostSummaryDTO> surgeryCostSummaryList) {
+        this.surgeryCostSummaryList = surgeryCostSummaryList;
+    }
+
+    public PatientEncounterDto getSelectedPatient() {
+        return selectedPatient;
+    }
+
+    public void setSelectedPatient(PatientEncounterDto selectedPatient) {
+        this.selectedPatient = selectedPatient;
+    }
+
+    public Staff getSelectedAdmitDoctor() {
+        return selectedAdmitDoctor;
+    }
+
+    public void setSelectedAdmitDoctor(Staff selectedAdmitDoctor) {
+        this.selectedAdmitDoctor = selectedAdmitDoctor;
+    }
+
+    public Staff getSelectedSurgeon() {
+        return selectedSurgeon;
+    }
+
+    public void setSelectedSurgeon(Staff selectedSurgeon) {
+        this.selectedSurgeon = selectedSurgeon;
+    }
+
+    public Staff getSelectedAssistantSurgeon() {
+        return selectedAssistantSurgeon;
+    }
+
+    public void setSelectedAssistantSurgeon(Staff selectedAssistantSurgeon) {
+        this.selectedAssistantSurgeon = selectedAssistantSurgeon;
+    }
+
+    public RoomFacilityCharge getSelectedOtRoom() {
+        return selectedOtRoom;
+    }
+
+    public void setSelectedOtRoom(RoomFacilityCharge selectedOtRoom) {
+        this.selectedOtRoom = selectedOtRoom;
+    }
+
+    public TheatreOccupancyStatus getSelectedSurgeryStatus() {
+        return selectedSurgeryStatus;
+    }
+
+    public void setSelectedSurgeryStatus(TheatreOccupancyStatus selectedSurgeryStatus) {
+        this.selectedSurgeryStatus = selectedSurgeryStatus;
+    }
+
+    public String getSurgeryCostEstimationReportType() {
+        return surgeryCostEstimationReportType;
+    }
+
+    public void setSurgeryCostEstimationReportType(String surgeryCostEstimationReportType) {
+        this.surgeryCostEstimationReportType = surgeryCostEstimationReportType;
+    }
+
+    public String getSurgeryCountChartType() {
+        return surgeryCountChartType;
+    }
+
+    public void setSurgeryCountChartType(String surgeryCountChartType) {
+        this.surgeryCountChartType = surgeryCountChartType;
+    }
+
+    public String getSurgeryCountBarChartModel() {
+        return surgeryCountBarChartModel;
+    }
+
+    public void setSurgeryCountBarChartModel(String surgeryCountBarChartModel) {
+        this.surgeryCountBarChartModel = surgeryCountBarChartModel;
+    }
+
+    public String getSurgeryCountLineChartModel() {
+        return surgeryCountLineChartModel;
+    }
+
+    public void setSurgeryCountLineChartModel(String surgeryCountLineChartModel) {
+        this.surgeryCountLineChartModel = surgeryCountLineChartModel;
+    }
+
+    private static final class ReportLookups {
+
+        final Set<Long> billIds = new LinkedHashSet<>();
+        final Set<Long> procIds = new LinkedHashSet<>();
+        final Set<Long> peIds = new LinkedHashSet<>();
+        final Map<Long, SurgeryCostEstimationDTO> dtoByBillId = new HashMap<>();
+        final Map<Long, List<SurgeryCostEstimationDTO>> dtosByProcId = new HashMap<>();
+        final Map<Long, List<SurgeryCostEstimationDTO>> dtosByPeId = new HashMap<>();
+    }
+
+    private ReportLookups buildLookups(List<SurgeryCostEstimationDTO> list) {
+        ReportLookups lookups = new ReportLookups();
+        for (SurgeryCostEstimationDTO dto : list) {
+            initializeDtoDefaults(dto);
+
+            lookups.billIds.add(dto.getSurgeryBillId());
+            lookups.procIds.add(dto.getProcedureId());
+            lookups.dtoByBillId.put(dto.getSurgeryBillId(), dto);
+            lookups.dtosByProcId.computeIfAbsent(dto.getProcedureId(), k -> new ArrayList<>()).add(dto);
+
+            if (dto.getAdmissionId() != null) {
+                lookups.peIds.add(dto.getAdmissionId());
+                lookups.dtosByPeId.computeIfAbsent(dto.getAdmissionId(), k -> new ArrayList<>()).add(dto);
+            }
+        }
+        return lookups;
+    }
+
+    private void initializeDtoDefaults(SurgeryCostEstimationDTO dto) {
+        dto.setTotalHospitalCharge(0.0);
+        dto.setProfessionalCharge(0.0);
+        dto.setTotalAmount(0.0);
+        dto.setBillDiscount(0.0);
+        dto.setNetAmount(0.0);
+        dto.setRoomCharges(0.0);
+        dto.setDrugCharges(0.0);
+    }
+
+    private void enrichSurgeonsAndAssistants(Set<Long> procIds,
+            Map<Long, List<SurgeryCostEstimationDTO>> dtosByProcId) {
+        if (procIds.isEmpty()) {
+            return;
+        }
+
+        String ecJpql = "SELECT ec FROM EncounterComponent ec "
+                + "WHERE ec.retired = false AND ec.patientEncounter.id IN :procIds "
+                + "AND ec.patientEncounterComponentType IN (:perfType, :asstType)";
+
+        for (List<Long> batch : partition(procIds, IN_CLAUSE_BATCH_SIZE)) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("procIds", batch);
+            params.put("perfType", PatientEncounterComponentType.Performed_By);
+            params.put("asstType", PatientEncounterComponentType.Assisted_by);
+
+            List<EncounterComponent> ecList = encounterComponentFacade.findByJpql(ecJpql, params);
+            if (ecList == null) {
+                continue;
+            }
+
+            for (EncounterComponent ec : ecList) {
+                Long procId = ec.getPatientEncounter().getId();
+                List<SurgeryCostEstimationDTO> targetDtos = dtosByProcId.get(procId);
+                if (targetDtos == null) {
+                    continue;
+                }
+                String staffName = resolveStaffName(ec);
+                boolean isPerformer = ec.getPatientEncounterComponentType() == PatientEncounterComponentType.Performed_By;
+                for (SurgeryCostEstimationDTO dto : targetDtos) {
+                    if (isPerformer) {
+                        dto.setSurgeonName(staffName);
+                    } else if (ec.getPatientEncounterComponentType() == PatientEncounterComponentType.Assisted_by) {
+                        dto.setAssistantSurgeonName(staffName);
+                    }
+                }
+            }
+        }
+    }
+
+    private String resolveStaffName(EncounterComponent ec) {
+        if (ec.getStaff() == null) {
+            return "";
+        }
+        if (ec.getStaff().getPerson() != null) {
+            return ec.getStaff().getPerson().getNameWithTitle();
+        }
+        return ec.getStaff().getName();
+    }
+
+    private void enrichOtRoomAndStatus(Set<Long> billIds,
+            Map<Long, SurgeryCostEstimationDTO> dtoByBillId) {
+        if (billIds.isEmpty()) {
+            return;
+        }
+
+        String ptrJpql = "SELECT ptr FROM PatientTransferRequest ptr "
+                + "WHERE ptr.retired = false "
+                + "AND ptr.surgeryBill.id IN :billIds "
+                + "AND ptr.id = ( "
+                + "    SELECT MAX(ptr2.id) FROM PatientTransferRequest ptr2 "
+                + "    WHERE ptr2.retired = false AND ptr2.surgeryBill = ptr.surgeryBill "
+                + ")";
+
+        for (List<Long> batch : partition(billIds, IN_CLAUSE_BATCH_SIZE)) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("billIds", batch);
+
+            List<PatientTransferRequest> latestPtrs = patientTransferRequestFacade.findByJpql(ptrJpql, params);
+            if (latestPtrs == null) {
+                continue;
+            }
+
+            for (PatientTransferRequest ptr : latestPtrs) {
+                if (ptr.getSurgeryBill() == null) {
+                    continue;
+                }
+                SurgeryCostEstimationDTO dto = dtoByBillId.get(ptr.getSurgeryBill().getId());
+                if (dto == null) {
+                    continue;
+                }
+                if (ptr.getToRoomFacilityCharge() != null) {
+                    dto.setOtRoomName(ptr.getToRoomFacilityCharge().getName());
+                }
+                if (ptr.getTheatreOccupancyStatus() != null) {
+                    dto.setSurgeryStatusLabel(getTheatreOccupancyStatusLabel(ptr.getTheatreOccupancyStatus()));
+                }
+            }
+        }
+    }
+
+    private void enrichChildBillCharges(Set<Long> billIds,
+            Map<Long, SurgeryCostEstimationDTO> dtoByBillId) {
+        if (billIds.isEmpty()) {
+            return;
+        }
+
+        String childJpql = "SELECT b.forwardReferenceBill.id, b.surgeryBillType, SUM(b.netTotal), SUM(b.discount) "
+                + "FROM Bill b WHERE b.retired = false AND b.cancelled = false "
+                + "AND b.forwardReferenceBill.id IN :billIds "
+                + "GROUP BY b.forwardReferenceBill.id, b.surgeryBillType";
+
+        for (List<Long> batch : partition(billIds, IN_CLAUSE_BATCH_SIZE)) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("billIds", batch);
+
+            List<Object[]> childBillsAgg = billFacade.findAggregates(childJpql, params);
+            if (childBillsAgg == null) {
+                continue;
+            }
+
+            for (Object[] row : childBillsAgg) {
+                Long parentId = (Long) row[0];
+                SurgeryBillType sbType = (SurgeryBillType) row[1];
+                double net = toDouble(row[2]);
+                double discount = toDouble(row[3]);
+
+                SurgeryCostEstimationDTO dto = dtoByBillId.get(parentId);
+                if (dto == null) {
+                    continue;
+                }
+                if (sbType == SurgeryBillType.ProfessionalFee) {
+                    dto.setProfessionalCharge(dto.getProfessionalCharge() + net);
+                } else if (sbType == SurgeryBillType.Service
+                        || sbType == SurgeryBillType.PharmacyItem
+                        || sbType == SurgeryBillType.TimedService) {
+                    dto.setTotalHospitalCharge(dto.getTotalHospitalCharge() + net);
+                }
+                dto.setBillDiscount(dto.getBillDiscount() + discount);
+            }
+        }
+    }
+
+    private void enrichRoomCharges(Set<Long> peIds,
+            Map<Long, List<SurgeryCostEstimationDTO>> dtosByPeId) {
+        if (peIds.isEmpty()) {
+            return;
+        }
+
+        String roomJpql
+                = "SELECT p.patientEncounter.id, "
+                + " SUM(p.calculatedRoomCharge - p.discountRoomCharge) "
+                + "   + SUM(p.calculatedMoCharge - p.discountMoCharge) "
+                + "   + SUM(p.calculatedNursingCharge - p.discountNursingCharge) "
+                + "   + SUM(p.calculatedMaintainCharge - p.discountMaintainCharge) "
+                + "   + SUM(p.calculatedMedicalCareCharge - p.discountMedicalCareCharge) "
+                + "   + SUM(p.calculatedAdministrationCharge - p.discountAdministrationCharge) "
+                + "   + SUM(p.calculatedLinenCharge - p.discountLinenCharge) "
+                + "   + SUM(COALESCE(( "
+                + "         SELECT SUM(t.calculatedCharge - t.discountCharge) "
+                + "         FROM PatientRoomTimedItemCharge t "
+                + "         WHERE t.patientRoom = p), 0)) "
+                + "FROM PatientRoom p "
+                + "WHERE p.retired = false AND p.patientEncounter.id IN :peIds "
+                + "GROUP BY p.patientEncounter.id";
+
+        for (List<Long> batch : partition(peIds, IN_CLAUSE_BATCH_SIZE)) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("peIds", batch);
+
+            List<Object[]> roomList = billFacade.findAggregates(roomJpql, params);
+            if (roomList == null) {
+                continue;
+            }
+
+            for (Object[] row : roomList) {
+                Long peId = (Long) row[0];
+                double totalRoomCharge = toDouble(row[1]);
+
+                List<SurgeryCostEstimationDTO> dtos = dtosByPeId.get(peId);
+                if (dtos == null) {
+                    continue;
+                }
+                for (SurgeryCostEstimationDTO dto : dtos) {
+                    dto.setRoomCharges(dto.getRoomCharges() + totalRoomCharge);
+                }
+            }
+        }
+    }
+
+    private static final List<BillTypeAtomic> DRUG_CHARGE_BILL_TYPES = Arrays.asList(
+            BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+            BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
+            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION
+    );
+
+    private void enrichDrugCharges(Set<Long> peIds,
+            Map<Long, List<SurgeryCostEstimationDTO>> dtosByPeId) {
+        if (peIds.isEmpty()) {
+            return;
+        }
+
+        String drugJpql = "SELECT pb.patientEncounter.id, SUM(pb.netTotal) "
+                + "FROM Bill pb "
+                + "WHERE pb.retired = false "
+                + "AND pb.billTypeAtomic IN :btas "
+                + "AND pb.patientEncounter.id IN :peIds "
+                + "GROUP BY pb.patientEncounter.id";
+
+        for (List<Long> batch : partition(peIds, IN_CLAUSE_BATCH_SIZE)) {
+            Map<String, Object> params = new HashMap<>();
+            params.put("peIds", batch);
+            params.put("btas", DRUG_CHARGE_BILL_TYPES);
+
+            List<Object[]> drugList = billFacade.findAggregates(drugJpql, params);
+            if (drugList == null) {
+                continue;
+            }
+
+            for (Object[] row : drugList) {
+                Long peId = (Long) row[0];
+                double drugVal = toDouble(row[1]);
+
+                List<SurgeryCostEstimationDTO> dtos = dtosByPeId.get(peId);
+                if (dtos == null) {
+                    continue;
+                }
+                for (SurgeryCostEstimationDTO dto : dtos) {
+                    dto.setDrugCharges(drugVal);
+                }
+            }
+        }
+    }
+
+    private void computeTotals(List<SurgeryCostEstimationDTO> list) {
+        for (SurgeryCostEstimationDTO dto : list) {
+            double net = dto.getTotalHospitalCharge() + dto.getProfessionalCharge();
+            double total = net + dto.getBillDiscount();
+            dto.setNetAmount(net);
+            dto.setTotalAmount(total);
+        }
+    }
+
+    private static double toDouble(Object value) {
+        return value instanceof Number ? ((Number) value).doubleValue() : 0.0;
+    }
+
+    private static List<List<Long>> partition(Collection<Long> ids, int batchSize) {
+        List<List<Long>> batches = new ArrayList<>();
+        List<Long> current = new ArrayList<>(batchSize);
+        for (Long id : ids) {
+            current.add(id);
+            if (current.size() == batchSize) {
+                batches.add(current);
+                current = new ArrayList<>(batchSize);
+            }
+        }
+        if (!current.isEmpty()) {
+            batches.add(current);
+        }
+        return batches;
+    }
+
+    public void downloadSurgeryCostEstimationExcel() {
+        if (surgeryCostEstimationList == null || surgeryCostEstimationList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        XSSFWorkbook workbook = null;
+        try {
+            workbook = new XSSFWorkbook();
+            XSSFSheet sheet = workbook.createSheet("Surgery Cost Estimation");
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+            // Styles
+            XSSFCellStyle titleStyle = workbook.createCellStyle();
+            XSSFFont titleFont = workbook.createFont();
+            titleFont.setBold(true);
+            titleFont.setFontHeightInPoints((short) 14);
+            titleStyle.setFont(titleFont);
+            titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+            XSSFCellStyle infoStyle = workbook.createCellStyle();
+            XSSFFont infoFont = workbook.createFont();
+            infoFont.setFontHeightInPoints((short) 9);
+            infoStyle.setFont(infoFont);
+
+            XSSFCellStyle headerStyle = workbook.createCellStyle();
+            XSSFFont headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setFontHeightInPoints((short) 9);
+            headerFont.setColor(new XSSFColor(new byte[]{(byte) 255, (byte) 255, (byte) 255}, null));
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(new XSSFColor(new byte[]{(byte) 41, (byte) 128, (byte) 185}, null));
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            XSSFCellStyle normalStyle = workbook.createCellStyle();
+            XSSFFont normalFont = workbook.createFont();
+            normalFont.setFontHeightInPoints((short) 8);
+            normalStyle.setFont(normalFont);
+            normalStyle.setBorderBottom(BorderStyle.THIN);
+            normalStyle.setBorderTop(BorderStyle.THIN);
+            normalStyle.setBorderLeft(BorderStyle.THIN);
+            normalStyle.setBorderRight(BorderStyle.THIN);
+
+            XSSFCellStyle numberStyle = workbook.createCellStyle();
+            numberStyle.cloneStyleFrom(normalStyle);
+            numberStyle.setAlignment(HorizontalAlignment.RIGHT);
+            XSSFDataFormat format = workbook.createDataFormat();
+            numberStyle.setDataFormat(format.getFormat("#,##0.00"));
+
+            XSSFCellStyle totalStyle = workbook.createCellStyle();
+            XSSFFont totalFont = workbook.createFont();
+            totalFont.setBold(true);
+            totalFont.setFontHeightInPoints((short) 9);
+            totalStyle.setFont(totalFont);
+            totalStyle.setFillForegroundColor(new XSSFColor(new byte[]{(byte) 255, (byte) 200, (byte) 100}, null));
+            totalStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            totalStyle.setBorderBottom(BorderStyle.MEDIUM);
+            totalStyle.setBorderTop(BorderStyle.MEDIUM);
+            totalStyle.setBorderLeft(BorderStyle.THIN);
+            totalStyle.setBorderRight(BorderStyle.THIN);
+
+            XSSFCellStyle totalNumberStyle = workbook.createCellStyle();
+            totalNumberStyle.cloneStyleFrom(totalStyle);
+            totalNumberStyle.setAlignment(HorizontalAlignment.RIGHT);
+            totalNumberStyle.setDataFormat(format.getFormat("#,##0.00"));
+
+            int rowIdx = 0;
+
+            // Title Row
+            Row titleRow = sheet.createRow(rowIdx++);
+            titleRow.setHeightInPoints(22);
+            Cell titleCell = titleRow.createCell(0);
+            titleCell.setCellValue("Surgery Cost Estimation Report");
+            titleCell.setCellStyle(titleStyle);
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 15));
+
+            rowIdx++; // Blank row
+
+            // Info rows
+            Row infoRow1 = sheet.createRow(rowIdx++);
+            infoRow1.createCell(0).setCellValue("From Date:");
+            infoRow1.createCell(1).setCellValue(fromDate != null ? sdf.format(fromDate) : "");
+            infoRow1.createCell(3).setCellValue("To Date:");
+            infoRow1.createCell(4).setCellValue(toDate != null ? sdf.format(toDate) : "");
+            for (int col = 0; col < 6; col++) {
+                Cell c = infoRow1.getCell(col);
+                if (c != null) {
+                    c.setCellStyle(infoStyle);
+                }
+            }
+
+            rowIdx++; // Blank row
+
+            // Headers
+            String[] headers = {
+                "SL No", "MRN", "Patient Name", "Admission No", "Admission Date", "Bed No",
+                "Surgeon", "Surgery Type", "Service Name", "Room Charges", "Drug Charges",
+                "Total Hospital Charge", "Professional Charge", "Total Amount", "Bill Discount", "Net Amount"
+            };
+
+            Row headerRow = sheet.createRow(rowIdx++);
+            headerRow.setHeightInPoints(25);
+            for (int i = 0; i < headers.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(headers[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            double grandHospital = 0;
+            double grandProfessional = 0;
+            double grandTotalAmt = 0;
+            double grandDiscount = 0;
+            double grandNet = 0;
+
+            int slNo = 1;
+            for (SurgeryCostEstimationDTO dto : surgeryCostEstimationList) {
+                Row row = sheet.createRow(rowIdx++);
+                row.createCell(0).setCellValue(slNo++);
+                row.createCell(1).setCellValue(dto.getPhn());
+                row.createCell(2).setCellValue(dto.getPatientName());
+                row.createCell(3).setCellValue(dto.getAdmissionNo());
+                row.createCell(4).setCellValue(dto.getAdmissionDate() != null ? sdf.format(dto.getAdmissionDate()) : "");
+                row.createCell(5).setCellValue(dto.getBedNo());
+                row.createCell(6).setCellValue(dto.getSurgeonName());
+                row.createCell(7).setCellValue(dto.getSurgeryTypeName());
+                row.createCell(8).setCellValue(dto.getServiceName());
+                Cell c9 = row.createCell(9);
+                c9.setCellValue(dto.getRoomCharges() != null ? dto.getRoomCharges() : 0.0);
+                c9.setCellStyle(numberStyle);
+
+                Cell c10 = row.createCell(10);
+                c10.setCellValue(dto.getDrugCharges() != null ? dto.getDrugCharges() : 0.0);
+                c10.setCellStyle(numberStyle);
+
+                Cell c11 = row.createCell(11);
+                c11.setCellValue(dto.getTotalHospitalCharge() != null ? dto.getTotalHospitalCharge() : 0.0);
+                c11.setCellStyle(numberStyle);
+                grandHospital += dto.getTotalHospitalCharge() != null ? dto.getTotalHospitalCharge() : 0.0;
+
+                Cell c12 = row.createCell(12);
+                c12.setCellValue(dto.getProfessionalCharge() != null ? dto.getProfessionalCharge() : 0.0);
+                c12.setCellStyle(numberStyle);
+                grandProfessional += dto.getProfessionalCharge() != null ? dto.getProfessionalCharge() : 0.0;
+
+                Cell c13 = row.createCell(13);
+                c13.setCellValue(dto.getTotalAmount() != null ? dto.getTotalAmount() : 0.0);
+                c13.setCellStyle(numberStyle);
+                grandTotalAmt += dto.getTotalAmount() != null ? dto.getTotalAmount() : 0.0;
+
+                Cell c14 = row.createCell(14);
+                c14.setCellValue(dto.getBillDiscount() != null ? dto.getBillDiscount() : 0.0);
+                c14.setCellStyle(numberStyle);
+                grandDiscount += dto.getBillDiscount() != null ? dto.getBillDiscount() : 0.0;
+
+                Cell c15 = row.createCell(15);
+                c15.setCellValue(dto.getNetAmount() != null ? dto.getNetAmount() : 0.0);
+                c15.setCellStyle(numberStyle);
+                grandNet += dto.getNetAmount() != null ? dto.getNetAmount() : 0.0;
+
+                for (int col = 0; col < 11; col++) {
+                    row.getCell(col).setCellStyle(normalStyle);
+                }
+            }
+
+            // Grand Total Row
+            Row totalRow = sheet.createRow(rowIdx++);
+            totalRow.setHeightInPoints(20);
+            Cell lblCell = totalRow.createCell(0);
+            lblCell.setCellValue("Grand Total");
+            lblCell.setCellStyle(totalStyle);
+            sheet.addMergedRegion(new CellRangeAddress(rowIdx - 1, rowIdx - 1, 0, 10));
+
+            for (int col = 1; col <= 10; col++) {
+                totalRow.createCell(col).setCellStyle(totalStyle);
+            }
+
+            Cell tc11 = totalRow.createCell(11);
+            tc11.setCellValue(grandHospital);
+            tc11.setCellStyle(totalNumberStyle);
+
+            Cell tc12 = totalRow.createCell(12);
+            tc12.setCellValue(grandProfessional);
+            tc12.setCellStyle(totalNumberStyle);
+
+            Cell tc13 = totalRow.createCell(13);
+            tc13.setCellValue(grandTotalAmt);
+            tc13.setCellStyle(totalNumberStyle);
+
+            Cell tc14 = totalRow.createCell(14);
+            tc14.setCellValue(grandDiscount);
+            tc14.setCellStyle(totalNumberStyle);
+
+            Cell tc15 = totalRow.createCell(15);
+            tc15.setCellValue(grandNet);
+            tc15.setCellStyle(totalNumberStyle);
+
+            // Auto fit column widths
+            for (int i = 0; i < headers.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            workbook.write(baos);
+            byte[] excelBytes = baos.toByteArray();
+
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            externalContext.setResponseContentLength(excelBytes.length);
+            String fileName = "Surgery_Cost_Estimation_Report_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".xlsx";
+            externalContext.setResponseHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            out.write(excelBytes);
+            out.flush();
+
+            facesContext.responseComplete();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating Excel: " + e.getMessage());
+        } finally {
+            if (workbook != null) {
+                try {
+                    workbook.close();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+    }
+
+    public void downloadSurgeryCostEstimationPdf() {
+        if (surgeryCostEstimationList == null || surgeryCostEstimationList.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            ExternalContext externalContext = facesContext.getExternalContext();
+
+            String fileName = "Surgery_Cost_Estimation_"
+                    + new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()) + ".pdf";
+
+            com.lowagie.text.Document document = new com.lowagie.text.Document(
+                    com.lowagie.text.PageSize.A3.rotate(), 15, 15, 30, 20);
+            com.lowagie.text.pdf.PdfWriter.getInstance(document, baos);
+            document.open();
+
+            com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 14);
+            com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+            com.lowagie.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
+            com.lowagie.text.Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8);
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MMM/yyyy HH:mm");
+
+            Paragraph titlePara = new Paragraph("Surgery Cost Estimation Report", titleFont);
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            titlePara.setSpacingAfter(10);
+            document.add(titlePara);
+
+            PdfPTable info = new PdfPTable(2);
+            info.setWidthPercentage(40);
+            info.setWidths(new float[]{1.5f, 3.5f});
+            info.setSpacingAfter(15);
+            info.setHorizontalAlignment(Element.ALIGN_LEFT);
+
+            addInfoRow(info, "From Date:", fromDate != null ? sdf.format(fromDate) : "");
+            addInfoRow(info, "To Date:", toDate != null ? sdf.format(toDate) : "");
+            document.add(info);
+
+            String[] headers = {
+                "SL No", "MRN", "Patient Name", "Admission No", "Admission Date", "Bed No",
+                "Surgeon", "Surgery Type", "Service Name", "Room Charges", "Drug Charges",
+                "Total Hospital Charge", "Professional Charge", "Total Amount", "Bill Discount", "Net Amount"
+            };
+
+            PdfPTable table = new PdfPTable(headers.length);
+            table.setWidthPercentage(100);
+            float[] widths = {2f, 4f, 8f, 5f, 7f, 4f, 7f, 6f, 8f, 4f, 4f, 6f, 6f, 6f, 5f, 6f};
+            table.setWidths(widths);
+
+            for (String h : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            double grandHospital = 0;
+            double grandProfessional = 0;
+            double grandTotalAmt = 0;
+            double grandDiscount = 0;
+            double grandNet = 0;
+
+            int slNo = 1;
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+
+            for (SurgeryCostEstimationDTO dto : surgeryCostEstimationList) {
+                table.addCell(new Phrase(String.valueOf(slNo++), normalFont));
+                table.addCell(new Phrase(dto.getPhn(), normalFont));
+                table.addCell(new Phrase(dto.getPatientName(), normalFont));
+                table.addCell(new Phrase(dto.getAdmissionNo(), normalFont));
+                table.addCell(new Phrase(dto.getAdmissionDate() != null ? sdf.format(dto.getAdmissionDate()) : "", normalFont));
+                table.addCell(new Phrase(dto.getBedNo(), normalFont));
+                table.addCell(new Phrase(dto.getSurgeonName(), normalFont));
+                table.addCell(new Phrase(dto.getSurgeryTypeName(), normalFont));
+                table.addCell(new Phrase(dto.getServiceName(), normalFont));
+                PdfPCell cRoom = new PdfPCell(new Phrase(df.format(dto.getRoomCharges() != null ? dto.getRoomCharges() : 0.0), normalFont));
+                cRoom.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cRoom);
+
+                PdfPCell cDrug = new PdfPCell(new Phrase(df.format(dto.getDrugCharges() != null ? dto.getDrugCharges() : 0.0), normalFont));
+                cDrug.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cDrug);
+
+                double hosp = dto.getTotalHospitalCharge() != null ? dto.getTotalHospitalCharge() : 0.0;
+                double prof = dto.getProfessionalCharge() != null ? dto.getProfessionalCharge() : 0.0;
+                double tot = dto.getTotalAmount() != null ? dto.getTotalAmount() : 0.0;
+                double disc = dto.getBillDiscount() != null ? dto.getBillDiscount() : 0.0;
+                double net = dto.getNetAmount() != null ? dto.getNetAmount() : 0.0;
+
+                grandHospital += hosp;
+                grandProfessional += prof;
+                grandTotalAmt += tot;
+                grandDiscount += disc;
+                grandNet += net;
+
+                PdfPCell cHosp = new PdfPCell(new Phrase(df.format(hosp), normalFont));
+                cHosp.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cHosp);
+
+                PdfPCell cProf = new PdfPCell(new Phrase(df.format(prof), normalFont));
+                cProf.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cProf);
+
+                PdfPCell cTot = new PdfPCell(new Phrase(df.format(tot), normalFont));
+                cTot.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cTot);
+
+                PdfPCell cDisc = new PdfPCell(new Phrase(df.format(disc), normalFont));
+                cDisc.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cDisc);
+
+                PdfPCell cNet = new PdfPCell(new Phrase(df.format(net), normalFont));
+                cNet.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(cNet);
+            }
+
+            PdfPCell totalLblCell = new PdfPCell(new Phrase("Grand Total", boldFont));
+            totalLblCell.setColspan(11);
+            totalLblCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+            table.addCell(totalLblCell);
+
+            PdfPCell tgHosp = new PdfPCell(new Phrase(df.format(grandHospital), boldFont));
+            tgHosp.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(tgHosp);
+
+            PdfPCell tgProf = new PdfPCell(new Phrase(df.format(grandProfessional), boldFont));
+            tgProf.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(tgProf);
+
+            PdfPCell tgTot = new PdfPCell(new Phrase(df.format(grandTotalAmt), boldFont));
+            tgTot.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(tgTot);
+
+            PdfPCell tgDisc = new PdfPCell(new Phrase(df.format(grandDiscount), boldFont));
+            tgDisc.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(tgDisc);
+
+            PdfPCell tgNet = new PdfPCell(new Phrase(df.format(grandNet), boldFont));
+            tgNet.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(tgNet);
+
+            document.add(table);
+            document.close();
+
+            byte[] pdfBytes = baos.toByteArray();
+            externalContext.responseReset();
+            externalContext.setResponseContentType("application/pdf");
+            externalContext.setResponseContentLength(pdfBytes.length);
+            externalContext.setResponseHeader("Content-Disposition",
+                    "attachment; filename=\"" + fileName + "\"");
+
+            OutputStream out = externalContext.getResponseOutputStream();
+            out.write(pdfBytes);
+            out.flush();
+            facesContext.responseComplete();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to generate PDF: " + e.getMessage());
+        }
+    }
 
     private Map<Long, Long> categoryAvailableRoomsCache;
     private List<RoomOccupancyRowDTO> roomOccupancyList;
@@ -1479,20 +2583,20 @@ public class InwardReportController implements Serializable {
         row.setRowValueIn(row.getRowValueIn() + sponsorPay);
         row.setRowValueOut(row.getRowValueOut() + patientPay);
     }
-    
+
     private void applyIpIncomeExcelBorders(CellStyle style) {
-    style.setBorderBottom(BorderStyle.THIN);
-    style.setBorderTop(BorderStyle.THIN);
-    style.setBorderLeft(BorderStyle.THIN);
-    style.setBorderRight(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
     }
-    
+
     private Paragraph buildSectionTitle(String text) {
-    Paragraph p = new Paragraph(text, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11));
-    p.setAlignment(Element.ALIGN_CENTER);
-    p.setSpacingBefore(12f);
-    p.setSpacingAfter(6f);
-    return p;
+        Paragraph p = new Paragraph(text, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11));
+        p.setAlignment(Element.ALIGN_CENTER);
+        p.setSpacingBefore(12f);
+        p.setSpacingAfter(6f);
+        return p;
     }
 
     private void populateIpIncomeProfitMatrixAndBillDiscounts(List<IpIncomeCategoryWiseRowDTO> rows) {
@@ -2520,6 +3624,306 @@ public class InwardReportController implements Serializable {
                 }
             }
         }
+    }
+
+    private static final String[] CHART_COLORS = {
+        "75, 192, 192", "255, 99, 132", "54, 162, 235", "255, 206, 86",
+        "153, 102, 255", "255, 159, 64", "199, 199, 199", "83, 102, 255",
+        "255, 99, 255", "99, 255, 132", "220, 20, 60", "65, 105, 225"
+    };
+
+    private List<SurgeryCountTypeWiseDTO> surgeryCountTypeList;
+    private List<String> surgeryCategoryNames;
+    private Map<String, Integer> totalCategoryCounts;
+    private int totalAllSurgeryCount;
+    
+
+    public List<SurgeryCountTypeWiseDTO> getSurgeryCountTypeList() {
+        return surgeryCountTypeList;
+    }
+
+    public void setSurgeryCountTypeList(List<SurgeryCountTypeWiseDTO> surgeryCountTypeList) {
+        this.surgeryCountTypeList = surgeryCountTypeList;
+    }
+
+    public List<String> getSurgeryCategoryNames() {
+        return surgeryCategoryNames;
+    }
+
+    public void setSurgeryCategoryNames(List<String> surgeryCategoryNames) {
+        this.surgeryCategoryNames = surgeryCategoryNames;
+    }
+
+    public Map<String, Integer> getTotalCategoryCounts() {
+        return totalCategoryCounts;
+    }
+
+    public void setTotalCategoryCounts(Map<String, Integer> totalCategoryCounts) {
+        this.totalCategoryCounts = totalCategoryCounts;
+    }
+
+    public int getTotalAllSurgeryCount() {
+        return totalAllSurgeryCount;
+    }
+
+    public void setTotalAllSurgeryCount(int totalAllSurgeryCount) {
+        this.totalAllSurgeryCount = totalAllSurgeryCount;
+    }
+
+    public void processSurgeryCountTypeReport() {
+        resetState();
+
+        if (!isDateRangeValid()) {
+            return;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        String jpql = buildSurgeryCountJpql(params);
+
+        List<Object[]> results = billFacade.findObjectArrayByJpql(
+                jpql, params, TemporalType.TIMESTAMP);
+
+        if (results == null || results.isEmpty()) {
+            JsfUtil.addErrorMessage("No surgery records found for the selected period.");
+            return;
+        }
+
+        aggregateResults(results);
+
+        if (surgeryCountChartType != null && !surgeryCountChartType.isEmpty()) {
+            createSurgeryCountChartModels();
+        }
+    }
+
+    private void resetState() {
+        surgeryCountTypeList = new ArrayList<>();
+        surgeryCategoryNames = new ArrayList<>();
+        totalCategoryCounts = new HashMap<>();
+        totalAllSurgeryCount = 0;
+    }
+
+    private boolean isDateRangeValid() {
+        if (fromYearStartDate == null || toYearEndDate == null) {
+            JsfUtil.addErrorMessage("Please select both From and To dates.");
+            return false;
+        }
+        if (fromYearStartDate.after(toYearEndDate)) {
+            JsfUtil.addErrorMessage("From Date must not be after To Date.");
+            return false;
+        }
+
+        Calendar from = Calendar.getInstance();
+        from.setTime(fromYearStartDate);
+        Calendar to = Calendar.getInstance();
+        to.setTime(toYearEndDate);
+
+        if (from.get(Calendar.YEAR) != to.get(Calendar.YEAR)) {
+            JsfUtil.addErrorMessage(
+                    "Please select a date range within a single calendar year. "
+                    + "Monthly totals are grouped by month only, so a "
+                    + "multi-year range would merge counts from different years.");
+            return false;
+        }
+        return true;
+    }
+
+
+    private String buildSurgeryCountJpql(Map<String, Object> params) {
+        StringBuilder jpql = new StringBuilder();
+        jpql.append(" select ")
+                .append("   coalesce(upper(c.name), 'OTHER'), ")
+                .append("   function('MONTH', b.createdAt), ")
+                .append("   count(b) ")
+                .append(" from BilledBill b ")
+                .append(" join b.procedure p ")
+                .append(" join p.item i ")
+                .append(" left join i.category c ")
+                .append(" where b.retired = false ")
+                .append(" and b.cancelled = false ")
+                .append(" and b.billType = :bt ")
+                .append(" and b.createdAt between :fd and :td ");
+
+        params.put("bt", BillType.SurgeryBill);
+        params.put("fd", fromYearStartDate);
+        params.put("td", toYearEndDate);
+
+        if (institution != null) {
+            jpql.append(" and b.institution = :inst ");
+            params.put("inst", institution);
+        }
+        if (department != null) {
+            jpql.append(" and b.department = :dept ");
+            params.put("dept", department);
+        }
+        if (site != null) {
+            jpql.append(" and b.department.site = :site ");
+            params.put("site", site);
+        }
+        if (surgeryType != null) {
+            jpql.append(" and c = :stype ");
+            params.put("stype", surgeryType);
+        }
+        if (surgeryItem != null) {
+            jpql.append(" and i = :sitem ");
+            params.put("sitem", surgeryItem);
+        }
+
+        jpql.append(" group by coalesce(upper(c.name), 'OTHER'), ")
+                .append(" function('MONTH', b.createdAt) ")
+                .append(" order by 1 ");
+
+        return jpql.toString();
+    }
+
+    private void aggregateResults(List<Object[]> results) {
+        SurgeryCountTypeWiseDTO[] monthDtos = new SurgeryCountTypeWiseDTO[12];
+        for (int i = 0; i < 12; i++) {
+            monthDtos[i] = new SurgeryCountTypeWiseDTO(localizedMonthName(i), i);
+        }
+
+        Set<String> categorySet = new TreeSet<>(); // sorted, dedupe on insert
+
+        for (Object[] row : results) {
+            String categoryName = (String) row[0];
+            int month = ((Number) row[1]).intValue();
+            int count = ((Number) row[2]).intValue();
+            int monthIndex = month - 1;
+
+            if (monthIndex < 0 || monthIndex >= 12) {
+                continue; // defensive, shouldn't happen
+            }
+
+            categorySet.add(categoryName);
+            monthDtos[monthIndex].addCount(categoryName, count);
+            totalCategoryCounts.merge(categoryName, count, Integer::sum);
+            totalAllSurgeryCount += count;
+        }
+
+        surgeryCategoryNames = new ArrayList<>(categorySet);
+        surgeryCountTypeList.addAll(Arrays.asList(monthDtos));
+    }
+
+    private String localizedMonthName(int monthIndex) {
+        return Month.of(monthIndex + 1).getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+    }
+
+    private void createSurgeryCountChartModels() {
+        if (surgeryCountTypeList == null || surgeryCountTypeList.isEmpty()) {
+            surgeryCountBarChartModel = null;
+            surgeryCountLineChartModel = null;
+            return;
+        }
+
+        createSurgeryCountBarChart();
+        createSurgeryCountLineChart();
+    }
+
+    private void createSurgeryCountBarChart() {
+        if (surgeryCountTypeList == null || surgeryCountTypeList.isEmpty()) {
+            surgeryCountBarChartModel = null;
+            return;
+        }
+
+        BarChart barChart = new BarChart();
+        BarData barData = new BarData();
+        barData.addLabels(shortMonthLabels());
+
+        int colorIndex = 0;
+        for (String categoryName : surgeryCategoryNames) {
+            int[] rgb = parseRgb(CHART_COLORS[colorIndex % CHART_COLORS.length]);
+
+            BarDataset dataset = new BarDataset()
+                    .setLabel(categoryName)
+                    .setBackgroundColor(toRgba(rgb, 0.7))
+                    .setBorderColor(toRgba(rgb, 1))
+                    .setBorderWidth(1);
+
+            for (SurgeryCountTypeWiseDTO dto : surgeryCountTypeList) {
+                dataset.addData(dto.getCount(categoryName));
+            }
+            barData.addDataset(dataset);
+            colorIndex++;
+        }
+
+        barChart.setData(barData);
+
+        BarOptions barOptionsObj = new BarOptions();
+        barOptionsObj.setPlugins(buildChartPlugins());
+        barOptionsObj.setScales(buildChartScales());
+        barChart.setOptions(barOptionsObj);
+
+        surgeryCountBarChartModel = barChart.toJson();
+    }
+
+    private void createSurgeryCountLineChart() {
+        if (surgeryCountTypeList == null || surgeryCountTypeList.isEmpty()) {
+            surgeryCountLineChartModel = null;
+            return;
+        }
+
+        LineChart lineChart = new LineChart();
+        LineData lineData = new LineData();
+        lineData.addLabels(shortMonthLabels());
+
+        int colorIndex = 0;
+        for (String categoryName : surgeryCategoryNames) {
+            int[] rgb = parseRgb(CHART_COLORS[colorIndex % CHART_COLORS.length]);
+
+            LineDataset dataset = new LineDataset()
+                    .setLabel(categoryName)
+                    .setBorderColor(toRgba(rgb, 1))
+                    .setFill(new Fill(false))
+                    .setTension(0.4f);
+
+            for (SurgeryCountTypeWiseDTO dto : surgeryCountTypeList) {
+                dataset.addData(dto.getCount(categoryName));
+            }
+            lineData.addDataset(dataset);
+            colorIndex++;
+        }
+
+        lineChart.setData(lineData);
+
+        LineOptions lineOptionsObj = new LineOptions();
+        lineOptionsObj.setPlugins(buildChartPlugins());
+        lineOptionsObj.setScales(buildChartScales());
+        lineChart.setOptions(lineOptionsObj);
+
+        surgeryCountLineChartModel = lineChart.toJson();
+    }
+
+    private String[] shortMonthLabels() {
+        return new String[]{"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    }
+
+    private int[] parseRgb(String csv) {
+        String[] parts = csv.split(",");
+        return new int[]{
+            Integer.parseInt(parts[0].trim()),
+            Integer.parseInt(parts[1].trim()),
+            Integer.parseInt(parts[2].trim())
+        };
+    }
+
+    private RGBAColor toRgba(int[] rgb, double alpha) {
+        return new RGBAColor(rgb[0], rgb[1], rgb[2], alpha);
+    }
+
+    private Plugins buildChartPlugins() {
+        Plugins plugins = new Plugins();
+        plugins.setTitle(new Title().setDisplay(true)
+                .setText("Surgery Count Type - Year " + getSelectedYear()));
+        plugins.setLegend(new Legend().setDisplay(true).setPosition(Legend.Position.TOP));
+        return plugins;
+    }
+
+    private Scales buildChartScales() {
+        Scales scales = new Scales();
+        scales.addScale("y", new LinearScaleOptions()
+                .setBeginAtZero(true)
+                .setTicks(new LinearTickOptions().setStepSize(1)));
+        return scales;
     }
 
     private List<SurgeryCountSurgeryWiseDTO> surgeryCountSurgeryWiseList;
@@ -3589,8 +4993,8 @@ public class InwardReportController implements Serializable {
                 + "WHERE b.retired = false "
                 + "AND b.cancelled = false "
                 + "AND b.billType = :bt "
-                + "AND b.patientEncounter.id IN :ids "
-                + "ORDER BY b.patientEncounter.id, b.id DESC";
+                + "AND b.confirmedFinalBill = true "
+                + "AND b.patientEncounter.id IN :ids";
 
         Map<String, Object> params = new HashMap<>();
         params.put("bt", BillType.InwardFinalBill);
@@ -3601,7 +5005,7 @@ public class InwardReportController implements Serializable {
         if (bills != null) {
             for (Bill bill : bills) {
                 if (bill.getPatientEncounter() != null && bill.getPatientEncounter().getId() != null) {
-                    result.putIfAbsent(bill.getPatientEncounter().getId(), bill);
+                    result.put(bill.getPatientEncounter().getId(), bill);
                 }
             }
         }
@@ -7626,7 +9030,7 @@ public class InwardReportController implements Serializable {
     public void setVatRegNo(String vatRegNo) {
         this.vatRegNo = vatRegNo;
     }
-    
+
     public void downloadIpIncomeCategoryWiseExcel() {
         try {
             if (bundle == null) {
@@ -7958,18 +9362,18 @@ public class InwardReportController implements Serializable {
 
                 if (ipIncomeBillDiscounts != null && !ipIncomeBillDiscounts.isEmpty()) {
                     for (Map<String, Object> discountRow : ipIncomeBillDiscounts) {
-                            Row bdRow = sheet.createRow(rowNum++);
+                        Row bdRow = sheet.createRow(rowNum++);
 
-                            Cell inv = bdRow.createCell(0);
-                            Object invoiceNo = discountRow.get("invoiceNo");
-                            inv.setCellValue(invoiceNo != null ? invoiceNo.toString() : "");
-                            inv.setCellStyle(textStyle);
+                        Cell inv = bdRow.createCell(0);
+                        Object invoiceNo = discountRow.get("invoiceNo");
+                        inv.setCellValue(invoiceNo != null ? invoiceNo.toString() : "");
+                        inv.setCellStyle(textStyle);
 
-                            Cell dis = bdRow.createCell(1);
-                             Object discount = discountRow.get("discount");
-                            double val = discount instanceof Number ? ((Number) discount).doubleValue() : 0.0;
-                            dis.setCellValue(val);
-                            dis.setCellStyle(numberStyle);
+                        Cell dis = bdRow.createCell(1);
+                        Object discount = discountRow.get("discount");
+                        double val = discount instanceof Number ? ((Number) discount).doubleValue() : 0.0;
+                        dis.setCellValue(val);
+                        dis.setCellStyle(numberStyle);
                     }
                 }
 
@@ -8200,12 +9604,12 @@ public class InwardReportController implements Serializable {
                 addPdfHeaderCell(bdTable, "Bill Discount");
 
                 if (ipIncomeBillDiscounts != null && !ipIncomeBillDiscounts.isEmpty()) {
-                     for (Map<String, Object> discountRow : ipIncomeBillDiscounts) {
-                            Object invoiceNo = discountRow.get("invoiceNo");
-                            addPdfCell(bdTable, invoiceNo != null ? invoiceNo.toString() : "", cellFont, Element.ALIGN_LEFT, null);
-                            Object discount = discountRow.get("discount");
-                            double val = discount instanceof Number ? ((Number) discount).doubleValue() : 0.0;
-                            addPdfCell(bdTable, String.format("%,.2f", val), cellFont, Element.ALIGN_RIGHT, null);
+                    for (Map<String, Object> discountRow : ipIncomeBillDiscounts) {
+                        Object invoiceNo = discountRow.get("invoiceNo");
+                        addPdfCell(bdTable, invoiceNo != null ? invoiceNo.toString() : "", cellFont, Element.ALIGN_LEFT, null);
+                        Object discount = discountRow.get("discount");
+                        double val = discount instanceof Number ? ((Number) discount).doubleValue() : 0.0;
+                        addPdfCell(bdTable, String.format("%,.2f", val), cellFont, Element.ALIGN_RIGHT, null);
                     }
                 }
 
@@ -8259,7 +9663,7 @@ public class InwardReportController implements Serializable {
             JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
         }
     }
-    
+
     private PdfPTable buildIpIncomeCategoryWisePdfInfoTable(SimpleDateFormat sdt) throws DocumentException {
         PdfPTable info = new PdfPTable(2);
         info.setWidthPercentage(65);
@@ -8297,15 +9701,15 @@ public class InwardReportController implements Serializable {
 
     private void addPdfHeaderCell(PdfPTable table, String text) {
         com.lowagie.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, java.awt.Color.WHITE);
-            PdfPCell cell = new PdfPCell(new Phrase(text, headerFont));
-            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-            cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-            cell.setBackgroundColor(new java.awt.Color(41, 128, 185));
-            cell.setPaddingTop(6f);
-            cell.setPaddingBottom(6f);
-            cell.setPaddingLeft(4f);
-            cell.setPaddingRight(4f);
-            table.addCell(cell);
+        PdfPCell cell = new PdfPCell(new Phrase(text, headerFont));
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setBackgroundColor(new java.awt.Color(41, 128, 185));
+        cell.setPaddingTop(6f);
+        cell.setPaddingBottom(6f);
+        cell.setPaddingLeft(4f);
+        cell.setPaddingRight(4f);
+        table.addCell(cell);
     }
 
     private void addPdfCell(PdfPTable table, String text, com.lowagie.text.Font font, int alignment, java.awt.Color bg) {

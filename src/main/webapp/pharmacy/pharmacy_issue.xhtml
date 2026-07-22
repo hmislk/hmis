@@ -11,6 +11,10 @@
 
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <h:panelGroup rendered="#{!(webUserController.hasPrivilege('PharmacyDisposalIssue') or webUserController.hasPrivilege('PharmacyDisposalIssueFinalize') or webUserController.hasPrivilege('PharmacyDisposalIssueApprove'))}">
+                    You are NOT authorized
+                </h:panelGroup>
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssue') or webUserController.hasPrivilege('PharmacyDisposalIssueFinalize') or webUserController.hasPrivilege('PharmacyDisposalIssueApprove')}">
                 <h:form id="bill">
 
 
@@ -77,7 +81,7 @@
                                     <!-- LEFT: title + config -->
                                     <div class="d-flex align-items-center gap-2">
                                         <i class="fas fa-building"/>
-                                        <h:outputText value="Department Disposal — Issue to #{pharmacyIssueController.toDepartment.name}"/>
+                                        <h:outputText value="Department Consumption — Issue to #{pharmacyIssueController.toDepartment.name}"/>
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                             <p:commandButton
                                                 id="btnConfig"
@@ -94,22 +98,22 @@
                                     <div class="d-flex gap-2">
                                         <p:commandButton
                                             id="btnNavFinalize"
-                                            value="Disposal Issues to Finalize"
+                                            value="Consumption Issues to Finalize"
                                             icon="fas fa-lock"
                                             ajax="false"
                                             action="/pharmacy/pharmacy_disposal_issue_list_to_finalize?faces-redirect=true"
                                             styleClass="ui-button-info ui-button-outlined"
                                             rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}"
-                                            title="View disposal issues waiting to be finalized"/>
+                                            title="View consumption issues waiting to be finalized"/>
                                         <p:commandButton
                                             id="btnNavApprove"
-                                            value="Disposal Issues to Approve"
+                                            value="Consumption Issues to Approve"
                                             icon="fas fa-check-double"
                                             ajax="false"
                                             action="/pharmacy/pharmacy_disposal_issue_list_to_approve?faces-redirect=true"
                                             styleClass="ui-button-info ui-button-outlined"
                                             rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssueApprove')}"
-                                            title="View disposal issues waiting for approval"/>
+                                            title="View consumption issues waiting for approval"/>
                                     </div>
 
                                     <!-- RIGHT: actions (left=least important → right=primary) -->
@@ -117,7 +121,7 @@
                                         <p:commandButton
                                             id="btnNew"
                                             accesskey="n"
-                                            value="New Disposal Issue Bill"
+                                            value="New Consumption Issue Bill"
                                             icon="fas fa-plus-circle"
                                             styleClass="ui-button-stage-save"
                                             ajax="false"
@@ -131,7 +135,8 @@
                                             styleClass="ui-button-stage-save"
                                             ajax="false"
                                             action="#{pharmacyIssueController.saveDisposalIssueDraft()}"
-                                            rendered="#{pharmacyIssueController.preBill.checkedBy eq null and webUserController.hasPrivilege('PharmacyDisposalIssue')}"
+                                            rendered="#{pharmacyIssueController.preBill.checkedBy eq null}"
+                                            disabled="#{not webUserController.hasPrivilege('PharmacyDisposalIssue')}"
                                             style="min-width:100px"/>
                                         <p:commandButton
                                             id="btnFinalize"
@@ -141,8 +146,9 @@
                                             styleClass="ui-button-stage-finalize"
                                             ajax="false"
                                             action="#{pharmacyIssueController.finalizeCurrentDraft()}"
-                                            onclick="return confirm('Finalize this disposal issue? It will be queued for approval.');"
-                                            rendered="#{pharmacyIssueController.preBill.checkedBy eq null and webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}"
+                                            onclick="return confirm('Finalize this consumption issue? It will be queued for approval.');"
+                                            rendered="#{pharmacyIssueController.preBill.checkedBy eq null}"
+                                            disabled="#{not webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}"
                                             style="min-width:120px"/>
                                         <p:commandButton
                                             id="btnApprove"
@@ -152,8 +158,9 @@
                                             styleClass="ui-button-stage-approve"
                                             ajax="false"
                                             action="#{pharmacyIssueController.approveDisposalIssue(pharmacyIssueController.preBill.id)}"
-                                            onclick="return confirm('Approve this disposal issue? Stock will be deducted.');"
-                                            rendered="#{pharmacyIssueController.preBill.checkedBy ne null and !pharmacyIssueController.preBill.completed and webUserController.hasPrivilege('PharmacyDisposalIssueApprove')}"
+                                            onclick="return confirm('Approve this consumption issue? Stock will be deducted.');"
+                                            rendered="#{pharmacyIssueController.preBill.checkedBy ne null and !pharmacyIssueController.preBill.completed}"
+                                            disabled="#{not webUserController.hasPrivilege('PharmacyDisposalIssueApprove')}"
                                             style="min-width:120px"/>
                                     </div>
                                 </div>
@@ -647,22 +654,22 @@
                                 <div class="d-flex gap-2">
                                     <p:commandButton
                                         id="btnPrintNavFinalize"
-                                        value="Disposal Issues to Finalize"
+                                        value="Consumption Issues to Finalize"
                                         icon="fas fa-lock"
                                         ajax="false"
                                         action="/pharmacy/pharmacy_disposal_issue_list_to_finalize?faces-redirect=true"
                                         styleClass="ui-button-info ui-button-outlined"
                                         rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssueFinalize')}"
-                                        title="View disposal issues waiting to be finalized"/>
+                                        title="View consumption issues waiting to be finalized"/>
                                     <p:commandButton
                                         id="btnPrintNavApprove"
-                                        value="Disposal Issues to Approve"
+                                        value="Consumption Issues to Approve"
                                         icon="fas fa-check-double"
                                         ajax="false"
                                         action="/pharmacy/pharmacy_disposal_issue_list_to_approve?faces-redirect=true"
                                         styleClass="ui-button-info ui-button-outlined"
                                         rendered="#{webUserController.hasPrivilege('PharmacyDisposalIssueApprove')}"
-                                        title="View disposal issues waiting for approval"/>
+                                        title="View consumption issues waiting for approval"/>
                                 </div>
 
                                 <!-- RIGHT: New bill -->
@@ -670,7 +677,7 @@
                                     <p:commandButton
                                         id="btnPrintNew"
                                         accesskey="n"
-                                        value="New Disposal Issue Bill"
+                                        value="New Consumption Issue Bill"
                                         icon="fas fa-plus-circle"
                                         styleClass="ui-button-stage-save"
                                         ajax="false"
@@ -696,7 +703,7 @@
 
                     <!-- Disposal Issue Configuration Dialog -->
                     <p:dialog id="disposalIssueConfigDialog"
-                              header="Disposal Issue Printer Configuration"
+                              header="Consumption Issue Printer Configuration"
                               widgetVar="disposalIssueConfigDialog"
                               modal="true"
                               width="600"
@@ -712,7 +719,7 @@
                                 <div class="col-12">
                                     <div class="card config-section">
                                         <div class="card-header">
-                                            <h6><i class="fas fa-file-alt"></i> Disposal Issue Paper Settings</h6>
+                                            <h6><i class="fas fa-file-alt"></i> Consumption Issue Paper Settings</h6>
                                         </div>
                                         <div class="card-body">
                                             <div class="mb-3">
@@ -720,21 +727,21 @@
                                                     id="disposalIssueA4"
                                                     value="#{pharmacyConfigController.disposalIssueA4Paper}" />
                                                 <p:outputLabel for="disposalIssueA4" value="A4 Paper Format" class="ms-2" />
-                                                <small class="form-text text-muted d-block">Standard A4 paper format for disposal issue receipts</small>
+                                                <small class="form-text text-muted d-block">Standard A4 paper format for consumption issue receipts</small>
                                             </div>
                                             <div class="mb-3">
                                                 <p:selectBooleanCheckbox
                                                     id="disposalIssueCustom1"
                                                     value="#{pharmacyConfigController.disposalIssueCustom1}" />
                                                 <p:outputLabel for="disposalIssueCustom1" value="Custom Format 1" class="ms-2" />
-                                                <small class="form-text text-muted d-block">Custom format 1 for disposal issue receipts</small>
+                                                <small class="form-text text-muted d-block">Custom format 1 for consumption issue receipts</small>
                                             </div>
                                             <div class="mb-3">
                                                 <p:selectBooleanCheckbox
                                                     id="disposalIssueCustom2"
                                                     value="#{pharmacyConfigController.disposalIssueCustom2}" />
                                                 <p:outputLabel for="disposalIssueCustom2" value="Custom Format 2" class="ms-2" />
-                                                <small class="form-text text-muted d-block">Custom format 2 for disposal issue receipts</small>
+                                                <small class="form-text text-muted d-block">Custom format 2 for consumption issue receipts</small>
                                             </div>
                                         </div>
                                     </div>
@@ -769,6 +776,7 @@
                         </h:form>
                     </p:dialog>
                 </h:form>
+                </h:panelGroup>
             </ui:define>
         </ui:composition>
     </h:body>

@@ -567,6 +567,7 @@ public class CreditCompanyDueController implements Serializable {
                 + "WHERE bill.retired <> :br "
                 + "AND (bill.cancelled = false OR bill.cancelled IS NULL) "
                 + "AND bill.billTypeAtomic IN :bts "
+                + "AND bill.referenceBill.confirmedFinalBill = true "
                 + "AND (ABS(bill.netTotal) - ABS(bill.paidAmount)) > :minBalance";
 
         parameters.put("br", true);
@@ -2303,6 +2304,8 @@ public class CreditCompanyDueController implements Serializable {
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
 
+        jpql += "AND bill.referenceBill.confirmedFinalBill = true ";
+
         if (filteringCreditCompany != null) {
             jpql += " and bill.creditCompany =:ins ";
             parameters.put("ins", filteringCreditCompany);
@@ -2469,6 +2472,8 @@ public class CreditCompanyDueController implements Serializable {
 
         jpql += "AND bill.billTypeAtomic in :bts ";
         parameters.put("bts", bts);
+
+        jpql += "AND bill.referenceBill.confirmedFinalBill = true ";
 
         if (institution != null) {
             jpql += " and bill.creditCompany =:ins ";

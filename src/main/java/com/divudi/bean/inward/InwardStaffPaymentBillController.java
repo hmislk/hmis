@@ -3,6 +3,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.PaymentMethod;
@@ -38,6 +39,7 @@ import com.divudi.core.facade.CancelledBillFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.RefundBillFacade;
 import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.data.ProfessionalPaymentVoucherGroup;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.DrawerService;
 import com.divudi.service.ProfessionalPaymentService;
@@ -96,6 +98,8 @@ public class InwardStaffPaymentBillController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    private WebUserController webUserController;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private List<BillComponent> billComponents;
@@ -109,6 +113,8 @@ public class InwardStaffPaymentBillController implements Serializable {
     private Date toDate;
 
     private Bill current;
+    private List<ProfessionalPaymentVoucherGroup> individualVoucherGroups;
+    private Bill individualVoucherGroupsBill;
     private List<Bill> items = null;
     private List<Bill> bills;
     private List<Bill> billsCan;
@@ -1446,6 +1452,13 @@ public class InwardStaffPaymentBillController implements Serializable {
         tmp.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE));
         tmp.setInsId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE));
 
+        Department voucherDepartment = getSessionController().getDepartment();
+        Long voucherStartingNumber = configOptionApplicationController.getLongValueByKeyForDepartment(
+                "Voucher Number Starting Value for " + BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE.getLabel(),
+                voucherDepartment, 1L);
+        tmp.setVoucherNo(getBillNumberBean().fetchNextVoucherNumber(
+                voucherDepartment, BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE, voucherStartingNumber));
+
         tmp.setDiscount(0.0);
         tmp.setDiscountPercent(0.0);
 
@@ -1461,6 +1474,16 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     private boolean errorCheck() {
+        if (getPayingBillFees() != null) {
+            for (BillFee bf : getPayingBillFees()) {
+                com.divudi.core.entity.PatientEncounter pe = bf.getPatienEncounter();
+                if (pe != null && Boolean.TRUE.equals(pe.getProfessionalPaymentsOnHold())
+                        && !webUserController.hasPrivilege("InwardPayProfessionalFeesWhileOnHold")) {
+                    JsfUtil.addErrorMessage("Cannot pay: professional payments are on hold for BHT " + pe.getBhtNo() + ".");
+                    return true;
+                }
+            }
+        }
         if (currentStaff == null) {
             JsfUtil.addErrorMessage("Please select a Staff Memeber");
             return true;
@@ -1573,6 +1596,15 @@ public class InwardStaffPaymentBillController implements Serializable {
             current = new BilledBill();
         }
         return current;
+    }
+
+    public List<ProfessionalPaymentVoucherGroup> getIndividualVoucherGroups() {
+        if (individualVoucherGroups == null || individualVoucherGroupsBill != current) {
+            individualVoucherGroups = professionalPaymentService
+                    .groupPaymentBillItemsByPatientOrBht(current);
+            individualVoucherGroupsBill = current;
+        }
+        return individualVoucherGroups;
     }
 
     public void setCurrent(Bill current) {
@@ -2091,6 +2123,10 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public void setBundle(IncomeBundle bundle) {
         this.bundle = bundle;
+    }
+    
+    public String convertToWord(double d) {
+        return CommonFunctions.convertToWord(Math.abs(d));
     }
 
 }

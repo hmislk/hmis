@@ -1028,6 +1028,22 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
     }
 
+    /**
+     * Shared by settle/finalize/approve so the rule lives in one place instead of an
+     * inline copy at each call site. Shows an error message and returns false if invalid.
+     */
+    private boolean isPaymentMethodValid(com.divudi.core.entity.Bill b) {
+        if (b.getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Select Payment Method");
+            return false;
+        }
+        if (b.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
+            JsfUtil.addErrorMessage("MultiplePayments Not Allowed.");
+            return false;
+        }
+        return true;
+    }
+
     public void settleDirectPurchaseBillFinally() {
         if (getBillItems() == null || getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Please add items");
@@ -1060,12 +1076,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 return;
             }
         }
-        if (getBill().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Select Payment Method");
-            return;
-        }
-        if (getBill().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
-            JsfUtil.addErrorMessage("MultiplePayments Not Allowed.");
+        if (!isPaymentMethodValid(getBill())) {
             return;
         }
 
@@ -1086,6 +1097,34 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
 //        Payment p = createPayment(getBill());
         billItemsTotalQty = 0;
+
+        // Calculate bill-level totals and distribute bill-level adjustments (discount,
+        // tax, expenses) into each item's cost rate BEFORE ItemBatch/Stock are created
+        // below. saveItemBatchWithCosting() reads BillItemFinanceDetails.totalCostRate
+        // to set ItemBatch.costRate (which StockHistory then snapshots) - if this ran
+        // after item batches were created, the batch/stock would be left with the
+        // pre-distribution cost rate forever while the report's cost totals reflect
+        // the post-distribution one, producing a permanent COGS cost variance.
+        calculateBillTotalsFromItems();
+        if (getBill().getDiscount() != 0.0 || getBill().getTax() != 0.0 || getBill().getExpensesTotalConsideredForCosting() != 0.0) {
+            distributeProportionalBillValuesToItems();
+            // Persist the distributed values for previously-saved items here (a zero-qty/
+            // zero-freeQty item is skipped by the loop below's `continue` before it ever
+            // reaches create/edit(i) or getBill().getBillItems(), so it would otherwise
+            // silently lose whatever distribute() computed for it). Brand-new items (id
+            // still null - the common case for a Direct Purchase settled directly without
+            // going through the Save Draft flow first) are deliberately skipped here: edit()
+            // is em.merge(), which on a transient entity inserts a row but does NOT populate
+            // this object's id - the loop below would then see getId()==null and create() a
+            // second, duplicate row for the same item. Those items already carry the
+            // distributed values in memory and get persisted correctly by the loop's own
+            // create(i) call.
+            for (BillItem item : getBillItems()) {
+                if (item.getId() != null) {
+                    getBillItemFacade().edit(item);
+                }
+            }
+        }
 
         for (BillItem i : getBillItems()) {
             double lastPurchaseRate = 0.0;
@@ -1127,21 +1166,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
             getBill().getBillItems().add(i);
         }
 
-        // CRITICAL: Calculate bill-level totals and update BillFinanceDetails after all items are processed
-        calculateBillTotalsFromItems();
-
-        // Distribute bill-level adjustments proportionally to items if needed
+        // Recalculate BillFinanceDetails cost aggregates after distribution
+        // This ensures bill-level totals reflect the updated cost rates with expenses
         if (getBill().getDiscount() != 0.0 || getBill().getTax() != 0.0 || getBill().getExpensesTotalConsideredForCosting() != 0.0) {
-            distributeProportionalBillValuesToItems();
-
-            for (BillItem item : getBillItems()) {
-                getBillItemFacade().edit(item);
-            }
-
-            // Recalculate BillFinanceDetails cost aggregates after distribution
-            // This ensures bill-level totals reflect the updated cost rates with expenses
             recalculateBillFinanceDetailsCostAggregates();
-
         }
 
         //check and calculate expenses separately
@@ -1460,6 +1488,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         } else {
+            syncBillItemsCollectionFromDatabase();
             getBillFacade().edit(getBill());
         }
 
@@ -1538,9 +1567,32 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
         getBill().setExpenseTotal(-Math.abs(totalForExpenses));
 
+        syncBillItemsCollectionFromDatabase();
         getBillFacade().edit(getBill());
         draftMode = true;
         return true;
+    }
+
+    /**
+     * Bill.billItems has orphanRemoval=true, but this method persists each BillItem
+     * directly via BillItemFacade rather than through that collection, so the in-memory
+     * bill's billItems field is otherwise left null/stale across repeated calls. If
+     * something has since refreshed this bill's shared cache entry (e.g. a Finalize
+     * attempt blocked by validation, which reloads the bill before returning), a later
+     * edit(bill) can treat that stale/empty collection as authoritative and orphan-delete
+     * the BillItem rows this method just persisted (issue #21900). Re-fetching the
+     * collection immediately before each edit(bill) keeps it accurate.
+     */
+    private void syncBillItemsCollectionFromDatabase() {
+        if (getBill().getId() == null) {
+            return;
+        }
+        java.util.Map<String, Object> params = new java.util.HashMap<>();
+        params.put("billId", getBill().getId());
+        List<BillItem> currentlyPersistedItems = getBillItemFacade().findByJpql(
+            "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId", params);
+        getBill().getBillItems().clear();
+        getBill().getBillItems().addAll(currentlyPersistedItems);
     }
 
     public void saveDraftDirectPurchase() {
@@ -1566,6 +1618,9 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
         if (freshBill.isCompleted()) {
             JsfUtil.addErrorMessage("This draft was already finalized by another user. Please refresh the list.");
+            return;
+        }
+        if (!isPaymentMethodValid(freshBill)) {
             return;
         }
 
@@ -1600,6 +1655,21 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (freshBill.isChecked()) {
             JsfUtil.addErrorMessage("This bill was already approved by another user. Please refresh the list.");
             return;
+        }
+        // The Payment Method dropdown on direct_purchase.xhtml stays editable on this screen
+        // (unlike items/expenses), but nothing else on this page persists it, and unlike
+        // finalize (which calls persistDraftDirectPurchase() first) nothing saves `bill`
+        // before this method runs either - so a selection made here would otherwise be
+        // silently discarded by the DB reload above on every Approve click. Validate the
+        // pending in-memory selection itself (not the possibly-stale freshBill copy) before
+        // persisting it, so an invalid choice is rejected without ever being written.
+        if (!isPaymentMethodValid(bill)) {
+            return;
+        }
+        PaymentMethod pendingPaymentMethod = bill.getPaymentMethod();
+        if (freshBill.getPaymentMethod() != pendingPaymentMethod) {
+            freshBill.setPaymentMethod(pendingPaymentMethod);
+            getBillFacade().edit(freshBill);
         }
 
         // Switch session bill to the fresh DB copy so finalizeBill()/approveBill() operate on it
@@ -1652,6 +1722,25 @@ public class PharmacyDirectPurchaseController implements Serializable {
         String expJpql = "SELECT be FROM BillItem be WHERE be.expenseBill.id = :billId AND be.retired = false ORDER BY be.searialNo";
         billExpenses = billItemFacade.findByJpql(expJpql, params);
 
+        // Calculate bill-level totals and distribute bill-level adjustments (discount,
+        // tax, expenses) into each item's cost rate BEFORE ItemBatch/Stock are created
+        // below. saveItemBatchWithCosting() reads BillItemFinanceDetails.totalCostRate
+        // to set ItemBatch.costRate (which StockHistory then snapshots) - if this ran
+        // after item batches were created, the batch/stock would be left with the
+        // pre-distribution cost rate forever while the report's cost totals reflect
+        // the post-distribution one, producing a permanent COGS cost variance (mirrors
+        // the same fix in settleDirectPurchaseBillFinally()).
+        calculateBillTotalsFromItems();
+        if (getBill().getDiscount() != 0.0 || getBill().getTax() != 0.0 || getBill().getExpensesTotalConsideredForCosting() != 0.0) {
+            distributeProportionalBillValuesToItems();
+            // Unlike settle (fully in-memory graph, cascaded on the final bill edit),
+            // these items were reloaded from DB above, so they need an explicit edit
+            // here for the distributed values to persist.
+            for (BillItem item : getBillItems()) {
+                getBillItemFacade().edit(item);
+            }
+        }
+
         // Add stock for each item (mirrors settleDirectPurchaseBillFinally())
         billItemsTotalQty = 0;
         for (BillItem i : getBillItems()) {
@@ -1683,13 +1772,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
             getBill().getBillItems().add(i);
         }
 
-        calculateBillTotalsFromItems();
-
         if (getBill().getDiscount() != 0.0 || getBill().getTax() != 0.0 || getBill().getExpensesTotalConsideredForCosting() != 0.0) {
-            distributeProportionalBillValuesToItems();
-            for (BillItem item : getBillItems()) {
-                getBillItemFacade().edit(item);
-            }
             recalculateBillFinanceDetailsCostAggregates();
         }
 

@@ -76,6 +76,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
@@ -124,6 +125,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     ////////////
     @EJB
+    private com.divudi.service.AuditService auditService;
+    @EJB
     private AdmissionFacade ejbFacade;
     @EJB
     private PatientEncounterFacade patientEncounterFacade;
@@ -145,6 +148,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ReservationFacade reservationFacade;
     @EJB
     private PatientTransferRequestFacade patientTransferRequestFacade;
+    @EJB
+    private com.divudi.ejb.InpatientPackageApplicationBean inpatientPackageApplicationBean;
+
+    public com.divudi.ejb.InpatientPackageApplicationBean getInpatientPackageApplicationBean() {
+        return inpatientPackageApplicationBean;
+    }
 
     @Inject
     BhtEditController bhtEditController;
@@ -268,6 +277,55 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Title is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's title (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Name is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's name (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian NIC is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's NIC/Passport (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Address is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's address (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Mobile Number is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's mobile number (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Home Phone Number is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's home phone number (default false)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Guardian Relationship is Required in Patient Admission",
+                "When Guardian Details are required, also require the guardian's relationship to the patient (default true)",
+                "inward/inward_admission",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
                 "Patient Admit - Enable Referred From in Patient Admission",
                 "Show the Referred From field during admission (default false)",
                 "inward/inward_admission",
@@ -320,8 +378,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
         try {
+            Map<String, Object> before = new LinkedHashMap<>();
+            before.put("allergy", pa.getItemValue() != null ? pa.getItemValue().getName() : null);
+            before.put("retired", pa.isRetired());
             pa.setRetired(true);
             clinicalFindingValueFacade.edit(pa);
+            Map<String, Object> after = new LinkedHashMap<>();
+            after.put("allergy", pa.getItemValue() != null ? pa.getItemValue().getName() : null);
+            after.put("retired", pa.isRetired());
+            auditService.logEncounterAudit(current, "Patient Allergy Removed",
+                    before, after, getSessionController().getLoggedUser(),
+                    "ClinicalFindingValue", pa.getId());
             getPatientAllergies().remove(pa);
             JsfUtil.addSuccessMessage("Allergy removed successfully");
         } catch (Exception e) {
@@ -380,11 +447,26 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
 
+        Map<String, Object> before = new LinkedHashMap<>();
+        before.put("creditCompany", patientEncounter.getCreditCompany() != null
+                ? patientEncounter.getCreditCompany().getName() : null);
+        before.put("creditLimit", patientEncounter.getCreditLimit());
+        before.put("creditPaidAmount", patientEncounter.getCreditPaidAmount());
+        before.put("creditUsedAmount", patientEncounter.getCreditUsedAmount());
+
         patientEncounter.setCreditCompany(null);
         patientEncounter.setCreditLimit(0);
         patientEncounter.setCreditPaidAmount(0);
         patientEncounter.setCreditUsedAmount(0);
         getPatientEncounterFacade().edit(patientEncounter);
+
+        Map<String, Object> after = new LinkedHashMap<>();
+        after.put("creditCompany", null);
+        after.put("creditLimit", 0);
+        after.put("creditPaidAmount", 0);
+        after.put("creditUsedAmount", 0);
+        auditService.logEncounterAudit(patientEncounter, "Credit Detail Reset",
+                before, after, getSessionController().getLoggedUser());
     }
 
     public String navigateToInpatientClinicalData() {
@@ -1543,10 +1625,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public void delete() {
 
         if (getCurrent() != null) {
+            Map<String, Object> before = admissionSnapshotMap(getCurrent());
             getCurrent().setRetired(true);
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
+            auditService.logEncounterAudit(getCurrent(), "Admission Deleted",
+                    before, admissionSnapshotMap(getCurrent()),
+                    getSessionController().getLoggedUser());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
             JsfUtil.addErrorMessage("Nothing to Delete");
@@ -1644,9 +1730,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (getCurrent().getId() == null || getCurrent().getId() == 0) {
             JsfUtil.addSuccessMessage("No Patient Data Found");
         } else {
+            Map<String, Object> before = new LinkedHashMap<>();
+            Admission persisted = getEjbFacade().findWithoutCache(getCurrent().getId());
+            if (persisted != null) {
+                before.put("discharged", persisted.isDischarged());
+                before.put("dateOfDischarge", persisted.getDateOfDischarge());
+            }
             getCurrent().setDischarged(Boolean.TRUE);
             getCurrent().setDateOfDischarge(new Date());
             getEjbFacade().edit(current);
+            Map<String, Object> after = new LinkedHashMap<>();
+            after.put("discharged", getCurrent().isDischarged());
+            after.put("dateOfDischarge", getCurrent().getDateOfDischarge());
+            auditService.logEncounterAudit(getCurrent(), "Discharge",
+                    before, after, getSessionController().getLoggedUser());
         }
 
     }
@@ -1664,10 +1761,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         Person person = getPatient().getPerson();
         // DON'T set to null - keep reference throughout
-        
-        if(patientForiegner){
-            getPatient().getPerson().setForeigner(true);
-        }
+
+        // Persist the "Mark as Foreigner" checkbox state onto the patient. This
+        // marks a new (or existing) patient as a foreigner when checked, and
+        // clears the flag when unchecked, keeping the record in sync with the UI.
+        getPatient().getPerson().setForeigner(patientForiegner);
 
         // Save Person first (no flush yet)
         if (person != null) {
@@ -2035,7 +2133,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     return true;
                 }
             }
-            if (configOptionApplicationController.getBooleanValueByKey("Guardian Home Phone Number is Required in Patient Admission", true)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Home Phone Number is Required in Patient Admission", false)) {
                 if (getCurrent().getGuardian().getPhone() == null || getCurrent().getGuardian().getPhone().isEmpty()) {
                     JsfUtil.addErrorMessage("Guardian Home Phone Number is Required");
                     return true;
@@ -2146,10 +2244,28 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Admission Type.");
             return;
         }
+        String oldBhtNo = null;
+        if (current.getId() != null) {
+            HashMap<String, Object> bhtParams = new HashMap<>();
+            bhtParams.put("id", current.getId());
+            List<String> persisted = getFacade().findString(
+                    "select a.bhtNo from Admission a where a.id=:id", bhtParams);
+            if (persisted != null && !persisted.isEmpty()) {
+                oldBhtNo = persisted.get(0);
+            }
+        }
         addPatient();
         addGuardian();
         addPatientRoom();
         getFacade().edit(current);
+        if (oldBhtNo != null && !oldBhtNo.equals(current.getBhtNo())) {
+            Map<String, Object> before = new LinkedHashMap<>();
+            before.put("bhtNo", oldBhtNo);
+            Map<String, Object> after = new LinkedHashMap<>();
+            after.put("bhtNo", current.getBhtNo());
+            auditService.logEncounterAudit(current, "BHT Number Changed",
+                    before, after, getSessionController().getLoggedUser());
+        }
         current = new Admission();
         patientRoom = new PatientRoom();
     }
@@ -2266,9 +2382,57 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("No admission selected");
             return;
         }
+        Map<String, Object> before = new LinkedHashMap<>();
+        before.put("registrationFlag", getCurrent().getEncounterRegistrationFlag());
         getCurrent().setEncounterRegistrationFlag(EncounterRegistrationFlag.STANDARD);
         getFacade().edit(getCurrent());
+        Map<String, Object> after = new LinkedHashMap<>();
+        after.put("registrationFlag", getCurrent().getEncounterRegistrationFlag());
+        auditService.logEncounterAudit(getCurrent(), "Rapid Temp Admission Completed",
+                before, after, getSessionController().getLoggedUser());
         JsfUtil.addSuccessMessage("Registration marked as complete.");
+    }
+
+    /**
+     * Snapshot of the audit-relevant admission fields, used as before/after
+     * JSON for admission-lifecycle audit events (#22235).
+     */
+    private Map<String, Object> admissionSnapshotMap(Admission a) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        if (a == null) {
+            return m;
+        }
+        m.put("encounterID", a.getId());
+        m.put("bhtNo", a.getBhtNo());
+        m.put("encounterType", a.getEncounterType());
+        m.put("admissionType", a.getAdmissionType() != null ? a.getAdmissionType().getName() : null);
+        m.put("dateOfAdmission", a.getDateOfAdmission());
+        m.put("paymentMethod", a.getPaymentMethod());
+        m.put("creditCompany", a.getCreditCompany() != null ? a.getCreditCompany().getName() : null);
+        m.put("registrationFlag", a.getEncounterRegistrationFlag());
+        m.put("retired", a.isRetired());
+        if (a.getReferringConsultant() != null) {
+            m.put("consultant", a.getReferringConsultant().toString());
+        }
+        if (a.getOpdDoctor() != null) {
+            m.put("medicalOfficer", a.getOpdDoctor().toString());
+        }
+        if (a.getDepartment() != null) {
+            m.put("department", a.getDepartment().getName());
+        }
+        if (a.getPatient() != null) {
+            m.put("patient_ID", a.getPatient().getId());
+            if (a.getPatient().getPerson() != null) {
+                m.put("patient_name", a.getPatient().getPerson().getName());
+            }
+        }
+        if (a.getGuardian() != null) {
+            m.put("guardian_name", a.getGuardian().getName());
+        }
+        if (a.getParentEncounter() != null) {
+            m.put("parentEncounter_bhtNo", a.getParentEncounter().getBhtNo());
+        }
+        return m;
     }
 
     private void proceedWithAdmissionCheck() {
@@ -2311,6 +2475,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (isRapidTempAe()) {
             applyRapidTempPlaceholders();
         }
+        final boolean isNewAdmission = getCurrent().getId() == null || getCurrent().getId() <= 0;
         savePatient();
         savePatientAllergies();
         saveGuardian();
@@ -2356,6 +2521,38 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             }
 
             getCurrent().setCurrentPatientRoom(currentPatientRoom);
+
+            if (getCurrent().getInpatientPackage() != null) {
+                // The admission and room above were each already committed in their
+                // own EJB transaction (this controller is a CDI bean, not itself
+                // transactional). applyPackageToAdmission runs in a further, separate
+                // transaction, so a failure here cannot be rolled back by the
+                // container - it would otherwise leave a package-linked admission
+                // with none of its locked billing rows. Compensate explicitly by
+                // retiring what was just created and surfacing a clear error instead.
+                try {
+                    getInpatientPackageApplicationBean().applyPackageToAdmission(
+                            getCurrent(), currentPatientRoom, getSessionController().getLoggedUser());
+                } catch (RuntimeException ex) {
+                    logger.log(Level.SEVERE, "Package application failed for admission " + getCurrent().getBhtNo(), ex);
+                    Date now = new Date();
+                    currentPatientRoom.setRetired(true);
+                    currentPatientRoom.setRetireComments("Auto-retired: package application failed - " + ex.getMessage());
+                    currentPatientRoom.setRetirer(getSessionController().getLoggedUser());
+                    currentPatientRoom.setRetiredAt(now);
+                    patientRoomFacade.edit(currentPatientRoom);
+
+                    getCurrent().setRetired(true);
+                    getCurrent().setRetireComments("Auto-retired: package application failed - " + ex.getMessage());
+                    getCurrent().setRetirer(getSessionController().getLoggedUser());
+                    getCurrent().setRetiredAt(now);
+                    getFacade().edit(getCurrent());
+
+                    JsfUtil.addErrorMessage("Package could not be applied to this admission and it has been cancelled. Please retry. (" + ex.getMessage() + ")");
+                    admittingProcessStarted = false;
+                    return;
+                }
+            }
 
             if (!getCurrent().isRoomAdmitted() && currentPatientRoom != null && currentPatientRoom.getRoomFacilityCharge() != null) {
                 PatientTransferRequest handoverRequest = new PatientTransferRequest();
@@ -2438,6 +2635,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         saveEncounterCreditCompanies(current);
 
+        if (isNewAdmission) {
+            String auditTrigger = getCurrent().getParentEncounter() != null
+                    ? "Baby Admission Created" : "Admission Created";
+            auditService.logEncounterAudit(getCurrent(), auditTrigger,
+                    null, admissionSnapshotMap(getCurrent()),
+                    getSessionController().getLoggedUser());
+        }
+
         // Save EncounterCreditCompanies
         // Need to create EncounterCredit
         admittingProcessStarted = false;
@@ -2450,6 +2655,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (errorCheck()) {
             return;
         }
+        Map<String, Object> conversionBefore = admissionSnapshotMap(getCurrentNonBht());
         savePatient();
         savePatientAllergies();
         saveGuardian();
@@ -2528,6 +2734,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         getFacade().edit(currentNonBht);
         currentNonBht = null;
 
+        auditService.logEncounterAudit(getCurrent(), "Admission Type Converted",
+                conversionBefore, admissionSnapshotMap(getCurrent()),
+                getSessionController().getLoggedUser());
+
         // Save EncounterCreditCompanies
         // Need to create EncounterCredit
         printPreview = true;
@@ -2541,6 +2751,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 ecc.setCreater(sessionController.getLoggedUser());
                 if (ecc.getInstitution() != null) {
                     getEncounterCreditCompanyFacade().create(ecc);
+                    Map<String, Object> eccState = new LinkedHashMap<>();
+                    eccState.put("creditCompany", ecc.getInstitution().getName());
+                    eccState.put("creditLimit", ecc.getCreditLimit());
+                    eccState.put("policyNo", ecc.getPolicyNo());
+                    eccState.put("referenceNo", ecc.getReferanceNo());
+                    auditService.logEncounterAudit(current, "Credit Company Added",
+                            null, eccState, getSessionController().getLoggedUser(),
+                            "EncounterCreditCompany", ecc.getId());
                     // Upsert back to patient-level insurance profile
                     patientInsuranceController.upsertFromEncounter(
                             current.getPatient(),
@@ -2787,6 +3005,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (current != null) {
             current.setPatient(patient);
             patientAllergies = clinicalFindingValueController.findClinicalFindingValues(patient, ClinicalFindingValueType.PatientAllergy);
+        }
+        // When a patient is searched/selected, reflect their foreigner status on the
+        // "Mark as Foreigner" checkbox so it is ticked automatically for foreigners.
+        if (patient != null && patient.getPerson() != null) {
+            patientForiegner = patient.getPerson().isForeigner();
+        } else {
+            patientForiegner = false;
         }
         selectPaymentSchemeAsPerPatientMembership();
     }

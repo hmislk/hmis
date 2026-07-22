@@ -7,6 +7,7 @@ package com.divudi.ejb;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.lab.LabTestHistoryController;
+import com.divudi.core.data.EmailAttachment;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.entity.AppEmail;
 import com.divudi.core.entity.Bill;
@@ -167,6 +168,11 @@ public class EmailManagerEjb {
 //
 //    }
     private boolean sendEmailViaRestGateway(String subject, String body, List<String> recipients, boolean isHtml) {
+        return sendEmailViaRestGateway(subject, body, recipients, isHtml, null);
+    }
+
+    private boolean sendEmailViaRestGateway(String subject, String body, List<String> recipients, boolean isHtml,
+            List<EmailAttachment> attachments) {
         String messengerServiceURL = configOptionApplicationController.getShortTextValueByKey("Email Gateway - URL", "");
 
         if (messengerServiceURL == null || messengerServiceURL.trim().isEmpty()) {
@@ -176,7 +182,7 @@ public class EmailManagerEjb {
 
         HttpURLConnection connection = null;
         try {
-            JSONObject payload = buildEmailJsonPayload(subject, body, recipients, isHtml);
+            JSONObject payload = buildEmailJsonPayload(subject, body, recipients, isHtml, attachments);
 
             URL url = new URL(messengerServiceURL);
             connection = (HttpURLConnection) url.openConnection();
@@ -228,6 +234,11 @@ public class EmailManagerEjb {
     }
 
     private JSONObject buildEmailJsonPayload(String subject, String body, List<String> recipients, boolean isHtml) {
+        return buildEmailJsonPayload(subject, body, recipients, isHtml, null);
+    }
+
+    private JSONObject buildEmailJsonPayload(String subject, String body, List<String> recipients, boolean isHtml,
+            List<EmailAttachment> attachments) {
         final String username = configOptionApplicationController.getShortTextValueByKey("Email Gateway - Username", "");
         final String password = configOptionApplicationController.getShortTextValueByKey("Email Gateway - Password", "");
         final String smtpHost = configOptionApplicationController.getShortTextValueByKey("Email Gateway - SMTP Host", "");
@@ -244,6 +255,20 @@ public class EmailManagerEjb {
             recipientArray.put(recipient);
         }
         payload.put("recipients", recipientArray);
+
+        // Only include the key when attachments exist so older messenger
+        // deployments keep accepting attachment-less payloads unchanged.
+        if (attachments != null && !attachments.isEmpty()) {
+            JSONArray attachmentArray = new JSONArray();
+            for (EmailAttachment attachment : attachments) {
+                JSONObject attachmentJson = new JSONObject();
+                attachmentJson.put("fileName", attachment.getFileName());
+                attachmentJson.put("contentType", attachment.getContentType());
+                attachmentJson.put("base64Content", attachment.getBase64Content());
+                attachmentArray.put(attachmentJson);
+            }
+            payload.put("attachments", attachmentArray);
+        }
 
         JSONObject smtpConfig = new JSONObject();
         smtpConfig.put("username", username);
@@ -369,6 +394,21 @@ public class EmailManagerEjb {
     public boolean sendEmail(final List<String> recipients, final String body, final String subject, final boolean isHtml) {
         try {
             return sendEmailViaRestGateway(subject, body, recipients, isHtml);
+        } catch (Exception e) {
+            Logger.getLogger(EmailManagerEjb.class.getName()).log(Level.SEVERE, "Failed to send email: " + e.getMessage(), e);
+            return false;
+        }
+    }
+
+    /**
+     * Sends an email with file attachments through the messenger REST
+     * gateway. Requires a messenger deployment that supports the
+     * "attachments" field in the payload.
+     */
+    public boolean sendEmail(final List<String> recipients, final String body, final String subject, final boolean isHtml,
+            final List<EmailAttachment> attachments) {
+        try {
+            return sendEmailViaRestGateway(subject, body, recipients, isHtml, attachments);
         } catch (Exception e) {
             Logger.getLogger(EmailManagerEjb.class.getName()).log(Level.SEVERE, "Failed to send email: " + e.getMessage(), e);
             return false;

@@ -372,7 +372,8 @@ public class InwardReportControllerBht implements Serializable {
     private List<InpatientServiceIssueDTO> fetchServiceIssueDtos(List<BillTypeAtomic> billTypes) {
         String jpql = "SELECT new com.divudi.core.data.dto.InpatientServiceIssueDTO("
                 + "bi.id, "
-                + "bi.item.name, "
+                + "CASE WHEN bi.item.printName IS NULL OR bi.item.printName = '' "
+                + "THEN CONCAT('Printing name is missing in ', bi.item.name) ELSE bi.item.printName END, "
                 + "bi.qty, "
                 + "bi.netValue, "
                 + "bi.bill.createdAt, "
@@ -404,7 +405,8 @@ public class InwardReportControllerBht implements Serializable {
     private List<InpatientServiceIssueDTO> fetchOnlyIPServiceIssueDtos(List<BillTypeAtomic> billTypes) {
         String jpql = "SELECT new com.divudi.core.data.dto.InpatientServiceIssueDTO("
                 + "bi.id, "
-                + "bi.item.name, "
+                + "CASE WHEN bi.item.printName IS NULL OR bi.item.printName = '' "
+                + "THEN CONCAT('Printing name is missing in ', bi.item.name) ELSE bi.item.printName END, "
                 + "bi.qty, "
                 + "bi.netValue, "
                 + "bi.bill.createdAt, "
@@ -1545,12 +1547,14 @@ public class InwardReportControllerBht implements Serializable {
         jpql = "select b from Bill b "
                 + "where b.patientEncounter=:pe "
                 + "and b.billType=:bTp "
+                + "and b.billTypeAtomic=:bta "
                 + "and b.retired=false "
                 + "and b.cancelled=false "
                 + "and  b.toDepartment=:toDep";
         hm.put("pe", getPatientEncounter());
         hm.put("toDep", department);
         hm.put("bTp", BillType.InwardPharmacyRequest);
+        hm.put("bta", BillTypeAtomic.REQUEST_MEDICINE_INWARD);
 
         issueBills = getBillFacade().findByJpql(jpql, hm);
 

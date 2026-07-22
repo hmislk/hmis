@@ -845,7 +845,70 @@ public class AnthropicApiService implements Serializable {
                                         .add("description", "InvestigationReportType enum value (e.g. General). Optional."))
                                 .add("bypassSampleWorkflow", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "'true' to skip sample collection and allow direct result entry after billing. Optional.")))
+                                        .add("description", "'true' to skip sample collection and allow direct result entry after billing. Optional."))
+                                .add("vatable", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'true' to charge VAT on this investigation, 'false' to exempt it. Optional."))
+                                .add("vatPercentage", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "VAT percentage applied when vatable is true (e.g. '18'). Optional.")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
+        JsonObject manageServicesTool = Json.createObjectBuilder()
+                .add("name", "manage_services")
+                .add("description",
+                        "Search, retrieve, create, update, activate, or deactivate service master records "
+                        + "(billable OPD or Inward services, e.g. consultations, procedures, room charges). "
+                        + "Use GET to search by name/code/printName, optionally filtered by serviceType or categoryId. "
+                        + "Use POST to create a new service (returns already_exists with the existing id if a "
+                        + "duplicate name is found). Use PUT to update metadata. "
+                        + "Use ACTIVATE/DEACTIVATE to toggle the inactive flag.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Operation: GET=search, GET_BY_ID=fetch one, POST=create, PUT=update, ACTIVATE=set inactive=false, DEACTIVATE=set inactive=true. Required."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Service ID. Required for GET_BY_ID, PUT, ACTIVATE, DEACTIVATE."))
+                                .add("query", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Search text matched against name, code, and printName (case-insensitive). Used with GET."))
+                                .add("serviceType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'OPD' or 'Inward'. Required for POST. Optional filter for GET."))
+                                .add("categoryId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Filter by service category ID. Used with GET."))
+                                .add("inactive", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Filter by active/inactive status: 'true' or 'false'. Omit to return both. Used with GET."))
+                                .add("limit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max results to return (1–100). Defaults to 20. Used with GET."))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Service name. Required for POST; optional for PUT."))
+                                .add("code", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Short code. Auto-generated from name if omitted on POST. Optional for PUT."))
+                                .add("printName", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Print/display name shown on reports and bills. Optional."))
+                                .add("fullName", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Full descriptive name. Optional."))
+                                .add("inwardChargeType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "InwardChargeType enum value. Required when serviceType=Inward on POST."))
+                                .add("vatable", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'true' to charge VAT on this service, 'false' to exempt it. Optional."))
+                                .add("vatPercentage", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "VAT percentage applied when vatable is true (e.g. '18'). Optional.")))
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
@@ -1166,6 +1229,7 @@ public class AnthropicApiService implements Serializable {
                 .add("description",
                         "Manage HMIS users, passwords, loggable departments, and department-scoped privileges.\n\n"
                         + "method: LIST | GET | POST | PUT | DELETE | RESET_PASSWORD | CHANGE_PASSWORD | "
+                        + "FORCE_PASSWORD_RESET | PASSWORD_STATUS | "
                         + "LIST_PRIVILEGES | ASSIGN_PRIVILEGES | REVOKE_PRIVILEGE | LIST_DEPARTMENTS | ASSIGN_DEPARTMENTS | "
                         + "LIST_AVAILABLE_PRIVILEGES | BULK_ASSIGN_PRIVILEGES | ASSIGN_PRIVILEGE_CATEGORIES | "
                         + "ASSIGN_ALL_PRIVILEGES_MULTI_DEPT\n\n"
@@ -1173,7 +1237,10 @@ public class AnthropicApiService implements Serializable {
                         + "ASSIGN_ALL_PRIVILEGES_MULTI_DEPT grants every privilege across supplied departmentIds (or all user's loggable depts if omitted). "
                         + "POST supports optional staffId to pre-link a Staff record at creation. "
                         + "Use LIST_AVAILABLE_PRIVILEGES before assigning explicit privilege names. "
-                        + "Always confirm with the user before POST, PUT, DELETE, RESET_PASSWORD, CHANGE_PASSWORD, "
+                        + "FORCE_PASSWORD_RESET flags the account for a mandatory reset on next login without setting an actual new "
+                        + "password (requires id only). PASSWORD_STATUS reports lastPasswordResetAt/needToResetPassword for every "
+                        + "active user, optionally filtered by from/to (yyyy-MM-dd) — read-only, no id required. "
+                        + "Always confirm with the user before POST, PUT, DELETE, RESET_PASSWORD, CHANGE_PASSWORD, FORCE_PASSWORD_RESET, "
                         + "ASSIGN_PRIVILEGES, REVOKE_PRIVILEGE, ASSIGN_DEPARTMENTS, BULK_ASSIGN_PRIVILEGES, "
                         + "ASSIGN_PRIVILEGE_CATEGORIES, or ASSIGN_ALL_PRIVILEGES_MULTI_DEPT.")
                 .add("input_schema", Json.createObjectBuilder()
@@ -1183,6 +1250,7 @@ public class AnthropicApiService implements Serializable {
                                         .add("enum", Json.createArrayBuilder()
                                                 .add("LIST").add("GET").add("POST").add("PUT").add("DELETE")
                                                 .add("RESET_PASSWORD").add("CHANGE_PASSWORD")
+                                                .add("FORCE_PASSWORD_RESET").add("PASSWORD_STATUS")
                                                 .add("LIST_PRIVILEGES").add("ASSIGN_PRIVILEGES").add("REVOKE_PRIVILEGE")
                                                 .add("LIST_DEPARTMENTS").add("ASSIGN_DEPARTMENTS")
                                                 .add("LIST_AVAILABLE_PRIVILEGES").add("BULK_ASSIGN_PRIVILEGES")
@@ -1213,8 +1281,136 @@ public class AnthropicApiService implements Serializable {
                                 .add("userIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated user IDs for BULK_ASSIGN_PRIVILEGES"))
                                 .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs for ASSIGN_DEPARTMENTS or ASSIGN_ALL_PRIVILEGES_MULTI_DEPT"))
                                 .add("staffId", Json.createObjectBuilder().add("type", "string").add("description", "Staff ID to link to the user on POST or via PUT /{id}/staff"))
-                                .add("retireComments", Json.createObjectBuilder().add("type", "string")))
+                                .add("retireComments", Json.createObjectBuilder().add("type", "string"))
+                                .add("from", Json.createObjectBuilder().add("type", "string").add("description", "PASSWORD_STATUS filter: lastPasswordResetAt on/after this date (yyyy-MM-dd)"))
+                                .add("to", Json.createObjectBuilder().add("type", "string").add("description", "PASSWORD_STATUS filter: lastPasswordResetAt on/before this date (yyyy-MM-dd)")))
                         .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
+        JsonObject userRoleResetTool = Json.createObjectBuilder()
+                .add("name", "user_role_reset")
+                .add("description",
+                        "Reset a user's role-template aspects (privileges/icons/subscriptions/login page) to exactly match a "
+                        + "role template for the given departments: retires records the user has that the template doesn't, "
+                        + "and adds records the template has that the user lacks. Roles are admin-time templates only — "
+                        + "this stamps user-level records; it never changes runtime behavior directly. "
+                        + "roleId is optional — omit it to reset to the user's own current role (the API 400s if the user "
+                        + "has no role). Set preview=true first to see added/retired counts per aspect without writing "
+                        + "anything, then call again with preview omitted/false to apply. Always confirm with the user "
+                        + "before applying (preview=false).")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("id", Json.createObjectBuilder().add("type", "string").add("description", "Target WebUser ID"))
+                                .add("roleId", Json.createObjectBuilder().add("type", "string").add("description", "Role template ID; omit to use the user's own role"))
+                                .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs to reset"))
+                                .add("aspects", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated aspects: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE. Default PRIVILEGES"))
+                                .add("updateUserRole", Json.createObjectBuilder().add("type", "string").add("description", "'true' or 'false' — also set WebUser.role to roleId. Default true"))
+                                .add("preview", Json.createObjectBuilder().add("type", "string").add("description", "'true' to preview counts without writing. Default false")))
+                        .add("required", Json.createArrayBuilder().add("id").add("departmentIds")))
+                .build();
+
+        JsonObject userRoleExpandTool = Json.createObjectBuilder()
+                .add("name", "user_role_expand")
+                .add("description",
+                        "Add role-template records (privileges/icons/subscriptions/login page) the user is missing, for the "
+                        + "given departments. Existing extra records the user already has beyond the template are left "
+                        + "untouched. roleId is required. Set preview=true first to see how many records would be added "
+                        + "per aspect, then call again with preview omitted/false to apply. Always confirm with the user "
+                        + "before applying.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("id", Json.createObjectBuilder().add("type", "string").add("description", "Target WebUser ID"))
+                                .add("roleId", Json.createObjectBuilder().add("type", "string").add("description", "Role template ID (required)"))
+                                .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs"))
+                                .add("aspects", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated aspects: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE. Default PRIVILEGES"))
+                                .add("preview", Json.createObjectBuilder().add("type", "string").add("description", "'true' to preview counts without writing. Default false")))
+                        .add("required", Json.createArrayBuilder().add("id").add("roleId").add("departmentIds")))
+                .build();
+
+        JsonObject userRoleNarrowTool = Json.createObjectBuilder()
+                .add("name", "user_role_narrow")
+                .add("description",
+                        "Retire the user's records (privileges/icons/subscriptions/login page) that match a role template, "
+                        + "for the given departments. Records the user has that are NOT part of the template are left "
+                        + "untouched. roleId is required. Set preview=true first to see how many records would be retired "
+                        + "per aspect, then call again with preview omitted/false to apply. Always confirm with the user "
+                        + "before applying.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("id", Json.createObjectBuilder().add("type", "string").add("description", "Target WebUser ID"))
+                                .add("roleId", Json.createObjectBuilder().add("type", "string").add("description", "Role template ID (required)"))
+                                .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs"))
+                                .add("aspects", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated aspects: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE. Default PRIVILEGES"))
+                                .add("preview", Json.createObjectBuilder().add("type", "string").add("description", "'true' to preview counts without writing. Default false")))
+                        .add("required", Json.createArrayBuilder().add("id").add("roleId").add("departmentIds")))
+                .build();
+
+        JsonObject userBulkRoleOperationsTool = Json.createObjectBuilder()
+                .add("name", "user_bulk_role_operations")
+                .add("description",
+                        "Apply RESET, EXPAND, or NARROW role-template operations to many users at once. Target users are "
+                        + "either an explicit userIds list (wins if given) or a filter by filterRoleId/filterDepartmentId "
+                        + "(users with that role and/or an active loggable department assignment). "
+                        + "Two-step safety gate mirroring the UI confirm dialog: first call with preview=true (confirm "
+                        + "omitted/false) to see the resolved user count and per-aspect totals (capped at the first 200 "
+                        + "users); only after showing this to the user and getting explicit approval, repeat the identical "
+                        + "call with confirm=true (preview omitted/false) to actually apply. Calling with neither preview "
+                        + "nor confirm set is rejected by the API.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("action", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("RESET").add("EXPAND").add("NARROW"))
+                                        .add("description", "Operation to apply to every resolved user"))
+                                .add("userIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated WebUser IDs. Wins over filterRoleId/filterDepartmentId if given"))
+                                .add("filterRoleId", Json.createObjectBuilder().add("type", "string").add("description", "Only used when userIds is omitted: match users with this role"))
+                                .add("filterDepartmentId", Json.createObjectBuilder().add("type", "string").add("description", "Only used when userIds is omitted: match users with an active loggable assignment to this department"))
+                                .add("roleId", Json.createObjectBuilder().add("type", "string").add("description", "Target template role ID. Omit to use each user's own current role"))
+                                .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs to operate on (required)"))
+                                .add("aspects", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated aspects: PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE. Default PRIVILEGES"))
+                                .add("updateUserRole", Json.createObjectBuilder().add("type", "string").add("description", "'true' or 'false' — for RESET, also set each user's WebUser.role to roleId. Default true"))
+                                .add("preview", Json.createObjectBuilder().add("type", "string").add("description", "'true' for the first, read-only call"))
+                                .add("confirm", Json.createObjectBuilder().add("type", "string").add("description", "'true' for the second call that actually applies the operation")))
+                        .add("required", Json.createArrayBuilder().add("action").add("departmentIds")))
+                .build();
+
+        JsonObject listUserRolesTool = Json.createObjectBuilder()
+                .add("name", "list_user_roles")
+                .add("description",
+                        "List active user roles with their role-template summary: id, name, description, template login "
+                        + "page, and counts of active role-level privileges, template icons, and template subscriptions. "
+                        + "Use this to discover valid roleId values before calling user_role_reset/expand/narrow or "
+                        + "user_bulk_role_operations.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder())
+                        .add("required", Json.createArrayBuilder()))
+                .build();
+
+        JsonObject setUserLoginPageTool = Json.createObjectBuilder()
+                .add("name", "set_user_login_page")
+                .add("description",
+                        "Set or remove a user's default login page override for one department. This is separate from a "
+                        + "role's template login page (admin-time only) and from the legacy WebUser.loginPage fallback. "
+                        + "Runtime resolution order: this user+department override, then WebUser.loginPage, then HOME. "
+                        + "action SET (default) requires loginPage (a LoginPage enum name); action DELETE removes the "
+                        + "override for that department, falling back to the legacy behavior. Always confirm with the "
+                        + "user before calling.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("action", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("SET").add("DELETE"))
+                                        .add("description", "SET to upsert the override (default), DELETE to remove it"))
+                                .add("id", Json.createObjectBuilder().add("type", "string").add("description", "Target WebUser ID"))
+                                .add("departmentId", Json.createObjectBuilder().add("type", "string").add("description", "Department ID"))
+                                .add("loginPage", Json.createObjectBuilder().add("type", "string").add("description", "LoginPage enum name — required for action SET")))
+                        .add("required", Json.createArrayBuilder().add("id").add("departmentId")))
                 .build();
 
         JsonObject managePharmacyItemsTool = Json.createObjectBuilder()
@@ -1561,11 +1757,18 @@ public class AnthropicApiService implements Serializable {
                 .add(inwardRoomsTool)
                 .add(bedBoardSvgTool)
                 .add(manageInvestigationsTool)
+                .add(manageServicesTool)
                 .add(manageInvestigationFormatTool)
                 .add(manageFormsTool)
                 .add(manageSubscriptionsTool)
                 .add(manageStaffTool)
                 .add(manageUsersTool)
+                .add(userRoleResetTool)
+                .add(userRoleExpandTool)
+                .add(userRoleNarrowTool)
+                .add(userBulkRoleOperationsTool)
+                .add(listUserRolesTool)
+                .add(setUserLoginPageTool)
                 .add(managePharmacyItemsTool)
                 .add(managePharmacyDiscountsTool)
                 .add(managePaymentSchemesTool)
@@ -1723,7 +1926,26 @@ public class AnthropicApiService implements Serializable {
                     String printName = toolInput.containsKey("printName") ? toolInput.getString("printName", "") : "";
                     String reportType = toolInput.containsKey("reportType") ? toolInput.getString("reportType", "") : "";
                     String bypass = toolInput.containsKey("bypassSampleWorkflow") ? toolInput.getString("bypassSampleWorkflow", "") : "";
-                    return callInvestigationApi(method, id, query, inactive, limit, name, code, printName, reportType, bypass, hmisBaseUrl, hmisApiKey);
+                    String vatable = toolInput.containsKey("vatable") ? toolInput.getString("vatable", "") : "";
+                    String vatPercentage = toolInput.containsKey("vatPercentage") ? toolInput.getString("vatPercentage", "") : "";
+                    return callInvestigationApi(method, id, query, inactive, limit, name, code, printName, reportType, bypass, vatable, vatPercentage, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_services": {
+                    String method = toolInput.getString("method", "GET");
+                    String id = toolInput.containsKey("id") ? toolInput.getString("id", "") : "";
+                    String query = toolInput.containsKey("query") ? toolInput.getString("query", "") : "";
+                    String serviceType = toolInput.containsKey("serviceType") ? toolInput.getString("serviceType", "") : "";
+                    String categoryId = toolInput.containsKey("categoryId") ? toolInput.getString("categoryId", "") : "";
+                    String inactive = toolInput.containsKey("inactive") ? toolInput.getString("inactive", "") : "";
+                    String limit = toolInput.containsKey("limit") ? toolInput.getString("limit", "20") : "20";
+                    String name = toolInput.containsKey("name") ? toolInput.getString("name", "") : "";
+                    String code = toolInput.containsKey("code") ? toolInput.getString("code", "") : "";
+                    String printName = toolInput.containsKey("printName") ? toolInput.getString("printName", "") : "";
+                    String fullName = toolInput.containsKey("fullName") ? toolInput.getString("fullName", "") : "";
+                    String inwardChargeType = toolInput.containsKey("inwardChargeType") ? toolInput.getString("inwardChargeType", "") : "";
+                    String vatable = toolInput.containsKey("vatable") ? toolInput.getString("vatable", "") : "";
+                    String vatPercentage = toolInput.containsKey("vatPercentage") ? toolInput.getString("vatPercentage", "") : "";
+                    return callServiceApi(method, id, query, serviceType, categoryId, inactive, limit, name, code, printName, fullName, inwardChargeType, vatable, vatPercentage, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_investigation_format": {
                     String resourceType = toolInput.getString("resource_type", "ITEM");
@@ -1867,6 +2089,24 @@ public class AnthropicApiService implements Serializable {
                 }
                 case "manage_users": {
                     return callUsersApi(toolInput, hmisBaseUrl, hmisApiKey);
+                }
+                case "user_role_reset": {
+                    return callUserRoleOperationApi("reset", toolInput, false, hmisBaseUrl, hmisApiKey);
+                }
+                case "user_role_expand": {
+                    return callUserRoleOperationApi("expand", toolInput, true, hmisBaseUrl, hmisApiKey);
+                }
+                case "user_role_narrow": {
+                    return callUserRoleOperationApi("narrow", toolInput, true, hmisBaseUrl, hmisApiKey);
+                }
+                case "user_bulk_role_operations": {
+                    return callUserBulkRoleOperationsApi(toolInput, hmisBaseUrl, hmisApiKey);
+                }
+                case "list_user_roles": {
+                    return callListUserRolesApi(hmisBaseUrl, hmisApiKey);
+                }
+                case "set_user_login_page": {
+                    return callSetUserLoginPageApi(toolInput, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_pharmacy_items": {
                     return callPharmacyItemsApi(toolInput, hmisBaseUrl, hmisApiKey);
@@ -3562,7 +3802,7 @@ public class AnthropicApiService implements Serializable {
      * @param userHmisApiKey  The logged-in user's active HMIS API key value
      * @param githubBranch    The GitHub branch for documentation links (e.g. "development")
      */
-    private String callInvestigationApi(String method, String id, String query, String inactive, String limit, String name, String code, String printName, String reportType, String bypassSampleWorkflow, String hmisBaseUrl, String hmisApiKey) {
+    private String callInvestigationApi(String method, String id, String query, String inactive, String limit, String name, String code, String printName, String reportType, String bypassSampleWorkflow, String vatable, String vatPercentage, String hmisBaseUrl, String hmisApiKey) {
         try {
             String root = (hmisBaseUrl != null) ? hmisBaseUrl.trim().replaceAll("/+$", "") : "";
             if (root.isEmpty()) return "Error: HMIS base URL is not configured.";
@@ -3577,6 +3817,8 @@ public class AnthropicApiService implements Serializable {
             else if ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method)) {
                 javax.json.JsonObjectBuilder b = Json.createObjectBuilder().add("name", name==null?"":name);
                 if(code!=null&&!code.isEmpty()) b.add("code", code); if(printName!=null&&!printName.isEmpty()) b.add("printName", printName); if(reportType!=null&&!reportType.isEmpty()) b.add("reportType", reportType); if(bypassSampleWorkflow!=null&&!bypassSampleWorkflow.isEmpty()) b.add("bypassSampleWorkflow", Boolean.parseBoolean(bypassSampleWorkflow));
+                if(vatable!=null&&!vatable.isEmpty()) b.add("vatable", Boolean.parseBoolean(vatable));
+                if(vatPercentage!=null&&!vatPercentage.isEmpty()) b.add("vatPercentage", Double.parseDouble(vatPercentage));
                 String u = "POST".equalsIgnoreCase(method) ? root+"/api/investigations" : root+"/api/investigations/"+id;
                 rb = HttpRequest.newBuilder().uri(URI.create(u)).method("POST".equalsIgnoreCase(method)?"POST":"PUT", HttpRequest.BodyPublishers.ofString(b.build().toString())).header("Content-Type", "application/json");
             } else if ("ACTIVATE".equalsIgnoreCase(method) || "DEACTIVATE".equalsIgnoreCase(method)) {
@@ -3590,6 +3832,45 @@ public class AnthropicApiService implements Serializable {
             }
             if(!key.isEmpty()) rb.header("Finance", key); HttpResponse<String> resp=client.send(rb.build(), HttpResponse.BodyHandlers.ofString()); return "HTTP "+resp.statusCode()+"\n"+resp.body();
         } catch (Exception e) { return "Investigation API error: "+e.getMessage(); }
+    }
+
+    private String callServiceApi(String method, String id, String query, String serviceType, String categoryId, String inactive, String limit, String name, String code, String printName, String fullName, String inwardChargeType, String vatable, String vatPercentage, String hmisBaseUrl, String hmisApiKey) {
+        try {
+            String root = (hmisBaseUrl != null) ? hmisBaseUrl.trim().replaceAll("/+$", "") : "";
+            if (root.isEmpty()) return "Error: HMIS base URL is not configured.";
+            String key = (hmisApiKey != null) ? hmisApiKey.trim() : "";
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+            HttpRequest.Builder rb;
+            if ("GET".equalsIgnoreCase(method)) {
+                String url = root+"/api/services/search?query="+URLEncoder.encode(query, StandardCharsets.UTF_8)+"&limit="+URLEncoder.encode(limit, StandardCharsets.UTF_8);
+                if(serviceType!=null&&!serviceType.isEmpty()) url += "&serviceType="+URLEncoder.encode(serviceType, StandardCharsets.UTF_8);
+                if(categoryId!=null&&!categoryId.isEmpty()) url += "&categoryId="+URLEncoder.encode(categoryId, StandardCharsets.UTF_8);
+                if(inactive!=null&&!inactive.isEmpty()) url += "&inactive="+URLEncoder.encode(inactive, StandardCharsets.UTF_8);
+                rb = HttpRequest.newBuilder().uri(URI.create(url)).GET();
+            } else if ("GET_BY_ID".equalsIgnoreCase(method)) { rb = HttpRequest.newBuilder().uri(URI.create(root+"/api/services/"+id)).GET(); }
+            else if ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method)) {
+                javax.json.JsonObjectBuilder b = Json.createObjectBuilder().add("name", name==null?"":name);
+                if(serviceType!=null&&!serviceType.isEmpty()) b.add("serviceType", serviceType);
+                if(code!=null&&!code.isEmpty()) b.add("code", code);
+                if(printName!=null&&!printName.isEmpty()) b.add("printName", printName);
+                if(fullName!=null&&!fullName.isEmpty()) b.add("fullName", fullName);
+                if(categoryId!=null&&!categoryId.isEmpty()) b.add("categoryId", Long.parseLong(categoryId));
+                if(inwardChargeType!=null&&!inwardChargeType.isEmpty()) b.add("inwardChargeType", inwardChargeType);
+                if(vatable!=null&&!vatable.isEmpty()) b.add("vatable", Boolean.parseBoolean(vatable));
+                if(vatPercentage!=null&&!vatPercentage.isEmpty()) b.add("vatPercentage", Double.parseDouble(vatPercentage));
+                String u = "POST".equalsIgnoreCase(method) ? root+"/api/services" : root+"/api/services/"+id;
+                rb = HttpRequest.newBuilder().uri(URI.create(u)).method("POST".equalsIgnoreCase(method)?"POST":"PUT", HttpRequest.BodyPublishers.ofString(b.build().toString())).header("Content-Type", "application/json");
+            } else if ("ACTIVATE".equalsIgnoreCase(method) || "DEACTIVATE".equalsIgnoreCase(method)) {
+                String u = root + "/api/services/" + id
+                        + ("ACTIVATE".equalsIgnoreCase(method) ? "/activate" : "/deactivate");
+                rb = HttpRequest.newBuilder().uri(URI.create(u))
+                        .method("PATCH", HttpRequest.BodyPublishers.noBody());
+            } else {
+                return "Error: Unsupported method for manage_services: " + method
+                        + ". Allowed methods are GET, GET_BY_ID, POST, PUT, ACTIVATE, DEACTIVATE.";
+            }
+            if(!key.isEmpty()) rb.header("Finance", key); HttpResponse<String> resp=client.send(rb.build(), HttpResponse.BodyHandlers.ofString()); return "HTTP "+resp.statusCode()+"\n"+resp.body();
+        } catch (Exception e) { return "Service API error: "+e.getMessage(); }
     }
 
     private String callInvestigationFormatApi(String resourceType, String method,
@@ -4216,6 +4497,14 @@ public class AnthropicApiService implements Serializable {
                     addString(change, "currentPassword", jsonString(input, "currentPassword"));
                     body = change.build().toString();
                     break;
+                case "FORCE_PASSWORD_RESET":
+                    httpMethod = "POST";
+                    url = base + "/" + requireText(id, "id") + "/force-password-reset";
+                    break;
+                case "PASSWORD_STATUS":
+                    url = base + "/password-status?" + queryParam("from", jsonString(input, "from"))
+                            + "&" + queryParam("to", jsonString(input, "to"));
+                    break;
                 case "LIST_PRIVILEGES":
                     url = base + "/" + requireText(id, "id") + "/privileges";
                     break;
@@ -4281,6 +4570,111 @@ public class AnthropicApiService implements Serializable {
             return callHmisApi(url, httpMethod, body, hmisApiKey);
         } catch (Exception e) {
             return "Users API error: " + e.getMessage();
+        }
+    }
+
+    private String callUserRoleOperationApi(String action, JsonObject input, boolean roleRequired, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String id = requireText(jsonString(input, "id"), "id");
+            String url = hmisBaseUrl.replaceAll("/$", "") + "/api/users/" + id + "/role/" + action;
+            String roleId = jsonString(input, "roleId");
+            if (roleRequired && roleId.isEmpty()) {
+                return "Error: roleId is required for role " + action + ".";
+            }
+            javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+            addLong(b, "roleId", roleId);
+            b.add("departmentIds", csvLongArray(jsonString(input, "departmentIds")));
+            String aspects = jsonString(input, "aspects");
+            if (!aspects.isEmpty()) b.add("aspects", csvArray(aspects));
+            addBoolean(b, "updateUserRole", jsonString(input, "updateUserRole"));
+            addBoolean(b, "preview", jsonString(input, "preview"));
+            return callHmisApi(url, "POST", b.build().toString(), hmisApiKey);
+        } catch (Exception e) {
+            return "User role " + action + " error: " + e.getMessage();
+        }
+    }
+
+    private String callUserBulkRoleOperationsApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String url = hmisBaseUrl.replaceAll("/$", "") + "/api/users/bulk/role-operations";
+            javax.json.JsonObjectBuilder b = Json.createObjectBuilder();
+            b.add("action", requireText(jsonString(input, "action"), "action"));
+            String userIds = jsonString(input, "userIds");
+            if (!userIds.isEmpty()) {
+                b.add("userIds", csvLongArray(userIds));
+            } else {
+                String filterRoleId = jsonString(input, "filterRoleId");
+                String filterDepartmentId = jsonString(input, "filterDepartmentId");
+                if (!filterRoleId.isEmpty() || !filterDepartmentId.isEmpty()) {
+                    javax.json.JsonObjectBuilder filter = Json.createObjectBuilder();
+                    addLong(filter, "roleId", filterRoleId);
+                    addLong(filter, "departmentId", filterDepartmentId);
+                    b.add("filter", filter);
+                }
+            }
+            addLong(b, "roleId", jsonString(input, "roleId"));
+            b.add("departmentIds", csvLongArray(jsonString(input, "departmentIds")));
+            String aspects = jsonString(input, "aspects");
+            if (!aspects.isEmpty()) b.add("aspects", csvArray(aspects));
+            addBoolean(b, "updateUserRole", jsonString(input, "updateUserRole"));
+            addBoolean(b, "preview", jsonString(input, "preview"));
+            addBoolean(b, "confirm", jsonString(input, "confirm"));
+            return callHmisApi(url, "POST", b.build().toString(), hmisApiKey);
+        } catch (Exception e) {
+            return "Bulk role operations error: " + e.getMessage();
+        }
+    }
+
+    private String callListUserRolesApi(String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String url = hmisBaseUrl.replaceAll("/$", "") + "/api/users/roles";
+            return callHmisApi(url, "GET", null, hmisApiKey);
+        } catch (Exception e) {
+            return "List user roles error: " + e.getMessage();
+        }
+    }
+
+    private String callSetUserLoginPageApi(JsonObject input, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: HMIS API key is not configured.";
+        }
+        try {
+            String id = requireText(jsonString(input, "id"), "id");
+            String departmentId = requireText(jsonString(input, "departmentId"), "departmentId");
+            String action = input.containsKey("action") ? input.getString("action", "SET").toUpperCase() : "SET";
+            String base = hmisBaseUrl.replaceAll("/$", "") + "/api/users/" + id + "/login-page";
+            if ("DELETE".equals(action)) {
+                return callHmisApi(base + "/" + departmentId, "DELETE", null, hmisApiKey);
+            }
+            String loginPage = requireText(jsonString(input, "loginPage"), "loginPage");
+            String body = Json.createObjectBuilder()
+                    .add("departmentId", Long.parseLong(departmentId))
+                    .add("loginPage", loginPage)
+                    .build().toString();
+            return callHmisApi(base, "PUT", body, hmisApiKey);
+        } catch (Exception e) {
+            return "Set user login page error: " + e.getMessage();
         }
     }
 
@@ -4860,8 +5254,20 @@ public class AnthropicApiService implements Serializable {
           .append("Use GET to search by name, code, or printName. ")
           .append("Use POST to create — returns 'already_exists' with the existing id when a duplicate name is found, ")
           .append("so always check before creating to avoid duplicates. ")
-          .append("Use PUT to update name, code, printName, reportType, or bypassSampleWorkflow. ")
+          .append("Use PUT to update name, code, printName, reportType, bypassSampleWorkflow, vatable, or vatPercentage. ")
+          .append("Set vatable=true and vatPercentage (e.g. 18) to charge VAT automatically wherever this investigation is billed; ")
+          .append("vatable=false or vatPercentage=0 means no VAT. ")
           .append("Always confirm with the user before POST or PUT — these changes affect live investigation billing.\n\n");
+        sb.append("### manage_services\n");
+        sb.append("Search, retrieve, create, update, activate, or deactivate service master records ")
+          .append("(billable OPD or Inward services, e.g. consultations, procedures, room charges). ")
+          .append("Use GET to search by name, code, or printName, optionally filtered by serviceType ('OPD'/'Inward') or categoryId. ")
+          .append("Use POST to create — serviceType and name are required, inwardChargeType is required when serviceType=Inward. ")
+          .append("Returns 'already_exists' with the existing id when a duplicate name is found, so always check before creating. ")
+          .append("Use PUT to update name, code, printName, fullName, categoryId, inwardChargeType, vatable, or vatPercentage. ")
+          .append("Set vatable=true and vatPercentage (e.g. 18) to charge VAT automatically wherever this service is billed; ")
+          .append("vatable=false or vatPercentage=0 means no VAT. ")
+          .append("Always confirm with the user before POST or PUT — these changes affect live service billing.\n\n");
         sb.append("### manage_investigation_format\n");
         sb.append("Manage the internal report format of an investigation: items (report fields like labels, values, ")
           .append("calculations, flags), item values (dropdown options for List-type items), calculations (formulas ")
@@ -4973,7 +5379,7 @@ public class AnthropicApiService implements Serializable {
         // ── Pharmacy ──────────────────────────────────────────────────────────
         appendModule(sb, "Pharmacy - Stock Adjustments", "/pharmacy_adjustments",
                 "Adjust pharmacy stock quantities, purchase rates, retail sale rates, and expiry dates.",
-                githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
+                githubUrl(branch, "developer_docs/api/API_PHARMACEUTICAL_MANAGEMENT.md"),
                 new String[][]{
                     {"POST", "/pharmacy_adjustments/stock_quantity", "Adjust quantity of a stock batch"},
                     {"POST", "/pharmacy_adjustments/retail_rate",    "Adjust retail sale rate of a stock batch"},
@@ -4984,7 +5390,7 @@ public class AnthropicApiService implements Serializable {
 
         appendModule(sb, "Pharmacy - Search", "/pharmacy_adjustments/search",
                 "Search pharmacy stocks, departments, and pharmaceutical items.",
-                githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
+                githubUrl(branch, "developer_docs/api/API_PHARMACEUTICAL_MANAGEMENT.md"),
                 new String[][]{
                     {"GET", "/pharmacy_adjustments/search/stocks",      "Search stocks with filters (department, item, quantity, expiry, batch)"},
                     {"GET", "/pharmacy_adjustments/search/departments",  "Search pharmacy departments by name"},
@@ -4993,7 +5399,7 @@ public class AnthropicApiService implements Serializable {
 
         appendModule(sb, "Pharmacy - Batches", "/pharmacy_batches",
                 "Create and search Active Moiety Products (AMPs) and pharmacy stock batches.",
-                githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
+                githubUrl(branch, "developer_docs/api/API_PHARMACEUTICAL_MANAGEMENT.md"),
                 new String[][]{
                     {"POST", "/pharmacy_batches/amp/search_or_create", "Search for an AMP by name or create one if not found"},
                     {"POST", "/pharmacy_batches/create",               "Create a new pharmacy stock batch"},
@@ -5002,21 +5408,21 @@ public class AnthropicApiService implements Serializable {
 
         appendModule(sb, "Pharmacy - F15 Report", "/pharmacy_f15_report",
                 "Generate and retrieve pharmacy F15 reports.",
-                githubUrl(branch, "developer_docs/API_F15_REPORT.md"),
+                githubUrl(branch, "developer_docs/api/API_F15_REPORT.md"),
                 new String[][]{
                     {"GET", "/pharmacy_f15_report", "Retrieve F15 report data with date range and department filters"}
                 });
 
         appendModule(sb, "Pharmacy - Stock History", "/stock_history",
                 "Retrieve pharmacy stock movement and history records.",
-                githubUrl(branch, "developer_docs/API_STOCK_HISTORY.md"),
+                githubUrl(branch, "developer_docs/api/API_STOCK_HISTORY.md"),
                 new String[][]{
                     {"GET", "/stock_history", "Get stock history with date range, item, and department filters. Pass includeArchived=true to also search archived rows beyond the retention window."}
                 });
 
         appendModule(sb, "Pharmaceutical Items", "/pharmaceutical_items",
                 "Manage pharmaceutical master data: VTM (active ingredients), ATM, VMP (generic products), AMP (branded products), VMPP, and AMPP. Supports full CRUD, retire/restore, and activate/deactivate.",
-                githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
+                githubUrl(branch, "developer_docs/api/API_PHARMACEUTICAL_MANAGEMENT.md"),
                 new String[][]{
                     {"GET",    "/pharmaceutical_items/{type}/search",              "Search items by name or code (types: vtm, atm, vmp, amp, vmpp, ampp)"},
                     {"GET",    "/pharmaceutical_items/{type}/{id}",                "Get a pharmaceutical item by ID"},
@@ -5067,7 +5473,7 @@ public class AnthropicApiService implements Serializable {
 
         appendModule(sb, "Pharmaceutical Config", "/pharmaceutical_config",
                 "Manage pharmaceutical configuration entities: categories, dosage forms, and measurement units.",
-                githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
+                githubUrl(branch, "developer_docs/api/API_PHARMACEUTICAL_MANAGEMENT.md"),
                 new String[][]{
                     {"GET",    "/pharmaceutical_config/{type}/search",  "Search config entries by name or code (types: categories, dosage_forms, units)"},
                     {"GET",    "/pharmaceutical_config/{type}/{id}",    "Get config entry by ID"},
@@ -5081,16 +5487,17 @@ public class AnthropicApiService implements Serializable {
                 + "Reconstruct missing BillFinanceDetail (BFD) and BillItemFinanceDetail (BIFD) records "
                 + "on historical pharmacy bills. Always supply auditComment and approvedBy. "
                 + "Do NOT execute these without administrator approval.",
-                githubUrl(branch, "developer_docs/API_PHARMACEUTICAL_MANAGEMENT.md"),
+                githubUrl(branch, "developer_docs/api/API_PHARMACEUTICAL_MANAGEMENT.md"),
                 new String[][]{
                     {"POST", "/pharmacy/backfill_bfd",      "Backfill missing BFD records for historical pharmacy adjustment bills"},
-                    {"POST", "/pharmacy/backfill_grn_bifd", "Backfill missing BIFD/BFD records for historical Pharmacy GRN bills"}
+                    {"POST", "/pharmacy/backfill_grn_bifd", "Backfill missing BIFD/BFD records for historical Pharmacy GRN bills"},
+                    {"POST", "/pharmacy/backfill_transfer_department_type", "Backfill missing departmentType on historical pharmacy transfer bills (issue/receive/cancellations/returns). Dry-run by default (apply=false); resolution: unanimous item types, then backwardReferenceBill, then billedBill"}
                 });
 
         // ── Institution / Department / Sites ──────────────────────────────────
         appendModule(sb, "Institution Management", "/institutions",
                 "Manage hospitals, clinics, and other healthcare institutions.",
-                githubUrl(branch, "developer_docs/API_INSTITUTION_DEPARTMENT_MANAGEMENT.md"),
+                githubUrl(branch, "developer_docs/api/API_INSTITUTION_DEPARTMENT_MANAGEMENT.md"),
                 new String[][]{
                     {"GET",    "/institutions/search", "Search institutions by name"},
                     {"GET",    "/institutions/{id}",   "Get institution by ID"},
@@ -5101,7 +5508,7 @@ public class AnthropicApiService implements Serializable {
 
         appendModule(sb, "Department Management", "/departments",
                 "Manage departments within institutions (wards, pharmacy, outpatient, etc.).",
-                githubUrl(branch, "developer_docs/API_INSTITUTION_DEPARTMENT_MANAGEMENT.md"),
+                githubUrl(branch, "developer_docs/api/API_INSTITUTION_DEPARTMENT_MANAGEMENT.md"),
                 new String[][]{
                     {"GET",    "/departments/search", "Search departments by name or institution"},
                     {"GET",    "/departments/{id}",   "Get department by ID"},
@@ -5115,7 +5522,7 @@ public class AnthropicApiService implements Serializable {
         appendModule(sb, "Sites", "/sites",
                 "Manage hospital sites (physical collection points or satellite locations). "
                 + "A site is an Institution with institutionType=Site.",
-                githubUrl(branch, "developer_docs/API_SITES.md"),
+                githubUrl(branch, "developer_docs/api/API_SITES.md"),
                 new String[][]{
                     {"GET",    "/sites/search",  "Search sites by name or code. Params: query, limit"},
                     {"GET",    "/sites/{id}",    "Get site by ID"},
@@ -5128,7 +5535,7 @@ public class AnthropicApiService implements Serializable {
         appendModule(sb, "Consultant Management", "/channel/consultant",
                 "List, create, and update consultant (doctor) records. "
                 + "IMPORTANT: Uses the 'Token' header, not 'Finance'.",
-                githubUrl(branch, "developer_docs/API_CONSULTANT_MANAGEMENT.md"),
+                githubUrl(branch, "developer_docs/api/API_CONSULTANT_MANAGEMENT.md"),
                 new String[][]{
                     {"GET",  "/channel/consultant",      "List consultants. Supports query, page, size, specialityId."},
                     {"POST", "/channel/consultant",      "Create a new consultant. Required: name. Optional: title, sex, mobile, phone, fax, address, code, serialNo, specialityId, institutionId, registration, qualification, description. Returns already_exists/409 for duplicates by name+title."},
@@ -5139,7 +5546,7 @@ public class AnthropicApiService implements Serializable {
         appendModule(sb, "Channel / Booking", "/channel",
                 "Manage online doctor appointment bookings end-to-end: browse specialties, hospitals, doctors and sessions, then create, edit, complete or cancel bookings. "
                 + "IMPORTANT: Uses the 'Token' header (not 'Finance'). Wrong booking parameters can create bad appointments — always confirm session availability before saving.",
-                githubUrl(branch, "developer_docs/API_CHANNEL_BOOKING.md"),
+                githubUrl(branch, "developer_docs/api/API_CHANNEL_BOOKING.md"),
                 new String[][]{
                     {"POST", "/channel/specializations",    "List all medical specialties available for booking"},
                     {"POST", "/channel/hospitals",          "List hospitals/institutions available for a booking channel"},
@@ -5182,8 +5589,25 @@ public class AnthropicApiService implements Serializable {
                 + "DELETE /{id}/departments/{assignmentId} removes one loggable department. "
                 + "DELETE /{id}/departments/{deptId}/privileges bulk-revokes all privileges for a department. "
                 + "POST /{id}/departments/{deptId}/privileges/all grants every privilege for a department. "
-                + "POST /{id}/privileges/all with optional body {departmentIds:[...]} grants every privilege across multiple departments at once.",
-                githubUrl(branch, "developer_docs/API_USER_MANAGEMENT.md"),
+                + "POST /{id}/privileges/all with optional body {departmentIds:[...]} grants every privilege across multiple departments at once.\n\n"
+                + "Role-template operations: roles (WebUserRole) are admin-time templates only — runtime behavior "
+                + "(privilege checks, login-page resolution, icons, subscriptions) reads user-level records exclusively. "
+                + "These endpoints stamp/reset a user's own records FROM a role template; they never change runtime behavior directly. "
+                + "aspects (default [\"PRIVILEGES\"]): PRIVILEGES, ICONS, SUBSCRIPTIONS, LOGIN_PAGE. "
+                + "RESET converges the user's records to exactly the template (retires extras, adds missing); roleId omitted defaults to the "
+                + "user's own WebUser.role and 400s if the user has none. EXPAND adds template records the user lacks, leaving extras untouched "
+                + "(roleId required). NARROW retires the user's records that match the template, leaving non-template records untouched "
+                + "(roleId required). Any single-user call with preview=true returns counts (added/retired per aspect) without writing. "
+                + "Bulk operations (POST /users/bulk/role-operations) target either explicit userIds or a {roleId?, departmentId?} filter "
+                + "(userIds wins) and use a two-step safety gate: call once with preview=true to see the resolved user count and per-aspect "
+                + "totals (capped at first 200 users), then repeat the identical call with confirm=true to actually apply — calling with "
+                + "neither preview nor confirm is rejected. GET /users/roles lists active roles with template summary counts.\n\n"
+                + "POST /users/{id}/force-password-reset flags needToResetPassword=true without requiring a new password value — "
+                + "use this to force a specific account to reset on next login when you don't want to set (or don't know) an actual "
+                + "new password; distinct from /reset-password. GET /users/password-status (optional ?from=&to=, yyyy-MM-dd) reports "
+                + "lastPasswordResetAt and needToResetPassword for every active user, for auditing password-expiration policy coverage "
+                + "or answering 'who has reset within this period' questions.",
+                githubUrl(branch, "developer_docs/api/API_USER_MANAGEMENT.md"),
                 new String[][]{
                     {"GET",    "/users",                          "List users. Filters: query, departmentId, page, size"},
                     {"POST",   "/users",                          "Create a new user (optional staffId links Staff at creation)"},
@@ -5204,12 +5628,21 @@ public class AnthropicApiService implements Serializable {
                     {"DELETE", "/users/{id}/departments/{departmentId}/privileges",  "Bulk-revoke all active privileges for a user scoped to a department"},
                     {"POST",   "/users/{id}/departments/{departmentId}/privileges/all", "Assign every Privileges enum value to a user for a department (skips duplicates)"},
                     {"PUT",    "/users/{id}/staff",               "Link an existing Staff record to the user (body: {staffId})"},
-                    {"POST",   "/users/{id}/privileges/all",      "Assign every privilege across supplied departmentIds (or all loggable depts). Returns per-dept summary"}
+                    {"POST",   "/users/{id}/privileges/all",      "Assign every privilege across supplied departmentIds (or all loggable depts). Returns per-dept summary"},
+                    {"POST",   "/users/{id}/role/reset",          "Reset a user's aspects to a role template (roleId optional; defaults to the user's own role)"},
+                    {"POST",   "/users/{id}/role/expand",         "Add role-template records the user lacks (roleId required)"},
+                    {"POST",   "/users/{id}/role/narrow",         "Retire the user's records that match a role template (roleId required)"},
+                    {"POST",   "/users/bulk/role-operations",     "Bulk RESET/EXPAND/NARROW for many users; preview=true then confirm=true"},
+                    {"GET",    "/users/roles",                    "List active roles with template summary counts (privileges/icons/subscriptions, template login page)"},
+                    {"PUT",    "/users/{id}/login-page",          "Upsert the user's default login page for a department (body: {departmentId, loginPage})"},
+                    {"DELETE", "/users/{id}/login-page/{departmentId}", "Retire the user's default login-page override for a department"},
+                    {"POST",   "/users/{id}/force-password-reset", "Flag needToResetPassword=true without supplying a new password (distinct from reset-password)"},
+                    {"GET",    "/users/password-status",          "Report lastPasswordResetAt and needToResetPassword per active user. Filters: from, to (yyyy-MM-dd)"}
                 });
 
         appendModule(sb, "User Roles", "/user-roles",
                 "Create and manage user roles. Assign privileges to roles for role-based access control.",
-                githubUrl(branch, "developer_docs/API_USER_MANAGEMENT.md"),
+                githubUrl(branch, "developer_docs/api/API_USER_MANAGEMENT.md"),
                 new String[][]{
                     {"GET",    "/user-roles",                     "List all user roles"},
                     {"POST",   "/user-roles",                     "Create a new role"},
@@ -5234,7 +5667,7 @@ public class AnthropicApiService implements Serializable {
         // ── Finance ───────────────────────────────────────────────────────────
         appendModule(sb, "Finance - Balance History", "/balance_history",
                 "Retrieve financial balance history: drawer entries, patient deposits, agent histories, staff welfare.",
-                githubUrl(branch, "developer_docs/API_BALANCE_HISTORY.md"),
+                githubUrl(branch, "developer_docs/api/API_BALANCE_HISTORY.md"),
                 new String[][]{
                     {"GET", "/balance_history/drawer_entries",         "Get cash drawer entries for a date range"},
                     {"GET", "/balance_history/patient_deposits",        "Get patient deposit records"},
@@ -5244,14 +5677,14 @@ public class AnthropicApiService implements Serializable {
 
         appendModule(sb, "Finance - Bill Data Correction", "/bill_data_correction",
                 "Apply corrections and adjustments to financial bill records.",
-                githubUrl(branch, "developer_docs/API_BILL_DATA_CORRECTION.md"),
+                githubUrl(branch, "developer_docs/api/API_BILL_DATA_CORRECTION.md"),
                 new String[][]{
                     {"POST", "/bill_data_correction", "Apply corrections to bill data"}
                 });
 
         appendModule(sb, "Finance - Costing Data", "/costing_data",
                 "Retrieve billing and costing data for financial analysis and reporting.",
-                githubUrl(branch, "developer_docs/API_COSTING_DATA.md"),
+                githubUrl(branch, "developer_docs/api/API_COSTING_DATA.md"),
                 new String[][]{
                     {"GET", "/costing_data/last_bill",                    "Get the most recent bill"},
                     {"GET", "/costing_data/bill",                          "Get bills for a date range"},
@@ -5262,7 +5695,7 @@ public class AnthropicApiService implements Serializable {
         appendModule(sb, "Finance - Legacy Bill Query", "/finance",
                 "Legacy bill query endpoints. Use for category-based filtering or simple date-range queries. "
                 + "Prefer /costing_data for richer detail. Date format: dd-MM-yyyy; for ranges: dd-MM-yyyy-HH:mm:ss.",
-                githubUrl(branch, "developer_docs/API_FINANCE_LEGACY.md"),
+                githubUrl(branch, "developer_docs/api/API_FINANCE_LEGACY.md"),
                 new String[][]{
                     {"GET", "/finance/bill",                                              "Get all bills for today"},
                     {"GET", "/finance/bill/{date}",                                       "Get bills for a specific date (dd-MM-yyyy)"},
@@ -5278,7 +5711,7 @@ public class AnthropicApiService implements Serializable {
 
         appendModule(sb, "Finance - QuickBooks Export", "/qb",
                 "Export HMIS financial data for QuickBooks synchronisation. All endpoints use incremental sync: supply the last synced record ID and a start date to retrieve the next batch (up to 2500 records). Dates in yyyy-MM-dd format.",
-                githubUrl(branch, "developer_docs/API_QUICKBOOKS.md"),
+                githubUrl(branch, "developer_docs/api/API_QUICKBOOKS.md"),
                 new String[][]{
                     {"GET", "/qb/last_invoice_id/{institution_code}/{last_date}",              "Get highest bill ID on or after last_date — use as start before paginating"},
                     {"GET", "/qb/cInvList/{institution_code}/{last_invoice_id}/{last_date}",   "Cash-paid invoices"},
@@ -5338,7 +5771,7 @@ public class AnthropicApiService implements Serializable {
                 + "and is set as the diagnosis (forItem); itemName/itemType is the suggested medicine. "
                 + "/validate (bulk entity validation) is live. "
                 + "/parse and /suggest are not yet implemented (return 501).",
-                githubUrl(branch, "developer_docs/API_CLINICAL_FAVOURITE_MEDICINES.md"),
+                githubUrl(branch, "developer_docs/api/API_CLINICAL_FAVOURITE_MEDICINES.md"),
                 new String[][]{
                     {"GET",    "/clinical/favourite_medicines",              "List favourite medicine/diagnosis templates. Use type=FavouriteDiagnosis for diagnosis suggestions"},
                     {"POST",   "/clinical/favourite_medicines",              "Create a new template. Set type=FavouriteDiagnosis + forItemName=<diagnosis name> for diagnosis suggestions"},
@@ -5356,7 +5789,7 @@ public class AnthropicApiService implements Serializable {
         // ── FHIR ──────────────────────────────────────────────────────────────
         appendModule(sb, "FHIR - Financial Data", "/fhir",
                 "HL7 FHIR R5-compliant access to invoices, GRN records, payments, and returns. Uses 'Finance' header.",
-                githubUrl(branch, "developer_docs/API_FHIR.md"),
+                githubUrl(branch, "developer_docs/api/API_FHIR.md"),
                 new String[][]{
                     {"GET", "/fhir/cash_invoice/{institution_code}/{last_invoice_id}",           "Get cash invoices newer than last_invoice_id"},
                     {"GET", "/fhir/credit_invoice/{institution_code}/{last_invoice_id}",         "Get credit invoices newer than last_invoice_id"},
@@ -5369,7 +5802,7 @@ public class AnthropicApiService implements Serializable {
 
         appendModule(sb, "FHIR - Patient", "/fhir/Patient",
                 "HL7 FHIR R5 Patient resource. Authentication uses 'FHIR' header (not 'Finance').",
-                githubUrl(branch, "developer_docs/API_FHIR.md"),
+                githubUrl(branch, "developer_docs/api/API_FHIR.md"),
                 new String[][]{
                     {"GET",  "/fhir/Patient",      "Search patients (supported parameters: name, phone, identifier)"},
                     {"GET",  "/fhir/Patient/{id}", "Read a patient by ID"},
@@ -5384,7 +5817,7 @@ public class AnthropicApiService implements Serializable {
                 + "/middleware: analyzer middleware for test orders and result ingestion (JSON body credentials). "
                 + "/limsmw: HL7/Sysmex/observation processing (HTTP Basic Auth). "
                 + "CAUTION: result-write endpoints (/middleware/test_results, /limsmw/observation, /limsmw/sysmex, /limsmw/limsProcessAnalyzerMessage) write into patient records — never call manually.",
-                githubUrl(branch, "developer_docs/API_LIMS.md"),
+                githubUrl(branch, "developer_docs/api/API_LIMS.md"),
                 new String[][]{
                     {"POST", "/lims/login/mw",                                          "Authenticate a middleware client (JSON body)"},
                     {"GET",  "/lims/samples/login/{username}/{password}",               "Legacy credential check (URL params)"},
@@ -5404,7 +5837,7 @@ public class AnthropicApiService implements Serializable {
         // ── Membership ────────────────────────────────────────────────────────
         appendModule(sb, "Membership", "/apiMembership",
                 "Manage membership schemes, patient registration under a membership, and membership billing.",
-                githubUrl(branch, "developer_docs/API_MEMBERSHIP.md"),
+                githubUrl(branch, "developer_docs/api/API_MEMBERSHIP.md"),
                 new String[][]{
                     {"GET", "/apiMembership/banks",                                                                 "List available bank institutions for payment"},
                     {"GET", "/apiMembership/savePatient/{title}/{name}/{sex}/{dob}/{address}/{phone}/{nic}",         "Register a new patient under the membership scheme"},
@@ -5431,7 +5864,7 @@ public class AnthropicApiService implements Serializable {
         // ── Inward / Admissions ───────────────────────────────────────────────
         appendModule(sb, "Inward / Admissions", "/apiInward",
                 "Access inpatient admission records and process payments for admitted patients.",
-                githubUrl(branch, "developer_docs/API_INWARD.md"),
+                githubUrl(branch, "developer_docs/api/API_INWARD.md"),
                 new String[][]{
                     {"GET",  "/apiInward/admissions",                                            "List active inpatient admissions"},
                     {"GET",  "/apiInward/admissions/byPhone/{phone}",                            "Find admission by patient phone number"},
@@ -5500,7 +5933,7 @@ public class AnthropicApiService implements Serializable {
         appendModule(sb, "Inward Room Management", "/inward/room-categories, /inward/rooms, /inward/room-facility-charges",
                 "Manage inward room master data: room categories, rooms, and room facility charges (fee configurations). "
                 + "POST returns 409 with existing id when a duplicate name exists.",
-                githubUrl(branch, "developer_docs/API_INWARD_ROOM.md"),
+                githubUrl(branch, "developer_docs/api/API_INWARD_ROOM.md"),
                 new String[][]{
                     {"GET",    "/inward/room-categories",          "List room categories. Filters: query, size"},
                     {"GET",    "/inward/room-categories/{id}",     "Fetch one room category"},
@@ -5557,7 +5990,7 @@ public class AnthropicApiService implements Serializable {
         // ── Login History / Config ────────────────────────────────────────────
         appendModule(sb, "Login History", "/logins",
                 "Query user login history filtered by department, user, and date range.",
-                githubUrl(branch, "developer_docs/API_LOGIN_HISTORY.md"),
+                githubUrl(branch, "developer_docs/api/API_LOGIN_HISTORY.md"),
                 new String[][]{
                     {"GET", "/logins",               "List logins. Filters: departmentId, userId, days, fromDate (yyyy-MM-dd), toDate, page, size"},
                     {"GET", "/logins/last-per-user", "Most recent login per unique user. Filters: departmentId, size"}
@@ -5566,7 +5999,7 @@ public class AnthropicApiService implements Serializable {
         appendModule(sb, "System Configuration", "/config",
                 "Search and set application configuration options at runtime. "
                 + "IMPORTANT: Uses the 'Config' header for authentication, not 'Finance'.",
-                githubUrl(branch, "developer_docs/API_CONFIG.md"),
+                githubUrl(branch, "developer_docs/api/API_CONFIG.md"),
                 new String[][]{
                     {"GET",  "/config?scope={tag}",  "List config options whose key contains {tag} (e.g. scope=inward); omit scope for all"},
                     {"GET",  "/config/{key}",  "Read a single config option by exact key (key, type, scope, current value)"},

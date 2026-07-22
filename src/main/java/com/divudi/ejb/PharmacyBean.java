@@ -1230,6 +1230,57 @@ public class PharmacyBean {
         return list;
     }
 
+    /**
+     * Extracted verbatim from the {@code Amp} branch of
+     * {@link #getStockByQty(Item, double, Department)} (same JPQL, same
+     * hardcoded {@code q=1.0}, same {@code findByJpqlWithoutCache}, same
+     * FEFO {@code order by}), so callers that evaluate multiple candidate
+     * quantities for the same Amp/Department (e.g.
+     * {@code PharmacySaleBhtController.generateIssueBillComponentsForBhtRequest})
+     * can fetch the raw stock list once and reuse it via
+     * {@link #depleteStockForQty(List, double)} instead of re-querying per
+     * candidate. {@link #getStockByQty(Item, double, Department)} itself is
+     * left untouched.
+     */
+    public List<Stock> getRawStockListForAmp(Amp amp, Department department) {
+        String jpql = "select s "
+                + " from Stock s "
+                + " where s.itemBatch.item=:amp "
+                + " and s.department=:d and s.stock >=:q "
+                + " and s.itemBatch.dateOfExpire > :doe "
+                + " order by s.itemBatch.dateOfExpire ";
+        Map<String, Object> params = new HashMap<>();
+        params.put("amp", amp);
+        params.put("d", department);
+        params.put("q", 1.0);
+        params.put("doe", new Date());
+        return getStockFacade().findByJpqlWithoutCache(jpql, params);
+    }
+
+    /**
+     * Extracted verbatim from the greedy depletion loop at the end of
+     * {@link #getStockByQty(Item, double, Department)}, so both that method
+     * and the cached {@link #getRawStockListForAmp(Amp, Department)} path
+     * share one implementation of the FEFO greedy-take logic.
+     */
+    public List<StockQty> depleteStockForQty(List<Stock> rawStocks, double qty) {
+        List<StockQty> list = new ArrayList<>();
+        if (rawStocks == null) {
+            return list;
+        }
+        double toAddQty = qty;
+        for (Stock s : rawStocks) {
+            if (s.getStock() >= toAddQty) {
+                list.add(new StockQty(s, toAddQty));
+                break;
+            } else {
+                toAddQty = toAddQty - s.getStock();
+                list.add(new StockQty(s, s.getStock()));
+            }
+        }
+        return list;
+    }
+
     public List<Stock> getStockByQty(Item item, Department department) {
         List<Amp> amps = resolveAmps(item);
         if (amps == null || amps.isEmpty()) {
@@ -1283,6 +1334,50 @@ public class PharmacyBean {
     }
 
     /**
+     * Batched form of {@link #findAmpsForVmp(Vmp)} — resolves the AMPs for
+     * many VMPs in a single query instead of one query per VMP, to fix the
+     * N+1 pattern in
+     * {@code PharmacySaleBhtController.generateIssueBillComponentsForBhtRequest}.
+     * An explicit {@code order by amp.id} is added for determinism (the
+     * single-VMP query above has no ordering guarantee either, so this is a
+     * strict improvement, not a behavior change).
+     *
+     * @return map of Vmp.id -> list of Amp under that Vmp (missing/empty for
+     * VMPs with no AMPs)
+     */
+    public Map<Long, List<Amp>> findAmpsForVmpsBatch(List<Vmp> vmps) {
+        Map<Long, List<Amp>> result = new HashMap<>();
+        if (vmps == null || vmps.isEmpty()) {
+            return result;
+        }
+        for (Vmp vmp : vmps) {
+            if (vmp != null && vmp.getId() != null) {
+                result.putIfAbsent(vmp.getId(), new ArrayList<>());
+            }
+        }
+        Map<String, Object> m = new HashMap<>();
+        m.put("vmps", vmps);
+        m.put("ret", false);
+        String jpql = "select amp "
+                + " from Amp amp "
+                + " where amp.retired=:ret "
+                + " and amp.vmp in :vmps "
+                + " order by amp.id";
+        List<Amp> amps = ampFacade.findByJpql(jpql, m);
+        if (amps == null) {
+            return result;
+        }
+        for (Amp amp : amps) {
+            if (amp.getVmp() == null || amp.getVmp().getId() == null) {
+                continue;
+            }
+            Long vmpId = amp.getVmp().getId();
+            result.computeIfAbsent(vmpId, id -> new ArrayList<>()).add(amp);
+        }
+        return result;
+    }
+
+    /**
      * Resolve the underlying AMP records for any pharmacy Item subclass,
      * <b>exactly</b> — an AMP (or Ampp) resolves to itself only. This preserves
      * brand-faithful stock lookup for prescription / discharge-dispensing flows
@@ -1299,6 +1394,26 @@ public class PharmacyBean {
      * @return list of AMP objects, or an empty list if none found
      */
     public List<Amp> resolveAmps(Item item) {
+        return resolveAmps(item, null);
+    }
+
+    /**
+     * Cache-aware overload of {@link #resolveAmps(Item)} — behaves
+     * identically, except the {@code Vmp} and {@code Vmpp}-derived-{@code Vmp}
+     * branches consult {@code vmpAmpCache} (as produced by
+     * {@link #findAmpsForVmpsBatch(List)}) before falling back to
+     * {@link #findAmpsForVmp(Vmp)}. Pass {@code null} for the cache to get
+     * the exact behavior of {@link #resolveAmps(Item)}. Added to fix the N+1
+     * pattern in {@code PharmacySaleBhtController.generateIssueBillComponentsForBhtRequest}
+     * — {@code Vtm}/{@code Atm} branches are out of scope (not part of the
+     * confirmed hot path for ward BHT requests) and stay uncached.
+     *
+     * @param item item to resolve
+     * @param vmpAmpCache pre-batched Vmp.id -> Amp list cache, or null to
+     * always query
+     * @return list of AMP objects, or an empty list if none found
+     */
+    public List<Amp> resolveAmps(Item item, Map<Long, List<Amp>> vmpAmpCache) {
         if (item == null) {
             return new ArrayList<>();
         }
@@ -1320,7 +1435,11 @@ public class PharmacyBean {
         }
 
         if (item instanceof Vmp) {
-            List<Amp> amps = findAmpsForVmp((Vmp) item);
+            Vmp vmp = (Vmp) item;
+            if (vmpAmpCache != null && vmp.getId() != null && vmpAmpCache.containsKey(vmp.getId())) {
+                return vmpAmpCache.get(vmp.getId());
+            }
+            List<Amp> amps = findAmpsForVmp(vmp);
             return amps == null ? new ArrayList<>() : amps;
         }
 
@@ -1329,6 +1448,9 @@ public class PharmacyBean {
             Vmp vmp = vmpp.getVmp();
             if (vmp == null) {
                 return new ArrayList<>();
+            }
+            if (vmpAmpCache != null && vmp.getId() != null && vmpAmpCache.containsKey(vmp.getId())) {
+                return vmpAmpCache.get(vmp.getId());
             }
             List<Amp> amps = findAmpsForVmp(vmp);
             return amps == null ? new ArrayList<>() : amps;

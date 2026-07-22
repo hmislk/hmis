@@ -336,6 +336,32 @@ public class PatientReportController implements Serializable {
 
     }
 
+    public String navigateToPrintPatientReportForInward(PatientReport pr) {
+        if (pr == null) {
+            JsfUtil.addErrorMessage("No Select Patient Report");
+            return "";
+        }
+
+        if (pr.getReportType() == null) {
+            setCurrentPatientReport(pr);
+            return "/inward/inward_patient_report_print?faces-redirect=true";
+        } else {
+            switch (pr.getReportType()) {
+                case INTERFACE:
+                case GENARATE:
+                    setCurrentPatientReport(pr);
+                    return "/inward/inward_patient_report_print?faces-redirect=true";
+                case UPLOAD:
+                    Upload currentReportUpload = loadUpload(pr);
+                    patientReportUploadController.setReportUpload(currentReportUpload);
+                    return "/inward/inward_upload_patient_report_print?faces-redirect=true";
+                default:
+                    return "";
+            }
+        }
+
+    }
+
     public String navigateToPrintPatientReportForCourier(PatientReport pr) {
         if (pr == null) {
             JsfUtil.addErrorMessage("No Select Patient Report");
@@ -1241,6 +1267,7 @@ public class PatientReportController implements Serializable {
     public void savePatientReportItemValues() {
         if (currentPatientReport != null && currentPatientReport.getPatientReportItemValues() != null) {
             for (PatientReportItemValue v : currentPatientReport.getPatientReportItemValues()) {
+                preserveMultipleSpacesInRichTextMemo(v);
                 pirivFacade.edit(v);
             }
         }
@@ -1253,6 +1280,39 @@ public class PatientReportController implements Serializable {
             System.out.println("Not Allow to Calculate Requerd. ----> Calculated Requerd = " + calculatedRequerd);
         }
         
+    }
+
+    /**
+     * Rich-text memo results (entered through the Quill Text Editor, e.g. the
+     * microbiology memo box) are stored as HTML. Quill collapses runs of ASCII
+     * spaces down to a single space when it re-loads that HTML into the editor,
+     * so the extra spacing a user typed is lost on the next edit. To keep it,
+     * convert the 2nd and each subsequent space of every run into a
+     * non-breaking space (&nbsp;), which Quill preserves on reload. &nbsp;
+     * renders as an ordinary space in both the editor and the print view.
+     * <p>
+     * Only values that contain HTML tags are touched, so plain-textarea memos
+     * (e.g. the grouped antibiotic memo) are left exactly as entered. The
+     * conversion is idempotent because &nbsp; is not an ASCII space.
+     */
+    private void preserveMultipleSpacesInRichTextMemo(PatientReportItemValue v) {
+        if (v == null || v.getInvestigationItem() == null) {
+            return;
+        }
+        if (v.getInvestigationItem().getIxItemValueType() != InvestigationItemValueType.Memo) {
+            return;
+        }
+        String lob = v.getLobValue();
+        if (lob == null || lob.indexOf('<') < 0) {
+            return; // plain text (not from the Text Editor) - leave untouched
+        }
+        // Replace each space that immediately follows another space with a
+        // non-breaking space, preserving the run length while still allowing
+        // the line to wrap at the first (normal) space.
+        String preserved = lob.replaceAll("(?<= ) ", "&nbsp;");
+        if (!preserved.equals(lob)) {
+            v.setLobValue(preserved);
+        }
     }
 
     public void savePatientReport() {

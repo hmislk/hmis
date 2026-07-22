@@ -7,6 +7,7 @@ package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.admin.ConfigOptionInfo;
 import com.divudi.core.data.admin.PageMetadata;
@@ -15,6 +16,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
@@ -49,6 +51,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -65,6 +69,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class TransferIssueForRequestsController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(TransferIssueForRequestsController.class.getName());
 
     @EJB
     private BillFacade billFacade;
@@ -88,6 +94,8 @@ public class TransferIssueForRequestsController implements Serializable {
     private UserStockController userStockController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     private BillController billController;
     @Inject
@@ -459,6 +467,9 @@ public class TransferIssueForRequestsController implements Serializable {
      * Saves the current items as a PHARMACY_ISSUE_PRE bill without moving stock.
      */
     public void saveDraftIssue() {
+        if (!isAuthorized("SAVE_DRAFT_ISSUE", "PharmacyIssueForRequestSave")) {
+            return;
+        }
         if (getIssuedBill().getToDepartment() == null) {
             JsfUtil.addErrorMessage("Please select a department to issue to");
             return;
@@ -521,6 +532,10 @@ public class TransferIssueForRequestsController implements Serializable {
         }
         setBillItems(nonZeroItems);
 
+        // Stamp after zero-qty removal so dropped lines cannot decide the type;
+        // persisted by the final bill edit below.
+        stampDepartmentTypeFromItemsIfMissing();
+
         for (BillItem bi : getBillItems()) {
             updateBillItemRateAndValue(bi);
             bi.setBill(getIssuedBill());
@@ -557,6 +572,9 @@ public class TransferIssueForRequestsController implements Serializable {
      * Finalizes the current PHARMACY_ISSUE_PRE draft (sets completed=true).
      */
     public void finalizeDraftIssue() {
+        if (!isAuthorized("FINALIZE_DRAFT_ISSUE", "PharmacyIssueForRequestFinalize")) {
+            return;
+        }
         if (getIssuedBill() == null || getIssuedBill().getId() == null) {
             JsfUtil.addErrorMessage("No draft to finalize. Please save first.");
             return;
@@ -582,6 +600,9 @@ public class TransferIssueForRequestsController implements Serializable {
      * Approves the PHARMACY_ISSUE_PRE draft: moves stock and converts to PHARMACY_ISSUE.
      */
     public synchronized void approveDraftIssue() {
+        if (!isAuthorized("APPROVE_DRAFT_ISSUE", "PharmacyIssueForRequestApprove")) {
+            return;
+        }
         if (getIssuedBill() == null || getIssuedBill().getId() == null) {
             JsfUtil.addErrorMessage("No finalized draft to approve.");
             return;
@@ -741,6 +762,9 @@ public class TransferIssueForRequestsController implements Serializable {
      * Cancels a saved/finalized PHARMACY_ISSUE_PRE draft (retires it before approval).
      */
     public void cancelPendingIssue() {
+        if (!isAuthorized("CANCEL_PENDING_ISSUE", "PharmacyTransferIssueCancel")) {
+            return;
+        }
         if (getIssuedBill() == null || getIssuedBill().getId() == null) {
             JsfUtil.addErrorMessage("No draft to cancel.");
             return;
@@ -771,6 +795,9 @@ public class TransferIssueForRequestsController implements Serializable {
     }
 
     public synchronized void settle() {
+        if (!isAuthorized("SETTLE_ISSUE", "PharmacyIssueForRequestFinalize")) {
+            return;
+        }
         if (getIssuedBill() != null && getIssuedBill().getId() != null) {
             JsfUtil.addErrorMessage("This bill has already been saved.");
             return;
@@ -855,6 +882,7 @@ public class TransferIssueForRequestsController implements Serializable {
         if (getIssuedBill().getDepartmentType() == null && getRequestedBill() != null) {
             getIssuedBill().setDepartmentType(getRequestedBill().getDepartmentType());
         }
+        stampDepartmentTypeFromItemsIfMissing();
 
         saveBill();
         for (BillItem billItemsInIssue : getBillItems()) {
@@ -1501,6 +1529,30 @@ public class TransferIssueForRequestsController implements Serializable {
         }
     }
 
+    // Fallback when the request bill carries no departmentType (e.g. legacy
+    // requests): department-type-filtered reports drop bills left NULL (#22056).
+    // Stamps only when all non-null item types agree; mixed legacy data is left
+    // unset rather than misclassifying the whole bill.
+    private void stampDepartmentTypeFromItemsIfMissing() {
+        if (getIssuedBill().getDepartmentType() != null) {
+            return;
+        }
+        DepartmentType found = null;
+        for (BillItem bi : getBillItems()) {
+            if (bi.getItem() == null || bi.getItem().getDepartmentType() == null) {
+                continue;
+            }
+            if (found == null) {
+                found = bi.getItem().getDepartmentType();
+            } else if (!found.equals(bi.getItem().getDepartmentType())) {
+                return;
+            }
+        }
+        if (found != null) {
+            getIssuedBill().setDepartmentType(found);
+        }
+    }
+
     public Bill getIssuedBill() {
         if (issuedBill == null) {
             issuedBill = new BilledBill();
@@ -1920,6 +1972,36 @@ public class TransferIssueForRequestsController implements Serializable {
         ));
 
         pageMetadataRegistry.registerPage(issuedListMetadata);
+    }
+
+    /**
+     * Authorization helper method to check Pharmacy Transfer Issue For
+     * Requests privileges and audit denied access
+     *
+     * @param action The action being attempted (e.g. SAVE_DRAFT_ISSUE, FINALIZE_DRAFT_ISSUE, APPROVE_DRAFT_ISSUE)
+     * @param requiredPrivilege The specific privilege required
+     * @return true if authorized, false if not
+     */
+    private boolean isAuthorized(String action, String requiredPrivilege) {
+        if (webUserController == null || sessionController == null) {
+            LOGGER.log(Level.SEVERE, "Authorization failed - missing controllers: action={0}, userId=null, billId={1}",
+                    new Object[]{action, issuedBill != null ? issuedBill.getId() : "null"});
+            return false;
+        }
+
+        if (!webUserController.hasPrivilege(requiredPrivilege)) {
+            // Audit denied access attempt
+            Long userId = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getId() : null;
+            Long billId = issuedBill != null ? issuedBill.getId() : null;
+
+            LOGGER.log(Level.WARNING, "SECURITY: Unauthorized Pharmacy Transfer Issue For Requests access attempt - action={0}, userId={1}, billId={2}, requiredPrivilege={3}",
+                    new Object[]{action, userId, billId, requiredPrivilege});
+
+            JsfUtil.addErrorMessage("You don't have permission to " + action.toLowerCase() + " transfer issues.");
+            return false;
+        }
+
+        return true;
     }
 
 }

@@ -42,6 +42,7 @@ import com.divudi.core.entity.Fee;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.ItemFee;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.inward.RoomCategory;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.WebUser;
@@ -147,12 +148,16 @@ public class BillBhtController implements Serializable {
     private BillNumberGenerator billNumberBean;
     @Inject
     BillController billController;
+    @Inject
+    private SurgeryBillController surgeryBillController;
     ///////////////////
 
     private double total;
     private double discount;
     private double marginTotal;
     private double netTotal;
+    private double vat;
+    private double vatPlusNetTotal;
     private double cashPaid;
     private double cashBalance;
     private String creditCardRefNo;
@@ -278,6 +283,8 @@ public class BillBhtController implements Serializable {
         total = 0.0;
         discount = 0.0;
         netTotal = 0.0;
+        vat = 0.0;
+        vatPlusNetTotal = 0.0;
         cashPaid = 0.0;
         cashBalance = 0.0;
         creditCardRefNo = "";
@@ -328,6 +335,8 @@ public class BillBhtController implements Serializable {
         total = 0.0;
         discount = 0.0;
         netTotal = 0.0;
+        vat = 0.0;
+        vatPlusNetTotal = 0.0;
         cashPaid = 0.0;
         cashBalance = 0.0;
         creditCardRefNo = "";
@@ -387,6 +396,8 @@ public class BillBhtController implements Serializable {
         total = 0.0;
         discount = 0.0;
         netTotal = 0.0;
+        vat = 0.0;
+        vatPlusNetTotal = 0.0;
         cashPaid = 0.0;
         cashBalance = 0.0;
         creditCardRefNo = "";
@@ -544,6 +555,21 @@ public class BillBhtController implements Serializable {
         this.priceMatrixController = priceMatrixController;
     }
 
+    /**
+     * The room category of the patient's current room, or null when the patient
+     * is not yet in a room (or the room has no facility charge / category). Used
+     * as the room-category dimension of the inward service-margin matrix lookup
+     * (issue #21977); null means "wildcard row only", preserving legacy behaviour.
+     */
+    private RoomCategory resolveCurrentRoomCategory(PatientEncounter encounter) {
+        if (encounter == null
+                || encounter.getCurrentPatientRoom() == null
+                || encounter.getCurrentPatientRoom().getRoomFacilityCharge() == null) {
+            return null;
+        }
+        return encounter.getCurrentPatientRoom().getRoomFacilityCharge().getRoomCategory();
+    }
+
     public List<BillItem> saveBillItems(Bill bill, List<BillEntry> billEntries, WebUser webUser, Department matrixDepartment, PaymentMethod paymentMethod) {
         List<BillItem> list = new ArrayList<>();
         for (BillEntry e : billEntries) {
@@ -558,7 +584,7 @@ public class BillBhtController implements Serializable {
             billItem.setSearialNo(list.size());
 
             for (BillFee bf : billItem.getBillFees()) {
-                PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeUnitGrossValue() != null ? bf.getFeeUnitGrossValue() : bf.getFeeGrossValue(), matrixDepartment, paymentMethod, bill.getPatientEncounter() != null ? bill.getPatientEncounter().getAdmissionType() : null);
+                PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, bf.getFeeUnitGrossValue() != null ? bf.getFeeUnitGrossValue() : bf.getFeeGrossValue(), matrixDepartment, paymentMethod, null, bill.getPatientEncounter() != null ? bill.getPatientEncounter().getAdmissionType() : null, resolveCurrentRoomCategory(bill.getPatientEncounter()));
                 getInwardBean().setBillFeeMargin(bf, bf.getBillItem().getItem(), priceMatrix, bill.getPatientEncounter());
                 getBillFeeFacade().edit(bf);
 
@@ -666,6 +692,12 @@ public class BillBhtController implements Serializable {
         Date toDate = null;
 
         if (getBatchBill() == null) {
+            return;
+        }
+
+        if (batchBill.getBillType() == BillType.SurgeryBill
+                && surgeryBillController.isSurgeryLockedForAdditions(batchBill)) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
             return;
         }
 
@@ -1021,9 +1053,11 @@ public class BillBhtController implements Serializable {
         for (Fee i : itemFee) {
             BillFee billFee = getBillBean().createBillFee(billItem, i, patientEncounter);
 
-            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment, paymentMethod, patientEncounter != null ? patientEncounter.getAdmissionType() : null);
+            PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment, paymentMethod, null, patientEncounter != null ? patientEncounter.getAdmissionType() : null, resolveCurrentRoomCategory(patientEncounter));
 
             getInwardBean().setBillFeeMargin(billFee, billItem.getItem(), priceMatrix, patientEncounter);
+
+            recalculateFeeVat(billFee);
 
             billFeeList.add(billFee);
         }
@@ -1086,6 +1120,7 @@ public class BillBhtController implements Serializable {
         double tot = 0.0;
         double net = 0.0;
         double margin = 0.0;
+        double vatTotal = 0.0;
 
         for (BillEntry be : getLstBillEntries()) {
             BillItem bi = be.getBillItem();
@@ -1094,6 +1129,7 @@ public class BillBhtController implements Serializable {
             bi.setGrossValue(0.0);
             bi.setNetValue(0.0);
             bi.setMarginValue(0.0);
+            bi.setVat(0.0);
 
             for (BillFee bf : be.getLstBillFees()) {
                 tot += bf.getFeeGrossValue();
@@ -1102,15 +1138,21 @@ public class BillBhtController implements Serializable {
                 bi.setGrossValue(bi.getGrossValue() + bf.getFeeGrossValue());
                 margin += bf.getFeeMargin();
                 bi.setMarginValue(bi.getMarginValue() + bf.getFeeMargin());
+                bi.setVat(bi.getVat() + bf.getFeeVat());
             }
 
             bi.setDiscount(bi.getGrossValue() + bi.getMarginValue() - bi.getNetValue());
+            bi.setVatPercentage(bi.getItem() != null && bi.getItem().isVatable() ? bi.getItem().getVatPercentage() : 0.0);
+            bi.setVatPlusNetValue(bi.getNetValue() + bi.getVat());
+            vatTotal += bi.getVat();
         }
 
         setTotal(tot);
         setMarginTotal(margin);
         setDiscount(tot + margin - net);
         setNetTotal(net);
+        setVat(vatTotal);
+        setVatPlusNetTotal(getNetTotal() + getVat());
     }
 
     public void feeChanged(BillFee bf) {
@@ -1131,9 +1173,11 @@ public class BillBhtController implements Serializable {
                 ? bf.getBillItem().getQty() : 1.0;
         bf.setFeeUnitGrossValue(bf.getFeeGrossValue() / qty);
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod(), getPatientEncounter().getAdmissionType());
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeUnitGrossValue(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getAdmissionType(), resolveCurrentRoomCategory(getPatientEncounter()));
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), priceMatrix);
+
+        recalculateFeeVat(bf);
 
         calTotals();
     }
@@ -1154,11 +1198,23 @@ public class BillBhtController implements Serializable {
         lstBillItems = null;
         getLstBillItems();
 
-        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeGrossValue(), getBatchBill().getFromDepartment(), getPatientEncounter().getPaymentMethod(), getPatientEncounter().getAdmissionType());
+        PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(bf.getBillItem(), bf.getFeeGrossValue(), getBatchBill().getFromDepartment(), getPatientEncounter().getPaymentMethod(), null, getPatientEncounter().getAdmissionType(), resolveCurrentRoomCategory(getPatientEncounter()));
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getBatchBill().getFromDepartment(), priceMatrix);
 
+        recalculateFeeVat(bf);
+
         calTotals();
+    }
+
+    private void recalculateFeeVat(BillFee bf) {
+        if (bf.getBillItem() != null && bf.getBillItem().getItem() != null
+                && bf.getBillItem().getItem().isVatable() && bf.getBillItem().getItem().getVatPercentage() > 0) {
+            bf.setFeeVat(roundOff(bf.getFeeValue() * bf.getBillItem().getItem().getVatPercentage() / 100));
+        } else {
+            bf.setFeeVat(0.0);
+        }
+        bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
     }
 
     public void prepareNewBill() {
@@ -1440,6 +1496,26 @@ public class BillBhtController implements Serializable {
 
     public void setNetTotal(double netTotal) {
         this.netTotal = netTotal;
+    }
+
+    public double getVat() {
+        return vat;
+    }
+
+    public void setVat(double vat) {
+        this.vat = vat;
+    }
+
+    public double getVatPlusNetTotal() {
+        return vatPlusNetTotal;
+    }
+
+    public void setVatPlusNetTotal(double vatPlusNetTotal) {
+        this.vatPlusNetTotal = vatPlusNetTotal;
+    }
+
+    private double roundOff(double d) {
+        return Math.round(d * 100.0) / 100.0;
     }
 
     public double getCashPaid() {

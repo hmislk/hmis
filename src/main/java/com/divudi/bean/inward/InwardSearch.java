@@ -93,6 +93,8 @@ public class InwardSearch implements Serializable {
     PaymentService paymentService;
     @EJB
     DrawerService drawerService;
+    @EJB
+    private com.divudi.service.AuditService auditService;
 
     /**
      * JSF Controllers
@@ -141,6 +143,7 @@ public class InwardSearch implements Serializable {
     List<BillItem> refundingItems;
     private List<Bill> bills;
     private List<BillItem> tempbillItems;
+    private List<Bill> finalBillVersions;
     /////////////////////
 
     PaymentMethod paymentMethod;
@@ -317,6 +320,8 @@ public class InwardSearch implements Serializable {
                 originalBillPaymentMethodData = loadCurrentBillPaymentMethodData(bill);
                 
                 paymentMethodData = new PaymentMethodData();
+                
+                refillPaymentDetail();
                 
                 return "inward_deposit_cancel_bill_payment?faces-redirect=true";
             case INWARD_DEPOSIT_REFUND:
@@ -591,28 +596,98 @@ public class InwardSearch implements Serializable {
             return "";
         }
 
-        String jpql;
-        Map temMap = new HashMap();
-        jpql = "select b from Bill b where"
-                + " b.billType = :billType and "
-                + " b.retired=false ";
+        finalBillVersions = null;
+        List<Bill> versions = fetchFinalBillVersions(admission);
 
-        jpql += " and  b.patientEncounter=:pe ";
-        temMap.put("pe", admission);
-
-        temMap.put("billType", BillType.InwardFinalBill);
-        jpql += " order by b.id desc ";
-
-        // bill = getBillFacade().findFirstByJpql(jpql, temMap, TemporalType.TIMESTAMP);
-        bill = getBillFacade().findFirstByJpql(jpql, temMap);
-
-        if (bill == null) {
+        if (versions.isEmpty()) {
             JsfUtil.addErrorMessage("No Final Bill Created");
             return "";
         }
-        withProfessionalFee = false;
 
-        return "/inward/inward_reprint_bill_final?faces-redirect=true";
+        if (versions.size() == 1) {
+            bill = versions.get(0);
+            withProfessionalFee = false;
+            return "/inward/inward_reprint_bill_final?faces-redirect=true";
+        }
+
+        return "/inward/inward_final_bill_list?faces-redirect=true";
+    }
+
+    /**
+     * Lazily fetches and caches all final-bill versions for the currently
+     * selected {@link #admission}. Callers that switch admissions must reset
+     * {@link #finalBillVersions} to null before calling this getter again.
+     */
+    public List<Bill> getFinalBillVersions() {
+        if (finalBillVersions == null && admission != null) {
+            finalBillVersions = fetchFinalBillVersions(admission);
+        }
+        return finalBillVersions;
+    }
+
+    private List<Bill> fetchFinalBillVersions(PatientEncounter admission) {
+        // billTypeAtomic (not just billType) is required here — the cancellation-record
+        // Bill created by createCancelBill() copies billType=InwardFinalBill from the
+        // bill it cancels, so filtering on billType alone would list cancellation
+        // records as if they were final bill versions.
+        String jpql = "select b from Bill b where b.patientEncounter = :pe and b.billType = :billType"
+                + " and b.billTypeAtomic = :atomic and b.retired = false order by b.finalBillVersionSerial asc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("pe", admission);
+        params.put("billType", BillType.InwardFinalBill);
+        params.put("atomic", BillTypeAtomic.INWARD_FINAL_BILL);
+        return getBillFacade().findByJpql(jpql, params);
+    }
+
+    /**
+     * User-facing action to mark {@code newConfirmed} as the confirmed final
+     * bill version for its admission. Privilege checks are done in the XHTML
+     * via {@code rendered}, not here.
+     */
+    public void setAsConfirmedFinalBill(Bill newConfirmed) {
+        if (newConfirmed == null) {
+            JsfUtil.addErrorMessage("No bill selected");
+            return;
+        }
+        if (newConfirmed.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot confirm a cancelled bill");
+            return;
+        }
+        setAsConfirmedFinalBillInternal(newConfirmed);
+        JsfUtil.addSuccessMessage("Final Bill Version Confirmed");
+        finalBillVersions = null;
+    }
+
+    /**
+     * Repoints {@code pe.finalBill} to {@code newConfirmed}, flips the
+     * {@code confirmedFinalBill} flag on the old and new bills, and mirrors
+     * the totals copy done in {@link BhtSummeryController#settle()}. Shared
+     * by the explicit "set as confirmed" action and the cancel-triggered
+     * auto-promotion of the next latest version.
+     */
+    private void setAsConfirmedFinalBillInternal(Bill newConfirmed) {
+        PatientEncounter pe = newConfirmed.getPatientEncounter();
+
+        Long previousFinalBillId = pe.getFinalBill() != null ? pe.getFinalBill().getId() : null;
+
+        if (pe.getFinalBill() != null && !pe.getFinalBill().getId().equals(newConfirmed.getId())) {
+            Bill oldConfirmed = pe.getFinalBill();
+            oldConfirmed.setConfirmedFinalBill(false);
+            getBillFacade().edit(oldConfirmed);
+        }
+
+        newConfirmed.setConfirmedFinalBill(true);
+        getBillFacade().edit(newConfirmed);
+
+        pe.setFinalBill(newConfirmed);
+        pe.setGrantTotal(newConfirmed.getGrantTotal());
+        pe.setDiscount(newConfirmed.getDiscount());
+        pe.setNetTotal(newConfirmed.getNetTotal());
+        getPatientEncounterFacade().edit(pe);
+
+        auditService.logEncounterAudit(pe, "Final Bill Version Confirmed",
+                previousFinalBillId, newConfirmed.getId(), sessionController.getLoggedUser(),
+                "Bill", newConfirmed.getId());
     }
 
     public String navigateToProvisionalBillForAdmission() {
@@ -893,6 +968,7 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
             return true;
         }
+        
         if (getBill().isRefunded()) {
             JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
             return true;
@@ -902,6 +978,7 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("You can't cancel Because this Bill has no BHT");
             return true;
         }
+        
         if (getBill().getPatientEncounter().isDischarged()) {
             JsfUtil.addErrorMessage("You can't cancel. Because this BHT is Already Discharged.");
             return true;
@@ -911,6 +988,7 @@ public class InwardSearch implements Serializable {
             JsfUtil.addErrorMessage("Please select a payment Method.");
             return true;
         }
+        
         if (getComment() == null || getComment().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return true;
@@ -1423,6 +1501,8 @@ public class InwardSearch implements Serializable {
                 return;
             }
 
+            boolean wasConfirmedFinalBill = getBill().isConfirmedFinalBill();
+
             CancelledBill cb = createCancelBill();
             //Copy & paste
             if (cb.getId() == null) {
@@ -1431,15 +1511,53 @@ public class InwardSearch implements Serializable {
             cancelBillItems(cb);
             getBill().setCancelled(true);
             getBill().setCancelledBill(cb);
+            getBill().setConfirmedFinalBill(false);
             getBillFacade().edit((BilledBill) getBill());
 
-            getBill().getPatientEncounter().setGrantTotal(0);
-            getBill().getPatientEncounter().setDiscount(0);
-            getBill().getPatientEncounter().setNetTotal(0);
-            getBill().getPatientEncounter().setAdjustedTotal(0);
-            getBill().getPatientEncounter().setPaymentFinalized(false);
-            getBill().getPatientEncounter().setCreditUsedAmount(0);
-            getPatientEncounterFacade().edit(getBill().getPatientEncounter());
+            // Only the cancellation of the *confirmed* version affects the encounter's
+            // totals/paymentFinalized/finalBill — cancelling an already-superseded,
+            // non-confirmed version must leave the confirmed version's state untouched.
+            if (wasConfirmedFinalBill) {
+                List<Bill> remainingVersions = fetchFinalBillVersions(getBill().getPatientEncounter());
+                List<Bill> nonCancelled = new ArrayList<>();
+                if (remainingVersions != null) {
+                    for (Bill v : remainingVersions) {
+                        if (!v.isCancelled()) {
+                            nonCancelled.add(v);
+                        }
+                    }
+                }
+                if (nonCancelled.isEmpty()) {
+                    getBill().getPatientEncounter().setGrantTotal(0);
+                    getBill().getPatientEncounter().setDiscount(0);
+                    getBill().getPatientEncounter().setNetTotal(0);
+                    getBill().getPatientEncounter().setAdjustedTotal(0);
+                    getBill().getPatientEncounter().setPaymentFinalized(false);
+                    getBill().getPatientEncounter().setCreditUsedAmount(0);
+                    getBill().getPatientEncounter().setFinalBill(null);
+                    getPatientEncounterFacade().edit(getBill().getPatientEncounter());
+                } else {
+                    Bill nextConfirmed = nonCancelled.get(0);
+                    for (Bill v : nonCancelled) {
+                        if (v.getFinalBillVersionSerial() != null
+                                && (nextConfirmed.getFinalBillVersionSerial() == null
+                                || v.getFinalBillVersionSerial() > nextConfirmed.getFinalBillVersionSerial())) {
+                            nextConfirmed = v;
+                        }
+                    }
+                    // nextConfirmed was loaded by a separate query, so its patientEncounter
+                    // association is a distinct (though same-row) managed instance from
+                    // getBill().getPatientEncounter(). Force identity before promoting so
+                    // setAsConfirmedFinalBillInternal's edit() is the single, authoritative
+                    // persist for this encounter — otherwise a second edit() on the stale
+                    // getBill().getPatientEncounter() instance would silently clobber the
+                    // finalBill repoint this call just made.
+                    nextConfirmed.setPatientEncounter(getBill().getPatientEncounter());
+                    setAsConfirmedFinalBillInternal(nextConfirmed);
+                }
+            } else {
+                getPatientEncounterFacade().edit(getBill().getPatientEncounter());
+            }
 
             JsfUtil.addSuccessMessage("Cancelled");
 

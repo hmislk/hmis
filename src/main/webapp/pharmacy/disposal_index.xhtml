@@ -22,7 +22,7 @@
                         <p:tab title="Issue">
                             <div class="d-grid gap-2">
                                 <p:commandButton
-                                    value="New Disposal Issue"
+                                    value="New Consumption Issue"
                                     ajax="false"
                                     action="/pharmacy/pharmacy_issue?faces-redirect=true"
                                     actionListener="#{pharmacyIssueController.resetAll()}"
@@ -120,19 +120,19 @@
             </div>
             <div class="col-10">
                 <ui:insert name="subcontent">
-                    <p:panel header="Disposal Management">
+                    <p:panel header="Consumption Management">
                         <div class="text-center p-5">
-                            <h3><h:outputText value="Welcome to Disposal Management"/></h3>
+                            <h3><h:outputText value="Welcome to Consumption Management"/></h3>
                             <p class="mt-3">
                                 <h:outputText value="Please select a function from the left menu to get started."/>
                             </p>
                             <div class="mt-4">
                                 <p:panelGrid columns="2" styleClass="mx-auto" style="max-width: 600px;">
                                     <h:outputText value="Issue" styleClass="font-weight-bold"/>
-                                    <h:outputText value="Create disposal issue bills and search existing bills"/>
+                                    <h:outputText value="Create consumption issue bills and search existing bills"/>
 
                                     <h:outputText value="Returns" styleClass="font-weight-bold"/>
-                                    <h:outputText value="Create, finalize, approve, and view completed disposal returns"/>
+                                    <h:outputText value="Create, finalize, approve, and view completed consumption returns"/>
                                 </p:panelGrid>
                             </div>
                         </div>

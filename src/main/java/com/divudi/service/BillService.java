@@ -2766,12 +2766,21 @@ public class BillService {
         // positive = stock came back on a return). For a "movement OUT" report we want the
         // quantity that went out, so we negate the summed pbi.qty: a sale yields a positive
         // out-quantity and a return reduces it, matching the signed value columns below.
+        // Direct Purchase Return is an exception: DirectPurchaseReturnController always
+        // persists pbi.qty as a positive magnitude (see its calculateBillItemDetails()), not
+        // the negative-for-out convention above, even though it is itself an OUT movement
+        // (goods leaving stock back to the supplier). This is a known writer bug tracked
+        // under #21032/#21053 (pbi.qty should be negative for this bill type but the writer
+        // is not yet fixed there); negating it here like a normal sale would flip its sign
+        // and net it against genuine sales, so it's added un-negated to match the current
+        // (buggy) persisted convention. If #21053 is ever fixed to store negative qty for
+        // this bill type, this special case must be removed at the same time.
         jpql = "select new com.divudi.core.data.dto.PharmacyMovementOutByItemDTO( "
                 + " it.id, "
                 + " coalesce(it.name, 'N/A'), "
                 + " it.code, "
                 + " coalesce(cat.name, 'N/A'), "
-                + " (coalesce(sum(pbi.qty), 0.0) * -1.0), "
+                + " coalesce(sum(case when b.billTypeAtomic = :directPurchaseReturnBta then pbi.qty else (pbi.qty * -1.0) end), 0.0), "
                 + " coalesce(sum(bi.grossValue), 0.0), "
                 + " coalesce(sum(bi.discount), 0.0), "
                 + " coalesce(sum(bi.marginValue), 0.0), "
@@ -2787,6 +2796,7 @@ public class BillService {
                 + " and b.createdAt between :fromDate and :toDate ";
 
         params.put("billTypesAtomics", billTypeAtomics);
+        params.put("directPurchaseReturnBta", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
 
@@ -3243,6 +3253,158 @@ public class BillService {
         List<Object[]> staffRows = billItemFacade.findObjectArrayByJpql(staffJpql, staffParams, TemporalType.TIMESTAMP);
 
         // Step 3: Build itemId → first staff name found, then set on each DTO
+        Map<Long, String> staffByItem = new HashMap<>();
+        for (Object[] row : staffRows) {
+            Long rowItemId = (Long) row[0];
+            String staffName = row[1] != null ? (String) row[1] : "";
+            staffByItem.putIfAbsent(rowItemId, staffName);
+        }
+        for (OpdSaleSummaryDTO dto : dtos) {
+            dto.setStaffName(staffByItem.getOrDefault(dto.getItemId(), ""));
+        }
+
+        return dtos;
+    }
+
+    /**
+     * Itemized Service Summary (combined OPD + Inward) — issue #21920.
+     *
+     * Unlike {@link #fetchOpdSaleSummaryDTOs}, this returns ONE ROW PER BillItem
+     * (no group-by aggregation), so re-billing the same service, cancellations and
+     * refunds are preserved as separate rows instead of being overwritten. Each row
+     * carries its bill's date (billed date) and the patient (BHT + name) when the bill
+     * is an inpatient (Inward) bill. Cancellation/refund bill items are negated so
+     * they show as negative rows and net out correctly in the totals.
+     *
+     * The staff (Doctor/Technician) name is populated best-effort per item (staff is
+     * assigned per item, not per billing instance) reusing the same second query as
+     * {@link #fetchOpdSaleSummaryDTOs}, to keep the existing Doctor column non-empty.
+     */
+    public List<OpdSaleSummaryDTO> fetchItemizedServiceInstanceDTOs(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            Category category,
+            Item item,
+            List<BillTypeAtomic> billTypeAtomics) {
+
+        // Step 1: One row per BillItem — no group by, so nothing is aggregated/overwritten.
+        String jpql = "select new com.divudi.core.data.dto.OpdSaleSummaryDTO("
+                + " cat.id," // Category ID for navigation
+                + " coalesce(cat.name, 'No Category')," // Category name for display
+                + " itm.id," // Item ID for navigation
+                + " coalesce(itm.name, 'No Item')," // Item name for display
+                + " bi.id," // BillItem ID — stable per-row key
+                + " b.createdAt," // Billed date
+                + " pe.bhtNo," // BHT (null for OPD bills — LEFT JOIN so OPD rows are kept)
+                + " per.name," // Patient name (null for anonymous/OPD bills — LEFT JOIN)
+                + " case when b.billClassType in (:cancel, :refund) then -1L else 1L end," // Count (no stored sign)
+                // Fee/value columns are ALREADY stored negative on cancellation/refund bill
+                // items, so they are used as-is. Negating them here would double-negate and
+                // make cancellations show as positive (the fee-doubling bug of issue #21918).
+                + " bi.hospitalFee,"
+                + " bi.staffFee,"
+                + " bi.grossValue,"
+                + " bi.discount,"
+                + " bi.netValue,"
+                + " bi.marginValue" // Service charge (issue #22050) — inverted on cancellation items like the other values
+                + ") "
+                // All LEFT JOINs: item/category and patientEncounter/patient may be null on
+                // some rows. A path expression (e.g. bi.item.category.id or b.patientEncounter.bhtNo)
+                // would generate an implicit INNER JOIN that silently drops those BillItem rows
+                // before coalesce() runs — the opposite of this report's "keep every billing" intent.
+                + " from BillItem bi join bi.bill b "
+                + " left join bi.item itm "
+                + " left join itm.category cat "
+                + " left join b.patientEncounter pe "
+                + " left join b.patient pat "
+                + " left join pat.person per "
+                + " where b.retired=:ret "
+                + " and (bi.retired is null or bi.retired=false) " // exclude voided bill items
+                + " and b.billTypeAtomic in :bts "
+                + " and b.createdAt between :fd and :td ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bts", billTypeAtomics);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("cancel", BillClassType.CancelledBill);
+        params.put("refund", BillClassType.RefundBill);
+
+        if (institution != null) {
+            jpql += " and b.department.institution=:ins";
+            params.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += " and b.department=:dep";
+            params.put("dep", department);
+        }
+        if (site != null) {
+            jpql += " and b.department.site=:site";
+            params.put("site", site);
+        }
+        if (category != null) {
+            jpql += " and cat=:cat";
+            params.put("cat", category);
+        }
+        if (item != null) {
+            jpql += " and itm=:itm";
+            params.put("itm", item);
+        }
+
+        // Chronological billing history
+        jpql += " order by b.createdAt, bi.id";
+
+        List<OpdSaleSummaryDTO> dtos = (List<OpdSaleSummaryDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        // Step 2: Per-item staff (doctor/technician) name — same approach as
+        // fetchOpdSaleSummaryDTOs. Staff is assigned per item, so this is a best-effort
+        // fill to keep the existing Doctor column populated. Explicit join on the item and
+        // a bi2.retired guard, mirroring the main query above.
+        String staffJpql = "select itm2.id, stf.person.name"
+                + " from BillFee bf"
+                + " join bf.billItem bi2"
+                + " join bi2.bill b2"
+                + " join bi2.item itm2"
+                + " join bf.staff stf"
+                + " where b2.retired = false"
+                + " and (bi2.retired is null or bi2.retired=false)"
+                + " and b2.billTypeAtomic in :bts"
+                + " and b2.createdAt between :fd and :td"
+                + " and bf.retired = false";
+
+        Map<String, Object> staffParams = new HashMap<>();
+        staffParams.put("bts", billTypeAtomics);
+        staffParams.put("fd", fromDate);
+        staffParams.put("td", toDate);
+
+        if (institution != null) {
+            staffJpql += " and b2.department.institution=:ins";
+            staffParams.put("ins", institution);
+        }
+        if (department != null) {
+            staffJpql += " and b2.department=:dep";
+            staffParams.put("dep", department);
+        }
+        if (site != null) {
+            staffJpql += " and b2.department.site=:site";
+            staffParams.put("site", site);
+        }
+        if (category != null) {
+            staffJpql += " and itm2.category=:cat";
+            staffParams.put("cat", category);
+        }
+        if (item != null) {
+            staffJpql += " and itm2=:itm";
+            staffParams.put("itm", item);
+        }
+
+        staffJpql += " group by itm2.id, stf.id, stf.person.name";
+
+        List<Object[]> staffRows = billItemFacade.findObjectArrayByJpql(staffJpql, staffParams, TemporalType.TIMESTAMP);
+
         Map<Long, String> staffByItem = new HashMap<>();
         for (Object[] row : staffRows) {
             Long rowItemId = (Long) row[0];

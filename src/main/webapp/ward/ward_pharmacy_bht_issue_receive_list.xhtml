@@ -10,12 +10,23 @@
         <h:form id="wardPharmacyBhtIssueReceiveListForm">
             <p:panel class="w-100">
                 <f:facet name="header">
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                         <div>
                             <h:outputText styleClass="fa-solid fa-truck-medical"/>
                             <p:outputLabel value="Medicines Pending Receipt - #{sessionController.department.name}" class="mx-4"/>
                         </div>
-                        <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h:outputLabel value="From" class="mx-1"/>
+                            <p:calendar id="fromDate" value="#{wardPharmacyBhtIssueReceiveController.fromDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" inputStyleClass="form-control"/>
+                            <h:outputLabel value="To" class="mx-1"/>
+                            <p:calendar id="toDate" value="#{wardPharmacyBhtIssueReceiveController.toDate}" pattern="#{sessionController.applicationPreference.shortDateFormat}" inputStyleClass="form-control"/>
+                            <p:commandButton
+                                id="btnSearchPendingList"
+                                value="Search"
+                                icon="fas fa-search"
+                                ajax="false"
+                                class="ui-button-success mx-1"
+                                action="#{wardPharmacyBhtIssueReceiveController.navigateToPendingList}"/>
                             <p:commandButton
                                 id="btnRefreshPendingList"
                                 value="Refresh"

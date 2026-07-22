@@ -69,6 +69,34 @@
 
                                         />
                     </p:commandButton>
+                    <p:commandButton value="PDF" ajax="false" class="ui-button-danger mx-1" icon="fas fa-file-pdf" >
+                        <p:dataExporter type="pdf" target="opd_new:opd_new,
+                                        colCash,
+                                        colCredit,
+                                        outside:outside,
+                                        pharmacy:pharmacy,
+                                        pharmacyc:pharmacyc,
+                                        pharmacyws:pharmacyws,
+                                        pharmacywsc:pharmacywsc,
+                                        inward_collection1:inward_collection1,
+                                        agent_collection:agent_collection,
+                                        collecting_centre_collection:collecting_centre_collection,
+                                        credit_collection:credit_collection,
+                                        credit_collection_inward:credit_collection_inward,
+                                        credit_collection_pharmacy:credit_collection_pharmacy,
+                                        col,
+                                        opd_professional_credit:opd_professional_credit,
+                                        inward_professional:inward_professional,
+                                        credit_card:credit_card,
+                                        online_settlement:online_settlement,
+                                        slip:slip,
+                                        cheque:cheque,
+                                        finalSum,
+                                        opd_new_credit:opd_new_credit"
+                                        fileName="Book_Keeping_Summery_without_pro_day_by_category_dat_end"
+
+                                        />
+                    </p:commandButton>
                 </h:panelGrid>
 
 <!--            <p:dataTable id="Val" value="#{billBeanController.billFees}" var="bf" >
