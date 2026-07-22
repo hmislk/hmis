@@ -179,6 +179,7 @@
                             border: 1px solid #000;
                             padding: 2px 4px;
                             text-align: left;
+                            overflow-wrap: anywhere;
                         }
                     }
                 </style>
@@ -277,7 +278,7 @@
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="7" style="text-align: right; font-weight: bold;">Total</td>
+                                <td colspan="7" style="text-align: right; font-weight: bold;"><h:outputText value="Total"/></td>
                                 <td style="text-align: right; font-weight: bold;">
                                     <h:outputText value="#{mdInwardReportController.itemHospitalTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
