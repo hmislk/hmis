@@ -122,9 +122,12 @@ public class AdmissionNumberApi {
 
     /**
      * Reset the counter to an explicit corrected value so the next generated
-     * number is correction+1.
+     * number is correction+1. Requires expectedLastAdmissionNumber (the value
+     * last observed via GET) as a compare-and-set precondition, so a reset
+     * based on stale information is rejected (409) instead of silently
+     * rewinding the sequence past a number a concurrent admission already issued.
      * PUT /api/admission-numbers?admissionTypeId=&institutionId=
-     * Body: { "lastAdmissionNumber": 1234 }
+     * Body: { "lastAdmissionNumber": 1234, "expectedLastAdmissionNumber": 1230 }
      */
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
@@ -154,7 +157,26 @@ public class AdmissionNumberApi {
             if (body == null || !body.has("lastAdmissionNumber")) {
                 return errorResponse("lastAdmissionNumber is required in the request body", 400);
             }
-            Long newLastAdmissionNumber = body.get("lastAdmissionNumber").getAsLong();
+            Long newLastAdmissionNumber;
+            try {
+                newLastAdmissionNumber = body.get("lastAdmissionNumber").getAsLong();
+            } catch (Exception e) {
+                return errorResponse("lastAdmissionNumber must be a numeric value", 400);
+            }
+            if (newLastAdmissionNumber < 0) {
+                return errorResponse("lastAdmissionNumber must not be negative", 400);
+            }
+            if (!body.has("expectedLastAdmissionNumber")) {
+                return errorResponse("expectedLastAdmissionNumber is required in the request body "
+                        + "(the lastAdmissionNumber value most recently observed via GET, used as a "
+                        + "compare-and-set precondition)", 400);
+            }
+            Long expectedLastAdmissionNumber;
+            try {
+                expectedLastAdmissionNumber = body.get("expectedLastAdmissionNumber").getAsLong();
+            } catch (Exception e) {
+                return errorResponse("expectedLastAdmissionNumber must be a numeric value", 400);
+            }
 
             boolean institutionBased = configOptionApplicationController.getBooleanValueByKey(
                     "Generate Separate BHT Number Series for Each Institution");
@@ -166,7 +188,23 @@ public class AdmissionNumberApi {
                 }
             }
 
-            Object[] result = billNumberGenerator.resetAdmissionNumber(admissionType, institution, institutionBased, newLastAdmissionNumber);
+            Object[] result;
+            try {
+                result = billNumberGenerator.resetAdmissionNumber(admissionType, institution, institutionBased,
+                        newLastAdmissionNumber, expectedLastAdmissionNumber);
+            } catch (Exception e) {
+                // BillNumberGenerator is an EJB — container wraps unchecked exceptions
+                // thrown from business methods in EJBException, so the compare-and-set
+                // conflict must be unwrapped from the cause chain here.
+                Throwable cause = e;
+                while (cause != null && !(cause instanceof java.util.ConcurrentModificationException)) {
+                    cause = cause.getCause();
+                }
+                if (cause != null) {
+                    return errorResponse(cause.getMessage() + " — re-fetch via GET and retry with the current value.", 409);
+                }
+                throw e;
+            }
             Long previous = (Long) result[0];
             Long admissionNumberId = (Long) result[1];
 

@@ -47,12 +47,13 @@ Content-Type: application/json
 ```
 
 ```json
-{ "lastAdmissionNumber": 48250 }
+{ "lastAdmissionNumber": 48250, "expectedLastAdmissionNumber": 48213 }
 ```
 
 | Field | Required | Description |
 |-------|----------|-------------|
 | lastAdmissionNumber | Yes | The corrected **last-used** number, not the next number. The next auto-generated number will be this value + 1 |
+| expectedLastAdmissionNumber | Yes | Compare-and-set precondition: the `lastAdmissionNumber` value most recently observed via `GET`. The reset only applies if the counter's current effective value still matches this — otherwise it means an admission was issued after the `GET` and the reset is rejected (`409`) rather than silently rewinding the sequence past a number already handed out |
 
 **Response 200:**
 ```json
@@ -71,12 +72,13 @@ Content-Type: application/json
 }
 ```
 
-If no counter row exists yet for the series, one is created with `lastAdmissionNumber` set to the value supplied.
+If no counter row exists yet for the series, one is created with `lastAdmissionNumber` set to the value supplied. In that case the "current effective value" checked against `expectedLastAdmissionNumber` is the same self-initializing, count-based value `GET` would have reported (not `null`).
 
 **Errors:**
-- `400` — missing `admissionTypeId` query param, missing/invalid JSON body, or missing `lastAdmissionNumber` in the body
+- `400` — missing `admissionTypeId` query param, missing/invalid JSON body, or missing/non-numeric/negative `lastAdmissionNumber` or missing/non-numeric `expectedLastAdmissionNumber`
 - `401` — invalid or missing `Finance` API key
 - `404` — `admissionTypeId` or `institutionId` does not resolve to an existing record
+- `409` — `expectedLastAdmissionNumber` no longer matches the counter's current value (an admission was issued after the caller's last `GET`) — re-fetch via `GET` and retry with the current value
 - `500` — unexpected server error
 
 Every successful reset is written to the audit log (`AdmissionNumber`, event `Admission Number Counter Reset`) recording the previous and new `lastAdmissionNumber` along with the acting user.

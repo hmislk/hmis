@@ -3781,19 +3781,44 @@ public class BillNumberGenerator {
      * (createAndFlush/editAndFlush) already relied on elsewhere in this class, so
      * every app instance sees the correction on its very next generation call.
      *
-     * @return a two-element result: [0] = the previous lastAdmissionNumber
-     *         value (Long, null if no counter row existed yet), [1] = the
-     *         AdmissionNumber row's id (Long) so the caller can audit-log
+     * @param expectedLastAdmissionNumber compare-and-set precondition: the
+     *        value the caller last observed (e.g. via {@link #peekNextAdmissionNumber}
+     *        minus 1, or this method's own previous-value result). If non-null
+     *        and it no longer matches the counter's current effective value
+     *        (checked inside the same lock a normal generation call would use),
+     *        the reset is rejected with a {@link java.util.ConcurrentModificationException}
+     *        instead of silently rewinding the sequence past numbers already
+     *        issued by a concurrent admission. Pass null to skip the check.
+     * @return a two-element result: [0] = the previous effective lastAdmissionNumber
+     *         value (Long — the self-initialized count-based value when no counter
+     *         row exists yet, matching what peekNextAdmissionNumber would report),
+     *         [1] = the AdmissionNumber row's id (Long) so the caller can audit-log
      *         against the actual entity, not the AdmissionType.
+     * @throws java.util.ConcurrentModificationException if expectedLastAdmissionNumber
+     *         is supplied and does not match the counter's current effective value
      */
     public Object[] resetAdmissionNumber(AdmissionType admissionType, Institution institution,
-            boolean institutionBased, Long newLastAdmissionNumber) {
+            boolean institutionBased, Long newLastAdmissionNumber, Long expectedLastAdmissionNumber) {
         String lockKey = getBhtLockKey(admissionType, institution, institutionBased);
         ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
         lock.lock();
         try {
             AdmissionNumber an = findAdmissionNumberRecord(admissionType, institution, institutionBased);
-            Long previous = an == null ? null : an.getLastAdmissionNumber();
+            Long previous;
+            if (an == null) {
+                Long count = computeAdmissionCount(admissionType, institution, institutionBased);
+                long addition = (admissionType != null) ? admissionType.getAdditionToCount() : 0;
+                previous = count + addition;
+            } else {
+                previous = an.getLastAdmissionNumber();
+            }
+
+            if (expectedLastAdmissionNumber != null && !expectedLastAdmissionNumber.equals(previous)) {
+                throw new java.util.ConcurrentModificationException(
+                        "Counter changed since it was last read: expected " + expectedLastAdmissionNumber
+                        + " but current value is " + previous);
+            }
+
             if (an == null) {
                 an = new AdmissionNumber();
                 if (admissionType != null && admissionType.isGenerateSeparateAdmissionNumber()) {
