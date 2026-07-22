@@ -3771,6 +3771,52 @@ public class BillNumberGenerator {
         return an;
     }
 
+    /**
+     * Resets the stored counter for an admission-number series to an explicit
+     * value (e.g. after staff manually correct a printed BHT/OPD-card number
+     * and need the next auto-generated number to continue from the correction).
+     * Uses the same lock as the generator methods so it serializes against an
+     * in-flight fetchNextAdmissionNumber on this JVM, and the same cache-bypass
+     * read (findAdmissionNumberRecord -> findFreshByJpql) / immediate-flush write
+     * (createAndFlush/editAndFlush) already relied on elsewhere in this class, so
+     * every app instance sees the correction on its very next generation call.
+     *
+     * @return a two-element result: [0] = the previous lastAdmissionNumber
+     *         value (Long, null if no counter row existed yet), [1] = the
+     *         AdmissionNumber row's id (Long) so the caller can audit-log
+     *         against the actual entity, not the AdmissionType.
+     */
+    public Object[] resetAdmissionNumber(AdmissionType admissionType, Institution institution,
+            boolean institutionBased, Long newLastAdmissionNumber) {
+        String lockKey = getBhtLockKey(admissionType, institution, institutionBased);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            AdmissionNumber an = findAdmissionNumberRecord(admissionType, institution, institutionBased);
+            Long previous = an == null ? null : an.getLastAdmissionNumber();
+            if (an == null) {
+                an = new AdmissionNumber();
+                if (admissionType != null && admissionType.isGenerateSeparateAdmissionNumber()) {
+                    an.setAdmissionType(admissionType);
+                }
+                if (admissionType != null) {
+                    an.setAdmissionTypeEnum(admissionType.getAdmissionTypeEnum());
+                }
+                if (institutionBased && institution != null) {
+                    an.setInstitution(institution);
+                }
+                an.setLastAdmissionNumber(newLastAdmissionNumber);
+                admissionNumberFacade.createAndFlush(an);
+            } else {
+                an.setLastAdmissionNumber(newLastAdmissionNumber);
+                admissionNumberFacade.editAndFlush(an);
+            }
+            return new Object[]{previous, an.getId()};
+        } finally {
+            lock.unlock();
+        }
+    }
+
     private AdmissionNumber findAdmissionNumberRecord(AdmissionType admissionType, Institution institution, boolean institutionBased) {
         StringBuilder sql = new StringBuilder("SELECT an FROM AdmissionNumber an WHERE an.retired=false");
         HashMap<String, Object> hm = new HashMap<>();
