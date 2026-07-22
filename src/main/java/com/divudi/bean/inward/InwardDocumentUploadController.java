@@ -41,7 +41,25 @@ public class InwardDocumentUploadController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private SessionController sessionController;
+    @javax.ejb.EJB
+    private com.divudi.service.AuditService auditService;
     // </editor-fold>
+
+    /**
+     * Snapshot of an uploaded document for audit events (#22239).
+     */
+    private Map<String, Object> documentAuditMap(Upload u) {
+        Map<String, Object> m = new HashMap<>();
+        if (u == null) {
+            return m;
+        }
+        m.put("fileName", u.getFileName());
+        m.put("fileType", u.getFileType());
+        m.put("uploadType", u.getUploadType());
+        m.put("comments", u.getComments());
+        m.put("retired", u.isRetired());
+        return m;
+    }
 
     // <editor-fold defaultstate="collapsed" desc="Variables">
     private PatientEncounter currentEncounter;
@@ -125,7 +143,10 @@ public class InwardDocumentUploadController implements Serializable {
             upload.setCreatedAt(new Date());
             upload.setCreater(sessionController.getLoggedUser());
             upload.setRetired(false);
-            uploadFacade.create(upload);
+            uploadFacade.createAndFlush(upload);
+            auditService.logEncounterAudit(currentEncounter, "Document Uploaded",
+                    null, documentAuditMap(upload), sessionController.getLoggedUser(),
+                    "Upload", upload.getId());
             JsfUtil.addSuccessMessage("Document uploaded successfully.");
             file = null;
             selectedUploadType = null;
@@ -179,7 +200,10 @@ public class InwardDocumentUploadController implements Serializable {
             upload.setCreatedAt(new Date());
             upload.setCreater(sessionController.getLoggedUser());
             upload.setRetired(false);
-            uploadFacade.create(upload);
+            uploadFacade.createAndFlush(upload);
+            auditService.logEncounterAudit(currentEncounter, "Document Uploaded",
+                    null, documentAuditMap(upload), sessionController.getLoggedUser(),
+                    "Upload", upload.getId());
             JsfUtil.addSuccessMessage("Document uploaded successfully.");
             selectedUploadType = null;
             comments = null;
@@ -197,10 +221,14 @@ public class InwardDocumentUploadController implements Serializable {
         if (u == null) {
             return;
         }
+        Map<String, Object> before = documentAuditMap(u);
         u.setRetired(true);
         u.setRetirer(sessionController.getLoggedUser());
         u.setRetiredAt(new Date());
         uploadFacade.edit(u);
+        auditService.logEncounterAudit(currentEncounter, "Document Removed",
+                before, documentAuditMap(u), sessionController.getLoggedUser(),
+                "Upload", u.getId());
         loadDocuments();
         JsfUtil.addSuccessMessage("Document removed.");
     }

@@ -43,6 +43,14 @@
                                             disabled="#{inwardSearch.bill.cancelled}"  />
                                         <p:commandButton
                                             ajax="false"
+                                            icon="fa fa-plus"
+                                            class="ui-button-warning"
+                                            value="Create New Version"
+                                            title="Create New Version from #{inwardSearch.bill.deptId}"
+                                            action="#{bhtSummeryController.createNewVersionFromBill(inwardSearch.bill)}"
+                                            rendered="#{not inwardSearch.bill.cancelled and webUserController.hasPrivilege('InwardFinalBillCreateVersion')}" />
+                                        <p:commandButton
+                                            ajax="false"
                                             icon="fas fa-id-card"
                                             class="ui-button-secondary "
                                             value="Inpatient Dashboard"

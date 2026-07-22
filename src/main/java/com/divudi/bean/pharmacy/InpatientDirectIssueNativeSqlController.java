@@ -16,6 +16,7 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.inward.RoomFacilityCharge;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
@@ -408,6 +409,14 @@ public class InpatientDirectIssueNativeSqlController implements Serializable {
                     JsfUtil.addErrorMessage("This batch is already in the bill. Edit the quantity instead.");
                     return;
                 }
+            }
+        }
+
+        if (patientEncounter != null && selectedStockDto.getItemId() != null) {
+            Item candidateItem = itemFacade.getReference(selectedStockDto.getItemId());
+            String reorderMsg = pharmacyService.getReorderWarningMessage(patientEncounter, candidateItem);
+            if (!reorderMsg.isEmpty()) {
+                JsfUtil.addWarningMessage(reorderMsg);
             }
         }
 

@@ -253,11 +253,14 @@
                             <p:column headerText="Doc No">
                                 <h:outputText value="#{f.bill.deptId}" />
                             </p:column>
+                            <p:column headerText="Transaction">
+                                <h:outputText value="#{f.bill.billTypeAtomic.label}" />
+                            </p:column>
                             <p:column headerText="Batch Code">
                                 <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.batchNo}" />
                             </p:column>
                             <p:column headerText="QTY">
-                                <h:outputText value="#{f.qty}" >
+                                <h:outputText value="#{pharmacyReportController.bhtIssueEffectiveQty(f)}" >
                                     <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
@@ -272,14 +275,11 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Cost Value">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate * f.qty}" >
+                                <h:outputText value="#{pharmacyReportController.bhtIssueEffectiveCostValue(f)}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <!-- Issue totals are stored with negative unit quantities; the
-                                         rows above display positive values, so display the total's
-                                         magnitude (display only). -->
-                                    <h:outputText value="#{pharmacyReportController.costValueTotal lt 0 ? -pharmacyReportController.costValueTotal : pharmacyReportController.costValueTotal}" >
+                                    <h:outputText value="#{pharmacyReportController.costValueTotal}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
@@ -289,10 +289,25 @@
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="BHT Issue">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate * f.qty}" >
+                            <p:column headerText="Retail Value">
+                                <h:outputText value="#{pharmacyReportController.bhtIssueEffectiveRetailValue(f)}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalRetailValue}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="BHT Issue">
+                                <h:outputText value="#{pharmacyReportController.bhtIssueEffectivePurchaseValue(f)}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.totalPurchaseValue}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
                             <p:column headerText="Net Total">
                                 <h:outputText value="#{f.bill.netTotal}" >

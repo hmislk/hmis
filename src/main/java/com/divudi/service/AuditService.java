@@ -1,6 +1,7 @@
 package com.divudi.service;
 
 import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.AuditEventFacade;
 import com.google.gson.Gson;
@@ -107,6 +108,56 @@ public class AuditService {
             audit.setEventStatus(eventStatus != null ? eventStatus : "Completed");
             audit.setIpAddress(getClientIpAddress());
 
+            auditEventFacade.create(audit);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Records an audit event linked to a PatientEncounter so all events of an
+     * admission can be fetched with
+     * {@code select a from AuditEvent a where a.patientEncounterId=:peid}.
+     * entityType defaults to "PatientEncounter" and objectId to the encounter id.
+     */
+    public void logEncounterAudit(PatientEncounter pe, String eventTrigger,
+            Object before, Object after, WebUser user) {
+        logEncounterAudit(pe, eventTrigger, before, after, user, "PatientEncounter",
+                pe != null ? pe.getId() : null, null, null);
+    }
+
+    public void logEncounterAudit(PatientEncounter pe, String eventTrigger,
+            Object before, Object after, WebUser user, String entityType, Long objectId) {
+        logEncounterAudit(pe, eventTrigger, before, after, user, entityType, objectId, null, null);
+    }
+
+    /**
+     * Full form for callers that audit a related entity (e.g. PatientRoom, Bill)
+     * while still linking the event to the encounter, optionally recording the
+     * acting institution/department (session data the EJB cannot reach itself).
+     */
+    public void logEncounterAudit(PatientEncounter pe, String eventTrigger,
+            Object before, Object after, WebUser user, String entityType, Long objectId,
+            Long institutionId, Long departmentId) {
+        try {
+            AuditEvent audit = new AuditEvent();
+            audit.setEventDataTime(new Date());
+            if (user != null) {
+                audit.setWebUserId(user.getId());
+            }
+            audit.setEntityType(entityType);
+            audit.setEventTrigger(eventTrigger);
+            audit.setObjectId(objectId);
+            if (pe != null) {
+                audit.setPatientEncounterId(pe.getId());
+                audit.setUrl("BHT: " + pe.getBhtNo());
+            }
+            audit.setInstitutionId(institutionId);
+            audit.setDepartmentId(departmentId);
+            audit.setBeforeJson(before != null ? gson.toJson(before) : null);
+            audit.setAfterJson(after != null ? gson.toJson(after) : null);
+            audit.setEventStatus("Completed");
+            audit.setIpAddress(getClientIpAddress());
             auditEventFacade.create(audit);
         } catch (Exception e) {
             e.printStackTrace();

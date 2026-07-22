@@ -39,6 +39,14 @@ public class PatientTransferRequest implements Serializable {
     @ManyToOne
     private PatientRoom fromPatientRoom;
 
+    /**
+     * Set only on accepted SEND_TO_THEATRE requests — the concurrent
+     * TheatreRoom billing record created by acceptInTheatre(), closed by
+     * returnToWard(). Null on all other transfer types.
+     */
+    @ManyToOne
+    private PatientRoom theatreRoom;
+
     @ManyToOne
     private RoomFacilityCharge toRoomFacilityCharge;
 
@@ -118,6 +126,14 @@ public class PatientTransferRequest implements Serializable {
 
     public void setFromPatientRoom(PatientRoom fromPatientRoom) {
         this.fromPatientRoom = fromPatientRoom;
+    }
+
+    public PatientRoom getTheatreRoom() {
+        return theatreRoom;
+    }
+
+    public void setTheatreRoom(PatientRoom theatreRoom) {
+        this.theatreRoom = theatreRoom;
     }
 
     public RoomFacilityCharge getToRoomFacilityCharge() {

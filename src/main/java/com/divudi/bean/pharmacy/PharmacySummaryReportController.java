@@ -977,7 +977,8 @@ public class PharmacySummaryReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
                 BillTypeAtomic.PHARMACY_ISSUE,
                 BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
-                BillTypeAtomic.PHARMACY_ISSUE_RETURN
+                BillTypeAtomic.PHARMACY_ISSUE_RETURN,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND
         );
     }
 

@@ -44,7 +44,10 @@ public class AuditEvent implements Serializable {
     private Long institutionId;
     private Long departmentId;
     private Long objectId;
-    
+    // Links the event to a PatientEncounter (BHT) regardless of which entity
+    // objectId points at, so all events for an admission can be queried together
+    private Long patientEncounterId;
+
     @Lob
     private String beforeJson;
     @Lob
@@ -326,6 +329,14 @@ public class AuditEvent implements Serializable {
 
     public void setObjectId(Long objectId) {
         this.objectId = objectId;
+    }
+
+    public Long getPatientEncounterId() {
+        return patientEncounterId;
+    }
+
+    public void setPatientEncounterId(Long patientEncounterId) {
+        this.patientEncounterId = patientEncounterId;
     }
 
 }
