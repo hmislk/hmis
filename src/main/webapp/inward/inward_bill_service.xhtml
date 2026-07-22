@@ -675,11 +675,7 @@
                                                         value="#{billBhtController.lstBillFees}"
                                                         var="bif"
                                                         rowKey="#{bif.id}"
-                                                        rowExpandMode="single"
-                                                        rowStyleClass="#{(bif.billItem.item.chargesVisibleForInward)
-                                                                         or (webUserController.hasPrivilege('ShowInwardFee'))
-                                                                         or (webUserController.hasPrivilege('ShowServiceCharges'))
-                                                                         ? '':'noDisplayRow'}">
+                                                        rowExpandMode="single">
                                                         <p:column width="2em">
                                                             <f:facet name="header"> </f:facet>
                                                             <p:rowToggler />
