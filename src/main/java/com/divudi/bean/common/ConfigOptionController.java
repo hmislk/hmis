@@ -64,6 +64,35 @@ public class ConfigOptionController implements Serializable {
     public ConfigOptionController() {
     }
 
+    public boolean getBooleanValueByKey(String key) {
+        return getBooleanValueByKey(key, true);
+    }
+
+    public boolean getBooleanValueByKey(String key, boolean defaultValue) {
+        String departmentName;
+        if (sessionController.getDepartment() != null) {
+            departmentName = sessionController.getDepartment().getName();
+        } else {
+            return configOptionApplicationController.getBooleanValueByKey(key, defaultValue);
+        }
+        String deptKey = departmentName + " - " + key;
+        ConfigOption appOption = configOptionApplicationController.getApplicationOption(deptKey);
+        if (appOption == null || appOption.getValueType() != OptionValueType.BOOLEAN) {
+            defaultValue = configOptionApplicationController.getBooleanValueByKey(key, defaultValue);
+        }
+        return configOptionApplicationController.getBooleanValueByKey(deptKey, defaultValue);
+    }
+
+    public void setBooleanValueByKey(String key, boolean value) {
+        String departmentName;
+        if (sessionController.getDepartment() != null) {
+            departmentName = sessionController.getDepartment().getName();
+            configOptionApplicationController.setBooleanValueByKey(departmentName + " - " + key, value);
+        } else {
+            configOptionApplicationController.setBooleanValueByKey(key, value);
+        }
+    }
+
     public String navigateToDepartmentOptions() {
         institution = null;
         department = sessionController.getDepartment();
