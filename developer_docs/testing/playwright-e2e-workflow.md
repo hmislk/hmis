@@ -1011,6 +1011,31 @@ Found while fixing issue #21538: `Notification/user_notifications.xhtml`'s
 wrapping the whole list) crashed the page load itself once a retired
 notification was shown in a row other than the first.
 
+## 43. Clicking a `p:printer` button hangs the whole browser session — verify with print-media emulation instead
+
+`p:printer` calls `window.print()`, which opens a real native OS print dialog.
+In a Playwright-driven session this dialog blocks not just the click (which
+times out and gets moved to a background task) but **every subsequent tool
+call on that browser** — `browser_tabs list/new/close` all hang too, because
+the dialog is modal at the OS/browser-process level, not a JS `confirm()`
+that `browser_handle_dialog` can intercept. The only recovery is asking the
+human operator to manually dismiss the dialog in the actual browser window.
+
+**Don't click the Print button to verify print CSS.** Instead, emulate print
+media on the existing page and screenshot that — `p:printer` clones the
+current document's `<head>` (including inline `<style>` blocks and linked
+stylesheets) into its print iframe, so `@media print` rules apply identically
+whether triggered by the real dialog or by emulation:
+
+```js
+async (page) => { await page.emulateMedia({ media: 'print' }); }
+```
+
+Then `browser_take_screenshot` — this shows exactly what would print (hidden
+`.noPrintButton` elements, `.printOnlyReport` toggled visible, etc.) without
+ever touching `window.print()`. Verified while fixing issue #22316 (Time
+Service Report print truncation).
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

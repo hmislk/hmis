@@ -14,10 +14,31 @@
         <h:panelGroup >
             <h:form  >
                 <p:panel >
+                    <style>
+                        @media screen {
+                            .printOnlyReport { display: none; }
+                        }
+                        @media print {
+                            @page { size: A4 landscape; }
+                            .noPrintButton { display: none !important; }
+                            .printOnlyReport { display: block; }
+                            .printOnlyReport table {
+                                width: 100%;
+                                border-collapse: collapse;
+                                font-size: 9pt;
+                            }
+                            .printOnlyReport th, .printOnlyReport td {
+                                border: 1px solid #000;
+                                padding: 2px 4px;
+                                text-align: left;
+                            }
+                        }
+                    </style>
+
                     <p:panel class="mt-2" header="Timed Service" id="gpBillPreview">
                             <h:panelGrid
-                                 columns="5" 
-                                 class="ui-fluid" 
+                                 columns="5"
+                                 class="ui-fluid noPrintButton"
                                  style="table-layout: fixed; width: 100%;"
                                  columnClasses="fp-col-label1,fp-col-input1,fp-col-space1,
                                             fp-col-label2,fp-col-input2">
@@ -108,7 +129,7 @@
                                 </h:panelGroup>
                             </h:panelGrid>
 
-                            <div class="my-4">
+                            <div class="my-4 noPrintButton">
                                 <p:commandButton ajax="false" class="ui-button-warning" icon="fas fa-fill" value="Fill" action="#{inwardTimedItemController.createTimeServiceList}" />
                                 
                                 <p:commandButton ajax="false" icon="fas fa-file-excel" value="Excel" class="ui-button-success mx-1 " actionListener="#{inwardTimedItemController.createTimeServiceList}">
@@ -116,12 +137,12 @@
                                 </p:commandButton>
                                 
                                 <p:commandButton value="Print" ajax="false" action="#" icon="fas fa-print" class="ui-button-info" >
-                                    <p:printer target="gpBillPreview" ></p:printer>
+                                    <p:printer target="printReport" ></p:printer>
                                 </p:commandButton>
                             </div>
-                      
 
-                        <p:dataTable id="tbl" value="#{inwardTimedItemController.items}" var="ti">
+
+                        <p:dataTable id="tbl" styleClass="noPrintButton" value="#{inwardTimedItemController.items}" var="ti">
 
 
                             <f:facet name="header">
@@ -252,6 +273,85 @@
                             </p:columnGroup>
 
                         </p:dataTable>
+
+                        <h:panelGroup layout="block" id="printReport" styleClass="printOnlyReport">
+                            <div style="text-align: center; font-weight: bold; margin-bottom: 4px;">
+                                <h:outputText value="#{inwardTimedItemController.current.item.name}"/>
+                                <h:outputText value=" : "/>
+                                <h:outputText value="#{inwardTimedItemController.frmDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                                <h:outputText value=" -- "/>
+                                <h:outputText value="#{inwardTimedItemController.toDate}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>BHT Number</th>
+                                        <th>Service Name</th>
+                                        <th>Service Name</th>
+                                        <th>Inward Charge Type</th>
+                                        <th>Start Time</th>
+                                        <th>Stopped Time</th>
+                                        <th>Time(Min.)</th>
+                                        <th>Discount</th>
+                                        <th>Adjusted Value</th>
+                                        <th>Total</th>
+                                        <th>Creator</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <ui:repeat value="#{inwardTimedItemController.items}" var="ti">
+                                        <tr>
+                                            <td><h:outputText value="#{ti.patientEncounter.bhtNo}"/></td>
+                                            <td><h:outputText value="#{ti.item.name}"/></td>
+                                            <td><h:outputText value="#{ti.bill}"/></td>
+                                            <td><h:outputText value="#{ti.item.inwardChargeType}"/></td>
+                                            <td><h:outputText value="#{ti.fromTime}">
+                                                    <f:convertDateTime pattern="yy/MM/dd hh:mm:ss a"/>
+                                                </h:outputText></td>
+                                            <td><h:outputText value="#{ti.toTime}">
+                                                    <f:convertDateTime pattern="yy/MM/dd hh:mm:ss a"/>
+                                                </h:outputText></td>
+                                            <td style="text-align: right;"><h:outputText value="#{ti.tmpConsumedTime}">
+                                                    <f:convertNumber pattern="##0.0"/>
+                                                </h:outputText></td>
+                                            <td style="text-align: right;"><h:outputText value="#{ti.discount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText></td>
+                                            <td style="text-align: right;"><h:outputText value="#{ti.adjustedValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText></td>
+                                            <td style="text-align: right;"><h:outputText value="#{ti.serviceValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText></td>
+                                            <td>
+                                                <h:outputText value="#{ti.creater.webUserPerson.name}"/>
+                                                <h:outputText rendered="#{ti.retired}" style="color: red;"
+                                                              value=" Deleted By #{ti.retirer.webUserPerson.name}"/>
+                                            </td>
+                                        </tr>
+                                    </ui:repeat>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="5" style="text-align: right; font-weight: bold;">Total</td>
+                                        <td style="text-align: right; font-weight: bold;">
+                                            <h:outputText value="#{inwardTimedItemController.totalMins}"/>
+                                        </td>
+                                        <td colspan="2"></td>
+                                        <td style="text-align: right; font-weight: bold;">
+                                            <h:outputText value="#{inwardTimedItemController.total}">
+                                                <f:convertNumber pattern="#,#00.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </h:panelGroup>
                     </p:panel>
 
 
