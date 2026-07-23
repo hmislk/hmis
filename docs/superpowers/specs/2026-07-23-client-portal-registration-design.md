@@ -63,7 +63,10 @@ visits/departments, but exactly one portal identity).
 | `phoneVerified` / `emailVerified` | booleans |
 | `createdVia` | enum: `SELF_PHONE`, `SELF_EMAIL`, `STAFF_ASSISTED`, `KIOSK` |
 | `createdByWebUser` | nullable `WebUser`, set only for `STAFF_ASSISTED` |
-| `enabled` | boolean, for future account-disable capability |
+| `retired` | boolean, soft-delete flag (standard codebase convention, matching `Sms.java`) — `false` means active |
+| `retirer` | nullable `WebUser`, the staff member who retired the account |
+| `retiredAt` | nullable `Date`, when the account was retired |
+| `retireComments` | nullable `String`, reason for retiring/disabling the account |
 
 One `ClientAccount` per `Person`, enforced at creation time (see §3 —
 uniqueness is per-person, **not** per-phone/email, because phone numbers are
@@ -115,6 +118,20 @@ never on the phone/email itself (since one phone can legitimately map to
 several people, each of whom may or may not already have an account): if the
 selected `Person` already has a `ClientAccount`, warn and block creating a
 second one — offer login or password-reset instead.
+
+**Concurrency and uniqueness note**: `ClientAccount.person` is intentionally
+NOT enforced unique at the database level, because a DB unique constraint
+would conflict with the soft-delete/retire-then-recreate pattern — a person
+could legitimately end up with one retired and one active `ClientAccount`
+over time. At DDL-generation time (a separately-deferred step), the
+generated `PERSON_ID` column on the `CLIENTACCOUNT` table is expected to come
+out as non-unique — that is correct, not a bug. Consequently, any
+registration-channel code that creates a `ClientAccount` must perform its
+"does this person already have a non-retired account" check
+(`ClientAccountFacade.findByPerson`) inside the same transaction as the
+create, since two concurrent registration attempts for the same person could
+otherwise both pass the check and each create a non-retired `ClientAccount`
+before either commits.
 
 ### 4. Login & credentials
 
