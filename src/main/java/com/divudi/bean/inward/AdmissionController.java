@@ -2245,6 +2245,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
         String oldBhtNo = null;
+        Long oldBhtLong = null;
         if (current.getId() != null) {
             HashMap<String, Object> bhtParams = new HashMap<>();
             bhtParams.put("id", current.getId());
@@ -2253,16 +2254,24 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             if (persisted != null && !persisted.isEmpty()) {
                 oldBhtNo = persisted.get(0);
             }
+            List<Long> persistedBhtLong = getFacade().findLongList(
+                    "select a.bhtLong from Admission a where a.id=:id", bhtParams);
+            if (persistedBhtLong != null && !persistedBhtLong.isEmpty()) {
+                oldBhtLong = persistedBhtLong.get(0);
+            }
         }
         addPatient();
         addGuardian();
         addPatientRoom();
         getFacade().edit(current);
-        if (oldBhtNo != null && !oldBhtNo.equals(current.getBhtNo())) {
+        if ((oldBhtNo != null && !oldBhtNo.equals(current.getBhtNo()))
+                || (oldBhtLong == null ? current.getBhtLong() != 0 : oldBhtLong.longValue() != current.getBhtLong())) {
             Map<String, Object> before = new LinkedHashMap<>();
             before.put("bhtNo", oldBhtNo);
+            before.put("bhtLong", oldBhtLong);
             Map<String, Object> after = new LinkedHashMap<>();
             after.put("bhtNo", current.getBhtNo());
+            after.put("bhtLong", current.getBhtLong());
             auditService.logEncounterAudit(current, "BHT Number Changed",
                     before, after, getSessionController().getLoggedUser());
         }
@@ -2479,19 +2488,26 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         savePatient();
         savePatientAllergies();
         saveGuardian();
-        // Always reserve the next BHT number from the counter
-        String generatedBht = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         boolean bhtCanBeEdited = configOptionApplicationController.getBooleanValueByKey("BHT Number can be edited at the time of admission");
-        if (bhtCanBeEdited && bhtText != null && !bhtText.trim().isEmpty()
-                && !bhtText.trim().equals(generatedBht)) {
-            // User explicitly overrode the BHT text — keep their value
+        String suggestedBht = getInwardBean().getBhtTextPreview(getCurrent().getAdmissionType());
+        boolean userOverrodeBht = bhtCanBeEdited && bhtText != null && !bhtText.trim().isEmpty()
+                && !bhtText.trim().equals(suggestedBht);
+
+        long oldBhtLong = getCurrent().getBhtLong();
+        String oldBhtNo = getCurrent().getBhtNo();
+
+        if (userOverrodeBht) {
+            // Staff-entered value — do not draw a counter number, do not touch bhtLong.
+            getCurrent().setBhtNo(bhtText);
         } else {
+            String generatedBht = getInwardBean().getBhtText(getCurrent().getAdmissionType()); // mutates, only when it will be used
             bhtText = generatedBht;
+            getCurrent().setBhtNo(bhtText);
+            if (getInwardBean().getLastGeneratedBhtLong() != null) {
+                getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
+            }
         }
-        getCurrent().setBhtNo(getBhtText());
-        if (getInwardBean().getLastGeneratedBhtLong() != null) {
-            getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
-        }
+
         getCurrent().setPaymentScheme(paymentScheme);
         getCurrent().setForiegner(patientForiegner);
 
@@ -2505,6 +2521,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setDepartment(sessionController.getDepartment());
             getFacade().create(getCurrent());
             JsfUtil.addSuccessMessage("Patient admitted successfully with BHT No: " + getCurrent().getBhtNo());
+        }
+
+        // Logged after create()/edit() so getCurrent().getId() is populated and the
+        // audit event can be traced back to this admission (objectId/patientEncounterId).
+        if ((oldBhtNo == null ? getCurrent().getBhtNo() != null : !oldBhtNo.equals(getCurrent().getBhtNo()))
+                || oldBhtLong != getCurrent().getBhtLong()) {
+            Map<String, Object> before = new LinkedHashMap<>();
+            before.put("bhtNo", oldBhtNo);
+            before.put("bhtLong", oldBhtLong);
+            Map<String, Object> after = new LinkedHashMap<>();
+            after.put("bhtNo", getCurrent().getBhtNo());
+            after.put("bhtLong", getCurrent().getBhtLong());
+            auditService.logEncounterAudit(getCurrent(), "BHT Number Assigned", before, after,
+                    getSessionController().getLoggedUser());
         }
 
         // Only create a PatientRoom record when a facility charge is actually selected.
