@@ -915,6 +915,160 @@ local `coop.patientencounter` table was missing all four
 `professionalpayments*` columns and `patienttransferrequest` was missing
 `theatreroom_id`.
 
+## 39. Local dev DB has no `FrequencyUnit`/`DurationUnit`/`DoseUnit` seed rows — the prescription "Calculate & Add" path is untestable locally
+
+`ward_pharmacy_bht_issue_request_bill.xhtml`'s Prescription section (Dose/Dose
+Unit/Frequency/Duration/Duration Unit → "Calculate & Add") requires selecting
+a `FrequencyUnit` and `DurationUnit` — both are `Category` subclasses stored
+in the single-table `category` (via `@Inheritance` with no strategy = default
+`SINGLE_TABLE`, discriminated by `DTYPE`). The local `coop` DB has **zero**
+rows with `DTYPE` in (`FrequencyUnit`, `DurationUnit`, `DoseUnit`) — confirmed
+via `SELECT DISTINCT DTYPE FROM category`. Both dropdowns render as
+`combobox "Select"` with no other options, and submitting anyway fails with
+`"Calculation Error: Incomplete prescription: dose, frequency, duration and
+duration unit are required"`. **Workaround**: use the "Dispense Request" →
+"+ Add Dispense Only" path instead (item autocomplete + plain qty field, no
+prescription fields) — but that path has the toDepartment bug from §31, so
+still fix `TODEPARTMENT_ID` via SQL afterward. Verified while testing issue
+#22312.
+
+## 40. Auto-substitution can silently turn a "zero stock" test case into "issued in full"
+
+When testing a BHT/pharmacy-request stock-shortfall feature, don't assume an
+item with 0 stock at the issuing department will exercise the "no stock"
+code path — `PharmacySaleBhtController.generateIssueBillComponentsForBhtRequest`
+(and similar issuing flows) auto-substitutes to a same-VMP sibling AMP with
+stock before falling back to "no stock". An item whose exact AMP has 0 stock
+but has an in-stock sibling under the same VMP (e.g. `Levo 500mg Tablet` →
+`EVITRA 500MG`) will be silently issued in full via the substitute, hiding the
+zero-stock code path entirely. To reliably hit "no stock at all", pick an item
+with **no in-stock siblings under its VMP either** — verify first:
+```sql
+SELECT a.ID, a.NAME, a.VMP_ID FROM item a WHERE a.DTYPE='Amp'
+AND a.ID NOT IN (SELECT ib.ITEM_ID FROM stock s JOIN itembatch ib ON s.ITEMBATCH_ID=ib.ID
+                 WHERE s.DEPARTMENT_ID=<dept> AND s.STOCK>0)
+AND (a.VMP_ID IS NULL OR a.VMP_ID NOT IN (
+  SELECT a2.VMP_ID FROM item a2 JOIN itembatch ib2 ON ib2.ITEM_ID=a2.ID
+  JOIN stock s2 ON s2.ITEMBATCH_ID=ib2.ID WHERE s2.DEPARTMENT_ID=<dept> AND s2.STOCK>0 AND a2.DTYPE='Amp');
+```
+Verified while testing issue #22312.
+
+## 41. A local dev DB with an empty `TRIGGERSUBSCRIPTION` table means notification-generating actions silently produce zero `UserNotification` rows
+
+Discharging a patient, changing a room, etc. always creates a `Notification`
+row, but the actual per-user `UserNotification` rows (what the bell icon and
+`/Notification/user_notifications.xhtml` show) only get created for webusers
+who hold a matching `TriggerSubscription`
+(`NotificationController.createNotification(...)` →
+`userNotificationController.createUserNotifications(nn)` →
+`TriggerSubscriptionController.fillSubscribedUsersByDepartment(...)`). A
+freshly-restored or never-fully-seeded local DB can have **zero rows in
+`TRIGGERSUBSCRIPTION`**, in which case discharging any number of patients
+produces `Notification` rows but no `UserNotification` rows for anyone —
+this looks identical to "the feature doesn't work" but is actually missing
+test-fixture data, not a bug.
+
+- Diagnose with `SELECT COUNT(*) FROM TRIGGERSUBSCRIPTION;` — 0 confirms this.
+- Fix through the UI, not SQL (per this doc's "use the admin UI" pattern,
+  §26): Admin → Manage Users → select the target user → **Manage User
+  Subscriptions** → tick **Application-wide** → pick the relevant
+  `TriggerType` (e.g. "Inward Patient Room Discharge - System Notification")
+  → **Add Subscription**.
+- The **Application-wide** checkbox's visible box intercepts Playwright's
+  normal click on the underlying `p:selectBooleanCheckbox` input — click via
+  a selector scoped to its own JSF id (`chkApplicationWide` in
+  `admin/users/user_subscription.xhtml`), not a bare `.ui-chkbox-box` index,
+  which picks whichever checkbox happens to be first/nth on the page and can
+  silently toggle the wrong control if the page has more than one:
+  `document.querySelector('[id$="chkApplicationWide"] .ui-chkbox-box')`.
+
+Found while verifying issue #21538 (discharge notifications routing to the
+wrong patient) — the fix couldn't be end-to-end tested at all until this was
+discovered and worked around.
+
+## 42. PrimeFaces bare `update="someId"` can 500 from inside a `p:dataTable`/`ui:repeat` row even though the id exists on the page
+
+A `p:commandButton update="someId"` where `someId` is a **sibling id
+declared outside** the enclosing `p:dataTable`/`ui:repeat`/`p:column` throws
+a hard 500 (`javax.faces.component.search.ComponentNotFoundException:
+Cannot find component for expressions "someId"`) as soon as that button is
+rendered for any row — not just on click, since PrimeFaces builds the ajax
+request descriptor (including resolving `update`) during **encode**, not
+decode. It can appear to work for row 0 by coincidence and break only from
+row 1 onward, or break for every row once a row's content changes (e.g. a
+row toggling into "retired" state and rendering a previously-`rendered=false`
+button for the first time) — so it can look like a row-index-specific bug
+rather than a general one.
+
+Fix: don't rely on plain-id resolution reaching outside the table/repeat.
+Use `update="@form"` (safe/simple when refreshing the whole form is
+acceptable) or an absolute id path — this project's `jsf-ajax` skill already
+documents `@this`/`@form`/`:#{p:resolveFirstComponentWithId(...)}` as the
+required patterns for exactly this reason.
+
+Found while fixing issue #21538: `Notification/user_notifications.xhtml`'s
+"Restore" button (`update="reNot"`, `reNot` being the `h:panelGroup`
+wrapping the whole list) crashed the page load itself once a retired
+notification was shown in a row other than the first.
+
+## 43. Clicking a `p:printer` button hangs the whole browser session — verify with print-media emulation instead
+
+`p:printer` calls `window.print()`, which opens a real native OS print dialog.
+In a Playwright-driven session this dialog blocks not just the click (which
+times out and gets moved to a background task) but **every subsequent tool
+call on that browser** — `browser_tabs list/new/close` all hang too, because
+the dialog is modal at the OS/browser-process level, not a JS `confirm()`
+that `browser_handle_dialog` can intercept. The only recovery is asking the
+human operator to manually dismiss the dialog in the actual browser window.
+
+**Don't click the Print button to verify print CSS.** Instead, emulate print
+media on the existing page and screenshot that — `p:printer` clones the
+current document's `<head>` (including inline `<style>` blocks and linked
+stylesheets) into its print iframe, so `@media print` rules apply identically
+whether triggered by the real dialog or by emulation:
+
+```js
+async (page) => { await page.emulateMedia({ media: 'print' }); }
+```
+
+Then `browser_take_screenshot` — this shows exactly what would print (hidden
+`.noPrintButton` elements, `.printOnlyReport` toggled visible, etc.) without
+ever touching `window.print()`. Verified while fixing issue #22316 (Time
+Service Report print truncation).
+
+**Scope of this check**: this only proves `@media print` visibility/layout
+rules apply correctly — it does not verify pagination, page-fit, or page
+breaks across multiple printed pages. For reports where those matter, follow
+up with an actual PDF export or a manual print-preview pass.
+
+## 44. A freshly-created test user needs a `WebUserDepartment` row, not just a `Department` field, to log in at all
+
+Creating a disposable test user via Admin > Manage Users > Add New User
+(`admin/users/user_add_new.xhtml`) and setting its `Department` field is not
+enough to let it log in. Login checks `listLoggableDepts(user)`
+(`SessionController.java`), which queries the `WebUserDepartment` join table
+— not the `WebUser.department` column. With no matching `WebUserDepartment`
+row, login fails with "This user has no privilage to login to any
+Department. Please conact system administrator." even though the user
+record itself looks fully configured.
+
+The Add New User form has no field for this; department-login grants are
+managed separately via **Manage Users > (select user) > Manage User
+Departments**. For a quick disposable test account it's simplest to insert
+the row directly:
+```sql
+INSERT INTO webuserdepartment (CREATEDAT, RETIRED, DEPARTMENT_ID, WEBUSER_ID)
+VALUES (NOW(), 0, <department_id>, <webuser_id>);
+```
+Also useful: no `WebUserRole` in this DB grants `ShowServiceCharges` (verified
+via `webuserroleprivilege`) — it's only assigned to individual users
+directly in `webuserprivilege`. So any freshly-created user with no role
+already lacks it, no extra step needed to test privilege-gated hiding.
+
+Found while verifying issue #22310 (fee row hidden along with its item name
+when `ShowServiceCharges` is absent) — needed a throwaway non-privileged
+login to confirm the fix without touching any real staff account.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

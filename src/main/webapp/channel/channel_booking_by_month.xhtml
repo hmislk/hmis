@@ -773,7 +773,7 @@
                                                 </h:panelGroup>
 
                                                 <h:outputLabel value="Foriegner"/>
-                                                <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                                <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Mark Foreigner and Mark Local Buttons in Billing', true)}">
                                                     <p:commandButton 
                                                         value="Mark Foreigner" 
                                                         action="#{bookingControllerViewScopeMonth.markAsForeigner}" 

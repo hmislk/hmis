@@ -74,6 +74,28 @@ Response:
 
 ---
 
+### POST `/api/users/{id}/force-password-reset` — Force reset without a new password
+
+Admin only. Flags `needToResetPassword=true` without requiring the caller to supply or
+know an actual new password. Distinct from `/reset-password`, which sets a real password.
+No request body.
+
+---
+
+### GET `/api/users/password-status` — Password reset status report
+
+Admin only. Returns `lastPasswordResetAt` and `needToResetPassword` for every active user.
+
+Optional query params: `from`, `to` (`yyyy-MM-dd`) — filters to users whose
+`lastPasswordResetAt` falls within the (inclusive) range. Omitted range returns all
+active users, including those who have never reset (`lastPasswordResetAt: null`).
+
+```
+GET /api/users/password-status?from=2026-06-01&to=2026-06-30
+```
+
+---
+
 ### GET `/api/users/{id}/privileges` — List user's privileges
 
 ---

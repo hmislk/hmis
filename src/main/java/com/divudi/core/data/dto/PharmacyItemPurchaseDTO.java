@@ -34,6 +34,7 @@ public class PharmacyItemPurchaseDTO implements Serializable {
     private Long itemId;
     private String itemName;
     private String itemCode;
+    private Double itemValue;
     
     // Batch and pricing information
     private String batchNo;
@@ -72,6 +73,31 @@ public class PharmacyItemPurchaseDTO implements Serializable {
         this.itemCode = itemCode;
         this.qty = qty;
         this.freeQty = freeQty;
+    }
+
+    // Constructor for Pharmacy Issue Bill Item search table with the bill item's own net value (16 parameters)
+    public PharmacyItemPurchaseDTO(Long billId, String billDeptId, Date billCreatedAt,
+                                   String billInstitutionName, String billDepartmentName,
+                                   String billFromInstitutionName, BillType billType,
+                                   Double billTotal, Double billNetTotal, Double billDiscount,
+                                   Long itemId, String itemName, String itemCode,
+                                   Double qty, Double freeQty, Double itemValue) {
+        this.billId = billId;
+        this.billDeptId = billDeptId;
+        this.billCreatedAt = billCreatedAt;
+        this.billInstitutionName = billInstitutionName;
+        this.billDepartmentName = billDepartmentName;
+        this.billFromInstitutionName = billFromInstitutionName;
+        this.billType = billType;
+        this.billTotal = billTotal;
+        this.billNetTotal = billNetTotal;
+        this.billDiscount = billDiscount;
+        this.itemId = itemId;
+        this.itemName = itemName;
+        this.itemCode = itemCode;
+        this.qty = qty;
+        this.freeQty = freeQty;
+        this.itemValue = itemValue;
     }
 
     // Constructor for BY_BILL report (no item details)
@@ -342,6 +368,9 @@ public class PharmacyItemPurchaseDTO implements Serializable {
 
     public String getItemCode() { return itemCode; }
     public void setItemCode(String itemCode) { this.itemCode = itemCode; }
+
+    public Double getItemValue() { return itemValue; }
+    public void setItemValue(Double itemValue) { this.itemValue = itemValue; }
 
     // Getter and setter methods for batch information
     public String getBatchNo() { return batchNo; }
