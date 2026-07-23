@@ -1452,6 +1452,13 @@ public class InwardStaffPaymentBillController implements Serializable {
         tmp.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE));
         tmp.setInsId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE));
 
+        Department voucherDepartment = getSessionController().getDepartment();
+        Long voucherStartingNumber = configOptionApplicationController.getLongValueByKeyForDepartment(
+                "Voucher Number Starting Value for " + BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE.getLabel(),
+                voucherDepartment, 1L);
+        tmp.setVoucherNo(getBillNumberBean().fetchNextVoucherNumber(
+                voucherDepartment, BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE, voucherStartingNumber));
+
         tmp.setDiscount(0.0);
         tmp.setDiscountPercent(0.0);
 
