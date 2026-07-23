@@ -20,7 +20,15 @@
 
                             <div class="d-flex gap-2" style="float: right">
 
-                                <p:commandButton 
+                                <p:commandButton
+                                    rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                    value="Settings"
+                                    icon="fas fa-cog"
+                                    class="ui-button-secondary"
+                                    type="button"
+                                    onclick="PF('retailSaleConfigDialog').show();" />
+
+                                <p:commandButton
                                     accesskey="n" 
                                     value="Back to Bill List"  
                                     ajax="false" 
@@ -110,39 +118,105 @@
 
                         </f:facet>
 
-                        <div class="d-flex justify-content-end gap-1">
-                            <p:outputLabel value="Paper Type" class="mt-2"></p:outputLabel>
-                            <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
-                                <f:selectItem itemLabel="Please Select Paper Type" />
-                                <f:selectItems value="#{enumController.paperTypes}" />
-                            </p:selectOneMenu>
-                            <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
-                        </div>
+                        <h:panelGroup   id="gpBillPreview"  >
 
-                        <h:panelGroup   id="gpBillPreview"  > 
-
-                            <h:panelGroup id="gpBillPreviewDouble" 
-                                          rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                            <h:panelGroup id="gpBillPreviewDouble"
+                                          rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill with Items is PosPaper',true)}">
 
                                 <ph:saleBill bill="#{pharmacyBillSearch.bill}" ></ph:saleBill>
 
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFivePaper',true)}">
                                 <ph:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></ph:saleBill_five_five>
                             </h:panelGroup>
-                            
-                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosHeaderPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}">
+
+                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}">
                                 <ph:saleBill_Header bill="#{pharmacyBillSearch.bill}" duplicate="true"></ph:saleBill_Header>
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
+                            <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}">
                                 <ph:sale_bill_five_five_custom_3 bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
                             </h:panelGroup>
 
                         </h:panelGroup>
                     </p:panel>
                 </h:form>
+
+                <!-- Pharmacy Retail Sale Configuration Dialog (Reused for Reprint, issue #22349) -->
+                <p:dialog id="retailSaleConfigDialog"
+                          rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                          header="Pharmacy Retail Sale Printer Configuration"
+                          widgetVar="retailSaleConfigDialog"
+                          modal="true"
+                          width="600"
+                          resizable="true"
+                          maximizable="true"
+                          closeOnEscape="true">
+
+                    <p:ajax event="open" listener="#{pharmacyConfigController.loadCurrentConfig}" update="retailSaleConfigForm" />
+
+                    <h:form id="retailSaleConfigForm">
+                        <div class="card config-section">
+                            <div class="card-header">
+                                <h6><i class="fas fa-file-alt"></i> Retail Sale Bill Paper Settings</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="retailSalePosPaper" value="#{pharmacyConfigController.retailSalePosPaper}" />
+                                    <h:outputLabel for="retailSalePosPaper" value="POS Paper (without items)" class="ms-2" />
+                                    <small class="form-text text-muted d-block">saleBill_without_item + saleBill components</small>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="retailSaleWithItemsPaper" value="#{pharmacyConfigController.retailSaleWithItemsPaper}" />
+                                    <h:outputLabel for="retailSaleWithItemsPaper" value="POS Paper (with items)" class="ms-2" />
+                                    <small class="form-text text-muted d-block">saleBill component</small>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="retailSalePrabodhaPaper" value="#{pharmacyConfigController.retailSalePrabodhaPaper}" />
+                                    <h:outputLabel for="retailSalePrabodhaPaper" value="POS Paper (Prabodha format)" class="ms-2" />
+                                    <small class="form-text text-muted d-block">saleBill_prabodha component</small>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="retailSaleFiveFivePaper" value="#{pharmacyConfigController.retailSaleFiveFivePaper}" />
+                                    <h:outputLabel for="retailSaleFiveFivePaper" value="5x5 Paper" class="ms-2" />
+                                    <small class="form-text text-muted d-block">saleBill_five_five component</small>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="retailSalePosHeaderPaper" value="#{pharmacyConfigController.retailSalePosHeaderPaper}" />
+                                    <h:outputLabel for="retailSalePosHeaderPaper" value="POS Paper with Header" class="ms-2" />
+                                    <small class="form-text text-muted d-block">saleBill_Header component</small>
+                                </div>
+                                <div class="mb-3">
+                                    <h:selectBooleanCheckbox id="retailSaleCustom3Paper" value="#{pharmacyConfigController.retailSaleCustom3Paper}" />
+                                    <h:outputLabel for="retailSaleCustom3Paper" value="5x5 Custom Format 3" class="ms-2" />
+                                    <small class="form-text text-muted d-block">sale_bill_five_five_custom_3 component</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card mt-3">
+                            <div class="card-body">
+                                <p:messages id="retailSaleConfigMessages" showDetail="true" closable="true" />
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        value="Apply &amp; Close"
+                                        icon="fas fa-save"
+                                        class="ui-button-success"
+                                        ajax="false"
+                                        action="#{pharmacyConfigController.saveRetailSaleConfig}" />
+                                    <p:commandButton
+                                        value="Cancel"
+                                        icon="fas fa-times"
+                                        class="ui-button-secondary"
+                                        onclick="PF('retailSaleConfigDialog').hide(); return false;"
+                                        type="button" />
+                                </div>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+
             </ui:define>
         </ui:composition>
     </h:body>
