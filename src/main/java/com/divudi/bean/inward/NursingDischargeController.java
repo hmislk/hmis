@@ -33,6 +33,9 @@ import javax.persistence.TemporalType;
 public class NursingDischargeController implements Serializable {
 
     @EJB
+    private com.divudi.service.AuditService auditService;
+
+    @EJB
     private PatientEncounterFacade patientEncounterFacade;
 
     @EJB
@@ -195,12 +198,34 @@ public class NursingDischargeController implements Serializable {
                     + " pending pharmacy item(s) must be resolved first.");
             return;
         }
+        Map<String, Object> before = nursingDischargeStateMap();
         currentEncounter.setNursingDischarged(Boolean.TRUE);
         currentEncounter.setNursingDischargeDateTime(new Date());
         currentEncounter.setNursingDischargedBy(sessionController.getLoggedUser());
         patientEncounterFacade.edit(currentEncounter);
+        auditService.logEncounterAudit(currentEncounter, "Nursing Discharge",
+                before, nursingDischargeStateMap(), sessionController.getLoggedUser());
         notificationController.createNotification(currentEncounter, "NursingDischarge");
         JsfUtil.addSuccessMessage("Nursing discharge confirmed.");
+    }
+
+    /**
+     * Snapshot of the nursing/physical discharge flags for audit events (#22236).
+     */
+    private Map<String, Object> nursingDischargeStateMap() {
+        Map<String, Object> m = new java.util.LinkedHashMap<>();
+        if (currentEncounter == null) {
+            return m;
+        }
+        m.put("nursingDischarged", currentEncounter.isNursingDischarged());
+        m.put("nursingDischargeDateTime", currentEncounter.getNursingDischargeDateTime());
+        m.put("nursingDischargedBy", currentEncounter.getNursingDischargedBy() != null
+                ? currentEncounter.getNursingDischargedBy().getName() : null);
+        m.put("physicalDischarged", currentEncounter.isPhysicalDischarged());
+        m.put("physicalDischargeDateTime", currentEncounter.getPhysicalDischargeDateTime());
+        m.put("physicalDischargedBy", currentEncounter.getPhysicalDischargedBy() != null
+                ? currentEncounter.getPhysicalDischargedBy().getName() : null);
+        return m;
     }
 
     public void cancelNursingDischarge() {
@@ -216,10 +241,13 @@ public class NursingDischargeController implements Serializable {
             JsfUtil.addErrorMessage("Cannot cancel nursing discharge: physical discharge has already been confirmed. Cancel physical discharge first.");
             return;
         }
+        Map<String, Object> before = nursingDischargeStateMap();
         currentEncounter.setNursingDischarged(Boolean.FALSE);
         currentEncounter.setNursingDischargeDateTime(null);
         currentEncounter.setNursingDischargedBy(null);
         patientEncounterFacade.edit(currentEncounter);
+        auditService.logEncounterAudit(currentEncounter, "Nursing Discharge Cancelled",
+                before, nursingDischargeStateMap(), sessionController.getLoggedUser());
         JsfUtil.addSuccessMessage("Nursing discharge cancelled.");
     }
 
@@ -240,14 +268,20 @@ public class NursingDischargeController implements Serializable {
             JsfUtil.addErrorMessage("Cannot confirm physical discharge: nursing discharge has not been completed.");
             return;
         }
-        if (!Boolean.TRUE.equals(currentEncounter.getDischarged())) {
+        boolean administrativelyDischarged = Boolean.TRUE.equals(currentEncounter.getDischarged())
+                || (currentEncounter.getParentEncounter() != null
+                    && Boolean.TRUE.equals(currentEncounter.getParentEncounter().getDischarged()));
+        if (!administrativelyDischarged) {
             JsfUtil.addErrorMessage("Cannot confirm physical discharge: administrative discharge (final bill) has not been completed.");
             return;
         }
+        Map<String, Object> before = nursingDischargeStateMap();
         currentEncounter.setPhysicalDischarged(Boolean.TRUE);
         currentEncounter.setPhysicalDischargeDateTime(new Date());
         currentEncounter.setPhysicalDischargedBy(sessionController.getLoggedUser());
         patientEncounterFacade.edit(currentEncounter);
+        auditService.logEncounterAudit(currentEncounter, "Physical Discharge",
+                before, nursingDischargeStateMap(), sessionController.getLoggedUser());
         notificationController.createNotification(currentEncounter, "PhysicalDischarge");
         JsfUtil.addSuccessMessage("Physical discharge confirmed. Patient has left the hospital.");
     }
@@ -261,10 +295,13 @@ public class NursingDischargeController implements Serializable {
             JsfUtil.addErrorMessage("Physical discharge has not been confirmed.");
             return;
         }
+        Map<String, Object> before = nursingDischargeStateMap();
         currentEncounter.setPhysicalDischarged(Boolean.FALSE);
         currentEncounter.setPhysicalDischargeDateTime(null);
         currentEncounter.setPhysicalDischargedBy(null);
         patientEncounterFacade.edit(currentEncounter);
+        auditService.logEncounterAudit(currentEncounter, "Physical Discharge Cancelled",
+                before, nursingDischargeStateMap(), sessionController.getLoggedUser());
         JsfUtil.addSuccessMessage("Physical discharge cancelled.");
     }
 

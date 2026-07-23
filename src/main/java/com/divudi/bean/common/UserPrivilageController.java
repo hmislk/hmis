@@ -166,6 +166,9 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdmissionsAdmission, "Admission"), admissionsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdmissionsEditAdmission, "Edit Admission Details"), admissionsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdmissionsInwardAppoinment, "Inward Appointment"), admissionsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardEditPatientDetailsFromAdmission, "Edit Patient Details From Admission"), admissionsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardEditPaymentDetails, "Edit Payment Details"), admissionsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardManageAllergies, "Manage Allergies"), admissionsNode);
 
         TreeNode appointmentNode = new DefaultTreeNode(new PrivilegeHolder(null, "Appointment"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAppointmentMenu, "Appointment Menu"), appointmentNode);
@@ -191,6 +194,8 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServicesAndItemsAddProfessionalFee, "Add Professional Fee"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServicesAndItemsAddTimedServices, "Add Timed Services"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAddChargesAfterNursingDischarge, "Add Charges After Nursing Discharge"), servicesItemsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardHoldProfessionalPayments, "Hold Professional Payments"), servicesItemsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPayProfessionalFeesWhileOnHold, "Pay Professional Fees While On Hold"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServiceItemRequestApproval, "Approve Service/Item Requests"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServiceItemRequestRejection, "Reject Service/Item Requests"), servicesItemsNode);
 
@@ -199,6 +204,34 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardBillingInterimBill, "Interim Bill"), inwardBillingNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardBillingInterimBillSearch, "Interim Bill Search"), inwardBillingNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillReportEdit, "Edit Patient Name After Payment Finalized"), inwardBillingNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardDoctorPaymentAccess, "Doctor Payment Access"), inwardBillingNode);
+
+        TreeNode dashboardPanelsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Inpatient Dashboard Panels"), inwardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelAdmission, "Admission Panel"), dashboardPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelBilling, "Billing Panel"), dashboardPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelServices, "Services Panel"), dashboardPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelRoomManagement, "Room Management Panel"), dashboardPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelOperationTheatre, "Operation Theatre Panel"), dashboardPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelClinicalData, "Clinical Data Panel"), dashboardPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelPharmaceuticals, "Pharmaceuticals Panel"), dashboardPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelDocuments, "Documents Panel"), dashboardPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientDashboardPanelReports, "Reports Panel"), dashboardPanelsNode);
+
+        TreeNode inwardSurgeryNode = new DefaultTreeNode(new PrivilegeHolder(null, "Surgery"), inwardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryAdd, "Add Surgery"), inwardSurgeryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryManage, "Manage Surgery"), inwardSurgeryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryValidate, "Validate Surgery"), inwardSurgeryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryValidationRevert, "Revert Surgery Validation"), inwardSurgeryNode);
+
+        TreeNode clinicalDataViewNode = new DefaultTreeNode(new PrivilegeHolder(null, "Clinical Data Access"), inwardNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPatientHistoryView, "Patient History View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardClinicalNotesView, "Clinical Notes View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardWardMedicationsView, "Ward Medications View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardDischargeMedicationsView, "Discharge Medications View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardInvestigationsView, "Investigations View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardImagesView, "Images View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardDiagnosisCardView, "Diagnosis Card View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardEventHistoryView, "Event History View"), clinicalDataViewNode);
 
         TreeNode inwardPharmacyNode = new DefaultTreeNode(new PrivilegeHolder(null, "Pharmacy"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyMenu, "Pharmacy Menu"), inwardPharmacyNode);
@@ -258,6 +291,8 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchServiceBillUnrestrictedAccess, "Inward Bill Search Without Restriction"), additionalPrivilegesNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSettleFinalBillUnrestricted, "Inward Final Bill Settle Without Restriction"), additionalPrivilegesNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSettleFinalBill, "Inward Settle Final Bill"), additionalPrivilegesNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillCreateVersion, "Inward Final Bill Create New Version"), additionalPrivilegesNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillSetConfirmed, "Inward Final Bill Set As Confirmed"), additionalPrivilegesNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSaveProvisionalFinalBill, "Inward Save Provisional Final Bill"), additionalPrivilegesNode);
 
         // Theatre Privileges
@@ -954,7 +989,15 @@ public class UserPrivilageController implements Serializable {
         TreeNode showDrugCharges = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShowDrugCharges, "Show Drug Charges"), nurseNode);
         TreeNode ShowServiceCharges = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShowServiceCharges, "Show Service Charges"), nurseNode);
         TreeNode ShowTimeServiceCharges = new DefaultTreeNode(new PrivilegeHolder(Privileges.ShowTimeServiceCharges, "Show Time Service Charges"), nurseNode);
-        
+
+        TreeNode nursingWorkBenchPanelsNode = new DefaultTreeNode(new PrivilegeHolder(null, "Nursing Workbench Panels"), nurseNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelEdit, "Edit Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelClinicalData, "Clinical Data Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelRoomManagement, "Room Management Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelService, "Service Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelOperationTheatre, "Operation Theatre Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelPharmaceuticals, "Pharmaceuticals Panel"), nursingWorkBenchPanelsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.NursingWorkBenchPanelReports, "Reports Panel"), nursingWorkBenchPanelsNode);
 
         // Admin Privileges
         TreeNode superAdminNode = new DefaultTreeNode(new PrivilegeHolder(Privileges.SuperAdmin, "Super Admin"), allNode);

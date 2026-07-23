@@ -1,5 +1,6 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.Title;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -8,6 +9,7 @@ public class DurationServiceReportDTO implements Serializable {
     private Long patientItemId;
     private String bhtNo;
     private String mrnNo;
+    private Title title;
     private String consultantName;
     private String surgeryName;
     private String serviceDepartmentName;
@@ -26,6 +28,7 @@ public class DurationServiceReportDTO implements Serializable {
     private Date checkedAt;
     private Date serviceAddedAt;
     private Date invoiceDate;
+    private String creatingLocation;
 
     public DurationServiceReportDTO() {
     }
@@ -70,6 +73,78 @@ public class DurationServiceReportDTO implements Serializable {
         this.checkedAt = checkedAt;
         this.serviceAddedAt = serviceAddedAt;
         this.invoiceDate = invoiceDate;
+    }
+
+    public DurationServiceReportDTO(
+            Long patientItemId,
+            String bhtNo,
+            String mrnNo,
+            Title title,
+            String consultantNameWithInitials,
+            String surgeryNameFromProc,
+            String surgeryNameFromEncounter,
+            String serviceDepartmentName,
+            String serviceName,
+            String serviceGroupName,
+            Date startTime,
+            Date endTime,
+            Double basePrice,
+            Double discountAmount,
+            Double adjustedAmount,
+            String creatorNameWithInitials,
+            String billCheckedByWithInitials,
+            String finalBillCheckedByWithInitials,
+            Date billCheckedAt,
+            Date finalBillCheckedAt,
+            Date serviceAddedAt,
+            Date billCreatedAt,
+            Date finalBillCreatedAt,
+            Long creditCompanyId,
+            String creatingLocation) {
+        this.patientItemId = patientItemId;
+        this.bhtNo = bhtNo != null ? bhtNo : "";
+        this.mrnNo = mrnNo != null ? mrnNo : "";
+        this.title = title;
+        this.consultantName = consultantNameWithInitials != null ? consultantNameWithInitials : "";
+        this.creatingLocation = creatingLocation != null ? creatingLocation : "";
+        
+        if (surgeryNameFromProc != null && !surgeryNameFromProc.trim().isEmpty()) {
+            this.surgeryName = surgeryNameFromProc;
+        } else if (surgeryNameFromEncounter != null && !surgeryNameFromEncounter.trim().isEmpty()) {
+            this.surgeryName = surgeryNameFromEncounter;
+        } else {
+            this.surgeryName = "";
+        }
+        
+        this.serviceDepartmentName = serviceDepartmentName != null ? serviceDepartmentName : "";
+        this.serviceName = serviceName != null ? serviceName : "";
+        this.serviceGroupName = serviceGroupName != null ? serviceGroupName : "";
+        this.startTime = startTime;
+        this.endTime = endTime;
+        
+        double bp = basePrice != null ? basePrice : 0.0;
+        double da = discountAmount != null ? discountAmount : 0.0;
+        
+        this.basePrice = bp;
+        this.discountAmount = da;
+        
+        double net = bp - da;
+        if (creditCompanyId != null) {
+            this.sponsorNet = net;
+            this.sponsorDiscount = 0.0;
+            this.patientAmount = 0.0;
+        } else {
+            this.sponsorNet = 0.0;
+            this.sponsorDiscount = 0.0;
+            this.patientAmount = net;
+        }
+        
+        this.adjustedAmount = adjustedAmount != null ? adjustedAmount : 0.0;
+        this.creatorName = creatorNameWithInitials != null ? creatorNameWithInitials : "";
+        this.checkedByName = billCheckedByWithInitials != null ? billCheckedByWithInitials : (finalBillCheckedByWithInitials != null ? finalBillCheckedByWithInitials : "");
+        this.checkedAt = billCheckedAt != null ? billCheckedAt : finalBillCheckedAt;
+        this.serviceAddedAt = serviceAddedAt;
+        this.invoiceDate = billCreatedAt != null ? billCreatedAt : finalBillCreatedAt;
     }
 
     public String getDuration() {
@@ -259,5 +334,21 @@ public class DurationServiceReportDTO implements Serializable {
 
     public void setInvoiceDate(Date invoiceDate) {
         this.invoiceDate = invoiceDate;
+    }
+
+    public Title getTitle() {
+        return title;
+    }
+
+    public void setTitle(Title title) {
+        this.title = title;
+    }
+
+    public String getCreatingLocation() {
+        return creatingLocation;
+    }
+
+    public void setCreatingLocation(String creatingLocation) {
+        this.creatingLocation = creatingLocation;
     }
 }

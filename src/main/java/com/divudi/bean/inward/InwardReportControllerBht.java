@@ -1547,12 +1547,14 @@ public class InwardReportControllerBht implements Serializable {
         jpql = "select b from Bill b "
                 + "where b.patientEncounter=:pe "
                 + "and b.billType=:bTp "
+                + "and b.billTypeAtomic=:bta "
                 + "and b.retired=false "
                 + "and b.cancelled=false "
                 + "and  b.toDepartment=:toDep";
         hm.put("pe", getPatientEncounter());
         hm.put("toDep", department);
         hm.put("bTp", BillType.InwardPharmacyRequest);
+        hm.put("bta", BillTypeAtomic.REQUEST_MEDICINE_INWARD);
 
         issueBills = getBillFacade().findByJpql(jpql, hm);
 

@@ -20,6 +20,7 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.PaperType;
+import com.divudi.core.data.Privileges;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
@@ -667,7 +668,9 @@ public class PharmacyBillSearch implements Serializable {
         }
         pharmacyRequestForBhtController.setBillPreview(false);
         pharmacyRequestForBhtController.setPatientEncounter(bill.getPatientEncounter());
-        pharmacyRequestForBhtController.setDepartment(bill.getFromDepartment());
+        // `department` on PharmacyRequestForBhtController means the target pharmacy
+        // (toDepartment), not the ward (fromDepartment) — see loadDraftForEditing().
+        pharmacyRequestForBhtController.setDepartment(bill.getToDepartment());
         pharmacyRequestForBhtController.setPreBill((PreBill) bill);
         billFacade.edit(bill);
         return "/ward/ward_pharmacy_bht_issue_request_edit?faces-redirect=true";
@@ -691,7 +694,40 @@ public class PharmacyBillSearch implements Serializable {
         bill.setCancelled(true);
         bill.setCancelledBill(cb);
         billFacade.edit(bill);
+        // Invalidate the cached print DTO so a subsequent "View Request" for this
+        // same bill id (this bean is session-scoped) re-reads the now-cancelled
+        // status instead of serving the stale pre-cancellation snapshot.
+        bhtIssueRequestPrintDtoBillId = null;
         return navigateBackFromInwardPharmacyRequestReprint();
+    }
+
+    public String markInwardPharmacyRequestComplete() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Not Bill Found !");
+            return "";
+        }
+        if (!webUserController.hasPrivilege(Privileges.PharmacyBhtRequestForceComplete.toString())) {
+            JsfUtil.addErrorMessage("You do not have privilege to force-complete this request.");
+            return "";
+        }
+        if (bill.isCompleted()) {
+            JsfUtil.addErrorMessage("This request is already marked as Completed.");
+            return "";
+        }
+        if (bill.isCancelled()) {
+            JsfUtil.addErrorMessage("Cannot complete a cancelled request.");
+            return "";
+        }
+        bill.setCompleted(true);
+        bill.setCompletedAt(new Date());
+        bill.setCompletedBy(sessionController.getLoggedUser());
+        billFacade.edit(bill);
+        // Invalidate the cached print DTO so a subsequent "View Request" for this
+        // same bill id (this bean is session-scoped) re-reads the now-completed
+        // status instead of serving the stale pre-completion snapshot.
+        bhtIssueRequestPrintDtoBillId = null;
+        JsfUtil.addSuccessMessage("Request marked as Completed.");
+        return "";
     }
 
     /**
@@ -1767,7 +1803,7 @@ public class PharmacyBillSearch implements Serializable {
         }
 
         if (getBill().getBillType() == BillType.PharmacySale) {
-            if (checkSaleReturn(getBill().getReferenceBill())) {
+            if (checkSaleReturn(getBill())) {
                 JsfUtil.addErrorMessage("Sale had been Returned u can't cancell bill ");
                 return true;
             }
@@ -1854,6 +1890,49 @@ public class PharmacyBillSearch implements Serializable {
         params.put("refBill", getBill());
 
         Long count = getBillFacade().findLongByJpql(jpql, params);
+        return count != null && count > 0;
+    }
+
+    /**
+     * Public method to check if the current Sale-for-Cashier bill already has
+     * an active (non-cancelled) item return against it.
+     * Used in XHTML to disable the Cancel button once a return has been processed.
+     * @return true if this Sale bill has been returned
+     */
+    public boolean hasActiveSaleReturn() {
+        if (getBill() == null || getBill().getBillType() != BillType.PharmacySale) {
+            return false;
+        }
+        return checkSaleReturn(getBill());
+    }
+
+    /**
+     * Public method to check if the current item-return bill already has an
+     * active (non-cancelled) refund payment processed against it. Queries
+     * fresh instead of navigating Bill.returnCashBills, whose lazy collection
+     * can be stale in the shared L2 cache when the refund bill was created in
+     * a separate request. Used both to gate the Cancel button in XHTML and to
+     * guard the server-side cancel action.
+     *
+     * Queries the base {@code Bill} type, not {@code RefundBill}: the refund
+     * payment bill created by PharmacyRefundForItemReturnsController is
+     * persisted as a plain {@code Bill} (DTYPE='Bill'), so a "From RefundBill"
+     * query would silently miss it.
+     * @return true if a refund payment has been processed for this bill
+     */
+    public boolean hasActiveReturnCashBill() {
+        if (getBill() == null) {
+            return false;
+        }
+        String sql = "Select count(b) From Bill b where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.billType=:bt "
+                + " and b.referenceBill=:ref "
+                + " and b.billedBill is null";
+        HashMap hm = new HashMap();
+        hm.put("ref", getBill());
+        hm.put("bt", BillType.PharmacySale);
+        Long count = getBillFacade().findLongByJpql(sql, hm);
         return count != null && count > 0;
     }
 
@@ -3294,7 +3373,7 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
 
-            if (getBill().checkActiveReturnCashBill()) {
+            if (hasActiveReturnCashBill()) {
                 JsfUtil.addErrorMessage("Payment for this bill Already Paid");
                 return;
             }
@@ -4194,6 +4273,26 @@ public class PharmacyBillSearch implements Serializable {
 //            paymentMethod = bb.getPaymentMethod();
 //        }
 
+    }
+
+    @EJB
+    private com.divudi.service.pharmacy.BhtIssueRequestNativeSqlService bhtIssueRequestNativeSqlService;
+
+    private com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto bhtIssueRequestPrintDto;
+    private Long bhtIssueRequestPrintDtoBillId;
+
+    public com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto getBhtIssueRequestPrintDto() {
+        if (bill == null || bill.getId() == null) {
+            return null;
+        }
+        if (!bill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
+            bhtIssueRequestPrintDto = bhtIssueRequestNativeSqlService.loadPrintDtoByBillId(bill.getId());
+            bhtIssueRequestPrintDtoBillId = bill.getId();
+            if (bhtIssueRequestPrintDto == null) {
+                JsfUtil.addErrorMessage("BHT Issue Request not found");
+            }
+        }
+        return bhtIssueRequestPrintDto;
     }
 
     public String getReturnPage() {

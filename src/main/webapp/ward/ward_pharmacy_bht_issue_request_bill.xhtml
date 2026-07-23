@@ -7,7 +7,8 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
       xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
-      xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward">
+      xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward"
+      xmlns:phprint="http://xmlns.jcp.org/jsf/composite/pharmacy/print">
 
     <h:body>
 
@@ -320,19 +321,11 @@
                                             <f:facet name="header" >
                                                 <h:outputText styleClass="fa-solid fa-circle-plus"  />
                                                 <h:outputText value="Prescription" styleClass="mx-4"/>
-<!--
-    Save Draft is hidden for now (rendered="false"). It persists a PharmacyBhtPre
-    PreBill, but there is currently no mechanism on this page to reload a saved
-    draft and continue editing it, so a saved draft cannot be picked up from where
-    it was left off. Until that "resume draft" capability is built, the button is
-    kept in place but not rendered to avoid confusing users. Re-enable once draft
-    retrieval is implemented.
--->
                                                 <p:commandButton
                                                     id="btnSave"
-                                                    rendered="false"
                                                     ajax="false"
                                                     value="Save Draft"
+                                                    title="Save this request as a draft to resume later"
                                                     action="#{pharmacyRequestForBhtController.saveBhtIssueRequestFrompharmacy()}"
                                                     icon="pi pi-save"
                                                     class="ui-button-success"
@@ -572,8 +565,8 @@
                                                         class="ui-button-success"
                                                         title="Calculate the dispense item and quantity from the prescription and add it to the dispense request"
                                                         action="#{pharmacyRequestForBhtController.calculateAndAddBillItem}"
-                                                        process="@this acMedicine acItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"
-                                                        update="growl :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acMedicine acItem focusItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtDrugOrderComments"   >
+                                                        process="@this acMedicine acItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtComments txtDrugOrderComments"
+                                                        update="growl :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acMedicine acItem focusItem txtQty txtDose doseUnitPanel cmbFrequency txtDuration cmbDuration prescribedFrom prescribedTo txtComments txtDrugOrderComments"   >
                                                     </p:commandButton>
                                                 </div>
                                             </div>
@@ -657,7 +650,7 @@
                                         <div class="row mt-1">
                                             <div class="col-md-12">
                                                 <p:outputLabel value="Comment" />
-                                                <p:inputTextarea id="txtDrugOrderComments" value="#{pharmacyRequestForBhtController.billItem.prescription.comment}" class="w-100" />
+                                                <p:inputTextarea id="txtDrugOrderComments" value="#{pharmacyRequestForBhtController.billItem.instructions}" class="w-100" />
                                             </div>
                                         </div>
 
@@ -688,6 +681,9 @@
                                                         <h:outputText rendered="#{bi.prescription.duration ne null}" value="Duration: #{bi.prescription.duration} #{bi.prescription.durationUnit.name}" />
                                                     </h:panelGroup>
                                                 </h:panelGroup>
+                                            </p:column>
+                                            <p:column headerText="Comment" width="15em">
+                                                <h:outputText value="#{bi.instructions}" />
                                             </p:column>
                                             <p:column headerText="Edit" width="5em">
                                                 <p:commandButton
@@ -848,6 +844,8 @@
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
 
+                                    <phprint:bht_issue_request_print_config_button/>
+
                                     <p:commandButton
                                         id="btnNewMedicineRequest"
                                         value="New Medicine Request for BHT"
@@ -865,8 +863,8 @@
                         </f:facet>
 
                         <h:panelGroup id="gpBillPreview">
-                            <ph:pharmacy_bht_issue_request_receipt 
-                                bill="#{pharmacyRequestForBhtController.printBill}"
+                            <phprint:bht_issue_request_receipt
+                                dto="#{pharmacyRequestForBhtController.bhtIssueRequestPrintDto}"
                                 comment="#{pharmacyRequestForBhtController.comment}" />
                         </h:panelGroup>
 

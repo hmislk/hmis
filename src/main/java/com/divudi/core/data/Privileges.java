@@ -90,6 +90,8 @@ public enum Privileges {
     InwardServiceItemRequestApproval("Inward Service/Item Request Approval"),
     InwardServiceItemRequestRejection("Inward Service/Item Request Rejection"),
     InwardAddChargesAfterNursingDischarge("Inward Add Charges After Nursing Discharge"),
+    InwardHoldProfessionalPayments("Hold Professional Payments"),
+    InwardPayProfessionalFeesWhileOnHold("Pay Professional Fees While On Hold"),
     InwardBilling("Inward Billing"),
     InwardBillingInterimBill("Inward Interim Bill"),
     InwardBillingInterimBillSearch("Inward Interim Bill Search"),
@@ -100,6 +102,8 @@ public enum Privileges {
     InwardSearchFinalBill("Inward Search Final Bill"),
     InwardSettleFinalBillUnrestricted("Inward Settle Final Bill Without Restricted"),
     InwardSettleFinalBill("Inward Settle Final Bill"),
+    InwardFinalBillCreateVersion("Inward Final Bill Create New Version"),
+    InwardFinalBillSetConfirmed("Inward Final Bill Set As Confirmed"),
     InwardSaveProvisionalFinalBill("Inward Save Provisional Final Bill"),
     InwardReport("Inward Report"),
     InwardLaboratory("Inward Laboratory"),
@@ -140,13 +144,51 @@ public enum Privileges {
     InpatientLetter("Inpatient Letter"),
     InwardPackageAdministration("Inward Package Administration"),
     InwardPackageAdmission("Inward Package Admission"),
+    InwardEditPatientDetailsFromAdmission("Inward Edit Patient Details From Admission"),
+    InwardEditPaymentDetails("Inward Edit Payment Details"),
+    InwardManageAllergies("Inward Manage Allergies"),
+    InwardDoctorPaymentAccess("Inward Doctor Payment Access"),
+    InwardSurgeryAdd("Inward Surgery Add"),
+    InwardSurgeryManage("Inward Surgery Manage"),
+    InwardSurgeryValidate("Inward Surgery Validate"),
+    InwardSurgeryValidationRevert("Inward Surgery Validation Revert"),
+    InwardPatientHistoryView("Inward Patient History View"),
+    InwardClinicalNotesView("Inward Clinical Notes View"),
+    InwardWardMedicationsView("Inward Ward Medications View"),
+    InwardDischargeMedicationsView("Inward Discharge Medications View"),
+    InwardInvestigationsView("Inward Investigations View"),
+    InwardImagesView("Inward Images View"),
+    InwardDiagnosisCardView("Inward Diagnosis Card View"),
+    InwardEventHistoryView("Inward Event History View"),
     //</editor-fold>
-    
+
+    //<editor-fold defaultstate="collapsed" desc="Inpatient Dashboard Panels">
+    InpatientDashboardPanelAdmission("Inpatient Dashboard - Admission Panel"),
+    InpatientDashboardPanelBilling("Inpatient Dashboard - Billing Panel"),
+    InpatientDashboardPanelServices("Inpatient Dashboard - Services Panel"),
+    InpatientDashboardPanelRoomManagement("Inpatient Dashboard - Room Management Panel"),
+    InpatientDashboardPanelOperationTheatre("Inpatient Dashboard - Operation Theatre Panel"),
+    InpatientDashboardPanelClinicalData("Inpatient Dashboard - Clinical Data Panel"),
+    InpatientDashboardPanelPharmaceuticals("Inpatient Dashboard - Pharmaceuticals Panel"),
+    InpatientDashboardPanelDocuments("Inpatient Dashboard - Documents Panel"),
+    InpatientDashboardPanelReports("Inpatient Dashboard - Reports Panel"),
+    //</editor-fold>
+
     //<editor-fold defaultstate="collapsed" desc="Nurse">
     NursingWorkBench("Nursing Work Bench"),
     ShowDrugCharges("Show Drug Charges"),
     ShowServiceCharges("Show Service Charges"),
     ShowTimeServiceCharges("Show Time Service Charges"),
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="Nursing Workbench Panels">
+    NursingWorkBenchPanelEdit("Nursing Workbench - Edit Panel"),
+    NursingWorkBenchPanelClinicalData("Nursing Workbench - Clinical Data Panel"),
+    NursingWorkBenchPanelRoomManagement("Nursing Workbench - Room Management Panel"),
+    NursingWorkBenchPanelService("Nursing Workbench - Service Panel"),
+    NursingWorkBenchPanelOperationTheatre("Nursing Workbench - Operation Theatre Panel"),
+    NursingWorkBenchPanelPharmaceuticals("Nursing Workbench - Pharmaceuticals Panel"),
+    NursingWorkBenchPanelReports("Nursing Workbench - Reports Panel"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Finance">
@@ -1164,8 +1206,15 @@ public enum Privileges {
             case ShowDrugCharges:
             case ShowServiceCharges:
             case ShowTimeServiceCharges:
+            case NursingWorkBenchPanelEdit:
+            case NursingWorkBenchPanelClinicalData:
+            case NursingWorkBenchPanelRoomManagement:
+            case NursingWorkBenchPanelService:
+            case NursingWorkBenchPanelOperationTheatre:
+            case NursingWorkBenchPanelPharmaceuticals:
+            case NursingWorkBenchPanelReports:
                 return "Nursing Work Bench";
-                
+
             case WatingRoomAdmitPatient:
             case InwardAppointmentMenu:
             case AddInwardAppointment:
@@ -1177,6 +1226,8 @@ public enum Privileges {
             case InwardNursingDischarge:
             case InwardPhysicalDischarge:
             case InwardAddChargesAfterNursingDischarge:
+            case InwardHoldProfessionalPayments:
+            case InwardPayProfessionalFeesWhileOnHold:
             case InwardDocumentUpload:
             case InpatientLetter:
             case InwardPackageAdministration:
@@ -1184,6 +1235,8 @@ public enum Privileges {
             case InwardFormTemplateAdmin:
             case InwardFormFill:
             case InwardSettleFinalBill:
+            case InwardFinalBillCreateVersion:
+            case InwardFinalBillSetConfirmed:
             case InwardSaveProvisionalFinalBill:
             case InwardLaboratory:
             case InwardLaboratoryBarcodeGeneration:
@@ -1195,6 +1248,31 @@ public enum Privileges {
             case WardAcceptTheatreReturn:
             case InwardServiceItemRequestApproval:
             case InwardServiceItemRequestRejection:
+            case InpatientDashboardPanelAdmission:
+            case InpatientDashboardPanelBilling:
+            case InpatientDashboardPanelServices:
+            case InpatientDashboardPanelRoomManagement:
+            case InpatientDashboardPanelOperationTheatre:
+            case InpatientDashboardPanelClinicalData:
+            case InpatientDashboardPanelPharmaceuticals:
+            case InpatientDashboardPanelDocuments:
+            case InpatientDashboardPanelReports:
+            case InwardEditPatientDetailsFromAdmission:
+            case InwardEditPaymentDetails:
+            case InwardManageAllergies:
+            case InwardDoctorPaymentAccess:
+            case InwardSurgeryAdd:
+            case InwardSurgeryManage:
+            case InwardSurgeryValidate:
+            case InwardSurgeryValidationRevert:
+            case InwardPatientHistoryView:
+            case InwardClinicalNotesView:
+            case InwardWardMedicationsView:
+            case InwardDischargeMedicationsView:
+            case InwardInvestigationsView:
+            case InwardImagesView:
+            case InwardDiagnosisCardView:
+            case InwardEventHistoryView:
                 return "Inward";
 
             case AdminInactivePatients:

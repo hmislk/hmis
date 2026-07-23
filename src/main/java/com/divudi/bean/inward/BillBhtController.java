@@ -17,6 +17,7 @@ import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemMappingController;
+import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
@@ -27,7 +28,11 @@ import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
+import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.admin.ConfigOptionInfo;
+import com.divudi.core.data.admin.PageMetadata;
+import com.divudi.core.data.admin.PrivilegeInfo;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.entity.Bill;
@@ -79,6 +84,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -116,6 +122,8 @@ public class BillBhtController implements Serializable {
     DepartmentController departmentController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    PageMetadataRegistry pageMetadataRegistry;
     /////////////////
     @EJB
     private ItemFeeFacade itemFeeFacade;
@@ -148,12 +156,16 @@ public class BillBhtController implements Serializable {
     private BillNumberGenerator billNumberBean;
     @Inject
     BillController billController;
+    @Inject
+    private SurgeryBillController surgeryBillController;
     ///////////////////
 
     private double total;
     private double discount;
     private double marginTotal;
     private double netTotal;
+    private double vat;
+    private double vatPlusNetTotal;
     private double cashPaid;
     private double cashBalance;
     private String creditCardRefNo;
@@ -188,6 +200,108 @@ public class BillBhtController implements Serializable {
     
     private Priority currentBillItemPriority;
     private Double currentBillItemQty;
+
+    @PostConstruct
+    public void init() {
+        registerPageMetadata();
+    }
+
+    /**
+     * Register page metadata for the admin configuration interface
+     */
+    private void registerPageMetadata() {
+        if (pageMetadataRegistry == null) {
+            return;
+        }
+
+        PageMetadata metadata = new PageMetadata();
+        metadata.setPagePath("inward/inward_bill_service");
+        metadata.setPageName("Inward Add Services");
+        metadata.setDescription("Adds services, investigations, and their fees to an inpatient's bill");
+        metadata.setControllerClass("BillBhtController");
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Bill Fees are based on the site for " + sessionController.getDepartment().getName(),
+                "Uses site-specific bill fees (falling back to base fees when none exist for the site) when adding services to the inward bill. Mirrors the equivalent OPD option.",
+                "BillBhtController.java: billFeeFromBillItemWithMatrix() method",
+                OptionScope.DEPARTMENT
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Use Sample Management for Inward Service and Investigations",
+                "Routes the print-preview 'Manage Samples' action to sample management instead of direct label printing",
+                "inward_bill_service.xhtml: print-preview action buttons",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is POS Paper",
+                "Uses POS paper format for the inward service bill print preview",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is A4 Paper",
+                "Uses A4 paper format for the inward service bill print preview",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is A4Printed Paper",
+                "Uses A4 pre-printed paper format for the inward service bill print preview",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is FiveFiveCustom3 Paper",
+                "Uses the FiveFiveCustom3 paper format for the inward service bill print preview",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is 5x8 inch Paper",
+                "Uses the 5x8 inch paper format for the inward service bill print preview",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
+                "Inward Servise Bill size is FiveFivePrinted paper",
+                "Uses the FiveFive pre-printed paper format for the inward service bill print preview (this is also the fallback default when the paper type preference is unset)",
+                "inward_bill_service.xhtml: bill print-preview paper format selection",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "NursingWorkBench",
+                "Access to the Nursing WorkBench navigation button",
+                "inward_bill_service.xhtml: 'Nursing WorkBench' buttons"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "InwardSearch",
+                "Access to Search Patients, Patient Profile, and Inpatient Dashboard navigation buttons",
+                "inward_bill_service.xhtml: patient navigation button group"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ShowServiceCharges",
+                "View rate, gross value, discount, service charge, VAT, and net value columns/details for inward services and fees",
+                "inward_bill_service.xhtml: Bill Items and Fees tab columns, Bill Details panel"
+        ));
+
+        metadata.addPrivilege(new PrivilegeInfo(
+                "ShowInwardFee",
+                "Allows editing the Total Gross value of an inward fee directly in the Fees tab",
+                "inward_bill_service.xhtml: Fees tab, Total Gross input"
+        ));
+
+        pageMetadataRegistry.registerPage(metadata);
+    }
 
     public String navigateToAddServiceFromMenu() {
         resetBillData();
@@ -279,6 +393,8 @@ public class BillBhtController implements Serializable {
         total = 0.0;
         discount = 0.0;
         netTotal = 0.0;
+        vat = 0.0;
+        vatPlusNetTotal = 0.0;
         cashPaid = 0.0;
         cashBalance = 0.0;
         creditCardRefNo = "";
@@ -329,6 +445,8 @@ public class BillBhtController implements Serializable {
         total = 0.0;
         discount = 0.0;
         netTotal = 0.0;
+        vat = 0.0;
+        vatPlusNetTotal = 0.0;
         cashPaid = 0.0;
         cashBalance = 0.0;
         creditCardRefNo = "";
@@ -388,6 +506,8 @@ public class BillBhtController implements Serializable {
         total = 0.0;
         discount = 0.0;
         netTotal = 0.0;
+        vat = 0.0;
+        vatPlusNetTotal = 0.0;
         cashPaid = 0.0;
         cashBalance = 0.0;
         creditCardRefNo = "";
@@ -682,6 +802,12 @@ public class BillBhtController implements Serializable {
         Date toDate = null;
 
         if (getBatchBill() == null) {
+            return;
+        }
+
+        if (batchBill.getBillType() == BillType.SurgeryBill
+                && surgeryBillController.isSurgeryLockedForAdditions(batchBill)) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
             return;
         }
 
@@ -1020,7 +1146,12 @@ public class BillBhtController implements Serializable {
     public List<BillFee> billFeeFromBillItemWithMatrix(BillItem billItem, PatientEncounter patientEncounter, Department matrixDepartment, PaymentMethod paymentMethod) {
 
         List<BillFee> billFeeList = new ArrayList<>();
-        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site", false);
+        // Falls back to the old application-wide key so any pre-existing configuration
+        // (set before this option was made discoverable/per-department) keeps working.
+        boolean legacyGlobalSiteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site", false);
+        boolean siteBasedBillFees = sessionController.getDepartment() != null
+                ? configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site for " + sessionController.getDepartment().getName(), legacyGlobalSiteBasedBillFees)
+                : legacyGlobalSiteBasedBillFees;
         Institution site = sessionController.getDepartment() != null ? sessionController.getDepartment().getSite() : null;
         List<ItemFee> itemFee;
 
@@ -1040,6 +1171,8 @@ public class BillBhtController implements Serializable {
             PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment, paymentMethod, null, patientEncounter != null ? patientEncounter.getAdmissionType() : null, resolveCurrentRoomCategory(patientEncounter));
 
             getInwardBean().setBillFeeMargin(billFee, billItem.getItem(), priceMatrix, patientEncounter);
+
+            recalculateFeeVat(billFee);
 
             billFeeList.add(billFee);
         }
@@ -1102,6 +1235,7 @@ public class BillBhtController implements Serializable {
         double tot = 0.0;
         double net = 0.0;
         double margin = 0.0;
+        double vatTotal = 0.0;
 
         for (BillEntry be : getLstBillEntries()) {
             BillItem bi = be.getBillItem();
@@ -1110,6 +1244,7 @@ public class BillBhtController implements Serializable {
             bi.setGrossValue(0.0);
             bi.setNetValue(0.0);
             bi.setMarginValue(0.0);
+            bi.setVat(0.0);
 
             for (BillFee bf : be.getLstBillFees()) {
                 tot += bf.getFeeGrossValue();
@@ -1118,15 +1253,21 @@ public class BillBhtController implements Serializable {
                 bi.setGrossValue(bi.getGrossValue() + bf.getFeeGrossValue());
                 margin += bf.getFeeMargin();
                 bi.setMarginValue(bi.getMarginValue() + bf.getFeeMargin());
+                bi.setVat(bi.getVat() + bf.getFeeVat());
             }
 
             bi.setDiscount(bi.getGrossValue() + bi.getMarginValue() - bi.getNetValue());
+            bi.setVatPercentage(bi.getItem() != null && bi.getItem().isVatable() ? bi.getItem().getVatPercentage() : 0.0);
+            bi.setVatPlusNetValue(bi.getNetValue() + bi.getVat());
+            vatTotal += bi.getVat();
         }
 
         setTotal(tot);
         setMarginTotal(margin);
         setDiscount(tot + margin - net);
         setNetTotal(net);
+        setVat(vatTotal);
+        setVatPlusNetTotal(getNetTotal() + getVat());
     }
 
     public void feeChanged(BillFee bf) {
@@ -1151,6 +1292,8 @@ public class BillBhtController implements Serializable {
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment(), priceMatrix);
 
+        recalculateFeeVat(bf);
+
         calTotals();
     }
 
@@ -1174,7 +1317,19 @@ public class BillBhtController implements Serializable {
 
         getInwardBean().updateBillItemMargin(bf, bf.getFeeGrossValue(), getPatientEncounter(), getBatchBill().getFromDepartment(), priceMatrix);
 
+        recalculateFeeVat(bf);
+
         calTotals();
+    }
+
+    private void recalculateFeeVat(BillFee bf) {
+        if (bf.getBillItem() != null && bf.getBillItem().getItem() != null
+                && bf.getBillItem().getItem().isVatable() && bf.getBillItem().getItem().getVatPercentage() > 0) {
+            bf.setFeeVat(roundOff(bf.getFeeValue() * bf.getBillItem().getItem().getVatPercentage() / 100));
+        } else {
+            bf.setFeeVat(0.0);
+        }
+        bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
     }
 
     public void prepareNewBill() {
@@ -1456,6 +1611,26 @@ public class BillBhtController implements Serializable {
 
     public void setNetTotal(double netTotal) {
         this.netTotal = netTotal;
+    }
+
+    public double getVat() {
+        return vat;
+    }
+
+    public void setVat(double vat) {
+        this.vat = vat;
+    }
+
+    public double getVatPlusNetTotal() {
+        return vatPlusNetTotal;
+    }
+
+    public void setVatPlusNetTotal(double vatPlusNetTotal) {
+        this.vatPlusNetTotal = vatPlusNetTotal;
+    }
+
+    private double roundOff(double d) {
+        return Math.round(d * 100.0) / 100.0;
     }
 
     public double getCashPaid() {

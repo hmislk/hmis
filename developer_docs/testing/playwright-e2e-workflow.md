@@ -163,6 +163,19 @@ dropdown panel.
 
 Type the date string directly or click to open the calendar popup and select.
 
+**JS-set values are silently discarded** (found on `cost_of_goods_sold.xhtml`,
+issue #22011): setting `input.value` via `page.evaluate` + dispatching
+`input`/`change` events looks committed in the DOM, and Playwright's `fill()`
+has the same problem — but on submit the widget re-serializes its own internal
+date, so the report runs with the OLD dates and no error is shown. The only
+reliable pattern is real key events: click the input → `Ctrl+A` →
+`pressSequentially` the date string → `Escape` (closes the overlay without
+resetting the typed value). Verify with a DOM read *after* pressing Escape,
+then submit — and because the DOM can look right while the widget still
+serializes its old internal date, always confirm the intended dates in the
+**result** too (e.g. report rows fall inside the requested window, or the
+server-side query used the right range) before trusting the run.
+
 ### Always add `widgetVar`
 
 Every `p:inputText`, `p:autoComplete`, `p:calendar`, and `p:selectOneMenu`
@@ -478,6 +491,19 @@ cached per session at login and won't pick up a new row otherwise. This came up 
 `BhtSummeryController.settle()` (`InwardSettleFinalBill`), where the local `buddhika`
 user had the privilege for `Store`/`Main Pharmacy` departments but not `Inward`.
 
+**`WebUser.department` is not a fixed "home department" — `SessionController.selectDepartment()`
+overwrites and persists it (`loggedUser.setDepartment(department); getFacede().edit(loggedUser)`)
+every time the department-selection screen is submitted, which is why it pre-fills with
+whatever was picked last time.** The catch for privilege testing:
+`SessionController.getUserPrivileges()` calls
+`fillUserPrivileges(getLoggedUser(), getLoggedUser().getDepartment(), false)` — by the time
+this runs, `getLoggedUser().getDepartment()` already equals the department just selected for
+*this* login, and `deptIsNull=false` means a `DEPARTMENT_ID IS NULL` privilege row is **never**
+matched, no matter which department that is. Query `SELECT DEPARTMENT_ID FROM webuser WHERE
+ID=<id>` *after* selecting the department you're about to test with, and insert the privilege
+row with that exact `DEPARTMENT_ID` — a NULL-department row silently does nothing, even after
+a full logout/login cycle.
+
 ## 21. Inward "Add Services" item picker — the Filter box does not load other departments' items
 
 On `inward/inward_bill_service.xhtml` (and the surgery equivalent) the item selector shows
@@ -671,6 +697,377 @@ Fix in automation: on the approve pass, click into `insv`, `Control+a`, `browser
 Everything else on that page (row qty/free-qty/batch/expiry/retail-rate inputs, invoice number/date)
 CAN be set directly on the DOM inputs — the `ajax="false"` Save/Finalize buttons submit and apply them
 (verified while testing issue #22120).
+
+## 30. `ward_pharmacy_bht_issue_request_bill.xhtml` — "New Bill" silently discards unsaved items
+
+On the "Start Pharmacy Request for Inpatients" flow, the "Add Dispense Only" button only stages
+`BillItem`s in the in-memory `PreBill` — nothing is persisted until "Settle Request" is clicked (the
+"Save Draft" button that would otherwise persist an intermediate `PharmacyBhtPre` is `rendered="false"`,
+per a comment in the page noting there's currently no way to resume a saved draft). The "New Bill"
+button (`actionListener="#{pharmacyRequestForBhtController.resetAll}"`) looks like a reasonable "finish
+this request" action but actually **discards all staged items with no confirmation** and resets the form
+to "Start Pharmacy Request for Inpatients". If a Playwright pass adds items and then clicks "New Bill"
+expecting the request to be saved, a DB check afterward will show nothing was created. Always use
+**"Settle Request"** (confirm-dialog-guarded) to actually persist a BHT pharmacy request. Verified while
+testing issue #22153.
+
+## 31. `ward_pharmacy_bht_issue_request_bill.xhtml`'s "Add Dispense Only" path sets `department`/`toDepartment` backwards
+
+`PharmacyRequestForBhtController`'s no-prescription creation path (the one behind
+"Add Dispense Only" → "Settle Request") sets `getPreBill().setToDepartment(getDepartment())`,
+where `getDepartment()` is the page's *Requesting Department* selector (the ward, e.g.
+"Inward") — the opposite of what the prescription-based "Calculate & Add" path does. The
+resulting bill ends up with `department` = the requesting ward and `toDepartment` = the
+requesting ward too, instead of `toDepartment` = the fulfilling pharmacy. Per §16, the
+pharmacist's "Issue Medicines" list (`ward_pharmacy_bht_issue_request_list_for_issue.xhtml`)
+filters on `toDepartment = session department`, so a request created via "Add Dispense Only"
+silently never appears there — "Search All"/"Search Not Issued" both return "No records
+found." even with the correct BHT number. This looks like a pre-existing, unrelated bug (not
+reproducible via the prescription-based creation path) — found incidentally while testing
+issue #22000; not fixed there since it was out of that issue's scope. If blocked on this
+during a future E2E pass, either use "Calculate & Add" instead of "Add Dispense Only" to
+create the test request, or correct `BILL.DEPARTMENT_ID`/`TODEPARTMENT_ID` directly in the
+local dev DB to unblock testing.
+
+## 32. A `FacesMessage` can be server-confirmed even when the browser never shows it
+
+Two related traps when checking whether `JsfUtil.addWarningMessage(...)` actually fired:
+
+- **A page-local `p:growl` without a `life` attribute never auto-dismisses**, unlike
+  `template.xhtml`'s global growl (`life="3000"`). If a later click lands on where the toast is
+  rendered, Playwright's actionability check reports `<span class="ui-growl-title">...
+  intercepts pointer events` and the click times out. Work around it in a test session with
+  `browser_evaluate`: `() => document.querySelectorAll('.ui-growl-item').forEach(el =>
+  el.remove())` — do not treat this as something the product code needs to fix unless the
+  issue you're working on is specifically about that page's growl behavior.
+- **On an `ajax="false"` (full-postback) button, a `life`-bound growl can auto-hide before you
+  take a snapshot**, making it look like the message never fired even though it did. Don't
+  trust a missed visual — inspect the actual HTTP response instead:
+  `browser_network_requests` (filter on the page's `.xhtml`, `static: true` if needed) to find
+  the POST matching the button's `name` parameter (e.g. `j_idt523%3AbtnAdd=`), then
+  `browser_network_request` with `part: "response-body"` on that index. For an AJAX
+  (`javax.faces.partial.ajax=true`) update, look for `<update id="...:growl">` containing
+  `PrimeFaces.cw("Growl",...,msgs:[{summary:"...",severity:'warn'}]})`. For a full postback,
+  grep the (often huge) HTML response body for the expected message text instead of loading it
+  into context. Verified while testing issue #22000, where this was the deciding evidence that
+  the warning fired correctly on a page whose *unrelated* pre-existing widget-init JS error
+  (`TypeError: Cannot read properties of undefined (reading 'hasAttribute')`, present since
+  before any interaction) prevented the growl from rendering visually at all.
+
+## 33. Binding a `p:inputText` through a nullable session-scoped entity property crashes on first submit
+
+`ward/issue_for_bht_request_list.xhtml` bound its BHT-No search box to
+`#{searchController.patientEncounter.bhtNo}` — a nested property path through
+`SearchController.patientEncounter`, which is `@SessionScoped` and never
+initialized on this page (nothing sets it before rendering; unlike the 3 lab
+pages that bind `value="#{searchController.patientEncounter}"` — the whole
+object, not a nested field — via `p:autoComplete`/`p:selectOneMenu`, which
+tolerate `null`). Every submit threw `EL: Target Unreachable, 'null' returned
+null` (HTTP 500) during `UIInput.getConvertedValue`, both with and without
+typing into the field — the crash happens on *any* postback of the form, not
+just when the bound property is touched. Fixed for #22196 by rebinding to
+`searchController.searchKeyword.bhtNo` (a plain `String`, default `""`),
+matching the pattern already used by ~28 other pages in this codebase (grep
+`searchController.searchKeyword.bhtNo` across `*.xhtml`). **Lesson**: never
+bind a `p:inputText` through a nested path on a session-scoped controller's
+entity-typed field unless something on the *same* page is guaranteed to have
+set that entity first — bind through a dedicated search-keyword/DTO field
+instead.
+
+## 34. Local dev DB can silently drift behind the entity model — watch for `Unknown column` on unrelated pages
+
+While testing #22196, clicking "View Request" on an inward pharmacy request
+threw `SQLSyntaxErrorException: Unknown column 'VATPERCENTAGE' in 'field
+list'` loading `BillItem` rows — the local `coop` DB's `BILLITEM` table
+predates the `vatPercentage` field added to the `BillItem` entity, and there
+is no DDL/migration step in the local dev workflow that keeps schema in sync
+automatically. This is unrelated to whatever feature is under test and will
+recur for any page that touches `BillItem`. Fix locally with a plain additive
+column matching the sibling `VAT`/`VATPLUSNETVALUE` columns:
+`ALTER TABLE BILLITEM ADD COLUMN VATPERCENTAGE DOUBLE NULL DEFAULT NULL AFTER
+VAT;` — do not add this to a migration script (it's a local-only environment
+gap, not a schema change accompanying a code change). If a fresh
+`Unknown column` error appears on an otherwise-unrelated page, check
+`SHOW COLUMNS FROM <table>` against the entity's fields before assuming the
+feature under test is broken.
+
+## 20. Don't `disable` + `enable` the app to clear the L2 cache — restart the domain
+
+The disable→enable trick for flushing a poisoned EclipseLink shared cache (§ noted in
+earlier sessions) loads the whole application a **second time in the same JVM**, and on
+this codebase that reliably ends in `java.lang.OutOfMemoryError: Java heap space` +
+`CDI deployment failure` mid-enable, leaving the app 404 (hit during issue #22011
+verification). Restart the domain instead — slower, but it actually comes back up:
+
+```bash
+asadmin stop-domain <dom>    # "domain is already stopped" is fine — continue
+asadmin start-domain <dom>
+```
+
+Run the two commands separately (not chained with `&&`): if the domain is already
+down, `stop-domain` exits nonzero and a chained `start-domain` would be skipped,
+leaving the app offline.
+
+## 35. Department-scoped dashboards need the department actually switched, not just full privileges
+
+While verifying #22213 (theatre stay billing), the Theatre Dashboard's "Awaiting
+Theatre Acceptance" / "Pending Return to Ward" lists showed **0** rows even though
+a request definitely existed (confirmed via direct DB query) and the logged-in
+user had every relevant privilege. Root cause: `PatientTransferController`'s
+loader methods (`loadPendingForTheatre()`, `loadInTheatreRequests()`, etc.) filter
+on `r.toRoomFacilityCharge.department = sessionController.getDepartment()` — the
+**currently selected** department, not "any department the user has access to."
+Being logged in under "Inward" and merely navigating to a Theatre page renders it
+fine but shows empty lists. Fix: log out and back in, and on the Select Department
+screen explicitly pick the department the workflow actually belongs to (here,
+"THEATRE") before testing department-scoped actions — the app remembers your last
+selection and will silently keep applying it across unrelated page navigations.
+
+## 36. `@SessionScoped` bean data can go stale after a direct URL hit — navigate through the real action chain
+
+Also during #22213 verification: after completing a theatre "return to ward" action
+(via a proper button click with a bound `action="..."` method), directly typing the
+URL for `/inward/inward_patient_room_details.xhtml` showed the just-discharged room
+still as "Active" — the underlying DB was already correct (verified via SQL), but
+`BhtSummeryController` (`@SessionScoped`) lazily caches `patientRooms` on first
+access and only a handful of specific action methods actually refresh it. A raw URL
+navigation skips whatever `action="..."` a genuine button click would have invoked,
+so it reads the stale in-memory list from earlier in the session. Fix: always
+reach the page under test by clicking through the real navigation chain (search →
+dashboard button → target page) rather than pasting/typing the target URL directly,
+especially right after an action that's supposed to change what that page displays.
+
+## 37. A required `p:selectOneMenu` with no default silently swallows an entire non-AJAX submit — no network request, no error
+
+On `inward/inward_bill_professional_payment.xhtml` (and likely the surgery
+equivalent), the "Find Due Payments" button (`type="submit"`, `onclick=""`,
+plain `ajax="false"` postback — verified via `outerHTML`) does **nothing
+at all** when the "WHT Calculation" dropdown is left at its default empty
+"Select" option — no `browser_network_requests` entry appears, no MySQL
+`general_log` query fires, no visible error, and the page doesn't even
+reload. `browser_click` and a JS `.click()` on the button both silently
+no-op. The accessibility snapshot's only tell is the dropdown rendering as
+`combobox "Select" [invalid]` — client-side JSF validation
+(`PrimeFaces.settings.validateEmptyFields=true`) blocks the *entire* form
+submit before it reaches the network layer, exactly like the required-field
+gotcha in §5/§12 but with **zero observable signal** beyond that one
+`[invalid]` accessibility attribute (this button isn't even in the same
+visual section as the required field, so it's easy to miss).
+
+**Diagnosis technique for local dev DBs only — never on staging/production**:
+`mysql.general_log` captures every statement verbatim, including patient
+identifiers and payment values, and adds real overhead while active, so only
+enable it against your own local dev database, for the shortest possible
+window. Enable it (`SET GLOBAL log_output='TABLE'; SET GLOBAL
+general_log='ON';`, `TRUNCATE TABLE mysql.general_log;`), click the button,
+then check
+`SELECT event_time, argument FROM mysql.general_log ORDER BY event_time DESC`
+— if the expected query never appears at all (not even a failed one), the
+submit never reached the server, which points at client-side validation
+rather than a bean/JPQL bug. Immediately run `SET GLOBAL general_log='OFF'`
+afterward and truncate the table again to avoid leaving captured rows
+sitting around.
+
+**Fix**: before clicking any non-AJAX submit button on this page, first
+select a real option in every required dropdown on the same form (here:
+click the "WHT Calculation" combobox → click e.g. "Include Withholding
+Tax" from the listbox), even if that dropdown looks unrelated to the
+button you're about to click — required-field validation on a JSF
+`ajax="false"` postback applies to the whole `<h:form>`, not just the
+fields near the button.
+
+## 38. A local dev DB missing columns for an already-shipped entity field surfaces as a hung page, and `ALTER TABLE` alone doesn't fix it — the pool needs a flush
+
+Entity fields that were added to the codebase a while ago (e.g.
+`PatientEncounter.professionalPaymentsOnHold` / `...HoldDateTime` /
+`...HoldBy` / `...HoldNotes`) can be **missing from a local dev database**
+that was never migrated, even though nothing about the current change
+touches those fields. Symptoms are confusing because EclipseLink issues a
+`SELECT *`-style query for the whole entity on any page that touches it, so
+the failure isn't localized to the field you'd expect:
+
+- Direct-navigating to a page via URL (bypassing the app's normal
+  click-through flow) can appear to **hang indefinitely** in Playwright
+  (`browserBackend.callTool` timeouts on `navigate`/`snapshot`/even
+  `tabs list`) rather than showing an error — the request never actually
+  hangs server-side, but an error response mid-navigation can leave the
+  MCP browser bridge stuck. If a normal in-app link/button navigation to
+  the same destination works cleanly and shows the real `SQLSyntaxErrorException:
+  Unknown column '...' in 'field list'` page, that confirms it's this
+  gotcha, not a broken browser.
+- The fix is a plain `ALTER TABLE ... ADD COLUMN ...` matching the
+  entity's field type (check the `@Column`/type in the entity class), but
+  **the running Payara connection pool caches connections/statement
+  metadata from before the ALTER** — re-hitting the page immediately after
+  the ALTER still throws the identical "Unknown column" error. Flush the
+  pool before retrying:
+  `asadmin flush-connection-pool <poolName>` (find the pool name via
+  `grep -B2 'jndi-name="jdbc/coop"' domain.xml` → look for the
+  `<jdbc-resource pool-name="...">` line, e.g. `poolCoopLocal` for
+  `jdbc/coop`).
+- Combining this with §20's privilege-row gotcha: if panels are still
+  missing after the schema+pool fix, check privileges next — they're
+  independent causes of the same "content silently doesn't render" symptom.
+
+Verified while testing the Inward Dashboard "Manage Allergies" /
+"Hold Professional Payments" button relocation (issue #22248), where the
+local `coop.patientencounter` table was missing all four
+`professionalpayments*` columns and `patienttransferrequest` was missing
+`theatreroom_id`.
+
+## 39. Local dev DB has no `FrequencyUnit`/`DurationUnit`/`DoseUnit` seed rows — the prescription "Calculate & Add" path is untestable locally
+
+`ward_pharmacy_bht_issue_request_bill.xhtml`'s Prescription section (Dose/Dose
+Unit/Frequency/Duration/Duration Unit → "Calculate & Add") requires selecting
+a `FrequencyUnit` and `DurationUnit` — both are `Category` subclasses stored
+in the single-table `category` (via `@Inheritance` with no strategy = default
+`SINGLE_TABLE`, discriminated by `DTYPE`). The local `coop` DB has **zero**
+rows with `DTYPE` in (`FrequencyUnit`, `DurationUnit`, `DoseUnit`) — confirmed
+via `SELECT DISTINCT DTYPE FROM category`. Both dropdowns render as
+`combobox "Select"` with no other options, and submitting anyway fails with
+`"Calculation Error: Incomplete prescription: dose, frequency, duration and
+duration unit are required"`. **Workaround**: use the "Dispense Request" →
+"+ Add Dispense Only" path instead (item autocomplete + plain qty field, no
+prescription fields) — but that path has the toDepartment bug from §31, so
+still fix `TODEPARTMENT_ID` via SQL afterward. Verified while testing issue
+#22312.
+
+## 40. Auto-substitution can silently turn a "zero stock" test case into "issued in full"
+
+When testing a BHT/pharmacy-request stock-shortfall feature, don't assume an
+item with 0 stock at the issuing department will exercise the "no stock"
+code path — `PharmacySaleBhtController.generateIssueBillComponentsForBhtRequest`
+(and similar issuing flows) auto-substitutes to a same-VMP sibling AMP with
+stock before falling back to "no stock". An item whose exact AMP has 0 stock
+but has an in-stock sibling under the same VMP (e.g. `Levo 500mg Tablet` →
+`EVITRA 500MG`) will be silently issued in full via the substitute, hiding the
+zero-stock code path entirely. To reliably hit "no stock at all", pick an item
+with **no in-stock siblings under its VMP either** — verify first:
+```sql
+SELECT a.ID, a.NAME, a.VMP_ID FROM item a WHERE a.DTYPE='Amp'
+AND a.ID NOT IN (SELECT ib.ITEM_ID FROM stock s JOIN itembatch ib ON s.ITEMBATCH_ID=ib.ID
+                 WHERE s.DEPARTMENT_ID=<dept> AND s.STOCK>0)
+AND (a.VMP_ID IS NULL OR a.VMP_ID NOT IN (
+  SELECT a2.VMP_ID FROM item a2 JOIN itembatch ib2 ON ib2.ITEM_ID=a2.ID
+  JOIN stock s2 ON s2.ITEMBATCH_ID=ib2.ID WHERE s2.DEPARTMENT_ID=<dept> AND s2.STOCK>0 AND a2.DTYPE='Amp');
+```
+Verified while testing issue #22312.
+
+## 41. A local dev DB with an empty `TRIGGERSUBSCRIPTION` table means notification-generating actions silently produce zero `UserNotification` rows
+
+Discharging a patient, changing a room, etc. always creates a `Notification`
+row, but the actual per-user `UserNotification` rows (what the bell icon and
+`/Notification/user_notifications.xhtml` show) only get created for webusers
+who hold a matching `TriggerSubscription`
+(`NotificationController.createNotification(...)` →
+`userNotificationController.createUserNotifications(nn)` →
+`TriggerSubscriptionController.fillSubscribedUsersByDepartment(...)`). A
+freshly-restored or never-fully-seeded local DB can have **zero rows in
+`TRIGGERSUBSCRIPTION`**, in which case discharging any number of patients
+produces `Notification` rows but no `UserNotification` rows for anyone —
+this looks identical to "the feature doesn't work" but is actually missing
+test-fixture data, not a bug.
+
+- Diagnose with `SELECT COUNT(*) FROM TRIGGERSUBSCRIPTION;` — 0 confirms this.
+- Fix through the UI, not SQL (per this doc's "use the admin UI" pattern,
+  §26): Admin → Manage Users → select the target user → **Manage User
+  Subscriptions** → tick **Application-wide** → pick the relevant
+  `TriggerType` (e.g. "Inward Patient Room Discharge - System Notification")
+  → **Add Subscription**.
+- The **Application-wide** checkbox's visible box intercepts Playwright's
+  normal click on the underlying `p:selectBooleanCheckbox` input — click via
+  a selector scoped to its own JSF id (`chkApplicationWide` in
+  `admin/users/user_subscription.xhtml`), not a bare `.ui-chkbox-box` index,
+  which picks whichever checkbox happens to be first/nth on the page and can
+  silently toggle the wrong control if the page has more than one:
+  `document.querySelector('[id$="chkApplicationWide"] .ui-chkbox-box')`.
+
+Found while verifying issue #21538 (discharge notifications routing to the
+wrong patient) — the fix couldn't be end-to-end tested at all until this was
+discovered and worked around.
+
+## 42. PrimeFaces bare `update="someId"` can 500 from inside a `p:dataTable`/`ui:repeat` row even though the id exists on the page
+
+A `p:commandButton update="someId"` where `someId` is a **sibling id
+declared outside** the enclosing `p:dataTable`/`ui:repeat`/`p:column` throws
+a hard 500 (`javax.faces.component.search.ComponentNotFoundException:
+Cannot find component for expressions "someId"`) as soon as that button is
+rendered for any row — not just on click, since PrimeFaces builds the ajax
+request descriptor (including resolving `update`) during **encode**, not
+decode. It can appear to work for row 0 by coincidence and break only from
+row 1 onward, or break for every row once a row's content changes (e.g. a
+row toggling into "retired" state and rendering a previously-`rendered=false`
+button for the first time) — so it can look like a row-index-specific bug
+rather than a general one.
+
+Fix: don't rely on plain-id resolution reaching outside the table/repeat.
+Use `update="@form"` (safe/simple when refreshing the whole form is
+acceptable) or an absolute id path — this project's `jsf-ajax` skill already
+documents `@this`/`@form`/`:#{p:resolveFirstComponentWithId(...)}` as the
+required patterns for exactly this reason.
+
+Found while fixing issue #21538: `Notification/user_notifications.xhtml`'s
+"Restore" button (`update="reNot"`, `reNot` being the `h:panelGroup`
+wrapping the whole list) crashed the page load itself once a retired
+notification was shown in a row other than the first.
+
+## 43. Clicking a `p:printer` button hangs the whole browser session — verify with print-media emulation instead
+
+`p:printer` calls `window.print()`, which opens a real native OS print dialog.
+In a Playwright-driven session this dialog blocks not just the click (which
+times out and gets moved to a background task) but **every subsequent tool
+call on that browser** — `browser_tabs list/new/close` all hang too, because
+the dialog is modal at the OS/browser-process level, not a JS `confirm()`
+that `browser_handle_dialog` can intercept. The only recovery is asking the
+human operator to manually dismiss the dialog in the actual browser window.
+
+**Don't click the Print button to verify print CSS.** Instead, emulate print
+media on the existing page and screenshot that — `p:printer` clones the
+current document's `<head>` (including inline `<style>` blocks and linked
+stylesheets) into its print iframe, so `@media print` rules apply identically
+whether triggered by the real dialog or by emulation:
+
+```js
+async (page) => { await page.emulateMedia({ media: 'print' }); }
+```
+
+Then `browser_take_screenshot` — this shows exactly what would print (hidden
+`.noPrintButton` elements, `.printOnlyReport` toggled visible, etc.) without
+ever touching `window.print()`. Verified while fixing issue #22316 (Time
+Service Report print truncation).
+
+**Scope of this check**: this only proves `@media print` visibility/layout
+rules apply correctly — it does not verify pagination, page-fit, or page
+breaks across multiple printed pages. For reports where those matter, follow
+up with an actual PDF export or a manual print-preview pass.
+
+## 44. A freshly-created test user needs a `WebUserDepartment` row, not just a `Department` field, to log in at all
+
+Creating a disposable test user via Admin > Manage Users > Add New User
+(`admin/users/user_add_new.xhtml`) and setting its `Department` field is not
+enough to let it log in. Login checks `listLoggableDepts(user)`
+(`SessionController.java`), which queries the `WebUserDepartment` join table
+— not the `WebUser.department` column. With no matching `WebUserDepartment`
+row, login fails with "This user has no privilage to login to any
+Department. Please conact system administrator." even though the user
+record itself looks fully configured.
+
+The Add New User form has no field for this; department-login grants are
+managed separately via **Manage Users > (select user) > Manage User
+Departments**. For a quick disposable test account it's simplest to insert
+the row directly:
+```sql
+INSERT INTO webuserdepartment (CREATEDAT, RETIRED, DEPARTMENT_ID, WEBUSER_ID)
+VALUES (NOW(), 0, <department_id>, <webuser_id>);
+```
+Also useful: no `WebUserRole` in this DB grants `ShowServiceCharges` (verified
+via `webuserroleprivilege`) — it's only assigned to individual users
+directly in `webuserprivilege`. So any freshly-created user with no role
+already lacks it, no extra step needed to test privilege-gated hiding.
+
+Found while verifying issue #22310 (fee row hidden along with its item name
+when `ShowServiceCharges` is absent) — needed a throwaway non-privileged
+login to confirm the fix without touching any real staff account.
 
 ## Quick checklist
 

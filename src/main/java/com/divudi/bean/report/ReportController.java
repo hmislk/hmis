@@ -772,6 +772,79 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         }
     }
 
+    public void exportPatientJourneyReportToPDF() {
+        if (patientJourneyRows == null || patientJourneyRows.isEmpty()) {
+            JsfUtil.addErrorMessage("No data to export. Please process the report first.");
+            return;
+        }
+
+        com.itextpdf.text.Font bodyFontSmall = com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 8);
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+        response.reset();
+
+        String dates = CommonFunctions.dateRangeForFileName(fromDate, toDate, sessionController.getApplicationPreference().getLongDateFormat());
+
+        response.setContentType("application/pdf");
+        if (dates != null && !dates.isEmpty()) {
+            response.setHeader("Content-Disposition", "attachment; filename=Patient_Journey_Report_" + dates + ".pdf");
+        } else {
+            response.setHeader("Content-Disposition", "attachment; filename=Patient_Journey_Report.pdf");
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        SimpleDateFormat reportSdf = new SimpleDateFormat("dd MM yyyy hh:mm:ss a");
+        String institutionName = sessionController.getInstitution() != null ? sessionController.getInstitution().getName() : "";
+
+        try (OutputStream out = response.getOutputStream()) {
+            com.itextpdf.text.Document document = new com.itextpdf.text.Document(com.itextpdf.text.PageSize.A4.rotate());
+            com.itextpdf.text.pdf.PdfWriter.getInstance(document, out);
+            document.open();
+
+            if (institutionName != null && !institutionName.isEmpty()) {
+                document.add(new com.itextpdf.text.Paragraph(institutionName, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 18)));
+            }
+            document.add(new com.itextpdf.text.Paragraph("Patient Journey Report", com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 16)));
+            document.add(new com.itextpdf.text.Paragraph("Date: " + reportSdf.format(new Date()), com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA, 12)));
+            document.add(new com.itextpdf.text.Paragraph(" "));
+
+            int columnCount = 7; 
+            com.itextpdf.text.pdf.PdfPTable table = new com.itextpdf.text.pdf.PdfPTable(columnCount);
+            table.setWidthPercentage(100);
+
+            float[] columnWidths = new float[]{0.5f, 1.5f, 1.5f, 2f, 1.5f, 3f, 1.5f};
+            String[] headers = new String[]{"S. No.", "Transaction Date", "Visit No", "Transaction Name", "Transaction Number", "Description", "User"};
+
+            table.setWidths(columnWidths);
+
+            for (String header : headers) {
+                com.itextpdf.text.pdf.PdfPCell cell = new com.itextpdf.text.pdf.PdfPCell(new com.itextpdf.text.Phrase(header, com.itextpdf.text.FontFactory.getFont(com.itextpdf.text.FontFactory.HELVETICA_BOLD, 8)));
+                cell.setBackgroundColor(com.itextpdf.text.BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            int indexRow = 1;
+            for (PatientJourneyRow row : patientJourneyRows) {
+                table.addCell(textCell(String.valueOf(indexRow), bodyFontSmall));
+                table.addCell(textCell(row.getTransactionDate() != null ? sdf.format(row.getTransactionDate()) : "-", bodyFontSmall));
+                table.addCell(textCell(row.getVisitNo() != null ? row.getVisitNo() : "-", bodyFontSmall));
+                table.addCell(textCell(row.getTransactionName() != null ? row.getTransactionName() : "-", bodyFontSmall));
+                table.addCell(textCell(row.getTransactionNumber() != null ? row.getTransactionNumber() : "-", bodyFontSmall));
+                table.addCell(textCell(row.getDescription() != null ? row.getDescription() : "-", bodyFontSmall));
+                table.addCell(textCell(row.getUserName() != null ? row.getUserName() : "-", bodyFontSmall));
+                indexRow++;
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            Logger.getLogger(ReportController.class.getName()).log(Level.SEVERE, "Error exporting Patient Journey Report to PDF", e);
+        }
+    }
+
     public void exportCollectionCenterWiseSummaryReportToPDF() {
         if (bundle == null || bundle.getReportTemplateRows() == null || bundle.getReportTemplateRows().isEmpty()) {
             JsfUtil.addErrorMessage("No data to export. Please process the report first.");
@@ -4172,14 +4245,63 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
-        jpql.append("SELECT pi ")
+        jpql.append("SELECT new com.divudi.core.data.dto.DurationServiceReportDTO( ")
+                .append("pi.id, ")
+                .append("pe.bhtNo, ")
+                .append("pat.phn, ")
+                .append("per.title, ")
+                .append("per.name, ")
+                .append("COALESCE(procItem.name, biProcItem.name, (SELECT MAX(bfProcItem.name) FROM BillFee bf JOIN bf.patienEncounter bfProc JOIN bfProc.item bfProcItem WHERE bf.patientItem = pi AND bf.retired = false)), ")
+                .append("COALESCE(proc.name, biProc.name, (SELECT MAX(bfProc.name) FROM BillFee bf JOIN bf.patienEncounter bfProc WHERE bf.patientItem = pi AND bf.retired = false)), ")
+                .append("dept.name, ")
+                .append("timedItem.name, ")
+                .append("cat.name, ")
+                .append("pi.fromTime, ")
+                .append("pi.toTime, ")
+                .append("pi.serviceValue, ")
+                .append("pi.discount, ")
+                .append("pi.adjustedValue, ")
+                .append("COALESCE(cPer.name, bPer.name, biPer.name), ")
+                .append("COALESCE(cbPer.name, fcbPer.name), ")
+                .append("fcbPer.name, ")
+                .append("bill.checkeAt, ")
+                .append("finalBill.checkeAt, ")
+                .append("pi.createdAt, ")
+                .append("bill.createdAt, ")
+                .append("finalBill.createdAt, ")
+                .append("cc.id, ")
+                .append("COALESCE(bDept.name, rfcDept.name) ) ")
                 .append("FROM PatientItem pi ")
                 .append("JOIN pi.patientEncounter pe ")
-                .append("LEFT JOIN pi.item timedItem ")
+                .append("LEFT JOIN pe.patient pat ")
+                .append("LEFT JOIN pe.referringConsultant rc ")
+                .append("LEFT JOIN rc.person per ")
                 .append("LEFT JOIN pi.bill bill ")
+                .append("LEFT JOIN bill.procedure proc ")
+                .append("LEFT JOIN proc.item procItem ")
+                .append("LEFT JOIN pi.billItem bi ")
+                .append("LEFT JOIN bi.bill biBill ")
+                .append("LEFT JOIN biBill.procedure biProc ")
+                .append("LEFT JOIN biProc.item biProcItem ")
                 .append("LEFT JOIN pe.finalBill finalBill ")
+                .append("LEFT JOIN pi.item timedItem ")
+                .append("LEFT JOIN timedItem.department dept ")
+                .append("LEFT JOIN timedItem.category cat ")
+                .append("LEFT JOIN pi.creater cUser ")
+                .append("LEFT JOIN cUser.webUserPerson cPer ")
+                .append("LEFT JOIN bill.creater bUser ")
+                .append("LEFT JOIN bUser.webUserPerson bPer ")
+                .append("LEFT JOIN biBill.creater biUser ")
+                .append("LEFT JOIN biUser.webUserPerson biPer ")
+                .append("LEFT JOIN bill.checkedBy cbUser ")
+                .append("LEFT JOIN cbUser.webUserPerson cbPer ")
+                .append("LEFT JOIN finalBill.checkedBy fcbUser ")
+                .append("LEFT JOIN fcbUser.webUserPerson fcbPer ")
+                .append("LEFT JOIN pe.creditCompany cc ")
                 .append("LEFT JOIN pe.currentPatientRoom room ")
-                .append("LEFT JOIN room.roomFacilityCharge rfc ");
+                .append("LEFT JOIN room.roomFacilityCharge rfc ")
+                .append("LEFT JOIN bill.department bDept ")
+                .append("LEFT JOIN rfc.department rfcDept ");
 
         jpql.append("WHERE pi.retired = :ret ")
                 .append("AND timedItem.retired = :itemRet ")
@@ -4243,19 +4365,14 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         jpql.append("ORDER BY pe.dateOfDischarge, pe.bhtNo, timedItem.name, pi.fromTime ");
         System.out.println("jpql = " + jpql);
         System.out.println("params = " + params);
-        List<PatientItem> patientItems = (List<PatientItem>) billItemFacade.findLightsByJpql(
-                jpql.toString(), params, TemporalType.TIMESTAMP);
-        System.out.println("durationServicePatientItems = " + patientItems);
-
-        durationServiceReportRows = new ArrayList<>();
-        if (patientItems == null) {
-            return;
+        
+        List<DurationServiceReportDTO> results = (List<DurationServiceReportDTO>) (Object) billItemFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        
+        if (results == null) {
+            results = new ArrayList<>();
         }
-
-        for (PatientItem patientItem : patientItems) {
-            durationServiceReportRows.add(toDurationServiceReportDto(patientItem));
-        }
-        System.out.println("durationServiceReportRows = " + durationServiceReportRows);
+        
+        this.durationServiceReportRows = results;
     }
     
      public void exportDurationServiceReportToPDF() {
@@ -4437,62 +4554,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
 
 
-    private DurationServiceReportDTO toDurationServiceReportDto(PatientItem patientItem) {
-        PatientEncounter encounter = patientItem != null ? patientItem.getPatientEncounter() : null;
-        Patient patient = encounter != null ? encounter.getPatient() : null;
-        Staff consultant = encounter != null ? encounter.getReferringConsultant() : null;
-        Item timedItem = patientItem != null ? patientItem.getItem() : null;
-        Bill bill = patientItem != null ? patientItem.getBill() : null;
-        Bill finalBill = encounter != null ? encounter.getFinalBill() : null;
-
-        Bill displayBill = bill != null ? bill : finalBill;
-        WebUser checkedBy = bill != null && bill.getCheckedBy() != null ? bill.getCheckedBy()
-                : finalBill != null ? finalBill.getCheckedBy() : null;
-        Date checkedAt = bill != null && bill.getCheckeAt() != null ? bill.getCheckeAt()
-                : finalBill != null ? finalBill.getCheckeAt() : null;
-        Date invoiceDate = displayBill != null ? displayBill.getCreatedAt() : null;
-
-        return new DurationServiceReportDTO(
-                patientItem != null ? patientItem.getId() : null,
-                encounter != null ? encounter.getBhtNo() : "",
-                patient != null ? patient.getPhn() : "",
-                personName(consultant != null ? consultant.getPerson() : null),
-                surgeryName(displayBill),
-                timedItem != null && timedItem.getDepartment() != null ? timedItem.getDepartment().getName() : "",
-                timedItem != null ? timedItem.getName() : "",
-                timedItem != null && timedItem.getCategory() != null ? timedItem.getCategory().getName() : "",
-                patientItem != null ? patientItem.getFromTime() : null,
-                patientItem != null ? patientItem.getToTime() : null,
-                patientItem != null ? patientItem.getServiceValue() : 0.0,
-                patientItem != null ? patientItem.getDiscount() : 0.0,
-                patientItem != null ? patientItem.getAdjustedValue() : 0.0,
-                webUserName(patientItem != null ? patientItem.getCreater() : null),
-                webUserName(checkedBy),
-                checkedAt,
-                patientItem != null ? patientItem.getCreatedAt() : null,
-                invoiceDate);
-    }
-
     private String personName(Person person) {
-        return person != null && person.getName() != null ? person.getName() : "";
-    }
-
-    private String webUserName(WebUser webUser) {
-        if (webUser == null) {
-            return "";
-        }
-        return personName(webUser.getWebUserPerson());
-    }
-
-    private String surgeryName(Bill bill) {
-        PatientEncounter procedure = bill != null ? bill.getProcedure() : null;
-        if (procedure == null) {
-            return "";
-        }
-        if (procedure.getItem() != null && procedure.getItem().getName() != null) {
-            return procedure.getItem().getName();
-        }
-        return procedure.getName() != null ? procedure.getName() : "";
+        return person != null && person.getNameWithTitle() != null ? person.getNameWithInitials() : "";
     }
 
     private void createProfitMatrixSummaryReport() {
@@ -5070,7 +5133,13 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private static final Set<BillTypeAtomic> RETURN_BILL_TYPES = new HashSet<>(Arrays.asList(
             BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
             BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN,
-            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+            BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION,
+            BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
+            BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS
     ));
 
     private List<PharmacySaleDepartmentDTO> buildHierarchy(List<PharmacySaleItemDTO> flatItems) {

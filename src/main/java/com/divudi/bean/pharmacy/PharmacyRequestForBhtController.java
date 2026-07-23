@@ -11,6 +11,7 @@ import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
@@ -95,6 +96,8 @@ public class PharmacyRequestForBhtController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     ItemController itemController;
+    @Inject
+    WebUserController webUserController;
 
 ////////////////////////
     @EJB
@@ -242,6 +245,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         selectedAlternative = null;
         preBill = null;
         printBill = null;
+        bhtIssueRequestPrintDtoBillId = null;
         bill = null;
         billItem = null;
         editingBillItem = null;
@@ -1008,8 +1012,62 @@ public class PharmacyRequestForBhtController implements Serializable {
             }
         }
 
-        BillTypeAtomic bta = BillTypeAtomic.REQUEST_MEDICINE_INWARD;
-        BillType bt = BillType.InwardPharmacyRequest;
+        if (!persistBhtRequest(BillTypeAtomic.REQUEST_MEDICINE_INWARD, BillType.InwardPharmacyRequest)) {
+            return;
+        }
+
+        Department fromDept = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
+        rememberRequestedPharmacyForWard(fromDept, department);
+        setPrintBill(billService.reloadBill(getPreBill()));
+        notificationController.createNotification(getPrintBill());
+        clearBill();
+        clearBillItem();
+        comment = "";
+        billPreview = true;
+    }
+
+    /**
+     * Persists the BHT medicine request bill header and its bill items,
+     * shared by both the "Settle Request" flow (atomic
+     * REQUEST_MEDICINE_INWARD) and the "Save Draft" flow (atomic
+     * REQUEST_MEDICINE_INWARD_PRE).
+     *
+     * <p>{@code Bill.completed} is NOT touched here: it means "fully issued
+     * by pharmacy" (set later in PharmacySaleBhtController once every item
+     * on the request has been dispensed), which is a distinct concept from
+     * "submitted vs draft" — that distinction is carried entirely by {@code
+     * bta}. Setting completed=true at submission time previously caused the
+     * pharmacy "Issue" action to reject freshly submitted requests with
+     * "This request has already been completed" before anything was ever
+     * issued (#22215).
+     *
+     * <p>When editing a bill that already has an id, the bill is re-fetched
+     * fresh from the DB first and its current billTypeAtomic is checked: if
+     * it is no longer REQUEST_MEDICINE_INWARD_PRE, someone else already
+     * settled this draft concurrently, so we bail out with an error instead
+     * of persisting. Mirrors the concurrency guard in
+     * {@link PharmacyDirectPurchaseController#finalizeDraftDirectPurchase()}.
+     *
+     * @param bta the BillTypeAtomic to set on the bill
+     * @param bt the BillType to set on the bill
+     * @return true if the bill (and its items) were persisted, false if the
+     * concurrency guard bailed out before persisting anything
+     */
+    private boolean persistBhtRequest(BillTypeAtomic bta, BillType bt) {
+        boolean settling = bta == BillTypeAtomic.REQUEST_MEDICINE_INWARD;
+        if (getPreBill().getId() != null) {
+            // Guard applies to BOTH settle and draft-save: without it, a stale
+            // "Save Draft" click on a bill someone else already settled would
+            // silently flip the settled bill back to REQUEST_MEDICINE_INWARD_PRE.
+            Bill fresh = billService.reloadBill(getPreBill());
+            if (fresh == null || fresh.getBillTypeAtomic() != BillTypeAtomic.REQUEST_MEDICINE_INWARD_PRE) {
+                JsfUtil.addErrorMessage(settling
+                        ? "This request was already settled by another user. Please refresh."
+                        : "This draft is no longer editable. Please refresh.");
+                return false;
+            }
+        }
+
         Patient pt = getPatientEncounter().getPatient();
         getPreBill().setPaidAmount(0);
         // From: ward (patient's current room department)
@@ -1033,14 +1091,8 @@ public class PharmacyRequestForBhtController implements Serializable {
         if (getPreBill().getId() == null) {
             getPreBill().setCreatedAt(new Date());
             getPreBill().setCreater(sessionController.getLoggedUser());
-//            getPreBill().setCompleted(true);
-//            getPreBill().setCompletedAt(new Date());
-//            getPreBill().setCompletedBy(sessionController.getLoggedUser());
             billFacade.create(getPreBill());
         } else {
-//            getPreBill().setCompleted(true);
-//            getPreBill().setCompletedAt(new Date());
-//            getPreBill().setCompletedBy(sessionController.getLoggedUser());
             billFacade.edit(getPreBill());
         }
         for (BillItem savingBillItem : getPreBill().getBillItems()) {
@@ -1053,13 +1105,7 @@ public class PharmacyRequestForBhtController implements Serializable {
                 billItemFacade.edit(savingBillItem);
             }
         }
-        rememberRequestedPharmacyForWard(fromDept, department);
-        setPrintBill(billService.reloadBill(getPreBill()));
-        notificationController.createNotification(getPrintBill());
-        clearBill();
-        clearBillItem();
-        comment = "";
-        billPreview = true;
+        return true;
     }
 
     public void settleStoreBhtIssue() {
@@ -1194,6 +1240,10 @@ public class PharmacyRequestForBhtController implements Serializable {
         // Calculation Margin
         updateMargin(getPreBill().getBillItems(), getPreBill(), getPreBill().getFromDepartment(), getPatientEncounter().getPaymentMethod());
         setPrintBill(getBillFacade().find(getPreBill().getId()));
+        // This is a re-settle of an existing request (same bill id) with edited
+        // items - invalidate the cached print DTO so the preview re-reads the
+        // updated item list instead of the pre-edit snapshot.
+        bhtIssueRequestPrintDtoBillId = null;
         Bill bill = getBillFacade().find(getPreBill().getId());
         bill.setBillTypeAtomic(BillTypeAtomic.REQUEST_MEDICINE_INWARD);
         bill.setEditedAt(new Date());
@@ -1440,12 +1490,18 @@ public class PharmacyRequestForBhtController implements Serializable {
 
         }
 
+        String reorderMsg = pharmacyService.getReorderWarningMessage(patientEncounter, billItem.getItem());
+        if (!reorderMsg.isEmpty()) {
+            JsfUtil.addWarningMessage(reorderMsg);
+        }
+
         // Create a new billItem for the collection to avoid entity state issues
         BillItem newBillItem = new BillItem();
         newBillItem.setItem(billItem.getItem());
         newBillItem.setQty(getQty());
         newBillItem.setInwardChargeType(InwardChargeType.Medicine);
         newBillItem.setBill(getPreBill());
+        newBillItem.setInstructions(billItem.getInstructions());
         // Required so resolvePackageOverrideRate()'s cumulative-quantity JPQL (bi.patientEncounter = :pe)
         // can find this row on subsequent dispenses of the same package-listed item.
         newBillItem.setPatientEncounter(patientEncounter);
@@ -2183,53 +2239,103 @@ public class PharmacyRequestForBhtController implements Serializable {
         }
     }
 
+    /**
+     * Saves an incomplete BHT medicine request as a draft (atomic
+     * REQUEST_MEDICINE_INWARD_PRE) so a nurse can resume it later. Unlike
+     * {@link #settleBhtRequestInternal()}, an empty bill-item list is
+     * allowed (a nurse may save a draft while still picking meds), no
+     * notification is sent, and the page stays on the edit screen instead of
+     * flipping to print preview.
+     */
     public void saveBhtIssueRequestFrompharmacy() {
-//        Date startTime = new Date();
-//        Date fromDate = null;
-//        Date toDate = null;
-//        if (errorCheck()) {
-//            return;
-//        }
-        if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment() == null) {
-            JsfUtil.addErrorMessage("No Request Department");
-        }
-        Patient pt = getPatientEncounter().getPatient();
-        getPreBill().setPaidAmount(0);
-
-        List<BillItem> tmpBillItems = getPreBill().getBillItems();
-        getPreBill().getBillItems().clear();
-        getPreBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyBhtPre, BillClassType.PreBill, BillNumberSuffix.POR));
-        getPreBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyBhtPre, BillClassType.PreBill, BillNumberSuffix.POR));
-
-        getPreBill().setCreater(getSessionController().getLoggedUser());
-        getPreBill().setCreatedAt(Calendar.getInstance().getTime());
-
-        getPreBill().setDepartment(getSessionController().getLoggedUser().getDepartment());
-        getPreBill().setInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        getPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
-        getPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
-
-        getPreBill().setEditedAt(null);
-        getPreBill().setEditor(null);
-
-        getPreBill().setBillTypeAtomic(BillTypeAtomic.REQUEST_MEDICINE_INWARD);
-        getPreBill().setBillClassType(BillClassType.PreBill);
-        getPreBill().setBillType(BillType.PharmacyBhtPre);
-
-        if (getPreBill().getId() == null) {
-            getBillFacade().create(getPreBill());
-        } else {
-            getBillFacade().edit(getPreBill());
+        if (getPatientEncounter() == null || getPatientEncounter().getPatient() == null) {
+            JsfUtil.addErrorMessage("Please Select a BHT");
+            return;
         }
 
-        Department matrixDepartment = getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge().getDepartment();
-        BillNumberSuffix billNumberSuffix = BillNumberSuffix.PHISSUEREQ;
-        BillType btp = BillType.PharmacyBhtPre;
+        if (getPatientEncounter().getCurrentPatientRoom() == null) {
+            JsfUtil.addErrorMessage("Please Select Patient Room");
+            return;
+        }
 
-        savePreBillFinallyRequest(pt, matrixDepartment, btp, billNumberSuffix);
-        savePreBillItemsFinallyRequest(tmpBillItems);
-        JsfUtil.addSuccessMessage("Request Saved");
+        if (getPatientEncounter().getCurrentPatientRoom().getRoomFacilityCharge() == null) {
+            JsfUtil.addErrorMessage("Please Set Room");
+            return;
+        }
+
+        if (getPatientEncounter().isNursingDischarged()) {
+            JsfUtil.addErrorMessage("Cannot issue medicines: nursing discharge has already been confirmed for this patient.");
+            return;
+        }
+
+        if (getPatientEncounter().isDischarged()) {
+            JsfUtil.addErrorMessage("Sorry Patient is Discharged!!!");
+            return;
+        }
+
+        if (getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Sorry this BHT was Settled !!!");
+            return;
+        }
+
+        if (!persistBhtRequest(BillTypeAtomic.REQUEST_MEDICINE_INWARD_PRE, BillType.InwardPharmacyRequest)) {
+            return;
+        }
+
+        JsfUtil.addSuccessMessage("Draft Saved");
+    }
+
+    /**
+     * Loads an existing draft BHT medicine request (billTypeAtomic
+     * REQUEST_MEDICINE_INWARD_PRE) into this controller so a nurse can
+     * resume editing it. Mirrors
+     * {@link com.divudi.bean.pharmacy.PharmacyBillSearch#editInwardPharmacyRequestBill()}
+     * (which does the equivalent for already-settled requests), but also
+     * guards against loading a bill that is no longer a draft (e.g. it was
+     * settled by someone else in the meantime) and explicitly reloads the
+     * bill items via a JPQL query rather than relying on the reloaded bill's
+     * (possibly lazy/uninitialized) billItems collection.
+     *
+     * @param draftBill the draft bill row selected from the drafts list
+     * @return navigation outcome to the BHT issue request edit page, or null
+     * on failure
+     */
+    public String loadDraftForEditing(Bill draftBill) {
+        if (!webUserController.hasPrivilege(com.divudi.core.data.Privileges.InwardPharmacyIssueRequest.toString())) {
+            JsfUtil.addErrorMessage("You do not have privilege to edit pharmacy requests.");
+            return null;
+        }
+        if (draftBill == null || draftBill.getId() == null) {
+            JsfUtil.addErrorMessage("No draft selected.");
+            return null;
+        }
+        Bill fresh = billService.reloadBill(draftBill);
+        if (fresh == null || fresh.getBillTypeAtomic() != BillTypeAtomic.REQUEST_MEDICINE_INWARD_PRE || fresh.isCancelled()) {
+            JsfUtil.addErrorMessage("This is not an editable draft.");
+            return null;
+        }
+
+        setBillPreview(false);
+        // Session-scoped controller: a stale cache from a previously handled
+        // patient must not be used to allergy-check items on this patient's draft.
+        allergyListOfPatient = null;
+        setPatientEncounter(fresh.getPatientEncounter());
+        // `department` here means the target pharmacy (see line ~1829: "this.department = pharmacy;"),
+        // which corresponds to the bill's toDepartment, not fromDepartment (the ward).
+        setDepartment(fresh.getToDepartment());
+        setPreBill((PreBill) fresh);
+
+        String jpql = "SELECT bi FROM BillItem bi "
+                + "WHERE bi.bill.id = :billId "
+                + "AND bi.retired = false";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", fresh.getId());
+        List<BillItem> items = billItemFacade.findByJpql(jpql, params);
+        getPreBill().setBillItems(items != null ? items : new ArrayList<>());
+
+        comment = fresh.getComments();
+
+        return "/ward/ward_pharmacy_bht_issue_request_bill?faces-redirect=true";
     }
 
     /**
@@ -2564,6 +2670,26 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public void setPrintBill(Bill printBill) {
         this.printBill = printBill;
+    }
+
+    @EJB
+    private com.divudi.service.pharmacy.BhtIssueRequestNativeSqlService bhtIssueRequestNativeSqlService;
+
+    private com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto bhtIssueRequestPrintDto;
+    private Long bhtIssueRequestPrintDtoBillId;
+
+    public com.divudi.core.data.dto.pharmacy.BhtIssueRequestPrintDto getBhtIssueRequestPrintDto() {
+        if (printBill == null || printBill.getId() == null) {
+            return null;
+        }
+        if (!printBill.getId().equals(bhtIssueRequestPrintDtoBillId)) {
+            bhtIssueRequestPrintDto = bhtIssueRequestNativeSqlService.loadPrintDtoByBillId(printBill.getId());
+            bhtIssueRequestPrintDtoBillId = printBill.getId();
+            if (bhtIssueRequestPrintDto == null) {
+                JsfUtil.addErrorMessage("BHT Issue Request not found");
+            }
+        }
+        return bhtIssueRequestPrintDto;
     }
 
     public PaymentSchemeController getPaymentSchemeController() {

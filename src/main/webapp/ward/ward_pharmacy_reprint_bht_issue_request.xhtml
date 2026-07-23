@@ -6,7 +6,8 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy"
-                xmlns:phe="http://xmlns.jcp.org/jsf/composite/pharmacy/inward">
+                xmlns:phe="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
+                xmlns:phprint="http://xmlns.jcp.org/jsf/composite/pharmacy/print">
 
     <ui:define name="content">
         <h:form>
@@ -18,6 +19,7 @@
                         <div class="d-flex align-items-center gap-2">
                             <h:outputText styleClass="fas fa-file-invoice" />
                             <h:outputLabel value="Inward Pharmacy Request Reprint" ></h:outputLabel>
+                            <p:tag value="Completed" severity="success" rendered="#{pharmacyBillSearch.bill.completed}" />
                         </div>
 
                         <!-- CENTER: navigation -->
@@ -34,6 +36,18 @@
 
                         <!-- RIGHT: actions, left=least important -> right=primary -->
                         <div class="d-flex gap-2 align-items-center">
+                            <p:commandButton
+                                id="btnMarkComplete"
+                                title="Force this request to Completed status (allows discharge to proceed even if not fully issued)"
+                                styleClass="ui-button-secondary"
+                                icon="fas fa-check-double"
+                                value="Mark as Complete"
+                                disabled="#{not webUserController.hasPrivilege('PharmacyBhtRequestForceComplete') or pharmacyBillSearch.bill.completed or pharmacyBillSearch.bill.cancelled}"
+                                onclick="return confirm('Mark this request as Complete? This allows discharge to proceed even if not all medicines have been issued.');"
+                                action="#{pharmacyBillSearch.markInwardPharmacyRequestComplete()}"
+                                ajax="false">
+                            </p:commandButton>
+
                             <p:commandButton
                                 id="btnCancelRequest"
                                 title="Cancel this request"
@@ -66,6 +80,8 @@
                                 ajax="false" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
+
+                            <phprint:bht_issue_request_print_config_button/>
                         </div>
 
                     </div>
@@ -126,8 +142,8 @@
                         <div class="col-8">
                             <p:panel header="Bill" style="height: 100%">
                                 <h:panelGroup id="gpBillPreview">
-                                    <ph:pharmacy_bht_issue_request_receipt
-                                        bill="#{pharmacyBillSearch.bill}"
+                                    <phprint:bht_issue_request_receipt
+                                        dto="#{pharmacyBillSearch.bhtIssueRequestPrintDto}"
                                         duplicate="true" />
                                 </h:panelGroup>
                             </p:panel>

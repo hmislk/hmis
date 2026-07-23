@@ -225,6 +225,7 @@
                                 id="departmentTypeFilter"
                                 value="#{pharmacyReportController.selectedDepartmentTypes}"
                                 label="Select Department Types"
+                                updateLabel="true"
                                 class="w-100"
                                 filter="true"
                                 filterMatchMode="contains"
@@ -326,6 +327,7 @@
                                 class="w-100"
                                 value="#{pharmacyReportController.billTypes}"
                                 label="All Bill Types"
+                                updateLabel="true"
                                 title="Leave empty to include all bill types">
                             <f:selectItems
                                     value="#{enumController.pharmacyBillTypesForMovementReports}"

@@ -343,6 +343,38 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method").add("key")))
                 .build();
 
+        JsonObject admissionNumberTool = Json.createObjectBuilder()
+                .add("name", "manage_admission_number_counter")
+                .add("description",
+                        "View or reset the BHT/OPD-card admission-number sequence counter for an admission type. "
+                        + "Use GET to check the current counter and next number. Use PUT only when staff have manually "
+                        + "corrected a printed BHT/OPD-card number and confirmed what the next number should be. "
+                        + "This resets a live, shared numbering sequence used by all staff admitting patients under "
+                        + "this admission type — before calling PUT, always state the current last/next number (from "
+                        + "GET) and the requested new last/next number back to the user, and wait for their explicit "
+                        + "confirmation in the same conversation. Never call PUT speculatively or without that confirmation.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("GET").add("PUT"))
+                                        .add("description", "HTTP method: GET to view, PUT to reset"))
+                                .add("admissionTypeId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Numeric AdmissionType ID. Required."))
+                                .add("institutionId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Numeric Institution ID (optional, only relevant if institution-based numbering is enabled)."))
+                                .add("lastAdmissionNumber", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "The corrected last-used number. Required for PUT; the next generated number will be this + 1."))
+                                .add("expectedLastAdmissionNumber", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Required for PUT. The lastAdmissionNumber value most recently observed via GET — used as a compare-and-set precondition so the reset is rejected (409) if the counter changed since it was read.")))
+                        .add("required", Json.createArrayBuilder().add("method").add("admissionTypeId")))
+                .build();
+
         JsonObject clinicalMetadataTool = Json.createObjectBuilder()
                 .add("name", "manage_clinical_metadata")
                 .add("description",
@@ -845,7 +877,70 @@ public class AnthropicApiService implements Serializable {
                                         .add("description", "InvestigationReportType enum value (e.g. General). Optional."))
                                 .add("bypassSampleWorkflow", Json.createObjectBuilder()
                                         .add("type", "string")
-                                        .add("description", "'true' to skip sample collection and allow direct result entry after billing. Optional.")))
+                                        .add("description", "'true' to skip sample collection and allow direct result entry after billing. Optional."))
+                                .add("vatable", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'true' to charge VAT on this investigation, 'false' to exempt it. Optional."))
+                                .add("vatPercentage", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "VAT percentage applied when vatable is true (e.g. '18'). Optional.")))
+                        .add("required", Json.createArrayBuilder().add("method")))
+                .build();
+
+        JsonObject manageServicesTool = Json.createObjectBuilder()
+                .add("name", "manage_services")
+                .add("description",
+                        "Search, retrieve, create, update, activate, or deactivate service master records "
+                        + "(billable OPD or Inward services, e.g. consultations, procedures, room charges). "
+                        + "Use GET to search by name/code/printName, optionally filtered by serviceType or categoryId. "
+                        + "Use POST to create a new service (returns already_exists with the existing id if a "
+                        + "duplicate name is found). Use PUT to update metadata. "
+                        + "Use ACTIVATE/DEACTIVATE to toggle the inactive flag.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Operation: GET=search, GET_BY_ID=fetch one, POST=create, PUT=update, ACTIVATE=set inactive=false, DEACTIVATE=set inactive=true. Required."))
+                                .add("id", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Service ID. Required for GET_BY_ID, PUT, ACTIVATE, DEACTIVATE."))
+                                .add("query", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Search text matched against name, code, and printName (case-insensitive). Used with GET."))
+                                .add("serviceType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'OPD' or 'Inward'. Required for POST. Optional filter for GET."))
+                                .add("categoryId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Filter by service category ID. Used with GET."))
+                                .add("inactive", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Filter by active/inactive status: 'true' or 'false'. Omit to return both. Used with GET."))
+                                .add("limit", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Max results to return (1–100). Defaults to 20. Used with GET."))
+                                .add("name", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Service name. Required for POST; optional for PUT."))
+                                .add("code", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Short code. Auto-generated from name if omitted on POST. Optional for PUT."))
+                                .add("printName", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Print/display name shown on reports and bills. Optional."))
+                                .add("fullName", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Full descriptive name. Optional."))
+                                .add("inwardChargeType", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "InwardChargeType enum value. Required when serviceType=Inward on POST."))
+                                .add("vatable", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "'true' to charge VAT on this service, 'false' to exempt it. Optional."))
+                                .add("vatPercentage", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "VAT percentage applied when vatable is true (e.g. '18'). Optional.")))
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
@@ -1166,6 +1261,7 @@ public class AnthropicApiService implements Serializable {
                 .add("description",
                         "Manage HMIS users, passwords, loggable departments, and department-scoped privileges.\n\n"
                         + "method: LIST | GET | POST | PUT | DELETE | RESET_PASSWORD | CHANGE_PASSWORD | "
+                        + "FORCE_PASSWORD_RESET | PASSWORD_STATUS | "
                         + "LIST_PRIVILEGES | ASSIGN_PRIVILEGES | REVOKE_PRIVILEGE | LIST_DEPARTMENTS | ASSIGN_DEPARTMENTS | "
                         + "LIST_AVAILABLE_PRIVILEGES | BULK_ASSIGN_PRIVILEGES | ASSIGN_PRIVILEGE_CATEGORIES | "
                         + "ASSIGN_ALL_PRIVILEGES_MULTI_DEPT\n\n"
@@ -1173,7 +1269,10 @@ public class AnthropicApiService implements Serializable {
                         + "ASSIGN_ALL_PRIVILEGES_MULTI_DEPT grants every privilege across supplied departmentIds (or all user's loggable depts if omitted). "
                         + "POST supports optional staffId to pre-link a Staff record at creation. "
                         + "Use LIST_AVAILABLE_PRIVILEGES before assigning explicit privilege names. "
-                        + "Always confirm with the user before POST, PUT, DELETE, RESET_PASSWORD, CHANGE_PASSWORD, "
+                        + "FORCE_PASSWORD_RESET flags the account for a mandatory reset on next login without setting an actual new "
+                        + "password (requires id only). PASSWORD_STATUS reports lastPasswordResetAt/needToResetPassword for every "
+                        + "active user, optionally filtered by from/to (yyyy-MM-dd) — read-only, no id required. "
+                        + "Always confirm with the user before POST, PUT, DELETE, RESET_PASSWORD, CHANGE_PASSWORD, FORCE_PASSWORD_RESET, "
                         + "ASSIGN_PRIVILEGES, REVOKE_PRIVILEGE, ASSIGN_DEPARTMENTS, BULK_ASSIGN_PRIVILEGES, "
                         + "ASSIGN_PRIVILEGE_CATEGORIES, or ASSIGN_ALL_PRIVILEGES_MULTI_DEPT.")
                 .add("input_schema", Json.createObjectBuilder()
@@ -1183,6 +1282,7 @@ public class AnthropicApiService implements Serializable {
                                         .add("enum", Json.createArrayBuilder()
                                                 .add("LIST").add("GET").add("POST").add("PUT").add("DELETE")
                                                 .add("RESET_PASSWORD").add("CHANGE_PASSWORD")
+                                                .add("FORCE_PASSWORD_RESET").add("PASSWORD_STATUS")
                                                 .add("LIST_PRIVILEGES").add("ASSIGN_PRIVILEGES").add("REVOKE_PRIVILEGE")
                                                 .add("LIST_DEPARTMENTS").add("ASSIGN_DEPARTMENTS")
                                                 .add("LIST_AVAILABLE_PRIVILEGES").add("BULK_ASSIGN_PRIVILEGES")
@@ -1213,7 +1313,9 @@ public class AnthropicApiService implements Serializable {
                                 .add("userIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated user IDs for BULK_ASSIGN_PRIVILEGES"))
                                 .add("departmentIds", Json.createObjectBuilder().add("type", "string").add("description", "Comma-separated department IDs for ASSIGN_DEPARTMENTS or ASSIGN_ALL_PRIVILEGES_MULTI_DEPT"))
                                 .add("staffId", Json.createObjectBuilder().add("type", "string").add("description", "Staff ID to link to the user on POST or via PUT /{id}/staff"))
-                                .add("retireComments", Json.createObjectBuilder().add("type", "string")))
+                                .add("retireComments", Json.createObjectBuilder().add("type", "string"))
+                                .add("from", Json.createObjectBuilder().add("type", "string").add("description", "PASSWORD_STATUS filter: lastPasswordResetAt on/after this date (yyyy-MM-dd)"))
+                                .add("to", Json.createObjectBuilder().add("type", "string").add("description", "PASSWORD_STATUS filter: lastPasswordResetAt on/before this date (yyyy-MM-dd)")))
                         .add("required", Json.createArrayBuilder().add("method")))
                 .build();
 
@@ -1678,6 +1780,7 @@ public class AnthropicApiService implements Serializable {
                 .add(fetchFileTool)
                 .add(searchConfigTool)
                 .add(manageConfigOptionTool)
+                .add(admissionNumberTool)
                 .add(clinicalMetadataTool)
                 .add(itemRequestTool)
                 .add(collectingCentreFeesTool)
@@ -1687,6 +1790,7 @@ public class AnthropicApiService implements Serializable {
                 .add(inwardRoomsTool)
                 .add(bedBoardSvgTool)
                 .add(manageInvestigationsTool)
+                .add(manageServicesTool)
                 .add(manageInvestigationFormatTool)
                 .add(manageFormsTool)
                 .add(manageSubscriptionsTool)
@@ -1741,6 +1845,14 @@ public class AnthropicApiService implements Serializable {
                     String key    = toolInput.containsKey("key")   ? toolInput.getString("key", "")   : "";
                     String value  = toolInput.containsKey("value") ? toolInput.getString("value", "") : null;
                     return manageConfigOption(method, key, value, hmisApiKey);
+                }
+                case "manage_admission_number_counter": {
+                    String method = toolInput.getString("method", "GET");
+                    String admissionTypeId = toolInput.containsKey("admissionTypeId") ? toolInput.getString("admissionTypeId", "") : "";
+                    String institutionId = toolInput.containsKey("institutionId") ? toolInput.getString("institutionId", "") : "";
+                    String lastAdmissionNumber = toolInput.containsKey("lastAdmissionNumber") ? toolInput.getString("lastAdmissionNumber", "") : "";
+                    String expectedLastAdmissionNumber = toolInput.containsKey("expectedLastAdmissionNumber") ? toolInput.getString("expectedLastAdmissionNumber", "") : "";
+                    return callAdmissionNumberApi(method, admissionTypeId, institutionId, lastAdmissionNumber, expectedLastAdmissionNumber, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_clinical_metadata": {
                     String method = toolInput.getString("method", "GET");
@@ -1855,7 +1967,26 @@ public class AnthropicApiService implements Serializable {
                     String printName = toolInput.containsKey("printName") ? toolInput.getString("printName", "") : "";
                     String reportType = toolInput.containsKey("reportType") ? toolInput.getString("reportType", "") : "";
                     String bypass = toolInput.containsKey("bypassSampleWorkflow") ? toolInput.getString("bypassSampleWorkflow", "") : "";
-                    return callInvestigationApi(method, id, query, inactive, limit, name, code, printName, reportType, bypass, hmisBaseUrl, hmisApiKey);
+                    String vatable = toolInput.containsKey("vatable") ? toolInput.getString("vatable", "") : "";
+                    String vatPercentage = toolInput.containsKey("vatPercentage") ? toolInput.getString("vatPercentage", "") : "";
+                    return callInvestigationApi(method, id, query, inactive, limit, name, code, printName, reportType, bypass, vatable, vatPercentage, hmisBaseUrl, hmisApiKey);
+                }
+                case "manage_services": {
+                    String method = toolInput.getString("method", "GET");
+                    String id = toolInput.containsKey("id") ? toolInput.getString("id", "") : "";
+                    String query = toolInput.containsKey("query") ? toolInput.getString("query", "") : "";
+                    String serviceType = toolInput.containsKey("serviceType") ? toolInput.getString("serviceType", "") : "";
+                    String categoryId = toolInput.containsKey("categoryId") ? toolInput.getString("categoryId", "") : "";
+                    String inactive = toolInput.containsKey("inactive") ? toolInput.getString("inactive", "") : "";
+                    String limit = toolInput.containsKey("limit") ? toolInput.getString("limit", "20") : "20";
+                    String name = toolInput.containsKey("name") ? toolInput.getString("name", "") : "";
+                    String code = toolInput.containsKey("code") ? toolInput.getString("code", "") : "";
+                    String printName = toolInput.containsKey("printName") ? toolInput.getString("printName", "") : "";
+                    String fullName = toolInput.containsKey("fullName") ? toolInput.getString("fullName", "") : "";
+                    String inwardChargeType = toolInput.containsKey("inwardChargeType") ? toolInput.getString("inwardChargeType", "") : "";
+                    String vatable = toolInput.containsKey("vatable") ? toolInput.getString("vatable", "") : "";
+                    String vatPercentage = toolInput.containsKey("vatPercentage") ? toolInput.getString("vatPercentage", "") : "";
+                    return callServiceApi(method, id, query, serviceType, categoryId, inactive, limit, name, code, printName, fullName, inwardChargeType, vatable, vatPercentage, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_investigation_format": {
                     String resourceType = toolInput.getString("resource_type", "ITEM");
@@ -2380,6 +2511,88 @@ public class AnthropicApiService implements Serializable {
             return "***masked***";
         }
         return value;
+    }
+
+    private String callAdmissionNumberApi(String method, String admissionTypeId, String institutionId,
+            String lastAdmissionNumber, String expectedLastAdmissionNumber, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured. Cannot call admission number API.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: No active HMIS API key found for the current user.";
+        }
+        if (admissionTypeId == null || admissionTypeId.trim().isEmpty()) {
+            return "Error: admissionTypeId is required.";
+        }
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+            String base = hmisBaseUrl.trim().replaceAll("/+$", "") + "/api/admission-numbers";
+            String url;
+            String requestBody = null;
+            String httpMethod;
+
+            switch (method.toUpperCase()) {
+                case "GET": {
+                    StringBuilder urlBuilder = new StringBuilder(base)
+                            .append("?admissionTypeId=").append(URLEncoder.encode(admissionTypeId.trim(), StandardCharsets.UTF_8));
+                    if (institutionId != null && !institutionId.trim().isEmpty()) {
+                        urlBuilder.append("&institutionId=").append(URLEncoder.encode(institutionId.trim(), StandardCharsets.UTF_8));
+                    }
+                    url = urlBuilder.toString();
+                    httpMethod = "GET";
+                    break;
+                }
+                case "PUT": {
+                    if (lastAdmissionNumber == null || lastAdmissionNumber.trim().isEmpty()) {
+                        return "Error: lastAdmissionNumber is required for PUT.";
+                    }
+                    if (expectedLastAdmissionNumber == null || expectedLastAdmissionNumber.trim().isEmpty()) {
+                        return "Error: expectedLastAdmissionNumber is required for PUT (the lastAdmissionNumber "
+                                + "value most recently observed via GET).";
+                    }
+                    StringBuilder urlBuilder = new StringBuilder(base)
+                            .append("?admissionTypeId=").append(URLEncoder.encode(admissionTypeId.trim(), StandardCharsets.UTF_8));
+                    if (institutionId != null && !institutionId.trim().isEmpty()) {
+                        urlBuilder.append("&institutionId=").append(URLEncoder.encode(institutionId.trim(), StandardCharsets.UTF_8));
+                    }
+                    url = urlBuilder.toString();
+                    httpMethod = "PUT";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    bodyBuilder.add("lastAdmissionNumber", Long.parseLong(lastAdmissionNumber.trim()));
+                    bodyBuilder.add("expectedLastAdmissionNumber", Long.parseLong(expectedLastAdmissionNumber.trim()));
+                    requestBody = bodyBuilder.build().toString();
+                    break;
+                }
+                default:
+                    return "Error: Unknown method: " + method;
+            }
+
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Finance", hmisApiKey)
+                    .header("Content-Type", "application/json");
+
+            if (requestBody != null) {
+                reqBuilder.method(httpMethod, HttpRequest.BodyPublishers.ofString(requestBody));
+            } else {
+                reqBuilder.GET();
+            }
+
+            HttpResponse<String> response = client.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + "\n" + response.body();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Admission number API call interrupted.";
+        } catch (NumberFormatException e) {
+            return "Error: lastAdmissionNumber and expectedLastAdmissionNumber must be whole numbers.";
+        } catch (Exception e) {
+            return "Admission number API error: " + e.getMessage();
+        }
     }
 
     private String callClinicalMetadataApi(String method, String type, String id,
@@ -3712,7 +3925,7 @@ public class AnthropicApiService implements Serializable {
      * @param userHmisApiKey  The logged-in user's active HMIS API key value
      * @param githubBranch    The GitHub branch for documentation links (e.g. "development")
      */
-    private String callInvestigationApi(String method, String id, String query, String inactive, String limit, String name, String code, String printName, String reportType, String bypassSampleWorkflow, String hmisBaseUrl, String hmisApiKey) {
+    private String callInvestigationApi(String method, String id, String query, String inactive, String limit, String name, String code, String printName, String reportType, String bypassSampleWorkflow, String vatable, String vatPercentage, String hmisBaseUrl, String hmisApiKey) {
         try {
             String root = (hmisBaseUrl != null) ? hmisBaseUrl.trim().replaceAll("/+$", "") : "";
             if (root.isEmpty()) return "Error: HMIS base URL is not configured.";
@@ -3727,6 +3940,8 @@ public class AnthropicApiService implements Serializable {
             else if ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method)) {
                 javax.json.JsonObjectBuilder b = Json.createObjectBuilder().add("name", name==null?"":name);
                 if(code!=null&&!code.isEmpty()) b.add("code", code); if(printName!=null&&!printName.isEmpty()) b.add("printName", printName); if(reportType!=null&&!reportType.isEmpty()) b.add("reportType", reportType); if(bypassSampleWorkflow!=null&&!bypassSampleWorkflow.isEmpty()) b.add("bypassSampleWorkflow", Boolean.parseBoolean(bypassSampleWorkflow));
+                if(vatable!=null&&!vatable.isEmpty()) b.add("vatable", Boolean.parseBoolean(vatable));
+                if(vatPercentage!=null&&!vatPercentage.isEmpty()) b.add("vatPercentage", Double.parseDouble(vatPercentage));
                 String u = "POST".equalsIgnoreCase(method) ? root+"/api/investigations" : root+"/api/investigations/"+id;
                 rb = HttpRequest.newBuilder().uri(URI.create(u)).method("POST".equalsIgnoreCase(method)?"POST":"PUT", HttpRequest.BodyPublishers.ofString(b.build().toString())).header("Content-Type", "application/json");
             } else if ("ACTIVATE".equalsIgnoreCase(method) || "DEACTIVATE".equalsIgnoreCase(method)) {
@@ -3740,6 +3955,45 @@ public class AnthropicApiService implements Serializable {
             }
             if(!key.isEmpty()) rb.header("Finance", key); HttpResponse<String> resp=client.send(rb.build(), HttpResponse.BodyHandlers.ofString()); return "HTTP "+resp.statusCode()+"\n"+resp.body();
         } catch (Exception e) { return "Investigation API error: "+e.getMessage(); }
+    }
+
+    private String callServiceApi(String method, String id, String query, String serviceType, String categoryId, String inactive, String limit, String name, String code, String printName, String fullName, String inwardChargeType, String vatable, String vatPercentage, String hmisBaseUrl, String hmisApiKey) {
+        try {
+            String root = (hmisBaseUrl != null) ? hmisBaseUrl.trim().replaceAll("/+$", "") : "";
+            if (root.isEmpty()) return "Error: HMIS base URL is not configured.";
+            String key = (hmisApiKey != null) ? hmisApiKey.trim() : "";
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
+            HttpRequest.Builder rb;
+            if ("GET".equalsIgnoreCase(method)) {
+                String url = root+"/api/services/search?query="+URLEncoder.encode(query, StandardCharsets.UTF_8)+"&limit="+URLEncoder.encode(limit, StandardCharsets.UTF_8);
+                if(serviceType!=null&&!serviceType.isEmpty()) url += "&serviceType="+URLEncoder.encode(serviceType, StandardCharsets.UTF_8);
+                if(categoryId!=null&&!categoryId.isEmpty()) url += "&categoryId="+URLEncoder.encode(categoryId, StandardCharsets.UTF_8);
+                if(inactive!=null&&!inactive.isEmpty()) url += "&inactive="+URLEncoder.encode(inactive, StandardCharsets.UTF_8);
+                rb = HttpRequest.newBuilder().uri(URI.create(url)).GET();
+            } else if ("GET_BY_ID".equalsIgnoreCase(method)) { rb = HttpRequest.newBuilder().uri(URI.create(root+"/api/services/"+id)).GET(); }
+            else if ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method)) {
+                javax.json.JsonObjectBuilder b = Json.createObjectBuilder().add("name", name==null?"":name);
+                if(serviceType!=null&&!serviceType.isEmpty()) b.add("serviceType", serviceType);
+                if(code!=null&&!code.isEmpty()) b.add("code", code);
+                if(printName!=null&&!printName.isEmpty()) b.add("printName", printName);
+                if(fullName!=null&&!fullName.isEmpty()) b.add("fullName", fullName);
+                if(categoryId!=null&&!categoryId.isEmpty()) b.add("categoryId", Long.parseLong(categoryId));
+                if(inwardChargeType!=null&&!inwardChargeType.isEmpty()) b.add("inwardChargeType", inwardChargeType);
+                if(vatable!=null&&!vatable.isEmpty()) b.add("vatable", Boolean.parseBoolean(vatable));
+                if(vatPercentage!=null&&!vatPercentage.isEmpty()) b.add("vatPercentage", Double.parseDouble(vatPercentage));
+                String u = "POST".equalsIgnoreCase(method) ? root+"/api/services" : root+"/api/services/"+id;
+                rb = HttpRequest.newBuilder().uri(URI.create(u)).method("POST".equalsIgnoreCase(method)?"POST":"PUT", HttpRequest.BodyPublishers.ofString(b.build().toString())).header("Content-Type", "application/json");
+            } else if ("ACTIVATE".equalsIgnoreCase(method) || "DEACTIVATE".equalsIgnoreCase(method)) {
+                String u = root + "/api/services/" + id
+                        + ("ACTIVATE".equalsIgnoreCase(method) ? "/activate" : "/deactivate");
+                rb = HttpRequest.newBuilder().uri(URI.create(u))
+                        .method("PATCH", HttpRequest.BodyPublishers.noBody());
+            } else {
+                return "Error: Unsupported method for manage_services: " + method
+                        + ". Allowed methods are GET, GET_BY_ID, POST, PUT, ACTIVATE, DEACTIVATE.";
+            }
+            if(!key.isEmpty()) rb.header("Finance", key); HttpResponse<String> resp=client.send(rb.build(), HttpResponse.BodyHandlers.ofString()); return "HTTP "+resp.statusCode()+"\n"+resp.body();
+        } catch (Exception e) { return "Service API error: "+e.getMessage(); }
     }
 
     private String callInvestigationFormatApi(String resourceType, String method,
@@ -4365,6 +4619,14 @@ public class AnthropicApiService implements Serializable {
                             .add("newPassword", requireText(jsonString(input, "newPassword"), "newPassword"));
                     addString(change, "currentPassword", jsonString(input, "currentPassword"));
                     body = change.build().toString();
+                    break;
+                case "FORCE_PASSWORD_RESET":
+                    httpMethod = "POST";
+                    url = base + "/" + requireText(id, "id") + "/force-password-reset";
+                    break;
+                case "PASSWORD_STATUS":
+                    url = base + "/password-status?" + queryParam("from", jsonString(input, "from"))
+                            + "&" + queryParam("to", jsonString(input, "to"));
                     break;
                 case "LIST_PRIVILEGES":
                     url = base + "/" + requireText(id, "id") + "/privileges";
@@ -5115,8 +5377,20 @@ public class AnthropicApiService implements Serializable {
           .append("Use GET to search by name, code, or printName. ")
           .append("Use POST to create — returns 'already_exists' with the existing id when a duplicate name is found, ")
           .append("so always check before creating to avoid duplicates. ")
-          .append("Use PUT to update name, code, printName, reportType, or bypassSampleWorkflow. ")
+          .append("Use PUT to update name, code, printName, reportType, bypassSampleWorkflow, vatable, or vatPercentage. ")
+          .append("Set vatable=true and vatPercentage (e.g. 18) to charge VAT automatically wherever this investigation is billed; ")
+          .append("vatable=false or vatPercentage=0 means no VAT. ")
           .append("Always confirm with the user before POST or PUT — these changes affect live investigation billing.\n\n");
+        sb.append("### manage_services\n");
+        sb.append("Search, retrieve, create, update, activate, or deactivate service master records ")
+          .append("(billable OPD or Inward services, e.g. consultations, procedures, room charges). ")
+          .append("Use GET to search by name, code, or printName, optionally filtered by serviceType ('OPD'/'Inward') or categoryId. ")
+          .append("Use POST to create — serviceType and name are required, inwardChargeType is required when serviceType=Inward. ")
+          .append("Returns 'already_exists' with the existing id when a duplicate name is found, so always check before creating. ")
+          .append("Use PUT to update name, code, printName, fullName, categoryId, inwardChargeType, vatable, or vatPercentage. ")
+          .append("Set vatable=true and vatPercentage (e.g. 18) to charge VAT automatically wherever this service is billed; ")
+          .append("vatable=false or vatPercentage=0 means no VAT. ")
+          .append("Always confirm with the user before POST or PUT — these changes affect live service billing.\n\n");
         sb.append("### manage_investigation_format\n");
         sb.append("Manage the internal report format of an investigation: items (report fields like labels, values, ")
           .append("calculations, flags), item values (dropdown options for List-type items), calculations (formulas ")
@@ -5450,7 +5724,12 @@ public class AnthropicApiService implements Serializable {
                 + "Bulk operations (POST /users/bulk/role-operations) target either explicit userIds or a {roleId?, departmentId?} filter "
                 + "(userIds wins) and use a two-step safety gate: call once with preview=true to see the resolved user count and per-aspect "
                 + "totals (capped at first 200 users), then repeat the identical call with confirm=true to actually apply — calling with "
-                + "neither preview nor confirm is rejected. GET /users/roles lists active roles with template summary counts.",
+                + "neither preview nor confirm is rejected. GET /users/roles lists active roles with template summary counts.\n\n"
+                + "POST /users/{id}/force-password-reset flags needToResetPassword=true without requiring a new password value — "
+                + "use this to force a specific account to reset on next login when you don't want to set (or don't know) an actual "
+                + "new password; distinct from /reset-password. GET /users/password-status (optional ?from=&to=, yyyy-MM-dd) reports "
+                + "lastPasswordResetAt and needToResetPassword for every active user, for auditing password-expiration policy coverage "
+                + "or answering 'who has reset within this period' questions.",
                 githubUrl(branch, "developer_docs/api/API_USER_MANAGEMENT.md"),
                 new String[][]{
                     {"GET",    "/users",                          "List users. Filters: query, departmentId, page, size"},
@@ -5479,7 +5758,9 @@ public class AnthropicApiService implements Serializable {
                     {"POST",   "/users/bulk/role-operations",     "Bulk RESET/EXPAND/NARROW for many users; preview=true then confirm=true"},
                     {"GET",    "/users/roles",                    "List active roles with template summary counts (privileges/icons/subscriptions, template login page)"},
                     {"PUT",    "/users/{id}/login-page",          "Upsert the user's default login page for a department (body: {departmentId, loginPage})"},
-                    {"DELETE", "/users/{id}/login-page/{departmentId}", "Retire the user's default login-page override for a department"}
+                    {"DELETE", "/users/{id}/login-page/{departmentId}", "Retire the user's default login-page override for a department"},
+                    {"POST",   "/users/{id}/force-password-reset", "Flag needToResetPassword=true without supplying a new password (distinct from reset-password)"},
+                    {"GET",    "/users/password-status",          "Report lastPasswordResetAt and needToResetPassword per active user. Filters: from, to (yyyy-MM-dd)"}
                 });
 
         appendModule(sb, "User Roles", "/user-roles",
@@ -5588,6 +5869,14 @@ public class AnthropicApiService implements Serializable {
                 null,
                 new String[][]{
                     {"GET", "/sap/inventory/sync", "Trigger SAP MM goods-receipt sync. Query params: fromDate (yyyy-MM-dd, optional), toDate (yyyy-MM-dd, optional)"}
+                });
+
+        appendModule(sb, "Admission Number Counters", "/admission-numbers",
+                "View or reset the BHT/OPD-card admission-number sequence counter for a given admission type (and institution, if institution-based numbering is enabled). Use this only when staff have manually corrected a printed BHT/OPD-card number and need the system's next auto-generated number to continue from that correction. This resets a live, shared numbering sequence used by all staff admitting patients under this admission type — before calling PUT, always state the current last/next number (from GET) and the requested new last/next number back to the user, and wait for their explicit confirmation in the same conversation. Never call PUT speculatively or without that confirmation.",
+                null,
+                new String[][]{
+                    {"GET", "/admission-numbers", "View the current counter and what the next generated number would be. Params: admissionTypeId (required), institutionId (optional)"},
+                    {"PUT", "/admission-numbers", "Reset the counter to an explicit corrected value so the next generated number is correction+1. Requires explicit user confirmation of the old/new values before calling. Params: admissionTypeId (required), institutionId (optional). Body: {lastAdmissionNumber}"}
                 });
 
         // ── Clinical ──────────────────────────────────────────────────────────
