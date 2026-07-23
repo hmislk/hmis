@@ -704,7 +704,7 @@
                                                         <h:outputLabel value="Foriegner"/>
                                                     </div>
                                                     <div class="col-8">
-                                                        <h:panelGroup id="gpLocalForeign" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                                        <h:panelGroup id="gpLocalForeign" rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Mark Foreigner and Mark Local Buttons in Billing', true)}">
                                                             <p:commandButton
                                                                 value="Mark Foreigner"
                                                                 style="width: 65%; margin-bottom: 10px;"

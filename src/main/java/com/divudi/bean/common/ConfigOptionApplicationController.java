@@ -1456,6 +1456,16 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
+    public void setLongValueByKey(String key, Long value) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.LONG) {
+            option = createApplicationOptionIfAbsent(key, OptionValueType.LONG, "" + value);
+        }
+        option.setOptionValue("" + value);
+        optionFacade.edit(option);
+        loadApplicationOptions();
+    }
+
     public List<String> getListOfCustomOptions(String optionName) {
         // Fetch the string that contains options separated by line breaks
         String listOfOptionSeperatedByLineBreaks = getLongTextValueByKey("Custom option values for " + optionName);
@@ -1588,6 +1598,57 @@ public class ConfigOptionApplicationController implements Serializable {
         }
         option.setValueType(OptionValueType.LONG_TEXT);
         option.setOptionValue(sanitized);
+        optionFacade.edit(option);
+    }
+
+    /**
+     * Retrieves a department-scoped long preference (OptionScope.DEPARTMENT).
+     * Falls back to the application-scoped value when department is null.
+     * Creates the department-scoped ConfigOption (with defaultValue) if absent.
+     *
+     * @param key the preference key
+     * @param dept the department the preference is scoped to
+     * @param defaultValue the value to persist if the option does not exist yet
+     * @return the current long value of the department-scoped preference
+     */
+    public Long getLongValueByKeyForDepartment(String key, Department dept, Long defaultValue) {
+        if (dept == null) {
+            return getLongValueByKey(key, defaultValue);
+        }
+        ConfigOption option = findActiveOption(key, OptionScope.DEPARTMENT, null, dept, null);
+        if (option == null || option.getValueType() != OptionValueType.LONG) {
+            String dv = defaultValue != null ? "" + defaultValue : "0";
+            option = optionFacade.createOptionIfNotExists(key, OptionScope.DEPARTMENT, null, dept, null,
+                    OptionValueType.LONG, dv);
+        }
+        try {
+            return Long.parseLong(option.getOptionValue());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+    /**
+     * Persists a department-scoped long preference (OptionScope.DEPARTMENT),
+     * creating the ConfigOption if it does not already exist. Falls back to the
+     * application-scoped setter when department is null.
+     *
+     * @param key the preference key
+     * @param dept the department the preference is scoped to
+     * @param value the value to persist
+     */
+    public void setLongValueByKeyForDepartment(String key, Department dept, Long value) {
+        if (dept == null) {
+            setLongValueByKey(key, value);
+            return;
+        }
+        ConfigOption option = findActiveOptionWithLock(key, OptionScope.DEPARTMENT, null, dept, null);
+        if (option == null) {
+            option = optionFacade.createOptionIfNotExists(key, OptionScope.DEPARTMENT, null, dept, null,
+                    OptionValueType.LONG, "" + value);
+        }
+        option.setValueType(OptionValueType.LONG);
+        option.setOptionValue("" + value);
         optionFacade.edit(option);
     }
 

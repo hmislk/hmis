@@ -216,6 +216,18 @@ public class PharmacyConfigController implements Serializable {
     private boolean bhtIssueRequestReceiptFiveFive;
     private boolean bhtIssueRequestReceiptPos;
 
+    // Fast Retail Sale Settings (pharmacy_fast_retail_sale*.xhtml, issue #22349)
+    private boolean fastSalePosPaper;
+    private boolean fastSaleWithItemsPaper;
+    private boolean fastSalePrabodhaPaper;
+    private boolean fastSaleFiveFivePaper;
+    private boolean fastSalePosHeaderPaper;
+    private boolean fastSaleCustom3Paper;
+
+    // Fast Retail Sale for Cashier Settings (pharmacy_fast_retail_sale_for_cashier.xhtml, issue #22349)
+    private boolean fastSaleCashierPosPaper;
+    private boolean fastSaleCashierCustom3Paper;
+
     public PharmacyConfigController() {
     }
     
@@ -414,6 +426,18 @@ public class PharmacyConfigController implements Serializable {
         bhtIssueRequestReceiptA4 = configOptionApplicationController.getBooleanValueByKey("Pharmacy BHT Issue Request Receipt is A4", false);
         bhtIssueRequestReceiptFiveFive = configOptionApplicationController.getBooleanValueByKey("Pharmacy BHT Issue Request Receipt is FiveFive", true);
         bhtIssueRequestReceiptPos = configOptionApplicationController.getBooleanValueByKey("Pharmacy BHT Issue Request Receipt is POS", false);
+
+        // Fast Retail Sale Settings (issue #22349) — application-wide, matches existing pharmacy_fast_retail_sale*.xhtml keys
+        fastSalePosPaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill is PosPaper", true);
+        fastSaleWithItemsPaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill with Items is PosPaper", true);
+        fastSalePrabodhaPaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill is PosPaper(prabodha)", true);
+        fastSaleFiveFivePaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill is FiveFivePaper", true);
+        fastSalePosHeaderPaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill is PosHeaderPaper", true);
+        fastSaleCustom3Paper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Retail Sale Bill is FiveFiveCustom3", true);
+
+        // Fast Retail Sale for Cashier Settings (issue #22349) — application-wide, matches existing pharmacy_fast_retail_sale_for_cashier.xhtml keys
+        fastSaleCashierPosPaper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Sale for Cashier Bill is Pos paper", false);
+        fastSaleCashierCustom3Paper = configOptionApplicationController.getBooleanValueByKey("Pharmacy Sale for cashier Bill is FiveFiveCustom3", false);
 
     }
 
@@ -967,6 +991,45 @@ public class PharmacyConfigController implements Serializable {
             loadCurrentConfig();
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Error saving print format settings: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Fast Retail Sale configuration changes specifically (issue #22349)
+     */
+    public void saveFastRetailSaleConfig() {
+        try {
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill is PosPaper", fastSalePosPaper);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill with Items is PosPaper", fastSaleWithItemsPaper);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill is PosPaper(prabodha)", fastSalePrabodhaPaper);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill is FiveFivePaper", fastSaleFiveFivePaper);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill is PosHeaderPaper", fastSalePosHeaderPaper);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill is FiveFiveCustom3", fastSaleCustom3Paper);
+
+            JsfUtil.addSuccessMessage("Fast Retail Sale configuration saved successfully");
+
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Fast Retail Sale configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Save Fast Retail Sale for Cashier configuration changes specifically (issue #22349)
+     */
+    public void saveFastSaleCashierConfig() {
+        try {
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Sale for Cashier Bill is Pos paper", fastSaleCashierPosPaper);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Retail Sale Bill is PosHeaderPaper", fastSalePosHeaderPaper);
+            configOptionApplicationController.setBooleanValueByKey("Pharmacy Sale for cashier Bill is FiveFiveCustom3", fastSaleCashierCustom3Paper);
+
+            JsfUtil.addSuccessMessage("Fast Retail Sale for Cashier configuration saved successfully");
+
+            loadCurrentConfig();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Fast Retail Sale for Cashier configuration: " + e.getMessage());
         }
     }
 
@@ -2004,6 +2067,71 @@ public class PharmacyConfigController implements Serializable {
 
     public void setBhtIssueRequestReceiptPos(boolean bhtIssueRequestReceiptPos) {
         this.bhtIssueRequestReceiptPos = bhtIssueRequestReceiptPos;
+    }
+
+    // Fast Retail Sale Getters and Setters (issue #22349)
+    public boolean isFastSalePosPaper() {
+        return fastSalePosPaper;
+    }
+
+    public void setFastSalePosPaper(boolean fastSalePosPaper) {
+        this.fastSalePosPaper = fastSalePosPaper;
+    }
+
+    public boolean isFastSaleWithItemsPaper() {
+        return fastSaleWithItemsPaper;
+    }
+
+    public void setFastSaleWithItemsPaper(boolean fastSaleWithItemsPaper) {
+        this.fastSaleWithItemsPaper = fastSaleWithItemsPaper;
+    }
+
+    public boolean isFastSalePrabodhaPaper() {
+        return fastSalePrabodhaPaper;
+    }
+
+    public void setFastSalePrabodhaPaper(boolean fastSalePrabodhaPaper) {
+        this.fastSalePrabodhaPaper = fastSalePrabodhaPaper;
+    }
+
+    public boolean isFastSaleFiveFivePaper() {
+        return fastSaleFiveFivePaper;
+    }
+
+    public void setFastSaleFiveFivePaper(boolean fastSaleFiveFivePaper) {
+        this.fastSaleFiveFivePaper = fastSaleFiveFivePaper;
+    }
+
+    public boolean isFastSalePosHeaderPaper() {
+        return fastSalePosHeaderPaper;
+    }
+
+    public void setFastSalePosHeaderPaper(boolean fastSalePosHeaderPaper) {
+        this.fastSalePosHeaderPaper = fastSalePosHeaderPaper;
+    }
+
+    public boolean isFastSaleCustom3Paper() {
+        return fastSaleCustom3Paper;
+    }
+
+    public void setFastSaleCustom3Paper(boolean fastSaleCustom3Paper) {
+        this.fastSaleCustom3Paper = fastSaleCustom3Paper;
+    }
+
+    public boolean isFastSaleCashierPosPaper() {
+        return fastSaleCashierPosPaper;
+    }
+
+    public void setFastSaleCashierPosPaper(boolean fastSaleCashierPosPaper) {
+        this.fastSaleCashierPosPaper = fastSaleCashierPosPaper;
+    }
+
+    public boolean isFastSaleCashierCustom3Paper() {
+        return fastSaleCashierCustom3Paper;
+    }
+
+    public void setFastSaleCashierCustom3Paper(boolean fastSaleCashierCustom3Paper) {
+        this.fastSaleCashierCustom3Paper = fastSaleCashierCustom3Paper;
     }
 
 }

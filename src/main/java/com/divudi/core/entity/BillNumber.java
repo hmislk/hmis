@@ -59,6 +59,8 @@ public class BillNumber implements Serializable {
     // Boolean fields for OPD and Inpatient service bill tracking
     private boolean opdAndInpatientServiceBills;
     private boolean opdAndInpatientServiceBatchBills;
+    // Marks a never-resetting, per-department voucher number counter (billYear is left null for these rows)
+    private boolean voucherNumber;
     @Enumerated(EnumType.STRING)
     private RequestType requestType;
     @Enumerated(EnumType.STRING)
@@ -234,6 +236,14 @@ public class BillNumber implements Serializable {
      */
     public void setOpdAndInpatientServiceBatchBills(boolean opdAndInpatientServiceBatchBills) {
         this.opdAndInpatientServiceBatchBills = opdAndInpatientServiceBatchBills;
+    }
+
+    public boolean isVoucherNumber() {
+        return voucherNumber;
+    }
+
+    public void setVoucherNumber(boolean voucherNumber) {
+        this.voucherNumber = voucherNumber;
     }
 
     public RequestType getRequestType() {

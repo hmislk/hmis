@@ -23,6 +23,20 @@
                             refreshNotificationList();
                         }
                     </script>
+                    <style>
+                        /* Card list, not a grid: strip PrimeFaces' default table chrome. */
+                        .ui-notification-list.ui-datatable table,
+                        .ui-notification-list .ui-datatable-header,
+                        .ui-notification-list .ui-datatable-footer {
+                            border: none;
+                            background: transparent;
+                        }
+                        .ui-notification-list .ui-datatable-data > tr > td {
+                            border: none;
+                            padding: 0;
+                            background: transparent;
+                        }
+                    </style>
 
                     <!-- Single remove-confirmation dialog shared across all rows -->
                     <p:dialog header="Remove Notification" widgetVar="dlgRemove" modal="true" width="350">
@@ -95,7 +109,12 @@
 
                         <!-- Notification list -->
                         <h:panelGroup id="reNot">
-                            <ui:repeat value="#{userNotificationController.items}" var="un">
+                            <!-- p:dataTable (not ui:repeat): ui:repeat isn't a NamingContainer, so
+                                 row-scoped ids for the same action get conflated across rows
+                                 (issue #21538). -->
+                            <p:dataTable value="#{userNotificationController.items}" var="un" rowKey="#{un.id}"
+                                         styleClass="ui-notification-list">
+                            <p:column>
                                 <div class="row mt-2 shadow-lg"
                                      style="#{un.notification.bill != null and un.notification.bill.cancelled ? 'background-color: #e35656;' : ''}">
 
@@ -203,7 +222,7 @@
                                                     <!-- Shown when listing cleared notifications -->
                                                     <p:commandButton id="btnRestore" class="ui-button-success mx-2"
                                                                      icon="fas fa-rotate-left" value="Restore"
-                                                                     process="@this" update="reNot"
+                                                                     process="@this" update="@form"
                                                                      rendered="#{un.retired}"
                                                                      action="#{userNotificationController.restoreUserNotification(un)}" />
                                                 </div>
@@ -212,7 +231,8 @@
                                     </div>
 
                                 </div>
-                            </ui:repeat>
+                            </p:column>
+                            </p:dataTable>
                         </h:panelGroup>
 
                     </h:panelGroup>

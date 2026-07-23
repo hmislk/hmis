@@ -343,6 +343,38 @@ public class AnthropicApiService implements Serializable {
                         .add("required", Json.createArrayBuilder().add("method").add("key")))
                 .build();
 
+        JsonObject admissionNumberTool = Json.createObjectBuilder()
+                .add("name", "manage_admission_number_counter")
+                .add("description",
+                        "View or reset the BHT/OPD-card admission-number sequence counter for an admission type. "
+                        + "Use GET to check the current counter and next number. Use PUT only when staff have manually "
+                        + "corrected a printed BHT/OPD-card number and confirmed what the next number should be. "
+                        + "This resets a live, shared numbering sequence used by all staff admitting patients under "
+                        + "this admission type — before calling PUT, always state the current last/next number (from "
+                        + "GET) and the requested new last/next number back to the user, and wait for their explicit "
+                        + "confirmation in the same conversation. Never call PUT speculatively or without that confirmation.")
+                .add("input_schema", Json.createObjectBuilder()
+                        .add("type", "object")
+                        .add("properties", Json.createObjectBuilder()
+                                .add("method", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("enum", Json.createArrayBuilder().add("GET").add("PUT"))
+                                        .add("description", "HTTP method: GET to view, PUT to reset"))
+                                .add("admissionTypeId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Numeric AdmissionType ID. Required."))
+                                .add("institutionId", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Numeric Institution ID (optional, only relevant if institution-based numbering is enabled)."))
+                                .add("lastAdmissionNumber", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "The corrected last-used number. Required for PUT; the next generated number will be this + 1."))
+                                .add("expectedLastAdmissionNumber", Json.createObjectBuilder()
+                                        .add("type", "string")
+                                        .add("description", "Required for PUT. The lastAdmissionNumber value most recently observed via GET — used as a compare-and-set precondition so the reset is rejected (409) if the counter changed since it was read.")))
+                        .add("required", Json.createArrayBuilder().add("method").add("admissionTypeId")))
+                .build();
+
         JsonObject clinicalMetadataTool = Json.createObjectBuilder()
                 .add("name", "manage_clinical_metadata")
                 .add("description",
@@ -1748,6 +1780,7 @@ public class AnthropicApiService implements Serializable {
                 .add(fetchFileTool)
                 .add(searchConfigTool)
                 .add(manageConfigOptionTool)
+                .add(admissionNumberTool)
                 .add(clinicalMetadataTool)
                 .add(itemRequestTool)
                 .add(collectingCentreFeesTool)
@@ -1812,6 +1845,14 @@ public class AnthropicApiService implements Serializable {
                     String key    = toolInput.containsKey("key")   ? toolInput.getString("key", "")   : "";
                     String value  = toolInput.containsKey("value") ? toolInput.getString("value", "") : null;
                     return manageConfigOption(method, key, value, hmisApiKey);
+                }
+                case "manage_admission_number_counter": {
+                    String method = toolInput.getString("method", "GET");
+                    String admissionTypeId = toolInput.containsKey("admissionTypeId") ? toolInput.getString("admissionTypeId", "") : "";
+                    String institutionId = toolInput.containsKey("institutionId") ? toolInput.getString("institutionId", "") : "";
+                    String lastAdmissionNumber = toolInput.containsKey("lastAdmissionNumber") ? toolInput.getString("lastAdmissionNumber", "") : "";
+                    String expectedLastAdmissionNumber = toolInput.containsKey("expectedLastAdmissionNumber") ? toolInput.getString("expectedLastAdmissionNumber", "") : "";
+                    return callAdmissionNumberApi(method, admissionTypeId, institutionId, lastAdmissionNumber, expectedLastAdmissionNumber, hmisBaseUrl, hmisApiKey);
                 }
                 case "manage_clinical_metadata": {
                     String method = toolInput.getString("method", "GET");
@@ -2470,6 +2511,88 @@ public class AnthropicApiService implements Serializable {
             return "***masked***";
         }
         return value;
+    }
+
+    private String callAdmissionNumberApi(String method, String admissionTypeId, String institutionId,
+            String lastAdmissionNumber, String expectedLastAdmissionNumber, String hmisBaseUrl, String hmisApiKey) {
+        if (hmisBaseUrl == null || hmisBaseUrl.trim().isEmpty()) {
+            return "Error: HMIS base URL is not configured. Cannot call admission number API.";
+        }
+        if (hmisApiKey == null || hmisApiKey.trim().isEmpty()) {
+            return "Error: No active HMIS API key found for the current user.";
+        }
+        if (admissionTypeId == null || admissionTypeId.trim().isEmpty()) {
+            return "Error: admissionTypeId is required.";
+        }
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(10))
+                    .build();
+
+            String base = hmisBaseUrl.trim().replaceAll("/+$", "") + "/api/admission-numbers";
+            String url;
+            String requestBody = null;
+            String httpMethod;
+
+            switch (method.toUpperCase()) {
+                case "GET": {
+                    StringBuilder urlBuilder = new StringBuilder(base)
+                            .append("?admissionTypeId=").append(URLEncoder.encode(admissionTypeId.trim(), StandardCharsets.UTF_8));
+                    if (institutionId != null && !institutionId.trim().isEmpty()) {
+                        urlBuilder.append("&institutionId=").append(URLEncoder.encode(institutionId.trim(), StandardCharsets.UTF_8));
+                    }
+                    url = urlBuilder.toString();
+                    httpMethod = "GET";
+                    break;
+                }
+                case "PUT": {
+                    if (lastAdmissionNumber == null || lastAdmissionNumber.trim().isEmpty()) {
+                        return "Error: lastAdmissionNumber is required for PUT.";
+                    }
+                    if (expectedLastAdmissionNumber == null || expectedLastAdmissionNumber.trim().isEmpty()) {
+                        return "Error: expectedLastAdmissionNumber is required for PUT (the lastAdmissionNumber "
+                                + "value most recently observed via GET).";
+                    }
+                    StringBuilder urlBuilder = new StringBuilder(base)
+                            .append("?admissionTypeId=").append(URLEncoder.encode(admissionTypeId.trim(), StandardCharsets.UTF_8));
+                    if (institutionId != null && !institutionId.trim().isEmpty()) {
+                        urlBuilder.append("&institutionId=").append(URLEncoder.encode(institutionId.trim(), StandardCharsets.UTF_8));
+                    }
+                    url = urlBuilder.toString();
+                    httpMethod = "PUT";
+                    javax.json.JsonObjectBuilder bodyBuilder = Json.createObjectBuilder();
+                    bodyBuilder.add("lastAdmissionNumber", Long.parseLong(lastAdmissionNumber.trim()));
+                    bodyBuilder.add("expectedLastAdmissionNumber", Long.parseLong(expectedLastAdmissionNumber.trim()));
+                    requestBody = bodyBuilder.build().toString();
+                    break;
+                }
+                default:
+                    return "Error: Unknown method: " + method;
+            }
+
+            HttpRequest.Builder reqBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Finance", hmisApiKey)
+                    .header("Content-Type", "application/json");
+
+            if (requestBody != null) {
+                reqBuilder.method(httpMethod, HttpRequest.BodyPublishers.ofString(requestBody));
+            } else {
+                reqBuilder.GET();
+            }
+
+            HttpResponse<String> response = client.send(reqBuilder.build(), HttpResponse.BodyHandlers.ofString());
+            return "HTTP " + response.statusCode() + "\n" + response.body();
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return "Admission number API call interrupted.";
+        } catch (NumberFormatException e) {
+            return "Error: lastAdmissionNumber and expectedLastAdmissionNumber must be whole numbers.";
+        } catch (Exception e) {
+            return "Admission number API error: " + e.getMessage();
+        }
     }
 
     private String callClinicalMetadataApi(String method, String type, String id,
@@ -5746,6 +5869,14 @@ public class AnthropicApiService implements Serializable {
                 null,
                 new String[][]{
                     {"GET", "/sap/inventory/sync", "Trigger SAP MM goods-receipt sync. Query params: fromDate (yyyy-MM-dd, optional), toDate (yyyy-MM-dd, optional)"}
+                });
+
+        appendModule(sb, "Admission Number Counters", "/admission-numbers",
+                "View or reset the BHT/OPD-card admission-number sequence counter for a given admission type (and institution, if institution-based numbering is enabled). Use this only when staff have manually corrected a printed BHT/OPD-card number and need the system's next auto-generated number to continue from that correction. This resets a live, shared numbering sequence used by all staff admitting patients under this admission type — before calling PUT, always state the current last/next number (from GET) and the requested new last/next number back to the user, and wait for their explicit confirmation in the same conversation. Never call PUT speculatively or without that confirmation.",
+                null,
+                new String[][]{
+                    {"GET", "/admission-numbers", "View the current counter and what the next generated number would be. Params: admissionTypeId (required), institutionId (optional)"},
+                    {"PUT", "/admission-numbers", "Reset the counter to an explicit corrected value so the next generated number is correction+1. Requires explicit user confirmation of the old/new values before calling. Params: admissionTypeId (required), institutionId (optional). Body: {lastAdmissionNumber}"}
                 });
 
         // ── Clinical ──────────────────────────────────────────────────────────

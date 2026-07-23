@@ -290,11 +290,7 @@
                                             </p:dataTable>
                                         </p:tab>
                                         <p:tab id="tabBillFee" title="Fees" >
-                                            <p:dataTable rowIndexVar="rowIndex" value="#{billBhtController.lstBillFees}" var="bif"
-                                                         rowStyleClass="#{(bif.billItem.item.chargesVisibleForInward)
-                                                                          or (webUserController.hasPrivilege('ShowInwardFee'))
-                                                                          or (webUserController.hasPrivilege('ShowServiceCharges'))
-                                                                          ? '':'noDisplayRow'}">
+                                            <p:dataTable rowIndexVar="rowIndex" value="#{billBhtController.lstBillFees}" var="bif">
                                                 <p:column>
                                                     <f:facet name="header">No</f:facet>
                                                     <h:outputLabel value="#{rowIndex+1}"/>
