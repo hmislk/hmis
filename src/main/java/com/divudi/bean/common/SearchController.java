@@ -5674,7 +5674,7 @@ public class SearchController implements Serializable {
         jpql.append("bi.bill.institution.name, bi.bill.department.name, bi.bill.toDepartment.name, ");
         jpql.append("bi.bill.billType, bi.bill.total, bi.bill.netTotal, bi.bill.discount, ");
         jpql.append("bi.item.id, bi.item.name, bi.item.code, ");
-        jpql.append("bi.qty, bi.pharmaceuticalBillItem.freeQty) ");
+        jpql.append("bi.qty, bi.pharmaceuticalBillItem.freeQty, bi.netValue) ");
         jpql.append(" from BillItem bi");
         jpql.append(" where bi.bill.billTypeAtomic in :bts");
         jpql.append(" and bi.bill.createdAt between :fd and :td");

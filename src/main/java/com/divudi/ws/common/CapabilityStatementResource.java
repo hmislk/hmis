@@ -146,6 +146,9 @@ public class CapabilityStatementResource {
                         "Inward patient workflows",
                         "API Key",
                         "GET", "POST"))
+                .add(resource("Admission Number Counters", "/api/admission-numbers",
+                        "View or reset the BHT/OPD-card admission-number sequence counter for an admission type.",
+                        "API Key (Finance header)", "GET", "PUT"))
                 .add(resource("Inward Discount Matrix", "/api/inward-discount-matrix",
                         "Manage inward discount matrix entries for services/investigations and pharmacy. "
                         + "Supports scope=service|pharmacy to restrict category types. "
