@@ -178,7 +178,7 @@
                             </p:column>
                             <p:column>
                                 <f:facet name="header">Comment</f:facet>
-                                <p:outputLabel value="#{bip.instructions}" ></p:outputLabel>
+                                <h:outputText value="#{bip.instructions}" />
                                 <h:panelGroup layout="block"
                                               rendered="#{bip.hasPrescription() and bip.prescription.comment ne null and bip.prescription.comment ne ''}"
                                               style="font-size:0.85em;color:#555;margin-top:2px;">
