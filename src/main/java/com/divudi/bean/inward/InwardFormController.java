@@ -202,6 +202,7 @@ public class InwardFormController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return;
         }
+        viewMode = true;
         currentEntry = entry;
         selectedTemplate = entry.getDesignComponent();
         String jpql = "select cc "
