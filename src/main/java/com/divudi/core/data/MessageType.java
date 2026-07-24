@@ -40,5 +40,6 @@ public enum MessageType {
     PatientPortal_Link,
     InpatientDocumentUpload,
     InpatientFilledForm,
-    InpatientClinicalDocument
+    InpatientClinicalDocument,
+    ClientPortalRegistrationOTP
 }

@@ -1041,6 +1041,34 @@ rules apply correctly — it does not verify pagination, page-fit, or page
 breaks across multiple printed pages. For reports where those matter, follow
 up with an actual PDF export or a manual print-preview pass.
 
+## 44. A freshly-created test user needs a `WebUserDepartment` row, not just a `Department` field, to log in at all
+
+Creating a disposable test user via Admin > Manage Users > Add New User
+(`admin/users/user_add_new.xhtml`) and setting its `Department` field is not
+enough to let it log in. Login checks `listLoggableDepts(user)`
+(`SessionController.java`), which queries the `WebUserDepartment` join table
+— not the `WebUser.department` column. With no matching `WebUserDepartment`
+row, login fails with "This user has no privilage to login to any
+Department. Please conact system administrator." even though the user
+record itself looks fully configured.
+
+The Add New User form has no field for this; department-login grants are
+managed separately via **Manage Users > (select user) > Manage User
+Departments**. For a quick disposable test account it's simplest to insert
+the row directly:
+```sql
+INSERT INTO webuserdepartment (CREATEDAT, RETIRED, DEPARTMENT_ID, WEBUSER_ID)
+VALUES (NOW(), 0, <department_id>, <webuser_id>);
+```
+Also useful: no `WebUserRole` in this DB grants `ShowServiceCharges` (verified
+via `webuserroleprivilege`) — it's only assigned to individual users
+directly in `webuserprivilege`. So any freshly-created user with no role
+already lacks it, no extra step needed to test privilege-gated hiding.
+
+Found while verifying issue #22310 (fee row hidden along with its item name
+when `ShowServiceCharges` is absent) — needed a throwaway non-privileged
+login to confirm the fix without touching any real staff account.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

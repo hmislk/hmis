@@ -199,10 +199,22 @@
                             <div>
                                 <h:outputText styleClass=" fa-solid fa-screwdriver-wrench fa-lg" />
                                 <p:outputLabel value="Inward Add Services" class="mx-2 mt-1"/>
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
+                                    <p:commandButton
+                                        value="Config"
+                                        icon="fa fa-cog"
+                                        title="Page Configuration Management"
+                                        action="#{pageAdminController.navigateToPageAdmin('inward/inward_bill_service')}"
+                                        ajax="false"
+                                        immediate="true"
+                                        styleClass="ui-button-secondary ui-button-sm p-button-outlined"
+                                        style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                                    </p:commandButton>
+                                </h:panelGroup>
                             </div>
                             <div class="d-flex gap-2">
                                 <p:commandButton
-                                    class="ui-button-warning"
+                                    class="ui-button-primary"
                                     action="#{billBhtController.resetBillData}"
                                     icon="fa fa-plus"
                                     ajax="false"
@@ -210,10 +222,10 @@
                                 </p:commandButton>
 
                                 <p:commandButton
-                                    class="ui-button-secondary"
+                                    class="ui-button-info ui-button-outlined"
                                     value="Go To Add Outside"
                                     ajax="false"
-                                    icon="fa fa-plus"
+                                    icon="fa fa-arrow-right"
                                     action="/inward/inward_bill_outside_charge?faces-redirect=true" >
                                 </p:commandButton>
 
@@ -223,7 +235,7 @@
                                             ajax="false"
                                             value="Search Patients"
                                             icon="fa fa-search"
-                                            class="ui-button-warning "
+                                            class="ui-button-info ui-button-outlined"
                                             action="#{patientController.navigateToSearchPatients()}"
                                             >
                                         </p:commandButton>
@@ -231,7 +243,7 @@
                                             ajax="false"
                                             value="Patient Profile"
                                             icon="fa fa-user"
-                                            class="ui-button-success"
+                                            class="ui-button-info ui-button-outlined"
                                             action="#{patientController.navigateToOpdPatientProfile()}"
                                             >
                                             <f:setPropertyActionListener
@@ -243,7 +255,7 @@
                                             ajax="false"
                                             value="Inpatient Dashboard"
                                             icon="fa fa-id-card"
-                                            class="ui-button-secondary"
+                                            class="ui-button-info ui-button-outlined"
                                             action="#{bhtSummeryController.navigateToInpatientProfile()}"
                                             >
                                             <f:setPropertyActionListener
@@ -675,11 +687,7 @@
                                                         value="#{billBhtController.lstBillFees}"
                                                         var="bif"
                                                         rowKey="#{bif.id}"
-                                                        rowExpandMode="single"
-                                                        rowStyleClass="#{(bif.billItem.item.chargesVisibleForInward)
-                                                                         or (webUserController.hasPrivilege('ShowInwardFee'))
-                                                                         or (webUserController.hasPrivilege('ShowServiceCharges'))
-                                                                         ? '':'noDisplayRow'}">
+                                                        rowExpandMode="single">
                                                         <p:column width="2em">
                                                             <f:facet name="header"> </f:facet>
                                                             <p:rowToggler />
@@ -921,7 +929,7 @@
                                             <f:selectItem itemLabel="Select Format" />
                                             <f:selectItems value="#{enumController.paperTypes}" var="pt" itemLabel="#{pt.label}" itemValue="#{pt}" />
                                         </p:selectOneMenu>
-                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+                                        <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button-warning" title="Redraw Bill"></p:commandButton>
                                     </div>
                                     <p:commandButton
                                         value="Print"
@@ -1096,8 +1104,7 @@
                                                         title="Manage Bill"
                                                         class="ui-button-warning m-1"
                                                         icon="fa fa-file-invoice"
-                                                        action="#{billSearch.navigateToInwardSearchService()}">
-                                                        <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                                                        action="#{billSearch.navigateToManageBillByAtomicBillTypeByBillId(b.id)}">
                                                     </p:commandButton>
                                                     <p:commandButton
                                                         title="To Sample Management"

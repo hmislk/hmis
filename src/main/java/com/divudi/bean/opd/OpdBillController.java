@@ -357,6 +357,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
+                "Show Mark Foreigner and Mark Local Buttons in Billing",
+                "Controls visibility of the Mark Foreigner / Mark Local buttons during OPD billing, channel booking, clinic sessions, and inward service billing",
+                "opd_bill_ac.xhtml line 1412 (gpLocalForeign panelGroup) and equivalent panels in opd_bill.xhtml, opd_order.xhtml, opd_pre_bill.xhtml, channel booking pages, clinic sessions, inward service bill pages",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
                 "Allow Local Number For Opd Billing",
                 "Shows local number panel for entering local reference numbers",
                 "opd_bill_ac.xhtml line 461: Local number panel",
