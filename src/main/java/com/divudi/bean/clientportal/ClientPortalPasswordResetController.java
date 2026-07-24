@@ -72,43 +72,48 @@ public class ClientPortalPasswordResetController implements Serializable {
         selectedAccount = null;
         otpSendSuccess = false;
         otpVerified = false;
+        matchedAccounts = null;
 
         if (identifier == null || identifier.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Enter the phone number or email on your account.");
             return;
         }
         String trimmed = identifier.trim();
-        matchedAccounts = clientAccountFacade.findByVerifiedPhoneOrEmail(trimmed);
-        if (matchedAccounts == null || matchedAccounts.isEmpty()) {
+        List<ClientAccount> candidates = clientAccountFacade.findByVerifiedPhoneOrEmail(trimmed);
+        if (candidates == null || candidates.isEmpty()) {
             noAccountFound = true;
             JsfUtil.addErrorMessage("No Client Portal account found for that phone number or email. Please register first.");
             return;
         }
-        if (matchedAccounts.size() == 1) {
-            selectAccount(matchedAccounts.get(0));
-        }
-        // else: multiple matches (shared household phone) — rendered as a list in the XHTML, user calls selectAccount(candidate) directly
-    }
 
-    public void selectAccount(ClientAccount account) {
-        clearMessages();
-        this.selectedAccount = account;
-        String trimmed = identifier == null ? null : identifier.trim();
-        boolean matchesPhone = trimmed != null && trimmed.equals(account.getVerifiedPhone());
+        // Which account(s) matched, and their names, are NOT revealed here — only
+        // after OTP verification below, mirroring the registration flow's
+        // OTP-then-disambiguation order. Revealing account holder names to anyone
+        // who types a phone/email, before proving they control that phone/email,
+        // would be a pre-authentication PII disclosure.
+        boolean matchesPhone = candidates.stream().anyMatch(a -> trimmed.equals(a.getVerifiedPhone()));
         if (!matchesPhone) {
             emailResetUnsupported = true;
             JsfUtil.addErrorMessage("Password reset by email isn't available yet. Please use the phone number on your account, or contact support.");
             return;
         }
+
+        matchedAccounts = candidates;
         sendOtp();
+    }
+
+    public void selectAccount(ClientAccount account) {
+        clearMessages();
+        this.selectedAccount = account;
     }
 
     public void sendOtp() {
         clearMessages();
-        if (selectedAccount == null) {
+        if (identifier == null || identifier.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Error in Development.");
             return;
         }
+        String trimmed = identifier.trim();
 
         otp = ClientPortalOtpGenerator.generate(getOtpLength());
         otpSendSuccess = false;
@@ -116,7 +121,7 @@ public class ClientPortalPasswordResetController implements Serializable {
         Sms sms = new Sms();
         sms.setCreatedAt(new Date());
         sms.setCreater(sessionController.getLoggedUser());
-        sms.setReceipientNumber(selectedAccount.getVerifiedPhone());
+        sms.setReceipientNumber(trimmed);
         sms.setSendingMessage(smsBody(otp));
         sms.setPending(false);
         sms.setSmsType(MessageType.ClientPortalPasswordResetOTP);
@@ -150,14 +155,15 @@ public class ClientPortalPasswordResetController implements Serializable {
     public void verifyOtp() {
         clearMessages();
 
-        if (selectedAccount == null) {
+        if (identifier == null || identifier.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Error in Development.");
             return;
         }
+        String trimmed = identifier.trim();
 
         String jpql = "select s from Sms s where s.retired=false and s.receipientNumber=:mobile and s.smsType=:type order by s.id desc";
         Map<String, Object> params = new HashMap<>();
-        params.put("mobile", selectedAccount.getVerifiedPhone());
+        params.put("mobile", trimmed);
         params.put("type", MessageType.ClientPortalPasswordResetOTP);
         Sms lastSms = smsFacade.findFirstByJpql(jpql, params);
 
@@ -189,6 +195,15 @@ public class ClientPortalPasswordResetController implements Serializable {
         }
 
         otpVerified = true;
+
+        // Only now — after OTP proves control of the phone number — do we reveal
+        // which account(s) matched. A single match auto-selects; multiple matches
+        // (shared household phone) render a picker (see isMultipleMatch()) for the
+        // user to pick their own name, same as the registration flow's post-OTP
+        // disambiguation step.
+        if (matchedAccounts != null && matchedAccounts.size() == 1) {
+            selectedAccount = matchedAccounts.get(0);
+        }
     }
 
     public void resetPassword() {
@@ -205,7 +220,12 @@ public class ClientPortalPasswordResetController implements Serializable {
             JsfUtil.addErrorMessage("Password and confirmation do not match.");
             return;
         }
-        selectedAccount.setPasswordHash(securityController.hashAndCheck(newPassword));
+        String passwordHash = securityController.hashAndCheck(newPassword);
+        if (passwordHash == null) {
+            JsfUtil.addErrorMessage("Unable to reset the password. Please try again.");
+            return;
+        }
+        selectedAccount.setPasswordHash(passwordHash);
         clientAccountFacade.edit(selectedAccount);
         resetComplete = true;
     }
@@ -230,7 +250,7 @@ public class ClientPortalPasswordResetController implements Serializable {
     }
 
     public boolean isMultipleMatch() {
-        return matchedAccounts != null && matchedAccounts.size() > 1 && selectedAccount == null;
+        return otpVerified && matchedAccounts != null && matchedAccounts.size() > 1 && selectedAccount == null;
     }
 
     public String getIdentifier() {
