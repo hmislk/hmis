@@ -24,8 +24,11 @@ public class ClientAccount implements Serializable {
 
     // @ManyToOne (not @OneToOne): person_id must stay non-unique at the DB level so
     // a retired account and a newly created active account can coexist for the same
-    // Person. "One active account per person" is enforced in business logic
-    // (ClientAccountFacade.findByPerson), not by a DB constraint.
+    // Person. ClientAccountFacade.findByPerson only looks up an existing account —
+    // it does not by itself enforce "one active account per person" under
+    // concurrent registrations. That requires locking the Person row (or an
+    // equivalent conflict-handling strategy) for the duration of the
+    // check-then-create, see the design spec's concurrency note.
     @ManyToOne
     private Person person;
 
