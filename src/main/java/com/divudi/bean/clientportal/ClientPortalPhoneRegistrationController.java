@@ -126,15 +126,6 @@ public class ClientPortalPhoneRegistrationController implements Serializable {
     public void verifyOtp() {
         clearMessages();
 
-        if (otpSentTime != null && System.currentTimeMillis() > getOtpExpiryEpochMs()) {
-            JsfUtil.addErrorMessage("OTP has expired. Please request a new OTP.");
-            otp = null;
-            enteredOtp = null;
-            otpSentTime = null;
-            otpSendSuccess = false;
-            return;
-        }
-
         String jpql = "select s from Sms s where s.retired=false and s.receipientNumber=:mobile and s.smsType=:type order by s.id desc";
         Map<String, Object> params = new HashMap<>();
         params.put("mobile", phoneNumber);
@@ -145,6 +136,19 @@ public class ClientPortalPhoneRegistrationController implements Serializable {
             JsfUtil.addErrorMessage("No OTP request found. Please request a new OTP.");
             return;
         }
+
+        // Checked against the persisted Sms.createdAt, not the view-scoped otpSentTime,
+        // so a page refresh mid-flow (which resets otpSentTime) can't bypass expiry.
+        long ageMs = System.currentTimeMillis() - lastSms.getCreatedAt().getTime();
+        if (ageMs > getOtpTimeoutMinutes() * 60_000L) {
+            JsfUtil.addErrorMessage("OTP has expired. Please request a new OTP.");
+            otp = null;
+            enteredOtp = null;
+            otpSentTime = null;
+            otpSendSuccess = false;
+            return;
+        }
+
         if (enteredOtp == null || enteredOtp.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Enter the authentication code.");
             return;
@@ -234,7 +238,7 @@ public class ClientPortalPhoneRegistrationController implements Serializable {
 
     public int getOtpLength() {
         Long configured = configOptionApplicationController.getLongValueByKey("Client Portal - OTP Length", 6L);
-        if (configured == null || configured < 1L || configured > 12L) {
+        if (configured == null || configured < 4L || configured > 12L) {
             return 6;
         }
         return configured.intValue();
