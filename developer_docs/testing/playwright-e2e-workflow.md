@@ -1069,6 +1069,50 @@ Found while verifying issue #22310 (fee row hidden along with its item name
 when `ShowServiceCharges` is absent) — needed a throwaway non-privileged
 login to confirm the fix without touching any real staff account.
 
+## 45. `&&` written as `&amp;&amp;` inside a `<script><![CDATA[...]]>` block parses as valid XML but throws a JS `SyntaxError` at runtime, silently breaking every function in that script
+
+When copying a `<script>` block that lives inside `<![CDATA[ ... ]]>` into a
+new XHTML page, writing the literal characters `&amp;&amp;` (instead of `&&`)
+is easy to do by habit — most other XML/XHTML text content genuinely needs
+`&` escaped — but CDATA sections are explicitly exempt from entity
+expansion, so this is always wrong there. The bug hides unusually well:
+
+- `xml.etree.ElementTree` (or any XML well-formedness check) parses the file
+  without complaint — `&amp;` is perfectly valid character data whether or
+  not it's inside CDATA, so a "did the file parse" check gives a false all-clear.
+- Facelets' XML parser reads the CDATA content literally (per spec, no entity
+  expansion inside CDATA), so the in-memory text node keeps the literal
+  6-character sequence `&amp;`. When Facelets serializes the response back
+  out as plain text (not treating it as a CDATA passthrough), it re-escapes
+  `&` to `&amp;` — so the browser receives doubled-up `&amp;&amp;` in the
+  final HTML.
+- Because `<script>` is an HTML5 "raw text" element, the browser does **not**
+  decode entities inside it — it hands the literal text straight to the JS
+  parser, which throws `SyntaxError: Unexpected token ';'` trying to parse
+  `&amp;&amp;` as code. **This aborts parsing of the entire `<script>`
+  block**, so every function defined anywhere in that block — even ones
+  with no `&&` in them at all — ends up undefined, surfacing later as
+  unrelated-looking `ReferenceError: xyz is not defined` console errors when
+  something tries to call them (e.g. via a PrimeFaces AJAX partial update
+  that re-inserts an inline `<script>` calling one of those functions).
+
+Detection: `curl` the deployed page and `grep -c '&amp;&amp;'` vs
+`grep -c '&&'` in the raw response — if the doubled-entity count is nonzero,
+the source file has the bug. A quick sed fix:
+```bash
+sed -i "s/&amp;&amp;/\&\&/g" path/to/page.xhtml
+```
+(safe because it only touches doubled `&amp;&amp;`, leaving legitimate single
+`&amp;` — e.g. in URL query strings or "Bills &amp; Appointments" body
+text — untouched).
+
+Found while verifying issue #22370 (Client Portal login/password-reset):
+two new pages copied `register_phone.xhtml`'s OTP-digit-box `<script>` block,
+and the copy silently escaped `&&` to `&amp;&amp;`. The OTP boxes never
+rendered and the browser console showed `initOtpBoxes is not defined` and
+`startOtpCountdown is not defined` — errors that look like a missing/renamed
+JS function, not a stray HTML entity three screens away in the same script tag.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
