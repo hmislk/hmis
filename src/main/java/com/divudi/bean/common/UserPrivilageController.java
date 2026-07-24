@@ -248,6 +248,14 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchProfessionalBill, "Search Professional Bill"), searchNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchFinalBill, "Search Final Bill"), searchNode);
 
+        TreeNode admissionSearchScopeNode = new DefaultTreeNode(new PrivilegeHolder(null, "Admission Search Scope"), searchNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchAdmissionsByAdmittedDepartmentAnyInstitute, "By Admitted Department - Any Institute"), admissionSearchScopeNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchAdmissionsByAdmittedDepartmentLoggedInstitute, "By Admitted Department - Logged Institute"), admissionSearchScopeNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchAdmissionsByAdmittedDepartmentLoggedDepartment, "By Admitted Department - Logged Department"), admissionSearchScopeNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchAdmissionsByCurrentDepartmentAnyInstitute, "By Current Department - Any Institute"), admissionSearchScopeNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchAdmissionsByCurrentDepartmentLoggedInstitute, "By Current Department - Logged Institute"), admissionSearchScopeNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchAdmissionsByCurrentDepartmentLoggedDepartment, "By Current Department - Logged Department"), admissionSearchScopeNode);
+
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardReport, "Inward Reports"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAdministration, "Administration"), inwardNode);
 

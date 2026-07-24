@@ -16,6 +16,7 @@ import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.PatientInsuranceController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PatientRegistrationSource;
 import com.divudi.core.data.admin.ConfigOptionInfo;
@@ -122,6 +123,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     PageMetadataRegistry pageMetadataRegistry;
+    @Inject
+    WebUserController webUserController;
 
     ////////////
     @EJB
@@ -1076,6 +1079,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void searchAdmissions() {
+        searchAdmissions(null, null);
+    }
+
+    /**
+     * @param currentRoomInstitutionFilter when non-null, restricts to admissions whose
+     * current room belongs to this institution (RoomFacilityCharge.company), independent
+     * of the admitted-time institutionForSearch field.
+     * @param currentRoomDepartmentFilter when non-null, restricts to admissions whose
+     * current room's department is this department or a child of it
+     * (RoomFacilityCharge.department / .superDepartment). Passed as a method parameter
+     * rather than an instance field so a scoped search never silently persists into a
+     * later plain Search click on this @SessionScoped bean.
+     */
+    private void searchAdmissions(Institution currentRoomInstitutionFilter, Department currentRoomDepartmentFilter) {
         if (fromDate == null || toDate == null) {
             JsfUtil.addErrorMessage("Please select date");
             return;
@@ -1170,6 +1187,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             m.put("dept", loggedDepartment);
         }
 
+        if (currentRoomInstitutionFilter != null) {
+            j += "  and c.currentPatientRoom.roomFacilityCharge.company=:curIns ";
+            m.put("curIns", currentRoomInstitutionFilter);
+        }
+
+        if (currentRoomDepartmentFilter != null) {
+            j += "  and (c.currentPatientRoom.roomFacilityCharge.department=:curDept "
+                    + " or c.currentPatientRoom.roomFacilityCharge.department.superDepartment=:curDept) ";
+            m.put("curDept", currentRoomDepartmentFilter);
+        }
+
         if (parentAdmission != null) {
             j += "  and c.parentEncounter=:pent ";
             m.put("pent", parentAdmission);
@@ -1181,6 +1209,78 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Search-scope shortcut buttons (issue #22382). Each is gated by its own
+     * privilege in the XHTML; the privilege re-check here is defense-in-depth
+     * so a request forged without the button can't widen the search scope
+     * beyond what the privilege allows.
+     *
+     * "By Admitted Department" scopes restrict on the admission-time
+     * institution/department (institutionForSearch / loggedDepartment,
+     * reused from the manual search fields — same as the plain Search
+     * button). "By Current Department" scopes restrict on the patient's
+     * current room instead (RoomFacilityCharge.company / .department),
+     * passed as parameters to the private searchAdmissions() overload
+     * rather than stored on the bean, so they can never leak into a later
+     * plain Search click. At the "Any Institute" level neither grouping
+     * applies an institution/department restriction, so both groups are
+     * intentionally equivalent there — the distinction only matters once a
+     * specific institute/department is being matched.
+     */
+    public void searchAdmissionsByAdmittedDepartmentAnyInstitute() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByAdmittedDepartmentAnyInstitute")) {
+            return;
+        }
+        institutionForSearch = null;
+        loggedDepartment = null;
+        searchAdmissions(null, null);
+    }
+
+    public void searchAdmissionsByAdmittedDepartmentLoggedInstitute() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByAdmittedDepartmentLoggedInstitute")) {
+            return;
+        }
+        institutionForSearch = sessionController.getInstitution();
+        loggedDepartment = null;
+        searchAdmissions(null, null);
+    }
+
+    public void searchAdmissionsByAdmittedDepartmentLoggedDepartment() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByAdmittedDepartmentLoggedDepartment")) {
+            return;
+        }
+        institutionForSearch = sessionController.getInstitution();
+        loggedDepartment = sessionController.getDepartment();
+        searchAdmissions(null, null);
+    }
+
+    public void searchAdmissionsByCurrentDepartmentAnyInstitute() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByCurrentDepartmentAnyInstitute")) {
+            return;
+        }
+        institutionForSearch = null;
+        loggedDepartment = null;
+        searchAdmissions(null, null);
+    }
+
+    public void searchAdmissionsByCurrentDepartmentLoggedInstitute() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByCurrentDepartmentLoggedInstitute")) {
+            return;
+        }
+        institutionForSearch = null;
+        loggedDepartment = null;
+        searchAdmissions(sessionController.getInstitution(), null);
+    }
+
+    public void searchAdmissionsByCurrentDepartmentLoggedDepartment() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByCurrentDepartmentLoggedDepartment")) {
+            return;
+        }
+        institutionForSearch = null;
+        loggedDepartment = null;
+        searchAdmissions(sessionController.getInstitution(), sessionController.getDepartment());
     }
 
     public void searchAdmissionsWithoutRoom() {

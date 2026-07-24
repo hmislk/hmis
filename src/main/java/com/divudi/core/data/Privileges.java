@@ -100,6 +100,13 @@ public enum Privileges {
     InwardSearchServiceBillUnrestrictedAccess("Inward Search Service Bill Without Restricted"),
     InwardSearchProfessionalBill("Inward Search Professional Bill"),
     InwardSearchFinalBill("Inward Search Final Bill"),
+    // Admission search scope buttons (issue #22382)
+    InwardSearchAdmissionsByAdmittedDepartmentAnyInstitute("Inward Search Admissions By Admitted Department - Any Institute"),
+    InwardSearchAdmissionsByAdmittedDepartmentLoggedInstitute("Inward Search Admissions By Admitted Department - Logged Institute"),
+    InwardSearchAdmissionsByAdmittedDepartmentLoggedDepartment("Inward Search Admissions By Admitted Department - Logged Department"),
+    InwardSearchAdmissionsByCurrentDepartmentAnyInstitute("Inward Search Admissions By Current Department - Any Institute"),
+    InwardSearchAdmissionsByCurrentDepartmentLoggedInstitute("Inward Search Admissions By Current Department - Logged Institute"),
+    InwardSearchAdmissionsByCurrentDepartmentLoggedDepartment("Inward Search Admissions By Current Department - Logged Department"),
     InwardSettleFinalBillUnrestricted("Inward Settle Final Bill Without Restricted"),
     InwardSettleFinalBill("Inward Settle Final Bill"),
     InwardFinalBillCreateVersion("Inward Final Bill Create New Version"),
