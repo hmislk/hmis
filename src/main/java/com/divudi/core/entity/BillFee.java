@@ -16,6 +16,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
@@ -118,6 +119,16 @@ public class BillFee implements Serializable, RetirableEntity {
     
     // Indicates if the fee has been collected directly by the surgeon/doctor
     private boolean feeCollectedByDoctor;
+
+    // Per-item professional payment hold — blocks payment of this specific fee only
+    // (mirrors PatientEncounter.professionalPaymentsOnHold, which holds the whole BHT). (Issue #22383)
+    private Boolean feePaymentOnHold = false;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date feePaymentHoldDateTime;
+    @ManyToOne
+    private WebUser feePaymentHoldBy;
+    @Lob
+    private String feePaymentHoldNotes;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private BillItem referenceBillItem;
@@ -916,6 +927,42 @@ public class BillFee implements Serializable, RetirableEntity {
 
     public void setFeeCollectedByDoctor(boolean feeCollectedByDoctor) {
         this.feeCollectedByDoctor = feeCollectedByDoctor;
+    }
+
+    public Boolean getFeePaymentOnHold() {
+        return feePaymentOnHold;
+    }
+
+    public boolean isFeePaymentOnHold() {
+        return Boolean.TRUE.equals(feePaymentOnHold);
+    }
+
+    public void setFeePaymentOnHold(Boolean feePaymentOnHold) {
+        this.feePaymentOnHold = feePaymentOnHold;
+    }
+
+    public Date getFeePaymentHoldDateTime() {
+        return feePaymentHoldDateTime;
+    }
+
+    public void setFeePaymentHoldDateTime(Date feePaymentHoldDateTime) {
+        this.feePaymentHoldDateTime = feePaymentHoldDateTime;
+    }
+
+    public WebUser getFeePaymentHoldBy() {
+        return feePaymentHoldBy;
+    }
+
+    public void setFeePaymentHoldBy(WebUser feePaymentHoldBy) {
+        this.feePaymentHoldBy = feePaymentHoldBy;
+    }
+
+    public String getFeePaymentHoldNotes() {
+        return feePaymentHoldNotes;
+    }
+
+    public void setFeePaymentHoldNotes(String feePaymentHoldNotes) {
+        this.feePaymentHoldNotes = feePaymentHoldNotes;
     }
 
 }

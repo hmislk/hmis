@@ -474,6 +474,18 @@
                                         styleClass="w-100 #{admissionController.current.professionalPaymentsOnHold ? 'ui-button-danger' : 'ui-button-secondary'}">
                                     </p:commandButton>
                                 </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnProfessionalFeeHold"
+                                        value="Professional Payments Report"
+                                        ajax="false"
+                                        action="#{professionalFeeHoldController.navigateToProfessionalFeeHold(admissionController.current)}"
+                                        icon="fa fa-list-check"
+                                        title="Report and per-item hold/unhold of professional payments for this admission"
+                                        rendered="#{webUserController.hasPrivilege('InwardHoldProfessionalPayments')}"
+                                        styleClass="w-100 ui-button-secondary">
+                                    </p:commandButton>
+                                </div>
                             </div>
                         </p:panel>
 
