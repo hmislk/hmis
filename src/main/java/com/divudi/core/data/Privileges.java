@@ -825,7 +825,8 @@ public enum Privileges {
     DeleteData("Delete Data"),
     BillCancel("Bill Cancel"),
     BillRefund("Bill Refund"), //</editor-fold>
-    AiChat("AI Chat")
+    AiChat("AI Chat"),
+    ClientPortalCreateAccount("Create Client Portal Account")
     ;
 
     private final String label;
