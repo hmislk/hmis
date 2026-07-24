@@ -65,6 +65,62 @@
                                     class="mt-2 w-100 mb-3 ui-button-warning">
                                 </p:commandButton>
 
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearchAdmissionsByAdmittedDepartmentAnyInstitute') or webUserController.hasPrivilege('InwardSearchAdmissionsByAdmittedDepartmentLoggedInstitute') or webUserController.hasPrivilege('InwardSearchAdmissionsByAdmittedDepartmentLoggedDepartment')}">
+                                    <p:outputLabel value="Search By Admitted Department" style="font-weight:bold" />
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Any Institute"
+                                        icon="fas fa-search"
+                                        rendered="#{webUserController.hasPrivilege('InwardSearchAdmissionsByAdmittedDepartmentAnyInstitute')}"
+                                        action="#{admissionController.searchAdmissionsByAdmittedDepartmentAnyInstitute}"
+                                        class="mt-1 w-100 ui-button-secondary">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Logged Institute"
+                                        icon="fas fa-search"
+                                        rendered="#{webUserController.hasPrivilege('InwardSearchAdmissionsByAdmittedDepartmentLoggedInstitute')}"
+                                        action="#{admissionController.searchAdmissionsByAdmittedDepartmentLoggedInstitute}"
+                                        class="mt-1 w-100 ui-button-secondary">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Logged Department"
+                                        icon="fas fa-search"
+                                        rendered="#{webUserController.hasPrivilege('InwardSearchAdmissionsByAdmittedDepartmentLoggedDepartment')}"
+                                        action="#{admissionController.searchAdmissionsByAdmittedDepartmentLoggedDepartment}"
+                                        class="mt-1 mb-3 w-100 ui-button-secondary">
+                                    </p:commandButton>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearchAdmissionsByCurrentDepartmentAnyInstitute') or webUserController.hasPrivilege('InwardSearchAdmissionsByCurrentDepartmentLoggedInstitute') or webUserController.hasPrivilege('InwardSearchAdmissionsByCurrentDepartmentLoggedDepartment')}">
+                                    <p:outputLabel value="Search By Current Department" style="font-weight:bold" />
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Any Institute"
+                                        icon="fas fa-search"
+                                        rendered="#{webUserController.hasPrivilege('InwardSearchAdmissionsByCurrentDepartmentAnyInstitute')}"
+                                        action="#{admissionController.searchAdmissionsByCurrentDepartmentAnyInstitute}"
+                                        class="mt-1 w-100 ui-button-secondary">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Logged Institute"
+                                        icon="fas fa-search"
+                                        rendered="#{webUserController.hasPrivilege('InwardSearchAdmissionsByCurrentDepartmentLoggedInstitute')}"
+                                        action="#{admissionController.searchAdmissionsByCurrentDepartmentLoggedInstitute}"
+                                        class="mt-1 w-100 ui-button-secondary">
+                                    </p:commandButton>
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Logged Department"
+                                        icon="fas fa-search"
+                                        rendered="#{webUserController.hasPrivilege('InwardSearchAdmissionsByCurrentDepartmentLoggedDepartment')}"
+                                        action="#{admissionController.searchAdmissionsByCurrentDepartmentLoggedDepartment}"
+                                        class="mt-1 mb-3 w-100 ui-button-secondary">
+                                    </p:commandButton>
+                                </h:panelGroup>
+
                                 <p:outputLabel value="BHT No" ></p:outputLabel>
                                 <p:inputText
                                     class="w-100"
