@@ -398,7 +398,10 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST", "DELETE"))
                                 .add(resource("Investigations", "/api/investigations",
-                        "Investigation master management including search, create, update, and activate/deactivate for item import workflows",
+                        "Investigation master management including search, create, update, and activate/deactivate for item import workflows. "
+                        + "Category/sample/container(tube)/analyzer(machine) can each be set via an ID referencing an existing row "
+                        + "(categoryId, sampleId, containerId, analyzerId — errors if not found) or a name "
+                        + "(categoryName, sampleName, containerName, analyzerName — found-or-created by name if no matching row exists).",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH"))
                 .add(resource("Investigation Format", "/api/investigations/{investigationId}/format",
