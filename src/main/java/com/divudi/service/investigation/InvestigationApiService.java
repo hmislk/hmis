@@ -86,17 +86,21 @@ public class InvestigationApiService implements Serializable {
         validateVatPercentage(req.getVatPercentage());
         if (req.getVatPercentage() != null) i.setVatPercentage(req.getVatPercentage());
         if (req.getReportType() != null && !req.getReportType().trim().isEmpty()) i.setReportType(InvestigationReportType.valueOf(req.getReportType().trim()));
-        if (req.getCategoryId() != null || req.getCategoryName() != null) {
-            i.setCategory(resolveCategory(req.getCategoryId(), req.getCategoryName(), user));
+        if (req.getCategoryId() != null || (req.getCategoryName() != null && !req.getCategoryName().trim().isEmpty())) {
+            InvestigationCategory category = resolveCategory(req.getCategoryId(), req.getCategoryName(), user);
+            if (category != null) i.setCategory(category);
         }
-        if (req.getSampleId() != null || req.getSampleName() != null) {
-            i.setSample(resolveSample(req.getSampleId(), req.getSampleName(), user));
+        if (req.getSampleId() != null || (req.getSampleName() != null && !req.getSampleName().trim().isEmpty())) {
+            Sample sample = resolveSample(req.getSampleId(), req.getSampleName(), user);
+            if (sample != null) i.setSample(sample);
         }
-        if (req.getContainerId() != null || req.getContainerName() != null) {
-            i.setInvestigationTube(resolveContainer(req.getContainerId(), req.getContainerName(), user));
+        if (req.getContainerId() != null || (req.getContainerName() != null && !req.getContainerName().trim().isEmpty())) {
+            InvestigationTube container = resolveContainer(req.getContainerId(), req.getContainerName(), user);
+            if (container != null) i.setInvestigationTube(container);
         }
-        if (req.getAnalyzerId() != null || req.getAnalyzerName() != null) {
-            i.setMachine(resolveAnalyzer(req.getAnalyzerId(), req.getAnalyzerName(), user));
+        if (req.getAnalyzerId() != null || (req.getAnalyzerName() != null && !req.getAnalyzerName().trim().isEmpty())) {
+            Machine analyzer = resolveAnalyzer(req.getAnalyzerId(), req.getAnalyzerName(), user);
+            if (analyzer != null) i.setMachine(analyzer);
         }
         i.setEditer(user); i.setEditedAt(new Date()); investigationFacade.edit(i);
         return toResponse(i, "Investigation updated successfully");
@@ -118,9 +122,9 @@ public class InvestigationApiService implements Serializable {
         if (name != null && !name.trim().isEmpty()) {
             Map<String, Object> m = new HashMap<>();
             m.put("ret", false);
-            m.put("name", name.trim());
+            m.put("name", name.trim().toLowerCase());
             InvestigationCategory c = investigationCategoryFacade.findFirstByJpql(
-                    "select c from InvestigationCategory c where c.retired=:ret and c.name=:name order by c.name", m);
+                    "select c from InvestigationCategory c where c.retired=:ret and lower(c.name)=:name order by c.name", m);
             if (c == null) {
                 c = new InvestigationCategory();
                 c.setName(name.trim());
@@ -142,9 +146,9 @@ public class InvestigationApiService implements Serializable {
         if (name != null && !name.trim().isEmpty()) {
             Map<String, Object> m = new HashMap<>();
             m.put("ret", false);
-            m.put("name", name.trim());
+            m.put("name", name.trim().toLowerCase());
             Sample s = sampleFacade.findFirstByJpql(
-                    "select s from Sample s where s.retired=:ret and s.name=:name order by s.name", m);
+                    "select s from Sample s where s.retired=:ret and lower(s.name)=:name order by s.name", m);
             if (s == null) {
                 s = new Sample();
                 s.setName(name.trim());
@@ -166,9 +170,9 @@ public class InvestigationApiService implements Serializable {
         if (name != null && !name.trim().isEmpty()) {
             Map<String, Object> m = new HashMap<>();
             m.put("ret", false);
-            m.put("name", name.trim());
+            m.put("name", name.trim().toLowerCase());
             InvestigationTube t = investigationTubeFacade.findFirstByJpql(
-                    "select t from InvestigationTube t where t.retired=:ret and t.name=:name order by t.name", m);
+                    "select t from InvestigationTube t where t.retired=:ret and lower(t.name)=:name order by t.name", m);
             if (t == null) {
                 t = new InvestigationTube();
                 t.setName(name.trim());
@@ -190,9 +194,9 @@ public class InvestigationApiService implements Serializable {
         if (name != null && !name.trim().isEmpty()) {
             Map<String, Object> m = new HashMap<>();
             m.put("ret", false);
-            m.put("name", name.trim());
+            m.put("name", name.trim().toLowerCase());
             Machine ma = machineFacade.findFirstByJpql(
-                    "select ma from Machine ma where ma.retired=:ret and ma.name=:name order by ma.name", m);
+                    "select ma from Machine ma where ma.retired=:ret and lower(ma.name)=:name order by ma.name", m);
             if (ma == null) {
                 ma = new Machine();
                 ma.setName(name.trim());
