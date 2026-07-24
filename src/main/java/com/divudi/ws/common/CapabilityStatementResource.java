@@ -411,6 +411,13 @@ public class CapabilityStatementResource {
                         + "Sub-resources: /items, /items/{itemId}/values, /calculations, /flags, /dynamic-labels.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Components", "/api/investigations/{investigationId}/components",
+                        "Manage InvestigationComponent groupings used to organize report items within an investigation's format "
+                        + "(componentName only). GET lists components for the investigation. POST creates one. "
+                        + "PUT /{componentId} renames one. DELETE /{componentId} permanently removes one — rejected with an error "
+                        + "if any report item (InvestigationItem) still references it.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories. "
                         + "Fee sub-paths: /{id}/fees (GET fees, POST add), /{id}/fees/{feeId} (PUT update, DELETE remove). "
