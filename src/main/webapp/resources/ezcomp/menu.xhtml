@@ -2024,9 +2024,16 @@
                         icon="fa fa-users"
                         rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" >
                     </p:menuitem>
-                    <p:menuitem  
-                        ajax="false"  
-                        action="#{institutionController.toAdminManageInstitutions()}" 
+                    <p:menuitem
+                        ajax="false"
+                        action="#{clientPortalStaffRegistrationController.navigateToStaffAssistedRegistration()}"
+                        value="Create Client Portal Account"
+                        icon="fa fa-id-card"
+                        rendered="#{webUserController.hasPrivilege('ClientPortalCreateAccount')}" >
+                    </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        action="#{institutionController.toAdminManageInstitutions()}"
                         value="Manage Institutions" 
                         icon="fa fa-hospital"
                         rendered="#{webUserController.hasPrivilege('AdminInstitutions')}" >
