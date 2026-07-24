@@ -66,7 +66,7 @@
                                 </p:commandButton>
 
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearchAdmissionsByAdmittedDepartmentAnyInstitute') or webUserController.hasPrivilege('InwardSearchAdmissionsByAdmittedDepartmentLoggedInstitute') or webUserController.hasPrivilege('InwardSearchAdmissionsByAdmittedDepartmentLoggedDepartment')}">
-                                    <p:outputLabel value="Search By Admitted Department" style="font-weight:bold" />
+                                    <h:outputText value="Search By Admitted Department" style="font-weight:bold" />
                                     <p:commandButton
                                         ajax="false"
                                         value="Any Institute"
@@ -94,7 +94,7 @@
                                 </h:panelGroup>
 
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearchAdmissionsByCurrentDepartmentAnyInstitute') or webUserController.hasPrivilege('InwardSearchAdmissionsByCurrentDepartmentLoggedInstitute') or webUserController.hasPrivilege('InwardSearchAdmissionsByCurrentDepartmentLoggedDepartment')}">
-                                    <p:outputLabel value="Search By Current Department" style="font-weight:bold" />
+                                    <h:outputText value="Search By Current Department" style="font-weight:bold" />
                                     <p:commandButton
                                         ajax="false"
                                         value="Any Institute"
