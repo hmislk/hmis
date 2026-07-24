@@ -64,6 +64,7 @@ public class InvestigationValidatorApiService implements Serializable {
         v.setName(req.getName().trim());
         v.setMaximumValue(req.getMaximumValue());
         v.setMinimumValue(req.getMinimumValue());
+        validateRange(v.getMinimumValue(), v.getMaximumValue());
         v.setCreater(user);
         v.setCreatedAt(new Date());
         investigationValidatorFacade.createAndFlush(v);
@@ -75,6 +76,14 @@ public class InvestigationValidatorApiService implements Serializable {
         if (req == null) {
             throw new Exception("Request body is required");
         }
+        // Validate the prospective merged range before mutating the managed
+        // entity — `v` is JPA-managed here, so any setter call is dirty-tracked
+        // and will be flushed at transaction commit even if this method later
+        // throws, since a checked Exception does not trigger EJB CMT rollback.
+        Double effectiveMax = req.getMaximumValue() != null ? req.getMaximumValue() : v.getMaximumValue();
+        Double effectiveMin = req.getMinimumValue() != null ? req.getMinimumValue() : v.getMinimumValue();
+        validateRange(effectiveMin, effectiveMax);
+
         if (req.getName() != null && !req.getName().trim().isEmpty()) {
             v.setName(req.getName().trim());
         }
@@ -102,6 +111,12 @@ public class InvestigationValidatorApiService implements Serializable {
     // =========================================================================
     // Private helpers
     // =========================================================================
+
+    private void validateRange(Double minimumValue, Double maximumValue) throws Exception {
+        if (minimumValue != null && maximumValue != null && minimumValue > maximumValue) {
+            throw new Exception("minimumValue cannot exceed maximumValue");
+        }
+    }
 
     private Investigation loadInvestigation(Long id) throws Exception {
         Investigation ix = investigationFacade.find(id);
