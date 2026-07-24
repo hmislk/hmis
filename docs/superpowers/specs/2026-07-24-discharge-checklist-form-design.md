@@ -7,7 +7,7 @@ line items plus a few free-text/date fields, with handwritten amendments in
 green ink) needs to be recreated as a dynamic form via the existing
 `/api/forms` REST API (see `developer_docs/forms/form-api-guide.md` and
 `developer_docs/forms/custom-layout-guide.md`), for trial use on rh staging
-(`http://124.43.4.189:8010/rhLocal`).
+(`<rh staging URL — see C:\Credentials\>`).
 
 Investigation of `admission_forms.xhtml` and `InwardFormController.java`
 confirmed the dynamic form system (`DesignComponent`/`CaptureComponent`) can
@@ -63,8 +63,8 @@ CI/CD per project rules — not done manually here).
 
 ## Phase 2 — Sample Form via API (after merge + staging redeploy)
 
-Using `curl` with the `Finance` header (`a6d817d5-d3d9-4ab9-9e2f-76ac37b91bb3`)
-against `http://124.43.4.189:8010/rhLocal/api/forms`, create:
+Using `curl` with the `Finance` header (`<Finance API key — see C:\Credentials\>`)
+against `<rh staging URL — see C:\Credentials\>/api/forms`, create:
 
 **Form template** — title makes clear this is a sample/trial form for
 evaluating the form-design system, e.g.

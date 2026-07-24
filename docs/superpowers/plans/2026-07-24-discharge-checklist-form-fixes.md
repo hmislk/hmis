@@ -289,4 +289,4 @@ Expected: command prints the created PR URL.
 
 ## After This Plan
 
-Once the PR is merged and rh staging (`http://124.43.4.189:8010/rhLocal`) is redeployed, proceed with Phase 2 from the design spec (`docs/superpowers/specs/2026-07-24-discharge-checklist-form-design.md`): create the discharge checklist form template, fields, and choices via the `/api/forms` REST API using the `Finance` header, verify it in the browser, and write the wiki page. This is data/content work, not code, and does not need its own TDD-style plan.
+Once the PR is merged and rh staging (`<rh staging URL — see C:\Credentials\>`) is redeployed, proceed with Phase 2 from the design spec (`docs/superpowers/specs/2026-07-24-discharge-checklist-form-design.md`): create the discharge checklist form template, fields, and choices via the `/api/forms` REST API using the `Finance` header, verify it in the browser, and write the wiki page. This is data/content work, not code, and does not need its own TDD-style plan.

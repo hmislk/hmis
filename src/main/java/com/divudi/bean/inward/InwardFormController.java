@@ -131,6 +131,7 @@ public class InwardFormController implements Serializable {
             JsfUtil.addErrorMessage("Please select a form to fill");
             return;
         }
+        viewMode = false;
         currentEntry = new PatientFormEntry();
         currentEntry.setPatientEncounter(patientEncounter);
         currentEntry.setDesignComponent(selectedTemplate);
