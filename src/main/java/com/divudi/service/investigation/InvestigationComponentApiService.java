@@ -93,11 +93,12 @@ public class InvestigationComponentApiService implements Serializable {
     }
 
     private InvestigationComponent loadComponent(Long componentId, Long investigationId) throws Exception {
+        Investigation investigation = loadInvestigation(investigationId);
         InvestigationComponent c = investigationComponentFacade.find(componentId);
         if (c == null) {
             throw new Exception("Component not found with ID: " + componentId);
         }
-        if (c.getInvestigation() == null || !c.getInvestigation().getId().equals(investigationId)) {
+        if (c.getInvestigation() == null || !investigation.getId().equals(c.getInvestigation().getId())) {
             throw new Exception("Component " + componentId + " does not belong to investigation " + investigationId);
         }
         return c;
