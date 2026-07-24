@@ -51,6 +51,7 @@ public class ClientPortalPasswordResetController implements Serializable {
     private Date otpSentTime;
     private boolean otpSendSuccess;
     private boolean otpVerified;
+    private Long verifiedSmsId;
 
     private String newPassword;
     private String newPasswordConfirm;
@@ -72,6 +73,7 @@ public class ClientPortalPasswordResetController implements Serializable {
         selectedAccount = null;
         otpSendSuccess = false;
         otpVerified = false;
+        verifiedSmsId = null;
         matchedAccounts = null;
 
         if (identifier == null || identifier.trim().isEmpty()) {
@@ -195,6 +197,7 @@ public class ClientPortalPasswordResetController implements Serializable {
         }
 
         otpVerified = true;
+        verifiedSmsId = lastSms.getId();
 
         // Only now — after OTP proves control of the phone number — do we reveal
         // which account(s) matched. A single match auto-selects; multiple matches
@@ -220,6 +223,28 @@ public class ClientPortalPasswordResetController implements Serializable {
             JsfUtil.addErrorMessage("Password and confirmation do not match.");
             return;
         }
+
+        // Re-bind the OTP proof at the moment of the credential change, rather than
+        // trusting the view-scoped otpVerified flag indefinitely: re-fetch the latest
+        // Sms for this identifier and confirm it's still the exact row that was
+        // verified (not a newer OTP requested since, which would leave a stale
+        // verification usable against a fresh code) and still within the expiry
+        // window (in case the view has been open longer than the OTP timeout).
+        String trimmed = identifier == null ? null : identifier.trim();
+        String jpql = "select s from Sms s where s.retired=false and s.receipientNumber=:mobile and s.smsType=:type order by s.id desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("mobile", trimmed);
+        params.put("type", MessageType.ClientPortalPasswordResetOTP);
+        Sms latestSms = smsFacade.findFirstByJpql(jpql, params);
+        boolean proofStillValid = latestSms != null
+                && latestSms.getId().equals(verifiedSmsId)
+                && (System.currentTimeMillis() - latestSms.getCreatedAt().getTime()) <= getOtpTimeoutMinutes() * 60_000L;
+        if (!proofStillValid) {
+            otpVerified = false;
+            JsfUtil.addErrorMessage("Your verification has expired or a newer code was requested. Please verify your OTP again.");
+            return;
+        }
+
         String passwordHash = securityController.hashAndCheck(newPassword);
         if (passwordHash == null) {
             JsfUtil.addErrorMessage("Unable to reset the password. Please try again.");
