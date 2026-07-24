@@ -427,6 +427,15 @@ public class CapabilityStatementResource {
                         + "total/totalForForeigner and are rejected against a retired investigation.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Validators", "/api/investigations/{investigationId}/validators",
+                        "Manage InvestigationValidator result-range checks (name, maximumValue, minimumValue) for an "
+                        + "investigation. GET lists non-retired validators. POST creates one. "
+                        + "PUT /{validatorId} updates one (only non-null/non-blank fields are applied). "
+                        + "DELETE /{validatorId} soft-deletes (retires) one. All mutations are rejected against a "
+                        + "retired investigation. Note: the legacy InvestigationValidaterComponent relation is dead "
+                        + "code in the app today and is intentionally not exposed by this API.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories. "
                         + "Fee sub-paths: /{id}/fees (GET fees, POST add), /{id}/fees/{feeId} (PUT update, DELETE remove). "
