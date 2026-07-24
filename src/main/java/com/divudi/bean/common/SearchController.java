@@ -9157,9 +9157,9 @@ public class SearchController implements Serializable {
                 + "COALESCE(cbCreater.name, ''), "
                 + "rb.createdAt, "
                 + "COALESCE(rbCreater.name, ''), "
-                + "bill.total, "
-                + "bill.discount, "
-                + "bill.netTotal, "
+                + "bi.grossValue, "
+                + "bi.discount, "
+                + "bi.netValue, "
                 + "COALESCE(doc.name, ''), "
                 + "doc.title, "
                 + "bref.id, "
@@ -9246,7 +9246,7 @@ public class SearchController implements Serializable {
                 + "AND pr.patientInvestigation.billItem.bill.id IN :billIds";
         Map<String, Object> m = new HashMap<>();
         m.put("billIds", billIds);
-        List<Long> approvedBillIds = getPatientReportFacade().findLongList(jpql, m);
+        List<Long> approvedBillIds = getPatientReportFacade().findLongValuesByJpql(jpql, m);
         Set<Long> approvedBillIdSet = new HashSet<>(approvedBillIds);
         for (OpdBillItemDTO dto : dtos) {
             dto.setApprovedAnyTest(approvedBillIdSet.contains(dto.getBillId()));

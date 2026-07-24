@@ -119,6 +119,7 @@
                                         <h:commandLink value="#{pi.patientNameWithTitle}" action="#{patientController.navigateToOpdPatientEdit()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit') and pi.approvedAnyTest ne true}">
                                             <f:setPropertyActionListener value="#{searchController.findPatientById(pi.patientId)}" target="#{patientController.current}"/>
                                         </h:commandLink>
+                                        <h:outputLabel value="#{pi.patientNameWithTitle}" rendered="#{not (webUserController.hasPrivilege('OpdBillSearchEdit') and pi.approvedAnyTest ne true)}"/>
                                         <br/>
                                         <h:outputLabel value="#{pi.patientAgeAsString}" />
                                         <br/>
