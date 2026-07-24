@@ -240,7 +240,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -253,7 +252,11 @@ public class ClientAccount implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    // @ManyToOne (not @OneToOne): person_id must stay non-unique at the DB level so
+    // a retired account and a newly created active account can coexist for the same
+    // Person. "One active account per person" is enforced in business logic
+    // (ClientAccountFacade.findByPerson), not by a DB constraint.
+    @ManyToOne
     private Person person;
 
     private String passwordHash;
@@ -621,6 +624,17 @@ public class ClientPortalIpAllowlistTest {
     }
 
     @Test
+    public void testBlankRequestIpIsRejected() {
+        assertFalse(ClientPortalIpAllowlist.isAllowed("", "10.0.0.5"));
+        assertFalse(ClientPortalIpAllowlist.isAllowed("   ", "10.0.0.5"));
+    }
+
+    @Test
+    public void testBlankRequestIpDoesNotMatchLeadingEmptyCsvEntry() {
+        assertFalse(ClientPortalIpAllowlist.isAllowed("", ",10.0.0.5"));
+    }
+
+    @Test
     public void testNullOrEmptyAllowlistIsRejected() {
         assertFalse(ClientPortalIpAllowlist.isAllowed("10.0.0.5", null));
         assertFalse(ClientPortalIpAllowlist.isAllowed("10.0.0.5", ""));
@@ -645,7 +659,8 @@ public class ClientPortalIpAllowlist {
     }
 
     public static boolean isAllowed(String requestIp, String allowedIpsCsv) {
-        if (requestIp == null || allowedIpsCsv == null || allowedIpsCsv.trim().isEmpty()) {
+        if (requestIp == null || requestIp.trim().isEmpty()
+                || allowedIpsCsv == null || allowedIpsCsv.trim().isEmpty()) {
             return false;
         }
         for (String allowed : allowedIpsCsv.split(",")) {
@@ -661,7 +676,14 @@ public class ClientPortalIpAllowlist {
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `mvn -q -Dtest=ClientPortalIpAllowlistTest test`
-Expected: PASS — 6 tests run, 0 failures.
+Expected: PASS — 8 tests run, 0 failures.
+
+> **Amended after PR review:** the original version only rejected a `null`
+> `requestIp`. A blank (`""`) `requestIp` combined with a malformed allowlist
+> containing a leading/stray comma (e.g. `",10.0.0.5"`, whose split retains a
+> leading empty entry) would have matched. Both the implementation and this
+> test file were updated to reject blank `requestIp` too (PR
+> [#22358](https://github.com/hmislk/hmis/pull/22358) review comment).
 
 - [ ] **Step 5: Commit**
 
@@ -710,9 +732,13 @@ public class ClientPortalOtpGeneratorTest {
     }
 
     @Test
-    public void testZeroLengthProducesEmptyString() {
-        String otp = ClientPortalOtpGenerator.generate(0);
-        assertEquals("", otp);
+    public void testZeroLengthThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> ClientPortalOtpGenerator.generate(0));
+    }
+
+    @Test
+    public void testNegativeLengthThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> ClientPortalOtpGenerator.generate(-1));
     }
 }
 ```
@@ -738,6 +764,9 @@ public class ClientPortalOtpGenerator {
     }
 
     public static String generate(int length) {
+        if (length <= 0) {
+            throw new IllegalArgumentException("OTP length must be positive");
+        }
         StringBuilder otpBuilder = new StringBuilder();
         for (int i = 0; i < length; i++) {
             int index = RANDOM.nextInt(DIGITS.length());
@@ -751,7 +780,15 @@ public class ClientPortalOtpGenerator {
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `mvn -q -Dtest=ClientPortalOtpGeneratorTest test`
-Expected: PASS — 4 tests run, 0 failures.
+Expected: PASS — 5 tests run, 0 failures.
+
+> **Amended after PR review:** the original version silently returned an
+> empty string for `length <= 0`, meaning a misconfigured OTP length could
+> produce a "secret" with no actual entropy. `generate` now throws
+> `IllegalArgumentException` for non-positive lengths; the zero-length test
+> was changed from asserting an empty string to asserting the exception, and
+> a negative-length test was added (PR
+> [#22358](https://github.com/hmislk/hmis/pull/22358) review comments).
 
 - [ ] **Step 5: Commit**
 
@@ -763,6 +800,20 @@ git commit -m "feat(client-portal): add pure OTP code generator"
 ---
 
 ### Task 8: Regenerate DDL for the new `ClientAccount` table
+
+> **DEFERRED — not part of this Foundation PR.** Per an explicit decision
+> made before execution (see PR [#22358](https://github.com/hmislk/hmis/pull/22358)),
+> this task is deliberately **not** run as part of this plan. `generate-ddl`
+> is a heavyweight, machine-specific procedure (full local build + Payara
+> redeploy + a push to the separate `hmis.wiki` repo) that shouldn't run
+> once per plan — it will be run once, manually (not via an implementer
+> subagent), after **all** client-portal follow-up plans (staff-assisted
+> registration, self-service phone/email OTP, kiosk registration, and the
+> `Institution.defaultInstitution` field for the landing page) have added
+> their schema changes too, so the full schema diff is captured in a single
+> pass instead of one redeploy cycle per plan. The steps below describe how
+> that eventual, single DDL-regeneration pass will work — they are not
+> something the Foundation PR itself completes.
 
 **Files:**
 - Modify: `tmp/createDDL.jdbc` (or wherever the `generate-ddl` skill writes output)

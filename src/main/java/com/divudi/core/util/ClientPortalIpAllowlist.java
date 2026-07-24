@@ -6,7 +6,8 @@ public class ClientPortalIpAllowlist {
     }
 
     public static boolean isAllowed(String requestIp, String allowedIpsCsv) {
-        if (requestIp == null || allowedIpsCsv == null || allowedIpsCsv.trim().isEmpty()) {
+        if (requestIp == null || requestIp.trim().isEmpty()
+                || allowedIpsCsv == null || allowedIpsCsv.trim().isEmpty()) {
             return false;
         }
         for (String allowed : allowedIpsCsv.split(",")) {

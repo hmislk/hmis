@@ -31,6 +31,17 @@ public class ClientPortalIpAllowlistTest {
     }
 
     @Test
+    public void testBlankRequestIpIsRejected() {
+        assertFalse(ClientPortalIpAllowlist.isAllowed("", "10.0.0.5"));
+        assertFalse(ClientPortalIpAllowlist.isAllowed("   ", "10.0.0.5"));
+    }
+
+    @Test
+    public void testBlankRequestIpDoesNotMatchLeadingEmptyCsvEntry() {
+        assertFalse(ClientPortalIpAllowlist.isAllowed("", ",10.0.0.5"));
+    }
+
+    @Test
     public void testNullOrEmptyAllowlistIsRejected() {
         assertFalse(ClientPortalIpAllowlist.isAllowed("10.0.0.5", null));
         assertFalse(ClientPortalIpAllowlist.isAllowed("10.0.0.5", ""));

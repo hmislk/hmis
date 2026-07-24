@@ -10,7 +10,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -23,7 +22,11 @@ public class ClientAccount implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    // @ManyToOne (not @OneToOne): person_id must stay non-unique at the DB level so
+    // a retired account and a newly created active account can coexist for the same
+    // Person. "One active account per person" is enforced in business logic
+    // (ClientAccountFacade.findByPerson), not by a DB constraint.
+    @ManyToOne
     private Person person;
 
     private String passwordHash;

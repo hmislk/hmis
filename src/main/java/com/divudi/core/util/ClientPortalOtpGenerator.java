@@ -11,6 +11,9 @@ public class ClientPortalOtpGenerator {
     }
 
     public static String generate(int length) {
+        if (length <= 0) {
+            throw new IllegalArgumentException("OTP length must be positive");
+        }
         StringBuilder otpBuilder = new StringBuilder();
         for (int i = 0; i < length; i++) {
             int index = RANDOM.nextInt(DIGITS.length());

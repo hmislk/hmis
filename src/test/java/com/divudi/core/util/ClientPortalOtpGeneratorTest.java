@@ -24,8 +24,12 @@ public class ClientPortalOtpGeneratorTest {
     }
 
     @Test
-    public void testZeroLengthProducesEmptyString() {
-        String otp = ClientPortalOtpGenerator.generate(0);
-        assertEquals("", otp);
+    public void testZeroLengthThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> ClientPortalOtpGenerator.generate(0));
+    }
+
+    @Test
+    public void testNegativeLengthThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> ClientPortalOtpGenerator.generate(-1));
     }
 }

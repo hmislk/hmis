@@ -125,13 +125,27 @@ would conflict with the soft-delete/retire-then-recreate pattern — a person
 could legitimately end up with one retired and one active `ClientAccount`
 over time. At DDL-generation time (a separately-deferred step), the
 generated `PERSON_ID` column on the `CLIENTACCOUNT` table is expected to come
-out as non-unique — that is correct, not a bug. Consequently, any
-registration-channel code that creates a `ClientAccount` must perform its
-"does this person already have a non-retired account" check
+out as non-unique — that is correct, not a bug.
+
+Running the "does this person already have a non-retired account" check
 (`ClientAccountFacade.findByPerson`) inside the same transaction as the
-create, since two concurrent registration attempts for the same person could
-otherwise both pass the check and each create a non-retired `ClientAccount`
-before either commits.
+create is **not by itself** sufficient to prevent two concurrent registration
+attempts for the same person from both succeeding: under normal database
+isolation levels, two concurrent transactions can each independently observe
+"no active account" and then each insert one, since neither transaction's
+uncommitted insert is visible to the other's read. Preventing this requires
+an actual serialization point, not just transaction scoping. Whichever
+follow-up plan implements account creation must take one of these two
+concrete approaches: (a) lock the `Person` row for the duration of the
+check-then-create (e.g. JPA `LockModeType.PESSIMISTIC_WRITE` /
+`SELECT ... FOR UPDATE` on `Person` before calling `findByPerson`, so a
+second concurrent transaction blocks until the first commits or rolls back),
+or (b) add a partial/conditional uniqueness mechanism scoped to
+non-retired rows only (MySQL has no native partial unique index, so this
+would need a generated/computed column or an application-level distributed
+lock keyed on the person id) with explicit conflict handling on insert
+failure. Option (a) is the simpler default recommendation for the first
+channel plan that implements creation.
 
 ### 4. Login & credentials
 
