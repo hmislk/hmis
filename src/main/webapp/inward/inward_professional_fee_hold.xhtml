@@ -1,0 +1,172 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form id="formProfessionalFeeHold"
+                        onkeydown="if(event.key==='Enter'&amp;&amp;event.target.tagName!=='TEXTAREA'){event.preventDefault();return false;}">
+
+                    <p:growl id="growl" life="4000"/>
+
+                    <!-- Navigation bar -->
+                    <div class="row">
+                        <div class="col-12 px-4">
+                            <p:commandButton
+                                id="btnDashboard"
+                                value="Inpatient Dashboard"
+                                ajax="false"
+                                action="#{admissionController.navigateToAdmissionProfilePage}"
+                                icon="fa fa-id-card"
+                                class="p-0 m-1">
+                                <f:setPropertyActionListener
+                                    value="#{professionalFeeHoldController.currentEncounter}"
+                                    target="#{admissionController.current}" />
+                            </p:commandButton>
+                        </div>
+                    </div>
+
+                    <!-- Access denied panel -->
+                    <h:panelGroup id="pnlAccessDenied" layout="block" rendered="#{not webUserController.hasPrivilege('InwardHoldProfessionalPayments')}">
+                        <div class="row px-4">
+                            <div class="col-12">
+                                <p:panel class="m-1">
+                                    <h:outputText value="You do not have permission to hold or release professional payments." />
+                                </p:panel>
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                    <!-- Main content -->
+                    <h:panelGroup id="pnlMain" layout="block" rendered="#{webUserController.hasPrivilege('InwardHoldProfessionalPayments')}">
+
+                        <div class="row px-4 py-2">
+                            <div class="col-12">
+
+                                <p:panel class="w-100 m-1">
+                                    <f:facet name="header">
+                                        <div class="d-flex justify-content-between align-items-center w-100">
+                                            <div>
+                                                <i class="fa fa-user-md mr-2"/>
+                                                <h:outputText value="Professional Payments — BHT: " />
+                                                <h:outputText value="#{professionalFeeHoldController.currentEncounter.bhtNo}" style="font-weight: bold;"/>
+                                                <h:outputText value=" — " />
+                                                <h:outputText value="#{professionalFeeHoldController.currentEncounter.patient.person.nameWithTitle}" style="font-weight: bold;"/>
+                                            </div>
+                                        </div>
+                                    </f:facet>
+
+                                    <p:outputLabel for="txtFeeHoldNotes" value="Hold Notes (applied to newly held payments):" styleClass="font-weight-bold" />
+                                    <p:inputTextarea
+                                        id="txtFeeHoldNotes"
+                                        value="#{professionalFeeHoldController.holdNotes}"
+                                        class="w-100"
+                                        autoResize="true"
+                                        rows="3"
+                                        placeholder="Reason for holding the selected professional payment(s), e.g. pending investigation, billing dispute, awaiting clarification, etc." />
+
+                                    <p:dataTable
+                                        id="tblProfessionalFees"
+                                        value="#{professionalFeeHoldController.professionalFees}"
+                                        selection="#{professionalFeeHoldController.selectedFees}"
+                                        class="w-100 m-1 mt-3"
+                                        rows="20"
+                                        paginator="true"
+                                        paginatorPosition="bottom"
+                                        paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                        currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                        rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
+                                        emptyMessage="No professional payments found for this admission."
+                                        var="bf"
+                                        rowKey="#{bf.id}">
+
+                                        <p:column selectionBox="true" width="20"/>
+
+                                        <p:column headerText="Consultant" sortBy="#{bf.staff.person.name}">
+                                            <h:outputLabel value="#{bf.staff.person.nameWithTitle}" styleClass="fw-bold text-dark"/>
+                                        </p:column>
+
+                                        <p:column headerText="Speciality" sortBy="#{bf.speciality.name}">
+                                            <h:outputLabel value="#{bf.speciality.name}" rendered="#{bf.speciality ne null}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Source" sortBy="#{bf.bill.billTypeAtomic}">
+                                            <h:outputLabel value="#{bf.bill.billTypeAtomic.label}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Bill No">
+                                            <h:outputLabel value="#{bf.bill.deptId}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Fee Date" sortBy="#{bf.feeAt}">
+                                            <h:outputLabel value="#{bf.feeAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column headerText="Fee" styleClass="text-end" sortBy="#{bf.feeValue}">
+                                            <h:outputLabel value="#{bf.feeValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column headerText="Paid" styleClass="text-end" sortBy="#{bf.paidValue}">
+                                            <h:outputLabel value="#{bf.paidValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column headerText="Hold Status">
+                                            <h:panelGroup layout="block" rendered="#{bf.feePaymentOnHold}">
+                                                <span class="ui-tag ui-tag-danger" title="#{bf.feePaymentHoldNotes}">
+                                                    On Hold since
+                                                    <h:outputText value="#{bf.feePaymentHoldDateTime}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                                    </h:outputText>
+                                                    by #{bf.feePaymentHoldBy.name}
+                                                </span>
+                                            </h:panelGroup>
+                                            <h:panelGroup layout="block" rendered="#{not bf.feePaymentOnHold}">
+                                                <span class="ui-tag ui-tag-success">Payable</span>
+                                            </h:panelGroup>
+                                        </p:column>
+
+                                    </p:dataTable>
+
+                                    <!-- Action buttons -->
+                                    <h:panelGroup id="pnlActionButtons" layout="block"
+                                                  styleClass="d-flex justify-content-end my-2">
+                                        <p:commandButton
+                                            id="btnHoldSelected"
+                                            value="Hold Selected"
+                                            ajax="false"
+                                            action="#{professionalFeeHoldController.holdSelected()}"
+                                            icon="fa fa-lock"
+                                            class="ui-button-danger mx-1"
+                                            onclick="return confirm('Hold payment for the selected professional payment(s)? They will be excluded from professional payment runs until released.')" />
+                                        <p:commandButton
+                                            id="btnReleaseHoldSelected"
+                                            value="Release Hold on Selected"
+                                            ajax="false"
+                                            action="#{professionalFeeHoldController.releaseHoldSelected()}"
+                                            icon="fa fa-unlock"
+                                            class="ui-button-success mx-1"
+                                            onclick="return confirm('Release the hold on the selected professional payment(s)?')" />
+                                    </h:panelGroup>
+
+                                </p:panel>
+
+                            </div>
+                        </div>
+                    </h:panelGroup>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
