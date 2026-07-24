@@ -436,6 +436,14 @@ public class CapabilityStatementResource {
                         + "code in the app today and is intentionally not exposed by this API.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Full Definition", "/api/investigations/{investigationId}/full",
+                        "Read-only aggregation of an investigation's complete definition into one nested JSON "
+                        + "document: metadata (incl. category/sample/container/analyzer), components, report "
+                        + "format (items, item values, calculations, flags, dynamic labels), validators, and fees. "
+                        + "Pure composition over the other investigation sub-resources — no new mutation logic. "
+                        + "Supersedes the old 'Export Investigation as JSON' idea (#458).",
+                        "API Key",
+                        "GET"))
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories. "
                         + "Fee sub-paths: /{id}/fees (GET fees, POST add), /{id}/fees/{feeId} (PUT update, DELETE remove). "
