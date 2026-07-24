@@ -418,6 +418,15 @@ public class CapabilityStatementResource {
                         + "if any report item (InvestigationItem) still references it.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Fees", "/api/investigations/{investigationId}/fees",
+                        "Manage investigation pricing (ItemFee), mirroring the Services /fees sub-resource. "
+                        + "GET lists non-retired fees for the investigation. POST adds a fee "
+                        + "(body: name, feeType, fee, ffee, discountAllowed, institutionId, departmentId, specialityId, staffId). "
+                        + "PUT /{feeId} updates a fee (only non-null fields are applied). "
+                        + "DELETE /{feeId} soft-deletes (retires) a fee. All mutations recalculate the investigation's "
+                        + "total/totalForForeigner and are rejected against a retired investigation.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories. "
                         + "Fee sub-paths: /{id}/fees (GET fees, POST add), /{id}/fees/{feeId} (PUT update, DELETE remove). "
