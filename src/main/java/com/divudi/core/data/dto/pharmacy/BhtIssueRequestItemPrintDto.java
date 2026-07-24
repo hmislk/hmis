@@ -9,6 +9,8 @@ public class BhtIssueRequestItemPrintDto implements Serializable {
     private String itemName = "";
     private double qty;
     private String directions = "";
+    private String instructions = "";
+    private String prescriptionComment = "";
 
     public String getItemName() {
         return itemName;
@@ -32,5 +34,21 @@ public class BhtIssueRequestItemPrintDto implements Serializable {
 
     public void setDirections(String directions) {
         this.directions = directions;
+    }
+
+    public String getInstructions() {
+        return instructions;
+    }
+
+    public void setInstructions(String instructions) {
+        this.instructions = instructions;
+    }
+
+    public String getPrescriptionComment() {
+        return prescriptionComment;
+    }
+
+    public void setPrescriptionComment(String prescriptionComment) {
+        this.prescriptionComment = prescriptionComment;
     }
 }
