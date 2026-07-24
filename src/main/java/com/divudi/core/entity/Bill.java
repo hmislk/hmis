@@ -273,6 +273,7 @@ public class Bill implements Serializable, RetirableEntity {
     //Id's
     private String deptId;
     private String insId;
+    private Long voucherNo;
     private String catId;
     private String sessionId;
     @Deprecated
@@ -351,6 +352,11 @@ public class Bill implements Serializable, RetirableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Bill backwardReferenceBill;
+
+    private Integer finalBillVersionSerial; // 1, 2, 3... for this admission's final-bill lineage; null for non-final-bill types
+    private boolean confirmedFinalBill;     // denormalized flag, true iff pe.finalBill == this bill
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Bill previousVersion;           // the bill this version was created from; null for the first version; display-only, not used in any query
 
     @Transient
     private double tmpReturnTotal;
@@ -1758,6 +1764,14 @@ public class Bill implements Serializable, RetirableEntity {
         this.deptId = deptId;
     }
 
+    public Long getVoucherNo() {
+        return voucherNo;
+    }
+
+    public void setVoucherNo(Long voucherNo) {
+        this.voucherNo = voucherNo;
+    }
+
     public String getInsId() {
         return insId;
     }
@@ -2066,6 +2080,30 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setBackwardReferenceBill(Bill backwardReferenceBill) {
         this.backwardReferenceBill = backwardReferenceBill;
+    }
+
+    public Integer getFinalBillVersionSerial() {
+        return finalBillVersionSerial;
+    }
+
+    public void setFinalBillVersionSerial(Integer finalBillVersionSerial) {
+        this.finalBillVersionSerial = finalBillVersionSerial;
+    }
+
+    public boolean isConfirmedFinalBill() {
+        return confirmedFinalBill;
+    }
+
+    public void setConfirmedFinalBill(boolean confirmedFinalBill) {
+        this.confirmedFinalBill = confirmedFinalBill;
+    }
+
+    public Bill getPreviousVersion() {
+        return previousVersion;
+    }
+
+    public void setPreviousVersion(Bill previousVersion) {
+        this.previousVersion = previousVersion;
     }
 
     public List<Bill> getForwardReferenceBills() {

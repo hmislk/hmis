@@ -43,6 +43,7 @@ This document lists the configuration options used in the application and their 
 | Key                                                              | Type      | Default | Description                                                                                             |
 | ---------------------------------------------------------------- | --------- | ------- | ------------------------------------------------------------------------------------------------------- |
 | `OPD Billing - Clear Referring Doctor on New Bill`              | Boolean   | `true`  | When true, clears the referring doctor and referring institution when starting a new OPD bill. When false, the values are preserved across consecutive bills. |
+| `Show Mark Foreigner and Mark Local Buttons in Billing`         | Boolean   | `true`  | Controls visibility of the Mark Foreigner / Mark Local buttons across OPD Billing, Channel Booking, Clinic Sessions, and Inward Service Bill screens. Independent of `Save the Patient with Patient Status` (which only controls the read-only status badge/toggle shown during patient registration). See issue #22311. |
 
 ## Pharmacy Procurement
 

@@ -76,6 +76,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
@@ -123,6 +124,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     PageMetadataRegistry pageMetadataRegistry;
 
     ////////////
+    @EJB
+    private com.divudi.service.AuditService auditService;
     @EJB
     private AdmissionFacade ejbFacade;
     @EJB
@@ -375,8 +378,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
         try {
+            Map<String, Object> before = new LinkedHashMap<>();
+            before.put("allergy", pa.getItemValue() != null ? pa.getItemValue().getName() : null);
+            before.put("retired", pa.isRetired());
             pa.setRetired(true);
             clinicalFindingValueFacade.edit(pa);
+            Map<String, Object> after = new LinkedHashMap<>();
+            after.put("allergy", pa.getItemValue() != null ? pa.getItemValue().getName() : null);
+            after.put("retired", pa.isRetired());
+            auditService.logEncounterAudit(current, "Patient Allergy Removed",
+                    before, after, getSessionController().getLoggedUser(),
+                    "ClinicalFindingValue", pa.getId());
             getPatientAllergies().remove(pa);
             JsfUtil.addSuccessMessage("Allergy removed successfully");
         } catch (Exception e) {
@@ -435,11 +447,26 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
 
+        Map<String, Object> before = new LinkedHashMap<>();
+        before.put("creditCompany", patientEncounter.getCreditCompany() != null
+                ? patientEncounter.getCreditCompany().getName() : null);
+        before.put("creditLimit", patientEncounter.getCreditLimit());
+        before.put("creditPaidAmount", patientEncounter.getCreditPaidAmount());
+        before.put("creditUsedAmount", patientEncounter.getCreditUsedAmount());
+
         patientEncounter.setCreditCompany(null);
         patientEncounter.setCreditLimit(0);
         patientEncounter.setCreditPaidAmount(0);
         patientEncounter.setCreditUsedAmount(0);
         getPatientEncounterFacade().edit(patientEncounter);
+
+        Map<String, Object> after = new LinkedHashMap<>();
+        after.put("creditCompany", null);
+        after.put("creditLimit", 0);
+        after.put("creditPaidAmount", 0);
+        after.put("creditUsedAmount", 0);
+        auditService.logEncounterAudit(patientEncounter, "Credit Detail Reset",
+                before, after, getSessionController().getLoggedUser());
     }
 
     public String navigateToInpatientClinicalData() {
@@ -1598,10 +1625,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public void delete() {
 
         if (getCurrent() != null) {
+            Map<String, Object> before = admissionSnapshotMap(getCurrent());
             getCurrent().setRetired(true);
             getCurrent().setRetiredAt(new Date());
             getCurrent().setRetirer(getSessionController().getLoggedUser());
             getFacade().edit(getCurrent());
+            auditService.logEncounterAudit(getCurrent(), "Admission Deleted",
+                    before, admissionSnapshotMap(getCurrent()),
+                    getSessionController().getLoggedUser());
             JsfUtil.addSuccessMessage("Deleted Successfully");
         } else {
             JsfUtil.addErrorMessage("Nothing to Delete");
@@ -1699,9 +1730,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (getCurrent().getId() == null || getCurrent().getId() == 0) {
             JsfUtil.addSuccessMessage("No Patient Data Found");
         } else {
+            Map<String, Object> before = new LinkedHashMap<>();
+            Admission persisted = getEjbFacade().findWithoutCache(getCurrent().getId());
+            if (persisted != null) {
+                before.put("discharged", persisted.isDischarged());
+                before.put("dateOfDischarge", persisted.getDateOfDischarge());
+            }
             getCurrent().setDischarged(Boolean.TRUE);
             getCurrent().setDateOfDischarge(new Date());
             getEjbFacade().edit(current);
+            Map<String, Object> after = new LinkedHashMap<>();
+            after.put("discharged", getCurrent().isDischarged());
+            after.put("dateOfDischarge", getCurrent().getDateOfDischarge());
+            auditService.logEncounterAudit(getCurrent(), "Discharge",
+                    before, after, getSessionController().getLoggedUser());
         }
 
     }
@@ -2202,10 +2244,37 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Admission Type.");
             return;
         }
+        String oldBhtNo = null;
+        Long oldBhtLong = null;
+        if (current.getId() != null) {
+            HashMap<String, Object> bhtParams = new HashMap<>();
+            bhtParams.put("id", current.getId());
+            List<String> persisted = getFacade().findString(
+                    "select a.bhtNo from Admission a where a.id=:id", bhtParams);
+            if (persisted != null && !persisted.isEmpty()) {
+                oldBhtNo = persisted.get(0);
+            }
+            List<Long> persistedBhtLong = getFacade().findLongList(
+                    "select a.bhtLong from Admission a where a.id=:id", bhtParams);
+            if (persistedBhtLong != null && !persistedBhtLong.isEmpty()) {
+                oldBhtLong = persistedBhtLong.get(0);
+            }
+        }
         addPatient();
         addGuardian();
         addPatientRoom();
         getFacade().edit(current);
+        if ((oldBhtNo != null && !oldBhtNo.equals(current.getBhtNo()))
+                || (oldBhtLong == null ? current.getBhtLong() != 0 : oldBhtLong.longValue() != current.getBhtLong())) {
+            Map<String, Object> before = new LinkedHashMap<>();
+            before.put("bhtNo", oldBhtNo);
+            before.put("bhtLong", oldBhtLong);
+            Map<String, Object> after = new LinkedHashMap<>();
+            after.put("bhtNo", current.getBhtNo());
+            after.put("bhtLong", current.getBhtLong());
+            auditService.logEncounterAudit(current, "BHT Number Changed",
+                    before, after, getSessionController().getLoggedUser());
+        }
         current = new Admission();
         patientRoom = new PatientRoom();
     }
@@ -2322,9 +2391,57 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("No admission selected");
             return;
         }
+        Map<String, Object> before = new LinkedHashMap<>();
+        before.put("registrationFlag", getCurrent().getEncounterRegistrationFlag());
         getCurrent().setEncounterRegistrationFlag(EncounterRegistrationFlag.STANDARD);
         getFacade().edit(getCurrent());
+        Map<String, Object> after = new LinkedHashMap<>();
+        after.put("registrationFlag", getCurrent().getEncounterRegistrationFlag());
+        auditService.logEncounterAudit(getCurrent(), "Rapid Temp Admission Completed",
+                before, after, getSessionController().getLoggedUser());
         JsfUtil.addSuccessMessage("Registration marked as complete.");
+    }
+
+    /**
+     * Snapshot of the audit-relevant admission fields, used as before/after
+     * JSON for admission-lifecycle audit events (#22235).
+     */
+    private Map<String, Object> admissionSnapshotMap(Admission a) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        if (a == null) {
+            return m;
+        }
+        m.put("encounterID", a.getId());
+        m.put("bhtNo", a.getBhtNo());
+        m.put("encounterType", a.getEncounterType());
+        m.put("admissionType", a.getAdmissionType() != null ? a.getAdmissionType().getName() : null);
+        m.put("dateOfAdmission", a.getDateOfAdmission());
+        m.put("paymentMethod", a.getPaymentMethod());
+        m.put("creditCompany", a.getCreditCompany() != null ? a.getCreditCompany().getName() : null);
+        m.put("registrationFlag", a.getEncounterRegistrationFlag());
+        m.put("retired", a.isRetired());
+        if (a.getReferringConsultant() != null) {
+            m.put("consultant", a.getReferringConsultant().toString());
+        }
+        if (a.getOpdDoctor() != null) {
+            m.put("medicalOfficer", a.getOpdDoctor().toString());
+        }
+        if (a.getDepartment() != null) {
+            m.put("department", a.getDepartment().getName());
+        }
+        if (a.getPatient() != null) {
+            m.put("patient_ID", a.getPatient().getId());
+            if (a.getPatient().getPerson() != null) {
+                m.put("patient_name", a.getPatient().getPerson().getName());
+            }
+        }
+        if (a.getGuardian() != null) {
+            m.put("guardian_name", a.getGuardian().getName());
+        }
+        if (a.getParentEncounter() != null) {
+            m.put("parentEncounter_bhtNo", a.getParentEncounter().getBhtNo());
+        }
+        return m;
     }
 
     private void proceedWithAdmissionCheck() {
@@ -2367,22 +2484,30 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (isRapidTempAe()) {
             applyRapidTempPlaceholders();
         }
+        final boolean isNewAdmission = getCurrent().getId() == null || getCurrent().getId() <= 0;
         savePatient();
         savePatientAllergies();
         saveGuardian();
-        // Always reserve the next BHT number from the counter
-        String generatedBht = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         boolean bhtCanBeEdited = configOptionApplicationController.getBooleanValueByKey("BHT Number can be edited at the time of admission");
-        if (bhtCanBeEdited && bhtText != null && !bhtText.trim().isEmpty()
-                && !bhtText.trim().equals(generatedBht)) {
-            // User explicitly overrode the BHT text — keep their value
+        String suggestedBht = getInwardBean().getBhtTextPreview(getCurrent().getAdmissionType());
+        boolean userOverrodeBht = bhtCanBeEdited && bhtText != null && !bhtText.trim().isEmpty()
+                && !bhtText.trim().equals(suggestedBht);
+
+        long oldBhtLong = getCurrent().getBhtLong();
+        String oldBhtNo = getCurrent().getBhtNo();
+
+        if (userOverrodeBht) {
+            // Staff-entered value — do not draw a counter number, do not touch bhtLong.
+            getCurrent().setBhtNo(bhtText);
         } else {
+            String generatedBht = getInwardBean().getBhtText(getCurrent().getAdmissionType()); // mutates, only when it will be used
             bhtText = generatedBht;
+            getCurrent().setBhtNo(bhtText);
+            if (getInwardBean().getLastGeneratedBhtLong() != null) {
+                getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
+            }
         }
-        getCurrent().setBhtNo(getBhtText());
-        if (getInwardBean().getLastGeneratedBhtLong() != null) {
-            getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
-        }
+
         getCurrent().setPaymentScheme(paymentScheme);
         getCurrent().setForiegner(patientForiegner);
 
@@ -2396,6 +2521,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setDepartment(sessionController.getDepartment());
             getFacade().create(getCurrent());
             JsfUtil.addSuccessMessage("Patient admitted successfully with BHT No: " + getCurrent().getBhtNo());
+        }
+
+        // Logged after create()/edit() so getCurrent().getId() is populated and the
+        // audit event can be traced back to this admission (objectId/patientEncounterId).
+        if ((oldBhtNo == null ? getCurrent().getBhtNo() != null : !oldBhtNo.equals(getCurrent().getBhtNo()))
+                || oldBhtLong != getCurrent().getBhtLong()) {
+            Map<String, Object> before = new LinkedHashMap<>();
+            before.put("bhtNo", oldBhtNo);
+            before.put("bhtLong", oldBhtLong);
+            Map<String, Object> after = new LinkedHashMap<>();
+            after.put("bhtNo", getCurrent().getBhtNo());
+            after.put("bhtLong", getCurrent().getBhtLong());
+            auditService.logEncounterAudit(getCurrent(), "BHT Number Assigned", before, after,
+                    getSessionController().getLoggedUser());
         }
 
         // Only create a PatientRoom record when a facility charge is actually selected.
@@ -2526,6 +2665,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         saveEncounterCreditCompanies(current);
 
+        if (isNewAdmission) {
+            String auditTrigger = getCurrent().getParentEncounter() != null
+                    ? "Baby Admission Created" : "Admission Created";
+            auditService.logEncounterAudit(getCurrent(), auditTrigger,
+                    null, admissionSnapshotMap(getCurrent()),
+                    getSessionController().getLoggedUser());
+        }
+
         // Save EncounterCreditCompanies
         // Need to create EncounterCredit
         admittingProcessStarted = false;
@@ -2538,6 +2685,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (errorCheck()) {
             return;
         }
+        Map<String, Object> conversionBefore = admissionSnapshotMap(getCurrentNonBht());
         savePatient();
         savePatientAllergies();
         saveGuardian();
@@ -2616,6 +2764,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         getFacade().edit(currentNonBht);
         currentNonBht = null;
 
+        auditService.logEncounterAudit(getCurrent(), "Admission Type Converted",
+                conversionBefore, admissionSnapshotMap(getCurrent()),
+                getSessionController().getLoggedUser());
+
         // Save EncounterCreditCompanies
         // Need to create EncounterCredit
         printPreview = true;
@@ -2629,6 +2781,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 ecc.setCreater(sessionController.getLoggedUser());
                 if (ecc.getInstitution() != null) {
                     getEncounterCreditCompanyFacade().create(ecc);
+                    Map<String, Object> eccState = new LinkedHashMap<>();
+                    eccState.put("creditCompany", ecc.getInstitution().getName());
+                    eccState.put("creditLimit", ecc.getCreditLimit());
+                    eccState.put("policyNo", ecc.getPolicyNo());
+                    eccState.put("referenceNo", ecc.getReferanceNo());
+                    auditService.logEncounterAudit(current, "Credit Company Added",
+                            null, eccState, getSessionController().getLoggedUser(),
+                            "EncounterCreditCompany", ecc.getId());
                     // Upsert back to patient-level insurance profile
                     patientInsuranceController.upsertFromEncounter(
                             current.getPatient(),

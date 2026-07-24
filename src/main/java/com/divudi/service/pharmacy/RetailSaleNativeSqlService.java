@@ -118,19 +118,24 @@ public class RetailSaleNativeSqlService {
 
             em.createNativeQuery(
                 "INSERT INTO " + billItemTable()
-                + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, netRate,"
+                + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, Rate, netRate,"
+                + " discount, discountRate, marginValue,"
                 + " createdAt, creater_ID, retired, refunded, billItemRefunded,"
                 + " consideredForCosting, inwardChargeType)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine')")
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine')")
                 .setParameter(1, preBillId)
                 .setParameter(2, d.getItemId())
                 .setParameter(3, absQty)
                 .setParameter(4, d.getDescription())
                 .setParameter(5, absNetValue)
                 .setParameter(6, absGrossValue)
-                .setParameter(7, netRate)
-                .setParameter(8, new Timestamp(createdAt.getTime()))
-                .setParameter(9, d.getCreaterId())
+                .setParameter(7, d.getRate())
+                .setParameter(8, netRate)
+                .setParameter(9, d.getDiscountValue())
+                .setParameter(10, absQty > 0 ? (d.getDiscountValue() / absQty) : 0.0)
+                .setParameter(11, d.getMarginValue())
+                .setParameter(12, new Timestamp(createdAt.getTime()))
+                .setParameter(13, d.getCreaterId())
                 .executeUpdate();
             biPreIds[i] = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
 
@@ -171,19 +176,24 @@ public class RetailSaleNativeSqlService {
 
             em.createNativeQuery(
                 "INSERT INTO " + billItemTable()
-                + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, netRate,"
+                + " (bill_ID, item_ID, qty, descreption, netValue, grossValue, Rate, netRate,"
+                + " discount, discountRate, marginValue,"
                 + " createdAt, creater_ID, retired, refunded, billItemRefunded,"
                 + " consideredForCosting, inwardChargeType)"
-                + " VALUES (?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine')")
+                + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,1,'Medicine')")
                 .setParameter(1, billId)
                 .setParameter(2, d.getItemId())
                 .setParameter(3, absQty)
                 .setParameter(4, d.getDescription())
                 .setParameter(5, absNetValue)
                 .setParameter(6, absGrossValue)
-                .setParameter(7, netRate)
-                .setParameter(8, new Timestamp(createdAt.getTime()))
-                .setParameter(9, d.getCreaterId())
+                .setParameter(7, d.getRate())
+                .setParameter(8, netRate)
+                .setParameter(9, d.getDiscountValue())
+                .setParameter(10, absQty > 0 ? (d.getDiscountValue() / absQty) : 0.0)
+                .setParameter(11, d.getMarginValue())
+                .setParameter(12, new Timestamp(createdAt.getTime()))
+                .setParameter(13, d.getCreaterId())
                 .executeUpdate();
             biIds[i] = ((Number) em.createNativeQuery("SELECT LAST_INSERT_ID()").getSingleResult()).longValue();
 

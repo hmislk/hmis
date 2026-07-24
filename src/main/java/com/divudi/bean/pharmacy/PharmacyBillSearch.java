@@ -668,7 +668,9 @@ public class PharmacyBillSearch implements Serializable {
         }
         pharmacyRequestForBhtController.setBillPreview(false);
         pharmacyRequestForBhtController.setPatientEncounter(bill.getPatientEncounter());
-        pharmacyRequestForBhtController.setDepartment(bill.getFromDepartment());
+        // `department` on PharmacyRequestForBhtController means the target pharmacy
+        // (toDepartment), not the ward (fromDepartment) — see loadDraftForEditing().
+        pharmacyRequestForBhtController.setDepartment(bill.getToDepartment());
         pharmacyRequestForBhtController.setPreBill((PreBill) bill);
         billFacade.edit(bill);
         return "/ward/ward_pharmacy_bht_issue_request_edit?faces-redirect=true";
@@ -1801,7 +1803,7 @@ public class PharmacyBillSearch implements Serializable {
         }
 
         if (getBill().getBillType() == BillType.PharmacySale) {
-            if (checkSaleReturn(getBill().getReferenceBill())) {
+            if (checkSaleReturn(getBill())) {
                 JsfUtil.addErrorMessage("Sale had been Returned u can't cancell bill ");
                 return true;
             }
@@ -1888,6 +1890,49 @@ public class PharmacyBillSearch implements Serializable {
         params.put("refBill", getBill());
 
         Long count = getBillFacade().findLongByJpql(jpql, params);
+        return count != null && count > 0;
+    }
+
+    /**
+     * Public method to check if the current Sale-for-Cashier bill already has
+     * an active (non-cancelled) item return against it.
+     * Used in XHTML to disable the Cancel button once a return has been processed.
+     * @return true if this Sale bill has been returned
+     */
+    public boolean hasActiveSaleReturn() {
+        if (getBill() == null || getBill().getBillType() != BillType.PharmacySale) {
+            return false;
+        }
+        return checkSaleReturn(getBill());
+    }
+
+    /**
+     * Public method to check if the current item-return bill already has an
+     * active (non-cancelled) refund payment processed against it. Queries
+     * fresh instead of navigating Bill.returnCashBills, whose lazy collection
+     * can be stale in the shared L2 cache when the refund bill was created in
+     * a separate request. Used both to gate the Cancel button in XHTML and to
+     * guard the server-side cancel action.
+     *
+     * Queries the base {@code Bill} type, not {@code RefundBill}: the refund
+     * payment bill created by PharmacyRefundForItemReturnsController is
+     * persisted as a plain {@code Bill} (DTYPE='Bill'), so a "From RefundBill"
+     * query would silently miss it.
+     * @return true if a refund payment has been processed for this bill
+     */
+    public boolean hasActiveReturnCashBill() {
+        if (getBill() == null) {
+            return false;
+        }
+        String sql = "Select count(b) From Bill b where b.retired=false "
+                + " and b.cancelled=false "
+                + " and b.billType=:bt "
+                + " and b.referenceBill=:ref "
+                + " and b.billedBill is null";
+        HashMap hm = new HashMap();
+        hm.put("ref", getBill());
+        hm.put("bt", BillType.PharmacySale);
+        Long count = getBillFacade().findLongByJpql(sql, hm);
         return count != null && count > 0;
     }
 
@@ -3328,7 +3373,7 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
 
-            if (getBill().checkActiveReturnCashBill()) {
+            if (hasActiveReturnCashBill()) {
                 JsfUtil.addErrorMessage("Payment for this bill Already Paid");
                 return;
             }

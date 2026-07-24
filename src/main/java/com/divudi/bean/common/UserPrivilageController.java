@@ -194,6 +194,8 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServicesAndItemsAddProfessionalFee, "Add Professional Fee"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServicesAndItemsAddTimedServices, "Add Timed Services"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardAddChargesAfterNursingDischarge, "Add Charges After Nursing Discharge"), servicesItemsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardHoldProfessionalPayments, "Hold Professional Payments"), servicesItemsNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPayProfessionalFeesWhileOnHold, "Pay Professional Fees While On Hold"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServiceItemRequestApproval, "Approve Service/Item Requests"), servicesItemsNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardServiceItemRequestRejection, "Reject Service/Item Requests"), servicesItemsNode);
 
@@ -218,6 +220,8 @@ public class UserPrivilageController implements Serializable {
         TreeNode inwardSurgeryNode = new DefaultTreeNode(new PrivilegeHolder(null, "Surgery"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryAdd, "Add Surgery"), inwardSurgeryNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryManage, "Manage Surgery"), inwardSurgeryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryValidate, "Validate Surgery"), inwardSurgeryNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSurgeryValidationRevert, "Revert Surgery Validation"), inwardSurgeryNode);
 
         TreeNode clinicalDataViewNode = new DefaultTreeNode(new PrivilegeHolder(null, "Clinical Data Access"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPatientHistoryView, "Patient History View"), clinicalDataViewNode);
@@ -227,6 +231,7 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardInvestigationsView, "Investigations View"), clinicalDataViewNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardImagesView, "Images View"), clinicalDataViewNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardDiagnosisCardView, "Diagnosis Card View"), clinicalDataViewNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardEventHistoryView, "Event History View"), clinicalDataViewNode);
 
         TreeNode inwardPharmacyNode = new DefaultTreeNode(new PrivilegeHolder(null, "Pharmacy"), inwardNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardPharmacyMenu, "Pharmacy Menu"), inwardPharmacyNode);
@@ -286,6 +291,8 @@ public class UserPrivilageController implements Serializable {
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSearchServiceBillUnrestrictedAccess, "Inward Bill Search Without Restriction"), additionalPrivilegesNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSettleFinalBillUnrestricted, "Inward Final Bill Settle Without Restriction"), additionalPrivilegesNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSettleFinalBill, "Inward Settle Final Bill"), additionalPrivilegesNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillCreateVersion, "Inward Final Bill Create New Version"), additionalPrivilegesNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardFinalBillSetConfirmed, "Inward Final Bill Set As Confirmed"), additionalPrivilegesNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.InwardSaveProvisionalFinalBill, "Inward Save Provisional Final Bill"), additionalPrivilegesNode);
 
         // Theatre Privileges

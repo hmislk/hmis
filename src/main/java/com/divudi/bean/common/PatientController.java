@@ -871,7 +871,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public String navigateToOpdPatientProfile() {
-        if (current == null) {
+        if (current == null || current.getId() == null) {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }

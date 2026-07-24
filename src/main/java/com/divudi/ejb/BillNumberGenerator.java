@@ -775,6 +775,65 @@ public class BillNumberGenerator {
         return next;
     }
 
+    private String getVoucherLockKey(Department department, BillTypeAtomic billTypeAtomic) {
+        String departmentId = department != null ? department.getId().toString() : "null";
+        String billTypeLabel = billTypeAtomic != null ? billTypeAtomic.name() : "null";
+        return "voucher-" + departmentId + "-" + billTypeLabel;
+    }
+
+    /**
+     * Returns the next number in a never-resetting, per-department voucher number
+     * sequence for the given bill type. Unlike the deptId/insId bill numbers, this
+     * counter does not reset yearly. If no counter exists yet for this
+     * (department, billTypeAtomic) pair, it is seeded so that the first number
+     * returned equals startingNumber (defaults to 1 when null or less than 1).
+     */
+    public Long fetchNextVoucherNumber(Department department, BillTypeAtomic billTypeAtomic, Long startingNumber) {
+        String lockKey = getVoucherLockKey(department, billTypeAtomic);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            return incrementAndFlushVoucherNumber(department, billTypeAtomic, startingNumber);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private Long incrementAndFlushVoucherNumber(Department department, BillTypeAtomic billTypeAtomic, Long startingNumber) {
+        BillNumber billNumber = fetchVoucherNumberRecord(department, billTypeAtomic, startingNumber);
+        Long next = billNumber.getLastBillNumber() + 1;
+        billNumber.setLastBillNumber(next);
+        billNumberFacade.editAndFlush(billNumber);
+        return next;
+    }
+
+    private BillNumber fetchVoucherNumberRecord(Department department, BillTypeAtomic billTypeAtomic, Long startingNumber) {
+        String jpql = "SELECT b FROM BillNumber b "
+                + " WHERE b.retired=false "
+                + " AND b.voucherNumber=true "
+                + " AND b.billTypeAtomic=:bTp "
+                + " AND b.department=:dept";
+
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("bTp", billTypeAtomic);
+        hm.put("dept", department);
+
+        BillNumber billNumber = billNumberFacade.findFirstByJpql(jpql, hm);
+
+        if (billNumber == null) {
+            billNumber = new BillNumber();
+            billNumber.setVoucherNumber(true);
+            billNumber.setBillTypeAtomic(billTypeAtomic);
+            billNumber.setDepartment(department);
+
+            long seed = (startingNumber == null || startingNumber < 1L) ? 0L : (startingNumber - 1L);
+            billNumber.setLastBillNumber(seed);
+            billNumberFacade.createAndFlush(billNumber);
+        }
+
+        return billNumber;
+    }
+
     // Special synchronized method for Single Number strategy only
     private BillNumber fetchLastBillNumberSynchronizedSingleNumber(Department department, List<BillTypeAtomic> billTypes) {
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
@@ -929,6 +988,44 @@ public class BillNumberGenerator {
 
     public void setPatientFacade(PatientFacade patientFacade) {
         this.patientFacade = patientFacade;
+    }
+
+    /**
+     * Runs {@code action} (computing the next final-bill version serial and
+     * persisting the bill that uses it) under a per-encounter lock, so two
+     * concurrent final-bill saves for the same admission cannot interleave
+     * between reading the count and committing their insert — a bare
+     * count-then-insert without this would let both reads see the same count.
+     * Mirrors this class's existing lockMap/ReentrantLock pattern; the lock
+     * lives here (a @Singleton EJB) rather than on the @SessionScoped
+     * BhtSummeryController because only a singleton's lockMap is guaranteed
+     * shared across different users' sessions.
+     */
+    public <T> T withFinalBillVersionLock(com.divudi.core.entity.PatientEncounter pe, java.util.function.Supplier<T> action) {
+        String lockKey = "finalBillVersionSerial-" + pe.getId();
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            return action.get();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Counts existing final-bill versions for the admission. Must only be
+     * called while holding the lock from {@link #withFinalBillVersionLock}
+     * — on its own this count-then-caller-increments pattern is racy.
+     */
+    public int computeNextFinalBillVersionSerial(com.divudi.core.entity.PatientEncounter pe) {
+        String jpql = "select count(b) from Bill b where b.patientEncounter = :pe and b.billType = :billType"
+                + " and b.billTypeAtomic = :atomic";
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("pe", pe);
+        params.put("billType", BillType.InwardFinalBill);
+        params.put("atomic", BillTypeAtomic.INWARD_FINAL_BILL);
+        long count = billFacade.findLongByJpql(jpql, params);
+        return (int) count + 1;
     }
 
     public synchronized String institutionBillNumberGenerator(Institution ins, BillType billType, BillClassType billClassType, BillNumberSuffix billNumberSuffix) {
@@ -3672,6 +3769,80 @@ public class BillNumberGenerator {
         admissionNumberFacade.editAndFlush(an);
 
         return an;
+    }
+
+    /**
+     * Resets the stored counter for an admission-number series to an explicit
+     * value (e.g. after staff manually correct a printed BHT/OPD-card number
+     * and need the next auto-generated number to continue from the correction).
+     * Uses the same lock as the generator methods so it serializes against an
+     * in-flight fetchNextAdmissionNumber on this JVM, and the same cache-bypass
+     * read (findAdmissionNumberRecord -> findFreshByJpql) / immediate-flush write
+     * (createAndFlush/editAndFlush) already relied on elsewhere in this class, so
+     * every app instance sees the correction on its very next generation call.
+     *
+     * @param expectedLastAdmissionNumber compare-and-set precondition: the
+     *        value the caller last observed (e.g. via {@link #peekNextAdmissionNumber}
+     *        minus 1, or this method's own previous-value result). If non-null
+     *        and it no longer matches the counter's current effective value
+     *        (checked inside the same lock a normal generation call would use),
+     *        the reset is rejected with a {@link java.util.ConcurrentModificationException}
+     *        instead of silently rewinding the sequence past numbers already
+     *        issued by a concurrent admission. Pass null to skip the check.
+     * @return a two-element result: [0] = the previous effective lastAdmissionNumber
+     *         value (Long — the self-initialized count-based value when no counter
+     *         row exists yet, matching what peekNextAdmissionNumber would report),
+     *         [1] = the AdmissionNumber row's id (Long) so the caller can audit-log
+     *         against the actual entity, not the AdmissionType.
+     * @throws java.util.ConcurrentModificationException if expectedLastAdmissionNumber
+     *         is supplied and does not match the counter's current effective value
+     */
+    public Object[] resetAdmissionNumber(AdmissionType admissionType, Institution institution,
+            boolean institutionBased, Long newLastAdmissionNumber, Long expectedLastAdmissionNumber) {
+        if (institutionBased && institution == null) {
+            throw new IllegalArgumentException("Institution is required when institutionBased is true.");
+        }
+        String lockKey = getBhtLockKey(admissionType, institution, institutionBased);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+        lock.lock();
+        try {
+            AdmissionNumber an = findAdmissionNumberRecord(admissionType, institution, institutionBased);
+            Long previous;
+            if (an == null) {
+                Long count = computeAdmissionCount(admissionType, institution, institutionBased);
+                long addition = (admissionType != null) ? admissionType.getAdditionToCount() : 0;
+                previous = count + addition;
+            } else {
+                previous = an.getLastAdmissionNumber();
+            }
+
+            if (expectedLastAdmissionNumber != null && !expectedLastAdmissionNumber.equals(previous)) {
+                throw new java.util.ConcurrentModificationException(
+                        "Counter changed since it was last read: expected " + expectedLastAdmissionNumber
+                        + " but current value is " + previous);
+            }
+
+            if (an == null) {
+                an = new AdmissionNumber();
+                if (admissionType != null && admissionType.isGenerateSeparateAdmissionNumber()) {
+                    an.setAdmissionType(admissionType);
+                }
+                if (admissionType != null) {
+                    an.setAdmissionTypeEnum(admissionType.getAdmissionTypeEnum());
+                }
+                if (institutionBased && institution != null) {
+                    an.setInstitution(institution);
+                }
+                an.setLastAdmissionNumber(newLastAdmissionNumber);
+                admissionNumberFacade.createAndFlush(an);
+            } else {
+                an.setLastAdmissionNumber(newLastAdmissionNumber);
+                admissionNumberFacade.editAndFlush(an);
+            }
+            return new Object[]{previous, an.getId()};
+        } finally {
+            lock.unlock();
+        }
     }
 
     private AdmissionNumber findAdmissionNumberRecord(AdmissionType admissionType, Institution institution, boolean institutionBased) {
