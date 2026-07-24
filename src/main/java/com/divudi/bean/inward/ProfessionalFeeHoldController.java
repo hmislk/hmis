@@ -2,7 +2,7 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
-import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.facade.BillFeeFacade;
@@ -71,17 +71,21 @@ public class ProfessionalFeeHoldController implements Serializable {
         if (currentEncounter == null || currentEncounter.getId() == null) {
             return;
         }
+        List<BillTypeAtomic> btcs = new ArrayList<>();
+        btcs.add(BillTypeAtomic.INWARD_PROFESSIONAL_FEE_BILL);
+        btcs.add(BillTypeAtomic.INWARD_THEATRE_PROFESSIONAL_FEE_BILL);
+        btcs.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        btcs.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
         String jpql = "select bf from BillFee bf where "
                 + " bf.retired=false "
                 + " and bf.bill.cancelled=false "
                 + " and bf.patienEncounter=:pe "
                 + " and bf.staff is not null "
-                + " and (bf.bill.billType=:btp or bf.bill.billType=:btp2) "
+                + " and bf.bill.billTypeAtomic in :btcs "
                 + " order by bf.staff.person.name, bf.createdAt";
         Map<String, Object> params = new HashMap<>();
         params.put("pe", currentEncounter);
-        params.put("btp", BillType.InwardBill);
-        params.put("btp2", BillType.InwardProfessional);
+        params.put("btcs", btcs);
         professionalFees = billFeeFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
