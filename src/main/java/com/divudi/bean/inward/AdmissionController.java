@@ -16,6 +16,7 @@ import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.PatientInsuranceController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PatientRegistrationSource;
 import com.divudi.core.data.admin.ConfigOptionInfo;
@@ -122,6 +123,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     PageMetadataRegistry pageMetadataRegistry;
+    @Inject
+    WebUserController webUserController;
 
     ////////////
     @EJB
@@ -212,6 +215,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private ClinicalFindingValue currentPatientAllergy;
     private Institution lastCreditCompany;
     private Department loggedDepartment;
+    private Department currentDepartmentForSearch;
     private Institution site;
 
     private PaymentMethod paymentMethod;
@@ -1170,6 +1174,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             m.put("dept", loggedDepartment);
         }
 
+        if (currentDepartmentForSearch != null) {
+            j += "  and (c.currentPatientRoom.roomFacilityCharge.department=:curDept "
+                    + " or c.currentPatientRoom.roomFacilityCharge.department.superDepartment=:curDept) ";
+            m.put("curDept", currentDepartmentForSearch);
+        }
+
         if (parentAdmission != null) {
             j += "  and c.parentEncounter=:pent ";
             m.put("pent", parentAdmission);
@@ -1181,6 +1191,72 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Search-scope shortcut buttons (issue #22382). Each is gated by its own
+     * privilege in the XHTML; the field resets here are a defense-in-depth
+     * check so a request forged without the button can't widen the search
+     * scope beyond what the privilege allows.
+     */
+    public void searchAdmissionsByAdmittedDepartmentAnyInstitute() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByAdmittedDepartmentAnyInstitute")) {
+            return;
+        }
+        institutionForSearch = null;
+        loggedDepartment = null;
+        currentDepartmentForSearch = null;
+        searchAdmissions();
+    }
+
+    public void searchAdmissionsByAdmittedDepartmentLoggedInstitute() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByAdmittedDepartmentLoggedInstitute")) {
+            return;
+        }
+        institutionForSearch = sessionController.getInstitution();
+        loggedDepartment = null;
+        currentDepartmentForSearch = null;
+        searchAdmissions();
+    }
+
+    public void searchAdmissionsByAdmittedDepartmentLoggedDepartment() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByAdmittedDepartmentLoggedDepartment")) {
+            return;
+        }
+        institutionForSearch = sessionController.getInstitution();
+        loggedDepartment = sessionController.getDepartment();
+        currentDepartmentForSearch = null;
+        searchAdmissions();
+    }
+
+    public void searchAdmissionsByCurrentDepartmentAnyInstitute() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByCurrentDepartmentAnyInstitute")) {
+            return;
+        }
+        institutionForSearch = null;
+        loggedDepartment = null;
+        currentDepartmentForSearch = null;
+        searchAdmissions();
+    }
+
+    public void searchAdmissionsByCurrentDepartmentLoggedInstitute() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByCurrentDepartmentLoggedInstitute")) {
+            return;
+        }
+        institutionForSearch = sessionController.getInstitution();
+        loggedDepartment = null;
+        currentDepartmentForSearch = null;
+        searchAdmissions();
+    }
+
+    public void searchAdmissionsByCurrentDepartmentLoggedDepartment() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByCurrentDepartmentLoggedDepartment")) {
+            return;
+        }
+        institutionForSearch = sessionController.getInstitution();
+        loggedDepartment = null;
+        currentDepartmentForSearch = sessionController.getDepartment();
+        searchAdmissions();
     }
 
     public void searchAdmissionsWithoutRoom() {
