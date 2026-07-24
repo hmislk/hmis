@@ -2685,6 +2685,7 @@ public class InwardReportController implements Serializable {
                 .append(" from BillFee b ")
                 .append(" Where b.retired = false ")
                 .append(" And b.bill.billTypeAtomic = :bta ")
+                .append(" And b.bill.cancelled = false ")
                 .append(" And (type(b.staff) = :doctorClass OR type(b.staff) = :consultantClass) ")
                 .append(" AND b.createdAt BETWEEN :fromDate AND :toDate ");
 
