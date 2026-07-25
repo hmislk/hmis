@@ -45,6 +45,13 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class InwardIntrimBillSearchController implements Serializable {
 
+    /**
+     * Matches the row cap the previous entity-based
+     * SearchController#createInwardIntrimBills() used, to avoid pulling an
+     * unbounded result set into memory for a wide date range.
+     */
+    private static final int MAX_RESULTS = 50;
+
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -107,17 +114,17 @@ public class InwardIntrimBillSearchController implements Serializable {
         params.put("toDate", toDate);
 
         if (billNo != null && !billNo.trim().isEmpty()) {
-            jpql += " AND b.deptId like :billNo ";
+            jpql += " AND UPPER(b.deptId) like :billNo ";
             params.put("billNo", "%" + billNo.trim().toUpperCase() + "%");
         }
 
         if (bhtNo != null && !bhtNo.trim().isEmpty()) {
-            jpql += " AND pe.bhtNo like :bhtNo ";
+            jpql += " AND UPPER(pe.bhtNo) like :bhtNo ";
             params.put("bhtNo", "%" + bhtNo.trim().toUpperCase() + "%");
         }
 
         if (patientName != null && !patientName.trim().isEmpty()) {
-            jpql += " AND per.name like :patientName ";
+            jpql += " AND UPPER(per.name) like :patientName ";
             params.put("patientName", "%" + patientName.trim().toUpperCase() + "%");
         }
 
@@ -127,13 +134,13 @@ public class InwardIntrimBillSearchController implements Serializable {
         }
 
         if (patientPhone != null && !patientPhone.trim().isEmpty()) {
-            jpql += " AND per.phone like :patientPhone ";
+            jpql += " AND UPPER(per.phone) like :patientPhone ";
             params.put("patientPhone", "%" + patientPhone.trim().toUpperCase() + "%");
         }
 
         if (patientIdentityNumber != null && !patientIdentityNumber.trim().isEmpty()) {
-            jpql += " AND per.nic = :nic ";
-            params.put("nic", patientIdentityNumber.trim());
+            jpql += " AND UPPER(per.nic) = :nic ";
+            params.put("nic", patientIdentityNumber.trim().toUpperCase());
         }
 
         if (referringDoctor != null) {
@@ -142,7 +149,7 @@ public class InwardIntrimBillSearchController implements Serializable {
         }
 
         if (occupation != null && !occupation.trim().isEmpty()) {
-            jpql += " AND occ.name like :occ ";
+            jpql += " AND UPPER(occ.name) like :occ ";
             params.put("occ", "%" + occupation.trim().toUpperCase() + "%");
         }
 
@@ -190,7 +197,7 @@ public class InwardIntrimBillSearchController implements Serializable {
 
         jpql += " order by b.createdAt desc ";
 
-        results = (List<InwardIntrimBillSearchDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        results = (List<InwardIntrimBillSearchDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP, MAX_RESULTS);
     }
 
     public String viewInterimBill() {
@@ -200,6 +207,10 @@ public class InwardIntrimBillSearchController implements Serializable {
         }
         Bill b = billService.reloadBill(billId);
         if (b == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        if (b.getBillType() != BillType.InwardIntrimBill) {
             JsfUtil.addErrorMessage("Bill not found");
             return null;
         }
