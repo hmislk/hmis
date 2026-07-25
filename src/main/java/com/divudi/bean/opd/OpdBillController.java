@@ -2285,6 +2285,24 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return bi != null && bi.getId() != null;
     }
 
+    private void retirePartialBillOnSettlementFailure(Bill bill, List<BillItem> persistedItems) {
+        if (bill == null) {
+            return;
+        }
+        for (BillItem bi : persistedItems) {
+            if (isPersistedBillItem(bi) && !bi.isRetired()) {
+                bi.setRetired(true);
+                bi.setRetiredAt(new Date());
+                getBillItemFacade().edit(bi);
+            }
+        }
+        if (bill.getId() != null && !bill.isRetired()) {
+            bill.setRetired(true);
+            bill.setRetiredAt(new Date());
+            getBillFacade().edit(bill);
+        }
+    }
+
     private boolean processBillsByDepartment() {
         Set<Department> billDepts = new HashSet<>();
         for (BillEntry e : lstBillEntries) {
@@ -2303,6 +2321,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 if (Objects.equals(prformingDept.getId(), d.getId())) {
                     BillItem bi = getBillBean().saveBillItemForOpdBill(myBill, e, getSessionController().getLoggedUser(), getBillFeeBundleEntrys());
                     if (!isPersistedBillItem(bi)) {
+                        retirePartialBillOnSettlementFailure(myBill, myBill.getBillItems());
                         JsfUtil.addErrorMessage("Failed to save bill items for department " + d.getName() + ". Please retry the bill settlement.");
                         return false;
                     }
@@ -2311,6 +2330,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 }
             }
             if (tmp.isEmpty()) {
+                retirePartialBillOnSettlementFailure(myBill, myBill.getBillItems());
                 JsfUtil.addErrorMessage("No bill items were found for department " + d.getName() + ". Please retry the bill settlement.");
                 return false;
             }
@@ -2363,6 +2383,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                             && Objects.equals(billEntry.getBillItem().getItem().getCategory().getId(), c.getId())) {
                         BillItem bi = getBillBean().saveBillItem(newlyCreatedIndividualBill, billEntry, getSessionController().getLoggedUser());
                         if (!isPersistedBillItem(bi)) {
+                            retirePartialBillOnSettlementFailure(newlyCreatedIndividualBill, newlyCreatedIndividualBill.getBillItems());
                             JsfUtil.addErrorMessage("Failed to save bill items for department " + d.getName() + " and category " + c.getName() + ". Please retry the bill settlement.");
                             return false;
                         }
@@ -2371,6 +2392,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     }
                 }
                 if (tmp.isEmpty()) {
+                    retirePartialBillOnSettlementFailure(newlyCreatedIndividualBill, newlyCreatedIndividualBill.getBillItems());
                     JsfUtil.addErrorMessage("No bill items were found for department " + d.getName() + " and category " + c.getName() + ". Please retry the bill settlement.");
                     return false;
                 }
@@ -2513,6 +2535,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             for (BillEntry billEntry : getLstBillEntries()) {
                 BillItem bi = getBillBean().saveBillItem(newSingleBill, billEntry, getSessionController().getLoggedUser());
                 if (!isPersistedBillItem(bi)) {
+                    retirePartialBillOnSettlementFailure(newSingleBill, list);
                     JsfUtil.addErrorMessage("Failed to save bill items. Please retry the bill settlement.");
                     return false;
                 }
