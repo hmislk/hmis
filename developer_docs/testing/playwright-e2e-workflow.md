@@ -982,6 +982,63 @@ test-fixture data, not a bug.
   silently toggle the wrong control if the page has more than one:
   `document.querySelector('[id$="chkApplicationWide"] .ui-chkbox-box')`.
 
+## 42. Local Payara can come up with a dead MySQL connection pool after any host sleep/restart — every page hangs, not just one touching a stale entity
+
+Unlike §38 (a pool holding connections from *before* an `ALTER TABLE`), this is
+the pool holding connections to a MySQL instance that was itself restarted or
+the host machine slept/resumed. Symptoms are more severe than §38's
+single-page hang: **the app root itself** (`GET /rh`, even the pre-login page)
+times out in both a direct `Invoke-WebRequest`/`curl` and
+`browser_navigate`/`browser_snapshot` (30-60s timeouts with no response) —
+because `ConfigOptionApplicationController.init()` runs on first
+request/session and hits the DB immediately. `server.log` shows
+`CJCommunicationsException: Communications link failure` /
+`SQLNonTransientConnectionException: No operations allowed after connection
+closed` from background EJB timers even while `mysql -h 127.0.0.1 ... SELECT
+1` succeeds fine from the shell — proving MySQL itself is up and it's
+specifically Payara's pool holding dead connections.
+
+**Diagnose**: confirm MySQL responds directly first (rules out "DB is down"),
+then confirm Payara's admin port responds to `list-applications` (rules out
+"domain is down") — if both succeed but the HTTP listener (9090) times out,
+suspect the connection pool.
+
+**Fix**: flush both the main and audit pools (find pool names via
+`grep -B2 'jndi-name="jdbc/coop"' domain.xml` /
+`grep -B2 'jndi-name="jdbc/ruhunuAudit"' domain.xml` — e.g. `poolCoop` and
+`poolRuhunuAuditLocal` locally):
+```powershell
+& asadmin.bat --port 5858 flush-connection-pool poolCoop
+& asadmin.bat --port 5858 flush-connection-pool poolRuhunuAuditLocal
+```
+No redeploy or domain restart needed — a plain HTTP request succeeds
+immediately after the flush. Verified while testing issue #22423 (itself a
+stale-audit-pool-connection bug), where the local dev machine's own audit
+pool had gone stale exactly the way the issue described.
+
+## 43. A leftover Playwright-MCP Chrome profile can lock out `browser_navigate` with no relation to the user's real browser windows
+
+`mcp__playwright__browser_navigate`/`browser_snapshot` can fail with `Browser
+is already in use for <profile-dir>, use --isolated to run multiple instances
+of the same browser` even when no Playwright session is visibly active. This
+comes from an orphaned Chrome process tree still holding that specific
+`--user-data-dir` (named `ms-playwright-mcp\mcp-chrome-<hash>` on Windows),
+left behind by a prior session that didn't shut down cleanly — it is **not**
+related to the user's everyday Chrome windows, which run under a different
+profile entirely. Confirm before touching anything:
+```powershell
+Get-CimInstance Win32_Process -Filter "Name = 'chrome.exe'" |
+  Where-Object { $_.CommandLine -like '*ms-playwright-mcp*' } |
+  Select-Object ProcessId, CommandLine
+```
+Every process whose `CommandLine` contains `ms-playwright-mcp` (main browser,
+crashpad handler, gpu-process, utility, renderer subprocesses) is safe to
+`Stop-Process -Force` — they all share that same isolated profile directory,
+distinct from the user's real Chrome profile. After clearing them,
+`browser_navigate` launches a fresh instance normally (the very first
+navigation after relaunch can still take up to 60s — a single retry is
+usually enough). Verified while testing issue #22423.
+
 Found while verifying issue #21538 (discharge notifications routing to the
 wrong patient) — the fix couldn't be end-to-end tested at all until this was
 discovered and worked around.

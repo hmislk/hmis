@@ -6,8 +6,12 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.AuditEventFacade;
 import com.google.gson.Gson;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -17,7 +21,10 @@ import javax.servlet.http.HttpServletRequest;
  *
  */
 @Stateless
+@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class AuditService {
+
+    private static final Logger LOGGER = Logger.getLogger(AuditService.class.getName());
 
     @EJB
     AuditEventFacade auditEventFacade;
@@ -58,10 +65,10 @@ public class AuditService {
 
             auditEventFacade.create(audit);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "Failed to record audit event: " + eventTrigger, e);
         }
     }
-    
+
     public void logAudit(Object before, Object after, WebUser user, String entityType, String eventTrigger, Long objectId) {
         try {
             AuditEvent audit = new AuditEvent();
@@ -79,7 +86,7 @@ public class AuditService {
 
             auditEventFacade.create(audit);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "Failed to record audit event: " + eventTrigger, e);
         }
     }
 
@@ -110,7 +117,7 @@ public class AuditService {
 
             auditEventFacade.create(audit);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "Failed to record audit event: " + eventTrigger, e);
         }
     }
 
@@ -160,7 +167,7 @@ public class AuditService {
             audit.setIpAddress(getClientIpAddress());
             auditEventFacade.create(audit);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.WARNING, "Failed to record audit event: " + eventTrigger, e);
         }
     }
 }
