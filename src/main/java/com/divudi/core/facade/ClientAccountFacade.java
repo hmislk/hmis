@@ -51,4 +51,17 @@ public class ClientAccountFacade extends AbstractFacade<ClientAccount> {
         create(newAccount);
         return newAccount;
     }
+
+    /**
+     * Returns all active ClientAccounts whose verifiedPhone or verifiedEmail
+     * exactly matches the given value. More than one account can match a
+     * shared household phone number; callers must disambiguate via password
+     * (login) or explicit selection (password reset).
+     */
+    public List<ClientAccount> findByVerifiedPhoneOrEmail(String phoneOrEmail) {
+        String jpql = "select c from ClientAccount c where c.retired=false and (c.verifiedPhone=:v or c.verifiedEmail=:v)";
+        Map<String, Object> params = new HashMap<>();
+        params.put("v", phoneOrEmail);
+        return findByJpql(jpql, params);
+    }
 }

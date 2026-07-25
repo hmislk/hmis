@@ -37,6 +37,24 @@
                             icon="fa fa-times"/>
                     </p:confirmDialog>
 
+                    <p:dialog id="dlgRoomOverlapConfirm" widgetVar="dlgRoomOverlapConfirm" header="&#9888; Room Time Overlap Warning"
+                              modal="true" resizable="false" closable="true" style="width:480px">
+                        <div style="padding:12px">
+                            <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
+                                &#9888; WARNING: This room's time range overlaps another room period for this patient or bed.
+                            </p>
+                            <p>Are you sure you want to save this room with the overlapping time range?</p>
+                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                <p:commandButton value="Cancel" icon="fa fa-times" class="ui-button-secondary"
+                                                 onclick="PF('dlgRoomOverlapConfirm').hide(); return false;"/>
+                                <p:commandButton value="Yes, Save Anyway" icon="fa fa-exclamation-triangle" class="ui-button-danger"
+                                                 update="@form"
+                                                 action="#{bhtSummeryController.confirmUpdatePatientRoomWithOverlap()}"
+                                                 oncomplete="PF('dlgRoomOverlapConfirm').hide();"/>
+                            </div>
+                        </div>
+                    </p:dialog>
+
                     <p:panel>
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">
@@ -44,6 +62,8 @@
                                     <i class="fa-solid fa-bed fa-lg text-primary me-3"></i>
                                     <div>
                                         <h:outputText value="Patient Room Details" styleClass="text-primary fw-bold"/>
+                                        <p:tag styleClass="ms-2" value="Room Time Overlap Detected" icon="fa fa-exclamation-triangle" severity="danger"
+                                               rendered="#{bhtSummeryController.anyRoomOverlapping}"/>
                                         <h:panelGroup rendered="#{bhtSummeryController.patientEncounter ne null}" layout="block">
                                             <small class="text-muted">
                                                 <h:outputText value="#{bhtSummeryController.patientEncounter.patient.person.nameWithTitle}"/>
@@ -136,6 +156,9 @@
                                                 <h:panelGroup rendered="#{not rm.discharged}">
                                                     <p:badge value="Active" severity="warning"/>
                                                 </h:panelGroup>
+                                                <h:panelGroup rendered="#{bhtSummeryController.hasOverlap(rm)}">
+                                                    <p:tag value="Overlap" icon="fa fa-exclamation-triangle" severity="danger"/>
+                                                </h:panelGroup>
                                             </div>
                                         </p:column>
 
@@ -215,26 +238,26 @@
                                                     icon="fa fa-save"
                                                     title="Save Changes"
                                                     class="ui-button-info"
-                                                    disabled="#{bhtSummeryController.patientEncounter.discharged}"
-                                                    action="#{bhtSummeryController.updatePatientRoom(rm)}">
+                                                    disabled="#{bhtSummeryController.patientEncounter.discharged or !webUserController.hasPrivilege('InwardRoomRoomChange')}"
+                                                    action="#{bhtSummeryController.checkBeforeUpdatePatientRoom(rm)}">
                                                 </p:commandButton>
 
                                                 <p:commandButton
                                                     update="@form"
                                                     icon="fa fa-calculator"
                                                     title="Update Charges from Room Rates"
-                                                    disabled="#{bhtSummeryController.patientEncounter.discharged}"
+                                                    disabled="#{bhtSummeryController.patientEncounter.discharged or !webUserController.hasPrivilege('InwardRoomRoomChange')}"
                                                     class="ui-button-success"
                                                     action="#{bhtSummeryController.updateChargesForRoom(rm)}">
                                                 </p:commandButton>
-                                                
+
                                                 <p:commandButton
                                                     process="@this"
                                                     update="@form"
                                                     icon="fa fa-check-square"
                                                     title="Discharge from Room"
                                                     rendered="#{not rm.discharged}"
-                                                    disabled="#{bhtSummeryController.patientEncounter.discharged}"
+                                                    disabled="#{bhtSummeryController.patientEncounter.discharged or !webUserController.hasPrivilege('InwardRoomDischarge')}"
                                                     class="ui-button-warning"
                                                     action="#{roomChangeController.dischargeWithCurrentTime(rm)}">
                                                     <p:confirm header="Confirm Discharge"
@@ -248,7 +271,7 @@
                                                     icon="fa fa-times-circle"
                                                     title="Cancel Room Discharge"
                                                     rendered="#{rm.discharged}"
-                                                    disabled="#{bhtSummeryController.patientEncounter.discharged}"
+                                                    disabled="#{bhtSummeryController.patientEncounter.discharged or !webUserController.hasPrivilege('InwardRoomDischarge')}"
                                                     class="ui-button-danger"
                                                     action="#{roomChangeController.dischargeCancel(rm)}">
                                                     <p:confirm header="Confirm Cancel Discharge"
@@ -270,7 +293,7 @@
                                                     update="@form"
                                                     icon="fa fa-trash"
                                                     title="Remove Room"
-                                                    disabled="#{bhtSummeryController.patientEncounter.discharged}"
+                                                    disabled="#{bhtSummeryController.patientEncounter.discharged or !webUserController.hasPrivilege('InwardRoomRoomChange')}"
                                                     class="ui-button-danger mx-2"
                                                     action="#{roomChangeController.removeRoom(rm)}">
                                                     <p:confirm header="Confirm Room Removal"

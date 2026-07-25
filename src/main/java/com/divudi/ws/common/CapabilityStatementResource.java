@@ -427,6 +427,23 @@ public class CapabilityStatementResource {
                         + "total/totalForForeigner and are rejected against a retired investigation.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Validators", "/api/investigations/{investigationId}/validators",
+                        "Manage InvestigationValidator result-range checks (name, maximumValue, minimumValue) for an "
+                        + "investigation. GET lists non-retired validators. POST creates one. "
+                        + "PUT /{validatorId} updates one (only non-null/non-blank fields are applied). "
+                        + "DELETE /{validatorId} soft-deletes (retires) one. All mutations are rejected against a "
+                        + "retired investigation. Note: the legacy InvestigationValidaterComponent relation is dead "
+                        + "code in the app today and is intentionally not exposed by this API.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Full Definition", "/api/investigations/{investigationId}/full",
+                        "Read-only aggregation of an investigation's complete definition into one nested JSON "
+                        + "document: metadata (incl. category/sample/container/analyzer), components, report "
+                        + "format (items, item values, calculations, flags, dynamic labels), validators, and fees. "
+                        + "Pure composition over the other investigation sub-resources — no new mutation logic. "
+                        + "Supersedes the old 'Export Investigation as JSON' idea (#458).",
+                        "API Key",
+                        "GET"))
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories. "
                         + "Fee sub-paths: /{id}/fees (GET fees, POST add), /{id}/fees/{feeId} (PUT update, DELETE remove). "
