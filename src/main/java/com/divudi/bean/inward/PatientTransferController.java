@@ -66,6 +66,10 @@ public class PatientTransferController implements Serializable {
     private Date acceptedAt;
     private PatientTransferRequest lastInitiatedRequest;
 
+    // PENDING requests scoped to a single admission — used by the focused
+    // accept view launched from the Inpatient Dashboard (#22420)
+    private List<PatientTransferRequest> pendingRequestsForAdmission;
+
     // All transfer requests for the currently selected patient
     private List<PatientTransferRequest> currentAdmissionRequests;
 
@@ -121,6 +125,21 @@ public class PatientTransferController implements Serializable {
         loadPendingForDepartment();
         loadPendingReturnsForWard();
         return "/inward/inward_patient_accept?faces-redirect=true";
+    }
+
+    /**
+     * Focused single-admission accept flow launched from the Inpatient
+     * Dashboard's Room Management panel — scoped to just this admission's
+     * PENDING request(s), instead of the ward-wide worklist (#22420).
+     */
+    public String navigateToPatientAcceptForAdmission(Admission admission) {
+        if (admission == null) {
+            JsfUtil.addErrorMessage("No patient selected.");
+            return "";
+        }
+        current = admission;
+        loadPendingForAdmission(admission);
+        return "/inward/inward_patient_accept_single?faces-redirect=true";
     }
 
     /**
@@ -388,6 +407,28 @@ public class PatientTransferController implements Serializable {
     }
 
     /**
+     * Accept from the single-admission focused view (#22420) — delegates to
+     * acceptTransfer() then refreshes the admission-scoped list instead of
+     * the department-wide one.
+     */
+    public void acceptTransferForAdmission(PatientTransferRequest req) {
+        Admission admission = req != null ? req.getAdmission() : current;
+        acceptTransfer(req);
+        loadPendingForAdmission(admission);
+    }
+
+    /**
+     * Cancel from the single-admission focused view (#22420) — delegates to
+     * cancelTransfer() then refreshes the admission-scoped list instead of
+     * the department-wide one.
+     */
+    public void cancelTransferForAdmission(PatientTransferRequest req) {
+        Admission admission = req != null ? req.getAdmission() : current;
+        cancelTransfer(req);
+        loadPendingForAdmission(admission);
+    }
+
+    /**
      * True if there are any PENDING transfer requests targeting the logged-in
      * user's department. Used to enable/disable the Accept Patients button.
      */
@@ -445,6 +486,43 @@ public class PatientTransferController implements Serializable {
         if (pendingRequests == null) {
             pendingRequests = new ArrayList<>();
         }
+    }
+
+    /**
+     * Loads only the PENDING request(s) for a single admission — for the
+     * focused accept view (#22420). Normally there is exactly one, but more
+     * than one is handled by listing them all.
+     */
+    private void loadPendingForAdmission(Admission admission) {
+        if (admission == null) {
+            pendingRequestsForAdmission = new ArrayList<>();
+            return;
+        }
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("status", TransferRequestStatus.PENDING);
+        params.put("admission", admission);
+        String jpql = "SELECT r FROM PatientTransferRequest r "
+                + "WHERE r.status = :status "
+                + "AND r.admission = :admission "
+                + "AND r.theatreTransferType IS NULL "
+                + "AND r.retired = false "
+                + "ORDER BY r.initiatedAt";
+        pendingRequestsForAdmission = patientTransferRequestFacade.findByJpql(jpql, params);
+        if (pendingRequestsForAdmission == null) {
+            pendingRequestsForAdmission = new ArrayList<>();
+        }
+        for (PatientTransferRequest req : pendingRequestsForAdmission) {
+            if (req.getAcceptedAt() == null) {
+                req.setAcceptedAt(new Date());
+            }
+        }
+    }
+
+    public List<PatientTransferRequest> getPendingRequestsForAdmission() {
+        if (pendingRequestsForAdmission == null) {
+            pendingRequestsForAdmission = new ArrayList<>();
+        }
+        return pendingRequestsForAdmission;
     }
 
     public Date getAcceptedAt() {
