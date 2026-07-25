@@ -16,6 +16,7 @@ import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Sms;
 import com.divudi.core.facade.ClientAccountFacade;
 import com.divudi.core.facade.EmailFacade;
+import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.SmsFacade;
@@ -71,6 +72,8 @@ public class ClientPortalKioskRegistrationController implements Serializable {
     private PersonFacade personFacade;
     @EJB
     private ClientAccountFacade clientAccountFacade;
+    @EJB
+    private InstitutionFacade institutionFacade;
 
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
@@ -471,7 +474,7 @@ public class ClientPortalKioskRegistrationController implements Serializable {
 
         newPatient.setRegistrationSource(PatientRegistrationSource.KIOSK);
         newPatient.setCreatedAt(new Date());
-        String phn = applicationController.createNewPersonalHealthNumber(sessionController.getInstitution());
+        String phn = applicationController.createNewPersonalHealthNumber(institutionFacade.findDefaultInstitution());
         if (phn != null) {
             newPatient.setPhn(phn);
         }
