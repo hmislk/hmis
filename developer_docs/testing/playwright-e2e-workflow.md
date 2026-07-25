@@ -1113,6 +1113,36 @@ rendered and the browser console showed `initOtpBoxes is not defined` and
 `startOtpCountdown is not defined` — errors that look like a missing/renamed
 JS function, not a stray HTML entity three screens away in the same script tag.
 
+## 46. A fixed-position status banner (e.g. "Database Migration Pending") can silently swallow every click on the page below it
+
+When a global banner is rendered with fixed/sticky positioning and no
+`pointer-events: none`, Playwright's actionability check reports the target
+element as "visible, enabled and stable" and still fails the click with
+`<div class="nonPrintBlock">…</div> intercepts pointer events` — this can hit
+*any* element on the page, not just ones physically near the banner, if the
+banner's box overlaps them in the stacking order. Real symptoms seen while
+verifying issue #22415 (Custom Bills tab): clicking a `p:tabView` tab header
+and a `p:commandButton` both timed out this way, even though the elements
+themselves were correctly rendered and enabled.
+
+Standard fixes (Escape, clicking a neutral area first, waiting) don't help
+because the banner isn't a transient overlay (like a datepicker popup) — it's
+a permanent part of the page layout. The reliable workaround is to bypass
+Playwright's actionability gate entirely and dispatch the click straight to
+the element via `browser_evaluate`:
+
+```js
+() => { document.getElementById('theActualElementId').click(); return 'clicked'; }
+```
+
+Get the id from the failed click's error output (it echoes the resolved
+locator's outer HTML, e.g. `id="j_idt524:j_idt867:j_idt3539_header"`). This
+is a real accessibility gap worth fixing in the banner itself (add
+`pointer-events: none` unless the banner has its own interactive controls,
+or `z-index`/positioning that keeps it from overlapping page content) — but
+until that's fixed, `browser_evaluate` + `.click()` is the dependable way to
+drive the page underneath it.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

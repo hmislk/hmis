@@ -11,6 +11,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
@@ -93,6 +94,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
@@ -161,6 +163,8 @@ public class BhtSummeryController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
+    ConfigOptionController configOptionController;
+    @Inject
     AdmissionController admissionController;
     @Inject
     InwardPaymentController inwardPaymentController;
@@ -206,6 +210,13 @@ public class BhtSummeryController implements Serializable {
     Date toDate;
     private Date date;
     private boolean printPreview;
+    //////////////////////////
+    // Custom2 (Custom Bills tab) print-format settings
+    private boolean custom2ShowAddress;
+    private boolean custom2ShowNic;
+    private boolean custom2ShowPhone;
+    private boolean custom2ShowGuardian;
+    private boolean custom2ShowCorporateSponsor;
     @Inject
     private InwardMemberShipDiscount inwardMemberShipDiscount;
     @Inject
@@ -428,6 +439,97 @@ public class BhtSummeryController implements Serializable {
             surgeryBill = surgeryBills.get(0);
         }
     }
+
+    // <editor-fold defaultstate="collapsed" desc="Custom Bills tab - Custom2 print format">
+    public void loadCustom2Config() {
+        custom2ShowAddress = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Address", false);
+        custom2ShowNic = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient NIC", false);
+        custom2ShowPhone = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", false);
+        custom2ShowGuardian = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Guardian", true);
+        custom2ShowCorporateSponsor = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Corporate Sponsor", true);
+    }
+
+    public void saveCustom2Config() {
+        if (!webUserController.hasPrivilege("ChangeReceiptPrintingPaperTypes")) {
+            JsfUtil.addErrorMessage("You do not have privilege to change Custom Bills configuration");
+            return;
+        }
+        try {
+            configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Address", custom2ShowAddress);
+            configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient NIC", custom2ShowNic);
+            configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", custom2ShowPhone);
+            configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Guardian", custom2ShowGuardian);
+            configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Corporate Sponsor", custom2ShowCorporateSponsor);
+            JsfUtil.addSuccessMessage("Custom Bills configuration saved successfully");
+            loadCustom2Config();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Custom Bills configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Charges grouped by inward charge type (excluding Professional Charge, which is
+     * printed separately on the Professional Bill section), alphabetical by display
+     * name, for the Custom2 "Final Bill" totals-only section.
+     */
+    public List<Map.Entry<String, Double>> getCustom2CategoryTotals(Bill bill) {
+        Map<String, Double> totals = new TreeMap<>();
+        if (bill == null || bill.getBillItems() == null) {
+            return new ArrayList<>(totals.entrySet());
+        }
+        for (BillItem bi : bill.getBillItems()) {
+            if (bi.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
+                continue;
+            }
+            if (bi.getAdjustedValue() == 0.0) {
+                continue;
+            }
+            String label = getChargeTypeLabel(bi.getInwardChargeType());
+            totals.merge(label, bi.getAdjustedValue(), Double::sum);
+        }
+        return new ArrayList<>(totals.entrySet());
+    }
+
+    public boolean isCustom2ShowAddress() {
+        return custom2ShowAddress;
+    }
+
+    public void setCustom2ShowAddress(boolean custom2ShowAddress) {
+        this.custom2ShowAddress = custom2ShowAddress;
+    }
+
+    public boolean isCustom2ShowNic() {
+        return custom2ShowNic;
+    }
+
+    public void setCustom2ShowNic(boolean custom2ShowNic) {
+        this.custom2ShowNic = custom2ShowNic;
+    }
+
+    public boolean isCustom2ShowPhone() {
+        return custom2ShowPhone;
+    }
+
+    public void setCustom2ShowPhone(boolean custom2ShowPhone) {
+        this.custom2ShowPhone = custom2ShowPhone;
+    }
+
+    public boolean isCustom2ShowGuardian() {
+        return custom2ShowGuardian;
+    }
+
+    public void setCustom2ShowGuardian(boolean custom2ShowGuardian) {
+        this.custom2ShowGuardian = custom2ShowGuardian;
+    }
+
+    public boolean isCustom2ShowCorporateSponsor() {
+        return custom2ShowCorporateSponsor;
+    }
+
+    public void setCustom2ShowCorporateSponsor(boolean custom2ShowCorporateSponsor) {
+        this.custom2ShowCorporateSponsor = custom2ShowCorporateSponsor;
+    }
+    // </editor-fold>
 
     public String navigateToAddServiceFromSurgeriesFromAdmissionProfile() {
         if (surgeryBills == null) {
