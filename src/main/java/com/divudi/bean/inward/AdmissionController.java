@@ -1413,7 +1413,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
             return bhtSummeryController.navigateToInpatientProfile();
         } else {
-            if (current.isRoomAdmitted() || current.isDischarged() || current.isPaymentFinalized()) {
+            if (current.isRoomAdmitted() || current.isDischarged() || current.isPaymentFinalized()
+                    || !current.getAdmissionType().isRoomChargesAllowed()) {
                 current.getPatient().setEditingMode(false);
                 bhtSummeryController.setPatientEncounter(current);
                 bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
