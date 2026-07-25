@@ -646,7 +646,7 @@
 
                                         <p:ajax event="open" listener="#{bhtSummeryController.loadCustom2Config}" update="custom2ConfigForm" />
 
-                                        <h:form id="custom2ConfigForm">
+                                        <h:form id="custom2ConfigForm" rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}">
                                             <div class="card-body">
                                                 <div class="mb-3">
                                                     <h:selectBooleanCheckbox id="custom2ShowAddress" value="#{bhtSummeryController.custom2ShowAddress}" />

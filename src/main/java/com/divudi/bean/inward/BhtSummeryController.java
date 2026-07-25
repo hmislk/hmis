@@ -450,6 +450,10 @@ public class BhtSummeryController implements Serializable {
     }
 
     public void saveCustom2Config() {
+        if (!webUserController.hasPrivilege("ChangeReceiptPrintingPaperTypes")) {
+            JsfUtil.addErrorMessage("You do not have privilege to change Custom Bills configuration");
+            return;
+        }
         try {
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Address", custom2ShowAddress);
             configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient NIC", custom2ShowNic);
@@ -480,7 +484,7 @@ public class BhtSummeryController implements Serializable {
             if (bi.getAdjustedValue() == 0.0) {
                 continue;
             }
-            String label = bi.getInwardChargeType().getName();
+            String label = getChargeTypeLabel(bi.getInwardChargeType());
             totals.merge(label, bi.getAdjustedValue(), Double::sum);
         }
         return new ArrayList<>(totals.entrySet());
