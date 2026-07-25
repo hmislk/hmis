@@ -14,7 +14,10 @@
     </h:head>
     <h:body>
 
-        <!-- Migration pending: open to everyone -->
+        <!-- Migration pending: open to everyone. Reduced toolset only (fullAccess="false") —
+             this page is reachable pre-login, so it must never expose the full admin toolset
+             (Check Missing Fields, Run Custom SQL). Those remain available only through the
+             authenticated Admin Functions path (dataAdmin/missing_database_fields.xhtml). -->
         <h:panelGroup rendered="#{applicationController.databaseMigrationPending}">
 
             <div class="container mt-3">
@@ -24,7 +27,7 @@
                 </div>
             </div>
 
-            <ez:midding_data_fields/>
+            <ez:midding_data_fields fullAccess="false"/>
 
             <div class="container mt-3 mb-5">
                 <h:form id="migrationControlForm">
@@ -41,15 +44,14 @@
 
         </h:panelGroup>
 
-        <!-- Not migration pending: admin only -->
+        <!-- Not migration pending: this page is unauthenticated, so nothing is rendered here.
+             The full admin toolset is reached only via the authenticated Admin Functions path. -->
         <h:panelGroup rendered="#{not applicationController.databaseMigrationPending}">
-
-            <h:panelGroup >
-                <ez:midding_data_fields/>
-            </h:panelGroup>
-
-           
-
+            <div class="container mt-3">
+                <div class="alert alert-info" role="alert">
+                    No database migration is pending.
+                </div>
+            </div>
         </h:panelGroup>
 
         <p:growl id="growl" showDetail="true" life="3000"/>

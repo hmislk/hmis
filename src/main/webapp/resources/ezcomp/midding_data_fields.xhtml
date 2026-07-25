@@ -8,6 +8,8 @@
 
     <!-- INTERFACE -->
     <cc:interface>
+        <cc:attribute name="fullAccess" type="boolean" default="true"
+                      shortDescription="When false, exposes only the DDL-load-and-run (simplified, single button) and AUTO_INCREMENT tabs — for the unauthenticated mf.xhtml migration-pending page. When true (default), exposes the full four-tab admin toolset."/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -21,7 +23,7 @@
                 <p:tab
                     title="Add All Tables using create ddl file contents"  >
 
-                    <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
+                    <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;" rendered="#{cc.attrs.fullAccess}">
                         <f:facet name="header">
                             <i class="fa fa-search"/>
                             <h:outputLabel value="Update Database by DDL File" class="mx-2"/>
@@ -84,8 +86,41 @@
                         </h:outputText>
                     </p:panelGrid>
 
+                    <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;" rendered="#{not cc.attrs.fullAccess}">
+                        <f:facet name="header">
+                            <i class="fa fa-search"/>
+                            <h:outputLabel value="Update Database by DDL File" class="mx-2"/>
+                        </f:facet>
+
+                        <p:outputLabel value="Instructions" />
+                        <p>Click 'Load Latest DDL from Wiki and Update Both Databases' to download the current full DDL script and apply it to both the main and audit databases in one step.</p>
+
+                        <p:spacer />
+                        <p:commandButton
+                            value="Load Latest DDL from Wiki and Update Both Databases"
+                            ajax="false"
+                            action="#{dataAdministrationController.loadDdlFromWikiAndUpdateBothDatabases}"
+                            styleClass="ui-button-success"
+                            title="Downloads the full DDL script from the wiki and applies it to the main (hmisPU) and audit (hmisAuditPU) databases"/>
+
+                        <p:outputLabel value="Execution Feedback" />
+                        <h:outputText escape="false">
+                            <textarea readonly="readonly" rows="6" class="form-control w-100" style="resize: none;">#{dataAdministrationController.executionFeedback}</textarea>
+                        </h:outputText>
+
+                        <p:outputLabel value="Main Database Results" rendered="#{not empty dataAdministrationController.mainDatabaseExecutionFeedback}"/>
+                        <h:outputText escape="false" rendered="#{not empty dataAdministrationController.mainDatabaseExecutionFeedback}">
+                            <textarea readonly="readonly" rows="6" class="form-control w-100" style="resize: none;">#{dataAdministrationController.mainDatabaseExecutionFeedback}</textarea>
+                        </h:outputText>
+
+                        <p:outputLabel value="Audit Database Results" rendered="#{not empty dataAdministrationController.auditDatabaseExecutionFeedback}"/>
+                        <h:outputText escape="false" rendered="#{not empty dataAdministrationController.auditDatabaseExecutionFeedback}">
+                            <textarea readonly="readonly" rows="6" class="form-control w-100" style="resize: none;">#{dataAdministrationController.auditDatabaseExecutionFeedback}</textarea>
+                        </h:outputText>
+                    </p:panelGrid>
+
                 </p:tab>
-                <p:tab title="Check Missing Fields and Add Fields" >
+                <p:tab title="Check Missing Fields and Add Fields" rendered="#{cc.attrs.fullAccess}" >
                     <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
                         <f:facet name="header">
                             <i class="fa fa-search"/>
@@ -260,7 +295,7 @@
 
                 </p:tab>
 
-                <p:tab title="Run Custom SQL Commands" >
+                <p:tab title="Run Custom SQL Commands" rendered="#{cc.attrs.fullAccess}" >
 
                     <p:panelGrid columns="2" class="mt-1 w-100" style="border: 10px green;">
                         <f:facet name="header">
