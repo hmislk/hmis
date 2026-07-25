@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import javax.ejb.Singleton;
 import javax.inject.Inject;
 
 /**
@@ -21,7 +21,7 @@ import javax.inject.Inject;
  *
  * @author Dr. M H B Ariyaratne <buddhika.ari at gmail.com>
  */
-@Stateless
+@Singleton
 public class MrnGenerator {
 
     // MRN generation strategies
@@ -120,9 +120,9 @@ public class MrnGenerator {
             String countJpql;
             Map<String, Object> countParams = new HashMap<>();
             if (year == null) {
-                countJpql = "SELECT count(p) FROM Patient p WHERE p.code IS NOT NULL AND p.retired = false";
+                countJpql = "SELECT count(p) FROM Patient p WHERE p.code IS NOT NULL";
             } else {
-                countJpql = "SELECT count(p) FROM Patient p WHERE p.code IS NOT NULL AND p.retired = false "
+                countJpql = "SELECT count(p) FROM Patient p WHERE p.code IS NOT NULL "
                         + "AND p.createdAt BETWEEN :startOfYear AND :endOfYear";
 
                 Calendar startOfYear = Calendar.getInstance();

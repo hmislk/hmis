@@ -3603,7 +3603,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
 
         if (p.getCode() == null || p.getCode().trim().isEmpty()) {
-            if (mrnGenerator.isMrnAutoGenerationEnabled()) {
+            if (isMrnAutoGenerationEnabled()) {
                 p.setCode(mrnGenerator.generateMrn(getSessionController().getInstitution()));
             }
         }
@@ -5031,6 +5031,10 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public void setReGenerateePhn(boolean reGenerateePhn) {
         this.reGenerateePhn = reGenerateePhn;
+    }
+
+    public boolean isMrnAutoGenerationEnabled() {
+        return mrnGenerator.isMrnAutoGenerationEnabled();
     }
 
     @Override
