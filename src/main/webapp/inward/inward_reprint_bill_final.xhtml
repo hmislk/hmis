@@ -576,6 +576,119 @@
                                         </h:panelGroup>
                                     </p:panel>
                                 </p:tab>
+
+                                <p:tab title="Custom Bills">
+                                    <div class="d-flex justify-content-end mb-2">
+                                        <p:commandButton
+                                            rendered="#{webUserController.hasPrivilege('ChangeReceiptPrintingPaperTypes')}"
+                                            value="Settings"
+                                            icon="fas fa-cog"
+                                            class="ui-button-secondary mx-1"
+                                            type="button"
+                                            onclick="PF('custom2ConfigDialog').show();" />
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <p:panel>
+                                                <f:facet name="header">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div><h:outputLabel value="Original" class="mt-2"/></div>
+                                                        <div>
+                                                            <p:commandButton
+                                                                icon="fa fa-print"
+                                                                value="Custom Bill"
+                                                                class="ui-button-info"
+                                                                ajax="false">
+                                                                <p:printer target="originalCustom2BillPriview" ></p:printer>
+                                                            </p:commandButton>
+                                                        </div>
+                                                    </div>
+                                                </f:facet>
+
+                                                <h:panelGroup id="originalCustom2BillPriview">
+                                                    <bi:finalBillCustom2 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="false"/>
+                                                </h:panelGroup>
+
+                                            </p:panel>
+                                        </div>
+                                        <div class="col-lg-6">
+                                            <p:panel>
+                                                <f:facet name="header">
+                                                    <div class="d-flex justify-content-between">
+                                                        <div><h:outputLabel value="Duplicate" class="mt-2"/></div>
+                                                        <div>
+                                                            <p:commandButton
+                                                                icon="fa fa-print"
+                                                                value="Custom Bill"
+                                                                class="ui-button-info"
+                                                                ajax="false">
+                                                                <p:printer target="duplicateCustom2BillPriview" ></p:printer>
+                                                            </p:commandButton>
+                                                        </div>
+                                                    </div>
+                                                </f:facet>
+
+                                                <h:panelGroup id="duplicateCustom2BillPriview">
+                                                    <bi:finalBillCustom2 bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" duplicate="true"/>
+                                                </h:panelGroup>
+
+                                            </p:panel>
+                                        </div>
+                                    </div>
+
+                                    <p:dialog id="custom2ConfigDialog"
+                                              header="Custom Bills Printer Configuration"
+                                              widgetVar="custom2ConfigDialog"
+                                              modal="true"
+                                              width="600"
+                                              resizable="true"
+                                              closeOnEscape="true">
+
+                                        <p:ajax event="open" listener="#{bhtSummeryController.loadCustom2Config}" update="custom2ConfigForm" />
+
+                                        <h:form id="custom2ConfigForm">
+                                            <div class="card-body">
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox id="custom2ShowAddress" value="#{bhtSummeryController.custom2ShowAddress}" />
+                                                    <h:outputLabel for="custom2ShowAddress" value="Show Patient Address" class="ms-2" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox id="custom2ShowNic" value="#{bhtSummeryController.custom2ShowNic}" />
+                                                    <h:outputLabel for="custom2ShowNic" value="Show Patient NIC" class="ms-2" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox id="custom2ShowPhone" value="#{bhtSummeryController.custom2ShowPhone}" />
+                                                    <h:outputLabel for="custom2ShowPhone" value="Show Patient Phone" class="ms-2" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox id="custom2ShowGuardian" value="#{bhtSummeryController.custom2ShowGuardian}" />
+                                                    <h:outputLabel for="custom2ShowGuardian" value="Show Guardian" class="ms-2" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <h:selectBooleanCheckbox id="custom2ShowCorporateSponsor" value="#{bhtSummeryController.custom2ShowCorporateSponsor}" />
+                                                    <h:outputLabel for="custom2ShowCorporateSponsor" value="Show Corporate Sponsor" class="ms-2" />
+                                                </div>
+
+                                                <p:messages id="custom2ConfigMessages" showDetail="true" closable="true" />
+
+                                                <div class="d-flex gap-2">
+                                                    <p:commandButton
+                                                        value="Apply &amp; Close"
+                                                        icon="fas fa-save"
+                                                        class="ui-button-success"
+                                                        ajax="false"
+                                                        action="#{bhtSummeryController.saveCustom2Config}" />
+                                                    <p:commandButton
+                                                        value="Cancel"
+                                                        icon="fas fa-times"
+                                                        class="ui-button-secondary"
+                                                        onclick="PF('custom2ConfigDialog').hide(); return false;"
+                                                        type="button" />
+                                                </div>
+                                            </div>
+                                        </h:form>
+                                    </p:dialog>
+                                </p:tab>
                             </p:tabView>
 
                         </p:panel>
