@@ -2281,6 +2281,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return false; // Fallback case, should not reach here.
     }
 
+    static boolean isPersistedBillItem(BillItem bi) {
+        return bi != null && bi.getId() != null;
+    }
+
     private boolean processBillsByDepartment() {
         Set<Department> billDepts = new HashSet<>();
         for (BillEntry e : lstBillEntries) {
@@ -2298,9 +2302,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 Department prformingDept = departmentResolver.resolvePerformingDepartment(sessionController.getDepartment(), e.getBillItem().getItem());
                 if (Objects.equals(prformingDept.getId(), d.getId())) {
                     BillItem bi = getBillBean().saveBillItemForOpdBill(myBill, e, getSessionController().getLoggedUser(), getBillFeeBundleEntrys());
+                    if (!isPersistedBillItem(bi)) {
+                        JsfUtil.addErrorMessage("Failed to save bill items for department " + d.getName() + ". Please retry the bill settlement.");
+                        return false;
+                    }
                     myBill.getBillItems().add(bi);
                     tmp.add(e);
                 }
+            }
+            if (tmp.isEmpty()) {
+                JsfUtil.addErrorMessage("No bill items were found for department " + d.getName() + ". Please retry the bill settlement.");
+                return false;
             }
             if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 myBill.setCashPaid(cashPaid);
@@ -2350,9 +2362,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     if (Objects.equals(dept.getId(), d.getId())
                             && Objects.equals(billEntry.getBillItem().getItem().getCategory().getId(), c.getId())) {
                         BillItem bi = getBillBean().saveBillItem(newlyCreatedIndividualBill, billEntry, getSessionController().getLoggedUser());
+                        if (!isPersistedBillItem(bi)) {
+                            JsfUtil.addErrorMessage("Failed to save bill items for department " + d.getName() + " and category " + c.getName() + ". Please retry the bill settlement.");
+                            return false;
+                        }
                         newlyCreatedIndividualBill.getBillItems().add(bi);
                         tmp.add(billEntry);
                     }
+                }
+                if (tmp.isEmpty()) {
+                    JsfUtil.addErrorMessage("No bill items were found for department " + d.getName() + " and category " + c.getName() + ". Please retry the bill settlement.");
+                    return false;
                 }
 
                 Priority highestPriority = Optional
@@ -2491,7 +2511,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
             List<BillItem> list = new ArrayList<>();
             for (BillEntry billEntry : getLstBillEntries()) {
-                list.add(getBillBean().saveBillItem(newSingleBill, billEntry, getSessionController().getLoggedUser()));
+                BillItem bi = getBillBean().saveBillItem(newSingleBill, billEntry, getSessionController().getLoggedUser());
+                if (!isPersistedBillItem(bi)) {
+                    JsfUtil.addErrorMessage("Failed to save bill items. Please retry the bill settlement.");
+                    return false;
+                }
+                list.add(bi);
             }
             newSingleBill.setBillItems(list);
 
@@ -2532,9 +2557,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             getBillBean().checkBillItemFeesInitiated(newSingleBill);
             getBills().add(newSingleBill);
         } else if (oneOpdBillForEachDepartmentAndCategoryCombination) {
-            processBillsByDepartmentAndCategory();
+            if (!processBillsByDepartmentAndCategory()) {
+                return false;
+            }
         } else if (oneOpdBillForEachDepartment) {
-            processBillsByDepartment();
+            if (!processBillsByDepartment()) {
+                return false;
+            }
         } else if (oneOpdBillForEachCategory) {
             JsfUtil.addErrorMessage("Still Under Development");
             return false;
