@@ -1143,6 +1143,38 @@ or `z-index`/positioning that keeps it from overlapping page content) — but
 until that's fixed, `browser_evaluate` + `.click()` is the dependable way to
 drive the page underneath it.
 
+## 47. Any JSF page under a plain (non-`/faces/`) webapp path must still be loaded through `/faces/` — otherwise the raw `.xhtml` source is served unprocessed
+
+`FacesServlet` is mapped to `/faces/*` in `web.xml` (`<url-pattern>/faces/*</url-pattern>`).
+Requesting `http://localhost:8080/rh/client_portal/login.xhtml` directly (no `/faces/`
+segment) does **not** 404 — the container serves the file as a static resource, so the
+page loads with a real `<title>`, but every EL expression renders as literal text
+(`#{clientPortalLoginController.login}`, `#{bean.property}` etc.) and there are **zero**
+`<input>` elements in the DOM (Facelets never ran, so `p:inputText`/`h:commandButton`
+components were never compiled to HTML). This looks like a broken page at first glance —
+confirmed via issue #22371 verification, where `register_phone.xhtml` initially appeared
+to have no input fields at all. Always use `/rh/faces/<same-path>.xhtml` for any new page
+under `src/main/webapp/`, matching the pattern already used for `client_portal/login.xhtml`
+→ `/rh/faces/client_portal/login.xhtml`. (JSF's own `action`/`outcome` navigation strings
+like `"/client_portal/home?faces-redirect=true"` and `<h:link outcome="/client_portal/login"/>`
+already resolve to the correct `/faces/`-prefixed URL automatically — this gotcha only
+bites when a human or a script types the URL by hand.)
+
+## 48. Raw SQL `UPDATE` on *any* EclipseLink-mapped entity (not just `ConfigOption`) can be invisible to the running app — the shared L2 cache is general, not `ConfigOption`-specific
+
+§26 documents this for `ConfigOption` specifically, but `eclipselink.cache.size.default`
+in `persistence.xml` applies to every entity class, so the same trap exists for `Institution`,
+`Patient`, or any other frequently-read entity. Hit while verifying issue #22371: a direct
+`UPDATE INSTITUTION SET DEFAULTINSTITUTION=1, POINTOFISSUENO='COOP' WHERE id=2` via the
+`mysql` CLI changed the DB row, but the next page load still showed the old (unset) values
+in the edit form and the PHN-generation code path still saw a blank POI — the already-cached
+`Institution` entity in the running Payara instance kept serving stale field values, with no
+error anywhere. Re-doing the exact same change through the admin UI form (Save button, which
+goes through `EntityManager.merge`/`edit`) fixed it immediately, confirming the raw SQL path
+was the problem. **Rule of thumb: never `UPDATE` an entity table via raw SQL mid-test if the
+running app might read that row again in the same session — use the corresponding admin
+UI/CRUD screen instead, and reserve raw SQL for read-only verification queries.**
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
