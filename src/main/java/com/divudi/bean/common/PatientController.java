@@ -32,6 +32,7 @@ import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.ejb.MrnGenerator;
 
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
@@ -139,6 +140,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     BillNumberGenerator billNumberBean;
     @EJB
     private BillNumberGenerator billNumberGenerator;
+    @EJB
+    private MrnGenerator mrnGenerator;
 
     @EJB
     BillFacade billFacade;
@@ -3597,6 +3600,12 @@ public class PatientController implements Serializable, ControllerWithPatient {
         // Generate PHN upfront if needed
         if (p.getPhn() == null || p.getPhn().trim().equals("")) {
             p.setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
+        }
+
+        if (p.getCode() == null || p.getCode().trim().isEmpty()) {
+            if (mrnGenerator.isMrnAutoGenerationEnabled()) {
+                p.setCode(mrnGenerator.generateMrn(getSessionController().getInstitution()));
+            }
         }
 
         // Add TextCase Format
