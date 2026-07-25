@@ -4196,6 +4196,7 @@ public class AnthropicApiService implements Serializable {
             } else {
                 return "Error: Unsupported method for manage_investigation_components: " + method + ". Allowed: LIST, POST, PUT, DELETE.";
             }
+            rb.timeout(Duration.ofSeconds(15));
             if (!key.isEmpty()) rb.header("Finance", key);
             HttpResponse<String> resp = client.send(rb.build(), HttpResponse.BodyHandlers.ofString());
             return "HTTP " + resp.statusCode() + "\n" + resp.body();
@@ -4245,6 +4246,7 @@ public class AnthropicApiService implements Serializable {
             } else {
                 return "Error: Unsupported method for manage_investigation_pricing: " + method + ". Allowed: LIST, POST, PUT, DELETE.";
             }
+            rb.timeout(Duration.ofSeconds(15));
             if (!key.isEmpty()) rb.header("Finance", key);
             HttpResponse<String> resp = client.send(rb.build(), HttpResponse.BodyHandlers.ofString());
             return "HTTP " + resp.statusCode() + "\n" + resp.body();
@@ -4281,6 +4283,7 @@ public class AnthropicApiService implements Serializable {
             } else {
                 return "Error: Unsupported method for manage_investigation_validators: " + method + ". Allowed: LIST, POST, PUT, DELETE.";
             }
+            rb.timeout(Duration.ofSeconds(15));
             if (!key.isEmpty()) rb.header("Finance", key);
             HttpResponse<String> resp = client.send(rb.build(), HttpResponse.BodyHandlers.ofString());
             return "HTTP " + resp.statusCode() + "\n" + resp.body();
@@ -4294,7 +4297,8 @@ public class AnthropicApiService implements Serializable {
             if (investigationId == null || investigationId.isEmpty()) return "Error: investigation_id is required.";
             String key = (hmisApiKey != null) ? hmisApiKey.trim() : "";
             HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
-            HttpRequest.Builder rb = HttpRequest.newBuilder().uri(URI.create(root + "/api/investigations/" + investigationId + "/full")).GET();
+            HttpRequest.Builder rb = HttpRequest.newBuilder().uri(URI.create(root + "/api/investigations/" + investigationId + "/full")).GET()
+                    .timeout(Duration.ofSeconds(15));
             if (!key.isEmpty()) rb.header("Finance", key);
             HttpResponse<String> resp = client.send(rb.build(), HttpResponse.BodyHandlers.ofString());
             return "HTTP " + resp.statusCode() + "\n" + resp.body();
