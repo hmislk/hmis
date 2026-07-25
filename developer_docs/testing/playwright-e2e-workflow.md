@@ -1160,20 +1160,23 @@ like `"/client_portal/home?faces-redirect=true"` and `<h:link outcome="/client_p
 already resolve to the correct `/faces/`-prefixed URL automatically — this gotcha only
 bites when a human or a script types the URL by hand.)
 
-## 48. Raw SQL `UPDATE` on *any* EclipseLink-mapped entity (not just `ConfigOption`) can be invisible to the running app — the shared L2 cache is general, not `ConfigOption`-specific
+## 48. Raw SQL `UPDATE` on an already-cached EclipseLink-mapped entity (not just `ConfigOption`) can be invisible to the running app — the shared L2 cache is general, not `ConfigOption`-specific
 
 §26 documents this for `ConfigOption` specifically, but `eclipselink.cache.size.default`
 in `persistence.xml` applies to every entity class, so the same trap exists for `Institution`,
-`Patient`, or any other frequently-read entity. Hit while verifying issue #22371: a direct
-`UPDATE INSTITUTION SET DEFAULTINSTITUTION=1, POINTOFISSUENO='COOP' WHERE id=2` via the
-`mysql` CLI changed the DB row, but the next page load still showed the old (unset) values
-in the edit form and the PHN-generation code path still saw a blank POI — the already-cached
-`Institution` entity in the running Payara instance kept serving stale field values, with no
-error anywhere. Re-doing the exact same change through the admin UI form (Save button, which
-goes through `EntityManager.merge`/`edit`) fixed it immediately, confirming the raw SQL path
-was the problem. **Rule of thumb: never `UPDATE` an entity table via raw SQL mid-test if the
-running app might read that row again in the same session — use the corresponding admin
-UI/CRUD screen instead, and reserve raw SQL for read-only verification queries.**
+`Patient`, or any other frequently-read entity **once that row has already been loaded into
+the shared L2 cache during the current app run** — visibility depends on persistence-context/
+cache state, not a blanket guarantee that every raw SQL update is invisible. Hit while
+verifying issue #22371: a direct `UPDATE INSTITUTION SET DEFAULTINSTITUTION=1,
+POINTOFISSUENO='COOP' WHERE id=2` via the `mysql` CLI changed the DB row, but the next page
+load still showed the old (unset) values in the edit form and the PHN-generation code path
+still saw a blank POI — the already-cached `Institution` entity in the running Payara instance
+kept serving stale field values, with no error anywhere. Re-doing the exact same change through
+the admin UI form (Save button, which goes through `EntityManager.merge`/`edit`) fixed it
+immediately, confirming the raw SQL path was the problem. **Rule of thumb: if a row might
+already be cached (anything read earlier in the same test session), don't `UPDATE` it via raw
+SQL mid-test — use the corresponding admin UI/CRUD screen instead, so the cache gets properly
+refreshed, and reserve raw SQL for read-only verification queries.**
 
 ## Quick checklist
 
