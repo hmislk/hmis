@@ -982,7 +982,7 @@ test-fixture data, not a bug.
   silently toggle the wrong control if the page has more than one:
   `document.querySelector('[id$="chkApplicationWide"] .ui-chkbox-box')`.
 
-## 42. Local Payara can come up with a dead MySQL connection pool after any host sleep/restart — every page hangs, not just one touching a stale entity
+## 47. Local Payara can come up with a dead MySQL connection pool after any host sleep/restart — every page hangs, not just one touching a stale entity
 
 Unlike §38 (a pool holding connections from *before* an `ALTER TABLE`), this is
 the pool holding connections to a MySQL instance that was itself restarted or
@@ -994,9 +994,9 @@ because `ConfigOptionApplicationController.init()` runs on first
 request/session and hits the DB immediately. `server.log` shows
 `CJCommunicationsException: Communications link failure` /
 `SQLNonTransientConnectionException: No operations allowed after connection
-closed` from background EJB timers even while `mysql -h 127.0.0.1 ... SELECT
-1` succeeds fine from the shell — proving MySQL itself is up and it's
-specifically Payara's pool holding dead connections.
+closed` from background EJB timers even while `mysql -h <local-mysql-host>
+... SELECT 1` succeeds fine from the shell — proving MySQL itself is up and
+it's specifically Payara's pool holding dead connections.
 
 **Diagnose**: confirm MySQL responds directly first (rules out "DB is down"),
 then confirm Payara's admin port responds to `list-applications` (rules out
@@ -1016,7 +1016,7 @@ immediately after the flush. Verified while testing issue #22423 (itself a
 stale-audit-pool-connection bug), where the local dev machine's own audit
 pool had gone stale exactly the way the issue described.
 
-## 43. A leftover Playwright-MCP Chrome profile can lock out `browser_navigate` with no relation to the user's real browser windows
+## 48. A leftover Playwright-MCP Chrome profile can lock out `browser_navigate` with no relation to the user's real browser windows
 
 `mcp__playwright__browser_navigate`/`browser_snapshot` can fail with `Browser
 is already in use for <profile-dir>, use --isolated to run multiple instances
