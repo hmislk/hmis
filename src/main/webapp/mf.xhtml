@@ -46,7 +46,7 @@
 
         <!-- Not migration pending: this page is unauthenticated, so nothing is rendered here.
              The full admin toolset is reached only via the authenticated Admin Functions path. -->
-        <h:panelGroup rendered="#{not applicationController.databaseMigrationPending}">
+        <h:panelGroup rendered="#{not applicationController.databaseMigrationPending}" layout="block">
             <div class="container mt-3">
                 <div class="alert alert-info" role="alert">
                     No database migration is pending.

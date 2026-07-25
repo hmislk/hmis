@@ -2412,6 +2412,12 @@ public class DataAdministrationController implements Serializable {
         runOnMainDatabase = true;
         runOnAuditDatabase = true;
         loadDdlFromWiki();
+        if (wikiFetchedDdl == null || wikiFetchedDdl.trim().isEmpty()) {
+            // loadDdlFromWiki() already set executionFeedback with the specific
+            // download error — do not overwrite it with the generic "DDL content
+            // is empty" message from createTablesAndFieldsForAllCreateStatements().
+            return;
+        }
         createTablesAndFieldsForAllCreateStatements();
     }
 

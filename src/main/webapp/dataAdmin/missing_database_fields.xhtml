@@ -12,7 +12,7 @@
             <ui:define name="subcontent">
 
                 <h:panelGroup rendered="#{!webUserController.hasPrivilege('Admin')}">
-                    <p:outputLabel value="YOU ARE NOT AUTHORIZED." />
+                    <h:outputText value="YOU ARE NOT AUTHORIZED." />
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">

@@ -104,19 +104,30 @@
                             title="Downloads the full DDL script from the wiki and applies it to the main (hmisPU) and audit (hmisAuditPU) databases"/>
 
                         <p:outputLabel value="Execution Feedback" />
-                        <h:outputText escape="false">
-                            <textarea readonly="readonly" rows="6" class="form-control w-100" style="resize: none;">#{dataAdministrationController.executionFeedback}</textarea>
-                        </h:outputText>
+                        <p:inputTextarea
+                            value="#{dataAdministrationController.executionFeedback}"
+                            readonly="true"
+                            rows="6"
+                            autoResize="false"
+                            class="w-100"/>
 
                         <p:outputLabel value="Main Database Results" rendered="#{not empty dataAdministrationController.mainDatabaseExecutionFeedback}"/>
-                        <h:outputText escape="false" rendered="#{not empty dataAdministrationController.mainDatabaseExecutionFeedback}">
-                            <textarea readonly="readonly" rows="6" class="form-control w-100" style="resize: none;">#{dataAdministrationController.mainDatabaseExecutionFeedback}</textarea>
-                        </h:outputText>
+                        <p:inputTextarea
+                            value="#{dataAdministrationController.mainDatabaseExecutionFeedback}"
+                            readonly="true"
+                            rows="6"
+                            autoResize="false"
+                            class="w-100"
+                            rendered="#{not empty dataAdministrationController.mainDatabaseExecutionFeedback}"/>
 
                         <p:outputLabel value="Audit Database Results" rendered="#{not empty dataAdministrationController.auditDatabaseExecutionFeedback}"/>
-                        <h:outputText escape="false" rendered="#{not empty dataAdministrationController.auditDatabaseExecutionFeedback}">
-                            <textarea readonly="readonly" rows="6" class="form-control w-100" style="resize: none;">#{dataAdministrationController.auditDatabaseExecutionFeedback}</textarea>
-                        </h:outputText>
+                        <p:inputTextarea
+                            value="#{dataAdministrationController.auditDatabaseExecutionFeedback}"
+                            readonly="true"
+                            rows="6"
+                            autoResize="false"
+                            class="w-100"
+                            rendered="#{not empty dataAdministrationController.auditDatabaseExecutionFeedback}"/>
                     </p:panelGrid>
 
                 </p:tab>
