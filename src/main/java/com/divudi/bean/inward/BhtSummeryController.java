@@ -181,6 +181,7 @@ public class BhtSummeryController implements Serializable {
     List<PatientItem> patientItems;
     private List<ChargeItemTotal> chargeItemTotals;
     List<PatientRoom> patientRooms;
+    private PatientRoom pendingOverlapRoom;
     private List<CreditCompanyAllocation> creditCompanyAllocations;
     private EncounterCreditCompany newEncounterCreditCompany;
     private boolean creatingNewVersion;
@@ -1548,6 +1549,82 @@ public class BhtSummeryController implements Serializable {
         createPatientItems();
         createChargeItemTotals();
 
+    }
+
+    /**
+     * Entry point for the "Save Changes" button. If the room's current
+     * admitted/discharged times overlap another (non-Guardian/Theatre) room
+     * period for the same patient or bed, ask for confirmation before saving
+     * instead of saving immediately.
+     */
+    public void checkBeforeUpdatePatientRoom(PatientRoom patientRoom) {
+        if (hasOverlap(patientRoom)) {
+            pendingOverlapRoom = patientRoom;
+            PrimeFaces.current().executeScript("PF('dlgRoomOverlapConfirm').show();");
+            return;
+        }
+        updatePatientRoom(patientRoom);
+    }
+
+    public void confirmUpdatePatientRoomWithOverlap() {
+        updatePatientRoom(pendingOverlapRoom);
+        pendingOverlapRoom = null;
+    }
+
+    public PatientRoom getPendingOverlapRoom() {
+        return pendingOverlapRoom;
+    }
+
+    /**
+     * True when this room's admitted/discharged time range overlaps another
+     * non-Guardian/Theatre room period for the same patient encounter or the
+     * same bed (RoomFacilityCharge). Used both to gate the save confirmation
+     * and to render a persistent warning on the room row.
+     */
+    public boolean hasOverlap(PatientRoom patientRoom) {
+        if (patientRoom == null || patientRoom.getAdmittedAt() == null || patientRoom.getPatientEncounter() == null) {
+            return false;
+        }
+        if (patientRoom instanceof GuardianRoom || patientRoom instanceof TheatreRoom) {
+            return false;
+        }
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("SELECT COUNT(pr2) FROM PatientRoom pr2 WHERE pr2.retired = false ");
+        jpql.append("AND TYPE(pr2) != :guardianClass AND TYPE(pr2) != :theatreClass ");
+        Map<String, Object> params = new HashMap<>();
+        params.put("guardianClass", GuardianRoom.class);
+        params.put("theatreClass", TheatreRoom.class);
+        if (patientRoom.getId() != null) {
+            jpql.append("AND pr2.id != :excludeId ");
+            params.put("excludeId", patientRoom.getId());
+        }
+        if (patientRoom.getRoomFacilityCharge() != null) {
+            jpql.append("AND (pr2.patientEncounter = :pe OR pr2.roomFacilityCharge = :rfc) ");
+            params.put("rfc", patientRoom.getRoomFacilityCharge());
+        } else {
+            jpql.append("AND pr2.patientEncounter = :pe ");
+        }
+        params.put("pe", patientRoom.getPatientEncounter());
+        if (patientRoom.getDischargedAt() != null) {
+            jpql.append("AND pr2.admittedAt < :to ");
+            params.put("to", patientRoom.getDischargedAt());
+        }
+        jpql.append("AND (pr2.dischargedAt IS NULL OR pr2.dischargedAt > :from)");
+        params.put("from", patientRoom.getAdmittedAt());
+        long count = getPatientRoomFacade().findLongByJpql(jpql.toString(), params);
+        return count > 0;
+    }
+
+    public boolean isAnyRoomOverlapping() {
+        if (patientRooms == null) {
+            return false;
+        }
+        for (PatientRoom pr : patientRooms) {
+            if (hasOverlap(pr)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void updatePatientRoom(PatientRoom patientRoom) {
