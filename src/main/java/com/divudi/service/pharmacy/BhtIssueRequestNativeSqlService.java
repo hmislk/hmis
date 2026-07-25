@@ -90,9 +90,10 @@ public class BhtIssueRequestNativeSqlService {
     @SuppressWarnings("unchecked")
     private List<BhtIssueRequestItemPrintDto> loadItems(long billId) {
         List<BhtIssueRequestItemPrintDto> items = new ArrayList<>();
-        String jpql = "SELECT i.name, bi.qty, bi.descreption "
+        String jpql = "SELECT i.name, bi.qty, bi.descreption, bi.instructions, p.comment "
                 + "FROM BillItem bi "
                 + "LEFT JOIN bi.item i "
+                + "LEFT JOIN bi.prescription p "
                 + "WHERE bi.bill.id = :billId AND bi.retired = false "
                 + "ORDER BY bi.id";
         List<Object[]> rows = em.createQuery(jpql).setParameter("billId", billId).getResultList();
@@ -103,6 +104,8 @@ public class BhtIssueRequestNativeSqlService {
             item.setQty(r[col] != null ? ((Number) r[col]).doubleValue() : 0.0);
             col++;
             item.setDirections(str(r[col++]));
+            item.setInstructions(str(r[col++]));
+            item.setPrescriptionComment(str(r[col++]));
             items.add(item);
         }
         return items;
