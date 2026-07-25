@@ -698,7 +698,7 @@
                                             value="Accept Patients"
                                             ajax="false"
                                             disabled="#{not patientTransferController.hasPendingRequestsForDepartment}"
-                                            action="#{patientTransferController.navigateToPatientAccept()}"
+                                            action="#{patientTransferController.navigateToPatientAcceptForAdmission(admissionController.current)}"
                                             icon="fa fa-check-circle"
                                             class="w-100 ui-button-success">
                                         </p:commandButton>
