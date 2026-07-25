@@ -165,11 +165,16 @@ public class ClientPortalEmailRegistrationController implements Serializable {
             JsfUtil.addErrorMessage("Enter the authentication code.");
             return;
         }
-        if (!enteredOtp.equalsIgnoreCase(lastEmail.getOtp())) {
+        if (lastEmail.getOtp() == null || !enteredOtp.equalsIgnoreCase(lastEmail.getOtp())) {
             JsfUtil.addErrorMessage("Enter correct authentication code.");
             enteredOtp = null;
             return;
         }
+
+        // Single-use: consume the OTP so a captured/observed code can't be replayed
+        // for the remainder of the validity window.
+        lastEmail.setOtp(null);
+        emailFacade.edit(lastEmail);
 
         otpVerified = true;
         findMatchingPatients();

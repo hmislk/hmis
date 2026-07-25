@@ -542,6 +542,7 @@
                     inp.setAttribute('pattern', '[0-9]*');
                     inp.autocomplete = 'off';
                     inp.setAttribute('data-index', i);
+                    inp.setAttribute('aria-label', 'Digit ' + (i + 1) + ' of ' + total);
                     (function(idx) {
                         inp.oninput    = function()  { otpBoxInput(this, idx, total); };
                         inp.onkeydown  = function(e) { otpBoxKeydown(this, idx, e, total); };
@@ -770,7 +771,7 @@
                                     </div>
 
                                     <div class="field-group">
-                                        <label class="field-label" for="otpBoxesContainer">One-Time Password</label>
+                                        <label class="field-label">One-Time Password</label>
                                         <div class="otp-boxes-wrap" id="otpBoxesContainer"/>
                                         <script type="text/javascript">
                                             //<![CDATA[
