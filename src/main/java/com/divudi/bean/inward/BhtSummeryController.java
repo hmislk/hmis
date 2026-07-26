@@ -300,9 +300,12 @@ public class BhtSummeryController implements Serializable {
      * Theatre bars are amber (active) or grey (completed).
      */
     private transient List<RoomGanttBar> cachedUnifiedGanttBars;
+    private transient long cachedUnifiedGanttBarsComputedAtMillis;
+    private static final long UNIFIED_GANTT_BARS_CACHE_TTL_MILLIS = 5000;
 
     public List<RoomGanttBar> getUnifiedGanttBars() {
-        if (cachedUnifiedGanttBars != null) {
+        if (cachedUnifiedGanttBars != null
+                && (System.currentTimeMillis() - cachedUnifiedGanttBarsComputedAtMillis) < UNIFIED_GANTT_BARS_CACHE_TTL_MILLIS) {
             return cachedUnifiedGanttBars;
         }
         List<PatientRoom> rooms = getPatientRooms();
@@ -346,6 +349,7 @@ public class BhtSummeryController implements Serializable {
 
         if (spanStart == null || spanEnd == null || !spanEnd.after(spanStart)) {
             cachedUnifiedGanttBars = getRoomGanttBars();
+            cachedUnifiedGanttBarsComputedAtMillis = System.currentTimeMillis();
             return cachedUnifiedGanttBars;
         }
 
@@ -403,6 +407,7 @@ public class BhtSummeryController implements Serializable {
         }
 
         cachedUnifiedGanttBars = bars;
+        cachedUnifiedGanttBarsComputedAtMillis = System.currentTimeMillis();
         return cachedUnifiedGanttBars;
     }
 
@@ -3710,6 +3715,7 @@ public class BhtSummeryController implements Serializable {
 //        makeNull();
         this.patientEncounter = patientEncounter;
         cachedUnifiedGanttBars = null;
+        cachedUnifiedGanttBarsComputedAtMillis = 0;
     }
 
     public SessionController getSessionController() {
