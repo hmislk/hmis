@@ -110,21 +110,23 @@ xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
                                 class="m-1 w-100 form-control" />
                         </div>
                         <div class="col-md-3 p-2">
-                            <p:outputLabel 
+                            <p:outputLabel
                                 class="m-1 form-label"
-                                value="Room No* :" />
-                            <p:autoComplete 
+                                value="Room No (optional) :"
+                                title="Leave blank if the baby will stay in the mother's room — assigning a separate room here would charge the room fee twice" />
+                            <p:autoComplete
                                 forceSelection="true"
                                 id="cmbDoc"
                                 inputStyleClass="w-100"
                                 class="m-1 w-100"
+                                placeholder="Leave blank to stay in mother's room"
                                 disabled="#{admissionController.current.admissionType eq null or admissionController.current.admissionType.roomFacilityCharge ne null}"
-                                value="#{admissionController.patientRoom.roomFacilityCharge}" 
+                                value="#{admissionController.patientRoom.roomFacilityCharge}"
                                 completeMethod="#{roomFacilityChargeController.completeRoom}"
                                 var="rf"
                                 itemLabel="#{rf.name}"
                                 itemValue="#{rf}"
-                                size="30" >                                
+                                size="30" >
                             </p:autoComplete>
                         </div>
                         <div class="col-md-3 p-2">
@@ -144,7 +146,17 @@ xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
                             <div class="row my-2">
                                 <p:panel>
                                     <f:facet name="header">
-                                        <h:outputLabel value="Parent Details" />
+                                        <div class="d-flex justify-content-between align-items-center w-100">
+                                            <h:outputLabel value="Parent Details" />
+                                            <p:commandButton
+                                                value="Copy Address &amp; Phone to Baby"
+                                                icon="fa fa-copy"
+                                                styleClass="ui-button-info ui-button-outlined"
+                                                title="Copy the mother's address and phone/mobile numbers onto the baby's own patient details"
+                                                process="@this"
+                                                update="@form"
+                                                action="#{admissionController.copyPatientDetailsFromParent()}" />
+                                        </div>
                                     </f:facet>
                                     <common:patient patient="#{admissionController.parentAdmission.patient}" class="w-100"/>
                                 </p:panel>

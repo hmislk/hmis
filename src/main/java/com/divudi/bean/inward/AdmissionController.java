@@ -952,6 +952,30 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
     }
 
+    /**
+     * Copies address, area, and contact numbers from the mother's patient
+     * record onto the baby's own patient record. Bound to a button on the
+     * "Admit a Baby" page — babies usually share the mother's home address
+     * and contact numbers, so this saves re-typing them. (#9900)
+     */
+    public void copyPatientDetailsFromParent() {
+        if (parentAdmission == null || parentAdmission.getPatient() == null
+                || parentAdmission.getPatient().getPerson() == null) {
+            JsfUtil.addErrorMessage("No parent admission found to copy details from.");
+            return;
+        }
+        if (current == null || current.getPatient() == null || current.getPatient().getPerson() == null) {
+            return;
+        }
+        Person parentPerson = parentAdmission.getPatient().getPerson();
+        Person babyPerson = current.getPatient().getPerson();
+        babyPerson.setAddress(parentPerson.getAddress());
+        babyPerson.setArea(parentPerson.getArea());
+        babyPerson.setPhone(parentPerson.getPhone());
+        babyPerson.setMobile(parentPerson.getMobile());
+        JsfUtil.addSuccessMessage("Address and contact details copied from mother.");
+    }
+
     public String navigateCancelBabyAdmission() {
         if (parentAdmission != null) {
             current = parentAdmission;
@@ -2034,7 +2058,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // MO-charge validation, but room occupancy is always enforced when a room
         // is voluntarily provided — an occupied room must never be double-assigned
         // regardless of admission type. (Issue #21183)
-        if (!isRapidTempAe()) {
+        // Baby admissions also skip the room requirement: the baby stays in the
+        // mother's room, so a separate PatientRoom would double-charge the room fee.
+        if (!isRapidTempAe() && !isBabyAdmission()) {
             if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
                 if (getPatientRoom().getRoomFacilityCharge() == null) {
                     JsfUtil.addErrorMessage("Select Room ");
@@ -2487,6 +2513,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     private boolean isRapidTempAe() {
         return getCurrent() != null
                 && getCurrent().getEncounterRegistrationFlag() == EncounterRegistrationFlag.RAPID_TEMP_AE;
+    }
+
+    /**
+     * @return {@code true} when the current encounter is a baby admission
+     * (i.e. it has a parent encounter). Babies stay in the mother's room, so
+     * room selection is optional for them (#9900).
+     */
+    private boolean isBabyAdmission() {
+        return getCurrent() != null && getCurrent().getParentEncounter() != null;
     }
 
     /**
