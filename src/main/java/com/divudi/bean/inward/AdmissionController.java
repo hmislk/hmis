@@ -906,6 +906,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToAddBabyAdmission() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission selected");
+            return "";
+        }
         if (current.getParentEncounter() != null) {
             // A baby admission's parentEncounter already points to the mother.
             // Do not allow a baby to have its own baby admission (e.g. grandmother
@@ -920,6 +924,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         setCurrent(ad);
         current.setParentEncounter(parentAdmission);
+        // This @SessionScoped bean may still hold a room selection left over from
+        // whatever admission was being edited before. Baby admissions never get
+        // their own room (see bhtNumberCalculation()/errorCheck()), so start the
+        // baby flow with a clean patientRoom to avoid carrying a stale selection
+        // through to saveSelected() and double-charging the room fee. (#9900)
+        patientRoom = new PatientRoom();
         patient = null;
         yearMonthDay = null;
         getPatient();
