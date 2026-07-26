@@ -5332,10 +5332,15 @@ public class ExcelController {
         Row footerRow = sheet.createRow(rowIndex);
 
         Cell printedByCell = footerRow.createCell(0);
-        printedByCell.setCellValue("Printed by: " + userName);
         printedByCell.setCellStyle(footerStyle);
 
         int printedAtCol = Math.min(4, mergeCol);
+        if (printedAtCol == 0) {
+            printedByCell.setCellValue("Printed by: " + userName + "     Printed at: " + printedTime);
+            return;
+        }
+
+        printedByCell.setCellValue("Printed by: " + userName);
         Cell printedAtCell = footerRow.createCell(printedAtCol);
         printedAtCell.setCellValue("Printed at: " + printedTime);
         printedAtCell.setCellStyle(footerStyle);

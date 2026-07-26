@@ -115,12 +115,14 @@
                                         <h:outputText value="Pharmacy Stock History Report"/>
                                         <br/>
                                         <p:outputLabel value="#{stockHistoryController.department.name}" rendered="#{stockHistoryController.department ne null}" />
-                                        <p:outputLabel value="All Departents Stock" rendered="#{stockHistoryController.department eq null}" /><br></br>
-                                        <p:outputLabel value="#{stockHistoryController.historyDate}" >
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                                        </p:outputLabel>
+                                        <p:outputLabel value="All Departments Stock" rendered="#{stockHistoryController.department eq null}" /><br></br>
                                         <h:panelGroup layout="block" style="font-size: 11px; font-weight: 400;">
-                                            <h:outputText value="Department Type: #{not empty stockHistoryController.departmentType ? stockHistoryController.departmentType.label : 'All'}   |   "/>
+                                            <h:outputText value="History Date: "/>
+                                            <h:outputText value="#{stockHistoryController.historyDate}" rendered="#{stockHistoryController.historyDate ne null}">
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
+                                            </h:outputText>
+                                            <h:outputText value="All" rendered="#{stockHistoryController.historyDate eq null}"/>
+                                            <h:outputText value="   |   Department Type: #{not empty stockHistoryController.departmentType ? stockHistoryController.departmentType.label : 'All'}   |   "/>
                                             <h:outputText value="Include Archived: #{stockHistoryController.includeArchived ? 'Yes' : 'No'}"/>
                                         </h:panelGroup>
                                     </h:panelGroup>
