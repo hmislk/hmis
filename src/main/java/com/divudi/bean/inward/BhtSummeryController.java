@@ -1677,21 +1677,29 @@ public class BhtSummeryController implements Serializable {
         return pendingOverlapRoom;
     }
 
+    public String getPendingOverlapDescription() {
+        return getOverlapDescription(pendingOverlapRoom);
+    }
+
     /**
-     * True when this room's admitted/discharged time range overlaps another
-     * non-Guardian/Theatre room period for the same patient encounter or the
-     * same bed (RoomFacilityCharge). Used both to gate the save confirmation
-     * and to render a persistent warning on the room row.
+     * The other non-Guardian/Theatre room stay(s) for the same patient
+     * encounter or same bed (RoomFacilityCharge) whose admitted/discharged
+     * time range overlaps this room's. Returned (rather than just a count)
+     * so callers can report exactly which room(s) are the conflict instead
+     * of a generic "overlap detected" message.
      */
-    public boolean hasOverlap(PatientRoom patientRoom) {
+    public List<PatientRoom> getOverlappingRooms(PatientRoom patientRoom) {
         if (patientRoom == null || patientRoom.getAdmittedAt() == null || patientRoom.getPatientEncounter() == null) {
-            return false;
+            return new ArrayList<>();
+        }
+        if (patientRoom.getDischargedAt() != null && patientRoom.getDischargedAt().before(patientRoom.getAdmittedAt())) {
+            return new ArrayList<>();
         }
         if (patientRoom instanceof GuardianRoom || patientRoom instanceof TheatreRoom) {
-            return false;
+            return new ArrayList<>();
         }
         StringBuilder jpql = new StringBuilder();
-        jpql.append("SELECT COUNT(pr2) FROM PatientRoom pr2 WHERE pr2.retired = false ");
+        jpql.append("SELECT pr2 FROM PatientRoom pr2 WHERE pr2.retired = false ");
         jpql.append("AND TYPE(pr2) != :guardianClass AND TYPE(pr2) != :theatreClass ");
         Map<String, Object> params = new HashMap<>();
         params.put("guardianClass", GuardianRoom.class);
@@ -1713,8 +1721,43 @@ public class BhtSummeryController implements Serializable {
         }
         jpql.append("AND (pr2.dischargedAt IS NULL OR pr2.dischargedAt > :from)");
         params.put("from", patientRoom.getAdmittedAt());
-        long count = getPatientRoomFacade().findLongByJpql(jpql.toString(), params);
-        return count > 0;
+        List<PatientRoom> overlaps = getPatientRoomFacade().findByJpql(jpql.toString(), params);
+        return overlaps != null ? overlaps : new ArrayList<>();
+    }
+
+    /**
+     * True when this room's admitted/discharged time range overlaps another
+     * non-Guardian/Theatre room period for the same patient encounter or the
+     * same bed (RoomFacilityCharge). Used both to gate the save confirmation
+     * and to render a persistent warning on the room row.
+     */
+    public boolean hasOverlap(PatientRoom patientRoom) {
+        return !getOverlappingRooms(patientRoom).isEmpty();
+    }
+
+    /**
+     * Human-readable summary of which specific room(s) this room's time
+     * range conflicts with, e.g. "Room 412 (Active)". Used by the row-level
+     * "Overlap" tag and the save confirmation dialog so a conflict can be
+     * identified and resolved instead of showing a generic warning that
+     * stays stuck when there are 3+ open (non-discharged) room stays.
+     */
+    public String getOverlapDescription(PatientRoom patientRoom) {
+        List<PatientRoom> overlaps = getOverlappingRooms(patientRoom);
+        if (overlaps.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder("Overlaps with ");
+        for (int i = 0; i < overlaps.size(); i++) {
+            PatientRoom pr2 = overlaps.get(i);
+            if (i > 0) {
+                sb.append(", ");
+            }
+            String roomName = pr2.getRoomFacilityCharge() != null && pr2.getRoomFacilityCharge().getName() != null
+                    ? pr2.getRoomFacilityCharge().getName() : "an unnamed room";
+            sb.append(roomName).append(pr2.getDischargedAt() == null ? " (Active)" : " (Left)");
+        }
+        return sb.toString();
     }
 
     public boolean isAnyRoomOverlapping() {
