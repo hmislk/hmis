@@ -86,17 +86,18 @@
                                         </div>
                                         <div class="col-md-10">
                                             <p:outputLabel value="Name:" for="txtName" class="form-label" />
-                                            <p:inputText 
-                                                id="txtName" 
-                                                value="#{patientController.current.person.name}" 
-                                                class="w-100 form-control" 
-                                                required="true" 
+                                            <p:inputText
+                                                id="txtName"
+                                                value="#{patientController.current.person.name}"
+                                                class="w-100 form-control"
+                                                required="true"
                                                 validatorMessage="Please enter only letters and spaces."
-                                                requiredMessage="Please Enter a name" 
+                                                requiredMessage="Please Enter a name"
                                                 >
                                                 <c:if test="#{not empty sessionController.applicationPreference.nameRegex}">
                                                     <f:validateRegex pattern="#{sessionController.applicationPreference.nameRegex}"/>
                                                 </c:if>
+                                                <p:ajax event="blur" async="true" process="@this" update="panDuplicateWarningInline" listener="#{patientController.checkForPossibleDuplicatePatients()}" />
                                             </p:inputText>
                                         </div>
                                     </div>
@@ -152,9 +153,10 @@
                                         <div class="col-md-6">
                                             <p:outputLabel value="Date of Birth:"  class="form-label" />
                                             <p:calendar value="#{patientController.current.person.dob}" id="calNewPtDob" navigator="true"
-                                                        pattern="#{sessionController.applicationPreference.longDateFormat}" style="border: none; padding: 0px;" 
+                                                        pattern="#{sessionController.applicationPreference.longDateFormat}" style="border: none; padding: 0px;"
                                                         maxdate="#{sessionController.currentDate}" inputStyle="width:100%;" class="form-control" >
                                                 <p:ajax event="dateSelect" process="calNewPtDob" update="year month day" />
+                                                <p:ajax event="dateSelect" process="@this" update="panDuplicateWarningInline" listener="#{patientController.checkForPossibleDuplicatePatients()}" />
                                             </p:calendar>
                                         </div>
                                     </div>
@@ -196,10 +198,47 @@
                                         <div class="col-md-3">
                                             <h:outputLabel class="form-label" value="NIC / Passport No:" />
                                             <h:panelGroup>
-                                                <p:inputText autocomplete="off" id="txtNIC" value="#{patientController.current.person.nic}" class="form-control" />
+                                                <p:inputText autocomplete="off" id="txtNIC" value="#{patientController.current.person.nic}" class="form-control" >
+                                                    <p:ajax event="blur" async="true" process="@this" update="panDuplicateWarningInline" listener="#{patientController.checkForPossibleDuplicatePatients()}" />
+                                                </p:inputText>
                                             </h:panelGroup>
                                         </div>
                                     </div>
+
+                                    <div class="row form-group mb-1">
+                                        <div class="col-md-12">
+                                            <p:outputPanel id="panDuplicateWarningInline" layout="block">
+                                                <h:panelGroup rendered="#{not empty patientController.possibleDuplicatePatients}">
+                                                    <p style="color:#b71c1c; font-weight:bold;">
+                                                        &#9888; Possible duplicate patient(s) found:
+                                                    </p>
+                                                    <p:dataTable value="#{patientController.possibleDuplicatePatients}" var="dup" rows="10">
+                                                        <p:column headerText="Name">
+                                                            <h:outputText value="#{dup.person.name}" />
+                                                        </p:column>
+                                                        <p:column headerText="NIC / Passport">
+                                                            <h:outputText value="#{dup.person.nic}" />
+                                                        </p:column>
+                                                        <p:column headerText="PHN">
+                                                            <h:outputText value="#{dup.phn}" />
+                                                        </p:column>
+                                                        <p:column headerText="MRN">
+                                                            <h:outputText value="#{dup.code}" />
+                                                        </p:column>
+                                                        <p:column headerText="Date of Birth">
+                                                            <h:outputText value="#{dup.person.dob}">
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                                            </h:outputText>
+                                                        </p:column>
+                                                        <p:column headerText="">
+                                                            <p:commandLink value="View" action="#{patientController.viewDuplicatePatientProfile(dup)}" ajax="false" styleClass="ui-button ui-button-info" />
+                                                        </p:column>
+                                                    </p:dataTable>
+                                                </h:panelGroup>
+                                            </p:outputPanel>
+                                        </div>
+                                    </div>
+
                                     <div class="row form-group mb-1">
                                         <div class="col-md-8">
                                             <p:outputLabel value="Address:"  class="form-label" />
@@ -419,6 +458,70 @@
                                             action="#{patientController.saveAndNavigateToAdmissionProfile()}"
                                             ajax="false"
                                             onclick="PF('dlgBlacklistSaveAdmissionWarning').hide();" />
+                                    </div>
+                                </div>
+                            </p:dialog>
+
+                            <!-- Duplicate Patient Warning Dialog — Save and go to Patient Profile -->
+                            <p:dialog id="dlgDuplicatePatientSaveWarning"
+                                      widgetVar="dlgDuplicatePatientSaveWarning"
+                                      header="&#9888; Possible Duplicate Patient"
+                                      modal="true"
+                                      resizable="false"
+                                      closable="true"
+                                      style="width:500px">
+                                <div style="padding:12px">
+                                    <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
+                                        &#9888; Possible duplicate patient(s) already exist matching this NIC/Passport or Name + Date of Birth (see the list above).
+                                    </p>
+                                    <p style="font-weight:bold;">
+                                        Are you sure you want to create a new patient record?
+                                    </p>
+                                    <div class="d-flex justify-content-end gap-2 mt-3">
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fa fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('dlgDuplicatePatientSaveWarning').hide(); return false;" />
+                                        <p:commandButton
+                                            value="Yes, Create New Patient"
+                                            icon="fa fa-exclamation-triangle"
+                                            class="ui-button-danger"
+                                            action="#{patientController.saveAndNavigateToOpdPatientProfile()}"
+                                            ajax="false"
+                                            onclick="PF('dlgDuplicatePatientSaveWarning').hide();" />
+                                    </div>
+                                </div>
+                            </p:dialog>
+
+                            <!-- Duplicate Patient Warning Dialog — Save and go to Inpatient Dashboard -->
+                            <p:dialog id="dlgDuplicatePatientAdmissionWarning"
+                                      widgetVar="dlgDuplicatePatientAdmissionWarning"
+                                      header="&#9888; Possible Duplicate Patient"
+                                      modal="true"
+                                      resizable="false"
+                                      closable="true"
+                                      style="width:500px">
+                                <div style="padding:12px">
+                                    <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
+                                        &#9888; Possible duplicate patient(s) already exist matching this NIC/Passport or Name + Date of Birth (see the list above).
+                                    </p>
+                                    <p style="font-weight:bold;">
+                                        Are you sure you want to create a new patient record?
+                                    </p>
+                                    <div class="d-flex justify-content-end gap-2 mt-3">
+                                        <p:commandButton
+                                            value="Cancel"
+                                            icon="fa fa-times"
+                                            class="ui-button-secondary"
+                                            onclick="PF('dlgDuplicatePatientAdmissionWarning').hide(); return false;" />
+                                        <p:commandButton
+                                            value="Yes, Create New Patient"
+                                            icon="fa fa-exclamation-triangle"
+                                            class="ui-button-danger"
+                                            action="#{patientController.saveAndNavigateToAdmissionProfile()}"
+                                            ajax="false"
+                                            onclick="PF('dlgDuplicatePatientAdmissionWarning').hide();" />
                                     </div>
                                 </div>
                             </p:dialog>
