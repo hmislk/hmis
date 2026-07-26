@@ -1235,6 +1235,36 @@ already be cached (anything read earlier in the same test session), don't `UPDAT
 SQL mid-test — use the corresponding admin UI/CRUD screen instead, so the cache gets properly
 refreshed, and reserve raw SQL for read-only verification queries.**
 
+## 49. Pharmacy Transfer Issue: "Request From" is the requester, not the issuer — and the entity-based `TransferIssueForRequestsController` "Issue" button is commented out in favor of the native-SQL path
+
+Two traps found verifying issue #19168's Transfer Issue Department Type filter fix:
+
+- On `pharmacy_transfer_request.xhtml`, "Request From: X / Request To: Y" means
+  **X is requesting stock FROM Y** — Y is the department that later approves and
+  issues. Logging in as X and searching "Issue for Requests" after approval shows
+  nothing ("No records found.") because the issue action belongs to Y's session,
+  not X's. Switch department (§17) to Y before expecting the request to appear
+  in "Select Request For Department: Y".
+- `pharmacy_transfer_request_list.xhtml`'s `p:commandButton` calling
+  `transferIssueForRequestsController.navigateToPharmacyIssueForRequestsById`
+  (id `btnToIssue`) is commented out in the current XHTML — the active "Issue"
+  button now calls `transferIssueNativeSqlController.navigateToIssueRequestNative()`
+  (`pharmacy_transfer_issue_native.xhtml`, the "Fast Issue" path) instead. The
+  entity-based controller class and its tests/fixes still exist and matter (the
+  comment says it can be re-enabled if the native path shows data-correctness
+  issues), but it is **not reachable through today's UI** — don't expect a code
+  change there to be exercisable via a normal click-through without first
+  re-enabling that button. Confirm which controller a page's button actually
+  wires to (`grep` the `.xhtml` for the bean name) before planning an E2E pass
+  around it, rather than assuming the "obvious" controller for a named flow.
+- If the department picked as issuer has zero stock for the item under test
+  (common for a secondary pharmacy like OPD Pharmacy in local seed data), the
+  Fast Issue page renders `Available Stock: 0.00` and blocks entering an issue
+  qty. Switch to the department that actually holds stock (usually Main
+  Pharmacy) and use **Direct Issue** (`pharmacy_transfer_issue_direct_department.xhtml`,
+  `TransferIssueDirectController`) instead — it doesn't require a prior
+  approved request and reaches the same `Bill.departmentType` stamping logic.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.
