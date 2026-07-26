@@ -14,46 +14,71 @@ xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
             <h:panelGroup rendered="#{!admissionController.printPreview}" >
                 <p:panel>
                     <f:facet name="header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h:outputText styleClass="fa fa-hospital"></h:outputText>
-                                <h:outputText class="mx-4" value="Admit a Baby"/>
+                        <!--
+                            Three-zone panel header layout (see UI guidelines § Panel Header Three-Zone Layout):
+                            LEFT  : panel title
+                            CENTER: entity-level navigation buttons (Inpatient Dashboard, Patient Lookup, Patient Profile)
+                            RIGHT : page actions ordered left→right by ascending importance; primary action rightmost
+                        -->
+                        <div class="d-flex justify-content-between align-items-center w-100">
+
+                            <!-- LEFT: title -->
+                            <div class="d-flex align-items-center gap-2">
+                                <h:outputText styleClass="fa fa-hospital" />
+                                <h:outputText value="Admit a Baby"/>
                             </div>
-                            <div>
+
+                            <!-- CENTER: navigation (page-to-page, entity-related) -->
+                            <div class="d-flex gap-2">
                                 <p:commandButton
                                     ajax="false"
                                     immediate="true"
                                     value="Inpatient Dashboard"
                                     icon="fa fa-id-card"
-                                    class="ui-button-secondary mx-1"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    title="Cancel this baby admission draft and return to the mother's Inpatient Dashboard"
                                     rendered="#{admissionController.parentAdmission ne null and admissionController.parentAdmission.id ne null}"
                                     action="#{admissionController.navigateCancelBabyAdmission()}">
                                 </p:commandButton>
                                 <p:commandButton
-                                    id="admt"
-                                    action="#{admissionController.saveSelected}"
                                     ajax="false"
-                                    class="ui-button-success mx-1"
-                                    value="Admit"  />
-                                <p:commandButton ajax="false" value="Clear" actionListener="#{admissionController.makeNull}" />
-                                <p:commandButton 
-                                    ajax="false" 
                                     immediate="true"
-                                    value="Patient Lookup" 
-                                    class="ui-button-warning mx-1" 
-                                    action="#{patientController.navigateToSearchPatients()}" 
-                                    icon="fa fa-search" /> <!-- Font Awesome icon for search -->
-
-                                <p:commandButton 
-                                    ajax="false" 
+                                    value="Patient Lookup"
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    title="Search for an existing patient"
+                                    action="#{patientController.navigateToSearchPatients()}"
+                                    icon="fa fa-search" />
+                                <p:commandButton
+                                    ajax="false"
                                     immediate="true"
-                                    class="ui-button-warning mx-1" 
-                                    value="Patient Profile" 
-                                    action="#{patientController.navigateToOpdPatientProfile()}" 
-                                    icon="fa fa-user" > <!-- Font Awesome icon for user -->
+                                    styleClass="ui-button-info ui-button-outlined"
+                                    value="Patient Profile"
+                                    title="View this patient's profile"
+                                    action="#{patientController.navigateToOpdPatientProfile()}"
+                                    icon="fa fa-user">
                                     <f:setPropertyActionListener value="#{admissionController.current.patient}" target="#{patientController.current}" ></f:setPropertyActionListener>
                                 </p:commandButton>
                             </div>
+
+                            <!-- RIGHT: actions — left=least important, right=primary -->
+                            <div class="d-flex gap-2 align-items-center">
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Clear"
+                                    icon="fas fa-eraser"
+                                    title="Clear the form and start over"
+                                    styleClass="ui-button-secondary"
+                                    actionListener="#{admissionController.makeNull}" />
+                                <p:commandButton
+                                    id="admt"
+                                    action="#{admissionController.saveSelected}"
+                                    ajax="false"
+                                    icon="pi pi-check-circle"
+                                    style="min-width:120px"
+                                    styleClass="ui-button-success"
+                                    value="Admit"  />
+                            </div>
+
                         </div>
                     </f:facet>
                     

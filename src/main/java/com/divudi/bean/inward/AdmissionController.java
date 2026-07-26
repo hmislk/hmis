@@ -906,6 +906,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToAddBabyAdmission() {
+        if (current.getParentEncounter() != null) {
+            // A baby admission's parentEncounter already points to the mother.
+            // Do not allow a baby to have its own baby admission (e.g. grandmother
+            // admits mother, mother admits daughter is not a realistic scenario).
+            JsfUtil.addErrorMessage("A baby admission cannot have its own baby admission.");
+            return "";
+        }
         parentAdmission = current;
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
