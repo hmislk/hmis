@@ -35,6 +35,9 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import java.text.SimpleDateFormat;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 
 /**
  *
@@ -56,6 +59,8 @@ public class StockHistoryController implements Serializable {
 
     @Inject
     SessionController sessionController;
+    @Inject
+    com.divudi.bean.common.ExcelController excelController;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private StockHistory current;
@@ -299,6 +304,29 @@ public class StockHistoryController implements Serializable {
 
     public void fillStockHistoriesWithOutZero() {
         fillStockHistories(true);
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock History" page -
+     * adds the report title, active filters, and a Printed By/At footer
+     * around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockHistory(Object document) {
+        if (!(document instanceof Workbook)) {
+            return;
+        }
+        Sheet sheet = ((Workbook) document).getSheetAt(0);
+        int mergeCol = 0;
+        if (sheet.getRow(0) != null) {
+            mergeCol = Math.max(0, sheet.getRow(0).getLastCellNum() - 1);
+        }
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"Department", department != null ? department.getName() : "All"});
+        filterPairs.add(new String[]{"Department Type", departmentType != null ? departmentType.getLabel() : "All"});
+        filterPairs.add(new String[]{"History Date", historyDate != null ? new SimpleDateFormat("dd MMMM yyyy hh:mm a").format(historyDate) : "All"});
+        filterPairs.add(new String[]{"Include Archived", includeArchived ? "Yes" : "No"});
+        excelController.insertExcelReportHeader(sheet, "Pharmacy Stock History Report", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
     }
 
     public void recordHistory() {

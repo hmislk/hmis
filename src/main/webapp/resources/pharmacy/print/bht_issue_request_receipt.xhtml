@@ -121,7 +121,7 @@
 
                 <table class="biq-items">
                     <thead>
-                        <tr><th>#</th><th>Item</th><th>Quantity</th><th>Directions</th></tr>
+                        <tr><th>#</th><th>Item</th><th>Quantity</th><th>Directions</th><th>Comment</th></tr>
                     </thead>
                     <tbody>
                         <ui:repeat value="#{cc.attrs.dto.items}" var="bii" varStatus="st">
@@ -130,6 +130,14 @@
                                 <td><h:outputText value="#{bii.itemName}"/></td>
                                 <td><h:outputText value="#{bii.qty}"><f:convertNumber pattern="#,##0"/></h:outputText></td>
                                 <td><h:outputText value="#{bii.directions}"/></td>
+                                <td>
+                                    <h:panelGroup rendered="#{bii.instructions ne null and bii.instructions ne ''}" layout="block">
+                                        <h:outputText value="#{bii.instructions}"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{bii.prescriptionComment ne null and bii.prescriptionComment ne ''}" layout="block">
+                                        <h:outputText value="Rx: #{bii.prescriptionComment}"/>
+                                    </h:panelGroup>
+                                </td>
                             </tr>
                         </ui:repeat>
                     </tbody>
@@ -201,13 +209,21 @@
                 <hr/>
 
                 <table class="biq-items">
-                    <thead><tr><th>Item</th><th>Qty</th><th>Directions</th></tr></thead>
+                    <thead><tr><th>Item</th><th>Qty</th><th>Directions</th><th>Comment</th></tr></thead>
                     <tbody>
                         <ui:repeat value="#{cc.attrs.dto.items}" var="bii">
                             <tr>
                                 <td><h:outputText value="#{bii.itemName}"/></td>
                                 <td><h:outputText value="#{bii.qty}"><f:convertNumber pattern="#,##0"/></h:outputText></td>
                                 <td><h:outputText value="#{bii.directions}"/></td>
+                                <td>
+                                    <h:panelGroup rendered="#{bii.instructions ne null and bii.instructions ne ''}" layout="block">
+                                        <h:outputText value="#{bii.instructions}"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{bii.prescriptionComment ne null and bii.prescriptionComment ne ''}" layout="block">
+                                        <h:outputText value="Rx: #{bii.prescriptionComment}"/>
+                                    </h:panelGroup>
+                                </td>
                             </tr>
                         </ui:repeat>
                     </tbody>
@@ -266,6 +282,16 @@
                             <td>&#160;&#160;Qty: <h:outputText value="#{bii.qty}"><f:convertNumber pattern="#,##0"/></h:outputText></td>
                             <td><h:outputText value="#{bii.directions}"/></td>
                         </tr>
+                        <ui:fragment rendered="#{bii.instructions ne null and bii.instructions ne ''}">
+                            <tr>
+                                <td colspan="2">&#160;&#160;<h:outputText value="Comment: #{bii.instructions}"/></td>
+                            </tr>
+                        </ui:fragment>
+                        <ui:fragment rendered="#{bii.prescriptionComment ne null and bii.prescriptionComment ne ''}">
+                            <tr>
+                                <td colspan="2">&#160;&#160;<h:outputText value="Rx: #{bii.prescriptionComment}"/></td>
+                            </tr>
+                        </ui:fragment>
                     </ui:repeat>
                 </table>
                 <hr/>

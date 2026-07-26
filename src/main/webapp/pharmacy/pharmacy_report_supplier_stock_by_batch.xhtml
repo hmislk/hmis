@@ -5,6 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       >
 
     <h:body>
@@ -40,8 +41,7 @@
                             </p:commandButton>
                             <p:commandButton class="ui-button-success" icon="fas fa-file-excel"  value="Excel" ajax="false">
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Lab_Investigation_List"
-
-
+                                                postProcessor="#{reportsStock.postProcessXLSSupplierStockByBatch}"
                                                 />
                             </p:commandButton>
                         </h:panelGrid>
@@ -59,8 +59,16 @@
                                          rowsPerPageTemplate="10,20,50">
 
                                 <f:facet name="header">
-                                    <h:outputLabel value="Department - #{reportsStock.department.name} "/>   <br/>                                 
-                                    <h:outputLabel value="Supplier - #{reportsStock.institution.name}"/>                                    
+                                    <h:panelGroup layout="block">
+                                        <h:outputLabel value="Supplier Stock Report"/>
+                                        <h:panelGroup layout="block" style="font-size: 11px; font-weight: 400;">
+                                            <h:outputText value="Department: #{not empty reportsStock.department ? reportsStock.department.name : 'All'}   |   "/>
+                                            <h:outputText value="Supplier: #{not empty reportsStock.institution ? reportsStock.institution.name : 'All'}"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </f:facet>
+                                <f:facet name="footer">
+                                    <common:report_print_footer/>
                                 </f:facet>
 
                                 <p:column width="40px;" headerText="No" sortBy="#{ii}">
@@ -191,17 +199,6 @@
                                             </f:facet>
                                         </p:column>
                                     </p:row>
-
-                                    <p:row>
-                                        <p:column colspan="9" >
-                                            <f:facet name="footer" >
-                                                <h:outputLabel value="Printed At " ></h:outputLabel>
-                                                <h:outputLabel value="#{sessionController.currentDate}" >
-                                                    <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" ></f:convertDateTime>
-                                                </h:outputLabel>
-                                            </f:facet>
-                                        </p:column>
-                                    </p:row> 
                                 </p:columnGroup>
 
                             </p:dataTable>

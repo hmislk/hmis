@@ -2401,6 +2401,27 @@ public class DataAdministrationController implements Serializable {
     }
 
     /**
+     * Single-click path for the reduced, unauthenticated "Add Missing Fields"
+     * page (mf.xhtml during pending migration): downloads the latest DDL from
+     * the wiki and applies it to both the main and audit databases, with no
+     * manual database-selection checkboxes or paste-a-snippet option — those
+     * remain available only in the full admin tool.
+     */
+    public void loadDdlFromWikiAndUpdateBothDatabases() {
+        allCreateStetements = "";
+        runOnMainDatabase = true;
+        runOnAuditDatabase = true;
+        loadDdlFromWiki();
+        if (wikiFetchedDdl == null || wikiFetchedDdl.trim().isEmpty()) {
+            // loadDdlFromWiki() already set executionFeedback with the specific
+            // download error — do not overwrite it with the generic "DDL content
+            // is empty" message from createTablesAndFieldsForAllCreateStatements().
+            return;
+        }
+        createTablesAndFieldsForAllCreateStatements();
+    }
+
+    /**
      * The DDL to operate on: manually pasted content (Tab 1 textarea) wins;
      * otherwise falls back to the script fetched server-side from the wiki.
      */
