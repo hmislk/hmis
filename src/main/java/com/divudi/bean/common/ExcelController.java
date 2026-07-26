@@ -37,6 +37,7 @@ import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.WorkbookUtil;
@@ -5236,5 +5237,107 @@ public class ExcelController {
                 .build();
 
         return excelSc;
+    }
+
+    /**
+     * Inserts a report title row followed by one row per filter (label/value
+     * pair) above whatever the PrimeFaces {@code p:dataExporter} has already
+     * written to row 0, by shifting the existing rows down. Intended to be
+     * called from a report controller's {@code postProcessor} method
+     * (issue #17615).
+     *
+     * @param sheet the sheet the dataExporter already wrote the table into
+     * @param reportTitle the report name to show as the header title
+     * @param filterPairs ordered {label, value} pairs, e.g. {"Institution",
+     * "All Institutions"}; always pass every filter the report supports,
+     * using "All" / "No" for unset ones so the printed header is complete
+     * @param mergeCol the last column index (0-based) the header rows should
+     * span, e.g. the report's number of exported columns minus one
+     */
+    public void insertExcelReportHeader(Sheet sheet, String reportTitle, List<String[]> filterPairs, int mergeCol) {
+        if (sheet == null) {
+            return;
+        }
+        org.apache.poi.ss.usermodel.Workbook wb = sheet.getWorkbook();
+
+        org.apache.poi.ss.usermodel.Font titleFont = wb.createFont();
+        titleFont.setBold(true);
+        titleFont.setFontHeightInPoints((short) 14);
+        CellStyle titleStyle = wb.createCellStyle();
+        titleStyle.setFont(titleFont);
+        titleStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        org.apache.poi.ss.usermodel.Font labelFont = wb.createFont();
+        labelFont.setBold(true);
+        CellStyle labelStyle = wb.createCellStyle();
+        labelStyle.setFont(labelFont);
+
+        CellStyle valueStyle = wb.createCellStyle();
+
+        int headerRows = 1 + (filterPairs != null ? filterPairs.size() : 0);
+        if (sheet.getLastRowNum() >= 0) {
+            sheet.shiftRows(0, sheet.getLastRowNum(), headerRows);
+        }
+
+        int rowIndex = 0;
+        Row titleRow = sheet.createRow(rowIndex++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue(reportTitle != null ? reportTitle : "");
+        titleCell.setCellStyle(titleStyle);
+        if (mergeCol > 0) {
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, mergeCol));
+        }
+
+        if (filterPairs != null) {
+            for (String[] pair : filterPairs) {
+                Row row = sheet.createRow(rowIndex);
+                Cell labelCell = row.createCell(0);
+                labelCell.setCellValue((pair[0] != null ? pair[0] : "") + ":");
+                labelCell.setCellStyle(labelStyle);
+                Cell valueCell = row.createCell(1);
+                valueCell.setCellValue(pair.length > 1 && pair[1] != null ? pair[1] : "All");
+                valueCell.setCellStyle(valueStyle);
+                if (mergeCol > 1) {
+                    sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, 1, mergeCol));
+                }
+                rowIndex++;
+            }
+        }
+    }
+
+    /**
+     * Appends a "Printed by ... / Printed at ..." row after the last row
+     * currently on the sheet. Call this after {@link
+     * #insertExcelReportHeader} (or standalone) from a report controller's
+     * {@code postProcessor} method (issue #17615).
+     *
+     * @param sheet the sheet to append the footer row to
+     * @param mergeCol the last column index (0-based) the footer row may use;
+     * the "Printed at" cell is placed at column {@code min(4, mergeCol)}
+     */
+    public void appendExcelPrintedByFooter(Sheet sheet, int mergeCol) {
+        if (sheet == null) {
+            return;
+        }
+        org.apache.poi.ss.usermodel.Workbook wb = sheet.getWorkbook();
+        CellStyle footerStyle = wb.createCellStyle();
+        org.apache.poi.ss.usermodel.Font footerFont = wb.createFont();
+        footerFont.setFontHeightInPoints((short) 9);
+        footerStyle.setFont(footerFont);
+
+        String userName = sessionController.getLoggedUser() != null ? sessionController.getLoggedUser().getName() : "";
+        String printedTime = new SimpleDateFormat(sessionController.getApplicationPreference().getLongDateTimeFormat()).format(new Date());
+
+        int rowIndex = sheet.getLastRowNum() + 2;
+        Row footerRow = sheet.createRow(rowIndex);
+
+        Cell printedByCell = footerRow.createCell(0);
+        printedByCell.setCellValue("Printed by: " + userName);
+        printedByCell.setCellStyle(footerStyle);
+
+        int printedAtCol = Math.min(4, mergeCol);
+        Cell printedAtCell = footerRow.createCell(printedAtCol);
+        printedAtCell.setCellValue("Printed at: " + printedTime);
+        printedAtCell.setCellStyle(footerStyle);
     }
 }

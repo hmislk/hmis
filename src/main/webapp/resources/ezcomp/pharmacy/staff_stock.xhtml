@@ -4,7 +4,8 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -89,7 +90,7 @@
                                              value="Excel"
                                              ajax="false"
                                              title="Export to Excel">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Staff_Stock_Report"/>
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Staff_Stock_Report" postProcessor="#{reportsStock.postProcessXLSStaffStock}"/>
                             </p:commandButton>
                         </div>
                     </div>
@@ -114,6 +115,10 @@
                         <f:facet name="header">
                             <div class="text-center p-2">
                                 <h:outputText value="Staff Stock Inventory Report" styleClass="fw-bold fs-5"/>
+                                <div style="font-size: 11px; font-weight: 400;">
+                                    <h:outputText value="Staff: #{not empty reportsStock.staff ? reportsStock.staff.person.name : 'All'}   |   "/>
+                                    <h:outputText value="Item: #{not empty reportsStock.item ? reportsStock.item.name : 'All'}"/>
+                                </div>
                             </div>
                         </f:facet>
 
@@ -250,12 +255,9 @@
                         </p:column>
 
                         <f:facet name="footer">
-                            <div class="text-center p-2 text-muted">
+                            <div class="p-2 text-muted">
                                 <small>
-                                    <h:outputText value="Report generated on "/>
-                                    <h:outputText value="#{sessionController.currentDate}">
-                                        <f:convertDateTime pattern="dd MMMM yyyy 'at' hh:mm a"/>
-                                    </h:outputText>
+                                    <common:report_print_footer/>
                                 </small>
                             </div>
                         </f:facet>

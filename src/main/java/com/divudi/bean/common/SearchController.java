@@ -144,6 +144,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.file.UploadedFile;
@@ -23856,6 +23858,30 @@ public class SearchController implements Serializable {
 
     public void setPharmacyAdjustmentRows(List<PharmacyAdjustmentRow> pharmacyAdjustmentRows) {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Taking Report(New)"
+     * page - adds the report title, active filters, and a Printed By/At
+     * footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockTakingNew(Object document) {
+        if (!(document instanceof Workbook)) {
+            return;
+        }
+        Sheet sheet = ((Workbook) document).getSheetAt(0);
+        int mergeCol = 0;
+        if (sheet.getRow(0) != null) {
+            mergeCol = Math.max(0, sheet.getRow(0).getLastCellNum() - 1);
+        }
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"From Date", fromDate != null ? new SimpleDateFormat("dd MMMM yyyy").format(fromDate) : "All"});
+        filterPairs.add(new String[]{"To Date", toDate != null ? new SimpleDateFormat("dd MMMM yyyy").format(toDate) : "All"});
+        filterPairs.add(new String[]{"Department", getReportKeyWord().getDepartment() != null ? getReportKeyWord().getDepartment().getName() : "All"});
+        filterPairs.add(new String[]{"Category", getReportKeyWord().getCategory() != null ? getReportKeyWord().getCategory().getName() : "All"});
+        filterPairs.add(new String[]{"Only Adjustments", getReportKeyWord().isAdditionalDetails() ? "Yes" : "No"});
+        excelController.insertExcelReportHeader(sheet, "Stock Taking Report (New)", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
     }
 
     private StreamedContent fileBillsAndBillItemsForDownload;
