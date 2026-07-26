@@ -75,6 +75,18 @@ import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 
 /**
+ * Sale window 4 copy of {@link RetailSaleNativeSqlController}.
+ *
+ * The controller is {@code @SessionScoped} (this codebase predates JSF view scope),
+ * so each simultaneous sale window needs its own bean instance to avoid state
+ * collisions. Windows 1-4 are backed by {@code RetailSaleNativeSqlController},
+ * {@code ...Controller1}, {@code ...Controller2} and {@code ...Controller3},
+ * paired with {@code pharmacy_bill_retail_sale_native{,_1,_2,_3}.xhtml}.
+ *
+ * Keep this class in sync with the base controller — it is a deliberate copy, not a
+ * subclass, matching the existing PharmacySaleController1/2/3 pattern.
+ * Issue: #22443 (master #22442)
+ *
  * Controller for the native-SQL pharmacy retail sale page.
  *
  * The settle path uses RetailSaleNativeSqlService (native SQL inserts), avoiding
@@ -86,9 +98,9 @@ import org.primefaces.event.SelectEvent;
  */
 @Named
 @SessionScoped
-public class RetailSaleNativeSqlController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
+public class RetailSaleNativeSqlController3 implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
 
-    private static final Logger LOGGER = Logger.getLogger(RetailSaleNativeSqlController.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RetailSaleNativeSqlController3.class.getName());
 
     // ---- CDI ----
     @Inject
@@ -164,7 +176,7 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
     public String pharmacyRetailSaleNative() {
         resetAll();
         billSettlingStarted = false;
-        return "/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true";
+        return "/pharmacy/pharmacy_bill_retail_sale_native_3?faces-redirect=true";
     }
 
     /**
@@ -177,7 +189,7 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
      */
     public String switchToThisSaleWindow() {
         billSettlingStarted = false;
-        return "/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true";
+        return "/pharmacy/pharmacy_bill_retail_sale_native_3?faces-redirect=true";
     }
 
     @SuppressWarnings("unchecked")
@@ -195,7 +207,7 @@ public class RetailSaleNativeSqlController implements Serializable, ControllerWi
         printBill = (PrintBillData) result[0];
         printBillItems = (List<BillItemData>) result[1];
         billPreview = true;
-        return "/pharmacy/pharmacy_bill_retail_sale_native?faces-redirect=true";
+        return "/pharmacy/pharmacy_bill_retail_sale_native_3?faces-redirect=true";
     }
 
     // -----------------------------------------------------------------------

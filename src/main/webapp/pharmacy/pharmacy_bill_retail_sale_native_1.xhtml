@@ -23,20 +23,20 @@
                     <!-- ============================================================
                          ENTRY PANEL (hidden after settle)
                          ============================================================ -->
-                    <p:panel rendered="#{!retailSaleNativeSqlController.billPreview}">
+                    <p:panel rendered="#{!retailSaleNativeSqlController1.billPreview}">
 
                         <p:panel class="w-100">
                             <f:facet name="header">
                                 <div class="row w-100 align-items-center">
                                     <div class="col-4">
                                         <h:outputText styleClass="fas fa-mortar-pestle" />
-                                        <h:outputLabel value="Pharmacy Retail Sale (Sale 1)" class="mx-2" />
+                                        <h:outputLabel value="Pharmacy Retail Sale (Sale 2)" class="mx-2" />
                                         <h:panelGroup rendered="#{webUserController.hasPrivilege('Admin')}">
                                             <p:commandButton
                                                 value="Config"
                                                 icon="fa fa-cog"
                                                 title="Page Configuration"
-                                                action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_bill_retail_sale_native')}"
+                                                action="#{pageAdminController.navigateToPageAdmin('pharmacy/pharmacy_bill_retail_sale_native_1')}"
                                                 ajax="false"
                                                 class="ui-button-secondary mx-1" />
                                         </h:panelGroup>
@@ -58,14 +58,14 @@
                                             icon="fa fa-check"
                                             class="ui-button-success mx-1"
                                             onclick="if (!confirm('Are you sure?')) return false"
-                                            action="#{retailSaleNativeSqlController.settleBillWithPay}" />
+                                            action="#{retailSaleNativeSqlController1.settleBillWithPay}" />
                                         <p:commandButton
                                             icon="fa fa-plus"
                                             value="New Bill"
                                             ajax="false"
-                                            action="pharmacy_bill_retail_sale_native"
+                                            action="pharmacy_bill_retail_sale_native_1"
                                             class="ui-button-warning"
-                                            actionListener="#{retailSaleNativeSqlController.resetAll()}" />
+                                            actionListener="#{retailSaleNativeSqlController1.resetAll()}" />
                                     </div>
                                 </div>
                                 <div class="row w-100 align-items-center">
@@ -75,7 +75,7 @@
                                             icon="fas fa-file-invoice"
                                             value="Sale 1"
                                             title="Sale window 1"
-                                            ajax="false" disabled="true"
+                                            ajax="false"
                                             action="pharmacy_bill_retail_sale_native?faces-redirect=true"
                                             actionListener="#{retailSaleNativeSqlController.switchToThisSaleWindow()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
@@ -84,7 +84,7 @@
                                             icon="fas fa-file-invoice"
                                             value="Sale 2"
                                             title="Sale window 2"
-                                            ajax="false"
+                                            ajax="false" disabled="true"
                                             action="pharmacy_bill_retail_sale_native_1?faces-redirect=true"
                                             actionListener="#{retailSaleNativeSqlController1.switchToThisSaleWindow()}"
                                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
@@ -131,9 +131,9 @@
                                                         maxResults="10"
                                                         styleClass="w-100"
                                                         forceSelection="true"
-                                                        value="#{retailSaleNativeSqlController.stockDto}"
-                                                        queryDelay="300" completeMethod="#{retailSaleNativeSqlController.completeAvailableStockOptimizedDto}"
-                                                        converter="#{retailSaleNativeSqlController.stockDtoConverter}"
+                                                        value="#{retailSaleNativeSqlController1.stockDto}"
+                                                        queryDelay="300" completeMethod="#{retailSaleNativeSqlController1.completeAvailableStockOptimizedDto}"
+                                                        converter="#{retailSaleNativeSqlController1.stockDtoConverter}"
                                                         var="i"
                                                         itemLabel="#{i.itemName}"
                                                         itemValue="#{i}">
@@ -178,7 +178,7 @@
                                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                                             </h:outputLabel>
                                                         </p:column>
-                                                        <p:ajax event="itemSelect" listener="#{retailSaleNativeSqlController.handleSelect}" update="txtQty txtRate focusQty" />
+                                                        <p:ajax event="itemSelect" listener="#{retailSaleNativeSqlController1.handleSelect}" update="txtQty txtRate focusQty" />
                                                         <p:ajax event="query" process="acStock" />
                                                     </p:autoComplete>
                                                 </h:panelGroup>
@@ -191,9 +191,9 @@
                                                     autocomplete="off"
                                                     class="w-100"
                                                     style="text-align: right;"
-                                                    value="#{retailSaleNativeSqlController.intQty}">
-                                                    <p:ajax event="keyup" listener="#{retailSaleNativeSqlController.calculateBillItemListner}" process="acStock txtQty" update="txtRate txtVal" />
-                                                    <p:ajax event="blur" listener="#{retailSaleNativeSqlController.calculateBillItemListner}" process="acStock txtQty" update="txtRate txtVal" />
+                                                    value="#{retailSaleNativeSqlController1.intQty}">
+                                                    <p:ajax event="keyup" listener="#{retailSaleNativeSqlController1.calculateBillItemListner}" process="acStock txtQty" update="txtRate txtVal" />
+                                                    <p:ajax event="blur" listener="#{retailSaleNativeSqlController1.calculateBillItemListner}" process="acStock txtQty" update="txtRate txtVal" />
                                                 </p:inputText>
                                             </div>
                                             <div class="col-md-5">
@@ -206,7 +206,7 @@
                                                             icon="fa fa-plus"
                                                             value="Add"
                                                             styleClass="ui-button-success"
-                                                            action="#{retailSaleNativeSqlController.addBillItem()}"
+                                                            action="#{retailSaleNativeSqlController1.addBillItem()}"
                                                             process="@this acStock txtQty focusForAcIx"
                                                             update=":#{p:resolveFirstComponentWithId('netTotal', view).clientId} :#{p:resolveFirstComponentWithId('dis', view).clientId} :#{p:resolveFirstComponentWithId('total', view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId} tblBillItem txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('panelError', view).clientId}" />
                                                     </div>
@@ -217,7 +217,7 @@
                                                             style="text-align: right;"
                                                             class="w-100"
                                                             readonly="true"
-                                                            value="#{retailSaleNativeSqlController.billItem.netRate}">
+                                                            value="#{retailSaleNativeSqlController1.billItem.netRate}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </p:inputText>
                                                     </div>
@@ -228,7 +228,7 @@
                                                             style="text-align: right;"
                                                             class="w-100"
                                                             readonly="true"
-                                                            value="#{retailSaleNativeSqlController.previewNetValue}">
+                                                            value="#{retailSaleNativeSqlController1.previewNetValue}">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </p:inputText>
                                                     </div>
@@ -247,13 +247,13 @@
                                         </f:facet>
                                         <p:dataTable
                                             id="tblBillItem"
-                                            value="#{retailSaleNativeSqlController.billItemDataList}"
+                                            value="#{retailSaleNativeSqlController1.billItemDataList}"
                                             var="bi"
                                             rowIndexVar="s"
                                             editable="true"
                                             class="w-100">
-                                            <p:ajax event="rowEdit" listener="#{retailSaleNativeSqlController.onEdit}" update="@this :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId} :#{p:resolveFirstComponentWithId('panelError', view).clientId}" />
-                                            <p:ajax event="rowEditCancel" listener="#{retailSaleNativeSqlController.onEditCancel}" update="@this :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}" />
+                                            <p:ajax event="rowEdit" listener="#{retailSaleNativeSqlController1.onEdit}" update="@this :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId} :#{p:resolveFirstComponentWithId('panelError', view).clientId}" />
+                                            <p:ajax event="rowEditCancel" listener="#{retailSaleNativeSqlController1.onEditCancel}" update="@this :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}" />
 
                                             <p:column headerText="No" style="width: 2em; padding: 6px;">
                                                 <h:outputLabel value="#{s+1}">
@@ -267,7 +267,7 @@
                                                     id="btnSelectSubstitute"
                                                     icon="pi pi-refresh"
                                                     title="Show Alternatives"
-                                                    action="#{retailSaleNativeSqlController.prepareSubstitute(bi)}"
+                                                    action="#{retailSaleNativeSqlController1.prepareSubstitute(bi)}"
                                                     update=":#{p:resolveFirstComponentWithId('substituteDlg',view).clientId}"
                                                     oncomplete="PF('substituteDialog').show();"
                                                     process="@this"
@@ -312,7 +312,7 @@
                                                 <p:commandButton
                                                     id="btnDelete"
                                                     icon="fas fa-trash"
-                                                    action="#{retailSaleNativeSqlController.removeBillItem(bi)}"
+                                                    action="#{retailSaleNativeSqlController1.removeBillItem(bi)}"
                                                     class="ui-button-danger"
                                                     process="btnDelete"
                                                     update="tblBillItem :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}"
@@ -331,11 +331,11 @@
                                             width="60%">
                                             <div class="mb-3 p-3 bg-light border rounded">
                                                 <h:outputLabel value="Selected Item: " styleClass="fw-bold text-primary"/>
-                                                <h:outputText value="#{retailSaleNativeSqlController.itemDataForSubstitution.itemName}" styleClass="fw-bold text-dark"/>
+                                                <h:outputText value="#{retailSaleNativeSqlController1.itemDataForSubstitution.itemName}" styleClass="fw-bold text-dark"/>
                                             </div>
                                             <p:dataTable
                                                 id="substituteTable"
-                                                value="#{retailSaleNativeSqlController.substituteStocks}"
+                                                value="#{retailSaleNativeSqlController1.substituteStocks}"
                                                 var="sStock"
                                                 rowKey="#{sStock.stockId}"
                                                 paginator="true"
@@ -368,11 +368,11 @@
                                                     <p:commandButton
                                                         id="btnReplace"
                                                         value="Replace"
-                                                        action="#{retailSaleNativeSqlController.replaceSelectedSubstitute}"
+                                                        action="#{retailSaleNativeSqlController1.replaceSelectedSubstitute}"
                                                         update=":#{p:resolveFirstComponentWithId('tblBillItem', view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}"
                                                         oncomplete="PF('substituteDialog').hide();"
                                                         process="@this">
-                                                        <f:setPropertyActionListener value="#{sStock}" target="#{retailSaleNativeSqlController.selectedSubstituteStock}" />
+                                                        <f:setPropertyActionListener value="#{sStock}" target="#{retailSaleNativeSqlController1.selectedSubstituteStock}" />
                                                     </p:commandButton>
                                                 </p:column>
                                             </p:dataTable>
@@ -391,13 +391,13 @@
                                                     <h:panelGroup id="headerFacet">
                                                         <h:outputText styleClass="fas fa-user" />
                                                         <h:outputText
-                                                            rendered="#{retailSaleNativeSqlController.patient.id eq null}"
+                                                            rendered="#{retailSaleNativeSqlController1.patient.id eq null}"
                                                             value="Patient" class="mx-4" />
                                                         <h:outputText
-                                                            rendered="#{retailSaleNativeSqlController.patient.id ne null}"
+                                                            rendered="#{retailSaleNativeSqlController1.patient.id ne null}"
                                                             value="Searched Patient Details" class="mx-2" />
                                                         <p:selectBooleanButton
-                                                            value="#{retailSaleNativeSqlController.patientDetailsEditable}"
+                                                            value="#{retailSaleNativeSqlController1.patientDetailsEditable}"
                                                             offIcon="pi pi-pencil"
                                                             onIcon="pi pi-eye"
                                                             class="mx-2">
@@ -408,8 +408,8 @@
                                                             alt="Save Patient Details"
                                                             class="ui-button-success"
                                                             icon="fas fa-check"
-                                                            action="#{patientController.saveSelected(retailSaleNativeSqlController.patient)}"
-                                                            rendered="#{retailSaleNativeSqlController.patientDetailsEditable}"
+                                                            action="#{patientController.saveSelected(retailSaleNativeSqlController1.patient)}"
+                                                            rendered="#{retailSaleNativeSqlController1.patientDetailsEditable}"
                                                             update=":#{p:resolveFirstComponentWithId('panelPatient', view).clientId}" />
 </h:panelGroup>
                                                     <h:panelGroup layout="block" styleClass="form-inline">
@@ -424,7 +424,7 @@
                                                             id="btnSearchbyPhoneNo"
                                                             icon="fa fa-search"
                                                             title="Quick Search from Phone Number"
-                                                            action="#{patientController.quickSearchPatientLongPhoneNumber(retailSaleNativeSqlController)}"
+                                                            action="#{patientController.quickSearchPatientLongPhoneNumber(retailSaleNativeSqlController1)}"
                                                             process="btnSearchbyPhoneNo txtQuickSearchPhoneNumber"
                                                             update="panelPatient selectPatient editPatient viewPatient panelPayment panelBillDetails"
                                                             styleClass="btn-sm mx-1" />
@@ -432,7 +432,7 @@
                                                             id="btnAddNewPatient"
                                                             icon="fa fa-plus-circle"
                                                             title="Add New Patient"
-                                                            action="#{patientController.quickSearchNewPatient(retailSaleNativeSqlController)}"
+                                                            action="#{patientController.quickSearchNewPatient(retailSaleNativeSqlController1)}"
                                                             process="btnAddNewPatient"
                                                             update="panelPatient selectPatient editPatient viewPatient panelPayment panelBillDetails"
                                                             styleClass="btn-sm mx-1" />
@@ -449,7 +449,7 @@
                                                         <p:column>
                                                             <p:commandButton
                                                                 id="btnSelectPt"
-                                                                action="#{patientController.selectQuickOneFromQuickSearchPatient(retailSaleNativeSqlController)}"
+                                                                action="#{patientController.selectQuickOneFromQuickSearchPatient(retailSaleNativeSqlController1)}"
                                                                 process="btnSelectPt"
                                                                 update=":#{p:resolveFirstComponentWithId('panelPatient', view).clientId} :#{p:resolveFirstComponentWithId('panelPayment', view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}"
                                                                 value="Select">
@@ -461,11 +461,11 @@
                                             </h:panelGroup>
 
                                             <h:panelGroup id="editPatient">
-                                                <h:panelGroup rendered="#{retailSaleNativeSqlController.patientDetailsEditable}">
+                                                <h:panelGroup rendered="#{retailSaleNativeSqlController1.patientDetailsEditable}">
                                                     <h:panelGroup rendered="#{patientController.quickSearchPatientList eq null or empty patientController.quickSearchPatientList}">
                                                         <div class="row">
                                                             <div class="col-md-3 p-1">
-                                                                <p:selectOneMenu id="cmbTitle" class="form-control w-100" value="#{retailSaleNativeSqlController.patient.person.title}">
+                                                                <p:selectOneMenu id="cmbTitle" class="form-control w-100" value="#{retailSaleNativeSqlController1.patient.person.title}">
                                                                     <f:selectItem itemLabel="Select Title" />
                                                                     <f:selectItems value="#{opdBillController.title}" var="i" itemLabel="#{i.label}" itemValue="#{i}" />
                                                                     <p:ajax event="change" process="cmbTitle" update="cmbSex" />
@@ -476,13 +476,13 @@
                                                                     autocomplete="off"
                                                                     id="txtNewPtName"
                                                                     placeholder="Patient Name"
-                                                                    value="#{retailSaleNativeSqlController.patient.person.name}"
+                                                                    value="#{retailSaleNativeSqlController1.patient.person.name}"
                                                                     class="form-control" />
                                                             </div>
                                                         </div>
                                                         <div class="row">
                                                             <div class="col-md-3 p-1">
-                                                                <p:selectOneMenu id="cmbSex" value="#{retailSaleNativeSqlController.patient.person.sex}" class="form-control w-100">
+                                                                <p:selectOneMenu id="cmbSex" value="#{retailSaleNativeSqlController1.patient.person.sex}" class="form-control w-100">
                                                                     <f:selectItem itemLabel="Select Gender" />
                                                                     <f:selectItems value="#{opdBillController.sex}" />
                                                                 </p:selectOneMenu>
@@ -490,23 +490,23 @@
                                                             <div class="col-md-9 p-1">
                                                                 <div class="row">
                                                                     <div class="col-md-2">
-                                                                        <p:inputText autocomplete="off" id="year" placeholder="Years" value="#{retailSaleNativeSqlController.patient.person.ageYearsComponent}" class="form-control">
-                                                                            <f:ajax event="keyup" execute="@this" render="dpDob" listener="#{retailSaleNativeSqlController.calculateDobFromAge}" />
+                                                                        <p:inputText autocomplete="off" id="year" placeholder="Years" value="#{retailSaleNativeSqlController1.patient.person.ageYearsComponent}" class="form-control">
+                                                                            <f:ajax event="keyup" execute="@this" render="dpDob" listener="#{retailSaleNativeSqlController1.calculateDobFromAge}" />
                                                                         </p:inputText>
                                                                     </div>
                                                                     <div class="col-md-2">
-                                                                        <p:inputText autocomplete="off" id="month" placeholder="Months" value="#{retailSaleNativeSqlController.patient.person.ageMonthsComponent}" class="form-control">
-                                                                            <f:ajax event="keyup" execute="@this" render="dpDob" listener="#{retailSaleNativeSqlController.calculateDobFromAge}" />
+                                                                        <p:inputText autocomplete="off" id="month" placeholder="Months" value="#{retailSaleNativeSqlController1.patient.person.ageMonthsComponent}" class="form-control">
+                                                                            <f:ajax event="keyup" execute="@this" render="dpDob" listener="#{retailSaleNativeSqlController1.calculateDobFromAge}" />
                                                                         </p:inputText>
                                                                     </div>
                                                                     <div class="col-md-2">
-                                                                        <p:inputText autocomplete="off" id="day" placeholder="Days" value="#{retailSaleNativeSqlController.patient.person.ageDaysComponent}" class="form-control">
-                                                                            <f:ajax event="keyup" execute="@this" render="dpDob" listener="#{retailSaleNativeSqlController.calculateDobFromAge}" />
+                                                                        <p:inputText autocomplete="off" id="day" placeholder="Days" value="#{retailSaleNativeSqlController1.patient.person.ageDaysComponent}" class="form-control">
+                                                                            <f:ajax event="keyup" execute="@this" render="dpDob" listener="#{retailSaleNativeSqlController1.calculateDobFromAge}" />
                                                                         </p:inputText>
                                                                     </div>
                                                                     <div class="col-md-6">
                                                                         <p:datePicker
-                                                                            value="#{retailSaleNativeSqlController.patient.person.dob}"
+                                                                            value="#{retailSaleNativeSqlController1.patient.person.dob}"
                                                                             id="dpDob"
                                                                             class="w-100"
                                                                             yearNavigator="true"
@@ -522,21 +522,21 @@
                                                         </div>
                                                         <div class="row">
                                                             <div class="col-md-3 p-1">
-                                                                <p:inputText id="txtMobile" autocomplete="off" placeholder="Mobile Number" value="#{retailSaleNativeSqlController.patient.mobileNumberStringTransient}" class="form-control" />
+                                                                <p:inputText id="txtMobile" autocomplete="off" placeholder="Mobile Number" value="#{retailSaleNativeSqlController1.patient.mobileNumberStringTransient}" class="form-control" />
                                                             </div>
                                                             <div class="col-md-3 p-1">
-                                                                <p:inputText id="txtPhone" autocomplete="off" placeholder="Phone Number" value="#{retailSaleNativeSqlController.patient.phoneNumberStringTransient}" class="form-control" />
+                                                                <p:inputText id="txtPhone" autocomplete="off" placeholder="Phone Number" value="#{retailSaleNativeSqlController1.patient.phoneNumberStringTransient}" class="form-control" />
                                                             </div>
                                                             <div class="col-md-3 p-1">
-                                                                <p:inputText autocomplete="off" id="txtEmail" placeholder="Email" value="#{retailSaleNativeSqlController.patient.person.email}" class="form-control" />
+                                                                <p:inputText autocomplete="off" id="txtEmail" placeholder="Email" value="#{retailSaleNativeSqlController1.patient.person.email}" class="form-control" />
                                                             </div>
                                                             <div class="col-md-3 p-1">
-                                                                <p:inputText id="txtNic" autocomplete="off" placeholder="National ID Number" value="#{retailSaleNativeSqlController.patient.person.nic}" class="form-control" />
+                                                                <p:inputText id="txtNic" autocomplete="off" placeholder="National ID Number" value="#{retailSaleNativeSqlController1.patient.person.nic}" class="form-control" />
                                                             </div>
                                                         </div>
                                                         <div class="row">
                                                             <div class="col-md-8 p-1">
-                                                                <p:inputText id="txtAddress" autocomplete="off" placeholder="Address" value="#{retailSaleNativeSqlController.patient.person.address}" class="form-control" />
+                                                                <p:inputText id="txtAddress" autocomplete="off" placeholder="Address" value="#{retailSaleNativeSqlController1.patient.person.address}" class="form-control" />
                                                             </div>
                                                             <div class="col-md-4 p-1">
                                                                 <p:autoComplete
@@ -545,7 +545,7 @@
                                                                     completeMethod="#{areaController.completeArea}"
                                                                     var="pta" itemLabel="#{pta.name}"
                                                                     itemValue="#{pta}" forceSelection="true"
-                                                                    value="#{retailSaleNativeSqlController.patient.person.area}"
+                                                                    value="#{retailSaleNativeSqlController1.patient.person.area}"
                                                                     inputStyleClass="form-control"
                                                                     class="w-100" />
                                                             </div>
@@ -555,24 +555,24 @@
                                             </h:panelGroup>
 
                                             <h:panelGroup id="viewPatient">
-                                                <h:panelGroup rendered="#{not retailSaleNativeSqlController.patientDetailsEditable}">
+                                                <h:panelGroup rendered="#{not retailSaleNativeSqlController1.patientDetailsEditable}">
                                                     <h:panelGroup rendered="#{patientController.quickSearchPatientList eq null}">
-                                                        <h:panelGrid columns="3" class="my-1" rendered="#{retailSaleNativeSqlController.patient ne null}">
+                                                        <h:panelGrid columns="3" class="my-1" rendered="#{retailSaleNativeSqlController1.patient ne null}">
                                                             <h:outputLabel value="Name" class="mx-3" />
                                                             <h:outputLabel value=" : " class="mx-3" />
-                                                            <h:outputText value="#{retailSaleNativeSqlController.patient.person.nameWithTitle}" />
+                                                            <h:outputText value="#{retailSaleNativeSqlController1.patient.person.nameWithTitle}" />
                                                             <h:outputLabel value="Gender" class="mx-3" />
                                                             <h:outputLabel value=" : " class="mx-3" />
-                                                            <h:outputText value="#{retailSaleNativeSqlController.patient.person.sex}" />
+                                                            <h:outputText value="#{retailSaleNativeSqlController1.patient.person.sex}" />
                                                             <h:outputLabel value="Mobile No." class="mx-3" />
                                                             <h:outputLabel value=" : " class="mx-3" />
-                                                            <h:outputText value="#{retailSaleNativeSqlController.patient.person.mobile}" />
+                                                            <h:outputText value="#{retailSaleNativeSqlController1.patient.person.mobile}" />
                                                             <h:outputLabel value="Phone No." class="mx-3" />
                                                             <h:outputLabel value=" : " class="mx-3" />
-                                                            <h:outputText value="#{retailSaleNativeSqlController.patient.person.phone}" />
+                                                            <h:outputText value="#{retailSaleNativeSqlController1.patient.person.phone}" />
                                                             <h:outputLabel value="NIC" class="mx-3" />
                                                             <h:outputLabel value=" : " class="mx-3" />
-                                                            <h:outputText value="#{empty retailSaleNativeSqlController.patient.person.nic ? 'N/A' : retailSaleNativeSqlController.patient.person.nic}" />
+                                                            <h:outputText value="#{empty retailSaleNativeSqlController1.patient.person.nic ? 'N/A' : retailSaleNativeSqlController1.patient.person.nic}" />
                                                         </h:panelGrid>
                                                     </h:panelGroup>
                                                 </h:panelGroup>
@@ -591,21 +591,21 @@
                                                         <div class="col-md-5">
                                                             <p:selectOneMenu
                                                                 id="pay"
-                                                                value="#{retailSaleNativeSqlController.paymentMethod}"
+                                                                value="#{retailSaleNativeSqlController1.paymentMethod}"
                                                                 required="true"
                                                                 requiredMessage="Please select a payment method">
                                                                 <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}" var="p" itemLabel="#{p.label}" itemValue="#{p}" />
-                                                                <p:ajax process="@this cmbPs cmbPaymentScheme" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController.listnerForPaymentMethodChange()}" />
+                                                                <p:ajax process="@this cmbPs cmbPaymentScheme" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController1.listnerForPaymentMethodChange()}" />
                                                             </p:selectOneMenu>
 
                                                             <p:selectOneMenu
                                                                 id="cmbPaymentScheme"
-                                                                value="#{retailSaleNativeSqlController.paymentScheme}"
+                                                                value="#{retailSaleNativeSqlController1.paymentScheme}"
                                                                 rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq true}"
                                                                 required="true"
                                                                 requiredMessage="Please select a payment scheme">
                                                                 <f:selectItems value="#{paymentSchemeController.items}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
-                                                                <p:ajax process="@this pay" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController.listnerForPaymentMethodChange()}" />
+                                                                <p:ajax process="@this pay" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController1.listnerForPaymentMethodChange()}" />
                                                             </p:selectOneMenu>
                                                         </div>
                                                     </div>
@@ -614,7 +614,7 @@
                                                         <div class="my-1">
                                                             <h:panelGroup id="panelPaymentDetails" class="row">
                                                                 <div class="col">
-                                                                    <h:panelGroup class="row" layout="block" rendered="#{retailSaleNativeSqlController.paymentMethod eq 'Credit'}">
+                                                                    <h:panelGroup class="row" layout="block" rendered="#{retailSaleNativeSqlController1.paymentMethod eq 'Credit'}">
                                                                         <div class="my-1">
                                                                             <div class="row">
                                                                                 <div class="col-12">
@@ -624,7 +624,7 @@
                                                                                             class="w-100"
                                                                                             inputStyleClass="form-control"
                                                                                             forceSelection="true"
-                                                                                            value="#{retailSaleNativeSqlController.paymentMethodData.credit.institution}"
+                                                                                            value="#{retailSaleNativeSqlController1.paymentMethodData.credit.institution}"
                                                                                             completeMethod="#{institutionController.completeCreditCompany}"
                                                                                             var="ix"
                                                                                             required="true"
@@ -634,25 +634,25 @@
                                                                                             itemLabel="#{ix.name}"
                                                                                             itemValue="#{ix}"
                                                                                             size="10">
-                                                                                            <f:ajax event="itemSelect" listener="#{retailSaleNativeSqlController.calTotal()}" execute="@this" render=":#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}" />
+                                                                                            <f:ajax event="itemSelect" listener="#{retailSaleNativeSqlController1.calTotal()}" execute="@this" render=":#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}" />
                                                                                         </p:autoComplete>
-                                                                                        <p:inputText id="polNo" style="width: 100px;" value="#{retailSaleNativeSqlController.paymentMethodData.credit.referralNo}" placeholder="Policy NO" required="true" requiredMessage="Please enter a policy number" />
-                                                                                        <p:inputText id="refNo" style="width: 100px;" required="true" requiredMessage="Please enter a Reference Number" value="#{retailSaleNativeSqlController.paymentMethodData.credit.referenceNo}" placeholder="Reference NO" />
-                                                                                        <p:inputText id="memo" style="width: 300px;" required="true" requiredMessage="Please Enter a comment" value="#{retailSaleNativeSqlController.paymentMethodData.credit.comment}" placeholder="Memo" />
+                                                                                        <p:inputText id="polNo" style="width: 100px;" value="#{retailSaleNativeSqlController1.paymentMethodData.credit.referralNo}" placeholder="Policy NO" required="true" requiredMessage="Please enter a policy number" />
+                                                                                        <p:inputText id="refNo" style="width: 100px;" required="true" requiredMessage="Please enter a Reference Number" value="#{retailSaleNativeSqlController1.paymentMethodData.credit.referenceNo}" placeholder="Reference NO" />
+                                                                                        <p:inputText id="memo" style="width: 300px;" required="true" requiredMessage="Please Enter a comment" value="#{retailSaleNativeSqlController1.paymentMethodData.credit.comment}" placeholder="Memo" />
                                                                                     </div>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
                                                                     </h:panelGroup>
 
-                                                                    <h:panelGroup class="row" layout="block" rendered="#{retailSaleNativeSqlController.paymentMethod eq 'Staff'}">
+                                                                    <h:panelGroup class="row" layout="block" rendered="#{retailSaleNativeSqlController1.paymentMethod eq 'Staff'}">
                                                                         <div class="my-1">
                                                                             <div class="row mt-1">
                                                                                 <div class="col-12">
                                                                                     <p:autoComplete
                                                                                         minQueryLength="2"
                                                                                         forceSelection="true"
-                                                                                        value="#{retailSaleNativeSqlController.toStaff}"
+                                                                                        value="#{retailSaleNativeSqlController1.toStaff}"
                                                                                         id="creditStaff"
                                                                                         completeMethod="#{staffController.completeStaff}"
                                                                                         var="mys"
@@ -666,21 +666,21 @@
                                                                                         size="10">
                                                                                         <p:column headerText="Name" style="padding: 2px;"><h:outputText value="#{mys.person.nameWithTitle}" /></p:column>
                                                                                         <p:column headerText="EPF" style="padding: 2px;"><h:outputText value="#{mys.epfNo}" /></p:column>
-                                                                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}" event="itemSelect" listener="#{retailSaleNativeSqlController.calTotal()}" />
+                                                                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}" event="itemSelect" listener="#{retailSaleNativeSqlController1.calTotal()}" />
                                                                                     </p:autoComplete>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
                                                                     </h:panelGroup>
 
-                                                                    <h:panelGroup class="row" layout="block" rendered="#{retailSaleNativeSqlController.paymentMethod eq 'Staff_Welfare'}">
+                                                                    <h:panelGroup class="row" layout="block" rendered="#{retailSaleNativeSqlController1.paymentMethod eq 'Staff_Welfare'}">
                                                                         <div class="my-1">
                                                                             <div class="row mt-1">
                                                                                 <div class="col-12">
                                                                                     <p:autoComplete
                                                                                         minQueryLength="1"
                                                                                         forceSelection="true"
-                                                                                        value="#{retailSaleNativeSqlController.toStaff}"
+                                                                                        value="#{retailSaleNativeSqlController1.toStaff}"
                                                                                         id="welfareStaff"
                                                                                         completeMethod="#{staffController.completeStaff}"
                                                                                         var="mys"
@@ -694,36 +694,36 @@
                                                                                         size="10">
                                                                                         <p:column headerText="Name" style="padding: 2px;"><h:outputText value="#{mys.person.nameWithTitle}" /></p:column>
                                                                                         <p:column headerText="EPF" style="padding: 2px;"><h:outputText value="#{mys.epfNo}" /></p:column>
-                                                                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}" event="itemSelect" listener="#{retailSaleNativeSqlController.calTotal()}" />
+                                                                                        <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('panelBillDetails', view).clientId}" event="itemSelect" listener="#{retailSaleNativeSqlController1.calTotal()}" />
                                                                                     </p:autoComplete>
                                                                                 </div>
                                                                             </div>
                                                                         </div>
                                                                     </h:panelGroup>
 
-                                                                    <h:panelGroup id="creditCard" rendered="#{retailSaleNativeSqlController.paymentMethod eq 'Card'}">
-                                                                        <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{retailSaleNativeSqlController.paymentMethodData}" />
+                                                                    <h:panelGroup id="creditCard" rendered="#{retailSaleNativeSqlController1.paymentMethod eq 'Card'}">
+                                                                        <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{retailSaleNativeSqlController1.paymentMethodData}" />
                                                                     </h:panelGroup>
-                                                                    <h:panelGroup id="ptdeposit" rendered="#{retailSaleNativeSqlController.paymentMethod eq 'PatientDeposit'}">
-                                                                        <pa:patient_deposit paymentMethodData="#{retailSaleNativeSqlController.paymentMethodData}" />
+                                                                    <h:panelGroup id="ptdeposit" rendered="#{retailSaleNativeSqlController1.paymentMethod eq 'PatientDeposit'}">
+                                                                        <pa:patient_deposit paymentMethodData="#{retailSaleNativeSqlController1.paymentMethodData}" />
                                                                     </h:panelGroup>
-                                                                    <h:panelGroup id="ewallet" rendered="#{retailSaleNativeSqlController.paymentMethod eq 'ewallet'}">
-                                                                        <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{retailSaleNativeSqlController.paymentMethodData}" />
+                                                                    <h:panelGroup id="ewallet" rendered="#{retailSaleNativeSqlController1.paymentMethod eq 'ewallet'}">
+                                                                        <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{retailSaleNativeSqlController1.paymentMethodData}" />
                                                                     </h:panelGroup>
-                                                                    <h:panelGroup id="cheque" rendered="#{retailSaleNativeSqlController.paymentMethod eq 'Cheque'}">
-                                                                        <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{retailSaleNativeSqlController.paymentMethodData}" />
+                                                                    <h:panelGroup id="cheque" rendered="#{retailSaleNativeSqlController1.paymentMethod eq 'Cheque'}">
+                                                                        <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{retailSaleNativeSqlController1.paymentMethodData}" />
                                                                     </h:panelGroup>
-                                                                    <h:panelGroup id="slip" rendered="#{retailSaleNativeSqlController.paymentMethod eq 'Slip'}">
-                                                                        <pa:slipDetailsAsOnlyPayment paymentMethodData="#{retailSaleNativeSqlController.paymentMethodData}" />
+                                                                    <h:panelGroup id="slip" rendered="#{retailSaleNativeSqlController1.paymentMethod eq 'Slip'}">
+                                                                        <pa:slipDetailsAsOnlyPayment paymentMethodData="#{retailSaleNativeSqlController1.paymentMethodData}" />
                                                                     </h:panelGroup>
-                                                                    <h:panelGroup id="iou" rendered="#{retailSaleNativeSqlController.paymentMethod eq 'IOU'}">
-                                                                        <pa:iouDetailsAsOnlyPayment paymentMethodData="#{retailSaleNativeSqlController.paymentMethodData}" />
+                                                                    <h:panelGroup id="iou" rendered="#{retailSaleNativeSqlController1.paymentMethod eq 'IOU'}">
+                                                                        <pa:iouDetailsAsOnlyPayment paymentMethodData="#{retailSaleNativeSqlController1.paymentMethodData}" />
                                                                     </h:panelGroup>
-                                                                    <h:panelGroup class="row my-1 w-100" layout="block" id="multiplePaymentMethods" rendered="#{retailSaleNativeSqlController.paymentMethod eq 'MultiplePaymentMethods'}">
+                                                                    <h:panelGroup class="row my-1 w-100" layout="block" id="multiplePaymentMethods" rendered="#{retailSaleNativeSqlController1.paymentMethod eq 'MultiplePaymentMethods'}">
                                                                         <pa:multiple_payment_methods
                                                                             id="panelMultiplePaymentDetails"
                                                                             class="w-100"
-                                                                            controller="#{retailSaleNativeSqlController}"
+                                                                            controller="#{retailSaleNativeSqlController1}"
                                                                             paymentMethods="#{enumController.paymentMethodsUnderMultipleForPharmacyBilling}" />
                                                                     </h:panelGroup>
                                                                 </div>
@@ -734,12 +734,12 @@
                                                     <div class="col-5">
                                                         <p:selectOneMenu
                                                             id="cmbPs"
-                                                            value="#{retailSaleNativeSqlController.paymentScheme}"
+                                                            value="#{retailSaleNativeSqlController1.paymentScheme}"
                                                             rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}"
                                                             class="my-1">
                                                             <f:selectItem itemLabel="Discount Scheme" />
                                                             <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}" />
-                                                            <p:ajax process="@this pay" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController.listnerForPaymentMethodChange()}" />
+                                                            <p:ajax process="@this pay" update="panelBillDetails panelPaymentDetails" event="change" listener="#{retailSaleNativeSqlController1.listnerForPaymentMethodChange()}" />
                                                         </p:selectOneMenu>
                                                     </div>
 
@@ -748,14 +748,14 @@
                                                         <p:autoComplete
                                                             forceSelection="true"
                                                             id="cmbDoc"
-                                                            value="#{retailSaleNativeSqlController.preBill.referredBy}"
+                                                            value="#{retailSaleNativeSqlController1.preBill.referredBy}"
                                                             completeMethod="#{doctorController.completeDoctor}"
                                                             var="ix" itemLabel="#{ix.person.name}"
                                                             itemValue="#{ix}" size="40"
                                                             class="mx-4 w-100 mt-1"
                                                             inputStyleClass="form-control" />
                                                         <p:outputLabel value="Comments" />
-                                                        <p:inputTextarea id="txtComment" class="w-100 mx-4" value="#{retailSaleNativeSqlController.comment}" />
+                                                        <p:inputTextarea id="txtComment" class="w-100 mx-4" value="#{retailSaleNativeSqlController1.comment}" />
                                                     </h:panelGrid>
                                                 </p:panel>
 
@@ -768,19 +768,19 @@
                                                     <h:panelGrid columns="2" columnClasses="numberCol, textCol">
                                                         <h:outputLabel value="Total" />
                                                         <h:panelGroup layout="block" class="text-end mx-4 my-1">
-                                                            <h:outputLabel id="total" value="#{retailSaleNativeSqlController.preBill.total}">
+                                                            <h:outputLabel id="total" value="#{retailSaleNativeSqlController1.preBill.total}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </h:panelGroup>
                                                         <h:outputLabel value="Discount" />
                                                         <h:panelGroup layout="block" class="text-end mx-4 my-1">
-                                                            <h:outputLabel id="dis" value="#{retailSaleNativeSqlController.preBill.discount}">
+                                                            <h:outputLabel id="dis" value="#{retailSaleNativeSqlController1.preBill.discount}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </h:panelGroup>
                                                         <h:outputLabel value="Net Total" />
                                                         <h:panelGroup layout="block" class="text-end mx-4 my-1">
-                                                            <h:outputLabel id="netTotal" value="#{retailSaleNativeSqlController.preBill.netTotal}">
+                                                            <h:outputLabel id="netTotal" value="#{retailSaleNativeSqlController1.preBill.netTotal}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </h:panelGroup>
@@ -788,7 +788,7 @@
                                                         <h:panelGroup layout="block" class="text-end mx-4 my-1">
                                                             <p:inputText
                                                                 id="paid"
-                                                                value="#{retailSaleNativeSqlController.cashPaid}"
+                                                                value="#{retailSaleNativeSqlController1.cashPaid}"
                                                                 class="form-control text-end"
                                                                 autocomplete="off"
                                                                 accesskey="t"
@@ -798,7 +798,7 @@
                                                         </h:panelGroup>
                                                         <h:outputLabel value="Balance" />
                                                         <h:panelGroup layout="block" class="text-end mx-4 my-1">
-                                                            <h:outputLabel id="balance" value="#{retailSaleNativeSqlController.balance}">
+                                                            <h:outputLabel id="balance" value="#{retailSaleNativeSqlController1.balance}">
                                                                 <f:convertNumber pattern="#,##0.00" />
                                                             </h:outputLabel>
                                                         </h:panelGroup>
@@ -817,7 +817,7 @@
                      PRINT / PREVIEW PANEL (shown after settle)
                      ============================================================ -->
                 <h:form>
-                    <p:panel rendered="#{retailSaleNativeSqlController.billPreview}">
+                    <p:panel rendered="#{retailSaleNativeSqlController1.billPreview}">
                         <div class="row">
                             <div class="col-3">
                                 <p:commandButton
@@ -843,9 +843,9 @@
                                         value="New Sale"
                                         icon="fa fa-plus"
                                         ajax="false"
-                                        action="pharmacy_bill_retail_sale_native"
+                                        action="pharmacy_bill_retail_sale_native_1"
                                         class="ui-button-warning mx-2"
-                                        actionListener="#{retailSaleNativeSqlController.resetAll()}" />
+                                        actionListener="#{retailSaleNativeSqlController1.resetAll()}" />
                                     <p:commandButton
                                         accesskey="p"
                                         id="btnPrint"
@@ -867,7 +867,7 @@
                                     icon="fas fa-file-invoice"
                                     value="Sale 1"
                                     title="Sale window 1"
-                                    ajax="false" disabled="true"
+                                    ajax="false"
                                     action="pharmacy_bill_retail_sale_native?faces-redirect=true"
                                     actionListener="#{retailSaleNativeSqlController.switchToThisSaleWindow()}"
                                     rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
@@ -876,7 +876,7 @@
                                     icon="fas fa-file-invoice"
                                     value="Sale 2"
                                     title="Sale window 2"
-                                    ajax="false"
+                                    ajax="false" disabled="true"
                                     action="pharmacy_bill_retail_sale_native_1?faces-redirect=true"
                                     actionListener="#{retailSaleNativeSqlController1.switchToThisSaleWindow()}"
                                     rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
@@ -904,41 +904,41 @@
                         <h:panelGroup id="gpBillPreview">
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper', true)}">
 <!--                                <phi:saleBill_without_item_native
-                                    bill="#{retailSaleNativeSqlController.printBill}"
-                                    items="#{retailSaleNativeSqlController.printBillItems}" />-->
+                                    bill="#{retailSaleNativeSqlController1.printBill}"
+                                    items="#{retailSaleNativeSqlController1.printBillItems}" />-->
                                 <phi:saleBill_native
-                                    bill="#{retailSaleNativeSqlController.printBill}"
-                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                                    bill="#{retailSaleNativeSqlController1.printBill}"
+                                    items="#{retailSaleNativeSqlController1.printBillItems}" />
                             </h:panelGroup>
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS Paper Custom 1', false)}">
                                 <phi:saleBill_Retail_Pos_paper_Custom_1_native
-                                    bill="#{retailSaleNativeSqlController.printBill}"
-                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                                    bill="#{retailSaleNativeSqlController1.printBill}"
+                                    items="#{retailSaleNativeSqlController1.printBillItems}" />
                             </h:panelGroup>
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is FiveFive Paper without Blank Space for Header', true)}">
                                 <phi:saleBill_five_five_native
-                                    bill="#{retailSaleNativeSqlController.printBill}"
-                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                                    bill="#{retailSaleNativeSqlController1.printBill}"
+                                    items="#{retailSaleNativeSqlController1.printBillItems}" />
                             </h:panelGroup>
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS paper with header', true)}">
                                 <phi:saleBill_Header_Inward_native
-                                    bill="#{retailSaleNativeSqlController.printBill}"
-                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                                    bill="#{retailSaleNativeSqlController1.printBill}"
+                                    items="#{retailSaleNativeSqlController1.printBillItems}" />
                             </h:panelGroup>
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 2', false)}">
                                 <phi:sale_for_cashier_bill_five_five_custom_2_native
-                                    bill="#{retailSaleNativeSqlController.printBill}"
-                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                                    bill="#{retailSaleNativeSqlController1.printBill}"
+                                    items="#{retailSaleNativeSqlController1.printBillItems}" />
                             </h:panelGroup>
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is Custom 3', false)}">
                                 <phi:sale_bill_five_five_custom_3_native
-                                    bill="#{retailSaleNativeSqlController.printBill}"
-                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                                    bill="#{retailSaleNativeSqlController1.printBill}"
+                                    items="#{retailSaleNativeSqlController1.printBillItems}" />
                             </h:panelGroup>
                             <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper', false)}">
                                 <phi:saleBill_Header_Inward_native
-                                    bill="#{retailSaleNativeSqlController.printBill}"
-                                    items="#{retailSaleNativeSqlController.printBillItems}" />
+                                    bill="#{retailSaleNativeSqlController1.printBill}"
+                                    items="#{retailSaleNativeSqlController1.printBillItems}" />
                             </h:panelGroup>
                         </h:panelGroup>
                     </p:panel>
