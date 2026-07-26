@@ -100,6 +100,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.ReorderEvent;
 import org.primefaces.event.RowEditEvent;
@@ -1726,7 +1727,11 @@ public class BhtSummeryController implements Serializable {
         }
         jpql.append("AND (pr2.dischargedAt IS NULL OR pr2.dischargedAt > :from)");
         params.put("from", patientRoom.getAdmittedAt());
-        List<PatientRoom> overlaps = getPatientRoomFacade().findByJpql(jpql.toString(), params);
+        // TemporalType.TIMESTAMP is required: the 2-arg findByJpql overload binds
+        // every Date with TemporalType.DATE, truncating admittedAt/dischargedAt to
+        // midnight, so two stays merely sharing a calendar day were reported as
+        // overlapping even when the times did not actually conflict.
+        List<PatientRoom> overlaps = getPatientRoomFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
         return overlaps != null ? overlaps : new ArrayList<>();
     }
 
