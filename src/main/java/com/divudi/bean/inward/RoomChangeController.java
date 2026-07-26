@@ -306,6 +306,7 @@ public class RoomChangeController implements Serializable {
         }
 
         recordRoomAuditEvent(pR, "Room Removed", beforeState);
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
     }
 
     public void discharge(PatientRoom pR) {
@@ -330,6 +331,7 @@ public class RoomChangeController implements Serializable {
         }
 
         recordRoomAuditEvent(pR, "Room Discharged", beforeState);
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
     }
 
     public void dischargeWithCurrentTime(PatientRoom pR) {
@@ -477,6 +479,7 @@ public class RoomChangeController implements Serializable {
         }
 
         recordRoomAuditEvent(pR, "Guardian Room Removed", beforeState);
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
     }
 
     public void recreate() {
