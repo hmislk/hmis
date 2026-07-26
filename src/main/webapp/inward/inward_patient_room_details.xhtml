@@ -43,6 +43,9 @@
                             <p style="color:#b71c1c; font-weight:bold; font-size:1.1em;">
                                 &#9888; WARNING: This room's time range overlaps another room period for this patient or bed.
                             </p>
+                            <p style="color:#b71c1c;">
+                                <h:outputText value="#{bhtSummeryController.pendingOverlapDescription}"/>
+                            </p>
                             <p>Are you sure you want to save this room with the overlapping time range?</p>
                             <div class="d-flex justify-content-end gap-2 mt-3">
                                 <p:commandButton value="Cancel" icon="fa fa-times" class="ui-button-secondary"
@@ -157,7 +160,8 @@
                                                     <p:badge value="Active" severity="warning"/>
                                                 </h:panelGroup>
                                                 <h:panelGroup rendered="#{bhtSummeryController.hasOverlap(rm)}">
-                                                    <p:tag value="Overlap" icon="fa fa-exclamation-triangle" severity="danger"/>
+                                                    <p:tag value="Overlap" icon="fa fa-exclamation-triangle" severity="danger"
+                                                           title="#{bhtSummeryController.getOverlapDescription(rm)}"/>
                                                 </h:panelGroup>
                                             </div>
                                         </p:column>
