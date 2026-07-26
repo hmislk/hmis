@@ -304,6 +304,18 @@ public class BhtSummeryController implements Serializable {
     private transient long cachedUnifiedGanttBarsComputedAtMillis;
     private static final long UNIFIED_GANTT_BARS_CACHE_TTL_MILLIS = 5000;
 
+    /**
+     * Clears the Gantt bar cache immediately. The 5s TTL above is a safety
+     * net for the wall-clock "Now" marker, which has no explicit save event
+     * to hook into - but any action that actually persists a room's
+     * admitted/discharged/retired state must call this so the same AJAX
+     * response reflects the change instead of waiting out the TTL.
+     */
+    public void invalidateUnifiedGanttBarsCache() {
+        cachedUnifiedGanttBars = null;
+        cachedUnifiedGanttBarsComputedAtMillis = 0;
+    }
+
     public List<RoomGanttBar> getUnifiedGanttBars() {
         if (cachedUnifiedGanttBars != null
                 && (System.currentTimeMillis() - cachedUnifiedGanttBarsComputedAtMillis) < UNIFIED_GANTT_BARS_CACHE_TTL_MILLIS) {
@@ -1810,6 +1822,8 @@ public class BhtSummeryController implements Serializable {
         } else {
             getPatientRoomFacade().create(patientRoom);
         }
+
+        invalidateUnifiedGanttBarsCache();
 
         // Refresh the tables or any other necessary actions after saving
         createTables();
@@ -3719,8 +3733,7 @@ public class BhtSummeryController implements Serializable {
     public void setPatientEncounter(PatientEncounter patientEncounter) {
 //        makeNull();
         this.patientEncounter = patientEncounter;
-        cachedUnifiedGanttBars = null;
-        cachedUnifiedGanttBarsComputedAtMillis = 0;
+        invalidateUnifiedGanttBarsCache();
     }
 
     public SessionController getSessionController() {
