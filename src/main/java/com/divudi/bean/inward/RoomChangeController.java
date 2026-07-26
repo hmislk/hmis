@@ -370,6 +370,7 @@ public class RoomChangeController implements Serializable {
 
         // Record audit event
         recordRoomAuditEvent(pR, "Room Discharged", beforeState);
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
 
         JsfUtil.addSuccessMessage("Successfully Discharged from Room");
     }
@@ -389,6 +390,7 @@ public class RoomChangeController implements Serializable {
         // Record audit event
         recordRoomAuditEvent(pR, "Room Discharge Cancelled", beforeState);
         notificationController.createNotification(pR, "CancelDischarge");
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
 
         JsfUtil.addSuccessMessage("Room Discharge Cancelled");
     }
@@ -450,6 +452,7 @@ public class RoomChangeController implements Serializable {
         pR.setRetirer(sessionController.getWebUser());
         getPatientRoomFacade().edit(pR);
         bhtSummeryController.setPatientRooms(null);
+        bhtSummeryController.invalidateUnifiedGanttBarsCache();
         recordRoomAuditEvent(pR, "Room Removed", beforeState);
     }
 
