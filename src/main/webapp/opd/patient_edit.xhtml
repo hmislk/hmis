@@ -231,7 +231,7 @@
                                                             </h:outputText>
                                                         </p:column>
                                                         <p:column headerText="">
-                                                            <p:commandLink value="View" action="#{patientController.viewDuplicatePatientProfile(dup)}" ajax="false" styleClass="ui-button ui-button-info" />
+                                                            <p:commandLink value="View" action="#{patientController.viewDuplicatePatientProfile(dup)}" ajax="false" immediate="true" styleClass="ui-button ui-button-info" />
                                                         </p:column>
                                                     </p:dataTable>
                                                 </h:panelGroup>

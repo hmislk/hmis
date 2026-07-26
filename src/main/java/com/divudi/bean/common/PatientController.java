@@ -3526,11 +3526,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
         List<String> orConditions = new ArrayList<>();
         if (hasNic) {
-            orConditions.add("p.person.nic = :nic");
+            orConditions.add("UPPER(p.person.nic) = UPPER(:nic)");
             params.put("nic", nic.trim());
         }
         if (hasNameDob) {
-            orConditions.add("(p.person.name = :name and p.person.dob = :dob)");
+            orConditions.add("(UPPER(p.person.name) = UPPER(:name) and p.person.dob = :dob)");
             params.put("name", name.trim());
             params.put("dob", dob);
         }
