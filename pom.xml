@@ -321,7 +321,7 @@
         <dependency>
             <groupId>org.omnifaces</groupId>
             <artifactId>omnifaces</artifactId>
-            <version>3.14.16</version>
+            <version>3.14.23</version>
         </dependency>
 
         <!-- JFreeChart -->
