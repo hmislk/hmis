@@ -3128,7 +3128,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         bhtText = getInwardBean().getBhtTextPreview(getCurrent().getAdmissionType());
 
-        getPatientRoom().setRoomFacilityCharge(getCurrent().getAdmissionType().getRoomFacilityCharge());
+        // Baby admissions never get a room of their own — the baby stays in the
+        // mother's room. Skip applying the admission type's default/package room
+        // facility charge here, otherwise picking a package-priced admission type
+        // would silently create a PatientRoom and double-charge the room fee (#9900).
+        if (!isBabyAdmission()) {
+            getPatientRoom().setRoomFacilityCharge(getCurrent().getAdmissionType().getRoomFacilityCharge());
+        }
     }
 
     public String getBhtText() {
