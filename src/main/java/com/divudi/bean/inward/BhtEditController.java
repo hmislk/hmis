@@ -730,6 +730,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             return "";
         }
         comment = null;
+        createPatientRoom();
         return "/inward/inward_cancel_admission?faces-redirect=true";
     }
 
