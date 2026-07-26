@@ -1692,6 +1692,9 @@ public class BhtSummeryController implements Serializable {
         if (patientRoom == null || patientRoom.getAdmittedAt() == null || patientRoom.getPatientEncounter() == null) {
             return new ArrayList<>();
         }
+        if (patientRoom.getDischargedAt() != null && patientRoom.getDischargedAt().before(patientRoom.getAdmittedAt())) {
+            return new ArrayList<>();
+        }
         if (patientRoom instanceof GuardianRoom || patientRoom instanceof TheatreRoom) {
             return new ArrayList<>();
         }
@@ -1750,7 +1753,8 @@ public class BhtSummeryController implements Serializable {
             if (i > 0) {
                 sb.append(", ");
             }
-            String roomName = pr2.getRoomFacilityCharge() != null ? pr2.getRoomFacilityCharge().getName() : "an unnamed room";
+            String roomName = pr2.getRoomFacilityCharge() != null && pr2.getRoomFacilityCharge().getName() != null
+                    ? pr2.getRoomFacilityCharge().getName() : "an unnamed room";
             sb.append(roomName).append(pr2.getDischargedAt() == null ? " (Active)" : " (Left)");
         }
         return sb.toString();
