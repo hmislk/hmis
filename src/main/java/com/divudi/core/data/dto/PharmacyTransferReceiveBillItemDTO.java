@@ -24,6 +24,7 @@ public class PharmacyTransferReceiveBillItemDTO implements Serializable {
     private Double purchaseValue;
     private Double transferRate;
     private Double transferValue;
+    private Long billId;
 
     public PharmacyTransferReceiveBillItemDTO() {
     }
@@ -93,7 +94,45 @@ public class PharmacyTransferReceiveBillItemDTO implements Serializable {
         this.transferRate = transferRate != null ? transferRate.doubleValue() : null;
         this.transferValue = transferValue != null ? transferValue.doubleValue() : null;
     }
+    
+    public PharmacyTransferReceiveBillItemDTO(
+            Long billId,
+            Object billClass,
+            String deptId,
+            Date createdAt,
+            String itemName,
+            String itemCode,
+            Double qty,
+            Double costRate,
+            java.math.BigDecimal costValue,
+            Double retailRate,
+            java.math.BigDecimal retailValue,
+            Double purchaseRate,
+            java.math.BigDecimal purchaseValue,
+            java.math.BigDecimal transferRate,
+            java.math.BigDecimal transferValue) {
 
+        this.billClassSimpleName = extractSimpleClassName(billClass);
+        this.billId = billId;
+        this.deptId = deptId;
+        this.createdAt = createdAt;
+        this.itemName = itemName;
+        this.itemCode = itemCode;
+        this.qty = qty;
+        this.costRate = costRate;
+        this.costValue = costValue != null ? costValue.doubleValue() : null;
+        this.retailRate = retailRate;
+        this.retailValue = retailValue != null
+                ? retailValue.doubleValue() : null;
+        this.purchaseRate = purchaseRate;
+        this.purchaseValue = purchaseValue != null
+                ? purchaseValue.doubleValue() : null;
+        this.transferRate = transferRate != null
+                ? transferRate.doubleValue() : null;
+        this.transferValue = transferValue != null
+                ? transferValue.doubleValue() : null;
+    }
+    
     /**
      * Helper method to extract simple class name from TYPE(b) result.
      */
@@ -227,7 +266,15 @@ public class PharmacyTransferReceiveBillItemDTO implements Serializable {
     public void setBillClassSimpleName(String billClassSimpleName) {
         this.billClassSimpleName = billClassSimpleName;
     }
-
+    
+    public Long getBillId() {
+        return billId;
+    }
+    
+    public void setBillId(Long billId) {
+        this.billId = billId;
+    }
+    
     /**
      * Helper method to check if this is a cancelled receive item.
      * Used in XHTML for conditional styling.
