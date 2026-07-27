@@ -11,6 +11,7 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
@@ -93,11 +94,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.ReorderEvent;
 import org.primefaces.event.RowEditEvent;
@@ -161,6 +164,8 @@ public class BhtSummeryController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
+    ConfigOptionController configOptionController;
+    @Inject
     AdmissionController admissionController;
     @Inject
     InwardPaymentController inwardPaymentController;
@@ -206,6 +211,13 @@ public class BhtSummeryController implements Serializable {
     Date toDate;
     private Date date;
     private boolean printPreview;
+    //////////////////////////
+    // Custom2 (Custom Bills tab) print-format settings
+    private boolean custom2ShowAddress;
+    private boolean custom2ShowNic;
+    private boolean custom2ShowPhone;
+    private boolean custom2ShowGuardian;
+    private boolean custom2ShowCorporateSponsor;
     @Inject
     private InwardMemberShipDiscount inwardMemberShipDiscount;
     @Inject
@@ -289,9 +301,24 @@ public class BhtSummeryController implements Serializable {
      * Theatre bars are amber (active) or grey (completed).
      */
     private transient List<RoomGanttBar> cachedUnifiedGanttBars;
+    private transient long cachedUnifiedGanttBarsComputedAtMillis;
+    private static final long UNIFIED_GANTT_BARS_CACHE_TTL_MILLIS = 5000;
+
+    /**
+     * Clears the Gantt bar cache immediately. The 5s TTL above is a safety
+     * net for the wall-clock "Now" marker, which has no explicit save event
+     * to hook into - but any action that actually persists a room's
+     * admitted/discharged/retired state must call this so the same AJAX
+     * response reflects the change instead of waiting out the TTL.
+     */
+    public void invalidateUnifiedGanttBarsCache() {
+        cachedUnifiedGanttBars = null;
+        cachedUnifiedGanttBarsComputedAtMillis = 0;
+    }
 
     public List<RoomGanttBar> getUnifiedGanttBars() {
-        if (cachedUnifiedGanttBars != null) {
+        if (cachedUnifiedGanttBars != null
+                && (System.currentTimeMillis() - cachedUnifiedGanttBarsComputedAtMillis) < UNIFIED_GANTT_BARS_CACHE_TTL_MILLIS) {
             return cachedUnifiedGanttBars;
         }
         List<PatientRoom> rooms = getPatientRooms();
@@ -335,6 +362,7 @@ public class BhtSummeryController implements Serializable {
 
         if (spanStart == null || spanEnd == null || !spanEnd.after(spanStart)) {
             cachedUnifiedGanttBars = getRoomGanttBars();
+            cachedUnifiedGanttBarsComputedAtMillis = System.currentTimeMillis();
             return cachedUnifiedGanttBars;
         }
 
@@ -392,6 +420,7 @@ public class BhtSummeryController implements Serializable {
         }
 
         cachedUnifiedGanttBars = bars;
+        cachedUnifiedGanttBarsComputedAtMillis = System.currentTimeMillis();
         return cachedUnifiedGanttBars;
     }
 
@@ -428,6 +457,97 @@ public class BhtSummeryController implements Serializable {
             surgeryBill = surgeryBills.get(0);
         }
     }
+
+    // <editor-fold defaultstate="collapsed" desc="Custom Bills tab - Custom2 print format">
+    public void loadCustom2Config() {
+        custom2ShowAddress = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Address", false);
+        custom2ShowNic = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient NIC", false);
+        custom2ShowPhone = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", false);
+        custom2ShowGuardian = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Guardian", true);
+        custom2ShowCorporateSponsor = configOptionController.getBooleanValueByKey("Inward Final Bill Custom2 - Show Corporate Sponsor", true);
+    }
+
+    public void saveCustom2Config() {
+        if (!webUserController.hasPrivilege("ChangeReceiptPrintingPaperTypes")) {
+            JsfUtil.addErrorMessage("You do not have privilege to change Custom Bills configuration");
+            return;
+        }
+        try {
+            configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Address", custom2ShowAddress);
+            configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient NIC", custom2ShowNic);
+            configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Patient Phone", custom2ShowPhone);
+            configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Guardian", custom2ShowGuardian);
+            configOptionController.setBooleanValueByKey("Inward Final Bill Custom2 - Show Corporate Sponsor", custom2ShowCorporateSponsor);
+            JsfUtil.addSuccessMessage("Custom Bills configuration saved successfully");
+            loadCustom2Config();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving Custom Bills configuration: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Charges grouped by inward charge type (excluding Professional Charge, which is
+     * printed separately on the Professional Bill section), alphabetical by display
+     * name, for the Custom2 "Final Bill" totals-only section.
+     */
+    public List<Map.Entry<String, Double>> getCustom2CategoryTotals(Bill bill) {
+        Map<String, Double> totals = new TreeMap<>();
+        if (bill == null || bill.getBillItems() == null) {
+            return new ArrayList<>(totals.entrySet());
+        }
+        for (BillItem bi : bill.getBillItems()) {
+            if (bi.getInwardChargeType() == InwardChargeType.ProfessionalCharge) {
+                continue;
+            }
+            if (bi.getAdjustedValue() == 0.0) {
+                continue;
+            }
+            String label = getChargeTypeLabel(bi.getInwardChargeType());
+            totals.merge(label, bi.getAdjustedValue(), Double::sum);
+        }
+        return new ArrayList<>(totals.entrySet());
+    }
+
+    public boolean isCustom2ShowAddress() {
+        return custom2ShowAddress;
+    }
+
+    public void setCustom2ShowAddress(boolean custom2ShowAddress) {
+        this.custom2ShowAddress = custom2ShowAddress;
+    }
+
+    public boolean isCustom2ShowNic() {
+        return custom2ShowNic;
+    }
+
+    public void setCustom2ShowNic(boolean custom2ShowNic) {
+        this.custom2ShowNic = custom2ShowNic;
+    }
+
+    public boolean isCustom2ShowPhone() {
+        return custom2ShowPhone;
+    }
+
+    public void setCustom2ShowPhone(boolean custom2ShowPhone) {
+        this.custom2ShowPhone = custom2ShowPhone;
+    }
+
+    public boolean isCustom2ShowGuardian() {
+        return custom2ShowGuardian;
+    }
+
+    public void setCustom2ShowGuardian(boolean custom2ShowGuardian) {
+        this.custom2ShowGuardian = custom2ShowGuardian;
+    }
+
+    public boolean isCustom2ShowCorporateSponsor() {
+        return custom2ShowCorporateSponsor;
+    }
+
+    public void setCustom2ShowCorporateSponsor(boolean custom2ShowCorporateSponsor) {
+        this.custom2ShowCorporateSponsor = custom2ShowCorporateSponsor;
+    }
+    // </editor-fold>
 
     public String navigateToAddServiceFromSurgeriesFromAdmissionProfile() {
         if (surgeryBills == null) {
@@ -1575,21 +1695,29 @@ public class BhtSummeryController implements Serializable {
         return pendingOverlapRoom;
     }
 
+    public String getPendingOverlapDescription() {
+        return getOverlapDescription(pendingOverlapRoom);
+    }
+
     /**
-     * True when this room's admitted/discharged time range overlaps another
-     * non-Guardian/Theatre room period for the same patient encounter or the
-     * same bed (RoomFacilityCharge). Used both to gate the save confirmation
-     * and to render a persistent warning on the room row.
+     * The other non-Guardian/Theatre room stay(s) for the same patient
+     * encounter or same bed (RoomFacilityCharge) whose admitted/discharged
+     * time range overlaps this room's. Returned (rather than just a count)
+     * so callers can report exactly which room(s) are the conflict instead
+     * of a generic "overlap detected" message.
      */
-    public boolean hasOverlap(PatientRoom patientRoom) {
+    public List<PatientRoom> getOverlappingRooms(PatientRoom patientRoom) {
         if (patientRoom == null || patientRoom.getAdmittedAt() == null || patientRoom.getPatientEncounter() == null) {
-            return false;
+            return new ArrayList<>();
+        }
+        if (patientRoom.getDischargedAt() != null && patientRoom.getDischargedAt().before(patientRoom.getAdmittedAt())) {
+            return new ArrayList<>();
         }
         if (patientRoom instanceof GuardianRoom || patientRoom instanceof TheatreRoom) {
-            return false;
+            return new ArrayList<>();
         }
         StringBuilder jpql = new StringBuilder();
-        jpql.append("SELECT COUNT(pr2) FROM PatientRoom pr2 WHERE pr2.retired = false ");
+        jpql.append("SELECT pr2 FROM PatientRoom pr2 WHERE pr2.retired = false ");
         jpql.append("AND TYPE(pr2) != :guardianClass AND TYPE(pr2) != :theatreClass ");
         Map<String, Object> params = new HashMap<>();
         params.put("guardianClass", GuardianRoom.class);
@@ -1611,8 +1739,47 @@ public class BhtSummeryController implements Serializable {
         }
         jpql.append("AND (pr2.dischargedAt IS NULL OR pr2.dischargedAt > :from)");
         params.put("from", patientRoom.getAdmittedAt());
-        long count = getPatientRoomFacade().findLongByJpql(jpql.toString(), params);
-        return count > 0;
+        // TemporalType.TIMESTAMP is required: the 2-arg findByJpql overload binds
+        // every Date with TemporalType.DATE, truncating admittedAt/dischargedAt to
+        // midnight, so two stays merely sharing a calendar day were reported as
+        // overlapping even when the times did not actually conflict.
+        List<PatientRoom> overlaps = getPatientRoomFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        return overlaps != null ? overlaps : new ArrayList<>();
+    }
+
+    /**
+     * True when this room's admitted/discharged time range overlaps another
+     * non-Guardian/Theatre room period for the same patient encounter or the
+     * same bed (RoomFacilityCharge). Used both to gate the save confirmation
+     * and to render a persistent warning on the room row.
+     */
+    public boolean hasOverlap(PatientRoom patientRoom) {
+        return !getOverlappingRooms(patientRoom).isEmpty();
+    }
+
+    /**
+     * Human-readable summary of which specific room(s) this room's time
+     * range conflicts with, e.g. "Room 412 (Active)". Used by the row-level
+     * "Overlap" tag and the save confirmation dialog so a conflict can be
+     * identified and resolved instead of showing a generic warning that
+     * stays stuck when there are 3+ open (non-discharged) room stays.
+     */
+    public String getOverlapDescription(PatientRoom patientRoom) {
+        List<PatientRoom> overlaps = getOverlappingRooms(patientRoom);
+        if (overlaps.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder("Overlaps with ");
+        for (int i = 0; i < overlaps.size(); i++) {
+            PatientRoom pr2 = overlaps.get(i);
+            if (i > 0) {
+                sb.append(", ");
+            }
+            String roomName = pr2.getRoomFacilityCharge() != null && pr2.getRoomFacilityCharge().getName() != null
+                    ? pr2.getRoomFacilityCharge().getName() : "an unnamed room";
+            sb.append(roomName).append(pr2.getDischargedAt() == null ? " (Active)" : " (Left)");
+        }
+        return sb.toString();
     }
 
     public boolean isAnyRoomOverlapping() {
@@ -1655,6 +1822,8 @@ public class BhtSummeryController implements Serializable {
         } else {
             getPatientRoomFacade().create(patientRoom);
         }
+
+        invalidateUnifiedGanttBarsCache();
 
         // Refresh the tables or any other necessary actions after saving
         createTables();
@@ -3564,7 +3733,7 @@ public class BhtSummeryController implements Serializable {
     public void setPatientEncounter(PatientEncounter patientEncounter) {
 //        makeNull();
         this.patientEncounter = patientEncounter;
-        cachedUnifiedGanttBars = null;
+        invalidateUnifiedGanttBarsCache();
     }
 
     public SessionController getSessionController() {

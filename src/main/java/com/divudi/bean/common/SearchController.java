@@ -144,6 +144,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.primefaces.model.file.UploadedFile;
@@ -16110,56 +16112,6 @@ public class SearchController implements Serializable {
 
     }
 
-    public void createInwardIntrimBills() {
-        Date startTime = new Date();
-
-        String sql;
-        Map temMap = new HashMap();
-        sql = "select b from BilledBill b where"
-                + " b.billType = :billType and "
-                + " b.createdAt between :fromDate and :toDate "
-                + "and b.retired=false ";
-
-        if (getSearchKeyword().getPatientName() != null && !getSearchKeyword().getPatientName().trim().equals("")) {
-            sql += " and  ((b.patientEncounter.patient.person.name) like :patientName )";
-            temMap.put("patientName", "%" + getSearchKeyword().getPatientName().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
-            sql += " and  (((b.patientEncounter.patient.code) =:number ) or ((b.patientEncounter.patient.phn) =:number )) ";
-            temMap.put("number", getSearchKeyword().getNumber().trim().toUpperCase());
-        }
-
-        if (getSearchKeyword().getPatientPhone() != null && !getSearchKeyword().getPatientPhone().trim().equals("")) {
-            sql += " and  ((b.patientEncounter.patient.person.phone) like :patientPhone )";
-            temMap.put("patientPhone", "%" + getSearchKeyword().getPatientPhone().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getBhtNo() != null && !getSearchKeyword().getBhtNo().trim().equals("")) {
-            sql += " and  ((b.patientEncounter.bhtNo) like :bht )";
-            temMap.put("bht", "%" + getSearchKeyword().getBhtNo().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((b.insId) like :billNo )";
-            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
-        }
-
-        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) = :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
-        }
-
-        sql += " order by b.insId desc  ";
-
-        temMap.put("billType", BillType.InwardIntrimBill);
-        temMap.put("toDate", toDate);
-        temMap.put("fromDate", fromDate);
-
-        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
-
-    }
-
     public void createInwardPaymentBills() {
         Date startTime = new Date();
 
@@ -23906,6 +23858,30 @@ public class SearchController implements Serializable {
 
     public void setPharmacyAdjustmentRows(List<PharmacyAdjustmentRow> pharmacyAdjustmentRows) {
         this.pharmacyAdjustmentRows = pharmacyAdjustmentRows;
+    }
+
+    /**
+     * {@code p:dataExporter} postProcessor for the "Stock Taking Report(New)"
+     * page - adds the report title, active filters, and a Printed By/At
+     * footer around the exported table (issue #17615).
+     */
+    public void postProcessXLSStockTakingNew(Object document) {
+        if (!(document instanceof Workbook)) {
+            return;
+        }
+        Sheet sheet = ((Workbook) document).getSheetAt(0);
+        int mergeCol = 0;
+        if (sheet.getRow(0) != null) {
+            mergeCol = Math.max(0, sheet.getRow(0).getLastCellNum() - 1);
+        }
+        List<String[]> filterPairs = new ArrayList<>();
+        filterPairs.add(new String[]{"From Date", fromDate != null ? new SimpleDateFormat("dd MMMM yyyy").format(fromDate) : "All"});
+        filterPairs.add(new String[]{"To Date", toDate != null ? new SimpleDateFormat("dd MMMM yyyy").format(toDate) : "All"});
+        filterPairs.add(new String[]{"Department", getReportKeyWord().getDepartment() != null ? getReportKeyWord().getDepartment().getName() : "All"});
+        filterPairs.add(new String[]{"Category", getReportKeyWord().getCategory() != null ? getReportKeyWord().getCategory().getName() : "All"});
+        filterPairs.add(new String[]{"Only Adjustments", getReportKeyWord().isAdditionalDetails() ? "Yes" : "No"});
+        excelController.insertExcelReportHeader(sheet, "Stock Taking Report (New)", filterPairs, mergeCol);
+        excelController.appendExcelPrintedByFooter(sheet, mergeCol);
     }
 
     private StreamedContent fileBillsAndBillItemsForDownload;
