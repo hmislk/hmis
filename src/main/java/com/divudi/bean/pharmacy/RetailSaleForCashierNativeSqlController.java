@@ -713,7 +713,12 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         pbd.setDepartmentName(dept.getName());
         pbd.setDepartmentPrintingName(dept.getPrintingName() != null ? dept.getPrintingName() : dept.getName());
         pbd.setDepartmentTelephone1(dept.getTelephone1());
+        pbd.setDepartmentTelephone2(dept.getTelephone2());
+        pbd.setDepartmentFax(dept.getFax());
         pbd.setDepartmentAddress(dept.getAddress());
+        if (dept.getSite() != null) {
+            pbd.setDepartmentSiteName(dept.getSite().getName());
+        }
         if (dept.getInstitution() != null) {
             pbd.setInstitutionName(dept.getInstitution().getName());
             pbd.setInstitutionAddress(dept.getInstitution().getAddress());
@@ -728,6 +733,15 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         pbd.setCreatedAt(bill.getCreatedAt());
         if (bill.getCreater() != null) {
             pbd.setCreatorName(bill.getCreater().getName());
+        }
+        // Token number for the token printouts. settleBillWithPay runs settle() ->
+        // settleTokenIfEnabled() -> buildPrintBill(), so the token (if the token system is
+        // enabled for this department) is already created and held in memory here - no Bill
+        // reload needed. Stays null when the token system is off, and the composites then
+        // print nothing where the token circle would be.
+        Token printToken = getToken() != null ? getToken() : getCurrentToken();
+        if (printToken != null) {
+            pbd.setTokenNumber(printToken.getTokenNumber());
         }
 
         // Patient. Read off the settled bill rather than the working field, so an anonymous

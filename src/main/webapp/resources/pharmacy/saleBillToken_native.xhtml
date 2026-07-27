@@ -38,15 +38,9 @@
                 <h:outputLabel value="-----------------------------------------------"   />
             </div>
 
-            <!-- FIXME (#20261): token number lookup has no PrintBillData equivalent.
-                 pharmacyPreSettleController.findTokenFromBill(Bill) requires a Bill entity;
-                 PrintBillData carries no tokenNumber property. Rendered false pending a
-                 deliberate decision (add a tokenNumber field to PrintBillData, populated by
-                 RetailSaleForCashierNativeSqlController from its in-memory currentToken/getToken()
-                 at settle time). See task-4-report.md. -->
-            <h:panelGroup rendered="false">
+            <h:panelGroup rendered="#{not empty cc.attrs.bill.tokenNumber}">
                 <div class="billline">
-                    <h:outputLabel value="" style="font-size: 30px;
+                    <h:outputLabel value="#{cc.attrs.bill.tokenNumber}" style="font-size: 30px;
                                    display: inline-block;
                                    width: 60px;
                                    height: 60px;

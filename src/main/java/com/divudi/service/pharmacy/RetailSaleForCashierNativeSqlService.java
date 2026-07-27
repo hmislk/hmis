@@ -6,6 +6,7 @@
 package com.divudi.service.pharmacy;
 
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.TokenType;
 import com.divudi.core.data.dto.BillItemData;
 import com.divudi.core.data.dto.PrintBillData;
 import com.divudi.core.data.dto.StockAggregateResult;
@@ -17,6 +18,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.Token;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.StockHistory;
 import java.util.ArrayList;
@@ -594,7 +596,12 @@ public class RetailSaleForCashierNativeSqlService {
             pbd.setDepartmentPrintingName(dept.getPrintingName() != null
                     ? dept.getPrintingName() : safeStr(dept.getName()));
             pbd.setDepartmentTelephone1(safeStr(dept.getTelephone1()));
+            pbd.setDepartmentTelephone2(safeStr(dept.getTelephone2()));
+            pbd.setDepartmentFax(safeStr(dept.getFax()));
             pbd.setDepartmentAddress(safeStr(dept.getAddress()));
+            if (dept.getSite() != null) {
+                pbd.setDepartmentSiteName(safeStr(dept.getSite().getName()));
+            }
             Institution inst = dept.getInstitution();
             if (inst != null) {
                 pbd.setInstitutionName(safeStr(inst.getName()));
@@ -608,6 +615,7 @@ public class RetailSaleForCashierNativeSqlService {
         if (bill.getCreater() != null) {
             pbd.setCreatorName(safeStr(bill.getCreater().getName()));
         }
+        pbd.setTokenNumber(findTokenNumber(bill));
         if (bill.getPatient() != null && bill.getPatient().getPerson() != null) {
             pbd.setPatientName(safeStr(bill.getPatient().getPerson().getNameWithTitle()));
             pbd.setPatientPhone(safeStr(bill.getPatient().getPerson().getPhone()));
@@ -687,6 +695,27 @@ public class RetailSaleForCashierNativeSqlService {
         }
 
         return new Object[]{pbd, itemList};
+    }
+
+    /**
+     * Token number of the pharmacy token issued for this bill, or null when the token
+     * system was off for the sale (no token exists). Same lookup as
+     * PharmacyPreSettleController.findTokenFromBill(Bill) - bill + SALE_FOR_CASHIER token
+     * type - so a reprinted token slip shows the same number the settle-time printout did.
+     */
+    private String findTokenNumber(Bill bill) {
+        List<Token> tokens = em.createQuery(
+                "select t from Token t"
+                + " where t.bill = :bill"
+                + " and t.tokenType = :ty", Token.class)
+                .setParameter("bill", bill)
+                .setParameter("ty", TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER)
+                .setMaxResults(1)
+                .getResultList();
+        if (tokens.isEmpty()) {
+            return null;
+        }
+        return tokens.get(0).getTokenNumber();
     }
 
     /**

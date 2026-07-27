@@ -28,13 +28,10 @@
                 </div>
                 <div >
                     <h:outputLabel value="#{cc.attrs.bill.departmentTelephone1} "/>
-                    <!-- FIXME (#20261): department.telephone2 has no PrintBillData equivalent.
-                         PrintBillData only carries departmentTelephone1. Left blank pending a
-                         deliberate decision on whether to add a second telephone field to the DTO. -->
+                    <h:outputLabel value="#{cc.attrs.bill.departmentTelephone2}"/>
                 </div>
                 <div >
-                    <!-- FIXME (#20261): department.fax has no PrintBillData equivalent.
-                         Left blank pending a deliberate decision on whether to add a fax field to the DTO. -->
+                    <h:outputLabel value="#{cc.attrs.bill.departmentFax}"/>
                 </div>
             </div>
 
@@ -48,15 +45,9 @@
                 <h:outputLabel value="-------------------------------------------------------------------------------"   />
             </div>
 
-            <!-- FIXME (#20261): token number lookup has no PrintBillData equivalent.
-                 pharmacyPreSettleController.findTokenFromBill(Bill) requires a Bill entity;
-                 PrintBillData carries no tokenNumber property. Rendered false pending a
-                 deliberate decision (add a tokenNumber field to PrintBillData, populated by
-                 RetailSaleForCashierNativeSqlController from its in-memory currentToken/getToken()
-                 at settle time). See task-4-report.md. -->
-            <h:panelGroup rendered="false">
+            <h:panelGroup rendered="#{not empty cc.attrs.bill.tokenNumber}">
                 <div class="billline">
-                    <h:outputLabel value="" style="font-size: 30px;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.tokenNumber}" style="font-size: 30px;"/>
                 </div>
             </h:panelGroup>
 
