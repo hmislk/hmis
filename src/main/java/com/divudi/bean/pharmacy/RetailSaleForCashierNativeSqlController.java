@@ -221,14 +221,6 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         }
         billSettlingStarted = true;
 
-        if (sessionController.getApplicationPreference().isCheckPaymentSchemeValidation()) {
-            if (paymentScheme == null) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please select Payment Scheme");
-                return null;
-            }
-        }
-
         if (paymentMethod == null) {
             billSettlingStarted = false;
             JsfUtil.addErrorMessage("Please select Payment Method");
@@ -239,35 +231,6 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             billSettlingStarted = false;
             JsfUtil.addErrorMessage("Please add items to the bill.");
             return null;
-        }
-
-        if ((getPatient().getMobileNumberStringTransient() == null
-                || getPatient().getMobileNumberStringTransient().trim().isEmpty()
-                || getPatient().getPerson().getName().trim().isEmpty())
-                && configOptionApplicationController.getBooleanValueByKey("Patient details are required for retail sale")) {
-            billSettlingStarted = false;
-            JsfUtil.addErrorMessage("Please enter patient name and mobile number.");
-            return null;
-        }
-
-        if (paymentMethod == PaymentMethod.Card) {
-            String cardNumber = getPaymentMethodData().getCreditCard().getNo();
-            if ((cardNumber == null || cardNumber.trim().isEmpty() || cardNumber.trim().length() != 4)
-                    && configOptionApplicationController.getBooleanValueByKey("Pharmacy retail sale CreditCard last digits is Mandatory")) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please enter a Credit Card last 4 digits");
-                return null;
-            }
-        }
-
-        if (paymentMethod == PaymentMethod.Staff_Welfare
-                && configOptionApplicationController.getBooleanValueByKey(
-                        "Pharmacy discount should be staff when select Staff_welfare as payment method", false)) {
-            if (paymentScheme == null || !paymentScheme.getName().equalsIgnoreCase("staff")) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Staff Welfare needs to set staff discount scheme.");
-                return null;
-            }
         }
 
         BooleanMessage discountValidation = discountSchemeValidationService.validateDiscountScheme(
