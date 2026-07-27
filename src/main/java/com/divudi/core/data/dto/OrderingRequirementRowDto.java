@@ -178,10 +178,12 @@ public class OrderingRequirementRowDto implements Serializable {
         return String.format("%.1f", stockCover);
     }
 
+    /** True when this row was decided Urgent Order - drives the red badge. */
     public boolean isUrgent() {
         return DECISION_URGENT_ORDER.equals(decision);
     }
 
+    /** True when this row was decided Order - drives the amber badge. */
     public boolean isOrder() {
         return DECISION_ORDER.equals(decision);
     }

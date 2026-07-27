@@ -113,6 +113,17 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
     private boolean paginator = true;
     private int rowsPerPage = 50;
 
+    /**
+     * Entry point from the Ordering tab.
+     *
+     * Clears any previous result, defaults the scope to the logged-in
+     * institution / site / department, and seeds the three numeric inputs from
+     * configuration before deriving the initial date window.
+     *
+     * Initialisation lives here rather than in an f:viewAction because this
+     * controller is @SessionScoped - a view action would re-run on every
+     * refresh and back-button navigation and corrupt state the user had set.
+     */
     public String navigateToOrderingRequirementReport() {
         rows = new ArrayList<>();
         unclassifiedMovementCount = 0;
@@ -160,6 +171,14 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
         toDate = CommonFunctions.getEndOfDay(end);
     }
 
+    /**
+     * Validates the filters and builds the report.
+     *
+     * All computation is delegated to PharmacyOrderingRequirementService; this
+     * method only guards the inputs, wraps the call in the report timer, and
+     * picks up the unclassified-movement count that drives the on-screen
+     * warning.
+     */
     public void processReport() {
         if (fromDate == null || toDate == null) {
             JsfUtil.addErrorMessage("Please select a date range");
@@ -192,6 +211,13 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
         }
     }
 
+    /**
+     * Streams the current result as an .xlsx download.
+     *
+     * Writes straight to the HttpServletResponse and calls responseComplete()
+     * so JSF does not also try to render the page, following the same pattern
+     * as ReportsStock.exportCurrentStockByBatchToExcel().
+     */
     public void exportToExcel() {
         if (rows == null || rows.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to export - process the report first");
@@ -305,6 +331,12 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
         }
     }
 
+    /**
+     * Streams the current result as a landscape A4 PDF download.
+     *
+     * Landscape because eight numeric columns do not fit portrait at a legible
+     * font size.
+     */
     public void exportToPdf() {
         if (rows == null || rows.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to export - process the report first");
@@ -398,6 +430,10 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
         cell.setCellStyle(style);
     }
 
+    /**
+     * One-line description of the active filters, printed on the Excel and PDF
+     * exports so a saved copy stays self-explanatory.
+     */
     public String getFilterSummary() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
         return "Window: " + (fromDate == null ? "-" : sdf.format(fromDate))
@@ -409,6 +445,7 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
                 + " | Department Type: " + getSelectedDepartmentTypesPrintDisplay();
     }
 
+    /** Comma-separated department types for the export header, "All" when none are picked. */
     public String getSelectedDepartmentTypesPrintDisplay() {
         if (selectedDepartmentTypes == null || selectedDepartmentTypes.isEmpty()) {
             return "All";
@@ -418,6 +455,7 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
                 .collect(Collectors.joining(", "));
     }
 
+    /** Department types offered in the filter, matching the Batch Stock report. */
     public List<DepartmentType> getAvailableDepartmentTypes() {
         return Arrays.asList(
                 DepartmentType.Pharmacy,
@@ -433,6 +471,7 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
         return department == null;
     }
 
+    /** Sum of Est. Cost across every row - the table footer and the summary tile. */
     public double getTotalEstimatedCost() {
         if (rows == null) {
             return 0.0;
@@ -440,6 +479,7 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
         return rows.stream().mapToDouble(OrderingRequirementRowDto::getEstimatedCost).sum();
     }
 
+    /** Number of rows decided Urgent Order, shown as a summary tile. */
     public long getUrgentCount() {
         if (rows == null) {
             return 0;
@@ -447,6 +487,7 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
         return rows.stream().filter(OrderingRequirementRowDto::isUrgent).count();
     }
 
+    /** Number of rows decided Order, shown as a summary tile. */
     public long getOrderCount() {
         if (rows == null) {
             return 0;
