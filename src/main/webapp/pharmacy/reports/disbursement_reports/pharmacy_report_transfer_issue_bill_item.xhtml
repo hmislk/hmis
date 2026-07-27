@@ -169,13 +169,7 @@
                                     value="#{i.deptId}"
                                     title="View transfer issue bill #{i.deptId}"
                                     styleClass="text-primary text-decoration-underline"
-                                    action="#{pharmacyBillSearch.navigateToReprintPharmacyTransferIssueById()}">
-
-                                    <f:setPropertyActionListener
-                                        target="#{pharmacyBillSearch.billId}"
-                                        value="#{i.billId}" />
-
-                                </p:commandLink>
+                                    action="#{pharmacyBillSearch.navigateToReprintPharmacyTransferIssueByIdWithParam(i.billId)}" />
                             </p:column>
 
                             <p:column headerText="Date"
