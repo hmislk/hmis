@@ -39,12 +39,8 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PaymentScheme;
-import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.Staff;
-import com.divudi.core.entity.clinical.Prescription;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.core.entity.pharmacy.Stock;
-import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.facade.ItemBatchFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientFacade;
@@ -63,8 +59,10 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -280,16 +278,108 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             return null;
         }
 
+        // Validate department type consistency before settlement.
+        // Mirrors PharmacySaleForCashierController.settlePreBillAndNavigateToPrint() :3622-3632;
+        // the entity getter Item.getDepartmentType() defaults a null column to Pharmacy, so the
+        // item is resolved through itemFacade rather than a JPQL projection to keep that default.
+        if (getPreBill().getDepartmentType() != null) {
+            for (BillItemData bid : billItemDataList) {
+                if (bid.getItemId() == null) {
+                    continue;
+                }
+                Item lineItem = itemFacade.find(bid.getItemId());
+                if (lineItem != null && lineItem.getDepartmentType() != null
+                        && !lineItem.getDepartmentType().equals(getPreBill().getDepartmentType())) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Inconsistent department types detected. All items must belong to the same department type.");
+                    return null;
+                }
+            }
+        }
+
+        // Pharmacy Sale Validation - Patient and Patient Details.
+        // Keys and messages are those of the legacy cashier path
+        // (PharmacySaleForCashierController :3635-3746), not the pay-now Sale page.
         boolean patientRequired = configOptionApplicationController.getBooleanValueByKey(
-                "Patient is required in Pharmacy Retail Sale Bill for "
-                + sessionController.getDepartment().getName(), false);
+                "Patient is required in Pharmacy Retail Sale", false);
+
         if (patientRequired) {
-            if (getPatient() == null || getPatient().getPerson() == null
-                    || getPatient().getPerson().getName() == null
-                    || getPatient().getPerson().getName().trim().isEmpty()) {
+            if (getPatient() == null || getPatient().getPerson() == null) {
                 billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please Select a Patient");
+                JsfUtil.addErrorMessage("Patient is required.");
                 return null;
+            }
+        }
+
+        // Only validate patient details if patient is required OR if patient exists
+        boolean hasPatient = getPatient() != null && getPatient().getPerson() != null;
+
+        if (hasPatient || patientRequired) {
+            // Patient Name validation
+            if (configOptionApplicationController.getBooleanValueByKey(
+                    "Patient Name is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getName() == null
+                        || getPatient().getPerson().getName().trim().isEmpty()) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient name is required.");
+                    return null;
+                }
+            }
+
+            // Patient Phone validation
+            if (configOptionApplicationController.getBooleanValueByKey(
+                    "Patient Phone is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient is required.");
+                    return null;
+                }
+                // Check both phone and mobile - at least one should be present
+                boolean hasPhone = getPatient().getPerson().getPhone() != null
+                        && !getPatient().getPerson().getPhone().trim().isEmpty();
+                boolean hasMobile = getPatient().getPerson().getMobile() != null
+                        && !getPatient().getPerson().getMobile().trim().isEmpty();
+
+                if (!hasPhone && !hasMobile) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient phone number is required.");
+                    return null;
+                }
+            }
+
+            // Patient Gender validation
+            if (configOptionApplicationController.getBooleanValueByKey(
+                    "Patient Gender is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getSex() == null) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient gender is required.");
+                    return null;
+                }
+            }
+
+            // Patient Address validation
+            if (configOptionApplicationController.getBooleanValueByKey(
+                    "Patient Address is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getAddress() == null
+                        || getPatient().getPerson().getAddress().trim().isEmpty()) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient address is required.");
+                    return null;
+                }
+            }
+
+            // Patient Area validation
+            if (configOptionApplicationController.getBooleanValueByKey(
+                    "Patient Area is required in Pharmacy Retail Sale", false)) {
+                if (getPatient() == null || getPatient().getPerson() == null
+                        || getPatient().getPerson().getArea() == null) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Patient area is required.");
+                    return null;
+                }
             }
         }
 
@@ -299,95 +389,61 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             return null;
         }
 
+        // Referring Doctor validation
         if (configOptionApplicationController.getBooleanValueByKey(
-                "Need Patient Title And Gender To Save Patient in Pharmacy Sale", false)) {
-            if (getPatient().getPerson().getTitle() == null) {
+                "Referring Doctor is required in Pharmacy Retail Sale", false)) {
+            if (getPreBill() == null || getPreBill().getReferredBy() == null) {
                 billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please select title.");
-                return null;
-            }
-            if (getPatient().getPerson().getSex() == null) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please select gender.");
+                JsfUtil.addErrorMessage("Referring doctor is required.");
                 return null;
             }
         }
 
+        // Defaults to TRUE - every deployment enforces this unless it is explicitly turned off.
         if (configOptionApplicationController.getBooleanValueByKey(
-                "Need Patient Name to save Patient in Pharmacy Sale", false)) {
-            if (getPatient().getPerson().getName() == null
-                    || getPatient().getPerson().getName().trim().isEmpty()) {
+                "Patient Phone number is mandotary in sale for cashier", true)) {
+            if (getPatient() != null && getPatient().getPerson() != null) {
+                if (getPatient().getPatientPhoneNumber() == null && getPatient().getPatientMobileNumber() == null) {
+                    JsfUtil.addErrorMessage("Please enter phone number of the patient");
+                    return null;
+                } else if (getPatient().getId() == null) {
+                    if (getPatient().getPatientPhoneNumber() != null
+                            && !(String.valueOf(getPatient().getPatientPhoneNumber()).length() >= 9)) {
+                        JsfUtil.addErrorMessage("Please enter valid phone number with more than or equal 10 digits of the patient");
+                        return null;
+                    } else if (getPatient().getPatientMobileNumber() != null
+                            && !(String.valueOf(getPatient().getPatientMobileNumber()).length() >= 9)) {
+                        JsfUtil.addErrorMessage("Please enter valid mobile number with more than or equal 10 digits of the patient");
+                        return null;
+                    }
+                }
+            } else if (patientRequired) {
+                JsfUtil.addErrorMessage("Patient is required.");
                 billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please enter name.");
                 return null;
             }
         }
 
-        if (configOptionApplicationController.getBooleanValueByKey(
-                "Need Patient Age to Save Patient in Pharmacy Sale", false)) {
-            if (getPatient().getPerson().getDob() == null) {
+        // Duplicate bill item detection - prevent double stock deduction (Closes #18874).
+        // Ported from PharmacySaleForCashierController :3749-3772; the native cart holds
+        // BillItemData rows instead of BillItem entities, so the stock id is read straight
+        // off the row rather than through PharmaceuticalBillItem.
+        // Check 1: same row object appearing twice (rapid Add button click)
+        Set<Integer> seenIdentities = new HashSet<>();
+        for (BillItemData bid : billItemDataList) {
+            if (!seenIdentities.add(System.identityHashCode(bid))) {
                 billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please enter patient date of birth.");
+                JsfUtil.addErrorMessage("Duplicate item detected. Please remove duplicate items and try again.");
                 return null;
             }
         }
-
-        if (configOptionApplicationController.getBooleanValueByKey(
-                "Need Patient Phone Number to save Patient in Pharmacy Sale", false)) {
-            if (getPatient().getPerson().getPhone() == null
-                    || getPatient().getPerson().getPhone().trim().isEmpty()) {
+        // Check 2: different rows pointing at the same Stock batch
+        Set<Long> seenStockIds = new HashSet<>();
+        for (BillItemData bid : billItemDataList) {
+            if (bid.getStockId() != null && !seenStockIds.add(bid.getStockId())) {
                 billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please enter phone number.");
-                return null;
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey(
-                "Need Patient Address to save Patient in Pharmacy Sale", false)) {
-            if (getPatient().getPerson().getAddress() == null
-                    || getPatient().getPerson().getAddress().trim().isEmpty()) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please enter patient address.");
-                return null;
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey(
-                "Need Patient Mail to save Patient in Pharmacy Sale", false)) {
-            if (getPatient().getPerson().getEmail() == null
-                    || getPatient().getPerson().getEmail().trim().isEmpty()) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please enter patient email.");
-                return null;
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey(
-                "Need Patient NIC to save Patient in Pharmacy Sale", false)) {
-            if (getPatient().getPerson().getNic() == null
-                    || getPatient().getPerson().getNic().trim().isEmpty()) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please enter patient NIC.");
-                return null;
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey(
-                "Need Patient Area to save Patient in Pharmacy Sale", false)) {
-            if (getPatient().getPerson().getArea() == null
-                    || getPatient().getPerson().getArea().getName() == null
-                    || getPatient().getPerson().getArea().getName().trim().isEmpty()) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please select patient area.");
-                return null;
-            }
-        }
-
-        if (configOptionApplicationController.getBooleanValueByKey(
-                "Need Referring Doctor to settlle bill in Pharmacy Sale", false)) {
-            if (getPreBill().getReferredBy() == null) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please select referring doctor.");
+                JsfUtil.addErrorMessage("Duplicate item batch detected: "
+                        + bid.getItemName() + ". Please remove duplicate items and try again.");
                 return null;
             }
         }
@@ -401,9 +457,12 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
 
         PreBill preBillEntity = buildPreBill();
 
-        // Stamp the multiple-payment breakdown onto the bill's own columns. No Payment
-        // entity is created for a NO_PAYMENT bill type; this is what the cashier-side
-        // settle page later reads. Mirrors legacy savePreBillFinallyForRetailSaleForCashier.
+        // Stamps the single-method payment reference fields on the bill itself: cheque /
+        // slip / card / online-settlement / ewallet numbers, dates and banks, plus the
+        // creditBill flag. BillBeanController.setPaymentMethodData (:2916-2951) has no
+        // MultiplePaymentMethods branch, so a multiple-payment breakdown is deliberately
+        // NOT written here - the cashier collects and records the money later. Mirrors
+        // legacy savePreBillFinallyForRetailSaleForCashier (:2997).
         preBillEntity.setCashPaid(cashPaid);
         billBean.setPaymentMethodData(preBillEntity, paymentMethod, getPaymentMethodData());
 
@@ -424,13 +483,26 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             // completed sale report as failed and skip the printout.
             try {
                 settleTokenIfEnabled(preBillEntity);
+                // Legacy runs this OUTSIDE the "Enable token system in sale for cashier"
+                // check (:3869-3872), so a token created by any other route is still
+                // attached to the settled bill.
+                if (getCurrentToken() != null) {
+                    getCurrentToken().setBill(preBillEntity);
+                    tokenFacade.edit(getCurrentToken());
+                }
             } catch (RuntimeException tokenEx) {
                 LOGGER.log(Level.WARNING, "Token handling failed after cashier settle", tokenEx);
             }
 
             buildPrintBill(preBillEntity);
-            clearBill();
-            clearBillItem();
+            // Legacy calls resetAll() here (:3874) so nothing from the settled bill leaks
+            // into the next one. resetAll() also clears the just-built printout, which the
+            // legacy controller keeps in a separate printBill field, so it is restored.
+            PrintBillData settledPrintBill = printBill;
+            List<BillItemData> settledPrintBillItems = printBillItems;
+            resetAll();
+            printBill = settledPrintBill;
+            printBillItems = settledPrintBillItems;
             billPreview = true;
             billSettlingStarted = false;
             JsfUtil.addSuccessMessage("Bill settled successfully.");
@@ -468,8 +540,6 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
     }
 
     private PreBill buildPreBill() {
-        String billNo = generateBillNumber();
-
         double netTot = 0.0;
         double grossTot = 0.0;
         double discountTot = 0.0;
@@ -482,8 +552,6 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         PreBill pb = new PreBill();
         pb.setBillType(BillType.PharmacyPre);
         pb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
-        pb.setInsId(billNo);
-        pb.setDeptId(billNo);
         pb.setDepartment(sessionController.getLoggedUser().getDepartment());
         pb.setInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
         pb.setPatient(patient);
@@ -508,19 +576,10 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             pb.setPaidAmount(netTot);
         }
 
-        // Single-bill flow: the counterparty of a credit / staff bill used to be stamped
-        // on the (now deleted) BilledBill. It has to live on the PreBill instead, which is
-        // also what legacy savePreBillFinallyForRetailSaleForCashier() does.
-        if (paymentMethod == PaymentMethod.Credit && getPaymentMethodData().getCredit().getInstitution() != null) {
-            pb.setToInstitution(getPaymentMethodData().getCredit().getInstitution());
-            pb.setCreditCompany(getPaymentMethodData().getCredit().getInstitution());
-        } else if (toInstitution != null) {
-            pb.setToInstitution(toInstitution);
-        }
-        if ((paymentMethod == PaymentMethod.Staff || paymentMethod == PaymentMethod.Staff_Welfare)
-                && toStaff != null) {
-            pb.setToStaff(toStaff);
-        }
+        // Legacy stamps both counterparties unconditionally and never sets creditCompany on
+        // the cashier PreBill (PharmacySaleForCashierController :2972-2973).
+        pb.setToStaff(toStaff);
+        pb.setToInstitution(toInstitution);
 
         if (getPreBill().getReferredBy() != null) {
             pb.setReferredBy(getPreBill().getReferredBy());
@@ -528,10 +587,20 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         // Carried over from the cart so the cashier-side settle page can keep filtering
         // by department type (see completeAvailableStockOptimizedDtoFilteredByDepartmentType).
         pb.setDepartmentType(getPreBill().getDepartmentType());
+
+        // Bill numbering. Legacy runs a SEPARATE institution generator for insId
+        // (:3016-3029); the two numbers only collapse under the Dept+Ins strategy.
+        String deptId = generateDepartmentBillNumber();
+        String insId = generateInstitutionBillNumber(pb, deptId);
+        pb.setInsId(insId);
+        pb.setDeptId(deptId);
+        pb.setInvoiceNumber(billNumberGenerator.fetchPaymentSchemeCount(
+                pb.getPaymentScheme(), pb.getBillType(), pb.getInstitution()));
         return pb;
     }
 
-    private String generateBillNumber() {
+    /** Ported verbatim from PharmacySaleForCashierController :3000-3013. */
+    private String generateDepartmentBillNumber() {
         if (configOptionApplicationController.getBooleanValueByKey(
                 "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
             return billNumberGenerator.departmentBillNumberGeneratorYearlyWithPrefixDeptInsYearCount(
@@ -545,9 +614,26 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             return billNumberGenerator.departmentBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
                     sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         }
+        // Use existing method for backward compatibility
         return billNumberGenerator.departmentBillNumberGenerator(
                 sessionController.getDepartment(), BillType.PharmacyPre,
                 BillClassType.PreBill, BillNumberSuffix.SALE);
+    }
+
+    /** Ported verbatim from PharmacySaleForCashierController :3015-3028. */
+    private String generateInstitutionBillNumber(PreBill pb, String deptId) {
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Institution Code + Year + Yearly Number", false)) {
+            return billNumberGenerator.institutionBillNumberGeneratorYearlyWithPrefixInsYearCountInstitutionWide(
+                    sessionController.getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        }
+        if (configOptionApplicationController.getBooleanValueByKey(
+                "Bill Number Generation Strategy for Pharmacy Sale Cashier Pre Bill - Prefix + Department Code + Institution Code + Year + Yearly Number", false)) {
+            return deptId; // Use same number as department to avoid consuming counter twice
+        }
+        // Use existing method for backward compatibility
+        return billNumberGenerator.institutionBillNumberGenerator(
+                pb.getInstitution(), pb.getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
     }
 
     private void buildPrintBill(Bill bill) {
@@ -756,10 +842,6 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         } else {
             markToken(settledBill);
         }
-        if (currentToken != null) {
-            currentToken.setBill(settledBill);
-            tokenFacade.edit(currentToken);
-        }
     }
 
     /**
@@ -900,6 +982,44 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             }
         }
 
+        // Department type validation, ported from PharmacySaleForCashierController :2384-2425.
+        // Runs on EVERY add, including the first item of an empty cart - at that point the
+        // autocomplete is still unfiltered because the bill's department type is not yet fixed.
+        Item selectedItem = itemFacade.find(stockDto.getItemId());
+
+        // Null-check for selected item (prevents NPE if item not found in database)
+        if (selectedItem == null) {
+            JsfUtil.addErrorMessage("Selected item not found. Please try again.");
+            return;
+        }
+
+        // Note: Item.getDepartmentType() already defaults a null column to DepartmentType.Pharmacy
+        DepartmentType itemDepartmentType = selectedItem.getDepartmentType();
+        if (itemDepartmentType == null) {
+            itemDepartmentType = DepartmentType.Pharmacy; // Defensive fallback (should never execute)
+        }
+
+        List<DepartmentType> allowedTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
+        if (allowedTypes == null || allowedTypes.isEmpty()) {
+            JsfUtil.addErrorMessage("No department types are configured for pharmacy transactions.");
+            return;
+        }
+
+        if (!allowedTypes.contains(itemDepartmentType)) {
+            JsfUtil.addErrorMessage("Items of type " + itemDepartmentType.getLabel()
+                    + " are not allowed for pharmacy transactions.");
+            return;
+        }
+
+        // If the bill already has a department type set, validate the item matches it
+        if (getPreBill().getDepartmentType() != null
+                && !itemDepartmentType.equals(getPreBill().getDepartmentType())) {
+            JsfUtil.addErrorMessage("Cannot add items from different department types. "
+                    + "Bill is set for " + getPreBill().getDepartmentType().getLabel()
+                    + " items, but you are trying to add a " + itemDepartmentType.getLabel() + " item.");
+            return;
+        }
+
         double requestedQty = intQty.doubleValue();
         double remainingQty = requestedQty;
 
@@ -909,7 +1029,9 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
                 JsfUtil.addErrorMessage("This batch is already added to the bill. Edit the quantity instead.");
                 return;
             }
-            addBillItemLineForStock(stockDto, requestedQty);
+            if (!addBillItemLineForStock(stockDto, requestedQty)) {
+                return;
+            }
             calTotal();
             clearBillItem();
             return;
@@ -939,7 +1061,9 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             if (take <= 0) {
                 continue;
             }
-            addBillItemLineForStock(next, take);
+            if (!addBillItemLineForStock(next, take)) {
+                continue;
+            }
             addedQty += take;
             remainingQty -= take;
         }
@@ -975,8 +1099,19 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
      * Build a single bill line for the given stock/batch at the given quantity and append it to
      * {@link #billItemDataList}. Shared by the single-batch and multi-batch (#13260) paths so the
      * rate, discount and value calculations stay identical regardless of how the batch was chosen.
+     *
+     * @return false when the item could not be resolved and no line was added.
      */
-    private void addBillItemLineForStock(StockDTO stk, double qty) {
+    private boolean addBillItemLineForStock(StockDTO stk, double qty) {
+        // Resolve the item up front and abort on null, matching legacy
+        // PharmacySaleForCashierController :2389-2392. Doing it inside the discount try/catch
+        // below would swallow the NPE and silently skip the department-type lock.
+        Item itemRef = itemFacade.find(stk.getItemId());
+        if (itemRef == null) {
+            JsfUtil.addErrorMessage("Selected item not found. Please try again.");
+            return false;
+        }
+
         double[] batchRates = fetchBatchRates(stk.getItemBatchId());
         double batchRetailRate    = batchRates[0];
         double batchPurchaseRate  = batchRates[1];
@@ -1012,22 +1147,22 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         double discountPct = 0.0;
         double discountValue = 0.0;
         try {
-            Item itemRef = itemFacade.find(stk.getItemId());
             if (Boolean.TRUE.equals(itemRef.isDiscountAllowed())) {
                 Double pct = priceMatrixController.getPaymentSchemeDiscountPercent(
                         paymentMethod, paymentScheme, sessionController.getDepartment(), itemRef);
                 discountPct = pct != null ? pct : 0.0;
                 discountValue = (discountPct / 100.0) * grossValue;
             }
-            // The first item added fixes the department type of the whole bill; the
-            // autocomplete then only offers matching items. Mirrors
-            // PharmacySaleForCashierController.addBillItem().
-            if (getPreBill().getDepartmentType() == null) {
-                getPreBill().setDepartmentType(itemRef.getDepartmentType());
-            }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Discount lookup failed for item {0}: {1}",
                     new Object[]{stk.getItemId(), e.getMessage()});
+        }
+        // The first item added fixes the department type of the whole bill; the autocomplete
+        // then only offers matching items. Kept OUTSIDE the discount try/catch so a discount
+        // lookup failure can never leave the cart unlocked. Mirrors
+        // PharmacySaleForCashierController.addBillItemSingleItem().
+        if (getPreBill().getDepartmentType() == null) {
+            getPreBill().setDepartmentType(itemRef.getDepartmentType());
         }
         double netValue = grossValue - discountValue;
         double netRate = qty > 0 ? netValue / qty : lineRetailRate;
@@ -1044,6 +1179,7 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             billItemDataList = new ArrayList<>();
         }
         billItemDataList.add(bid);
+        return true;
     }
 
     /**
@@ -1569,11 +1705,6 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         token = null;
     }
 
-    private void clearBill() {
-        preBill = null;
-        billItemDataList = null;
-    }
-
     private void clearBillItem() {
         billItem = null;
         intQty = null;
@@ -1915,6 +2046,19 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             getPaymentMethodData().getStaffCredit().setToStaff(toStaff);
             getPaymentMethodData().getStaffWelfare().setToStaff(toStaff);
         }
+    }
+
+    /**
+     * Credit counterparty of the bill. buildPreBill() stamps it on the PreBill
+     * unconditionally, matching PharmacySaleForCashierController :2973, so the page needs
+     * to be able to set it (the legacy controller exposes the same pair at :3395-3401).
+     */
+    public Institution getToInstitution() {
+        return toInstitution;
+    }
+
+    public void setToInstitution(Institution toInstitution) {
+        this.toInstitution = toInstitution;
     }
 
     public Double getPreviewRate() {
