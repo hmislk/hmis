@@ -92,12 +92,20 @@ Find the built WAR and force-deploy it (this also triggers the singleton's
 `@PostConstruct`, which is what runs the column-enhancement step). First
 look up the **actual currently-deployed app name** — do not assume `rh`; on
 some machines the app is deployed as `rh-3.0.0` (derived from the WAR
-filename) instead:
+filename) instead. `list-applications` lists *every* deployed app (not just
+this one), so don't just grab the first line — filter for the `rh`/`rh-<version>`
+naming convention and require exactly one unambiguous match, failing loudly
+rather than silently defaulting to `rh` if that's not the case:
 
 ```bash
 WAR=$(ls target/*.war | head -1)
-DEPLOYED_NAME=$(/home/buddhika/payara/bin/asadmin list-applications | awk 'NR==1{print $1}')
-DEPLOYED_NAME="${DEPLOYED_NAME:-rh}"
+MATCHES=$(/home/buddhika/payara/bin/asadmin list-applications | awk '{print $1}' | grep -E '^rh(-[0-9][0-9.]*)?$' || true)
+MATCH_COUNT=$(printf '%s\n' "$MATCHES" | grep -c . || true)
+if [ "$MATCH_COUNT" -ne 1 ]; then
+  echo "ERROR: expected exactly one deployed app matching rh/rh-<version>, found $MATCH_COUNT: $MATCHES" >&2
+  exit 1
+fi
+DEPLOYED_NAME="$MATCHES"
 /home/buddhika/payara/bin/asadmin redeploy --name "$DEPLOYED_NAME" "$WAR"
 ```
 
@@ -106,7 +114,9 @@ particular machine actually has deployed — `dev-issue` and `playwright-e2e`
 default to `rh`, but that's only a convention, not a guarantee. Omitting
 `--name` lets `asadmin` derive the app name from the WAR filename instead of
 redeploying the existing app, which can leave two separate apps competing
-for the same hardcoded `/rh` context root (`glassfish-web.xml`).
+for the same hardcoded `/rh` context root (`glassfish-web.xml`). If the
+error above fires (zero or multiple matches), stop and ask the user rather
+than guessing which app to redeploy.
 
 **If deploy fails with a JNDI lookup error for a datasource** (e.g.
 `jdbc/ruhunuAudit` not found): this is a pre-existing local-environment
@@ -166,8 +176,13 @@ use the same `$DEPLOYED_NAME` lookup as step 4:
 ```bash
 mvn -q package -DskipTests
 WAR=$(ls target/*.war | head -1)
-DEPLOYED_NAME=$(/home/buddhika/payara/bin/asadmin list-applications | awk 'NR==1{print $1}')
-DEPLOYED_NAME="${DEPLOYED_NAME:-rh}"
+MATCHES=$(/home/buddhika/payara/bin/asadmin list-applications | awk '{print $1}' | grep -E '^rh(-[0-9][0-9.]*)?$' || true)
+MATCH_COUNT=$(printf '%s\n' "$MATCHES" | grep -c . || true)
+if [ "$MATCH_COUNT" -ne 1 ]; then
+  echo "ERROR: expected exactly one deployed app matching rh/rh-<version>, found $MATCH_COUNT: $MATCHES" >&2
+  exit 1
+fi
+DEPLOYED_NAME="$MATCHES"
 /home/buddhika/payara/bin/asadmin redeploy --name "$DEPLOYED_NAME" "$WAR"
 ```
 
