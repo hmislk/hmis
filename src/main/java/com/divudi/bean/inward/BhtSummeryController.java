@@ -3514,13 +3514,6 @@ public class BhtSummeryController implements Serializable {
             theatreMedicineIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters, DepartmentType.Theatre);
             storeMedicineIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters, DepartmentType.Store);
             inventryMedicineIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters, DepartmentType.Inventry);
-        
-            System.out.println("etuMedicineIssues = " + etuMedicineIssues);
-            System.out.println("pharmacyMedicineIssues = " + pharmacyMedicineIssues);
-            System.out.println("inwardMedicineIssues = " + inwardMedicineIssues);
-            System.out.println("theatreMedicineIssues = " + theatreMedicineIssues);
-            System.out.println("storeMedicineIssues = " + storeMedicineIssues);
-            System.out.println("inventryMedicineIssues = " + inventryMedicineIssues);
         }
 
         storeIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.StoreBhtPre, childPatientEncouters);
