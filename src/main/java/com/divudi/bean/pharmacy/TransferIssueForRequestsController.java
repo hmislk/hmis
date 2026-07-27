@@ -1531,8 +1531,12 @@ public class TransferIssueForRequestsController implements Serializable {
 
     // Fallback when the request bill carries no departmentType (e.g. legacy
     // requests): department-type-filtered reports drop bills left NULL (#22056).
-    // Stamps only when all non-null item types agree; mixed legacy data is left
-    // unset rather than misclassifying the whole bill.
+    // Stamps only when all non-null item types agree; mixed-type items are left
+    // unset rather than misclassifying the whole bill. When no item carries a
+    // type at all, default to Pharmacy (#19168) to match the fallback already
+    // used by TransferIssueDirectController and TransferRequestController
+    // .createNewApprovedTransferRequestBill() (#22146) — this is the last
+    // standard-flow bill-save path that could otherwise still persist NULL.
     private void stampDepartmentTypeFromItemsIfMissing() {
         if (getIssuedBill().getDepartmentType() != null) {
             return;
@@ -1548,9 +1552,7 @@ public class TransferIssueForRequestsController implements Serializable {
                 return;
             }
         }
-        if (found != null) {
-            getIssuedBill().setDepartmentType(found);
-        }
+        getIssuedBill().setDepartmentType(found != null ? found : DepartmentType.Pharmacy);
     }
 
     public Bill getIssuedBill() {

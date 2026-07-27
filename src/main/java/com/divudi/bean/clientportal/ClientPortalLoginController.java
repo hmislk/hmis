@@ -32,15 +32,15 @@ public class ClientPortalLoginController implements Serializable {
         }
     }
 
-    public void login() {
+    public String login() {
         clearMessages();
         if (identifier == null || identifier.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Enter your phone number or email.");
-            return;
+            return null;
         }
         if (password == null || password.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Enter your password.");
-            return;
+            return null;
         }
 
         List<ClientAccount> candidates = clientAccountFacade.findByVerifiedPhoneOrEmail(identifier.trim());
@@ -55,11 +55,12 @@ public class ClientPortalLoginController implements Serializable {
 
         if (matched == null) {
             JsfUtil.addErrorMessage("Incorrect phone/email or password.");
-            return;
+            return null;
         }
 
         clientPortalSessionController.login(matched);
         password = null;
+        return "/client_portal/home?faces-redirect=true";
     }
 
     public void logout() {
