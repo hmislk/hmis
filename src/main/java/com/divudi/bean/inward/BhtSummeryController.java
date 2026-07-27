@@ -3504,7 +3504,7 @@ public class BhtSummeryController implements Serializable {
 
         createPatientRooms();
         createPatientItems();
-        
+
         if (!configOptionApplicationController.getBooleanValueByKey("Medicine, Sort by the type of department that issued it.", false)) {
             pharmacyIssues = getInwardBean().fetchIssueTable(getPatientEncounter(), BillType.PharmacyBhtPre, childPatientEncouters);
         } else {
@@ -3656,6 +3656,13 @@ public class BhtSummeryController implements Serializable {
         creditCompanyAllocations = null;
         newEncounterCreditCompany = null;
         estimatedBillView = false;
+
+        etuMedicineIssues = null;
+        pharmacyMedicineIssues = null;
+        inwardMedicineIssues = null;
+        theatreMedicineIssues = null;
+        storeMedicineIssues = null;
+        inventryMedicineIssues = null;
     }
 
     public void onInstitutionChange() {
