@@ -1061,6 +1061,30 @@
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
                         <p:menuitem
                             ajax="false"
+                            action="/pharmacy/pharmacy_bill_retail_sale_native_1?faces-redirect=true"
+                            actionListener="#{retailSaleNativeSqlController1.switchToThisSaleWindow()}"
+                            value="Sale 2"
+                            icon="fas fa-mortar-pestle"
+                            styleClass="menu-item-optimised"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="/pharmacy/pharmacy_bill_retail_sale_native_2?faces-redirect=true"
+                            actionListener="#{retailSaleNativeSqlController2.switchToThisSaleWindow()}"
+                            value="Sale 3"
+                            icon="fas fa-mortar-pestle"
+                            styleClass="menu-item-optimised"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="/pharmacy/pharmacy_bill_retail_sale_native_3?faces-redirect=true"
+                            actionListener="#{retailSaleNativeSqlController3.switchToThisSaleWindow()}"
+                            value="Sale 4"
+                            icon="fas fa-mortar-pestle"
+                            styleClass="menu-item-optimised"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
                             action="#{pharmacySaleController.navigateToPharmacyRetailSale()}"
                             value="Sale (Legacy)"
                             icon="fas fa-shopping-cart"
@@ -2024,9 +2048,16 @@
                         icon="fa fa-users"
                         rendered="#{webUserController.hasPrivilege('AdminManagingUsers')}" >
                     </p:menuitem>
-                    <p:menuitem  
-                        ajax="false"  
-                        action="#{institutionController.toAdminManageInstitutions()}" 
+                    <p:menuitem
+                        ajax="false"
+                        action="#{clientPortalStaffRegistrationController.navigateToStaffAssistedRegistration()}"
+                        value="Create Client Portal Account"
+                        icon="fa fa-id-card"
+                        rendered="#{webUserController.hasPrivilege('ClientPortalCreateAccount')}" >
+                    </p:menuitem>
+                    <p:menuitem
+                        ajax="false"
+                        action="#{institutionController.toAdminManageInstitutions()}"
                         value="Manage Institutions" 
                         icon="fa fa-hospital"
                         rendered="#{webUserController.hasPrivilege('AdminInstitutions')}" >

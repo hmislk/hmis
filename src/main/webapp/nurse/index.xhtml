@@ -205,6 +205,17 @@
                                                                 rendered="#{webUserController.hasPrivilege('InwardHoldProfessionalPayments')}"
                                                                 styleClass="w-100 #{admissionController.current.professionalPaymentsOnHold ? 'ui-button-danger' : 'ui-button-secondary'}">
                                                             </p:commandButton>
+
+                                                            <p:commandButton
+                                                                id="btnProfessionalFeeHold"
+                                                                value="Professional Payments Report"
+                                                                ajax="false"
+                                                                action="#{professionalFeeHoldController.navigateToProfessionalFeeHold(admissionController.current)}"
+                                                                icon="fa fa-list-check"
+                                                                title="Report and per-item hold/unhold of professional payments for this admission"
+                                                                rendered="#{webUserController.hasPrivilege('InwardHoldProfessionalPayments')}"
+                                                                styleClass="w-100 ui-button-secondary">
+                                                            </p:commandButton>
                                                         </div>
                                                     </div>
 
@@ -632,14 +643,11 @@
                                                                 <p:commandButton
                                                                     id="btnPharmacyRequestsHistoryNurse"
                                                                     value="Pharmacy Requests"
-                                                                    action="#{inwardPharmacyEncounterReportController.navigateToInpatientPharmacyRequestsList()}"
+                                                                    action="#{inwardPharmacyEncounterReportController.navigateToWardPharmacyRequestsList()}"
                                                                     rendered="#{webUserController.hasPrivilege('PharmacyBHTIssueAccept') or webUserController.hasPrivilege('InwardPharmacyIssueRequestSearch')}"
                                                                     icon="fa fa-clipboard-list"
                                                                     class="w-100"
                                                                     ajax="false">
-                                                                    <f:setPropertyActionListener
-                                                                        value="#{admissionController.current}"
-                                                                        target="#{inwardPharmacyEncounterReportController.patientEncounter}" />
                                                                 </p:commandButton>
                                                             </div>
                                                             <div class="col-6">

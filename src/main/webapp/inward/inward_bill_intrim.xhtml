@@ -191,60 +191,78 @@
 
                     <p:panel rendered="#{bhtSummeryController.patientEncounter ne null}">
                         <f:facet name="header">
-                            <h:outputText styleClass="fas fa-file-invoice-dollar" />
-                            <p:outputLabel value="Inward Payment Bill" class="mx-2"/>
-                            <div columns="12" class="m-0 d-flex justify-content-end align-items-center" style="float:right;">
-                                <p:commandButton
-                                    ajax="false"
-                                    value="Clear"
-                                    icon="fa-solid fa-eraser"
-                                    class="ui-button-warning"
-                                    action="#{bhtSummeryController.clear}"  />
+                            <div class="d-flex justify-content-between align-items-center w-100">
 
-                                <p:commandButton
-                                    ajax="false"
-                                    value="Settle Bill"
-                                    icon="fa fa-check"
-                                    class="ui-button-success mx-1"
-                                    onclick="PF('settleBillLoadingDlg').show();"
-                                    action="#{bhtSummeryController.toSettle()}"  />
+                                <!-- LEFT: title -->
+                                <div class="d-flex align-items-center gap-2">
+                                    <h:outputText styleClass="fas fa-file-invoice-dollar" />
+                                    <p:outputLabel value="Inward Payment Bill"/>
+                                </div>
 
-                                <p:commandButton
-                                    ajax="false"
-                                    value="Print Bill"
-                                    icon="fas fa-print"
-                                    class="ui-button-info"
-                                    action="#{bhtSummeryController.toPrintItrim()}"  />
+                                <!-- CENTER: entity navigation -->
+                                <div class="d-flex gap-2">
+                                    <p:commandButton
+                                        ajax="false"
+                                        immediate="true"
+                                        icon="fa fa-search"
+                                        title="Patient Lookup"
+                                        styleClass="ui-button-info ui-button-outlined"
+                                        action="#{patientController.navigateToSearchPatients()}"
+                                        />
 
+                                    <p:commandButton
+                                        ajax="false"
+                                        immediate="true"
+                                        icon="fa fa-user"
+                                        title="Patient Profile"
+                                        styleClass="ui-button-info ui-button-outlined"
+                                        action="#{patientController.navigateToOpdPatientProfile()}" >
 
-                                <p:commandButton
-                                    ajax="false"
-                                    icon="fa fa-search"
-                                    class="ui-button-warning  mx-1"
-                                    action="#{patientController.navigateToSearchPatients()}"
-                                    />
+                                        <f:setPropertyActionListener
+                                            value="#{bhtSummeryController.patientEncounter.patient}"
+                                            target="#{patientController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
 
-                                <p:commandButton
-                                    ajax="false"
-                                    icon="fa fa-user"
-                                    class="ui-button-warning  mx-1"
-                                    action="#{patientController.navigateToOpdPatientProfile()}" >
+                                    <p:commandButton
+                                        ajax="false"
+                                        immediate="true"
+                                        value="Inpatient Dashboard"
+                                        icon="fas fa-id-card"
+                                        styleClass="ui-button-info ui-button-outlined"
+                                        action="#{bhtSummeryController.navigateToInpatientProfile()}"
+                                        >
+                                        <f:setPropertyActionListener
+                                            value="#{bhtSummeryController.patientEncounter}"
+                                            target="#{admissionController.current}" ></f:setPropertyActionListener>
+                                    </p:commandButton>
+                                </div>
 
-                                    <f:setPropertyActionListener
-                                        value="#{bhtSummeryController.patientEncounter.patient}"
-                                        target="#{patientController.current}" ></f:setPropertyActionListener>
-                                </p:commandButton>
-                                <p:commandButton
-                                    ajax="false"
-                                    value="Inpatient Dashboard"
-                                    icon="fas fa-id-card"
-                                    class="ui-button-secondary  mx-1"
-                                    action="#{bhtSummeryController.navigateToInpatientProfile()}"
-                                    >
-                                    <f:setPropertyActionListener
-                                        value="#{bhtSummeryController.patientEncounter}"
-                                        target="#{admissionController.current}" ></f:setPropertyActionListener>
-                                </p:commandButton>
+                                <!-- RIGHT: actions — left=least important, right=primary -->
+                                <div class="d-flex gap-2 align-items-center">
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Clear"
+                                        icon="fa-solid fa-eraser"
+                                        styleClass="ui-button-secondary"
+                                        action="#{bhtSummeryController.clear}"  />
+
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Print Interim Bill"
+                                        icon="fas fa-print"
+                                        styleClass="ui-button-info"
+                                        action="#{bhtSummeryController.toPrintItrim()}"  />
+
+                                    <p:commandButton
+                                        ajax="false"
+                                        value="Create Final Bill"
+                                        icon="pi pi-check-circle"
+                                        style="min-width:120px"
+                                        styleClass="ui-button-success"
+                                        onclick="PF('settleBillLoadingDlg').show();"
+                                        action="#{bhtSummeryController.toSettle()}"  />
+                                </div>
+
                             </div>
 
                         </f:facet>

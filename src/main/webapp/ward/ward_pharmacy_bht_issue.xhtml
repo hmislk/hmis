@@ -368,6 +368,15 @@
                             </h:panelGroup>
                         </p:column>
 
+                        <p:column headerText="Comment" style="width: 50px!important; padding: 6px;">
+                            <h:outputText value="#{bItm.referanceBillItem.instructions}" />
+                            <h:panelGroup layout="block"
+                                          rendered="#{bItm.referanceBillItem.hasPrescription() and bItm.referanceBillItem.prescription.comment ne null and bItm.referanceBillItem.prescription.comment ne ''}"
+                                          style="font-size:0.85em;color:#555;margin-top:2px;">
+                                <h:outputText value="Rx: #{bItm.referanceBillItem.prescription.comment}" />
+                            </h:panelGroup>
+                        </p:column>
+
                         <p:column headerText="Batch No"  style="width:50px!important; text-align: right; padding: 6px;">
                             <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}" id="batchNo"/>
                         </p:column>

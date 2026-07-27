@@ -2565,15 +2565,15 @@ public class BillService {
         params.put("toDate", toDate);
 
         if (institution != null) {
-            jpql += " and bi.bill.toInstitution=:ins";
+            jpql += " and bi.bill.institution=:ins";
             params.put("ins", institution);
         }
         if (department != null) {
-            jpql += " and bi.bill.toDepartment=:dep";
+            jpql += " and bi.bill.department=:dep";
             params.put("dep", department);
         }
         if (site != null) {
-            jpql += " and bi.bill.toDepartment.site=:site";
+            jpql += " and bi.bill.department.site=:site";
             params.put("site", site);
         }
 

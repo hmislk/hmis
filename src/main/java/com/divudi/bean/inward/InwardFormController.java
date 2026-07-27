@@ -131,6 +131,7 @@ public class InwardFormController implements Serializable {
             JsfUtil.addErrorMessage("Please select a form to fill");
             return;
         }
+        viewMode = false;
         currentEntry = new PatientFormEntry();
         currentEntry.setPatientEncounter(patientEncounter);
         currentEntry.setDesignComponent(selectedTemplate);
@@ -202,6 +203,7 @@ public class InwardFormController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return;
         }
+        viewMode = true;
         currentEntry = entry;
         selectedTemplate = entry.getDesignComponent();
         String jpql = "select cc "
@@ -489,6 +491,19 @@ public class InwardFormController implements Serializable {
         return designComponentChoiceFacade.findByJpql(jpql, m);
     }
 
+    /**
+     * Column count for a SelectOneRadio field's PrimeFaces grid layout,
+     * derived from how many choices the field actually has (clamped so a
+     * 2-choice field doesn't get 1 column and a 10-choice field doesn't
+     * get 10 columns).
+     */
+    static int clampRadioColumns(int choiceCount) {
+        return Math.max(1, Math.min(4, choiceCount));
+    }
+
+    public int getRadioColumns(CaptureComponent cc) {
+        return clampRadioColumns(getChoicesFor(cc).size());
+    }
 
     public String navigateBackToAdmissionProfile() {
         return "/inward/admission_profile?faces-redirect=true";

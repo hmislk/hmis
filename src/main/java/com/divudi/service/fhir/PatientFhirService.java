@@ -13,6 +13,7 @@ import com.divudi.core.entity.Person;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PersonFacade;
+import com.divudi.ejb.MrnGenerator;
 import com.divudi.service.PatientService;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,6 +44,9 @@ public class PatientFhirService {
 
     @EJB
     private PatientService patientService;
+
+    @EJB
+    private MrnGenerator mrnGenerator;
 
     // -------------------------------------------------------------------------
     // Read
@@ -123,7 +127,7 @@ public class PatientFhirService {
         // MRN from identifier or auto-generate
         String mrn = extractIdentifierValue(fhirPt, "urn:hmis:mrn");
         if (mrn == null || mrn.trim().isEmpty()) {
-            mrn = generatePatientCode();
+            mrn = mrnGenerator.generateMrn(creator != null ? creator.getInstitution() : null);
         }
         patient.setCode(mrn);
 
@@ -339,11 +343,6 @@ public class PatientFhirService {
     // -------------------------------------------------------------------------
     // Helpers
     // -------------------------------------------------------------------------
-
-    public String generatePatientCode() {
-        long count = patientFacade.countByJpql("select count(p) FROM Patient p where p.code is not null");
-        return String.valueOf(count + 1);
-    }
 
     private String extractIdentifierValue(org.hl7.fhir.r5.model.Patient fhirPt, String system) {
         for (Identifier id : fhirPt.getIdentifier()) {

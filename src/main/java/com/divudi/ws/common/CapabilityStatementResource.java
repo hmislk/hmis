@@ -398,7 +398,10 @@ public class CapabilityStatementResource {
                         "API Key",
                         "GET", "POST", "DELETE"))
                                 .add(resource("Investigations", "/api/investigations",
-                        "Investigation master management including search, create, update, and activate/deactivate for item import workflows",
+                        "Investigation master management including search, create, update, and activate/deactivate for item import workflows. "
+                        + "Category/sample/container(tube)/analyzer(machine) can each be set via an ID referencing an existing row "
+                        + "(categoryId, sampleId, containerId, analyzerId — errors if not found) or a name "
+                        + "(categoryName, sampleName, containerName, analyzerName — found-or-created by name if no matching row exists).",
                         "API Key",
                         "GET", "POST", "PUT", "PATCH"))
                 .add(resource("Investigation Format", "/api/investigations/{investigationId}/format",
@@ -408,6 +411,39 @@ public class CapabilityStatementResource {
                         + "Sub-resources: /items, /items/{itemId}/values, /calculations, /flags, /dynamic-labels.",
                         "API Key",
                         "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Components", "/api/investigations/{investigationId}/components",
+                        "Manage InvestigationComponent groupings used to organize report items within an investigation's format "
+                        + "(componentName only). GET lists components for the investigation. POST creates one. "
+                        + "PUT /{componentId} renames one. DELETE /{componentId} permanently removes one — rejected with an error "
+                        + "if any report item (InvestigationItem) still references it.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Fees", "/api/investigations/{investigationId}/fees",
+                        "Manage investigation pricing (ItemFee), mirroring the Services /fees sub-resource. "
+                        + "GET lists non-retired fees for the investigation. POST adds a fee "
+                        + "(body: name, feeType, fee, ffee, discountAllowed, institutionId, departmentId, specialityId, staffId). "
+                        + "PUT /{feeId} updates a fee (only non-null fields are applied). "
+                        + "DELETE /{feeId} soft-deletes (retires) a fee. All mutations recalculate the investigation's "
+                        + "total/totalForForeigner and are rejected against a retired investigation.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Validators", "/api/investigations/{investigationId}/validators",
+                        "Manage InvestigationValidator result-range checks (name, maximumValue, minimumValue) for an "
+                        + "investigation. GET lists non-retired validators. POST creates one. "
+                        + "PUT /{validatorId} updates one (only non-null/non-blank fields are applied). "
+                        + "DELETE /{validatorId} soft-deletes (retires) one. All mutations are rejected against a "
+                        + "retired investigation. Note: the legacy InvestigationValidaterComponent relation is dead "
+                        + "code in the app today and is intentionally not exposed by this API.",
+                        "API Key",
+                        "GET", "POST", "PUT", "DELETE"))
+                .add(resource("Investigation Full Definition", "/api/investigations/{investigationId}/full",
+                        "Read-only aggregation of an investigation's complete definition into one nested JSON "
+                        + "document: metadata (incl. category/sample/container/analyzer), components, report "
+                        + "format (items, item values, calculations, flags, dynamic labels), validators, and fees. "
+                        + "Pure composition over the other investigation sub-resources — no new mutation logic. "
+                        + "Supersedes the old 'Export Investigation as JSON' idea (#458).",
+                        "API Key",
+                        "GET"))
                 .add(resource("Services", "/api/services",
                         "OPD and Inward service management including fees and categories. "
                         + "Fee sub-paths: /{id}/fees (GET fees, POST add), /{id}/fees/{feeId} (PUT update, DELETE remove). "
