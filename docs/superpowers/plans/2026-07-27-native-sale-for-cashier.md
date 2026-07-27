@@ -123,9 +123,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
   `PaymentMethodData`, `PaymentScheme`.
 - Produces:
   ```java
-  public void settle(PreBill preBill, List<BillItemData> items,
-                     PaymentMethod paymentMethod, PaymentMethodData paymentMethodData,
-                     PaymentScheme paymentScheme)
+  public void settle(PreBill preBill, List<BillItemData> items)
 
   public Object[] loadViewDataByBillId(long billId)   // [PrintBillData, List<BillItemData>]
   ```
@@ -193,22 +191,22 @@ Replace:
 with:
 
 ```java
-    public void settle(PreBill preBill, List<BillItemData> items,
-                       PaymentMethod paymentMethod, PaymentMethodData paymentMethodData,
-                       PaymentScheme paymentScheme) {
+    public void settle(PreBill preBill, List<BillItemData> items) {
 ```
 
-`paymentMethod` / `paymentMethodData` / `paymentScheme` stay in the signature even though no
-Payment rows are written — they are retained so the method shape matches its sibling and so a
-future change (e.g. recording method on the bill inside the service) needs no call-site churn.
-Mark them so no reader thinks they were forgotten by adding, immediately after the guard clause:
+The three payment parameters are **dropped**, not retained: this bill type is `NO_PAYMENT`, so
+the service writes no `Payment` rows and has no use for them. The controller stamps payment
+details onto the bill's own columns via `billBean.setPaymentMethodData(...)` *before* calling
+`settle`. Record why, immediately after the guard clause:
 
 ```java
-        // paymentMethod / paymentMethodData / paymentScheme are intentionally unused here:
-        // PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER is a NO_PAYMENT bill type. The
-        // controller stamps them onto the bill's own columns via billBean.setPaymentMethodData
-        // before calling settle(). No Payment entity is created.
+        // No payment parameters: PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER is a
+        // NO_PAYMENT bill type, so no Payment entity is created here. The controller
+        // stamps payment details onto the bill's own columns before calling settle().
 ```
+
+Remove the `PaymentMethod`, `PaymentMethodData` and `PaymentScheme` imports if nothing else
+in the file uses them.
 
 - [ ] **Step 5: Delete the BilledBill persist and cross-link (Steps 1b and 1c)**
 
@@ -506,8 +504,7 @@ end of the `try` block with:
         }
 
         try {
-            nativeSqlService.settle(preBillEntity, billItemDataList,
-                    paymentMethod, getPaymentMethodData(), paymentScheme);
+            nativeSqlService.settle(preBillEntity, billItemDataList);
 
             settleTokenIfEnabled(preBillEntity);
 
@@ -1369,8 +1366,9 @@ and note that Phase 3 (production testing gate) is now the blocker for Phase 4.
   from the originals; the recipe plus the two `grep` gates is more reliable and is how the
   existing `*_native` composites were produced.
 
-**Type consistency:** `settle(...)` is `void` and 5-arg in Task 2's Produces block, Task 3's
-call site, and the spec. `buildPrintBill(Bill)` keeps its one-arg entity signature (Task 3
+**Type consistency:** `settle(...)` is `void` and 2-arg in Task 2's Produces block and Task 3's
+call site. (The spec's §5.2 sketch shows a 5-arg form; the three payment parameters were
+dropped during plan pre-flight as unused — this plan governs.) `buildPrintBill(Bill)` keeps its one-arg entity signature (Task 3
 Steps 6, 11). `recalculateRow(BillItemData)` is introduced in Task 3 Step 8 and used only
 there. `navigateToPharmacyBillForCashierNativeFromMenu()` is defined in Task 3 Step 10 and
 consumed in Task 7 Step 1 — names match.
