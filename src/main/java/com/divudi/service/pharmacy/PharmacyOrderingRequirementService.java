@@ -330,12 +330,18 @@ public class PharmacyOrderingRequirementService implements Serializable {
                 + " and bill.retired = false"
                 + " and p.purchaseRate > 0"
                 + " and bill.createdAt between :fd and :td"
-                + " and bill.billTypeAtomic in :inbound"
-                + " order by bill.createdAt");
+                + " and bill.billTypeAtomic in :inbound");
 
         m.put("fd", windowStart);
         m.put("td", windowEnd);
         m.put("inbound", inbound);
+
+        // Scope must be applied before the ORDER BY is appended, and the rate has
+        // to come from the same scope as the rest of the report - otherwise
+        // Estimated Cost is priced off some other department's purchases.
+        appendBillScope(jpql, m, institution, site, department);
+
+        jpql.append(" order by bill.createdAt");
 
         List<Object[]> rows = (List<Object[]>) pharmaceuticalBillItemFacade.findLightsByJpql(
                 jpql.toString(), m, TemporalType.TIMESTAMP);
