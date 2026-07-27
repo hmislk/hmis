@@ -220,322 +220,301 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             return null;
         }
         billSettlingStarted = true;
+        try {
 
-        // Session guard, ported from PharmacySaleForCashierController :3582-3586 (also :2958-2962).
-        // Without it buildPreBill() would dereference getLoggedUser().getDepartment() and NPE to a
-        // JSF error page with the latch left true, permanently disabling settle for the session.
-        if (sessionController.getLoggedUser() == null) {
-            billSettlingStarted = false;
-            JsfUtil.addErrorMessage("Session expired. Please log in again.");
-            return null;
-        }
-
-        if (paymentMethod == null) {
-            billSettlingStarted = false;
-            JsfUtil.addErrorMessage("Please select Payment Method");
-            return null;
-        }
-
-        if (billItemDataList == null || billItemDataList.isEmpty()) {
-            billSettlingStarted = false;
-            JsfUtil.addErrorMessage("Please add items to the bill.");
-            return null;
-        }
-
-        // Zero-quantity gate, ported from PharmacySaleForCashierController :3591-3604 (message
-        // spelling is legacy's). recalculateRow() can leave a row at qty 0 while the money fields
-        // still hold the previous quantity's values, so without this gate buildPreBill() would
-        // charge for a line the service dispenses no stock for.
-        for (BillItemData bid : billItemDataList) {
-            if (bid.getQty() <= 0.0) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
+            // Session guard, ported from PharmacySaleForCashierController :3582-3586 (also :2958-2962).
+            // Without it buildPreBill() would dereference getLoggedUser().getDepartment() and NPE to a
+            // JSF error page with the latch left true, permanently disabling settle for the session.
+            if (sessionController.getLoggedUser() == null) {
+                JsfUtil.addErrorMessage("Session expired. Please log in again.");
                 return null;
             }
-        }
 
-        BooleanMessage discountValidation = discountSchemeValidationService.validateDiscountScheme(
-                paymentMethod, paymentScheme, getPaymentMethodData());
-        if (!discountValidation.isFlag()) {
-            billSettlingStarted = false;
-            JsfUtil.addErrorMessage(discountValidation.getMessage());
-            return null;
-        }
+            if (paymentMethod == null) {
+                JsfUtil.addErrorMessage("Please select Payment Method");
+                return null;
+            }
 
-        // Validate department type consistency before settlement.
-        // Mirrors PharmacySaleForCashierController.settlePreBillAndNavigateToPrint() :3622-3632;
-        // the entity getter Item.getDepartmentType() defaults a null column to Pharmacy, so the
-        // item is resolved through itemFacade rather than a JPQL projection to keep that default.
-        if (getPreBill().getDepartmentType() != null) {
+            if (billItemDataList == null || billItemDataList.isEmpty()) {
+                JsfUtil.addErrorMessage("Please add items to the bill.");
+                return null;
+            }
+
+            // Zero-quantity gate, ported from PharmacySaleForCashierController :3591-3604 (message
+            // spelling is legacy's). recalculateRow() can leave a row at qty 0 while the money fields
+            // still hold the previous quantity's values, so without this gate buildPreBill() would
+            // charge for a line the service dispenses no stock for.
             for (BillItemData bid : billItemDataList) {
-                if (bid.getItemId() == null) {
-                    continue;
-                }
-                Item lineItem = itemFacade.find(bid.getItemId());
-                if (lineItem != null && lineItem.getDepartmentType() != null
-                        && !lineItem.getDepartmentType().equals(getPreBill().getDepartmentType())) {
-                    billSettlingStarted = false;
-                    JsfUtil.addErrorMessage("Inconsistent department types detected. All items must belong to the same department type.");
+                if (bid.getQty() <= 0.0) {
+                    JsfUtil.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
                     return null;
                 }
             }
-        }
 
-        // Pharmacy Sale Validation - Patient and Patient Details.
-        // Keys and messages are those of the legacy cashier path
-        // (PharmacySaleForCashierController :3635-3746), not the pay-now Sale page.
-        boolean patientRequired = configOptionApplicationController.getBooleanValueByKey(
-                "Patient is required in Pharmacy Retail Sale", false);
-
-        if (patientRequired) {
-            if (getPatient() == null || getPatient().getPerson() == null) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Patient is required.");
+            BooleanMessage discountValidation = discountSchemeValidationService.validateDiscountScheme(
+                    paymentMethod, paymentScheme, getPaymentMethodData());
+            if (!discountValidation.isFlag()) {
+                JsfUtil.addErrorMessage(discountValidation.getMessage());
                 return null;
             }
-        }
 
-        // Only validate patient details if patient is required OR if patient exists
-        boolean hasPatient = getPatient() != null && getPatient().getPerson() != null;
-
-        if (hasPatient || patientRequired) {
-            // Patient Name validation
-            if (configOptionApplicationController.getBooleanValueByKey(
-                    "Patient Name is required in Pharmacy Retail Sale", false)) {
-                if (getPatient() == null || getPatient().getPerson() == null
-                        || getPatient().getPerson().getName() == null
-                        || getPatient().getPerson().getName().trim().isEmpty()) {
-                    billSettlingStarted = false;
-                    JsfUtil.addErrorMessage("Patient name is required.");
-                    return null;
-                }
-            }
-
-            // Patient Phone validation
-            if (configOptionApplicationController.getBooleanValueByKey(
-                    "Patient Phone is required in Pharmacy Retail Sale", false)) {
-                if (getPatient() == null || getPatient().getPerson() == null) {
-                    billSettlingStarted = false;
-                    JsfUtil.addErrorMessage("Patient is required.");
-                    return null;
-                }
-                // Check both phone and mobile - at least one should be present
-                boolean hasPhone = getPatient().getPerson().getPhone() != null
-                        && !getPatient().getPerson().getPhone().trim().isEmpty();
-                boolean hasMobile = getPatient().getPerson().getMobile() != null
-                        && !getPatient().getPerson().getMobile().trim().isEmpty();
-
-                if (!hasPhone && !hasMobile) {
-                    billSettlingStarted = false;
-                    JsfUtil.addErrorMessage("Patient phone number is required.");
-                    return null;
-                }
-            }
-
-            // Patient Gender validation
-            if (configOptionApplicationController.getBooleanValueByKey(
-                    "Patient Gender is required in Pharmacy Retail Sale", false)) {
-                if (getPatient() == null || getPatient().getPerson() == null
-                        || getPatient().getPerson().getSex() == null) {
-                    billSettlingStarted = false;
-                    JsfUtil.addErrorMessage("Patient gender is required.");
-                    return null;
-                }
-            }
-
-            // Patient Address validation
-            if (configOptionApplicationController.getBooleanValueByKey(
-                    "Patient Address is required in Pharmacy Retail Sale", false)) {
-                if (getPatient() == null || getPatient().getPerson() == null
-                        || getPatient().getPerson().getAddress() == null
-                        || getPatient().getPerson().getAddress().trim().isEmpty()) {
-                    billSettlingStarted = false;
-                    JsfUtil.addErrorMessage("Patient address is required.");
-                    return null;
-                }
-            }
-
-            // Patient Area validation
-            if (configOptionApplicationController.getBooleanValueByKey(
-                    "Patient Area is required in Pharmacy Retail Sale", false)) {
-                if (getPatient() == null || getPatient().getPerson() == null
-                        || getPatient().getPerson().getArea() == null) {
-                    billSettlingStarted = false;
-                    JsfUtil.addErrorMessage("Patient area is required.");
-                    return null;
-                }
-            }
-        }
-
-        if (getPatient().isBlacklisted()) {
-            billSettlingStarted = false;
-            JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
-            return null;
-        }
-
-        // Referring Doctor validation
-        if (configOptionApplicationController.getBooleanValueByKey(
-                "Referring Doctor is required in Pharmacy Retail Sale", false)) {
-            if (getPreBill() == null || getPreBill().getReferredBy() == null) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Referring doctor is required.");
-                return null;
-            }
-        }
-
-        // Defaults to TRUE - every deployment enforces this unless it is explicitly turned off.
-        if (configOptionApplicationController.getBooleanValueByKey(
-                "Patient Phone number is mandotary in sale for cashier", true)) {
-            // NOTE: legacy leaves the latch untouched on these three branches, but legacy's
-            // settlePreBillAndNavigateToPrint() never sets billSettlingStarted at all (only its
-            // separate settleBillWithPay() at :4505 does), so there it is harmless. Here the latch
-            // IS set above, so not clearing it would deadlock the page for the whole session:
-            // the retry after entering the phone number would hit the re-entry guard silently.
-            if (getPatient() != null && getPatient().getPerson() != null) {
-                if (getPatient().getPatientPhoneNumber() == null && getPatient().getPatientMobileNumber() == null) {
-                    billSettlingStarted = false;
-                    JsfUtil.addErrorMessage("Please enter phone number of the patient");
-                    return null;
-                } else if (getPatient().getId() == null) {
-                    if (getPatient().getPatientPhoneNumber() != null
-                            && !(String.valueOf(getPatient().getPatientPhoneNumber()).length() >= 9)) {
-                        billSettlingStarted = false;
-                        JsfUtil.addErrorMessage("Please enter valid phone number with more than or equal 10 digits of the patient");
-                        return null;
-                    } else if (getPatient().getPatientMobileNumber() != null
-                            && !(String.valueOf(getPatient().getPatientMobileNumber()).length() >= 9)) {
-                        billSettlingStarted = false;
-                        JsfUtil.addErrorMessage("Please enter valid mobile number with more than or equal 10 digits of the patient");
+            // Validate department type consistency before settlement.
+            // Mirrors PharmacySaleForCashierController.settlePreBillAndNavigateToPrint() :3622-3632;
+            // the entity getter Item.getDepartmentType() defaults a null column to Pharmacy, so the
+            // item is resolved through itemFacade rather than a JPQL projection to keep that default.
+            if (getPreBill().getDepartmentType() != null) {
+                for (BillItemData bid : billItemDataList) {
+                    if (bid.getItemId() == null) {
+                        continue;
+                    }
+                    Item lineItem = itemFacade.find(bid.getItemId());
+                    if (lineItem != null && lineItem.getDepartmentType() != null
+                            && !lineItem.getDepartmentType().equals(getPreBill().getDepartmentType())) {
+                        JsfUtil.addErrorMessage("Inconsistent department types detected. All items must belong to the same department type.");
                         return null;
                     }
                 }
-            } else if (patientRequired) {
-                JsfUtil.addErrorMessage("Patient is required.");
-                billSettlingStarted = false;
-                return null;
             }
-        }
 
-        // Duplicate bill item detection - prevent double stock deduction (Closes #18874).
-        // Ported from PharmacySaleForCashierController :3749-3772; the native cart holds
-        // BillItemData rows instead of BillItem entities, so the stock id is read straight
-        // off the row rather than through PharmaceuticalBillItem.
-        // Check 1: same row object appearing twice (rapid Add button click)
-        Set<Integer> seenIdentities = new HashSet<>();
-        for (BillItemData bid : billItemDataList) {
-            if (!seenIdentities.add(System.identityHashCode(bid))) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Duplicate item detected. Please remove duplicate items and try again.");
-                return null;
-            }
-        }
-        // Check 2: different rows pointing at the same Stock batch
-        Set<Long> seenStockIds = new HashSet<>();
-        for (BillItemData bid : billItemDataList) {
-            if (bid.getStockId() != null && !seenStockIds.add(bid.getStockId())) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Duplicate item batch detected: "
-                        + bid.getItemName() + ". Please remove duplicate items and try again.");
-                return null;
-            }
-        }
+            // Pharmacy Sale Validation - Patient and Patient Details.
+            // Keys and messages are those of the legacy cashier path
+            // (PharmacySaleForCashierController :3635-3746), not the pay-now Sale page.
+            boolean patientRequired = configOptionApplicationController.getBooleanValueByKey(
+                    "Patient is required in Pharmacy Retail Sale", false);
 
-        // Ensure discounts reflect current payment scheme before building the bill
-        recalculateDiscountsForAll();
-        calTotal();
-
-        // Back-fill the credit counterparties from the entered payment components before the
-        // bill is built, so a Credit / Staff bill is not persisted without one.
-        syncStaffSelectionFromPaymentDetails(paymentMethod);
-        syncCreditInstitutionFromPaymentDetails(paymentMethod);
-
-        // Patient-required gate + conditional patient save, ported from
-        // PharmacySaleForCashierController :3790-3815. The earlier
-        // "Patient is required in Pharmacy Retail Sale" null test can never fire because
-        // getPatient() and Patient.getPerson() both self-instantiate (Patient.java:441-444);
-        // legacy's real enforcement is this name-emptiness test. Equally important, an
-        // anonymous sale must NOT persist an empty Person + Patient row - legacy attaches
-        // null to the bill in that case.
-        Patient pt = null;
-        if (getPatient() != null && getPatient().getPerson() != null) {
-            String name = getPatient().getPerson().getName();
-            boolean hasValidName = name != null && !name.trim().isEmpty();
             if (patientRequired) {
-                if (!hasValidName) {
-                    billSettlingStarted = false;
-                    JsfUtil.addErrorMessage("Please Select a Patient");
+                if (getPatient() == null || getPatient().getPerson() == null) {
+                    JsfUtil.addErrorMessage("Patient is required.");
                     return null;
+                }
+            }
+
+            // Only validate patient details if patient is required OR if patient exists
+            boolean hasPatient = getPatient() != null && getPatient().getPerson() != null;
+
+            if (hasPatient || patientRequired) {
+                // Patient Name validation
+                if (configOptionApplicationController.getBooleanValueByKey(
+                        "Patient Name is required in Pharmacy Retail Sale", false)) {
+                    if (getPatient() == null || getPatient().getPerson() == null
+                            || getPatient().getPerson().getName() == null
+                            || getPatient().getPerson().getName().trim().isEmpty()) {
+                        JsfUtil.addErrorMessage("Patient name is required.");
+                        return null;
+                    }
+                }
+
+                // Patient Phone validation
+                if (configOptionApplicationController.getBooleanValueByKey(
+                        "Patient Phone is required in Pharmacy Retail Sale", false)) {
+                    if (getPatient() == null || getPatient().getPerson() == null) {
+                        JsfUtil.addErrorMessage("Patient is required.");
+                        return null;
+                    }
+                    // Check both phone and mobile - at least one should be present
+                    boolean hasPhone = getPatient().getPerson().getPhone() != null
+                            && !getPatient().getPerson().getPhone().trim().isEmpty();
+                    boolean hasMobile = getPatient().getPerson().getMobile() != null
+                            && !getPatient().getPerson().getMobile().trim().isEmpty();
+
+                    if (!hasPhone && !hasMobile) {
+                        JsfUtil.addErrorMessage("Patient phone number is required.");
+                        return null;
+                    }
+                }
+
+                // Patient Gender validation
+                if (configOptionApplicationController.getBooleanValueByKey(
+                        "Patient Gender is required in Pharmacy Retail Sale", false)) {
+                    if (getPatient() == null || getPatient().getPerson() == null
+                            || getPatient().getPerson().getSex() == null) {
+                        JsfUtil.addErrorMessage("Patient gender is required.");
+                        return null;
+                    }
+                }
+
+                // Patient Address validation
+                if (configOptionApplicationController.getBooleanValueByKey(
+                        "Patient Address is required in Pharmacy Retail Sale", false)) {
+                    if (getPatient() == null || getPatient().getPerson() == null
+                            || getPatient().getPerson().getAddress() == null
+                            || getPatient().getPerson().getAddress().trim().isEmpty()) {
+                        JsfUtil.addErrorMessage("Patient address is required.");
+                        return null;
+                    }
+                }
+
+                // Patient Area validation
+                if (configOptionApplicationController.getBooleanValueByKey(
+                        "Patient Area is required in Pharmacy Retail Sale", false)) {
+                    if (getPatient() == null || getPatient().getPerson() == null
+                            || getPatient().getPerson().getArea() == null) {
+                        JsfUtil.addErrorMessage("Patient area is required.");
+                        return null;
+                    }
+                }
+            }
+
+            if (getPatient().isBlacklisted()) {
+                JsfUtil.addErrorMessage("This patient is blacklisted from the system. Can't Bill.");
+                return null;
+            }
+
+            // Referring Doctor validation
+            if (configOptionApplicationController.getBooleanValueByKey(
+                    "Referring Doctor is required in Pharmacy Retail Sale", false)) {
+                if (getPreBill() == null || getPreBill().getReferredBy() == null) {
+                    JsfUtil.addErrorMessage("Referring doctor is required.");
+                    return null;
+                }
+            }
+
+            // Defaults to TRUE - every deployment enforces this unless it is explicitly turned off.
+            if (configOptionApplicationController.getBooleanValueByKey(
+                    "Patient Phone number is mandotary in sale for cashier", true)) {
+                // NOTE: legacy leaves the latch untouched on these three branches, but legacy's
+                // settlePreBillAndNavigateToPrint() never sets billSettlingStarted at all (only its
+                // separate settleBillWithPay() at :4505 does), so there it is harmless. Here the
+                // enclosing try/finally always clears the latch on the way out, so returning from
+                // any of these branches cannot leave settling disabled for the rest of the session.
+                if (getPatient() != null && getPatient().getPerson() != null) {
+                    if (getPatient().getPatientPhoneNumber() == null && getPatient().getPatientMobileNumber() == null) {
+                        JsfUtil.addErrorMessage("Please enter phone number of the patient");
+                        return null;
+                    } else if (getPatient().getId() == null) {
+                        if (getPatient().getPatientPhoneNumber() != null
+                                && !(String.valueOf(getPatient().getPatientPhoneNumber()).length() >= 9)) {
+                            JsfUtil.addErrorMessage("Please enter valid phone number with more than or equal 10 digits of the patient");
+                            return null;
+                        } else if (getPatient().getPatientMobileNumber() != null
+                                && !(String.valueOf(getPatient().getPatientMobileNumber()).length() >= 9)) {
+                            JsfUtil.addErrorMessage("Please enter valid mobile number with more than or equal 10 digits of the patient");
+                            return null;
+                        }
+                    }
+                } else if (patientRequired) {
+                    JsfUtil.addErrorMessage("Patient is required.");
+                    return null;
+                }
+            }
+
+            // Duplicate bill item detection - prevent double stock deduction (Closes #18874).
+            // Ported from PharmacySaleForCashierController :3749-3772; the native cart holds
+            // BillItemData rows instead of BillItem entities, so the stock id is read straight
+            // off the row rather than through PharmaceuticalBillItem.
+            // Check 1: same row object appearing twice (rapid Add button click)
+            Set<Integer> seenIdentities = new HashSet<>();
+            for (BillItemData bid : billItemDataList) {
+                if (!seenIdentities.add(System.identityHashCode(bid))) {
+                    JsfUtil.addErrorMessage("Duplicate item detected. Please remove duplicate items and try again.");
+                    return null;
+                }
+            }
+            // Check 2: different rows pointing at the same Stock batch
+            Set<Long> seenStockIds = new HashSet<>();
+            for (BillItemData bid : billItemDataList) {
+                if (bid.getStockId() != null && !seenStockIds.add(bid.getStockId())) {
+                    JsfUtil.addErrorMessage("Duplicate item batch detected: "
+                            + bid.getItemName() + ". Please remove duplicate items and try again.");
+                    return null;
+                }
+            }
+
+            // Ensure discounts reflect current payment scheme before building the bill
+            recalculateDiscountsForAll();
+            calTotal();
+
+            // Back-fill the credit counterparties from the entered payment components before the
+            // bill is built, so a Credit / Staff bill is not persisted without one.
+            syncStaffSelectionFromPaymentDetails(paymentMethod);
+            syncCreditInstitutionFromPaymentDetails(paymentMethod);
+
+            // Patient-required gate + conditional patient save, ported from
+            // PharmacySaleForCashierController :3790-3815. The earlier
+            // "Patient is required in Pharmacy Retail Sale" null test can never fire because
+            // getPatient() and Patient.getPerson() both self-instantiate (Patient.java:441-444);
+            // legacy's real enforcement is this name-emptiness test. Equally important, an
+            // anonymous sale must NOT persist an empty Person + Patient row - legacy attaches
+            // null to the bill in that case.
+            Patient pt = null;
+            if (getPatient() != null && getPatient().getPerson() != null) {
+                String name = getPatient().getPerson().getName();
+                boolean hasValidName = name != null && !name.trim().isEmpty();
+                if (patientRequired) {
+                    if (!hasValidName) {
+                        JsfUtil.addErrorMessage("Please Select a Patient");
+                        return null;
+                    } else {
+                        pt = savePatient();
+                    }
                 } else {
-                    pt = savePatient();
+                    if (hasValidName) {
+                        pt = savePatient();
+                    }
                 }
-            } else {
-                if (hasValidName) {
-                    pt = savePatient();
-                }
+            } else if (patientRequired) {
+                JsfUtil.addErrorMessage("Please Select a Patient");
+                return null;
             }
-        } else if (patientRequired) {
-            billSettlingStarted = false;
-            JsfUtil.addErrorMessage("Please Select a Patient");
-            return null;
-        }
 
-        PreBill preBillEntity = buildPreBill(pt);
+            PreBill preBillEntity = buildPreBill(pt);
 
-        // Stamps the single-method payment reference fields on the bill itself: cheque /
-        // slip / card / online-settlement / ewallet numbers, dates and banks, plus the
-        // creditBill flag. BillBeanController.setPaymentMethodData (:2916-2951) has no
-        // MultiplePaymentMethods branch, so a multiple-payment breakdown is deliberately
-        // NOT written here - the cashier collects and records the money later. Mirrors
-        // legacy savePreBillFinallyForRetailSaleForCashier (:2997).
-        preBillEntity.setCashPaid(cashPaid);
-        billBean.setPaymentMethodData(preBillEntity, paymentMethod, getPaymentMethodData());
+            // Stamps the single-method payment reference fields on the bill itself: cheque /
+            // slip / card / online-settlement / ewallet numbers, dates and banks, plus the
+            // creditBill flag. BillBeanController.setPaymentMethodData (:2916-2951) has no
+            // MultiplePaymentMethods branch, so a multiple-payment breakdown is deliberately
+            // NOT written here - the cashier collects and records the money later. Mirrors
+            // legacy savePreBillFinallyForRetailSaleForCashier (:2997).
+            preBillEntity.setCashPaid(cashPaid);
+            billBean.setPaymentMethodData(preBillEntity, paymentMethod, getPaymentMethodData());
 
-        // Stamp dept/institution IDs on each item (needed by the native service for
-        // StockHistory aggregates).
-        long deptId = sessionController.getLoggedUser().getDepartment().getId();
-        long instId = sessionController.getLoggedUser().getDepartment().getInstitution().getId();
-        for (BillItemData bid : billItemDataList) {
-            bid.setDepartmentId(deptId);
-            bid.setInstitutionId(instId);
-        }
+            // Stamp dept/institution IDs on each item (needed by the native service for
+            // StockHistory aggregates).
+            long deptId = sessionController.getLoggedUser().getDepartment().getId();
+            long instId = sessionController.getLoggedUser().getDepartment().getInstitution().getId();
+            for (BillItemData bid : billItemDataList) {
+                bid.setDepartmentId(deptId);
+                bid.setInstitutionId(instId);
+            }
 
-        try {
-            nativeSqlService.settle(preBillEntity, billItemDataList);
-
-            // settle() is a @Stateless REQUIRED boundary, so the bill and the stock
-            // deduction are already committed here. A token failure must not make a
-            // completed sale report as failed and skip the printout.
             try {
-                settleTokenIfEnabled(preBillEntity);
-                // Legacy runs this OUTSIDE the "Enable token system in sale for cashier"
-                // check (:3869-3872), so a token created by any other route is still
-                // attached to the settled bill.
-                if (getCurrentToken() != null) {
-                    getCurrentToken().setBill(preBillEntity);
-                    tokenFacade.edit(getCurrentToken());
-                }
-            } catch (RuntimeException tokenEx) {
-                LOGGER.log(Level.WARNING, "Token handling failed after cashier settle", tokenEx);
-            }
+                nativeSqlService.settle(preBillEntity, billItemDataList);
 
-            buildPrintBill(preBillEntity);
-            // Legacy calls resetAll() here (:3874) so nothing from the settled bill leaks
-            // into the next one. resetAll() also clears the just-built printout, which the
-            // legacy controller keeps in a separate printBill field, so it is restored.
-            PrintBillData settledPrintBill = printBill;
-            List<BillItemData> settledPrintBillItems = printBillItems;
-            resetAll();
-            printBill = settledPrintBill;
-            printBillItems = settledPrintBillItems;
-            billPreview = true;
+                // settle() is a @Stateless REQUIRED boundary, so the bill and the stock
+                // deduction are already committed here. A token failure must not make a
+                // completed sale report as failed and skip the printout.
+                try {
+                    settleTokenIfEnabled(preBillEntity);
+                    // Legacy runs this OUTSIDE the "Enable token system in sale for cashier"
+                    // check (:3869-3872), so a token created by any other route is still
+                    // attached to the settled bill.
+                    if (getCurrentToken() != null) {
+                        getCurrentToken().setBill(preBillEntity);
+                        tokenFacade.edit(getCurrentToken());
+                    }
+                } catch (RuntimeException tokenEx) {
+                    LOGGER.log(Level.WARNING, "Token handling failed after cashier settle", tokenEx);
+                }
+
+                buildPrintBill(preBillEntity);
+                // Legacy calls resetAll() here (:3874) so nothing from the settled bill leaks
+                // into the next one. resetAll() also clears the just-built printout, which the
+                // legacy controller keeps in a separate printBill field, so it is restored.
+                PrintBillData settledPrintBill = printBill;
+                List<BillItemData> settledPrintBillItems = printBillItems;
+                resetAll();
+                printBill = settledPrintBill;
+                printBillItems = settledPrintBillItems;
+                billPreview = true;
+                JsfUtil.addSuccessMessage("Bill settled successfully.");
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.SEVERE, "Native sale-for-cashier settle failed", e);
+                JsfUtil.addErrorMessage("Failed to settle bill: " + e.getMessage());
+            }
+            return null;
+        } finally {
             billSettlingStarted = false;
-            JsfUtil.addSuccessMessage("Bill settled successfully.");
-        } catch (RuntimeException e) {
-            LOGGER.log(Level.SEVERE, "Native sale-for-cashier settle failed", e);
-            billSettlingStarted = false;
-            JsfUtil.addErrorMessage("Failed to settle bill: " + e.getMessage());
         }
-        return null;
     }
 
     /**
@@ -558,11 +537,19 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             patient.setMobileNumberStringTransient(patient.getMobileNumberStringTransient());
             patient.setPhoneNumberStringTransient(patient.getPhoneNumberStringTransient());
             if (patient.getId() == null) {
+                patient.setCreater(sessionController.getLoggedUser());
+                patient.setCreatedAt(new Date());
+                patient.getPerson().setCreater(sessionController.getLoggedUser());
+                patient.getPerson().setCreatedAt(new Date());
                 if (patient.getPerson().getId() == null) {
                     personFacade.create(patient.getPerson());
                 }
                 patientFacade.create(patient);
             } else {
+                // Deliberate divergence from legacy savePatient() (:1440-1462), which only ever
+                // creates. This page's "Patient Phone number is mandotary in sale for cashier"
+                // gate defaults to on, so operators are expected to enter or correct an existing
+                // patient's phone number at the counter, and that correction must persist.
                 personFacade.edit(patient.getPerson());
                 patientFacade.edit(patient);
             }
@@ -934,7 +921,7 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
      * Ported from PharmacySaleForCashierController.settlePharmacyToken(TokenType), with
      * the settled bill passed in instead of read from a getPreBill() field this controller
      * uses differently (here getPreBill() is the in-progress cart header, not the saved
-     * bill). The patient is already persisted by savePatientIfNeeded() at this point, so
+     * bill). The patient is already persisted by savePatient() at this point, so
      * the legacy savePatient() call is not repeated.
      */
     public void settlePharmacyToken(TokenType tokenType, Bill settledBill) {
@@ -1079,7 +1066,9 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             return;
         }
 
-        // Note: Item.getDepartmentType() already defaults a null column to DepartmentType.Pharmacy
+        // Note: Item.getDepartmentType() defaults a null column to DepartmentType.Pharmacy only
+        // when the instance is a PharmaceuticalItem; for any other Item subtype a null column
+        // is returned as null (see Item.java getDepartmentType()).
         DepartmentType itemDepartmentType = selectedItem.getDepartmentType();
         if (itemDepartmentType == null) {
             itemDepartmentType = DepartmentType.Pharmacy; // Defensive fallback (should never execute)
@@ -1521,8 +1510,9 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
 
     /**
      * @param filterType when non-null, only stock of items with this department type is
-     * returned. Items with no department type at all are treated as Pharmacy, matching
-     * {@code Item.getDepartmentType()}, which defaults a null column to Pharmacy.
+     * returned. {@code Item.getDepartmentType()} only defaults a null column to Pharmacy when
+     * the instance is a {@code PharmaceuticalItem}; for any other Item subtype with a null
+     * column it returns null, which will not match a non-null {@code filterType} here.
      */
     private List<StockDTO> searchAvailableStock(String qry, DepartmentType filterType) {
         if (qry == null || qry.trim().isEmpty()) {
