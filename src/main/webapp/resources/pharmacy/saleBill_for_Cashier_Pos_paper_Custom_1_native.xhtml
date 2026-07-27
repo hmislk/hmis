@@ -59,9 +59,9 @@
             <div class="billline">
                 <h:outputLabel value="-----------------------------------------------"   />                           
             </div>
-            <h:panelGroup rendered="#{not empty pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill)}">
+            <h:panelGroup rendered="#{not empty cc.attrs.bill.tokenNumber}">
                 <div class="billline" >
-                    <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(cc.attrs.bill).tokenNumber}" style="font-size: 30px;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.tokenNumber}" style="font-size: 30px;"/>
                 </div>
             </h:panelGroup>
 
@@ -311,7 +311,7 @@
                             <h:outputLabel   value="Number of Items Count" />
                         </td>
                         <td  class="totalsItemBlock" style="text-align: right; ">
-                            <h:outputLabel   value="#{billBeanController.fetchBillItems(cc.attrs.bill).size()}">
+                            <h:outputLabel   value="#{cc.attrs.items.size()()}">
                                 <f:convertNumber pattern="#,##0" />
                             </h:outputLabel>
                         </td>
