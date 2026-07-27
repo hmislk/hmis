@@ -730,9 +730,11 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         pbd.setBillNo(bill.getDeptId());
         pbd.setBillIdStr(bill.getIdStr());
         pbd.setCancelled(bill.isCancelled());
+        pbd.setInvoiceNumber(bill.getInvoiceNumber());
         pbd.setCreatedAt(bill.getCreatedAt());
         if (bill.getCreater() != null) {
             pbd.setCreatorName(bill.getCreater().getName());
+            pbd.setCreatorCode(bill.getCreater().getCode());
         }
         // Token number for the token printouts. settleBillWithPay runs settle() ->
         // settleTokenIfEnabled() -> buildPrintBill(), so the token (if the token system is
@@ -752,6 +754,14 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             pbd.setPatientName(billPatient.getPerson().getNameWithTitle());
             pbd.setPatientPhone(billPatient.getPerson().getPhone());
             pbd.setPatientPhn(billPatient.getPhn());
+            // Rendered as "age / sex" on the cashier bill formats, matching the legacy
+            // composites' "#{...ageAsShortString} / #{...sex.label}" pair.
+            String age = billPatient.getPerson().getAgeAsShortString();
+            String sex = billPatient.getPerson().getSex() != null
+                    ? billPatient.getPerson().getSex().getLabel() : null;
+            if (age != null || sex != null) {
+                pbd.setPatientAgeSex((age != null ? age : "") + " / " + (sex != null ? sex : ""));
+            }
         }
 
         // Payment
@@ -1223,6 +1233,7 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         BillItemData bid = new BillItemData();
         bid.setItemId(stk.getItemId());
         bid.setItemName(stk.getItemName());
+        bid.setItemCode(stk.getCode());
         bid.setAmpItemId(ampItemId);
         bid.setStockId(stk.getId());
         bid.setItemBatchId(stk.getItemBatchId());

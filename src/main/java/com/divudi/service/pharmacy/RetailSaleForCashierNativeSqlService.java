@@ -611,13 +611,21 @@ public class RetailSaleForCashierNativeSqlService {
             }
         }
         pbd.setBillNo(safeStr(bill.getDeptId()));
+        pbd.setBillIdStr(safeStr(bill.getIdStr()));
+        pbd.setCancelled(bill.isCancelled());
+        pbd.setInvoiceNumber(safeStr(bill.getInvoiceNumber()));
         pbd.setCreatedAt(bill.getCreatedAt());
         if (bill.getCreater() != null) {
             pbd.setCreatorName(safeStr(bill.getCreater().getName()));
+            pbd.setCreatorCode(safeStr(bill.getCreater().getCode()));
         }
         pbd.setTokenNumber(findTokenNumber(bill));
         if (bill.getPatient() != null && bill.getPatient().getPerson() != null) {
             pbd.setPatientName(safeStr(bill.getPatient().getPerson().getNameWithTitle()));
+            pbd.setPatientAgeSex(safeStr(bill.getPatient().getPerson().getAgeAsShortString())
+                    + " / "
+                    + (bill.getPatient().getPerson().getSex() != null
+                            ? safeStr(bill.getPatient().getPerson().getSex().getLabel()) : ""));
             pbd.setPatientPhone(safeStr(bill.getPatient().getPerson().getPhone()));
             pbd.setPatientPhn(safeStr(bill.getPatient().getPhn()));
         }
@@ -661,12 +669,13 @@ public class RetailSaleForCashierNativeSqlService {
         pbd.setCashPaid(cashPaid);
         pbd.setBalance(balance);
 
-        // Items are on the BilledBill. For legacy plain-Bill records (pre two-bill structure)
-        // or PreBill IDs passed in, fall back to referenceBill if the bill has no items.
+        // Single-bill flow: the items hang off this bill directly. There is no BilledBill
+        // and no referenceBill to fall back to (contrast the two-bill retail sale path).
         long itemsBillId = billId;
 
         String sql = "SELECT i.name, ABS(bi.qty), COALESCE(bi.rate, bi.netRate, 0),"
-                + " ABS(bi.netRate), ABS(bi.netValue), ABS(bi.grossValue), ib.dateOfExpire"
+                + " ABS(bi.netRate), ABS(bi.netValue), ABS(bi.grossValue), ib.dateOfExpire,"
+                + " i.code"
                 + " FROM " + billItemTable() + " bi"
                 + " JOIN " + pharmBillItemTable() + " pbi ON pbi.billItem_ID = bi.ID"
                 + " JOIN " + itemBatchTable() + " ib ON ib.ID = pbi.itemBatch_ID"
@@ -691,6 +700,7 @@ public class RetailSaleForCashierNativeSqlService {
             bid.setDoe(row[6] instanceof java.sql.Date
                     ? new java.util.Date(((java.sql.Date) row[6]).getTime())
                     : (row[6] instanceof java.util.Date ? (java.util.Date) row[6] : null));
+            bid.setItemCode(row[7] != null ? row[7].toString() : "");
             itemList.add(bid);
         }
 

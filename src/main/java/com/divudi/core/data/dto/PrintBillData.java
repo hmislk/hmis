@@ -28,6 +28,11 @@ public class PrintBillData implements Serializable {
     private String creatorName;
     private String billIdStr;
     private boolean cancelled;
+    // Bill.invoiceNumber — shown on the FiveFive cashier bill formats.
+    private String invoiceNumber;
+    // WebUser.code of the bill's creator — printed as "Cashier : <code>" on the
+    // FiveFive cashier format.
+    private String creatorCode;
     // Pharmacy token number (Token.tokenNumber). Null when the token system is disabled
     // or the bill has no token; the token composites render nothing in that case.
     private String tokenNumber;
@@ -112,6 +117,12 @@ public class PrintBillData implements Serializable {
 
     public boolean isCancelled() { return cancelled; }
     public void setCancelled(boolean cancelled) { this.cancelled = cancelled; }
+
+    public String getInvoiceNumber() { return invoiceNumber; }
+    public void setInvoiceNumber(String invoiceNumber) { this.invoiceNumber = invoiceNumber; }
+
+    public String getCreatorCode() { return creatorCode; }
+    public void setCreatorCode(String creatorCode) { this.creatorCode = creatorCode; }
 
     public String getTokenNumber() { return tokenNumber; }
     public void setTokenNumber(String tokenNumber) { this.tokenNumber = tokenNumber; }
