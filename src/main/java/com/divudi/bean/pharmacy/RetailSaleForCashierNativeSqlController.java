@@ -221,6 +221,15 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         }
         billSettlingStarted = true;
 
+        // Session guard, ported from PharmacySaleForCashierController :3582-3586 (also :2958-2962).
+        // Without it buildPreBill() would dereference getLoggedUser().getDepartment() and NPE to a
+        // JSF error page with the latch left true, permanently disabling settle for the session.
+        if (sessionController.getLoggedUser() == null) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage("Session expired. Please log in again.");
+            return null;
+        }
+
         if (paymentMethod == null) {
             billSettlingStarted = false;
             JsfUtil.addErrorMessage("Please select Payment Method");
@@ -231,6 +240,18 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             billSettlingStarted = false;
             JsfUtil.addErrorMessage("Please add items to the bill.");
             return null;
+        }
+
+        // Zero-quantity gate, ported from PharmacySaleForCashierController :3591-3604 (message
+        // spelling is legacy's). recalculateRow() can leave a row at qty 0 while the money fields
+        // still hold the previous quantity's values, so without this gate buildPreBill() would
+        // charge for a line the service dispenses no stock for.
+        for (BillItemData bid : billItemDataList) {
+            if (bid.getQty() <= 0.0) {
+                billSettlingStarted = false;
+                JsfUtil.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
+                return null;
+            }
         }
 
         BooleanMessage discountValidation = discountSchemeValidationService.validateDiscountScheme(
@@ -365,17 +386,25 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         // Defaults to TRUE - every deployment enforces this unless it is explicitly turned off.
         if (configOptionApplicationController.getBooleanValueByKey(
                 "Patient Phone number is mandotary in sale for cashier", true)) {
+            // NOTE: legacy leaves the latch untouched on these three branches, but legacy's
+            // settlePreBillAndNavigateToPrint() never sets billSettlingStarted at all (only its
+            // separate settleBillWithPay() at :4505 does), so there it is harmless. Here the latch
+            // IS set above, so not clearing it would deadlock the page for the whole session:
+            // the retry after entering the phone number would hit the re-entry guard silently.
             if (getPatient() != null && getPatient().getPerson() != null) {
                 if (getPatient().getPatientPhoneNumber() == null && getPatient().getPatientMobileNumber() == null) {
+                    billSettlingStarted = false;
                     JsfUtil.addErrorMessage("Please enter phone number of the patient");
                     return null;
                 } else if (getPatient().getId() == null) {
                     if (getPatient().getPatientPhoneNumber() != null
                             && !(String.valueOf(getPatient().getPatientPhoneNumber()).length() >= 9)) {
+                        billSettlingStarted = false;
                         JsfUtil.addErrorMessage("Please enter valid phone number with more than or equal 10 digits of the patient");
                         return null;
                     } else if (getPatient().getPatientMobileNumber() != null
                             && !(String.valueOf(getPatient().getPatientMobileNumber()).length() >= 9)) {
+                        billSettlingStarted = false;
                         JsfUtil.addErrorMessage("Please enter valid mobile number with more than or equal 10 digits of the patient");
                         return null;
                     }
@@ -415,10 +444,42 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         recalculateDiscountsForAll();
         calTotal();
 
-        // Save or update the patient record
-        savePatientIfNeeded();
+        // Back-fill the credit counterparties from the entered payment components before the
+        // bill is built, so a Credit / Staff bill is not persisted without one.
+        syncStaffSelectionFromPaymentDetails(paymentMethod);
+        syncCreditInstitutionFromPaymentDetails(paymentMethod);
 
-        PreBill preBillEntity = buildPreBill();
+        // Patient-required gate + conditional patient save, ported from
+        // PharmacySaleForCashierController :3790-3815. The earlier
+        // "Patient is required in Pharmacy Retail Sale" null test can never fire because
+        // getPatient() and Patient.getPerson() both self-instantiate (Patient.java:441-444);
+        // legacy's real enforcement is this name-emptiness test. Equally important, an
+        // anonymous sale must NOT persist an empty Person + Patient row - legacy attaches
+        // null to the bill in that case.
+        Patient pt = null;
+        if (getPatient() != null && getPatient().getPerson() != null) {
+            String name = getPatient().getPerson().getName();
+            boolean hasValidName = name != null && !name.trim().isEmpty();
+            if (patientRequired) {
+                if (!hasValidName) {
+                    billSettlingStarted = false;
+                    JsfUtil.addErrorMessage("Please Select a Patient");
+                    return null;
+                } else {
+                    pt = savePatient();
+                }
+            } else {
+                if (hasValidName) {
+                    pt = savePatient();
+                }
+            }
+        } else if (patientRequired) {
+            billSettlingStarted = false;
+            JsfUtil.addErrorMessage("Please Select a Patient");
+            return null;
+        }
+
+        PreBill preBillEntity = buildPreBill(pt);
 
         // Stamps the single-method payment reference fields on the bill itself: cheque /
         // slip / card / online-settlement / ewallet numbers, dates and banks, plus the
@@ -477,32 +538,85 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         return null;
     }
 
-    private void savePatientIfNeeded() {
+    /**
+     * Persists the entered patient, mirroring PharmacySaleForCashierController.savePatient()
+     * (:1440-1462): a patient with no name is never written and null is returned, so an
+     * anonymous cashier sale leaves no empty Person/Patient row behind and the bill carries
+     * no patient at all.
+     *
+     * @return the persisted patient, or null when there was nothing worth saving.
+     */
+    private Patient savePatient() {
         try {
-            if (patient == null) {
-                return;
+            if (patient == null || patient.getPerson() == null
+                    || patient.getPerson().getName() == null
+                    || patient.getPerson().getName().trim().isEmpty()) {
+                return null;
             }
-            if (patient.getPerson() != null) {
-                patient.setMobileNumberStringTransient(patient.getMobileNumberStringTransient());
-                patient.setPhoneNumberStringTransient(patient.getPhoneNumberStringTransient());
-            }
+            // Round-trips the transient phone/mobile strings so the Long patientPhoneNumber /
+            // patientMobileNumber columns are kept in step with Person.phone / Person.mobile.
+            patient.setMobileNumberStringTransient(patient.getMobileNumberStringTransient());
+            patient.setPhoneNumberStringTransient(patient.getPhoneNumberStringTransient());
             if (patient.getId() == null) {
-                if (patient.getPerson() != null) {
+                if (patient.getPerson().getId() == null) {
                     personFacade.create(patient.getPerson());
                 }
                 patientFacade.create(patient);
             } else {
-                if (patient.getPerson() != null) {
-                    personFacade.edit(patient.getPerson());
-                }
+                personFacade.edit(patient.getPerson());
                 patientFacade.edit(patient);
             }
+            return patient;
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Could not save patient", e);
+            return null;
         }
     }
 
-    private PreBill buildPreBill() {
+    /**
+     * Ported verbatim from PharmacySaleForCashierController :3377-3393. Back-fills the bill's
+     * {@code toStaff} from the staff picked inside the Staff / Staff Welfare payment component
+     * when the page has not set it directly, so a staff-credit bill always names its debtor.
+     */
+    private void syncStaffSelectionFromPaymentDetails(PaymentMethod method) {
+        if (method != PaymentMethod.Staff && method != PaymentMethod.Staff_Welfare) {
+            return;
+        }
+        if (paymentMethodData == null) {
+            return;
+        }
+        if (toStaff != null) {
+            return;
+        }
+        ComponentDetail staffComponent = method == PaymentMethod.Staff
+                ? paymentMethodData.getStaffCredit()
+                : paymentMethodData.getStaffWelfare();
+        if (staffComponent != null && staffComponent.getToStaff() != null) {
+            setToStaff(staffComponent.getToStaff());
+        }
+    }
+
+    /**
+     * Credit counterpart of {@link #syncStaffSelectionFromPaymentDetails(PaymentMethod)}. The
+     * credit company is only ever entered inside the Credit payment component; without this the
+     * bill would persist with {@code creditBill = true} but no {@code creditCompany} /
+     * {@code toInstitution}, and so would never surface in credit-company debtor reporting.
+     * Mirrors how legacy stamps the same pair on its settled bill
+     * (PharmacySaleForCashierController :4453-4454).
+     */
+    private void syncCreditInstitutionFromPaymentDetails(PaymentMethod method) {
+        if (method != PaymentMethod.Credit) {
+            return;
+        }
+        if (paymentMethodData == null || toInstitution != null) {
+            return;
+        }
+        if (paymentMethodData.getCredit() != null && paymentMethodData.getCredit().getInstitution() != null) {
+            setToInstitution(paymentMethodData.getCredit().getInstitution());
+        }
+    }
+
+    private PreBill buildPreBill(Patient billPatient) {
         double netTot = 0.0;
         double grossTot = 0.0;
         double discountTot = 0.0;
@@ -517,7 +631,7 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         pb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
         pb.setDepartment(sessionController.getLoggedUser().getDepartment());
         pb.setInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
-        pb.setPatient(patient);
+        pb.setPatient(billPatient);
         pb.setFromDepartment(sessionController.getLoggedUser().getDepartment());
         pb.setFromInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
         pb.setBillDate(new Date());
@@ -539,10 +653,15 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             pb.setPaidAmount(netTot);
         }
 
-        // Legacy stamps both counterparties unconditionally and never sets creditCompany on
-        // the cashier PreBill (PharmacySaleForCashierController :2972-2973).
+        // Legacy stamps both counterparties unconditionally
+        // (PharmacySaleForCashierController :2972-2973). creditCompany is stamped alongside
+        // toInstitution so a Credit bill is reportable as a debtor: BillBeanController
+        // .setPaymentMethodData only flips creditBill = true, it never records who owes.
         pb.setToStaff(toStaff);
         pb.setToInstitution(toInstitution);
+        if (paymentMethod == PaymentMethod.Credit && toInstitution != null) {
+            pb.setCreditCompany(toInstitution);
+        }
 
         if (getPreBill().getReferredBy() != null) {
             pb.setReferredBy(getPreBill().getReferredBy());
@@ -624,11 +743,14 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             pbd.setCreatorName(bill.getCreater().getName());
         }
 
-        // Patient
-        if (patient != null && patient.getPerson() != null) {
-            pbd.setPatientName(patient.getPerson().getNameWithTitle());
-            pbd.setPatientPhone(patient.getPerson().getPhone());
-            pbd.setPatientPhn(patient.getPhn());
+        // Patient. Read off the settled bill rather than the working field, so an anonymous
+        // sale (no Patient persisted, bill.patient == null) prints no patient block instead of
+        // an empty one.
+        Patient billPatient = bill.getPatient();
+        if (billPatient != null && billPatient.getPerson() != null) {
+            pbd.setPatientName(billPatient.getPerson().getNameWithTitle());
+            pbd.setPatientPhone(billPatient.getPerson().getPhone());
+            pbd.setPatientPhn(billPatient.getPhn());
         }
 
         // Payment
@@ -646,9 +768,10 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         if (toStaff != null && toStaff.getPerson() != null) {
             pbd.setToStaffName(toStaff.getPerson().getNameWithTitle());
         }
-        if (paymentMethod == PaymentMethod.Credit
-                && getPaymentMethodData().getCredit().getInstitution() != null) {
-            pbd.setToInstitutionName(getPaymentMethodData().getCredit().getInstitution().getName());
+        // Read the same field the bill was stamped from, so the printout can never name a
+        // different credit company than the one persisted on the bill.
+        if (paymentMethod == PaymentMethod.Credit && bill.getToInstitution() != null) {
+            pbd.setToInstitutionName(bill.getToInstitution().getName());
         }
 
         // Totals
@@ -1004,6 +1127,7 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         // sort all candidates by expiry before allocating, so earlier-expiring stock is always
         // dispensed first regardless of which batch the user picked.
         double addedQty = 0.0;
+        boolean lineCreationFailed = false;
 
         List<StockDTO> candidates = new ArrayList<>();
         candidates.add(stockDto);
@@ -1025,10 +1149,20 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
                 continue;
             }
             if (!addBillItemLineForStock(next, take)) {
-                continue;
+                // Every candidate batch belongs to the same item, so a failure to resolve it
+                // would repeat for each remaining batch. addBillItemLineForStock has already
+                // shown "Selected item not found"; stop so it is shown exactly once.
+                lineCreationFailed = true;
+                break;
             }
             addedQty += take;
             remainingQty -= take;
+        }
+
+        if (lineCreationFailed) {
+            calTotal();
+            clearBillItem();
+            return;
         }
 
         if (addedQty <= 0) {
@@ -1252,7 +1386,15 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             return;
         }
         if (bid.getQty() <= 0) {
+            // Zero the money fields too. Returning early with the previous quantity's
+            // grossValue/netValue/pbiQty still on the row would let calTotal()/buildPreBill()
+            // charge for a line that dispenses no stock.
             bid.setQty(0);
+            bid.setPbiQty(0);
+            bid.setGrossValue(0);
+            bid.setDiscountValue(0);
+            bid.setNetValue(0);
+            bid.setNetRate(bid.getRate());
             JsfUtil.addErrorMessage("Quantity must be greater than zero.");
             return;
         }
@@ -1654,10 +1796,12 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         billPreview = false;
         billSettlingStarted = false;
         patientDetailsEditable = false;
-        comment = "";
+        // Legacy clearBill() :5421-5432 leaves the payment method at Cash and the comment null,
+        // so the operator does not have to re-pick a payment method after every settle.
+        comment = null;
         cashPaid = 0.0;
         balance = 0.0;
-        paymentMethod = null;
+        paymentMethod = PaymentMethod.Cash;
         paymentScheme = null;
         paymentMethodData = null;
         toStaff = null;
