@@ -95,21 +95,22 @@ public class PharmacyTransferReceiveBillItemDTO implements Serializable {
         this.transferValue = transferValue != null ? transferValue.doubleValue() : null;
     }
     
-    public PharmacyTransferReceiveBillItemDTO(Long billId,
-                                              Object billClass,
-                                              String deptId,
-                                              Date createdAt,
-                                              String itemName,
-                                              String itemCode,
-                                              Double qty,
-                                              Double costRate,
-                                              java.math.BigDecimal costValue,
-                                              Double retailRate,
-                                              java.math.BigDecimal retailValue,
-                                              Double purchaseRate,
-                                              java.math.BigDecimal purchaseValue,
-                                              java.math.BigDecimal transferRate,
-                                              java.math.BigDecimal transferValue) {
+    public PharmacyTransferReceiveBillItemDTO(
+            Long billId,
+            Object billClass,
+            String deptId,
+            Date createdAt,
+            String itemName,
+            String itemCode,
+            Double qty,
+            Double costRate,
+            java.math.BigDecimal costValue,
+            Double retailRate,
+            java.math.BigDecimal retailValue,
+            Double purchaseRate,
+            java.math.BigDecimal purchaseValue,
+            java.math.BigDecimal transferRate,
+            java.math.BigDecimal transferValue) {
 
         this.billClassSimpleName = extractSimpleClassName(billClass);
         this.billId = billId;
