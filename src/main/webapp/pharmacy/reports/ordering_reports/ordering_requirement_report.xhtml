@@ -1,0 +1,337 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <h:body>
+
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form id="frmOrdering">
+
+                    <p:panel header="Ordering Requirement Report">
+
+                        <common:institution_site_department_filter controller="#{pharmacyOrderingAnalyticsController}"/>
+
+                        <h:panelGroup id="pnlItemFilters" layout="block" styleClass="container-fluid my-2">
+                            <h:panelGroup layout="block" styleClass="row">
+                                <!-- Category Filter -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText styleClass="fa fa-tags mr-2" />
+                                            <h:outputLabel value="Category" for="categoryFilter" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:selectOneMenu
+                                            id="categoryFilter"
+                                            value="#{pharmacyOrderingAnalyticsController.category}"
+                                            styleClass="w-100"
+                                            filter="true"
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="All Categories"/>
+                                            <f:selectItems value="#{pharmaceuticalItemCategoryController.items}" var="cat" itemLabel="#{cat.name}" itemValue="#{cat}"/>
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <!-- Dosage Form Filter -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText styleClass="fa fa-capsules mr-2" />
+                                            <h:outputLabel value="Dosage Form" for="dosageFormFilter" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:selectOneMenu
+                                            id="dosageFormFilter"
+                                            value="#{pharmacyOrderingAnalyticsController.dosageForm}"
+                                            styleClass="w-100"
+                                            filter="true"
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="All Dosage Forms"/>
+                                            <f:selectItems value="#{dosageFormController.items}" var="df" itemLabel="#{df.name}" itemValue="#{df}"/>
+                                        </p:selectOneMenu>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <!-- Department Type Filter -->
+                                <h:panelGroup layout="block" styleClass="col-lg-4 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2" />
+                                            <h:outputLabel value="Department Types" for="departmentTypeFilter" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:selectCheckboxMenu
+                                            id="departmentTypeFilter"
+                                            value="#{pharmacyOrderingAnalyticsController.selectedDepartmentTypes}"
+                                            label="Select Department Types"
+                                            updateLabel="true"
+                                            styleClass="w-100"
+                                            filter="true"
+                                            filterMatchMode="contains"
+                                            showHeader="true"
+                                            scrollHeight="200"
+                                            title="Select one or more department types to filter results. Leave empty to include all.">
+                                            <f:selectItems
+                                                value="#{pharmacyOrderingAnalyticsController.availableDepartmentTypes}"
+                                                var="depType"
+                                                itemLabel="#{depType.label}"
+                                                itemValue="#{depType}"/>
+                                        </p:selectCheckboxMenu>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="pnlOrderingInputs" layout="block" styleClass="container-fluid my-2">
+                            <h:panelGroup layout="block" styleClass="row">
+                                <!-- Consumption window -->
+                                <h:panelGroup layout="block" styleClass="col-lg-3 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText styleClass="fa fa-calendar-alt mr-2" />
+                                            <h:outputLabel value="Consumption Window (Months)" for="txtWindowMonths" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:inputNumber id="txtWindowMonths"
+                                                       value="#{pharmacyOrderingAnalyticsController.consumptionWindowMonths}"
+                                                       decimalPlaces="0"
+                                                       minValue="1"
+                                                       maxValue="36"
+                                                       styleClass="w-100"
+                                                       title="Recalculates the From date from the To date when changed">
+                                            <p:ajax event="change"
+                                                    listener="#{pharmacyOrderingAnalyticsController.applyWindowFromMonths}"
+                                                    process="@this"
+                                                    update="pnlOrderingInputs"/>
+                                        </p:inputNumber>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <!-- From date -->
+                                <h:panelGroup layout="block" styleClass="col-lg-3 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText styleClass="fa fa-calendar mr-2" />
+                                            <h:outputLabel value="From" for="fromDate" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:calendar id="fromDate"
+                                                    value="#{pharmacyOrderingAnalyticsController.fromDate}"
+                                                    styleClass="w-100"
+                                                    inputStyleClass="w-100 form-control"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    title="Start of the consumption window"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <!-- To date -->
+                                <h:panelGroup layout="block" styleClass="col-lg-3 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText styleClass="fa fa-calendar mr-2" />
+                                            <h:outputLabel value="To" for="toDate" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:calendar id="toDate"
+                                                    value="#{pharmacyOrderingAnalyticsController.toDate}"
+                                                    styleClass="w-100"
+                                                    inputStyleClass="w-100 form-control"
+                                                    navigator="false"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    title="End of the consumption window"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <!-- Target cover -->
+                                <h:panelGroup layout="block" styleClass="col-lg-3 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText styleClass="fa fa-bullseye mr-2" />
+                                            <h:outputLabel value="Target Stock Cover (Months)" for="txtTargetCover" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:inputNumber id="txtTargetCover"
+                                                       value="#{pharmacyOrderingAnalyticsController.targetCoverMonths}"
+                                                       decimalPlaces="1"
+                                                       minValue="0.5"
+                                                       maxValue="24"
+                                                       styleClass="w-100"
+                                                       title="Order up to this many months of cover"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <!-- Urgent threshold -->
+                                <h:panelGroup layout="block" styleClass="col-lg-3 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                            <h:outputText styleClass="fa fa-exclamation-triangle mr-2" />
+                                            <h:outputLabel value="Urgent Below (Months)" for="txtUrgent" styleClass="mb-0"/>
+                                        </h:panelGroup>
+                                        <p:inputNumber id="txtUrgent"
+                                                       value="#{pharmacyOrderingAnalyticsController.urgentThresholdMonths}"
+                                                       decimalPlaces="1"
+                                                       minValue="0"
+                                                       maxValue="24"
+                                                       styleClass="w-100"
+                                                       title="Cover below this many months is flagged Urgent Order"/>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                                <!-- Action buttons -->
+                                <h:panelGroup layout="block" styleClass="col-lg-3 col-md-6 col-sm-12 mb-3">
+                                    <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
+                                        <h:outputLabel value="&nbsp;" styleClass="mb-0"/>
+                                    </h:panelGroup>
+                                    <p:commandButton
+                                        id="btnProcess"
+                                        ajax="false"
+                                        value="Process"
+                                        icon="fas fa-cogs"
+                                        styleClass="ui-button-warning mx-1"
+                                        action="#{pharmacyOrderingAnalyticsController.processReport()}" />
+
+                                    <p:commandButton
+                                        id="btnPdf"
+                                        styleClass="ui-button-danger mx-1"
+                                        icon="fas fa-file-pdf"
+                                        value="PDF"
+                                        ajax="false"
+                                        action="#{pharmacyOrderingAnalyticsController.exportToPdf()}" />
+
+                                    <p:commandButton
+                                        id="btnExcel"
+                                        icon="fas fa-file-excel"
+                                        styleClass="ui-button-success mx-1"
+                                        value="Excel"
+                                        ajax="false"
+                                        action="#{pharmacyOrderingAnalyticsController.exportToExcel()}" />
+                                </h:panelGroup>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <!-- Warning: movements that touched stock but could not be classified -->
+                        <h:panelGroup layout="block"
+                                      styleClass="alert alert-warning my-2"
+                                      rendered="#{pharmacyOrderingAnalyticsController.unclassifiedMovementCount gt 0}">
+                            <h:outputText styleClass="fa fa-exclamation-circle me-2" />
+                            <h:outputText value="#{pharmacyOrderingAnalyticsController.unclassifiedMovementCount} stock movement(s) in this window could not be classified and were ignored. Figures below may understate movement - please report this to the development team." />
+                        </h:panelGroup>
+
+                        <!-- Caveat: internal transfers at a scope wider than one department -->
+                        <h:panelGroup layout="block"
+                                      styleClass="alert alert-info my-2"
+                                      rendered="#{pharmacyOrderingAnalyticsController.multiDepartmentScope and not empty pharmacyOrderingAnalyticsController.rows}">
+                            <h:outputText styleClass="fa fa-info-circle me-2" />
+                            <h:outputText value="No single department is selected. Transfers between departments inside this scope are counted as consumption, which inflates demand. Select a department for ordering decisions." />
+                        </h:panelGroup>
+
+                        <h:panelGroup layout="block" styleClass="row my-2" rendered="#{not empty pharmacyOrderingAnalyticsController.rows}">
+                            <h:panelGroup layout="block" styleClass="col-md-4">
+                                <p:panel styleClass="text-center">
+                                    <h:outputText value="Urgent Orders" styleClass="d-block text-muted" />
+                                    <h:outputText value="#{pharmacyOrderingAnalyticsController.urgentCount}" styleClass="d-block fs-4 fw-bold text-danger" />
+                                </p:panel>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="col-md-4">
+                                <p:panel styleClass="text-center">
+                                    <h:outputText value="Orders" styleClass="d-block text-muted" />
+                                    <h:outputText value="#{pharmacyOrderingAnalyticsController.orderCount}" styleClass="d-block fs-4 fw-bold text-warning" />
+                                </p:panel>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="col-md-4">
+                                <p:panel styleClass="text-center">
+                                    <h:outputText value="Total Estimated Cost (Rs.)" styleClass="d-block text-muted" />
+                                    <h:outputText value="#{pharmacyOrderingAnalyticsController.totalEstimatedCost}" styleClass="d-block fs-4 fw-bold">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:panel>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="gpOrderingPreview" styleClass="noBorder summeryBorder" style="min-width: 100%!important;">
+
+                            <p:dataTable id="tblOrdering" rowIndexVar="ii"
+                                         value="#{pharmacyOrderingAnalyticsController.rows}" var="i"
+                                         rows="#{pharmacyOrderingAnalyticsController.rowsPerPage}"
+                                         paginator="#{pharmacyOrderingAnalyticsController.paginator}"
+                                         paginatorPosition="bottom"
+                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks}{NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                         rowsPerPageTemplate="20, 50, 100">
+
+                                <f:facet name="header">
+                                    <h:outputLabel value="Ordering Requirement - #{pharmacyOrderingAnalyticsController.department.name}" />
+                                </f:facet>
+
+                                <p:column headerText="Drug Name"
+                                          sortBy="#{i.itemName}"
+                                          filterBy="#{i.itemName}"
+                                          filterMatchMode="contains">
+                                    <h:outputLabel value="#{i.itemName}" />
+                                </p:column>
+
+                                <p:column headerText="Current Balance" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.currentBalance}">
+                                    <h:outputLabel value="#{i.currentBalance}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Avg Monthly Consumption" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.avgMonthlyConsumption}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Avg Monthly Consumption"
+                                                       title="Consumption over the window, divided by its days and scaled to a month" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.avgMonthlyConsumption}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Stock Cover (Months)" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.stockCover}">
+                                    <h:outputLabel value="#{i.stockCoverDisplay}" />
+                                </p:column>
+
+                                <p:column headerText="Target Stock" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.targetStock}">
+                                    <h:outputLabel value="#{i.targetStock}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Qty to Order" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.quantityToOrder}">
+                                    <h:outputLabel value="#{i.quantityToOrder}" style="font-weight: bold;">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Est. Cost (Rs.)" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.estimatedCost}">
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{pharmacyOrderingAnalyticsController.totalEstimatedCost}" style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.estimatedCost}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <h:outputText styleClass="fa fa-question-circle ms-1 text-muted"
+                                                  rendered="#{i.purchaseRateUnknown and i.quantityToOrder gt 0}"
+                                                  title="No purchase in the selected window, so no rate is available" />
+                                </p:column>
+
+                                <p:column headerText="Decision"
+                                          sortBy="#{i.decision}"
+                                          filterBy="#{i.decision}"
+                                          filterMatchMode="contains">
+                                    <h:outputLabel value="#{i.decision}"
+                                                   styleClass="#{i.urgent ? 'badge bg-danger' : (i.order ? 'badge bg-warning text-dark' : 'badge bg-secondary')}" />
+                                </p:column>
+
+                            </p:dataTable>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>
