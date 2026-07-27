@@ -243,21 +243,6 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             return null;
         }
 
-        if (paymentMethod == PaymentMethod.Cash
-                && configOptionApplicationController.getBooleanValueByKey(
-                        "Need to Enter the Cash Tendered Amount to Settle Pharmacy Retail Bill", true)) {
-            if (cashPaid == 0.0) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Please enter the paid amount.");
-                return null;
-            }
-            if (cashPaid < getPreBill().getNetTotal()) {
-                billSettlingStarted = false;
-                JsfUtil.addErrorMessage("Tendered amount is less than net total.");
-                return null;
-            }
-        }
-
         if ((getPatient().getMobileNumberStringTransient() == null
                 || getPatient().getMobileNumberStringTransient().trim().isEmpty()
                 || getPatient().getPerson().getName().trim().isEmpty())
@@ -410,16 +395,6 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         // Ensure discounts reflect current payment scheme before building the bill
         recalculateDiscountsForAll();
         calTotal();
-
-        // For Multiple Payment Methods, the entered components must cover the net
-        // total (and balance-backed components must have sufficient balance)
-        // before the bill is settled as paid. Mirrors the legacy retail sale
-        // page validation (PharmacySaleController.errorCheck).
-        if (paymentMethod == PaymentMethod.MultiplePaymentMethods
-                && validateMultiplePaymentsFailed()) {
-            billSettlingStarted = false;
-            return null;
-        }
 
         // Save or update the patient record
         savePatientIfNeeded();
@@ -650,10 +625,11 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             for (PrintBillData.PaymentLine line : pbd.getPayments()) {
                 tendered += line.getValue();
             }
-            // settle accepts the split when it is within 1.0 of the net total
-            // (validateMultiplePaymentsFailed); clamp the printed balance to zero
-            // within the same tolerance so an already-settled bill never shows a
-            // residual balance.
+            // No payment is actually taken on this cashier page, so the entered
+            // component split is not validated against the net total at settle
+            // time (unlike the pay-now retail sale page). Clamp a near-zero
+            // printed balance to zero so an already-settled bill doesn't show a
+            // stray residual from rounding.
             printedBalance = tendered - netTot;
             if (Math.abs(printedBalance) <= 1.0) {
                 printedBalance = 0.0;
@@ -1165,14 +1141,6 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
     public void onEdit(RowEditEvent<BillItemData> event) {
         recalculateRow(event.getObject());
         calTotal();
-    }
-
-    /**
-     * EL alias of {@link #onEdit(RowEditEvent)} kept under the name the legacy cashier
-     * page uses for its row editor, so the page can bind either spelling.
-     */
-    public void quantityInTableChangeEvent(RowEditEvent<BillItemData> event) {
-        onEdit(event);
     }
 
     /**
@@ -1924,107 +1892,6 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
                 }
             }
         }
-    }
-
-    /**
-     * Validates a Multiple Payment Methods bill before settling: there must be
-     * at least one component, balance-backed components (Patient Deposit, Staff,
-     * Staff Welfare) must have sufficient balance, and the sum of the entered
-     * component values must match the bill net total (within a 1.0 tolerance).
-     * Adds a user-facing error message and returns {@code true} when settling
-     * must be aborted. Mirrors {@code PharmacySaleController.errorCheck}.
-     */
-    private boolean validateMultiplePaymentsFailed() {
-        if (getPaymentMethodData().getPaymentMethodMultiple() == null
-                || getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null
-                || getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().isEmpty()) {
-            JsfUtil.addErrorMessage("No Details on multiple payment methods given");
-            return true;
-        }
-
-        double netTotal = Math.abs(getPreBill().getNetTotal());
-        double multiplePaymentMethodTotalValue = 0.0;
-        for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-            if (cd.getPaymentMethod() == null || cd.getPaymentMethodData() == null) {
-                continue;
-            }
-            switch (cd.getPaymentMethod()) {
-                case Cash:
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCash().getTotalValue();
-                    break;
-                case Card:
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCreditCard().getTotalValue();
-                    break;
-                case Cheque:
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCheque().getTotalValue();
-                    break;
-                case ewallet:
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
-                    break;
-                case Slip:
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
-                    break;
-                case OnlineSettlement:
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
-                    break;
-                case IOU:
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getIou().getTotalValue();
-                    break;
-                case Credit:
-                    multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getCredit().getTotalValue();
-                    break;
-                case PatientDeposit: {
-                    double value = cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
-                    PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
-                    if (pd == null) {
-                        JsfUtil.addErrorMessage("No Patient Deposit.");
-                        return true;
-                    }
-                    if (value > pd.getBalance()) {
-                        JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
-                        return true;
-                    }
-                    multiplePaymentMethodTotalValue += value;
-                    break;
-                }
-                case Staff: {
-                    double value = cd.getPaymentMethodData().getStaffCredit().getTotalValue();
-                    Staff selectedStaff = cd.getPaymentMethodData().getStaffCredit().getToStaff();
-                    if (value == 0.0 || selectedStaff == null) {
-                        JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
-                        return true;
-                    }
-                    if (selectedStaff.getCurrentCreditValue() + value > selectedStaff.getCreditLimitQualified()) {
-                        JsfUtil.addErrorMessage("No enough Credit.");
-                        return true;
-                    }
-                    multiplePaymentMethodTotalValue += value;
-                    break;
-                }
-                case Staff_Welfare: {
-                    double value = cd.getPaymentMethodData().getStaffWelfare().getTotalValue();
-                    Staff welfareStaff = cd.getPaymentMethodData().getStaffWelfare().getToStaff();
-                    if (value == 0.0 || welfareStaff == null) {
-                        JsfUtil.addErrorMessage("Please fill the Paying Amount and Staff Name");
-                        return true;
-                    }
-                    if (Math.abs(welfareStaff.getAnnualWelfareUtilized()) + value > welfareStaff.getAnnualWelfareQualified()) {
-                        JsfUtil.addErrorMessage("No enough credit.");
-                        return true;
-                    }
-                    multiplePaymentMethodTotalValue += value;
-                    break;
-                }
-                default:
-                    break;
-            }
-        }
-
-        if (Math.abs(netTotal - multiplePaymentMethodTotalValue) > 1.0) {
-            JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
-            return true;
-        }
-        return false;
     }
 
     public PaymentMethodData getPaymentMethodData() {
