@@ -89,18 +89,24 @@ mvn -q package -DskipTests
 ```
 
 Find the built WAR and force-deploy it (this also triggers the singleton's
-`@PostConstruct`, which is what runs the column-enhancement step):
+`@PostConstruct`, which is what runs the column-enhancement step). First
+look up the **actual currently-deployed app name** — do not assume `rh`; on
+some machines the app is deployed as `rh-3.0.0` (derived from the WAR
+filename) instead:
 
 ```bash
 WAR=$(ls target/*.war | head -1)
-/home/buddhika/payara/bin/asadmin redeploy --name rh "$WAR"
+DEPLOYED_NAME=$(/home/buddhika/payara/bin/asadmin list-applications | awk 'NR==1{print $1}')
+DEPLOYED_NAME="${DEPLOYED_NAME:-rh}"
+/home/buddhika/payara/bin/asadmin redeploy --name "$DEPLOYED_NAME" "$WAR"
 ```
 
-Use the explicit app name `rh` — the same name `dev-issue` and
-`playwright-e2e` redeploy under. Omitting `--name` lets `asadmin` derive the
-app name from the WAR filename (e.g. `rh-3.0.0`) instead of redeploying the
-existing `rh` app, which can leave two separate apps competing for the same
-hardcoded `/rh` context root (`glassfish-web.xml`).
+Always pass the looked-up `--name`, matching whatever app name this
+particular machine actually has deployed — `dev-issue` and `playwright-e2e`
+default to `rh`, but that's only a convention, not a guarantee. Omitting
+`--name` lets `asadmin` derive the app name from the WAR filename instead of
+redeploying the existing app, which can leave two separate apps competing
+for the same hardcoded `/rh` context root (`glassfish-web.xml`).
 
 **If deploy fails with a JNDI lookup error for a datasource** (e.g.
 `jdbc/ruhunuAudit` not found): this is a pre-existing local-environment
@@ -109,6 +115,24 @@ this skill. Run `/home/buddhika/payara/bin/asadmin list-jdbc-resources` to
 see what's actually registered, report the mismatch to the user, and ask
 before changing `<jta-data-source>` (that line may already be a deliberate
 uncommitted local override).
+
+**If the `redeploy` command itself fails** (for the JNDI reason above or any
+other), re-run `list-applications` before retrying anything — a failed
+`redeploy` can leave the app fully undeployed rather than rolled back to the
+previous working version:
+
+```bash
+/home/buddhika/payara/bin/asadmin list-applications
+```
+
+If `$DEPLOYED_NAME` is no longer listed, do **not** retry `redeploy` (it will
+fail again with "Application ... is not deployed"). Fall back to a plain
+`deploy` instead, setting `--contextroot` explicitly since a fresh `deploy`
+doesn't infer it the way `redeploy` does:
+
+```bash
+/home/buddhika/payara/bin/asadmin deploy --name "$DEPLOYED_NAME" --contextroot rh "$WAR"
+```
 
 ### 5. Verify the output
 
@@ -136,9 +160,15 @@ pre-existing local-only change was already there before step 1 — never more.
 
 ### 7. Rebuild and redeploy again to restore the running app
 
+Re-check the deployed app name rather than assuming it's still the same —
+use the same `$DEPLOYED_NAME` lookup as step 4:
+
 ```bash
 mvn -q package -DskipTests
-/home/buddhika/payara/bin/asadmin redeploy --name rh "$(ls target/*.war | head -1)"
+WAR=$(ls target/*.war | head -1)
+DEPLOYED_NAME=$(/home/buddhika/payara/bin/asadmin list-applications | awk 'NR==1{print $1}')
+DEPLOYED_NAME="${DEPLOYED_NAME:-rh}"
+/home/buddhika/payara/bin/asadmin redeploy --name "$DEPLOYED_NAME" "$WAR"
 ```
 
 If this redeploy fails for the same pre-existing JNDI reason noted in step
@@ -146,6 +176,17 @@ If this redeploy fails for the same pre-existing JNDI reason noted in step
 known-good state when it isn't. The previous (DDL-generation-enabled)
 deployment will keep running in that case until the underlying datasource
 issue is fixed.
+
+If the failed `redeploy` left the app undeployed (check with
+`asadmin list-applications` — `$DEPLOYED_NAME` will be absent), fall back to:
+
+```bash
+/home/buddhika/payara/bin/asadmin deploy --name "$DEPLOYED_NAME" --contextroot rh "$WAR"
+```
+
+Report this fallback explicitly too — the app is restored, but via `deploy`
+rather than `redeploy`, which is worth flagging since it means the earlier
+`redeploy` genuinely failed rather than just being slow.
 
 ### 8. Publish the DDL to the wiki
 
