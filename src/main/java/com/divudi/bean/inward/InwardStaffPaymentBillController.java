@@ -327,6 +327,7 @@ public class InwardStaffPaymentBillController implements Serializable {
                 + " and bf.bill.cancelled=false "
                 + " and bf.bill.createdAt between :fd and :td "
                 + " and (bf.feeValue - bf.paidValue) > 0 "
+                + " and (bf.feePaymentOnHold=false or bf.feePaymentOnHold is null) "
                 + " and bf.staff=:stf "
                 + " order by bf.createdAt desc";
 
@@ -1293,6 +1294,7 @@ public class InwardStaffPaymentBillController implements Serializable {
                 + " and b.bill.cancelled=false "
                 //                + " and b.bill.refunded=false "
                 + " and (b.feeValue - b.paidValue) > 0 "
+                + " and (b.feePaymentOnHold=false or b.feePaymentOnHold is null) "
                 + " and b.staff=:stf ";
 //            h.put("btp", BillType.ChannelPaid);
         h.put("stf", currentStaff);
@@ -1452,6 +1454,13 @@ public class InwardStaffPaymentBillController implements Serializable {
         tmp.setDeptId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE));
         tmp.setInsId(getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE));
 
+        Department voucherDepartment = getSessionController().getDepartment();
+        Long voucherStartingNumber = configOptionApplicationController.getLongValueByKeyForDepartment(
+                "Voucher Number Starting Value for " + BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE.getLabel(),
+                voucherDepartment, 1L);
+        tmp.setVoucherNo(getBillNumberBean().fetchNextVoucherNumber(
+                voucherDepartment, BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE, voucherStartingNumber));
+
         tmp.setDiscount(0.0);
         tmp.setDiscountPercent(0.0);
 
@@ -1473,6 +1482,12 @@ public class InwardStaffPaymentBillController implements Serializable {
                 if (pe != null && Boolean.TRUE.equals(pe.getProfessionalPaymentsOnHold())
                         && !webUserController.hasPrivilege("InwardPayProfessionalFeesWhileOnHold")) {
                     JsfUtil.addErrorMessage("Cannot pay: professional payments are on hold for BHT " + pe.getBhtNo() + ".");
+                    return true;
+                }
+                if (bf.isFeePaymentOnHold()
+                        && !webUserController.hasPrivilege("InwardPayProfessionalFeesWhileOnHold")) {
+                    JsfUtil.addErrorMessage("Cannot pay: this professional payment is individually on hold"
+                            + (pe != null ? " (BHT " + pe.getBhtNo() + ")" : "") + ".");
                     return true;
                 }
             }

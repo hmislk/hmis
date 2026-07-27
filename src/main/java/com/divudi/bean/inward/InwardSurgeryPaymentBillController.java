@@ -168,8 +168,9 @@ public class InwardSurgeryPaymentBillController implements Serializable {
                 + " and bf.bill.cancelled=false "
                 + " and bf.bill.createdAt between :fd and :td "
                 + " and (bf.feeValue - bf.paidValue) > 0 "
+                + " and (bf.feePaymentOnHold=false or bf.feePaymentOnHold is null) "
                 + " and bf.staff=:stf ";
-        
+
         sql += " order by bf.createdAt desc";
 
         h.put("fd", fromDate);
@@ -342,6 +343,12 @@ public class InwardSurgeryPaymentBillController implements Serializable {
                 if (pe != null && Boolean.TRUE.equals(pe.getProfessionalPaymentsOnHold())
                         && !webUserController.hasPrivilege("InwardPayProfessionalFeesWhileOnHold")) {
                     JsfUtil.addErrorMessage("Cannot pay: professional payments are on hold for BHT " + pe.getBhtNo() + ".");
+                    return true;
+                }
+                if (bf.isFeePaymentOnHold()
+                        && !webUserController.hasPrivilege("InwardPayProfessionalFeesWhileOnHold")) {
+                    JsfUtil.addErrorMessage("Cannot pay: this professional payment is individually on hold"
+                            + (pe != null ? " (BHT " + pe.getBhtNo() + ")" : "") + ".");
                     return true;
                 }
             }

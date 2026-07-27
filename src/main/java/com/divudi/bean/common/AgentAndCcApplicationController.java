@@ -629,7 +629,7 @@ public class AgentAndCcApplicationController {
             agentHistory.setAgentTransactionValue(Math.abs(transactionValue));
             agentHistory.setStaffTrasnactionValue(0);
             agentHistory.setTransactionValue(Math.abs(transactionValue));
-            agentHistory.setPaidAmountByAgency(Math.abs(transactionValue));
+            agentHistory.setPaidAmountToAgency(transactionValue);
 
             double balanceBeforeTx = fetchCurrentBalance(collectingCentreId);
 

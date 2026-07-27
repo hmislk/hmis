@@ -1804,14 +1804,23 @@ public class SessionController implements Serializable, HttpSessionListener {
 
         // Check password expiration
         if (enablePasswordExpiration) {
+            // Use the raw (non-self-initializing) accessor - getLastPasswordResetAt()
+            // silently sets the field to "now" when null, which would make a null
+            // check here always false and defeat the expiration check entirely.
+            Date lastPasswordResetAt = loggedUser.getLastPasswordResetAtRaw();
+            if (lastPasswordResetAt == null) {
+                // No recorded password change (e.g. account predates this feature) -
+                // treat as an unknown-age, expired password rather than silently exempting it.
+                passwordRequirementMessage = "Password has expired. Please reset your password.";
+                JsfUtil.addErrorMessage("Password has expired. Please reset your password.");
+                return false;
+            }
             long expirationMillis = passwordExpirationPeriod * 24L * 60 * 60 * 1000; // Convert days to milliseconds
-            if (loggedUser.getLastPasswordResetAt() != null) {
-                long timeSinceLastReset = System.currentTimeMillis() - loggedUser.getLastPasswordResetAt().getTime();
-                if (timeSinceLastReset > expirationMillis) {
-                    passwordRequirementMessage = "Password has expired. Please reset your password.";
-                    JsfUtil.addErrorMessage("Password has expired. Please reset your password.");
-                    return false;
-                }
+            long timeSinceLastReset = System.currentTimeMillis() - lastPasswordResetAt.getTime();
+            if (timeSinceLastReset > expirationMillis) {
+                passwordRequirementMessage = "Password has expired. Please reset your password.";
+                JsfUtil.addErrorMessage("Password has expired. Please reset your password.");
+                return false;
             }
         }
 

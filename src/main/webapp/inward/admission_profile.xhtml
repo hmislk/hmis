@@ -19,6 +19,10 @@
                         <div>
                             <h:outputText styleClass="fa fa-id-card"/>
                             <p:outputLabel value="Inpatient Dashboard" class="mt-2 mx-3"/>
+                            <h:panelGroup rendered="#{admissionController.current.parentEncounter != null}">
+                                <p:tag value="Baby Admission — Mother: #{admissionController.current.parentEncounter.patient.person.nameWithTitle} (BHT #{admissionController.current.parentEncounter.bhtNo})"
+                                       icon="fa fa-baby" severity="warning" class="mx-2"/>
+                            </h:panelGroup>
                         </div>
                         <div><div class="d-flex gap-2">
                                 <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardSearch')}">
@@ -265,10 +269,11 @@
                                         class="w-100 ui-button-secondary">
                                     </p:commandButton>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{admissionController.current.parentEncounter == null and webUserController.hasPrivilege('InwardAdmissionsAdmission')}" layout="block" styleClass="col-6">
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardAdmissionsAdmission')}" layout="block" styleClass="col-6">
                                     <p:commandButton
                                         value="Add Baby Admission"
-                                        disabled="#{admissionController.current.discharged eq true}"
+                                        disabled="#{admissionController.current.discharged eq true or admissionController.current.parentEncounter != null}"
+                                        title="#{admissionController.current.parentEncounter != null ? 'A baby admission cannot have its own baby admission' : (admissionController.current.discharged eq true ? 'Patient is discharged' : '')}"
                                         action="#{admissionController.navigateToAddBabyAdmission}"
                                         icon="fa fa-baby"
                                         ajax="false"
@@ -468,6 +473,18 @@
                                         title="Navigate to Hold Professional Payments"
                                         rendered="#{webUserController.hasPrivilege('InwardHoldProfessionalPayments')}"
                                         styleClass="w-100 #{admissionController.current.professionalPaymentsOnHold ? 'ui-button-danger' : 'ui-button-secondary'}">
+                                    </p:commandButton>
+                                </div>
+                                <div class="col-6">
+                                    <p:commandButton
+                                        id="btnProfessionalFeeHold"
+                                        value="Professional Payments Report"
+                                        ajax="false"
+                                        action="#{professionalFeeHoldController.navigateToProfessionalFeeHold(admissionController.current)}"
+                                        icon="fa fa-list-check"
+                                        title="Report and per-item hold/unhold of professional payments for this admission"
+                                        rendered="#{webUserController.hasPrivilege('InwardHoldProfessionalPayments')}"
+                                        styleClass="w-100 ui-button-secondary">
                                     </p:commandButton>
                                 </div>
                             </div>
@@ -682,7 +699,7 @@
                                             value="Accept Patients"
                                             ajax="false"
                                             disabled="#{not patientTransferController.hasPendingRequestsForDepartment}"
-                                            action="#{patientTransferController.navigateToPatientAccept()}"
+                                            action="#{patientTransferController.navigateToPatientAcceptForAdmission(admissionController.current)}"
                                             icon="fa fa-check-circle"
                                             class="w-100 ui-button-success">
                                         </p:commandButton>

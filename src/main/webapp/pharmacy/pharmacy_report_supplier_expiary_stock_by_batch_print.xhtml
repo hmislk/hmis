@@ -233,6 +233,9 @@
                                     </tr>
                                     <tr>
                                         <td colspan="9" style="text-align: right; font-weight: 700;">
+                                            <h:outputLabel value="Printed By "/>
+                                            <h:outputLabel value="#{sessionController.loggedUser.webUserPerson.name}" />
+                                            <h:outputText value="   |   "/>
                                             <h:outputLabel value="Printed At "/>
                                             <h:outputLabel value="#{sessionController.currentDate}">
                                                 <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a"/>

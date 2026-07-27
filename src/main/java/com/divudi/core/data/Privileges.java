@@ -100,8 +100,17 @@ public enum Privileges {
     InwardSearchServiceBillUnrestrictedAccess("Inward Search Service Bill Without Restricted"),
     InwardSearchProfessionalBill("Inward Search Professional Bill"),
     InwardSearchFinalBill("Inward Search Final Bill"),
+    // Admission search scope buttons (issue #22382)
+    InwardSearchAdmissionsByAdmittedDepartmentAnyInstitute("Inward Search Admissions By Admitted Department - Any Institute"),
+    InwardSearchAdmissionsByAdmittedDepartmentLoggedInstitute("Inward Search Admissions By Admitted Department - Logged Institute"),
+    InwardSearchAdmissionsByAdmittedDepartmentLoggedDepartment("Inward Search Admissions By Admitted Department - Logged Department"),
+    InwardSearchAdmissionsByCurrentDepartmentAnyInstitute("Inward Search Admissions By Current Department - Any Institute"),
+    InwardSearchAdmissionsByCurrentDepartmentLoggedInstitute("Inward Search Admissions By Current Department - Logged Institute"),
+    InwardSearchAdmissionsByCurrentDepartmentLoggedDepartment("Inward Search Admissions By Current Department - Logged Department"),
     InwardSettleFinalBillUnrestricted("Inward Settle Final Bill Without Restricted"),
     InwardSettleFinalBill("Inward Settle Final Bill"),
+    InwardFinalBillCreateVersion("Inward Final Bill Create New Version"),
+    InwardFinalBillSetConfirmed("Inward Final Bill Set As Confirmed"),
     InwardSaveProvisionalFinalBill("Inward Save Provisional Final Bill"),
     InwardReport("Inward Report"),
     InwardLaboratory("Inward Laboratory"),
@@ -148,6 +157,8 @@ public enum Privileges {
     InwardDoctorPaymentAccess("Inward Doctor Payment Access"),
     InwardSurgeryAdd("Inward Surgery Add"),
     InwardSurgeryManage("Inward Surgery Manage"),
+    InwardSurgeryValidate("Inward Surgery Validate"),
+    InwardSurgeryValidationRevert("Inward Surgery Validation Revert"),
     InwardPatientHistoryView("Inward Patient History View"),
     InwardClinicalNotesView("Inward Clinical Notes View"),
     InwardWardMedicationsView("Inward Ward Medications View"),
@@ -821,7 +832,8 @@ public enum Privileges {
     DeleteData("Delete Data"),
     BillCancel("Bill Cancel"),
     BillRefund("Bill Refund"), //</editor-fold>
-    AiChat("AI Chat")
+    AiChat("AI Chat"),
+    ClientPortalCreateAccount("Create Client Portal Account")
     ;
 
     private final String label;
@@ -1231,6 +1243,8 @@ public enum Privileges {
             case InwardFormTemplateAdmin:
             case InwardFormFill:
             case InwardSettleFinalBill:
+            case InwardFinalBillCreateVersion:
+            case InwardFinalBillSetConfirmed:
             case InwardSaveProvisionalFinalBill:
             case InwardLaboratory:
             case InwardLaboratoryBarcodeGeneration:
@@ -1257,6 +1271,8 @@ public enum Privileges {
             case InwardDoctorPaymentAccess:
             case InwardSurgeryAdd:
             case InwardSurgeryManage:
+            case InwardSurgeryValidate:
+            case InwardSurgeryValidationRevert:
             case InwardPatientHistoryView:
             case InwardClinicalNotesView:
             case InwardWardMedicationsView:

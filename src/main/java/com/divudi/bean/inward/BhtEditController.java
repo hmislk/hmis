@@ -730,6 +730,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
             return "";
         }
         comment = null;
+        createPatientRoom();
         return "/inward/inward_cancel_admission?faces-redirect=true";
     }
 
@@ -1204,6 +1205,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
         
         m.put("encounterID", o.getId());
         m.put("bhtNo", o.getBhtNo());
+        m.put("bhtLong", o.getBhtLong());
         m.put("encounterType", o.getEncounterType());
         m.put("dateOfAdmission", o.getDateOfAdmission());
         m.put("paymentMethod", o.getPaymentMethod());

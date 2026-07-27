@@ -915,6 +915,356 @@ local `coop.patientencounter` table was missing all four
 `professionalpayments*` columns and `patienttransferrequest` was missing
 `theatreroom_id`.
 
+## 39. Local dev DB has no `FrequencyUnit`/`DurationUnit`/`DoseUnit` seed rows — the prescription "Calculate & Add" path is untestable locally
+
+`ward_pharmacy_bht_issue_request_bill.xhtml`'s Prescription section (Dose/Dose
+Unit/Frequency/Duration/Duration Unit → "Calculate & Add") requires selecting
+a `FrequencyUnit` and `DurationUnit` — both are `Category` subclasses stored
+in the single-table `category` (via `@Inheritance` with no strategy = default
+`SINGLE_TABLE`, discriminated by `DTYPE`). The local `coop` DB has **zero**
+rows with `DTYPE` in (`FrequencyUnit`, `DurationUnit`, `DoseUnit`) — confirmed
+via `SELECT DISTINCT DTYPE FROM category`. Both dropdowns render as
+`combobox "Select"` with no other options, and submitting anyway fails with
+`"Calculation Error: Incomplete prescription: dose, frequency, duration and
+duration unit are required"`. **Workaround**: use the "Dispense Request" →
+"+ Add Dispense Only" path instead (item autocomplete + plain qty field, no
+prescription fields) — but that path has the toDepartment bug from §31, so
+still fix `TODEPARTMENT_ID` via SQL afterward. Verified while testing issue
+#22312.
+
+## 40. Auto-substitution can silently turn a "zero stock" test case into "issued in full"
+
+When testing a BHT/pharmacy-request stock-shortfall feature, don't assume an
+item with 0 stock at the issuing department will exercise the "no stock"
+code path — `PharmacySaleBhtController.generateIssueBillComponentsForBhtRequest`
+(and similar issuing flows) auto-substitutes to a same-VMP sibling AMP with
+stock before falling back to "no stock". An item whose exact AMP has 0 stock
+but has an in-stock sibling under the same VMP (e.g. `Levo 500mg Tablet` →
+`EVITRA 500MG`) will be silently issued in full via the substitute, hiding the
+zero-stock code path entirely. To reliably hit "no stock at all", pick an item
+with **no in-stock siblings under its VMP either** — verify first:
+```sql
+SELECT a.ID, a.NAME, a.VMP_ID FROM item a WHERE a.DTYPE='Amp'
+AND a.ID NOT IN (SELECT ib.ITEM_ID FROM stock s JOIN itembatch ib ON s.ITEMBATCH_ID=ib.ID
+                 WHERE s.DEPARTMENT_ID=<dept> AND s.STOCK>0)
+AND (a.VMP_ID IS NULL OR a.VMP_ID NOT IN (
+  SELECT a2.VMP_ID FROM item a2 JOIN itembatch ib2 ON ib2.ITEM_ID=a2.ID
+  JOIN stock s2 ON s2.ITEMBATCH_ID=ib2.ID WHERE s2.DEPARTMENT_ID=<dept> AND s2.STOCK>0 AND a2.DTYPE='Amp');
+```
+Verified while testing issue #22312.
+
+## 41. A local dev DB with an empty `TRIGGERSUBSCRIPTION` table means notification-generating actions silently produce zero `UserNotification` rows
+
+Discharging a patient, changing a room, etc. always creates a `Notification`
+row, but the actual per-user `UserNotification` rows (what the bell icon and
+`/Notification/user_notifications.xhtml` show) only get created for webusers
+who hold a matching `TriggerSubscription`
+(`NotificationController.createNotification(...)` →
+`userNotificationController.createUserNotifications(nn)` →
+`TriggerSubscriptionController.fillSubscribedUsersByDepartment(...)`). A
+freshly-restored or never-fully-seeded local DB can have **zero rows in
+`TRIGGERSUBSCRIPTION`**, in which case discharging any number of patients
+produces `Notification` rows but no `UserNotification` rows for anyone —
+this looks identical to "the feature doesn't work" but is actually missing
+test-fixture data, not a bug.
+
+- Diagnose with `SELECT COUNT(*) FROM TRIGGERSUBSCRIPTION;` — 0 confirms this.
+- Fix through the UI, not SQL (per this doc's "use the admin UI" pattern,
+  §26): Admin → Manage Users → select the target user → **Manage User
+  Subscriptions** → tick **Application-wide** → pick the relevant
+  `TriggerType` (e.g. "Inward Patient Room Discharge - System Notification")
+  → **Add Subscription**.
+- The **Application-wide** checkbox's visible box intercepts Playwright's
+  normal click on the underlying `p:selectBooleanCheckbox` input — click via
+  a selector scoped to its own JSF id (`chkApplicationWide` in
+  `admin/users/user_subscription.xhtml`), not a bare `.ui-chkbox-box` index,
+  which picks whichever checkbox happens to be first/nth on the page and can
+  silently toggle the wrong control if the page has more than one:
+  `document.querySelector('[id$="chkApplicationWide"] .ui-chkbox-box')`.
+
+## 47. Local Payara can come up with a dead MySQL connection pool after any host sleep/restart — every page hangs, not just one touching a stale entity
+
+Unlike §38 (a pool holding connections from *before* an `ALTER TABLE`), this is
+the pool holding connections to a MySQL instance that was itself restarted or
+the host machine slept/resumed. Symptoms are more severe than §38's
+single-page hang: **the app root itself** (`GET /rh`, even the pre-login page)
+times out in both a direct `Invoke-WebRequest`/`curl` and
+`browser_navigate`/`browser_snapshot` (30-60s timeouts with no response) —
+because `ConfigOptionApplicationController.init()` runs on first
+request/session and hits the DB immediately. `server.log` shows
+`CJCommunicationsException: Communications link failure` /
+`SQLNonTransientConnectionException: No operations allowed after connection
+closed` from background EJB timers even while `mysql -h <local-mysql-host>
+... SELECT 1` succeeds fine from the shell — proving MySQL itself is up and
+it's specifically Payara's pool holding dead connections.
+
+**Diagnose**: confirm MySQL responds directly first (rules out "DB is down"),
+then confirm Payara's admin port responds to `list-applications` (rules out
+"domain is down") — if both succeed but the HTTP listener (9090) times out,
+suspect the connection pool.
+
+**Fix**: flush both the main and audit pools (find pool names via
+`grep -B2 'jndi-name="jdbc/coop"' domain.xml` /
+`grep -B2 'jndi-name="jdbc/ruhunuAudit"' domain.xml` — e.g. `poolCoop` and
+`poolRuhunuAuditLocal` locally):
+```powershell
+& asadmin.bat --port 5858 flush-connection-pool poolCoop
+& asadmin.bat --port 5858 flush-connection-pool poolRuhunuAuditLocal
+```
+No redeploy or domain restart needed — a plain HTTP request succeeds
+immediately after the flush. Verified while testing issue #22423 (itself a
+stale-audit-pool-connection bug), where the local dev machine's own audit
+pool had gone stale exactly the way the issue described.
+
+## 48. A leftover Playwright-MCP Chrome profile can lock out `browser_navigate` with no relation to the user's real browser windows
+
+`mcp__playwright__browser_navigate`/`browser_snapshot` can fail with `Browser
+is already in use for <profile-dir>, use --isolated to run multiple instances
+of the same browser` even when no Playwright session is visibly active. This
+comes from an orphaned Chrome process tree still holding that specific
+`--user-data-dir` (named `ms-playwright-mcp\mcp-chrome-<hash>` on Windows),
+left behind by a prior session that didn't shut down cleanly — it is **not**
+related to the user's everyday Chrome windows, which run under a different
+profile entirely. Confirm before touching anything:
+```powershell
+Get-CimInstance Win32_Process -Filter "Name = 'chrome.exe'" |
+  Where-Object { $_.CommandLine -like '*ms-playwright-mcp*' } |
+  Select-Object ProcessId, CommandLine
+```
+Every process whose `CommandLine` contains `ms-playwright-mcp` (main browser,
+crashpad handler, gpu-process, utility, renderer subprocesses) is safe to
+`Stop-Process -Force` — they all share that same isolated profile directory,
+distinct from the user's real Chrome profile. After clearing them,
+`browser_navigate` launches a fresh instance normally (the very first
+navigation after relaunch can still take up to 60s — a single retry is
+usually enough). Verified while testing issue #22423.
+
+Found while verifying issue #21538 (discharge notifications routing to the
+wrong patient) — the fix couldn't be end-to-end tested at all until this was
+discovered and worked around.
+
+## 42. PrimeFaces bare `update="someId"` can 500 from inside a `p:dataTable`/`ui:repeat` row even though the id exists on the page
+
+A `p:commandButton update="someId"` where `someId` is a **sibling id
+declared outside** the enclosing `p:dataTable`/`ui:repeat`/`p:column` throws
+a hard 500 (`javax.faces.component.search.ComponentNotFoundException:
+Cannot find component for expressions "someId"`) as soon as that button is
+rendered for any row — not just on click, since PrimeFaces builds the ajax
+request descriptor (including resolving `update`) during **encode**, not
+decode. It can appear to work for row 0 by coincidence and break only from
+row 1 onward, or break for every row once a row's content changes (e.g. a
+row toggling into "retired" state and rendering a previously-`rendered=false`
+button for the first time) — so it can look like a row-index-specific bug
+rather than a general one.
+
+Fix: don't rely on plain-id resolution reaching outside the table/repeat.
+Use `update="@form"` (safe/simple when refreshing the whole form is
+acceptable) or an absolute id path — this project's `jsf-ajax` skill already
+documents `@this`/`@form`/`:#{p:resolveFirstComponentWithId(...)}` as the
+required patterns for exactly this reason.
+
+Found while fixing issue #21538: `Notification/user_notifications.xhtml`'s
+"Restore" button (`update="reNot"`, `reNot` being the `h:panelGroup`
+wrapping the whole list) crashed the page load itself once a retired
+notification was shown in a row other than the first.
+
+## 43. Clicking a `p:printer` button hangs the whole browser session — verify with print-media emulation instead
+
+`p:printer` calls `window.print()`, which opens a real native OS print dialog.
+In a Playwright-driven session this dialog blocks not just the click (which
+times out and gets moved to a background task) but **every subsequent tool
+call on that browser** — `browser_tabs list/new/close` all hang too, because
+the dialog is modal at the OS/browser-process level, not a JS `confirm()`
+that `browser_handle_dialog` can intercept. The only recovery is asking the
+human operator to manually dismiss the dialog in the actual browser window.
+
+**Don't click the Print button to verify print CSS.** Instead, emulate print
+media on the existing page and screenshot that — `p:printer` clones the
+current document's `<head>` (including inline `<style>` blocks and linked
+stylesheets) into its print iframe, so `@media print` rules apply identically
+whether triggered by the real dialog or by emulation:
+
+```js
+async (page) => { await page.emulateMedia({ media: 'print' }); }
+```
+
+Then `browser_take_screenshot` — this shows exactly what would print (hidden
+`.noPrintButton` elements, `.printOnlyReport` toggled visible, etc.) without
+ever touching `window.print()`. Verified while fixing issue #22316 (Time
+Service Report print truncation).
+
+**Scope of this check**: this only proves `@media print` visibility/layout
+rules apply correctly — it does not verify pagination, page-fit, or page
+breaks across multiple printed pages. For reports where those matter, follow
+up with an actual PDF export or a manual print-preview pass.
+
+## 44. A freshly-created test user needs a `WebUserDepartment` row, not just a `Department` field, to log in at all
+
+Creating a disposable test user via Admin > Manage Users > Add New User
+(`admin/users/user_add_new.xhtml`) and setting its `Department` field is not
+enough to let it log in. Login checks `listLoggableDepts(user)`
+(`SessionController.java`), which queries the `WebUserDepartment` join table
+— not the `WebUser.department` column. With no matching `WebUserDepartment`
+row, login fails with "This user has no privilage to login to any
+Department. Please conact system administrator." even though the user
+record itself looks fully configured.
+
+The Add New User form has no field for this; department-login grants are
+managed separately via **Manage Users > (select user) > Manage User
+Departments**. For a quick disposable test account it's simplest to insert
+the row directly:
+```sql
+INSERT INTO webuserdepartment (CREATEDAT, RETIRED, DEPARTMENT_ID, WEBUSER_ID)
+VALUES (NOW(), 0, <department_id>, <webuser_id>);
+```
+Also useful: no `WebUserRole` in this DB grants `ShowServiceCharges` (verified
+via `webuserroleprivilege`) — it's only assigned to individual users
+directly in `webuserprivilege`. So any freshly-created user with no role
+already lacks it, no extra step needed to test privilege-gated hiding.
+
+Found while verifying issue #22310 (fee row hidden along with its item name
+when `ShowServiceCharges` is absent) — needed a throwaway non-privileged
+login to confirm the fix without touching any real staff account.
+
+## 45. `&&` written as `&amp;&amp;` inside a `<script><![CDATA[...]]>` block parses as valid XML but throws a JS `SyntaxError` at runtime, silently breaking every function in that script
+
+When copying a `<script>` block that lives inside `<![CDATA[ ... ]]>` into a
+new XHTML page, writing the literal characters `&amp;&amp;` (instead of `&&`)
+is easy to do by habit — most other XML/XHTML text content genuinely needs
+`&` escaped — but CDATA sections are explicitly exempt from entity
+expansion, so this is always wrong there. The bug hides unusually well:
+
+- `xml.etree.ElementTree` (or any XML well-formedness check) parses the file
+  without complaint — `&amp;` is perfectly valid character data whether or
+  not it's inside CDATA, so a "did the file parse" check gives a false all-clear.
+- Facelets' XML parser reads the CDATA content literally (per spec, no entity
+  expansion inside CDATA), so the in-memory text node keeps the literal
+  6-character sequence `&amp;`. When Facelets serializes the response back
+  out as plain text (not treating it as a CDATA passthrough), it re-escapes
+  `&` to `&amp;` — so the browser receives doubled-up `&amp;&amp;` in the
+  final HTML.
+- Because `<script>` is an HTML5 "raw text" element, the browser does **not**
+  decode entities inside it — it hands the literal text straight to the JS
+  parser, which throws `SyntaxError: Unexpected token ';'` trying to parse
+  `&amp;&amp;` as code. **This aborts parsing of the entire `<script>`
+  block**, so every function defined anywhere in that block — even ones
+  with no `&&` in them at all — ends up undefined, surfacing later as
+  unrelated-looking `ReferenceError: xyz is not defined` console errors when
+  something tries to call them (e.g. via a PrimeFaces AJAX partial update
+  that re-inserts an inline `<script>` calling one of those functions).
+
+Detection: `curl` the deployed page and `grep -c '&amp;&amp;'` vs
+`grep -c '&&'` in the raw response — if the doubled-entity count is nonzero,
+the source file has the bug. A quick sed fix:
+```bash
+sed -i "s/&amp;&amp;/\&\&/g" path/to/page.xhtml
+```
+(safe because it only touches doubled `&amp;&amp;`, leaving legitimate single
+`&amp;` — e.g. in URL query strings or "Bills &amp; Appointments" body
+text — untouched).
+
+Found while verifying issue #22370 (Client Portal login/password-reset):
+two new pages copied `register_phone.xhtml`'s OTP-digit-box `<script>` block,
+and the copy silently escaped `&&` to `&amp;&amp;`. The OTP boxes never
+rendered and the browser console showed `initOtpBoxes is not defined` and
+`startOtpCountdown is not defined` — errors that look like a missing/renamed
+JS function, not a stray HTML entity three screens away in the same script tag.
+
+## 46. A fixed-position status banner (e.g. "Database Migration Pending") can silently swallow every click on the page below it
+
+When a global banner is rendered with fixed/sticky positioning and no
+`pointer-events: none`, Playwright's actionability check reports the target
+element as "visible, enabled and stable" and still fails the click with
+`<div class="nonPrintBlock">…</div> intercepts pointer events` — this can hit
+*any* element on the page, not just ones physically near the banner, if the
+banner's box overlaps them in the stacking order. Real symptoms seen while
+verifying issue #22415 (Custom Bills tab): clicking a `p:tabView` tab header
+and a `p:commandButton` both timed out this way, even though the elements
+themselves were correctly rendered and enabled.
+
+Standard fixes (Escape, clicking a neutral area first, waiting) don't help
+because the banner isn't a transient overlay (like a datepicker popup) — it's
+a permanent part of the page layout. The reliable workaround is to bypass
+Playwright's actionability gate entirely and dispatch the click straight to
+the element via `browser_evaluate`:
+
+```js
+() => { document.getElementById('theActualElementId').click(); return 'clicked'; }
+```
+
+Get the id from the failed click's error output (it echoes the resolved
+locator's outer HTML, e.g. `id="j_idt524:j_idt867:j_idt3539_header"`). This
+is a real accessibility gap worth fixing in the banner itself (add
+`pointer-events: none` unless the banner has its own interactive controls,
+or `z-index`/positioning that keeps it from overlapping page content) — but
+until that's fixed, `browser_evaluate` + `.click()` is the dependable way to
+drive the page underneath it.
+
+## 47. Any JSF page under a plain (non-`/faces/`) webapp path must still be loaded through `/faces/` — otherwise the raw `.xhtml` source is served unprocessed
+
+`FacesServlet` is mapped to `/faces/*` in `web.xml` (`<url-pattern>/faces/*</url-pattern>`).
+Requesting `http://localhost:8080/rh/client_portal/login.xhtml` directly (no `/faces/`
+segment) does **not** 404 — the container serves the file as a static resource, so the
+page loads with a real `<title>`, but every EL expression renders as literal text
+(`#{clientPortalLoginController.login}`, `#{bean.property}` etc.) and there are **zero**
+`<input>` elements in the DOM (Facelets never ran, so `p:inputText`/`h:commandButton`
+components were never compiled to HTML). This looks like a broken page at first glance —
+confirmed via issue #22371 verification, where `register_phone.xhtml` initially appeared
+to have no input fields at all. Always use `/rh/faces/<same-path>.xhtml` for any new page
+under `src/main/webapp/`, matching the pattern already used for `client_portal/login.xhtml`
+→ `/rh/faces/client_portal/login.xhtml`. (JSF's own `action`/`outcome` navigation strings
+like `"/client_portal/home?faces-redirect=true"` and `<h:link outcome="/client_portal/login"/>`
+already resolve to the correct `/faces/`-prefixed URL automatically — this gotcha only
+bites when a human or a script types the URL by hand.)
+
+## 48. Raw SQL `UPDATE` on an already-cached EclipseLink-mapped entity (not just `ConfigOption`) can be invisible to the running app — the shared L2 cache is general, not `ConfigOption`-specific
+
+§26 documents this for `ConfigOption` specifically, but `eclipselink.cache.size.default`
+in `persistence.xml` applies to every entity class, so the same trap exists for `Institution`,
+`Patient`, or any other frequently-read entity **once that row has already been loaded into
+the shared L2 cache during the current app run** — visibility depends on persistence-context/
+cache state, not a blanket guarantee that every raw SQL update is invisible. Hit while
+verifying issue #22371: a direct `UPDATE INSTITUTION SET DEFAULTINSTITUTION=1,
+POINTOFISSUENO='COOP' WHERE id=2` via the `mysql` CLI changed the DB row, but the next page
+load still showed the old (unset) values in the edit form and the PHN-generation code path
+still saw a blank POI — the already-cached `Institution` entity in the running Payara instance
+kept serving stale field values, with no error anywhere. Re-doing the exact same change through
+the admin UI form (Save button, which goes through `EntityManager.merge`/`edit`) fixed it
+immediately, confirming the raw SQL path was the problem. **Rule of thumb: if a row might
+already be cached (anything read earlier in the same test session), don't `UPDATE` it via raw
+SQL mid-test — use the corresponding admin UI/CRUD screen instead, so the cache gets properly
+refreshed, and reserve raw SQL for read-only verification queries.**
+
+## 49. Pharmacy Transfer Issue: "Request From" is the requester, not the issuer — and the entity-based `TransferIssueForRequestsController` "Issue" button is commented out in favor of the native-SQL path
+
+Two traps found verifying issue #19168's Transfer Issue Department Type filter fix:
+
+- On `pharmacy_transfer_request.xhtml`, "Request From: X / Request To: Y" means
+  **X is requesting stock FROM Y** — Y is the department that later approves and
+  issues. Logging in as X and searching "Issue for Requests" after approval shows
+  nothing ("No records found.") because the issue action belongs to Y's session,
+  not X's. Switch department (§17) to Y before expecting the request to appear
+  in "Select Request For Department: Y".
+- `pharmacy_transfer_request_list.xhtml`'s `p:commandButton` calling
+  `transferIssueForRequestsController.navigateToPharmacyIssueForRequestsById`
+  (id `btnToIssue`) is commented out in the current XHTML — the active "Issue"
+  button now calls `transferIssueNativeSqlController.navigateToIssueRequestNative()`
+  (`pharmacy_transfer_issue_native.xhtml`, the "Fast Issue" path) instead. The
+  entity-based controller class and its tests/fixes still exist and matter (the
+  comment says it can be re-enabled if the native path shows data-correctness
+  issues), but it is **not reachable through today's UI** — don't expect a code
+  change there to be exercisable via a normal click-through without first
+  re-enabling that button. Confirm which controller a page's button actually
+  wires to (`grep` the `.xhtml` for the bean name) before planning an E2E pass
+  around it, rather than assuming the "obvious" controller for a named flow.
+- If the department picked as issuer has zero stock for the item under test
+  (common for a secondary pharmacy like OPD Pharmacy in local seed data), the
+  Fast Issue page renders `Available Stock: 0.00` and blocks entering an issue
+  qty. Switch to the department that actually holds stock (usually Main
+  Pharmacy) and use **Direct Issue** (`pharmacy_transfer_issue_direct_department.xhtml`,
+  `TransferIssueDirectController`) instead — it doesn't require a prior
+  approved request and reaches the same `Bill.departmentType` stamping logic.
+
 ## Quick checklist
 
 - [ ] Confirmed environment + URL with the developer; credentials kept out of the repo.

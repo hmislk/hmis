@@ -357,6 +357,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         ));
 
         metadata.addConfigOption(new ConfigOptionInfo(
+                "Show Mark Foreigner and Mark Local Buttons in Billing",
+                "Controls visibility of the Mark Foreigner / Mark Local buttons during OPD billing, channel booking, clinic sessions, and inward service billing",
+                "opd_bill_ac.xhtml line 1412 (gpLocalForeign panelGroup) and equivalent panels in opd_bill.xhtml, opd_order.xhtml, opd_pre_bill.xhtml, channel booking pages, clinic sessions, inward service bill pages",
+                OptionScope.APPLICATION
+        ));
+
+        metadata.addConfigOption(new ConfigOptionInfo(
                 "Allow Local Number For Opd Billing",
                 "Shows local number panel for entering local reference numbers",
                 "opd_bill_ac.xhtml line 461: Local number panel",
@@ -2274,6 +2281,28 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         return false; // Fallback case, should not reach here.
     }
 
+    static boolean isPersistedBillItem(BillItem bi) {
+        return bi != null && bi.getId() != null;
+    }
+
+    private void retirePartialBillOnSettlementFailure(Bill bill, List<BillItem> persistedItems) {
+        if (bill == null) {
+            return;
+        }
+        for (BillItem bi : persistedItems) {
+            if (isPersistedBillItem(bi) && !bi.isRetired()) {
+                bi.setRetired(true);
+                bi.setRetiredAt(new Date());
+                getBillItemFacade().edit(bi);
+            }
+        }
+        if (bill.getId() != null && !bill.isRetired()) {
+            bill.setRetired(true);
+            bill.setRetiredAt(new Date());
+            getBillFacade().edit(bill);
+        }
+    }
+
     private boolean processBillsByDepartment() {
         Set<Department> billDepts = new HashSet<>();
         for (BillEntry e : lstBillEntries) {
@@ -2291,9 +2320,19 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 Department prformingDept = departmentResolver.resolvePerformingDepartment(sessionController.getDepartment(), e.getBillItem().getItem());
                 if (Objects.equals(prformingDept.getId(), d.getId())) {
                     BillItem bi = getBillBean().saveBillItemForOpdBill(myBill, e, getSessionController().getLoggedUser(), getBillFeeBundleEntrys());
+                    if (!isPersistedBillItem(bi)) {
+                        retirePartialBillOnSettlementFailure(myBill, myBill.getBillItems());
+                        JsfUtil.addErrorMessage("Failed to save bill items for department " + d.getName() + ". Please retry the bill settlement.");
+                        return false;
+                    }
                     myBill.getBillItems().add(bi);
                     tmp.add(e);
                 }
+            }
+            if (tmp.isEmpty()) {
+                retirePartialBillOnSettlementFailure(myBill, myBill.getBillItems());
+                JsfUtil.addErrorMessage("No bill items were found for department " + d.getName() + ". Please retry the bill settlement.");
+                return false;
             }
             if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 myBill.setCashPaid(cashPaid);
@@ -2343,9 +2382,19 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     if (Objects.equals(dept.getId(), d.getId())
                             && Objects.equals(billEntry.getBillItem().getItem().getCategory().getId(), c.getId())) {
                         BillItem bi = getBillBean().saveBillItem(newlyCreatedIndividualBill, billEntry, getSessionController().getLoggedUser());
+                        if (!isPersistedBillItem(bi)) {
+                            retirePartialBillOnSettlementFailure(newlyCreatedIndividualBill, newlyCreatedIndividualBill.getBillItems());
+                            JsfUtil.addErrorMessage("Failed to save bill items for department " + d.getName() + " and category " + c.getName() + ". Please retry the bill settlement.");
+                            return false;
+                        }
                         newlyCreatedIndividualBill.getBillItems().add(bi);
                         tmp.add(billEntry);
                     }
+                }
+                if (tmp.isEmpty()) {
+                    retirePartialBillOnSettlementFailure(newlyCreatedIndividualBill, newlyCreatedIndividualBill.getBillItems());
+                    JsfUtil.addErrorMessage("No bill items were found for department " + d.getName() + " and category " + c.getName() + ". Please retry the bill settlement.");
+                    return false;
                 }
 
                 Priority highestPriority = Optional
@@ -2484,7 +2533,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
             List<BillItem> list = new ArrayList<>();
             for (BillEntry billEntry : getLstBillEntries()) {
-                list.add(getBillBean().saveBillItem(newSingleBill, billEntry, getSessionController().getLoggedUser()));
+                BillItem bi = getBillBean().saveBillItem(newSingleBill, billEntry, getSessionController().getLoggedUser());
+                if (!isPersistedBillItem(bi)) {
+                    retirePartialBillOnSettlementFailure(newSingleBill, list);
+                    JsfUtil.addErrorMessage("Failed to save bill items. Please retry the bill settlement.");
+                    return false;
+                }
+                list.add(bi);
             }
             newSingleBill.setBillItems(list);
 
@@ -2525,9 +2580,13 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             getBillBean().checkBillItemFeesInitiated(newSingleBill);
             getBills().add(newSingleBill);
         } else if (oneOpdBillForEachDepartmentAndCategoryCombination) {
-            processBillsByDepartmentAndCategory();
+            if (!processBillsByDepartmentAndCategory()) {
+                return false;
+            }
         } else if (oneOpdBillForEachDepartment) {
-            processBillsByDepartment();
+            if (!processBillsByDepartment()) {
+                return false;
+            }
         } else if (oneOpdBillForEachCategory) {
             JsfUtil.addErrorMessage("Still Under Development");
             return false;

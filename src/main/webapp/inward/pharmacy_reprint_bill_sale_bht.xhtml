@@ -46,6 +46,11 @@
                                         icon="fa fa-backward"
                                         styleClass="ui-button-info ui-button-outlined"
                                         action="/inward/inward_bill_intrim" />
+                                    <p:commandButton ajax="false" value="Back to Surgery Summary"
+                                                      action="#{surgeryBillController.navigateToSurgeryBillSummary(pharmacyBillSearch.bill.forwardReferenceBill)}"
+                                                      rendered="#{pharmacyBillSearch.bill.forwardReferenceBill ne null and pharmacyBillSearch.bill.forwardReferenceBill.billType eq 'SurgeryBill'}"
+                                                      icon="fa fa-backward"
+                                                      styleClass="ui-button-info ui-button-outlined"/>
                                     <p:commandButton
                                         ajax="false"
                                         value="Inpatient Dashboard"

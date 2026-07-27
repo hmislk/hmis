@@ -2565,15 +2565,15 @@ public class BillService {
         params.put("toDate", toDate);
 
         if (institution != null) {
-            jpql += " and bi.bill.toInstitution=:ins";
+            jpql += " and bi.bill.institution=:ins";
             params.put("ins", institution);
         }
         if (department != null) {
-            jpql += " and bi.bill.toDepartment=:dep";
+            jpql += " and bi.bill.department=:dep";
             params.put("dep", department);
         }
         if (site != null) {
-            jpql += " and bi.bill.toDepartment.site=:site";
+            jpql += " and bi.bill.department.site=:site";
             params.put("site", site);
         }
 
@@ -2766,12 +2766,21 @@ public class BillService {
         // positive = stock came back on a return). For a "movement OUT" report we want the
         // quantity that went out, so we negate the summed pbi.qty: a sale yields a positive
         // out-quantity and a return reduces it, matching the signed value columns below.
+        // Direct Purchase Return is an exception: DirectPurchaseReturnController always
+        // persists pbi.qty as a positive magnitude (see its calculateBillItemDetails()), not
+        // the negative-for-out convention above, even though it is itself an OUT movement
+        // (goods leaving stock back to the supplier). This is a known writer bug tracked
+        // under #21032/#21053 (pbi.qty should be negative for this bill type but the writer
+        // is not yet fixed there); negating it here like a normal sale would flip its sign
+        // and net it against genuine sales, so it's added un-negated to match the current
+        // (buggy) persisted convention. If #21053 is ever fixed to store negative qty for
+        // this bill type, this special case must be removed at the same time.
         jpql = "select new com.divudi.core.data.dto.PharmacyMovementOutByItemDTO( "
                 + " it.id, "
                 + " coalesce(it.name, 'N/A'), "
                 + " it.code, "
                 + " coalesce(cat.name, 'N/A'), "
-                + " (coalesce(sum(pbi.qty), 0.0) * -1.0), "
+                + " coalesce(sum(case when b.billTypeAtomic = :directPurchaseReturnBta then pbi.qty else (pbi.qty * -1.0) end), 0.0), "
                 + " coalesce(sum(bi.grossValue), 0.0), "
                 + " coalesce(sum(bi.discount), 0.0), "
                 + " coalesce(sum(bi.marginValue), 0.0), "
@@ -2787,6 +2796,7 @@ public class BillService {
                 + " and b.createdAt between :fromDate and :toDate ";
 
         params.put("billTypesAtomics", billTypeAtomics);
+        params.put("directPurchaseReturnBta", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
 

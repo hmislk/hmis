@@ -16,6 +16,7 @@ import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PageMetadataRegistry;
 import com.divudi.bean.common.PatientInsuranceController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.OptionScope;
 import com.divudi.core.data.PatientRegistrationSource;
 import com.divudi.core.data.admin.ConfigOptionInfo;
@@ -122,6 +123,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     PageMetadataRegistry pageMetadataRegistry;
+    @Inject
+    WebUserController webUserController;
 
     ////////////
     @EJB
@@ -903,6 +906,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToAddBabyAdmission() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("No Admission selected");
+            return "";
+        }
+        if (current.getParentEncounter() != null) {
+            // A baby admission's parentEncounter already points to the mother.
+            // Do not allow a baby to have its own baby admission (e.g. grandmother
+            // admits mother, mother admits daughter is not a realistic scenario).
+            JsfUtil.addErrorMessage("A baby admission cannot have its own baby admission.");
+            return "";
+        }
         parentAdmission = current;
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
@@ -910,6 +924,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         setCurrent(ad);
         current.setParentEncounter(parentAdmission);
+        // This @SessionScoped bean may still hold a room selection left over from
+        // whatever admission was being edited before. Baby admissions never get
+        // their own room (see bhtNumberCalculation()/errorCheck()), so start the
+        // baby flow with a clean patientRoom to avoid carrying a stale selection
+        // through to saveSelected() and double-charging the room fee. (#9900)
+        patientRoom = new PatientRoom();
         patient = null;
         yearMonthDay = null;
         getPatient();
@@ -940,6 +960,30 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (parentAdmission.getGuardianRelationshipToPatient() != null) {
             current.setGuardianRelationshipToPatient(parentAdmission.getGuardianRelationshipToPatient());
         }
+    }
+
+    /**
+     * Copies address, area, and contact numbers from the mother's patient
+     * record onto the baby's own patient record. Bound to a button on the
+     * "Admit a Baby" page — babies usually share the mother's home address
+     * and contact numbers, so this saves re-typing them. (#9900)
+     */
+    public void copyPatientDetailsFromParent() {
+        if (parentAdmission == null || parentAdmission.getPatient() == null
+                || parentAdmission.getPatient().getPerson() == null) {
+            JsfUtil.addErrorMessage("No parent admission found to copy details from.");
+            return;
+        }
+        if (current == null || current.getPatient() == null || current.getPatient().getPerson() == null) {
+            return;
+        }
+        Person parentPerson = parentAdmission.getPatient().getPerson();
+        Person babyPerson = current.getPatient().getPerson();
+        babyPerson.setAddress(parentPerson.getAddress());
+        babyPerson.setArea(parentPerson.getArea());
+        babyPerson.setPhone(parentPerson.getPhone());
+        babyPerson.setMobile(parentPerson.getMobile());
+        JsfUtil.addSuccessMessage("Address and contact details copied from mother.");
     }
 
     public String navigateCancelBabyAdmission() {
@@ -1076,6 +1120,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void searchAdmissions() {
+        searchAdmissions(null, null);
+    }
+
+    /**
+     * @param currentRoomInstitutionFilter when non-null, restricts to admissions whose
+     * current room belongs to this institution (RoomFacilityCharge.company), independent
+     * of the admitted-time institutionForSearch field.
+     * @param currentRoomDepartmentFilter when non-null, restricts to admissions whose
+     * current room's department is this department or a child of it
+     * (RoomFacilityCharge.department / .superDepartment). Passed as a method parameter
+     * rather than an instance field so a scoped search never silently persists into a
+     * later plain Search click on this @SessionScoped bean.
+     */
+    private void searchAdmissions(Institution currentRoomInstitutionFilter, Department currentRoomDepartmentFilter) {
         if (fromDate == null || toDate == null) {
             JsfUtil.addErrorMessage("Please select date");
             return;
@@ -1170,6 +1228,17 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             m.put("dept", loggedDepartment);
         }
 
+        if (currentRoomInstitutionFilter != null) {
+            j += "  and c.currentPatientRoom.roomFacilityCharge.company=:curIns ";
+            m.put("curIns", currentRoomInstitutionFilter);
+        }
+
+        if (currentRoomDepartmentFilter != null) {
+            j += "  and (c.currentPatientRoom.roomFacilityCharge.department=:curDept "
+                    + " or c.currentPatientRoom.roomFacilityCharge.department.superDepartment=:curDept) ";
+            m.put("curDept", currentRoomDepartmentFilter);
+        }
+
         if (parentAdmission != null) {
             j += "  and c.parentEncounter=:pent ";
             m.put("pent", parentAdmission);
@@ -1181,6 +1250,78 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
+    }
+
+    /**
+     * Search-scope shortcut buttons (issue #22382). Each is gated by its own
+     * privilege in the XHTML; the privilege re-check here is defense-in-depth
+     * so a request forged without the button can't widen the search scope
+     * beyond what the privilege allows.
+     *
+     * "By Admitted Department" scopes restrict on the admission-time
+     * institution/department (institutionForSearch / loggedDepartment,
+     * reused from the manual search fields — same as the plain Search
+     * button). "By Current Department" scopes restrict on the patient's
+     * current room instead (RoomFacilityCharge.company / .department),
+     * passed as parameters to the private searchAdmissions() overload
+     * rather than stored on the bean, so they can never leak into a later
+     * plain Search click. At the "Any Institute" level neither grouping
+     * applies an institution/department restriction, so both groups are
+     * intentionally equivalent there — the distinction only matters once a
+     * specific institute/department is being matched.
+     */
+    public void searchAdmissionsByAdmittedDepartmentAnyInstitute() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByAdmittedDepartmentAnyInstitute")) {
+            return;
+        }
+        institutionForSearch = null;
+        loggedDepartment = null;
+        searchAdmissions(null, null);
+    }
+
+    public void searchAdmissionsByAdmittedDepartmentLoggedInstitute() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByAdmittedDepartmentLoggedInstitute")) {
+            return;
+        }
+        institutionForSearch = sessionController.getInstitution();
+        loggedDepartment = null;
+        searchAdmissions(null, null);
+    }
+
+    public void searchAdmissionsByAdmittedDepartmentLoggedDepartment() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByAdmittedDepartmentLoggedDepartment")) {
+            return;
+        }
+        institutionForSearch = sessionController.getInstitution();
+        loggedDepartment = sessionController.getDepartment();
+        searchAdmissions(null, null);
+    }
+
+    public void searchAdmissionsByCurrentDepartmentAnyInstitute() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByCurrentDepartmentAnyInstitute")) {
+            return;
+        }
+        institutionForSearch = null;
+        loggedDepartment = null;
+        searchAdmissions(null, null);
+    }
+
+    public void searchAdmissionsByCurrentDepartmentLoggedInstitute() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByCurrentDepartmentLoggedInstitute")) {
+            return;
+        }
+        institutionForSearch = null;
+        loggedDepartment = null;
+        searchAdmissions(sessionController.getInstitution(), null);
+    }
+
+    public void searchAdmissionsByCurrentDepartmentLoggedDepartment() {
+        if (!webUserController.hasPrivilege("InwardSearchAdmissionsByCurrentDepartmentLoggedDepartment")) {
+            return;
+        }
+        institutionForSearch = null;
+        loggedDepartment = null;
+        searchAdmissions(sessionController.getInstitution(), sessionController.getDepartment());
     }
 
     public void searchAdmissionsWithoutRoom() {
@@ -1313,7 +1454,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
             return bhtSummeryController.navigateToInpatientProfile();
         } else {
-            if (current.isRoomAdmitted() || current.isDischarged() || current.isPaymentFinalized()) {
+            if (current.isRoomAdmitted() || current.isDischarged() || current.isPaymentFinalized()
+                    || !current.getAdmissionType().isRoomChargesAllowed()) {
                 current.getPatient().setEditingMode(false);
                 bhtSummeryController.setPatientEncounter(current);
                 bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
@@ -1926,7 +2068,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         // MO-charge validation, but room occupancy is always enforced when a room
         // is voluntarily provided — an occupied room must never be double-assigned
         // regardless of admission type. (Issue #21183)
-        if (!isRapidTempAe()) {
+        // Baby admissions also skip the room requirement: the baby stays in the
+        // mother's room, so a separate PatientRoom would double-charge the room fee.
+        if (!isRapidTempAe() && !isBabyAdmission()) {
             if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
                 if (getPatientRoom().getRoomFacilityCharge() == null) {
                     JsfUtil.addErrorMessage("Select Room ");
@@ -2245,6 +2389,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             return;
         }
         String oldBhtNo = null;
+        Long oldBhtLong = null;
         if (current.getId() != null) {
             HashMap<String, Object> bhtParams = new HashMap<>();
             bhtParams.put("id", current.getId());
@@ -2253,16 +2398,24 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             if (persisted != null && !persisted.isEmpty()) {
                 oldBhtNo = persisted.get(0);
             }
+            List<Long> persistedBhtLong = getFacade().findLongList(
+                    "select a.bhtLong from Admission a where a.id=:id", bhtParams);
+            if (persistedBhtLong != null && !persistedBhtLong.isEmpty()) {
+                oldBhtLong = persistedBhtLong.get(0);
+            }
         }
         addPatient();
         addGuardian();
         addPatientRoom();
         getFacade().edit(current);
-        if (oldBhtNo != null && !oldBhtNo.equals(current.getBhtNo())) {
+        if ((oldBhtNo != null && !oldBhtNo.equals(current.getBhtNo()))
+                || (oldBhtLong == null ? current.getBhtLong() != 0 : oldBhtLong.longValue() != current.getBhtLong())) {
             Map<String, Object> before = new LinkedHashMap<>();
             before.put("bhtNo", oldBhtNo);
+            before.put("bhtLong", oldBhtLong);
             Map<String, Object> after = new LinkedHashMap<>();
             after.put("bhtNo", current.getBhtNo());
+            after.put("bhtLong", current.getBhtLong());
             auditService.logEncounterAudit(current, "BHT Number Changed",
                     before, after, getSessionController().getLoggedUser());
         }
@@ -2373,6 +2526,15 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     /**
+     * @return {@code true} when the current encounter is a baby admission
+     * (i.e. it has a parent encounter). Babies stay in the mother's room, so
+     * room selection is optional for them (#9900).
+     */
+    private boolean isBabyAdmission() {
+        return getCurrent() != null && getCurrent().getParentEncounter() != null;
+    }
+
+    /**
      * Clears the {@link EncounterRegistrationFlag#RAPID_TEMP_AE} flag once staff
      * have completed the patient's demographics, returning the encounter to
      * {@link EncounterRegistrationFlag#STANDARD}. (Issue #21183)
@@ -2479,19 +2641,26 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         savePatient();
         savePatientAllergies();
         saveGuardian();
-        // Always reserve the next BHT number from the counter
-        String generatedBht = getInwardBean().getBhtText(getCurrent().getAdmissionType());
         boolean bhtCanBeEdited = configOptionApplicationController.getBooleanValueByKey("BHT Number can be edited at the time of admission");
-        if (bhtCanBeEdited && bhtText != null && !bhtText.trim().isEmpty()
-                && !bhtText.trim().equals(generatedBht)) {
-            // User explicitly overrode the BHT text — keep their value
+        String suggestedBht = getInwardBean().getBhtTextPreview(getCurrent().getAdmissionType());
+        boolean userOverrodeBht = bhtCanBeEdited && bhtText != null && !bhtText.trim().isEmpty()
+                && !bhtText.trim().equals(suggestedBht);
+
+        long oldBhtLong = getCurrent().getBhtLong();
+        String oldBhtNo = getCurrent().getBhtNo();
+
+        if (userOverrodeBht) {
+            // Staff-entered value — do not draw a counter number, do not touch bhtLong.
+            getCurrent().setBhtNo(bhtText);
         } else {
+            String generatedBht = getInwardBean().getBhtText(getCurrent().getAdmissionType()); // mutates, only when it will be used
             bhtText = generatedBht;
+            getCurrent().setBhtNo(bhtText);
+            if (getInwardBean().getLastGeneratedBhtLong() != null) {
+                getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
+            }
         }
-        getCurrent().setBhtNo(getBhtText());
-        if (getInwardBean().getLastGeneratedBhtLong() != null) {
-            getCurrent().setBhtLong(getInwardBean().getLastGeneratedBhtLong());
-        }
+
         getCurrent().setPaymentScheme(paymentScheme);
         getCurrent().setForiegner(patientForiegner);
 
@@ -2505,6 +2674,20 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             getCurrent().setDepartment(sessionController.getDepartment());
             getFacade().create(getCurrent());
             JsfUtil.addSuccessMessage("Patient admitted successfully with BHT No: " + getCurrent().getBhtNo());
+        }
+
+        // Logged after create()/edit() so getCurrent().getId() is populated and the
+        // audit event can be traced back to this admission (objectId/patientEncounterId).
+        if ((oldBhtNo == null ? getCurrent().getBhtNo() != null : !oldBhtNo.equals(getCurrent().getBhtNo()))
+                || oldBhtLong != getCurrent().getBhtLong()) {
+            Map<String, Object> before = new LinkedHashMap<>();
+            before.put("bhtNo", oldBhtNo);
+            before.put("bhtLong", oldBhtLong);
+            Map<String, Object> after = new LinkedHashMap<>();
+            after.put("bhtNo", getCurrent().getBhtNo());
+            after.put("bhtLong", getCurrent().getBhtLong());
+            auditService.logEncounterAudit(getCurrent(), "BHT Number Assigned", before, after,
+                    getSessionController().getLoggedUser());
         }
 
         // Only create a PatientRoom record when a facility charge is actually selected.
@@ -2955,7 +3138,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         bhtText = getInwardBean().getBhtTextPreview(getCurrent().getAdmissionType());
 
-        getPatientRoom().setRoomFacilityCharge(getCurrent().getAdmissionType().getRoomFacilityCharge());
+        // Baby admissions never get a room of their own — the baby stays in the
+        // mother's room. Skip applying the admission type's default/package room
+        // facility charge here, otherwise picking a package-priced admission type
+        // would silently create a PatientRoom and double-charge the room fee (#9900).
+        if (!isBabyAdmission()) {
+            getPatientRoom().setRoomFacilityCharge(getCurrent().getAdmissionType().getRoomFacilityCharge());
+        }
     }
 
     public String getBhtText() {

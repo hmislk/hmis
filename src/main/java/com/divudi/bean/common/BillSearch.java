@@ -6050,6 +6050,9 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
             case FUND_SHIFT_SHORTAGE_BILL:
             case FUND_SHIFT_SHORTAGE_SETTLEMENT_BILL:
                 return navigateToViewCashierShiftShortageBill(bill);
+            case INWARD_SERVICE_BILL:
+            case INWARD_SERVICE_BATCH_BILL:
+                return navigateToInwardSearchService();
             //                opdBillController.setBill(bill);
 //                return opdBillController.navigateToViewPackageBatchBill();
 

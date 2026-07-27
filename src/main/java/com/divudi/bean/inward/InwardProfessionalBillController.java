@@ -414,6 +414,11 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public void addProfessionalFee() {
+        if (getBatchBill() != null && surgeryBillController.isSurgeryLockedForAdditions(getBatchBill())) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
+            return;
+        }
+
         if (generalChecking()) {
             return;
         }
@@ -437,6 +442,11 @@ public class InwardProfessionalBillController implements Serializable {
     }
 
     public void saveProfessionalFeeBill() {
+        if (getBatchBill() != null && surgeryBillController.isSurgeryLockedForAdditions(getBatchBill())) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
+            return;
+        }
+
         if (generalChecking()) {
             return;
         }

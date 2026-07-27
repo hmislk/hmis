@@ -82,6 +82,8 @@ public class InwardTimedItemController implements Serializable {
     private InwardBeanController inwardBean;
     @Inject
     BillBeanController billBean;
+    @Inject
+    private SurgeryBillController surgeryBillController;
     @EJB
     BillFeeFacade billFeeFacade;
     @EJB
@@ -522,6 +524,11 @@ public class InwardTimedItemController implements Serializable {
     }
 
     public void saveSurgeryTimedService() {
+        if (batchBill != null && surgeryBillController.isSurgeryLockedForAdditions(batchBill)) {
+            JsfUtil.addErrorMessage("This surgery has been validated and is locked. Revert validation to make changes.");
+            return;
+        }
+
         if (generalChecking()) {
             return;
         }
