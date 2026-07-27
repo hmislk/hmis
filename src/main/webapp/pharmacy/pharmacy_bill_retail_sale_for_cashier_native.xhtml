@@ -108,7 +108,7 @@
                                                         styleClass="w-100"
                                                         forceSelection="true"
                                                         value="#{retailSaleForCashierNativeSqlController.stockDto}"
-                                                        queryDelay="300" completeMethod="#{retailSaleForCashierNativeSqlController.completeAvailableStockOptimizedDto}"
+                                                        queryDelay="300" completeMethod="#{retailSaleForCashierNativeSqlController.completeAvailableStockOptimizedDtoFilteredByDepartmentType}"
                                                         converter="#{retailSaleForCashierNativeSqlController.stockDtoConverter}"
                                                         var="i"
                                                         itemLabel="#{i.itemName}"

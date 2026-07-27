@@ -39,7 +39,7 @@
                 <h:outputLabel value="-----------------------------"   />
             </div>
 
-            <h:panelGroup >
+            <h:panelGroup rendered="#{not empty cc.attrs.bill.tokenNumber}">
                 <div class="billline">
                     <h:outputLabel value="#{cc.attrs.bill.tokenNumber}" style="font-size: 30px;
                                    display: inline-block;

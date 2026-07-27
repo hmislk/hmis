@@ -446,6 +446,13 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
                         return null;
                     } else {
                         pt = savePatient();
+                        // savePatient() logs and returns null if the write fails. Settling
+                        // anyway would produce a patient-less bill on a department that
+                        // requires one, so abort instead.
+                        if (pt == null) {
+                            JsfUtil.addErrorMessage("Could not save the patient. Please try again.");
+                            return null;
+                        }
                     }
                 } else {
                     if (hasValidName) {
@@ -477,9 +484,20 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
                 bid.setInstitutionId(instId);
             }
 
+            // Only the settle() call is allowed to report "failed". Nothing has been
+            // committed if it throws, so the cart is left intact and a retry is safe.
             try {
                 nativeSqlService.settle(preBillEntity, billItemDataList);
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.SEVERE, "Native sale-for-cashier settle failed", e);
+                JsfUtil.addErrorMessage("Failed to settle bill: " + e.getMessage());
+                return null;
+            }
 
+            // Past this point settle() has committed: the bill exists and the stock is
+            // already deducted. Anything failing from here must NOT be reported as a failed
+            // settle — the operator would press Settle again and deduct the stock twice.
+            try {
                 // settle() is a @Stateless REQUIRED boundary, so the bill and the stock
                 // deduction are already committed here. A token failure must not make a
                 // completed sale report as failed and skip the printout.
@@ -508,8 +526,16 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
                 billPreview = true;
                 JsfUtil.addSuccessMessage("Bill settled successfully.");
             } catch (RuntimeException e) {
-                LOGGER.log(Level.SEVERE, "Native sale-for-cashier settle failed", e);
-                JsfUtil.addErrorMessage("Failed to settle bill: " + e.getMessage());
+                LOGGER.log(Level.SEVERE,
+                        "Cashier bill was settled but post-settle processing failed", e);
+                // Clear the cart so the bill cannot be settled a second time, and say
+                // plainly that the sale itself went through.
+                resetAll();
+                billPreview = false;
+                JsfUtil.addErrorMessage("Bill " + preBillEntity.getDeptId()
+                        + " WAS settled and stock was deducted, but the printout could not be"
+                        + " prepared. Do not settle again — reprint it from Search Sale for"
+                        + " Cashier Bills.");
             }
             return null;
         } finally {
@@ -942,6 +968,12 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
                     settledBill, TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
             if (saleForCashierToken == null) {
                 settlePharmacyToken(TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER, settledBill);
+            } else {
+                // Adopt the token that already exists for this bill, otherwise token and
+                // currentToken stay null and markInprogress() below is a no-op — the
+                // existing token would never be attached to the settled bill.
+                setToken(saleForCashierToken);
+                setCurrentToken(saleForCashierToken);
             }
             markInprogress(settledBill);
         } else {
@@ -1495,9 +1527,20 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
         if (bid == null) {
             return;
         }
-        bid.setQty(bid.getQty() / 2);
+        bid.setQty(halveQty(bid.getQty()));
         recalculateRow(bid);
         calTotal();
+    }
+
+    /**
+     * Halves a dispense quantity the way legacy
+     * PharmacySaleForCashierController.divideQuantityByHalf() does (:1234):
+     * {@code Math.max(1.0, qty / 2.0)}. A plain division would leave 0.5 on an odd
+     * quantity — a fractional dispense that the qty column renders with
+     * {@code integerOnly="true"}, so the operator would never see it.
+     */
+    private double halveQty(double qty) {
+        return Math.max(1.0, Math.floor(qty / 2.0));
     }
 
     public void multiplyAllQuantitiesByTwo() {
@@ -1516,7 +1559,7 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             return;
         }
         for (BillItemData bid : billItemDataList) {
-            bid.setQty(bid.getQty() / 2);
+            bid.setQty(halveQty(bid.getQty()));
             recalculateRow(bid);
         }
         calTotal();
