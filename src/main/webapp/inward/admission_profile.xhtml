@@ -269,10 +269,11 @@
                                         class="w-100 ui-button-secondary">
                                     </p:commandButton>
                                 </h:panelGroup>
-                                <h:panelGroup rendered="#{admissionController.current.parentEncounter == null and webUserController.hasPrivilege('InwardAdmissionsAdmission')}" layout="block" styleClass="col-6">
+                                <h:panelGroup rendered="#{webUserController.hasPrivilege('InwardAdmissionsAdmission')}" layout="block" styleClass="col-6">
                                     <p:commandButton
                                         value="Add Baby Admission"
-                                        disabled="#{admissionController.current.discharged eq true}"
+                                        disabled="#{admissionController.current.discharged eq true or admissionController.current.parentEncounter != null}"
+                                        title="#{admissionController.current.parentEncounter != null ? 'A baby admission cannot have its own baby admission' : (admissionController.current.discharged eq true ? 'Patient is discharged' : '')}"
                                         action="#{admissionController.navigateToAddBabyAdmission}"
                                         icon="fa fa-baby"
                                         ajax="false"

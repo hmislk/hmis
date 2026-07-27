@@ -100,6 +100,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.ReorderEvent;
 import org.primefaces.event.RowEditEvent;
@@ -302,6 +303,18 @@ public class BhtSummeryController implements Serializable {
     private transient List<RoomGanttBar> cachedUnifiedGanttBars;
     private transient long cachedUnifiedGanttBarsComputedAtMillis;
     private static final long UNIFIED_GANTT_BARS_CACHE_TTL_MILLIS = 5000;
+
+    /**
+     * Clears the Gantt bar cache immediately. The 5s TTL above is a safety
+     * net for the wall-clock "Now" marker, which has no explicit save event
+     * to hook into - but any action that actually persists a room's
+     * admitted/discharged/retired state must call this so the same AJAX
+     * response reflects the change instead of waiting out the TTL.
+     */
+    public void invalidateUnifiedGanttBarsCache() {
+        cachedUnifiedGanttBars = null;
+        cachedUnifiedGanttBarsComputedAtMillis = 0;
+    }
 
     public List<RoomGanttBar> getUnifiedGanttBars() {
         if (cachedUnifiedGanttBars != null
@@ -1726,7 +1739,11 @@ public class BhtSummeryController implements Serializable {
         }
         jpql.append("AND (pr2.dischargedAt IS NULL OR pr2.dischargedAt > :from)");
         params.put("from", patientRoom.getAdmittedAt());
-        List<PatientRoom> overlaps = getPatientRoomFacade().findByJpql(jpql.toString(), params);
+        // TemporalType.TIMESTAMP is required: the 2-arg findByJpql overload binds
+        // every Date with TemporalType.DATE, truncating admittedAt/dischargedAt to
+        // midnight, so two stays merely sharing a calendar day were reported as
+        // overlapping even when the times did not actually conflict.
+        List<PatientRoom> overlaps = getPatientRoomFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
         return overlaps != null ? overlaps : new ArrayList<>();
     }
 
@@ -1805,6 +1822,8 @@ public class BhtSummeryController implements Serializable {
         } else {
             getPatientRoomFacade().create(patientRoom);
         }
+
+        invalidateUnifiedGanttBarsCache();
 
         // Refresh the tables or any other necessary actions after saving
         createTables();
@@ -3714,8 +3733,7 @@ public class BhtSummeryController implements Serializable {
     public void setPatientEncounter(PatientEncounter patientEncounter) {
 //        makeNull();
         this.patientEncounter = patientEncounter;
-        cachedUnifiedGanttBars = null;
-        cachedUnifiedGanttBarsComputedAtMillis = 0;
+        invalidateUnifiedGanttBarsCache();
     }
 
     public SessionController getSessionController() {
