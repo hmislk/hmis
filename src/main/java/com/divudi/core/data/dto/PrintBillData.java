@@ -23,6 +23,8 @@ public class PrintBillData implements Serializable {
     private String billNo;
     private Date createdAt;
     private String creatorName;
+    private String billIdStr;
+    private boolean cancelled;
 
     // Patient
     private String patientName;
@@ -89,6 +91,12 @@ public class PrintBillData implements Serializable {
 
     public String getCreatorName() { return creatorName; }
     public void setCreatorName(String creatorName) { this.creatorName = creatorName; }
+
+    public String getBillIdStr() { return billIdStr; }
+    public void setBillIdStr(String billIdStr) { this.billIdStr = billIdStr; }
+
+    public boolean isCancelled() { return cancelled; }
+    public void setCancelled(boolean cancelled) { this.cancelled = cancelled; }
 
     // --- Patient ---
 
