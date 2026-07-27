@@ -5,6 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       >
 
     <h:body>
@@ -35,13 +36,13 @@
                                 class="ui-button-warning"
                                 actionListener="#{reportsStock.fillCategoryStocks()}" >
                             </p:commandButton>
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Excel" 
+                            <p:commandButton
+                                ajax="false"
+                                value="Excel"
                                 icon="fas fa-file-excel"
                                 class="ui-button-success mx-2">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Category_report"  />
-                            </p:commandButton> 
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Category_report" postProcessor="#{reportsStock.postProcessXLSAfterStockTaking}"  />
+                            </p:commandButton>
                             <p:commandButton 
                                 value="Print" 
                                 icon="fas fa-print"
@@ -58,10 +59,17 @@
                                         
                                         >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Stock in #{reportsStock.department.name} "/>   <br/>                                 
-                                    <h:outputLabel value="for #{reportsStock.category.name}"/> <br/><br/>
-                                    <h:outputLabel value="Date : "><p:clock pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  /></h:outputLabel>                                   
-                                </f:facet> 
+                                    <h:panelGroup layout="block">
+                                        <h:outputLabel value="After Stock Taking Report"/>
+                                        <h:panelGroup layout="block" style="font-size: 11px; font-weight: 400;">
+                                            <h:outputText value="Department: #{not empty reportsStock.department ? reportsStock.department.name : 'All'}   |   "/>
+                                            <h:outputText value="Category: #{not empty reportsStock.category ? reportsStock.category.name : 'All'}"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </f:facet>
+                                <f:facet name="footer">
+                                    <common:report_print_footer/>
+                                </f:facet>
                                 
                                 <p:column headerText="Item"
                                           sortBy="#{i.itemBatch.item.name}"

@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
       xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -57,12 +57,12 @@
                                 icon="fas fa-search"
                                 class="ui-button-warning"
                                 action="#{searchController.createPharmacyAdjustmentBillItemTableForStockTaking()}"/>
-                            <p:commandButton 
-                                value="Excel" 
-                                ajax="false" 
+                            <p:commandButton
+                                value="Excel"
+                                ajax="false"
                                 icon="fas fa-file-excel"
                                 class="ui-button-success mx-2">
-                                <p:dataExporter type="xlsx" target="tblBills" fileName="Stock_Taking_New_Report"/>
+                                <p:dataExporter type="xlsx" target="tblBills" fileName="Stock_Taking_New_Report" postProcessor="#{searchController.postProcessXLSStockTakingNew}"/>
                             </p:commandButton>
                             <p:commandButton 
                                 ajax="false" 
@@ -82,11 +82,24 @@
                             <p:dataTable rowIndexVar="i" id="tblBills" 
                                          value="#{searchController.pharmacyAdjustmentRows}" var="r" >
                                 <f:facet name="header" >
-                                    <p:outputLabel value="From Date - #{searchController.fromDate}"></p:outputLabel><br></br>
-                                    <p:outputLabel value="To Date - #{searchController.toDate}"></p:outputLabel><br></br>
-                                    <p:outputLabel value="Department - #{searchController.reportKeyWord.department.name}" rendered="#{searchController.reportKeyWord.department ne null}" /><br></br>
-                                    <p:outputLabel value="Category - #{searchController.reportKeyWord.category.name}" rendered="#{searchController.reportKeyWord.category ne null}" />
+                                    <p:outputLabel value="Stock Taking Report(New)" style="font-weight: bold;"/><br></br>
+                                    <h:outputLabel value="From Date - "/>
+                                    <h:outputText value="#{searchController.fromDate}" rendered="#{searchController.fromDate ne null}">
+                                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    </h:outputText>
+                                    <h:outputText value="All" rendered="#{searchController.fromDate eq null}"/><br></br>
+                                    <h:outputLabel value="To Date - "/>
+                                    <h:outputText value="#{searchController.toDate}" rendered="#{searchController.toDate ne null}">
+                                        <f:convertDateTime pattern="dd MMMM yyyy"/>
+                                    </h:outputText>
+                                    <h:outputText value="All" rendered="#{searchController.toDate eq null}"/><br></br>
+                                    <p:outputLabel value="Department - #{not empty searchController.reportKeyWord.department ? searchController.reportKeyWord.department.name : 'All'}" /><br></br>
+                                    <p:outputLabel value="Category - #{not empty searchController.reportKeyWord.category ? searchController.reportKeyWord.category.name : 'All'}" /><br></br>
+                                    <p:outputLabel value="Only Adjustments - #{searchController.reportKeyWord.additionalDetails ? 'Yes' : 'No'}" />
 
+                                </f:facet>
+                                <f:facet name="footer">
+                                    <common:report_print_footer/>
                                 </f:facet>
                                 <p:column styleClass="alignTop" >
                                     <f:facet name="header" >

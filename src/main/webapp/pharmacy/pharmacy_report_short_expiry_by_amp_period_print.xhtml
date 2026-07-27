@@ -337,6 +337,19 @@
 
                                 </div>
 
+                                <div class="d-flex justify-content-between" style="font-weight:400; font-size: 10px; margin-top: 3mm;">
+                                    <span>
+                                        Printed By:
+                                        <h:outputText value="#{sessionController.loggedUser.webUserPerson.name}" />
+                                    </span>
+                                    <span>
+                                        Printed At:
+                                        <h:outputText value="#{sessionController.currentDate}">
+                                            <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a"/>
+                                        </h:outputText>
+                                    </span>
+                                </div>
+
                             </div>
                         </h:panelGroup>
 

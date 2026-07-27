@@ -2747,6 +2747,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 OptionScope.APPLICATION
         ));
         metadata.addConfigOption(new ConfigOptionInfo(
+                "Allow Adding Direct Purchase Items When Normal Quantity Is Zero And Free Quantity Is Present",
+                "Allows adding a direct purchase item with zero normal quantity as long as free quantity is entered, "
+                + "for fully-free supplier items. When off, quantity must be greater than zero to add an item.",
+                OptionScope.APPLICATION
+        ));
+        metadata.addConfigOption(new ConfigOptionInfo(
                 "Use Save Finalize Approve Workflow for Direct Purchase",
                 "Switches the page from single-step Settle to a Save Draft / Finalize / Approve workflow",
                 OptionScope.APPLICATION
