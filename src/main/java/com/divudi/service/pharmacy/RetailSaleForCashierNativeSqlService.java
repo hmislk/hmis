@@ -622,10 +622,18 @@ public class RetailSaleForCashierNativeSqlService {
         pbd.setTokenNumber(findTokenNumber(bill));
         if (bill.getPatient() != null && bill.getPatient().getPerson() != null) {
             pbd.setPatientName(safeStr(bill.getPatient().getPerson().getNameWithTitle()));
-            pbd.setPatientAgeSex(safeStr(bill.getPatient().getPerson().getAgeAsShortString())
-                    + " / "
-                    + (bill.getPatient().getPerson().getSex() != null
-                            ? safeStr(bill.getPatient().getPerson().getSex().getLabel()) : ""));
+            // Same rule as the fresh-print path: never emit a bare " / " when neither
+            // age nor sex is known, so reprints match freshly printed bills.
+            String age = safeStr(bill.getPatient().getPerson().getAgeAsShortString()).trim();
+            String sex = bill.getPatient().getPerson().getSex() != null
+                    ? safeStr(bill.getPatient().getPerson().getSex().getLabel()).trim() : "";
+            if (!age.isEmpty() && !sex.isEmpty()) {
+                pbd.setPatientAgeSex(age + " / " + sex);
+            } else if (!age.isEmpty()) {
+                pbd.setPatientAgeSex(age);
+            } else if (!sex.isEmpty()) {
+                pbd.setPatientAgeSex(sex);
+            }
             pbd.setPatientPhone(safeStr(bill.getPatient().getPerson().getPhone()));
             pbd.setPatientPhn(safeStr(bill.getPatient().getPhn()));
         }

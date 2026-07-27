@@ -759,9 +759,17 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             String age = billPatient.getPerson().getAgeAsShortString();
             String sex = billPatient.getPerson().getSex() != null
                     ? billPatient.getPerson().getSex().getLabel() : null;
-            if (age != null || sex != null) {
-                pbd.setPatientAgeSex((age != null ? age : "") + " / " + (sex != null ? sex : ""));
+            boolean hasAge = age != null && !age.trim().isEmpty();
+            boolean hasSex = sex != null && !sex.trim().isEmpty();
+            if (hasAge && hasSex) {
+                pbd.setPatientAgeSex(age + " / " + sex);
+            } else if (hasAge) {
+                pbd.setPatientAgeSex(age);
+            } else if (hasSex) {
+                pbd.setPatientAgeSex(sex);
             }
+            // Left null when neither is known, so the print shows an empty Age/Sex cell
+            // rather than a bare " / ".
         }
 
         // Payment

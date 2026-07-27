@@ -19,7 +19,12 @@
                         };
                     </script>
                     <p:growl id="panelError" />
-                    <p:defaultCommand target="btnAdd" />
+                    <!-- Guarded on the entry panel: btnAdd only exists while !billPreview, and
+                         PrimeFaces throws on widget init when a defaultCommand target is absent.
+                         The sibling pharmacy_bill_retail_sale_native.xhtml has the same unguarded
+                         markup and logs the same console error after a settle. -->
+                    <p:defaultCommand target="btnAdd"
+                                      rendered="#{!retailSaleForCashierNativeSqlController.billPreview}" />
 
                     <!-- ============================================================
                          ENTRY PANEL (hidden after settle)
