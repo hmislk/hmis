@@ -1115,10 +1115,17 @@
                         <p:separator />
                         <p:menuitem
                             ajax="false"
-                            action="#{pharmacySaleForCashierController.navigateToPharmacyBillForCashierFromMenu()}"
+                            action="#{retailSaleForCashierNativeSqlController.navigateToPharmacyBillForCashierNativeFromMenu()}"
                             value="Sale for cashier"
                             icon="fas fa-cash-register"
+                            styleClass="menu-item-optimised"
                             rendered="#{webUserController.hasPrivilege('PharmacySaleForCashier')}" ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{pharmacySaleForCashierController.navigateToPharmacyBillForCashierFromMenu()}"
+                            value="Sale for cashier (Legacy)"
+                            icon="fas fa-cash-register"
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleForCashier') and configOptionApplicationController.getBooleanValueByKey('Legacy Functions Allowed', false)}" ></p:menuitem>
                         <p:menuitem
                             ajax="false" action="/pharmacy/pharmacy_search_sale_pre_bill?faces-redirect=true"
                             value="Search Sale for Cashier Bills"
