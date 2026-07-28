@@ -116,14 +116,14 @@
                                         <h:outputLabel value="Date of Admission:" />
                                         <h:outputLabel>
                                             <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfAdmission}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
                                         </h:outputLabel>
                                         <h:outputLabel value="" />
                                         <h:outputLabel value="Date of Discharge:" />
                                         <h:outputLabel>
                                             <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfDischarge}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputText>
                                         </h:outputLabel>
 

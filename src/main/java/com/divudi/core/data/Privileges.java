@@ -1282,6 +1282,7 @@ public enum Privileges {
             case InwardImagesView:
             case InwardDiagnosisCardView:
             case InwardEventHistoryView:
+            case InwardPostDischargeReports:
                 return "Inward";
 
             case AdminInactivePatients:

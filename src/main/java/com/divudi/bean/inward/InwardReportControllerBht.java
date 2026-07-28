@@ -279,12 +279,20 @@ public class InwardReportControllerBht implements Serializable {
             JsfUtil.addErrorMessage("No encounter selected");
             return null;
         }
+        if (!Boolean.TRUE.equals(patientEncounter.getDischarged()) || !patientEncounter.isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Post-discharge reports are only available after the admission is discharged and payment finalized");
+            return null;
+        }
         return "/inward/reports/post_discharge_reports?faces-redirect=true";
     }
 
     public String navigateToInpatientPharmacyNetSummaryDto() {
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        if (!Boolean.TRUE.equals(patientEncounter.getDischarged()) || !patientEncounter.isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Post-discharge reports are only available after the admission is discharged and payment finalized");
             return null;
         }
         pharmacyNetSummaryDtosToPatientEncounter = new ArrayList<>();
