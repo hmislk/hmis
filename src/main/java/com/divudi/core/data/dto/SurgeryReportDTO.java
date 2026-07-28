@@ -60,4 +60,8 @@ public class SurgeryReportDTO implements Serializable {
     public void setOtStatus(String otStatus) { this.otStatus = otStatus; }
     public Long getProcedureId() { return procedureId; }
     public void setProcedureId(Long procedureId) { this.procedureId = procedureId; }
+
+    public void setOtRoomName(String otRoomName) {
+        this.otRoomName = otRoomName;
+    }
 }

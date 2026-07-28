@@ -104,12 +104,8 @@ public class SurgeryReportController implements Serializable {
             return;
         }
 
-        StringBuilder jpql = new StringBuilder();
-        jpql.append(" select new com.divudi.core.data.dto.SurgeryReportDTO( ")
-                .append("   b.id, pat.phn, pp.name, pe.dateOfAdmission, i.name, ")
-                .append("   d.name, rfc.name, stp.name, rcp.name, pe.id, p.id ")
-                .append(" ) ")
-                .append(" from Bill b ")
+        StringBuilder queryBody = new StringBuilder();
+        queryBody.append(" from Bill b ")
                 .append(" join b.procedure p ")
                 .append(" join p.item i ")
                 .append(" join b.patientEncounter pe ")
@@ -133,27 +129,33 @@ public class SurgeryReportController implements Serializable {
         params.put("td", toDate);
 
         if (institution != null) {
-            jpql.append(" and b.institution = :inst ");
+            queryBody.append(" and b.institution = :inst ");
             params.put("inst", institution);
         }
         if (department != null) {
-            jpql.append(" and d = :dept ");
+            queryBody.append(" and d = :dept ");
             params.put("dept", department);
         }
         if (site != null) {
-            jpql.append(" and d.site = :site ");
+            queryBody.append(" and d.site = :site ");
             params.put("site", site);
         }
         if (procedure != null) {
-            jpql.append(" and i = :proc ");
+            queryBody.append(" and i = :proc ");
             params.put("proc", procedure);
         }
         if (operationTheatreRoom != null) {
-            jpql.append(" and cpr.roomFacilityCharge = :otRoom ");
+            queryBody.append(" and cpr.roomFacilityCharge = :otRoom ");
             params.put("otRoom", operationTheatreRoom);
         }
 
-        jpql.append(" order by i.name ");
+        StringBuilder jpql = new StringBuilder();
+        jpql.append(" select new com.divudi.core.data.dto.SurgeryReportDTO( ")
+                .append("   b.id, pat.phn, pp.name, pe.dateOfAdmission, i.name, ")
+                .append("   rfc.department.name, rfc.name, stp.name, rcp.name, pe.id, p.id ")
+                .append(" ) ")
+                .append(queryBody)
+                .append(" order by i.name ");
 
         reportList = (List<SurgeryReportDTO>) billFacade.findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP, 1000);
 
@@ -161,23 +163,16 @@ public class SurgeryReportController implements Serializable {
             JsfUtil.addErrorMessage("Report may be incomplete because results were limited to 1,000 records.");
         }
 
-        attachOtStatuses(reportList);
-        attachSurgeons(reportList);
+        attachOtStatuses(reportList, queryBody.toString(), params);
+        attachSurgeons(reportList, queryBody.toString(), params);
     }
 
-    private void attachSurgeons(List<SurgeryReportDTO> rows) {
+    private void attachSurgeons(List<SurgeryReportDTO> rows, String queryBody, Map<String, Object> params) {
         if (rows.isEmpty()) {
             return;
         }
-        List<Long> procedureIds = new ArrayList<>();
-        for (SurgeryReportDTO r : rows) {
-            if (r.getProcedureId() != null) {
-                procedureIds.add(r.getProcedureId());
-            }
-        }
-        if (procedureIds.isEmpty()) {
-            return;
-        }
+
+        String subquery = " (SELECT p.id " + queryBody + ") ";
 
         String jpql = "SELECT pe.id, ce.id, ec.patientEncounterComponentType, stp.name, bfstp.name "
                 + " FROM EncounterComponent ec "
@@ -188,13 +183,12 @@ public class SurgeryReportController implements Serializable {
                 + " LEFT JOIN ec.billFee bf "
                 + " LEFT JOIN bf.staff bfst "
                 + " LEFT JOIN bfst.person bfstp "
-                + " WHERE (pe.id IN :procIds OR ce.id IN :procIds) "
+                + " WHERE (pe.id IN " + subquery + " OR ce.id IN " + subquery + ") "
                 + " AND ec.retired = false "
                 + " AND (ec.patientEncounterComponentType = :type1 OR ec.patientEncounterComponentType = :type2) "
                 + " ORDER BY ec.orderNo ";
         
-        Map<String, Object> p = new HashMap<>();
-        p.put("procIds", procedureIds);
+        Map<String, Object> p = new HashMap<>(params);
         p.put("type1", com.divudi.core.data.inward.PatientEncounterComponentType.Performed_By);
         p.put("type2", com.divudi.core.data.inward.PatientEncounterComponentType.Assisted_by);
 
@@ -218,13 +212,11 @@ public class SurgeryReportController implements Serializable {
                 }
                 nameToUse += role;
                 
-                if (peId != null && procedureIds.contains(peId)) {
+                if (peId != null) {
                     doctorsMap.computeIfAbsent(peId, k -> new ArrayList<>()).add(nameToUse);
                 }
-                if (ceId != null && procedureIds.contains(ceId)) {
-                    if (peId == null || !peId.equals(ceId)) {
-                        doctorsMap.computeIfAbsent(ceId, k -> new ArrayList<>()).add(nameToUse);
-                    }
+                if (ceId != null && (peId == null || !peId.equals(ceId))) {
+                    doctorsMap.computeIfAbsent(ceId, k -> new ArrayList<>()).add(nameToUse);
                 }
             }
         }
@@ -239,36 +231,34 @@ public class SurgeryReportController implements Serializable {
         }
     }
 
-    private void attachOtStatuses(List<SurgeryReportDTO> rows) {
+    private void attachOtStatuses(List<SurgeryReportDTO> rows, String queryBody, Map<String, Object> params) {
         if (rows.isEmpty()) {
             return;
         }
-        List<Long> encounterIds = new ArrayList<>();
-        List<Long> billIds = new ArrayList<>();
-        for (SurgeryReportDTO r : rows) {
-            encounterIds.add(r.getPatientEncounterId());
-            billIds.add(r.getBillId());
-        }
 
-        String jpql = " select str.admission.id, str.surgeryBill.id, str.theatreOccupancyStatus "
+        String encSubquery = " (SELECT pe.id " + queryBody + ") ";
+        String billSubquery = " (SELECT b.id " + queryBody + ") ";
+
+        String jpql = " select str.admission.id, str.surgeryBill.id, str.theatreOccupancyStatus , str.toRoomFacilityCharge.name "
                 + " from PatientTransferRequest str "
                 + " where str.retired = false "
-                + " and (str.admission.id in :encIds OR str.surgeryBill.id in :billIds) "
+                + " and (str.admission.id in " + encSubquery + " OR str.surgeryBill.id in " + billSubquery + ") "
                 + " and str.theatreOccupancyStatus is not null "
                 + " order by str.createdAt ASC";
-        Map<String, Object> p = new HashMap<>();
-        p.put("encIds", encounterIds);
-        p.put("billIds", billIds);
+        
+        Map<String, Object> p = new HashMap<>(params);
 
         List<Object[]> statusRows = billFacade.findAggregates(jpql, p, TemporalType.TIMESTAMP);
 
         Map<Long, String> statusByEncounter = new HashMap<>();
         Map<Long, String> statusByBill = new HashMap<>();
+        Map<Long, String> otRooms = new HashMap<>();
         
         for (Object[] row : statusRows) {
             Long encounterId = (Long) row[0];
             Long billId = (Long) row[1];
             Object statusObj = row[2];
+            String otRoom = (String) row[3];
             String status = statusObj != null ? statusObj.toString() : "";
             
             if (billId != null) {
@@ -276,6 +266,12 @@ public class SurgeryReportController implements Serializable {
             }
             if (encounterId != null) {
                 statusByEncounter.put(encounterId, status);
+            }
+            if(otRoom != null && billId != null){
+                otRooms.put(billId, otRoom);
+            }
+            if (otRoom != null && encounterId != null) {
+                otRooms.put(encounterId, otRoom);
             }
         }
 
@@ -286,6 +282,14 @@ public class SurgeryReportController implements Serializable {
                 r.setOtStatus(statusByEncounter.get(r.getPatientEncounterId()));
             } else {
                 r.setOtStatus("");
+            }
+            
+            if (otRooms.containsKey(r.getBillId())) {
+                r.setOtRoomName(otRooms.get(r.getBillId()));
+            } else if (otRooms.containsKey(r.getPatientEncounterId())) {
+                r.setOtRoomName(otRooms.get(r.getPatientEncounterId()));
+            } else {
+                r.setOtRoomName("-");
             }
         }
     }
