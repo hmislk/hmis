@@ -1,5 +1,6 @@
 package com.divudi.core.data.dto;
 
+import com.divudi.core.data.Title;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -14,6 +15,7 @@ public class SurgeryReportDTO implements Serializable {
     private String wardName;        // currentPatientRoom.roomFacilityCharge.name
     private String surgeonName;
     private String consultantName;
+    private Title title;
 
     // needed to join OT status in-memory after batch fetch
     private Long patientEncounterId;
@@ -24,7 +26,7 @@ public class SurgeryReportDTO implements Serializable {
 
     public SurgeryReportDTO(Long billId, String mrn, String patientName, Date admissionDate,
                             String procedureName, String otRoomName, String wardName,
-                            String surgeonName, String consultantName, Long patientEncounterId) {
+                            String surgeonName, Title title, String consultantName, Long patientEncounterId) {
         this.billId = billId;
         this.mrn = mrn;
         this.patientName = patientName;
@@ -33,14 +35,15 @@ public class SurgeryReportDTO implements Serializable {
         this.otRoomName = otRoomName;
         this.wardName = wardName;
         this.surgeonName = surgeonName;
+        this.title = title;
         this.consultantName = consultantName;
         this.patientEncounterId = patientEncounterId;
     }
 
     public SurgeryReportDTO(Long billId, String mrn, String patientName, Date admissionDate,
                             String procedureName, String otRoomName, String wardName,
-                            String surgeonName, String consultantName, Long patientEncounterId, Long procedureId) {
-        this(billId, mrn, patientName, admissionDate, procedureName, otRoomName, wardName, surgeonName, consultantName, patientEncounterId);
+                            String surgeonName, Title title, String consultantName, Long patientEncounterId, Long procedureId) {
+        this(billId, mrn, patientName, admissionDate, procedureName, otRoomName, wardName, surgeonName, title, consultantName, patientEncounterId);
         this.procedureId = procedureId;
     }
 
@@ -63,5 +66,9 @@ public class SurgeryReportDTO implements Serializable {
 
     public void setOtRoomName(String otRoomName) {
         this.otRoomName = otRoomName;
+    }
+
+    public Title getTitle() {
+        return title;
     }
 }

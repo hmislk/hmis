@@ -42,6 +42,7 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
+import java.util.stream.Collectors;
 
 import software.xdev.chartjs.model.charts.BarChart;
 import software.xdev.chartjs.model.charts.LineChart;
@@ -80,7 +81,7 @@ public class SurgeryReportController implements Serializable {
     private Item procedure;
     private RoomFacilityCharge operationTheatreRoom;
     private List<SurgeryReportDTO> reportList;
-    
+
     private Date fromYearDate;
     private Date toYearDate;
     private String otRoomChartType;
@@ -145,14 +146,19 @@ public class SurgeryReportController implements Serializable {
             params.put("proc", procedure);
         }
         if (operationTheatreRoom != null) {
-            queryBody.append(" and cpr.roomFacilityCharge = :otRoom ");
+            queryBody.append(" and exists ( ")
+                    .append("   select 1 from PatientTransferRequest otr ")
+                    .append("   where otr.retired = false ")
+                    .append("   and otr.toRoomFacilityCharge = :otRoom ")
+                    .append("   and (otr.admission.id = pe.id or otr.surgeryBill.id = b.id) ")
+                    .append(" ) ");
             params.put("otRoom", operationTheatreRoom);
         }
 
         StringBuilder jpql = new StringBuilder();
         jpql.append(" select new com.divudi.core.data.dto.SurgeryReportDTO( ")
                 .append("   b.id, pat.phn, pp.name, pe.dateOfAdmission, i.name, ")
-                .append("   rfc.department.name, rfc.name, stp.name, rcp.name, pe.id, p.id ")
+                .append("   rfc.department.name, rfc.name, stp.name, rcp.title, rcp.name, pe.id, p.id ")
                 .append(" ) ")
                 .append(queryBody)
                 .append(" order by i.name ");
@@ -174,7 +180,8 @@ public class SurgeryReportController implements Serializable {
 
         String subquery = " (SELECT p.id " + queryBody + ") ";
 
-        String jpql = "SELECT pe.id, ce.id, ec.patientEncounterComponentType, stp.name, bfstp.name "
+        String jpql = "SELECT pe.id, ce.id, ec.patientEncounterComponentType, "
+                + " stp.title, stp.name, bfstp.title, bfstp.name "
                 + " FROM EncounterComponent ec "
                 + " LEFT JOIN ec.patientEncounter pe "
                 + " LEFT JOIN ec.childEncounter ce "
@@ -185,9 +192,10 @@ public class SurgeryReportController implements Serializable {
                 + " LEFT JOIN bfst.person bfstp "
                 + " WHERE (pe.id IN " + subquery + " OR ce.id IN " + subquery + ") "
                 + " AND ec.retired = false "
-                + " AND (ec.patientEncounterComponentType = :type1 OR ec.patientEncounterComponentType = :type2) "
+                + " AND (ec.patientEncounterComponentType = :type1 "
+                + "      OR ec.patientEncounterComponentType = :type2) "
                 + " ORDER BY ec.orderNo ";
-        
+
         Map<String, Object> p = new HashMap<>(params);
         p.put("type1", com.divudi.core.data.inward.PatientEncounterComponentType.Performed_By);
         p.put("type2", com.divudi.core.data.inward.PatientEncounterComponentType.Assisted_by);
@@ -195,29 +203,47 @@ public class SurgeryReportController implements Serializable {
         List<Object[]> docRows = billFacade.findAggregates(jpql, p, TemporalType.TIMESTAMP);
 
         Map<Long, List<String>> doctorsMap = new HashMap<>();
+
         for (Object[] row : docRows) {
             Long peId = (Long) row[0];
             Long ceId = (Long) row[1];
-            com.divudi.core.data.inward.PatientEncounterComponentType type = 
-                (com.divudi.core.data.inward.PatientEncounterComponentType) row[2];
-            String staffName1 = (String) row[3];
-            String staffName2 = (String) row[4];
-            
-            String nameToUse = (staffName1 != null && !staffName1.isEmpty()) ? staffName1 : staffName2;
-            
-            if (nameToUse != null) {
-                String role = "";
-                if (type == com.divudi.core.data.inward.PatientEncounterComponentType.Assisted_by) {
-                    role = " (Assisted)";
-                }
-                nameToUse += role;
-                
-                if (peId != null) {
-                    doctorsMap.computeIfAbsent(peId, k -> new ArrayList<>()).add(nameToUse);
-                }
-                if (ceId != null && (peId == null || !peId.equals(ceId))) {
-                    doctorsMap.computeIfAbsent(ceId, k -> new ArrayList<>()).add(nameToUse);
-                }
+            com.divudi.core.data.inward.PatientEncounterComponentType type
+                    = (com.divudi.core.data.inward.PatientEncounterComponentType) row[2];
+
+            com.divudi.core.data.Title staffTitle1 = (com.divudi.core.data.Title) row[3];
+            String staffName1 = (String) row[4];
+            com.divudi.core.data.Title staffTitle2 = (com.divudi.core.data.Title) row[5];
+            String staffName2 = (String) row[6];
+
+            String nameToUse = (staffName1 != null && !staffName1.trim().isEmpty())
+                    ? staffName1.trim()
+                    : (staffName2 != null ? staffName2.trim() : null);
+
+            com.divudi.core.data.Title titleToUse = staffTitle1 != null ? staffTitle1 : staffTitle2;
+
+            if (nameToUse == null || nameToUse.isEmpty()) {
+                continue;
+            }
+
+            StringBuilder fullName = new StringBuilder();
+
+            if (titleToUse != null) {
+                fullName.append(titleToUse.toString()).append(" ");
+            }
+
+            fullName.append(nameToUse);
+
+            if (type == com.divudi.core.data.inward.PatientEncounterComponentType.Assisted_by) {
+                fullName.append(" (Assisted)");
+            }
+
+            String finalName = fullName.toString().trim();
+
+            if (peId != null) {
+                doctorsMap.computeIfAbsent(peId, k -> new ArrayList<>()).add(finalName);
+            }
+            if (ceId != null && (peId == null || !peId.equals(ceId))) {
+                doctorsMap.computeIfAbsent(ceId, k -> new ArrayList<>()).add(finalName);
             }
         }
 
@@ -225,7 +251,10 @@ public class SurgeryReportController implements Serializable {
             if (r.getProcedureId() != null) {
                 List<String> docs = doctorsMap.get(r.getProcedureId());
                 if (docs != null && !docs.isEmpty()) {
-                    r.setSurgeonName(String.join(", ", docs));
+                    List<String> uniqueDocs = docs.stream()
+                            .distinct()
+                            .collect(Collectors.toList());
+                    r.setSurgeonName(String.join(", ", uniqueDocs));
                 }
             }
         }
@@ -245,29 +274,28 @@ public class SurgeryReportController implements Serializable {
                 + " and (str.admission.id in " + encSubquery + " OR str.surgeryBill.id in " + billSubquery + ") "
                 + " and str.theatreOccupancyStatus is not null "
                 + " order by str.createdAt ASC";
-        
-        Map<String, Object> p = new HashMap<>(params);
 
+        Map<String, Object> p = new HashMap<>(params);
         List<Object[]> statusRows = billFacade.findAggregates(jpql, p, TemporalType.TIMESTAMP);
 
         Map<Long, String> statusByEncounter = new HashMap<>();
         Map<Long, String> statusByBill = new HashMap<>();
         Map<Long, String> otRooms = new HashMap<>();
-        
+
         for (Object[] row : statusRows) {
             Long encounterId = (Long) row[0];
             Long billId = (Long) row[1];
             Object statusObj = row[2];
             String otRoom = (String) row[3];
             String status = statusObj != null ? statusObj.toString() : "";
-            
+
             if (billId != null) {
                 statusByBill.put(billId, status);
             }
             if (encounterId != null) {
                 statusByEncounter.put(encounterId, status);
             }
-            if(otRoom != null && billId != null){
+            if (otRoom != null && billId != null) {
                 otRooms.put(billId, otRoom);
             }
             if (otRoom != null && encounterId != null) {
@@ -281,9 +309,9 @@ public class SurgeryReportController implements Serializable {
             } else if (statusByEncounter.containsKey(r.getPatientEncounterId())) {
                 r.setOtStatus(statusByEncounter.get(r.getPatientEncounterId()));
             } else {
-                r.setOtStatus("");
+                r.setOtStatus("-");
             }
-            
+
             if (otRooms.containsKey(r.getBillId())) {
                 r.setOtRoomName(otRooms.get(r.getBillId()));
             } else if (otRooms.containsKey(r.getPatientEncounterId())) {
@@ -333,7 +361,7 @@ public class SurgeryReportController implements Serializable {
             titleCell.setCellValue("Surgery Status Report");
             titleCell.setCellStyle(titleStyle);
             rowIdx++; // blank row
-            
+
             Row dateRow = sheet.createRow(rowIdx++);
             dateRow.createCell(0).setCellValue("Date Range: " + sdf.format(fromDate) + " - " + sdf.format(toDate));
 
@@ -411,7 +439,7 @@ public class SurgeryReportController implements Serializable {
             title.setAlignment(Element.ALIGN_CENTER);
             title.setSpacingAfter(5);
             document.add(title);
-            
+
             Font filterFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
             Paragraph filters = new Paragraph();
             filters.add(new Phrase("Date Range: " + sdf.format(fromDate) + " - " + sdf.format(toDate) + "\n", filterFont));
@@ -483,8 +511,7 @@ public class SurgeryReportController implements Serializable {
         }
         fc.responseComplete();
     }
-    
-    
+
     // ═══════════════════════════════════════════════════════════════════════
     // OT Room Wise Surgery Count Report
     // ═══════════════════════════════════════════════════════════════════════
@@ -498,7 +525,6 @@ public class SurgeryReportController implements Serializable {
         "153, 102, 255", "255, 159, 64", "199, 199, 199", "83, 102, 255",
         "255, 99, 255", "99, 255, 132", "220, 20, 60", "65, 105, 225"
     };
-
 
     public void processOtRoomWiseSurgeryCountReport() {
         otRoomWiseList = new ArrayList<>();
@@ -969,7 +995,6 @@ public class SurgeryReportController implements Serializable {
         }
         table.addCell(cell);
     }
-
 
     public List<SurgeryReportDTO> getReportList() {
         return reportList;

@@ -157,7 +157,7 @@
                             <p:column headerText="Ward"><h:outputText value="#{c.wardName}"/></p:column>
                             <p:column headerText="Surgeon"><h:outputText value="#{c.surgeonName}"/></p:column>
                             <p:column headerText="OT Status"><h:outputText value="#{c.otStatus}"/></p:column>
-                            <p:column headerText="Consultant"><h:outputText value="#{c.consultantName}"/></p:column>
+                            <p:column headerText="Consultant"><h:outputText value="#{c.title} #{c.consultantName}"/></p:column>
                         </p:dataTable>
 
                     </p:panel>
