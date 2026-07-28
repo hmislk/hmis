@@ -304,6 +304,19 @@
                                     </p:tab>
 
 
+                                    <p:tab title="Ordering" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Ordering Tab', true)}">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Ordering Requirement Report', true)}"
+                                                             value="Ordering Requirement Report"
+                                                             icon="fa fa-cart-plus"
+                                                             ajax="false"
+                                                             styleClass="w-100 ui-button-success"
+                                                             style="text-align: left"
+                                                             title="What to order and how much, corrected for stock-out periods"
+                                                             action="#{pharmacyOrderingAnalyticsController.navigateToOrderingRequirementReport()}" />
+                                        </div>
+                                    </p:tab>
+
                                     <p:tab title="Movement Reports" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Analytics Movement Reports Tab')}">
                                         <div class="d-grid gap-2">
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Movement Out by Sale, Issue, and Consumption with Current Stock Report')}"
