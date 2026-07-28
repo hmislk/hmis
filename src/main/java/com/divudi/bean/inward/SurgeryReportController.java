@@ -42,6 +42,8 @@ import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import software.xdev.chartjs.model.charts.BarChart;
@@ -169,16 +171,29 @@ public class SurgeryReportController implements Serializable {
             JsfUtil.addErrorMessage("Report may be incomplete because results were limited to 1,000 records.");
         }
 
-        attachOtStatuses(reportList, queryBody.toString(), params);
-        attachSurgeons(reportList, queryBody.toString(), params);
-    }
-
-    private void attachSurgeons(List<SurgeryReportDTO> rows, String queryBody, Map<String, Object> params) {
-        if (rows.isEmpty()) {
+        if (reportList.isEmpty()) {
             return;
         }
 
-        String subquery = " (SELECT p.id " + queryBody + ") ";
+        Set<Long> billIds = new HashSet<>();
+        Set<Long> encounterIds = new HashSet<>();
+        for (SurgeryReportDTO r : reportList) {
+            if (r.getBillId() != null) {
+                billIds.add(r.getBillId());
+            }
+            if (r.getPatientEncounterId() != null) {
+                encounterIds.add(r.getPatientEncounterId());
+            }
+        }
+
+        attachOtStatuses(reportList, billIds, encounterIds);
+        attachSurgeons(reportList, encounterIds);
+    }
+
+    private void attachSurgeons(List<SurgeryReportDTO> rows, Set<Long> encounterIds) {
+        if (rows.isEmpty() || encounterIds.isEmpty()) {
+            return;
+        }
 
         String jpql = "SELECT pe.id, ce.id, ec.patientEncounterComponentType, "
                 + " stp.title, stp.name, bfstp.title, bfstp.name "
@@ -190,19 +205,20 @@ public class SurgeryReportController implements Serializable {
                 + " LEFT JOIN ec.billFee bf "
                 + " LEFT JOIN bf.staff bfst "
                 + " LEFT JOIN bfst.person bfstp "
-                + " WHERE (pe.id IN " + subquery + " OR ce.id IN " + subquery + ") "
+                + " WHERE (pe.id IN :encIds OR ce.id IN :encIds) "
                 + " AND ec.retired = false "
-                + " AND (ec.patientEncounterComponentType = :type1 "
-                + "      OR ec.patientEncounterComponentType = :type2) "
+                + " AND ec.patientEncounterComponentType IN :types "
                 + " ORDER BY ec.orderNo ";
 
-        Map<String, Object> p = new HashMap<>(params);
-        p.put("type1", com.divudi.core.data.inward.PatientEncounterComponentType.Performed_By);
-        p.put("type2", com.divudi.core.data.inward.PatientEncounterComponentType.Assisted_by);
+        Map<String, Object> p = new HashMap<>();
+        p.put("encIds", encounterIds);
+        p.put("types", java.util.Arrays.asList(
+                com.divudi.core.data.inward.PatientEncounterComponentType.Performed_By,
+                com.divudi.core.data.inward.PatientEncounterComponentType.Assisted_by));
 
         List<Object[]> docRows = billFacade.findAggregates(jpql, p, TemporalType.TIMESTAMP);
 
-        Map<Long, List<String>> doctorsMap = new HashMap<>();
+        Map<Long, List<String>> doctorsByEncounter = new HashMap<>();
 
         for (Object[] row : docRows) {
             Long peId = (Long) row[0];
@@ -219,68 +235,60 @@ public class SurgeryReportController implements Serializable {
                     ? staffName1.trim()
                     : (staffName2 != null ? staffName2.trim() : null);
 
-            com.divudi.core.data.Title titleToUse = staffTitle1 != null ? staffTitle1 : staffTitle2;
-
             if (nameToUse == null || nameToUse.isEmpty()) {
                 continue;
             }
 
-            StringBuilder fullName = new StringBuilder();
+            com.divudi.core.data.Title titleToUse = staffTitle1 != null ? staffTitle1 : staffTitle2;
 
+            StringBuilder fullName = new StringBuilder();
             if (titleToUse != null) {
                 fullName.append(titleToUse.toString()).append(" ");
             }
-
             fullName.append(nameToUse);
-
             if (type == com.divudi.core.data.inward.PatientEncounterComponentType.Assisted_by) {
                 fullName.append(" (Assisted)");
             }
-
             String finalName = fullName.toString().trim();
 
             if (peId != null) {
-                doctorsMap.computeIfAbsent(peId, k -> new ArrayList<>()).add(finalName);
+                doctorsByEncounter.computeIfAbsent(peId, k -> new ArrayList<>()).add(finalName);
             }
-            if (ceId != null && (peId == null || !peId.equals(ceId))) {
-                doctorsMap.computeIfAbsent(ceId, k -> new ArrayList<>()).add(finalName);
+            if (ceId != null && !ceId.equals(peId)) {
+                doctorsByEncounter.computeIfAbsent(ceId, k -> new ArrayList<>()).add(finalName);
             }
         }
 
         for (SurgeryReportDTO r : rows) {
-            if (r.getProcedureId() != null) {
-                List<String> docs = doctorsMap.get(r.getProcedureId());
-                if (docs != null && !docs.isEmpty()) {
-                    List<String> uniqueDocs = docs.stream()
-                            .distinct()
-                            .collect(Collectors.toList());
-                    r.setSurgeonName(String.join(", ", uniqueDocs));
-                }
+            List<String> docs = doctorsByEncounter.get(r.getPatientEncounterId());
+            if (docs != null && !docs.isEmpty()) {
+                r.setSurgeonName(docs.stream().distinct().collect(Collectors.joining(", ")));
             }
         }
     }
 
-    private void attachOtStatuses(List<SurgeryReportDTO> rows, String queryBody, Map<String, Object> params) {
-        if (rows.isEmpty()) {
+    private void attachOtStatuses(List<SurgeryReportDTO> rows, Set<Long> billIds, Set<Long> encounterIds) {
+        if (rows.isEmpty() || (billIds.isEmpty() && encounterIds.isEmpty())) {
             return;
         }
 
-        String encSubquery = " (SELECT pe.id " + queryBody + ") ";
-        String billSubquery = " (SELECT b.id " + queryBody + ") ";
-
-        String jpql = " select str.admission.id, str.surgeryBill.id, str.theatreOccupancyStatus , str.toRoomFacilityCharge.name "
+        String jpql = " select str.admission.id, str.surgeryBill.id, str.theatreOccupancyStatus, str.toRoomFacilityCharge.name "
                 + " from PatientTransferRequest str "
                 + " where str.retired = false "
-                + " and (str.admission.id in " + encSubquery + " OR str.surgeryBill.id in " + billSubquery + ") "
                 + " and str.theatreOccupancyStatus is not null "
-                + " order by str.createdAt ASC";
+                + " and (str.admission.id in :encIds or str.surgeryBill.id in :billIds) "
+                + " order by str.createdAt asc"; // ascending + overwrite below => latest status wins
 
-        Map<String, Object> p = new HashMap<>(params);
+        Map<String, Object> p = new HashMap<>();
+        p.put("encIds", encounterIds.isEmpty() ? java.util.Collections.singleton(-1L) : encounterIds);
+        p.put("billIds", billIds.isEmpty() ? java.util.Collections.singleton(-1L) : billIds);
+
         List<Object[]> statusRows = billFacade.findAggregates(jpql, p, TemporalType.TIMESTAMP);
 
         Map<Long, String> statusByEncounter = new HashMap<>();
         Map<Long, String> statusByBill = new HashMap<>();
-        Map<Long, String> otRooms = new HashMap<>();
+        Map<Long, String> otRoomByBill = new HashMap<>();
+        Map<Long, String> otRoomByEncounter = new HashMap<>();
 
         for (Object[] row : statusRows) {
             Long encounterId = (Long) row[0];
@@ -291,37 +299,33 @@ public class SurgeryReportController implements Serializable {
 
             if (billId != null) {
                 statusByBill.put(billId, status);
+                if (otRoom != null) {
+                    otRoomByBill.put(billId, otRoom);
+                }
             }
             if (encounterId != null) {
                 statusByEncounter.put(encounterId, status);
-            }
-            if (otRoom != null && billId != null) {
-                otRooms.put(billId, otRoom);
-            }
-            if (otRoom != null && encounterId != null) {
-                otRooms.put(encounterId, otRoom);
+                if (otRoom != null) {
+                    otRoomByEncounter.put(encounterId, otRoom);
+                }
             }
         }
 
         for (SurgeryReportDTO r : rows) {
-            if (statusByBill.containsKey(r.getBillId())) {
-                r.setOtStatus(statusByBill.get(r.getBillId()));
-            } else if (statusByEncounter.containsKey(r.getPatientEncounterId())) {
-                r.setOtStatus(statusByEncounter.get(r.getPatientEncounterId()));
-            } else {
-                r.setOtStatus("-");
+            String status = statusByBill.get(r.getBillId());
+            if (status == null) {
+                status = statusByEncounter.get(r.getPatientEncounterId());
             }
+            r.setOtStatus(status != null ? status : "-");
 
-            if (otRooms.containsKey(r.getBillId())) {
-                r.setOtRoomName(otRooms.get(r.getBillId()));
-            } else if (otRooms.containsKey(r.getPatientEncounterId())) {
-                r.setOtRoomName(otRooms.get(r.getPatientEncounterId()));
-            } else {
-                r.setOtRoomName("-");
+            String room = otRoomByBill.get(r.getBillId());
+            if (room == null) {
+                room = otRoomByEncounter.get(r.getPatientEncounterId());
             }
+            r.setOtRoomName(room != null ? room : "-");
         }
     }
-
+    
     private static final String[] REPORT_HEADERS = {
         "SL No.", "MRN", "Patient Name", "Admission Date", "Proposed Surgery",
         "OT Room", "Ward", "Surgeon", "OT Status", "Consultant"
