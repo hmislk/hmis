@@ -12,6 +12,7 @@ import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.ejb.PharmacyService;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -55,6 +56,9 @@ public class PharmacyOrderingRequirementService implements Serializable {
 
     @EJB
     private PharmacyService pharmacyService;
+
+    @EJB
+    private BillService billService;
 
     /**
      * Builds the report.
@@ -127,9 +131,49 @@ public class PharmacyOrderingRequirementService implements Serializable {
             rows.add(row);
         }
 
+        applyLastSuppliers(rows);
+
         rows.sort(Comparator.comparing(OrderingRequirementRowDto::getItemName,
                 Comparator.nullsFirst(String.CASE_INSENSITIVE_ORDER)));
         return rows;
+    }
+
+    /**
+     * Fills the Last Supplier column from one batched lookup keyed by item id.
+     *
+     * Kept out of the main aggregate deliberately. Folding it in would need an
+     * extra join and a per-item "most recent purchase" correlation on a query
+     * that already groups a large PharmaceuticalBillItem scan; resolving it
+     * separately keeps each query simple and avoids a per-item N+1.
+     *
+     * Uses the itemBatch-keyed variant rather than the BillItem-keyed one the
+     * Movement Out with Current Stock report calls. Every row here is keyed on
+     * p.itemBatch.item, and the two identities diverge when a purchase is billed
+     * as a pack: billItem.item is then an Ampp while the batch hangs off the
+     * underlying Amp, so a BillItem-keyed lookup would report no supplier for
+     * that item even though it was purchased. Confirmed in the coop data - one
+     * purchase line in 22,592 bills an Ampp against an Amp batch.
+     */
+    private void applyLastSuppliers(List<OrderingRequirementRowDto> rows) {
+        if (rows == null || rows.isEmpty()) {
+            return;
+        }
+
+        List<Long> itemIds = new ArrayList<>();
+        for (OrderingRequirementRowDto row : rows) {
+            if (row.getItemId() != null) {
+                itemIds.add(row.getItemId());
+            }
+        }
+        if (itemIds.isEmpty()) {
+            return;
+        }
+
+        Map<Long, String> lastSupplierByItem = billService.fetchLastSupplierByPharmaceuticalItemIds(itemIds);
+        for (OrderingRequirementRowDto row : rows) {
+            String supplier = lastSupplierByItem.get(row.getItemId());
+            row.setLastSupplier(supplier != null ? supplier : "");
+        }
     }
 
     /**

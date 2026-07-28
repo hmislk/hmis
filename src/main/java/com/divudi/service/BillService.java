@@ -2882,6 +2882,68 @@ public class BillService {
     }
 
     /**
+     * Batched last-supplier lookup keyed by the item behind the stock batch
+     * ({@code pharmaceuticalBillItem.itemBatch.item}) rather than by
+     * {@code billItem.item}.
+     *
+     * Same purpose and same result shape as
+     * {@link #fetchLastSupplierByItemIds(List)}, but keyed on the identity that
+     * stock-level reports use. The two differ when a purchase is billed as a
+     * pack: {@code billItem.item} is then an {@code Ampp} while the batch - and
+     * therefore every Stock row - hangs off the underlying {@code Amp}. A report
+     * that groups by the batch's item would show a blank supplier for those
+     * items if it asked the BillItem-keyed method.
+     *
+     * Prefer this variant whenever rows are keyed on
+     * {@code itemBatch.item}; prefer the BillItem-keyed one when rows come from
+     * {@code billItem.item}.
+     */
+    public Map<Long, String> fetchLastSupplierByPharmaceuticalItemIds(List<Long> itemIds) {
+        Map<Long, String> result = new HashMap<>();
+        if (itemIds == null || itemIds.isEmpty()) {
+            return result;
+        }
+
+        List<BillTypeAtomic> purchaseBillTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_GRN,
+                BillTypeAtomic.PHARMACY_GRN_PRE,
+                BillTypeAtomic.PHARMACY_GRN_WHOLESALE,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_PRE
+        );
+
+        String jpql = "select p.itemBatch.item.id, ins.name "
+                + " from PharmaceuticalBillItem p "
+                + " join p.billItem bi "
+                + " join bi.bill b "
+                + " join b.fromInstitution ins "
+                + " where (b.retired=false or b.retired is null) "
+                + " and (bi.retired=false or bi.retired is null) "
+                + " and (p.retired=false or p.retired is null) "
+                + " and p.itemBatch.item.id in :itemIds "
+                + " and b.billTypeAtomic in :purchaseTypes "
+                + " order by p.itemBatch.item.id, b.createdAt desc ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("itemIds", itemIds);
+        params.put("purchaseTypes", purchaseBillTypes);
+
+        List<Object[]> rows = (List) billItemFacade.findObjectByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if (rows != null) {
+            for (Object[] row : rows) {
+                Long itemId = (Long) row[0];
+                String supplierName = (String) row[1];
+                if (itemId == null || supplierName == null) {
+                    continue;
+                }
+                // First row per item is the most recent purchase (ordered date desc).
+                result.putIfAbsent(itemId, supplierName);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Batched last-supplier lookup for a set of item ids. For each item, returns
      * the supplier institution name of the most recent GRN / Direct Purchase
      * bill (by bill {@code createdAt}). Supplier = {@code bill.fromInstitution}.
@@ -2890,6 +2952,9 @@ public class BillService {
      * then bill date descending, and Java keeps the first row seen per item (the
      * most recent purchase). This avoids a per-item correlated subquery while
      * still yielding only the latest supplier.
+     *
+     * Keyed on {@code billItem.item}. For rows keyed on the stock batch's item,
+     * use {@link #fetchLastSupplierByPharmaceuticalItemIds(List)} instead.
      */
     public Map<Long, String> fetchLastSupplierByItemIds(List<Long> itemIds) {
         Map<Long, String> result = new HashMap<>();
