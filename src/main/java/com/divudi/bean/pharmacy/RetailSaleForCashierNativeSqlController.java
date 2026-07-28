@@ -49,6 +49,7 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.facade.TokenFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.PaymentBreakdownCodec;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyService;
 import com.divudi.service.pharmacy.RetailSaleForCashierNativeSqlService;
@@ -475,6 +476,17 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             preBillEntity.setCashPaid(cashPaid);
             billBean.setPaymentMethodData(preBillEntity, paymentMethod, getPaymentMethodData());
 
+            // setPaymentMethodData has no MultiplePaymentMethods branch, so without this the
+            // component split would exist only in the session-scoped paymentMethodData that
+            // resetAll() clears - the settle-time slip would itemise "Cash 40.00 / Card 29.80"
+            // and a reprint of the same bill would show no breakdown at all (#22487). Stored
+            // for printing only; no Payment rows are created here, the cashier still writes
+            // those against the settled bill later.
+            if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
+                preBillEntity.setPaymentBreakdown(
+                        PaymentBreakdownCodec.serialize(buildPrintPaymentLines()));
+            }
+
             // Stamp dept/institution IDs on each item (needed by the native service for
             // StockHistory aggregates).
             long deptId = sessionController.getLoggedUser().getDepartment().getId();
@@ -592,13 +604,18 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
      * when the page has not set it directly, so a staff-credit bill always names its debtor.
      */
     private void syncStaffSelectionFromPaymentDetails(PaymentMethod method) {
+        if (paymentMethodData == null || toStaff != null) {
+            return;
+        }
+        // Staff / Staff Welfare can also be one component of a Multiple Payment Methods
+        // bill. Legacy only ever looked at the bill-level method, so the welfare member
+        // resolved correctly in the UI but toStaff was never stamped on the bill (#22487) -
+        // leaving a staff-welfare debt with no named debtor.
+        if (method == PaymentMethod.MultiplePaymentMethods) {
+            syncStaffSelectionFromMultiplePaymentComponents();
+            return;
+        }
         if (method != PaymentMethod.Staff && method != PaymentMethod.Staff_Welfare) {
-            return;
-        }
-        if (paymentMethodData == null) {
-            return;
-        }
-        if (toStaff != null) {
             return;
         }
         ComponentDetail staffComponent = method == PaymentMethod.Staff
@@ -606,6 +623,36 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
                 : paymentMethodData.getStaffWelfare();
         if (staffComponent != null && staffComponent.getToStaff() != null) {
             setToStaff(staffComponent.getToStaff());
+        }
+    }
+
+    /**
+     * Finds the staff member named inside a Staff or Staff Welfare component of a Multiple
+     * Payment Methods bill. The first one found wins - the bill carries a single
+     * {@code toStaff}, so a split naming two different members cannot be represented and
+     * the remainder is left to the cashier's own Payment rows at settle.
+     */
+    private void syncStaffSelectionFromMultiplePaymentComponents() {
+        if (paymentMethodData.getPaymentMethodMultiple() == null
+                || paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
+            return;
+        }
+        for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+            if (cd == null || cd.getPaymentMethod() == null || cd.getPaymentMethodData() == null) {
+                continue;
+            }
+            ComponentDetail staffComponent;
+            if (cd.getPaymentMethod() == PaymentMethod.Staff) {
+                staffComponent = cd.getPaymentMethodData().getStaffCredit();
+            } else if (cd.getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                staffComponent = cd.getPaymentMethodData().getStaffWelfare();
+            } else {
+                continue;
+            }
+            if (staffComponent != null && staffComponent.getToStaff() != null) {
+                setToStaff(staffComponent.getToStaff());
+                return;
+            }
         }
     }
 
