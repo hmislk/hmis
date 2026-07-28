@@ -270,6 +270,17 @@
                                     </h:outputLabel>
                                 </p:column>
 
+                                <p:column headerText="Consumption (Period)" style="text-align: right;" styleClass="averageNumericColumn"
+                                          sortBy="#{i.consumption}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Consumption (Period)"
+                                                       title="Total consumed over the selected window, net of returns" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.consumption}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
                                 <p:column headerText="Avg Monthly Consumption" style="text-align: right;" styleClass="averageNumericColumn"
                                           sortBy="#{i.avgMonthlyConsumption}">
                                     <f:facet name="header">
@@ -321,6 +332,17 @@
                                           filterMatchMode="contains">
                                     <h:outputLabel value="#{i.decision}"
                                                    styleClass="#{i.urgent ? 'badge bg-danger' : (i.order ? 'badge bg-warning text-dark' : 'badge bg-secondary')}" />
+                                </p:column>
+
+                                <p:column headerText="Last Supplier"
+                                          sortBy="#{i.lastSupplier}"
+                                          filterBy="#{i.lastSupplier}"
+                                          filterMatchMode="contains">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Last Supplier"
+                                                       title="Who this item was most recently purchased from" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.lastSupplier}" />
                                 </p:column>
 
                             </p:dataTable>

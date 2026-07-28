@@ -234,7 +234,7 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
 
             XSSFSheet sheet = workbook.createSheet("Ordering Requirement");
             int rowIndex = 0;
-            int totalColumns = 8;
+            int totalColumns = 10;
 
             Font boldFont = workbook.createFont();
             boldFont.setBold(true);
@@ -297,9 +297,9 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
 
             Row headerRow = sheet.createRow(rowIndex++);
             String[] headers = {
-                "Drug Name", "Current Balance", "Avg Monthly Consumption",
-                "Stock Cover (Months)", "Target Stock", "Qty to Order",
-                "Est. Cost (Rs.)", "Decision"
+                "Drug Name", "Current Balance", "Consumption (Period)",
+                "Avg Monthly Consumption", "Stock Cover (Months)", "Target Stock",
+                "Qty to Order", "Est. Cost (Rs.)", "Decision", "Last Supplier"
             };
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
@@ -311,12 +311,14 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
                 Row dataRow = sheet.createRow(rowIndex++);
                 createCell(dataRow, 0, r.getItemName(), dataStyle);
                 createCell(dataRow, 1, r.getCurrentBalance(), numberStyle);
-                createCell(dataRow, 2, r.getAvgMonthlyConsumption(), numberStyle);
-                createCell(dataRow, 3, r.getStockCoverDisplay(), dataStyle);
-                createCell(dataRow, 4, r.getTargetStock(), numberStyle);
-                createCell(dataRow, 5, r.getQuantityToOrder(), numberStyle);
-                createCell(dataRow, 6, r.getEstimatedCost(), numberStyle);
-                createCell(dataRow, 7, r.getDecision(), dataStyle);
+                createCell(dataRow, 2, r.getConsumption(), numberStyle);
+                createCell(dataRow, 3, r.getAvgMonthlyConsumption(), numberStyle);
+                createCell(dataRow, 4, r.getStockCoverDisplay(), dataStyle);
+                createCell(dataRow, 5, r.getTargetStock(), numberStyle);
+                createCell(dataRow, 6, r.getQuantityToOrder(), numberStyle);
+                createCell(dataRow, 7, r.getEstimatedCost(), numberStyle);
+                createCell(dataRow, 8, r.getDecision(), dataStyle);
+                createCell(dataRow, 9, r.getLastSupplier(), dataStyle);
             }
 
             for (int i = 0; i < totalColumns; i++) {
@@ -375,14 +377,14 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
             document.add(filterPara);
             document.add(new Paragraph(" ", smallFont));
 
-            PdfPTable table = new PdfPTable(8);
+            PdfPTable table = new PdfPTable(10);
             table.setWidthPercentage(100);
-            table.setWidths(new float[]{26, 11, 13, 11, 11, 11, 11, 12});
+            table.setWidths(new float[]{20, 9, 10, 10, 8, 9, 9, 9, 8, 15});
 
             String[] headers = {
-                "Drug Name", "Current Balance", "Avg Monthly Consumption",
-                "Stock Cover", "Target Stock", "Qty to Order",
-                "Est. Cost (Rs.)", "Decision"
+                "Drug Name", "Current Balance", "Consumption (Period)",
+                "Avg Monthly Consumption", "Stock Cover", "Target Stock",
+                "Qty to Order", "Est. Cost (Rs.)", "Decision", "Last Supplier"
             };
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
@@ -393,6 +395,7 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
             for (OrderingRequirementRowDto r : rows) {
                 table.addCell(new PdfPCell(new Phrase(r.getItemName(), smallFont)));
                 addNumericCell(table, r.getCurrentBalance(), smallFont);
+                addNumericCell(table, r.getConsumption(), smallFont);
                 addNumericCell(table, r.getAvgMonthlyConsumption(), smallFont);
                 PdfPCell coverCell = new PdfPCell(new Phrase(r.getStockCoverDisplay(), smallFont));
                 coverCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -401,6 +404,7 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
                 addNumericCell(table, r.getQuantityToOrder(), smallFont);
                 addNumericCell(table, r.getEstimatedCost(), smallFont);
                 table.addCell(new PdfPCell(new Phrase(r.getDecision(), smallFont)));
+                table.addCell(new PdfPCell(new Phrase(r.getLastSupplier(), smallFont)));
             }
 
             document.add(table);
