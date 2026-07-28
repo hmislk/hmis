@@ -39,6 +39,7 @@ import com.divudi.core.facade.PatientItemFacade;
 import com.divudi.core.facade.PatientRoomFacade;
 import com.divudi.service.BillService;
 import com.divudi.core.data.dto.InpatientPharmacyIssueDTO;
+import com.divudi.core.data.dto.InpatientPharmacyNetSummaryDTO;
 import com.divudi.core.data.dto.InpatientServiceIssueDTO;
 import com.divudi.core.data.dto.BillListReportDTO;
 import com.divudi.core.entity.Service;
@@ -105,6 +106,9 @@ public class InwardReportControllerBht implements Serializable {
 
     private List<InpatientPharmacyIssueDTO> pharmacyIssueDtosToPatientEncounter;
     private double pharmacyIssueDtosToPatientEncounterNetTotal;
+
+    private List<InpatientPharmacyNetSummaryDTO> pharmacyNetSummaryDtosToPatientEncounter;
+    private double pharmacyNetSummaryDtosToPatientEncounterNetTotal;
 
     private List<InpatientServiceIssueDTO> serviceIssueDtosToPatientEncounter;
     private double serviceIssueDtosToPatientEncounterNetTotal;
@@ -268,6 +272,54 @@ public class InwardReportControllerBht implements Serializable {
         }
 
         return "/inward/reports/inpatient_pharmacy_item_list_dto?faces-redirect=true";
+    }
+
+    public String navigateToPostDischargeReports() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter selected");
+            return null;
+        }
+        return "/inward/reports/post_discharge_reports?faces-redirect=true";
+    }
+
+    public String navigateToInpatientPharmacyNetSummaryDto() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        pharmacyNetSummaryDtosToPatientEncounter = new ArrayList<>();
+        pharmacyNetSummaryDtosToPatientEncounterNetTotal = 0.0;
+        try {
+            List<BillTypeAtomic> issueTypes = new ArrayList<>();
+            issueTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+            issueTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            issueTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE);
+            issueTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+
+            List<BillTypeAtomic> returnTypes = new ArrayList<>();
+            returnTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            returnTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_RETURN);
+            returnTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+
+            List<BillTypeAtomic> cancellationTypes = new ArrayList<>();
+            cancellationTypes.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
+            cancellationTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+            cancellationTypes.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_DISCHARGE_MEDICINE_CANCELLATION);
+            cancellationTypes.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+
+            pharmacyNetSummaryDtosToPatientEncounter = fetchPharmacyNetSummaryDtos(issueTypes, returnTypes, cancellationTypes);
+
+            for (InpatientPharmacyNetSummaryDTO dto : pharmacyNetSummaryDtosToPatientEncounter) {
+                pharmacyNetSummaryDtosToPatientEncounterNetTotal += dto.getNetValue() != null ? dto.getNetValue() : 0.0;
+            }
+
+        } catch (Exception e) {
+            Logger.getLogger(InwardReportControllerBht.class.getName()).log(Level.SEVERE, "Error loading pharmacy net summary DTOs", e);
+            JsfUtil.addErrorMessage("Error loading pharmacy data");
+            return null;
+        }
+
+        return "/inward/reports/inpatient_pharmacy_net_summary_dto?faces-redirect=true";
     }
 
     public String navigateToInpatientServiceItemListDto() {
@@ -565,6 +617,39 @@ public class InwardReportControllerBht implements Serializable {
         jpql += "ORDER BY bi.bill.createdAt, bi.id";
 
         List<InpatientPharmacyIssueDTO> result = (List<InpatientPharmacyIssueDTO>) billItemFacade.findLightsByJpql(jpql, params);
+
+        return result != null ? result : new ArrayList<>();
+    }
+
+    private List<InpatientPharmacyNetSummaryDTO> fetchPharmacyNetSummaryDtos(List<BillTypeAtomic> issueTypes,
+            List<BillTypeAtomic> returnTypes, List<BillTypeAtomic> cancellationTypes) {
+        String jpql = "SELECT new com.divudi.core.data.dto.InpatientPharmacyNetSummaryDTO("
+                + "bi.item.id, "
+                + "bi.item.name, "
+                + "SUM(0 - bi.pharmaceuticalBillItem.qty), "
+                + "SUM(bi.grossValue), "
+                + "SUM(bi.discount), "
+                + "SUM(bi.marginValue), "
+                + "SUM(bi.netValue)) "
+                + "FROM BillItem bi "
+                + "WHERE bi.bill.patientEncounter = :patientEncounter "
+                + "AND bi.retired = FALSE "
+                + "AND bi.bill.retired = FALSE "
+                + "AND ("
+                + "  (bi.bill.billTypeAtomic IN :issueTypes AND bi.bill.cancelled = FALSE) "
+                + "  OR bi.bill.billTypeAtomic IN :returnTypes "
+                + "  OR bi.bill.billTypeAtomic IN :cancellationTypes"
+                + ") "
+                + "GROUP BY bi.item.id, bi.item.name "
+                + "ORDER BY bi.item.name";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("patientEncounter", patientEncounter);
+        params.put("issueTypes", issueTypes);
+        params.put("returnTypes", returnTypes);
+        params.put("cancellationTypes", cancellationTypes);
+
+        List<InpatientPharmacyNetSummaryDTO> result = (List<InpatientPharmacyNetSummaryDTO>) billItemFacade.findLightsByJpql(jpql, params);
 
         return result != null ? result : new ArrayList<>();
     }
@@ -2078,6 +2163,22 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setPharmacyIssueDtosToPatientEncounterNetTotal(double pharmacyIssueDtosToPatientEncounterNetTotal) {
         this.pharmacyIssueDtosToPatientEncounterNetTotal = pharmacyIssueDtosToPatientEncounterNetTotal;
+    }
+
+    public List<InpatientPharmacyNetSummaryDTO> getPharmacyNetSummaryDtosToPatientEncounter() {
+        return pharmacyNetSummaryDtosToPatientEncounter;
+    }
+
+    public void setPharmacyNetSummaryDtosToPatientEncounter(List<InpatientPharmacyNetSummaryDTO> pharmacyNetSummaryDtosToPatientEncounter) {
+        this.pharmacyNetSummaryDtosToPatientEncounter = pharmacyNetSummaryDtosToPatientEncounter;
+    }
+
+    public double getPharmacyNetSummaryDtosToPatientEncounterNetTotal() {
+        return pharmacyNetSummaryDtosToPatientEncounterNetTotal;
+    }
+
+    public void setPharmacyNetSummaryDtosToPatientEncounterNetTotal(double pharmacyNetSummaryDtosToPatientEncounterNetTotal) {
+        this.pharmacyNetSummaryDtosToPatientEncounterNetTotal = pharmacyNetSummaryDtosToPatientEncounterNetTotal;
     }
 
     public List<InpatientServiceIssueDTO> getServiceIssueDtosToPatientEncounter() {
