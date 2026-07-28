@@ -881,6 +881,65 @@ public class InwardBeanController implements Serializable {
 
         return sortedList;
     }
+    
+    public List<Bill> fetchIssueTable(PatientEncounter patientEncounter, BillType billType, List<PatientEncounter> cpts, DepartmentType billingDepartmentType) {
+        List<Bill> list = new ArrayList<>();
+        String sql;
+        HashMap hm;
+        sql = "SELECT  b FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.department.departmentType = :type"
+                + " and (b.billedBill is null )  "
+                + " and  b.patientEncounter IN :pe"
+                + " and (type(b)=:class) ";
+        hm = new HashMap();
+        hm.put("btp", billType);
+        hm.put("class", PreBill.class);
+        hm.put("type", billingDepartmentType);
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
+        hm.put("pe", pts);
+
+        List<Bill> bills = getBillFacade().findByJpql(sql, hm);
+
+        hm.clear();
+        sql = "SELECT  b FROM Bill b "
+                + " WHERE b.retired=false "
+                + " and b.billType=:btp"
+                + " and  b.department.departmentType = :type"
+                + " and type(b.billedBill)=:billedClass "
+                + " and  b.patientEncounter IN :pe"
+                + " and (type(b)=:class) ";
+        hm = new HashMap();
+        hm.put("btp", billType);
+        hm.put("class", RefundBill.class);
+        hm.put("billedClass", PreBill.class);
+        hm.put("type", billingDepartmentType);
+        List<PatientEncounter> pts1 = new ArrayList<>();
+        pts1.add(patientEncounter);
+        List<PatientEncounter> cpts1 = cpts;
+        if (cpts1.size() > 0) {
+            for (PatientEncounter pt : cpts1) {
+                pts1.add(pt);
+            }
+        }
+        hm.put("pe", pts1);
+
+        List<Bill> bills2 = getBillFacade().findByJpql(sql, hm);
+
+        list.addAll(bills);
+        list.addAll(bills2);
+
+        List<Bill> sortedList = list.stream()
+                .sorted(Comparator.comparing(Bill::getCreatedAt))
+                .collect(Collectors.toList());
+
+        return sortedList;
+    }
 
     public List<BillItem> fetchPharmacyIssueBillItem(PatientEncounter patientEncounter, BillType billType) {
         List<BillItem> grantList = new ArrayList<>();
