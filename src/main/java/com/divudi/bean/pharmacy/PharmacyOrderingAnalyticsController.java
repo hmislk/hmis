@@ -22,6 +22,7 @@ import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.pharmacy.PharmacyOrderingRequirementService;
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -226,11 +227,14 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition",
-                "attachment; filename=Ordering_Requirement_Report.xlsx");
 
-        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+        // Build the whole workbook in memory first. Writing straight to the
+        // response stream would commit headers before generation finished, so a
+        // POI failure part-way through would hand the user a truncated .xlsx and
+        // leave addErrorMessage with nowhere to render.
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
 
             XSSFSheet sheet = workbook.createSheet("Ordering Requirement");
             int rowIndex = 0;
@@ -325,11 +329,39 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
                 sheet.autoSizeColumn(i);
             }
 
-            workbook.write(out);
-            out.flush();
-            context.responseComplete();
+            workbook.write(buffer);
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Could not create the Excel file: " + e.getMessage());
+            return;
+        }
+
+        writeDownload(context, response,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "Ordering_Requirement_Report.xlsx", buffer.toByteArray(),
+                "Could not send the Excel file: ");
+    }
+
+    /**
+     * Commits a fully generated binary payload as a download.
+     *
+     * Kept separate so nothing touches the response until the bytes exist - the
+     * point of buffering is lost if headers are set while generation can still
+     * fail.
+     */
+    private void writeDownload(FacesContext context, HttpServletResponse response,
+            String contentType, String fileName, byte[] content, String errorPrefix) {
+        try {
+            response.reset();
+            response.setContentType(contentType);
+            response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+            response.setContentLength(content.length);
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(content);
+                out.flush();
+            }
+            context.responseComplete();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(errorPrefix + e.getMessage());
         }
     }
 
@@ -347,13 +379,14 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
-        response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition",
-                "attachment; filename=Ordering_Requirement_Report.pdf");
+
+        // Same reason as the Excel export: generate fully in memory so an iText
+        // failure cannot leave a half-written PDF on the wire.
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         Document document = new Document(PageSize.A4.rotate(), 20, 20, 20, 20);
-        try (OutputStream out = response.getOutputStream()) {
-            PdfWriter.getInstance(document, out);
+        try {
+            PdfWriter.getInstance(document, buffer);
             document.open();
 
             com.itextpdf.text.Font titleFont =
@@ -409,11 +442,17 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
 
             document.add(table);
             document.close();
-            out.flush();
-            context.responseComplete();
         } catch (Exception e) {
+            if (document.isOpen()) {
+                document.close();
+            }
             JsfUtil.addErrorMessage("Could not create the PDF file: " + e.getMessage());
+            return;
         }
+
+        writeDownload(context, response, "application/pdf",
+                "Ordering_Requirement_Report.pdf", buffer.toByteArray(),
+                "Could not send the PDF file: ");
     }
 
     private void addNumericCell(PdfPTable table, double value, com.itextpdf.text.Font font) {

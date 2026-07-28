@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8' ?>
+﻿<?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
@@ -174,7 +174,7 @@
                                 <!-- Action buttons -->
                                 <h:panelGroup layout="block" styleClass="col-lg-3 col-md-6 col-sm-12 mb-3">
                                     <h:panelGroup layout="block" styleClass="d-flex align-items-center mb-2">
-                                        <h:outputLabel value="&nbsp;" styleClass="mb-0"/>
+                                        <h:outputText value="&nbsp;" styleClass="mb-0"/>
                                     </h:panelGroup>
                                     <p:commandButton
                                         id="btnProcess"
@@ -253,74 +253,74 @@
                                          rowsPerPageTemplate="20, 50, 100">
 
                                 <f:facet name="header">
-                                    <h:outputLabel value="Ordering Requirement - #{pharmacyOrderingAnalyticsController.department.name}" />
+                                    <h:outputText value="Ordering Requirement - #{pharmacyOrderingAnalyticsController.department.name}" />
                                 </f:facet>
 
                                 <p:column headerText="Drug Name"
                                           sortBy="#{i.itemName}"
                                           filterBy="#{i.itemName}"
                                           filterMatchMode="contains">
-                                    <h:outputLabel value="#{i.itemName}" />
+                                    <h:outputText value="#{i.itemName}" />
                                 </p:column>
 
                                 <p:column headerText="Current Balance" style="text-align: right;" styleClass="averageNumericColumn"
                                           sortBy="#{i.currentBalance}">
-                                    <h:outputLabel value="#{i.currentBalance}">
+                                    <h:outputText value="#{i.currentBalance}">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Consumption (Period)" style="text-align: right;" styleClass="averageNumericColumn"
                                           sortBy="#{i.consumption}">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Consumption (Period)"
+                                        <h:outputText value="Consumption (Period)"
                                                        title="Total consumed over the selected window, net of returns" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.consumption}">
+                                    <h:outputText value="#{i.consumption}">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Avg Monthly Consumption" style="text-align: right;" styleClass="averageNumericColumn"
                                           sortBy="#{i.avgMonthlyConsumption}">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Avg Monthly Consumption"
+                                        <h:outputText value="Avg Monthly Consumption"
                                                        title="Consumption over the window, divided by its days and scaled to a month" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.avgMonthlyConsumption}">
+                                    <h:outputText value="#{i.avgMonthlyConsumption}">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Stock Cover (Months)" style="text-align: right;" styleClass="averageNumericColumn"
                                           sortBy="#{i.stockCover}">
-                                    <h:outputLabel value="#{i.stockCoverDisplay}" />
+                                    <h:outputText value="#{i.stockCoverDisplay}" />
                                 </p:column>
 
                                 <p:column headerText="Target Stock" style="text-align: right;" styleClass="averageNumericColumn"
                                           sortBy="#{i.targetStock}">
-                                    <h:outputLabel value="#{i.targetStock}">
+                                    <h:outputText value="#{i.targetStock}">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Qty to Order" style="text-align: right;" styleClass="averageNumericColumn"
                                           sortBy="#{i.quantityToOrder}">
-                                    <h:outputLabel value="#{i.quantityToOrder}" style="font-weight: bold;">
+                                    <h:outputText value="#{i.quantityToOrder}" style="font-weight: bold;">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
+                                    </h:outputText>
                                 </p:column>
 
                                 <p:column headerText="Est. Cost (Rs.)" style="text-align: right;" styleClass="averageNumericColumn"
                                           sortBy="#{i.estimatedCost}">
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{pharmacyOrderingAnalyticsController.totalEstimatedCost}" style="font-weight: bold;">
+                                        <h:outputText value="#{pharmacyOrderingAnalyticsController.totalEstimatedCost}" style="font-weight: bold;">
                                             <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
+                                        </h:outputText>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.estimatedCost}">
+                                    <h:outputText value="#{i.estimatedCost}">
                                         <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
+                                    </h:outputText>
                                     <h:outputText styleClass="fa fa-question-circle ms-1 text-muted"
                                                   rendered="#{i.purchaseRateUnknown and i.quantityToOrder gt 0}"
                                                   title="No purchase in the selected window, so no rate is available" />
@@ -330,7 +330,7 @@
                                           sortBy="#{i.decision}"
                                           filterBy="#{i.decision}"
                                           filterMatchMode="contains">
-                                    <h:outputLabel value="#{i.decision}"
+                                    <h:outputText value="#{i.decision}"
                                                    styleClass="#{i.urgent ? 'badge bg-danger' : (i.order ? 'badge bg-warning text-dark' : 'badge bg-secondary')}" />
                                 </p:column>
 
@@ -339,10 +339,10 @@
                                           filterBy="#{i.lastSupplier}"
                                           filterMatchMode="contains">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Last Supplier"
+                                        <h:outputText value="Last Supplier"
                                                        title="Who this item was most recently purchased from" />
                                     </f:facet>
-                                    <h:outputLabel value="#{i.lastSupplier}" />
+                                    <h:outputText value="#{i.lastSupplier}" />
                                 </p:column>
 
                             </p:dataTable>

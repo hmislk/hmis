@@ -146,9 +146,13 @@ public class PharmacyOrderingRequirementService implements Serializable {
      * that already groups a large PharmaceuticalBillItem scan; resolving it
      * separately keeps each query simple and avoids a per-item N+1.
      *
-     * Reuses BillService.fetchLastSupplierByItemIds(), which the Movement Out
-     * with Current Stock report already uses for its own Last Supplier column,
-     * so both reports name the same supplier for the same item.
+     * Uses the itemBatch-keyed variant rather than the BillItem-keyed one the
+     * Movement Out with Current Stock report calls. Every row here is keyed on
+     * p.itemBatch.item, and the two identities diverge when a purchase is billed
+     * as a pack: billItem.item is then an Ampp while the batch hangs off the
+     * underlying Amp, so a BillItem-keyed lookup would report no supplier for
+     * that item even though it was purchased. Confirmed in the coop data - one
+     * purchase line in 22,592 bills an Ampp against an Amp batch.
      */
     private void applyLastSuppliers(List<OrderingRequirementRowDto> rows) {
         if (rows == null || rows.isEmpty()) {
@@ -165,7 +169,7 @@ public class PharmacyOrderingRequirementService implements Serializable {
             return;
         }
 
-        Map<Long, String> lastSupplierByItem = billService.fetchLastSupplierByItemIds(itemIds);
+        Map<Long, String> lastSupplierByItem = billService.fetchLastSupplierByPharmaceuticalItemIds(itemIds);
         for (OrderingRequirementRowDto row : rows) {
             String supplier = lastSupplierByItem.get(row.getItemId());
             row.setLastSupplier(supplier != null ? supplier : "");
