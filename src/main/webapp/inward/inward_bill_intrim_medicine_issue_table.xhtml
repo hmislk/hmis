@@ -1,0 +1,108 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui">
+
+    <p:dataTable
+        value="#{issues}"
+        var="iss"
+        rowIndexVar="rowIndex"
+        scrollable="true"
+        scrollHeight="300"
+        rowStyleClass="#{((iss.billClass eq 'class com.divudi.core.entity.PreBill')
+                         or
+                         (iss.billedBill ne null
+                         and iss.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
+        <p:column headerText="#" class="text-center" width="3em;">
+            <h:outputLabel value="#{rowIndex + 1}"/>
+        </p:column>
+        <p:column headerText="Bill No">
+            <h:outputLabel  value="#{iss.deptId}"></h:outputLabel>
+        </p:column>
+
+        <p:column headerText="Billed At">
+            <h:outputLabel value="#{iss.createdAt}">
+                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+            </h:outputLabel>
+            <br/>
+            <h:panelGroup rendered="#{iss.cancelled}" >
+                <h:outputLabel style="color: red;" value="Cancelled at " />
+                <h:outputLabel style="color: red;" rendered="#{iss.cancelled}"
+                               value="#{iss.cancelledBill.createdAt}" >
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                </h:outputLabel>
+            </h:panelGroup>
+        </p:column>
+
+        <p:column headerText="Bill Total" class="text-end">
+            <h:outputLabel  value="#{iss.netTotal}">
+                <f:convertNumber pattern="#,##0.00"/>
+            </h:outputLabel>
+        </p:column>
+
+        <p:column headerText="Billed By">
+            <h:outputLabel value="#{iss.creater.webUserPerson.nameWithTitle}"/>
+            <br/>
+            <h:panelGroup rendered="#{iss.cancelled}" >
+                <h:outputLabel style="color: red;" value="Cancelled By " />
+                <h:outputLabel style="color: red;" rendered="#{iss.cancelled}"
+                               value="#{iss.cancelledBill.creater.webUserPerson.nameWithTitle}" >
+                </h:outputLabel>
+            </h:panelGroup>
+        </p:column>
+
+        <p:column headerText="Checked By">
+            <h:outputLabel value="#{iss.checkedBy.webUserPerson.nameWithTitle}"/>
+        </p:column>
+
+        <p:column headerText="Checked At">
+            <h:outputLabel value="#{iss.checkeAt}">
+                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+            </h:outputLabel>
+        </p:column>
+
+        <p:column headerText="Comments">
+            <h:panelGroup id="commentContainer" layout="block" class="row">
+                <div class="d-flex gap-2" >
+                    <p:inputText 
+                        id="commentInput"
+                        class="w-100"
+                        value="#{iss.comments}">
+                    </p:inputText>
+
+                    <p:commandButton
+                        id="saveBtn"
+                        icon="fa fa-save"
+                        action="#{billController.save(iss)}"
+                        process="commentContainer"
+                        update="pageForm:pageMessages"
+                        title="Save">
+                    </p:commandButton>
+                </div>
+            </h:panelGroup>
+        </p:column>
+
+        <p:column style="width: 14em;" headerText="Action" class="text-center">
+            <div class="d-flex gap-2 justify-content-center">
+                <p:commandButton
+                    ajax="false"
+                    action="pharmacy_reprint_bill_sale_bht?faces-redirect=true"
+                    rendered="#{iss.billClass eq 'class com.divudi.core.entity.PreBill'}"
+                    value="View Issue">
+                    <f:setPropertyActionListener value="#{iss}" target="#{pharmacyBillSearch.bill}"/>
+                </p:commandButton>
+                <p:commandButton
+                    ajax="false"
+                    action="pharmacy_reprint_bill_return_bht?faces-redirect=true"
+                    rendered="#{iss.billClass eq 'class com.divudi.core.entity.RefundBill'}"
+                    class="ui-button-warning"
+                    value="View Returns"  >
+                    <f:setPropertyActionListener value="#{iss}" target="#{pharmacyBillSearch.bill}"/>
+                </p:commandButton>
+            </div>
+
+        </p:column>
+    </p:dataTable>
+
+</ui:composition>
