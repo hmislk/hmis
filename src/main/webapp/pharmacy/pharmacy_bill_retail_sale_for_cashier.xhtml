@@ -78,7 +78,7 @@
                                     <!-- RIGHT SECTION: Counter Selection and Action Buttons -->
                                     <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
                                         <!-- Counter Selection (moved from center) -->
-                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', true)}"
+                                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
                                                       style="display: flex; align-items: center; gap: 8px;">
                                             <p:outputLabel value="Counter" style="font-weight: 500;"></p:outputLabel>
                                             <p:selectOneMenu value="#{pharmacySaleForCashierController.counter}"

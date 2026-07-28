@@ -79,7 +79,7 @@
                                     <!-- RIGHT SECTION: Counter, New Bill, Settle Bill -->
                                     <div style="display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0;">
                                         <!-- Counter Dropdown (if token system enabled) -->
-                                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', true)}" style="display: flex; align-items: center; gap: 0.25rem;">
+                                        <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" style="display: flex; align-items: center; gap: 0.25rem;">
                                             <p:outputLabel value="Counter" style="white-space: nowrap;"></p:outputLabel>
                                             <p:selectOneMenu value="#{pharmacySaleForCashierController3.counter}" style="min-width: 120px;">
                                                 <f:selectItem itemLabel="Any" ></f:selectItem>
