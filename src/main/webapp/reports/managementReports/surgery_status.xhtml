@@ -9,7 +9,25 @@
     <h:body>
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
-
+                <style type="text/css">
+                    @media print {
+                        @page {
+                            size: landscape;
+                            margin: 1cm;
+                        }
+                        .ui-datatable table {
+                            width: 100% !important;
+                            table-layout: auto !important;
+                        }
+                        .ui-datatable .ui-datatable-header,
+                        .ui-datatable .ui-datatable-footer {
+                            display: none !important;
+                        }
+                        body {
+                            font-size: 10px !important;
+                        }
+                    }
+                </style>
                 <h:form class="w-100">
                     <p:panel header="Surgery Status Report" >
                         <h:panelGrid columns="5" class="w-100" >

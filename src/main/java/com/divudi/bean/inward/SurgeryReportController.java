@@ -107,7 +107,7 @@ public class SurgeryReportController implements Serializable {
         StringBuilder jpql = new StringBuilder();
         jpql.append(" select new com.divudi.core.data.dto.SurgeryReportDTO( ")
                 .append("   b.id, pat.phn, pp.name, pe.dateOfAdmission, i.name, ")
-                .append("   d.name, rfc.name, stp.name, rcp.name, pe.id ")
+                .append("   d.name, rfc.name, stp.name, rcp.name, pe.id, p.id ")
                 .append(" ) ")
                 .append(" from Bill b ")
                 .append(" join b.procedure p ")
@@ -162,6 +162,81 @@ public class SurgeryReportController implements Serializable {
         }
 
         attachOtStatuses(reportList);
+        attachSurgeons(reportList);
+    }
+
+    private void attachSurgeons(List<SurgeryReportDTO> rows) {
+        if (rows.isEmpty()) {
+            return;
+        }
+        List<Long> procedureIds = new ArrayList<>();
+        for (SurgeryReportDTO r : rows) {
+            if (r.getProcedureId() != null) {
+                procedureIds.add(r.getProcedureId());
+            }
+        }
+        if (procedureIds.isEmpty()) {
+            return;
+        }
+
+        String jpql = "SELECT pe.id, ce.id, ec.patientEncounterComponentType, stp.name, bfstp.name "
+                + " FROM EncounterComponent ec "
+                + " LEFT JOIN ec.patientEncounter pe "
+                + " LEFT JOIN ec.childEncounter ce "
+                + " LEFT JOIN ec.staff st "
+                + " LEFT JOIN st.person stp "
+                + " LEFT JOIN ec.billFee bf "
+                + " LEFT JOIN bf.staff bfst "
+                + " LEFT JOIN bfst.person bfstp "
+                + " WHERE (pe.id IN :procIds OR ce.id IN :procIds) "
+                + " AND ec.retired = false "
+                + " AND (ec.patientEncounterComponentType = :type1 OR ec.patientEncounterComponentType = :type2) "
+                + " ORDER BY ec.orderNo ";
+        
+        Map<String, Object> p = new HashMap<>();
+        p.put("procIds", procedureIds);
+        p.put("type1", com.divudi.core.data.inward.PatientEncounterComponentType.Performed_By);
+        p.put("type2", com.divudi.core.data.inward.PatientEncounterComponentType.Assisted_by);
+
+        List<Object[]> docRows = billFacade.findAggregates(jpql, p, TemporalType.TIMESTAMP);
+
+        Map<Long, List<String>> doctorsMap = new HashMap<>();
+        for (Object[] row : docRows) {
+            Long peId = (Long) row[0];
+            Long ceId = (Long) row[1];
+            com.divudi.core.data.inward.PatientEncounterComponentType type = 
+                (com.divudi.core.data.inward.PatientEncounterComponentType) row[2];
+            String staffName1 = (String) row[3];
+            String staffName2 = (String) row[4];
+            
+            String nameToUse = (staffName1 != null && !staffName1.isEmpty()) ? staffName1 : staffName2;
+            
+            if (nameToUse != null) {
+                String role = "";
+                if (type == com.divudi.core.data.inward.PatientEncounterComponentType.Assisted_by) {
+                    role = " (Assisted)";
+                }
+                nameToUse += role;
+                
+                if (peId != null && procedureIds.contains(peId)) {
+                    doctorsMap.computeIfAbsent(peId, k -> new ArrayList<>()).add(nameToUse);
+                }
+                if (ceId != null && procedureIds.contains(ceId)) {
+                    if (peId == null || !peId.equals(ceId)) {
+                        doctorsMap.computeIfAbsent(ceId, k -> new ArrayList<>()).add(nameToUse);
+                    }
+                }
+            }
+        }
+
+        for (SurgeryReportDTO r : rows) {
+            if (r.getProcedureId() != null) {
+                List<String> docs = doctorsMap.get(r.getProcedureId());
+                if (docs != null && !docs.isEmpty()) {
+                    r.setSurgeonName(String.join(", ", docs));
+                }
+            }
+        }
     }
 
     private void attachOtStatuses(List<SurgeryReportDTO> rows) {
@@ -169,30 +244,49 @@ public class SurgeryReportController implements Serializable {
             return;
         }
         List<Long> encounterIds = new ArrayList<>();
+        List<Long> billIds = new ArrayList<>();
         for (SurgeryReportDTO r : rows) {
             encounterIds.add(r.getPatientEncounterId());
+            billIds.add(r.getBillId());
         }
 
-        String jpql = " select str.admission.id, str.theatreOccupancyStatus "
+        String jpql = " select str.admission.id, str.surgeryBill.id, str.theatreOccupancyStatus "
                 + " from PatientTransferRequest str "
                 + " where str.retired = false "
-                + " and str.admission.id in :ids "
+                + " and (str.admission.id in :encIds OR str.surgeryBill.id in :billIds) "
+                + " and str.theatreOccupancyStatus is not null "
                 + " order by str.createdAt ASC";
         Map<String, Object> p = new HashMap<>();
-        p.put("ids", encounterIds);
+        p.put("encIds", encounterIds);
+        p.put("billIds", billIds);
 
         List<Object[]> statusRows = billFacade.findAggregates(jpql, p, TemporalType.TIMESTAMP);
 
         Map<Long, String> statusByEncounter = new HashMap<>();
+        Map<Long, String> statusByBill = new HashMap<>();
+        
         for (Object[] row : statusRows) {
             Long encounterId = (Long) row[0];
-            Object statusObj = row[1];
+            Long billId = (Long) row[1];
+            Object statusObj = row[2];
             String status = statusObj != null ? statusObj.toString() : "";
-            statusByEncounter.put(encounterId, status);
+            
+            if (billId != null) {
+                statusByBill.put(billId, status);
+            }
+            if (encounterId != null) {
+                statusByEncounter.put(encounterId, status);
+            }
         }
 
         for (SurgeryReportDTO r : rows) {
-            r.setOtStatus(statusByEncounter.get(r.getPatientEncounterId()));
+            if (statusByBill.containsKey(r.getBillId())) {
+                r.setOtStatus(statusByBill.get(r.getBillId()));
+            } else if (statusByEncounter.containsKey(r.getPatientEncounterId())) {
+                r.setOtStatus(statusByEncounter.get(r.getPatientEncounterId()));
+            } else {
+                r.setOtStatus("");
+            }
         }
     }
 
@@ -232,8 +326,22 @@ public class SurgeryReportController implements Serializable {
 
             Row titleRow = sheet.createRow(rowIdx++);
             Cell titleCell = titleRow.createCell(0);
-            titleCell.setCellValue("Surgery Status Report  (" + sdf.format(fromDate) + " - " + sdf.format(toDate) + ")");
+            titleCell.setCellValue("Surgery Status Report");
             titleCell.setCellStyle(titleStyle);
+            rowIdx++; // blank row
+            
+            Row dateRow = sheet.createRow(rowIdx++);
+            dateRow.createCell(0).setCellValue("Date Range: " + sdf.format(fromDate) + " - " + sdf.format(toDate));
+
+            if (operationTheatreRoom != null) {
+                Row otRow = sheet.createRow(rowIdx++);
+                otRow.createCell(0).setCellValue("OT Room: " + operationTheatreRoom.getName());
+            }
+
+            if (procedure != null) {
+                Row procRow = sheet.createRow(rowIdx++);
+                procRow.createCell(0).setCellValue("Proposed Surgery: " + procedure.getName());
+            }
             rowIdx++; // blank row
 
             Row headerRow = sheet.createRow(rowIdx++);
@@ -295,12 +403,22 @@ public class SurgeryReportController implements Serializable {
             Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 8);
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            Paragraph title = new Paragraph(
-                    "Surgery Status Report  (" + sdf.format(fromDate) + " - " + sdf.format(toDate) + ")",
-                    titleFont);
+            Paragraph title = new Paragraph("Surgery Status Report", titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
-            title.setSpacingAfter(10);
+            title.setSpacingAfter(5);
             document.add(title);
+            
+            Font filterFont = FontFactory.getFont(FontFactory.HELVETICA, 10);
+            Paragraph filters = new Paragraph();
+            filters.add(new Phrase("Date Range: " + sdf.format(fromDate) + " - " + sdf.format(toDate) + "\n", filterFont));
+            if (operationTheatreRoom != null) {
+                filters.add(new Phrase("OT Room: " + operationTheatreRoom.getName() + "\n", filterFont));
+            }
+            if (procedure != null) {
+                filters.add(new Phrase("Proposed Surgery: " + procedure.getName() + "\n", filterFont));
+            }
+            filters.setSpacingAfter(10);
+            document.add(filters);
 
             PdfPTable table = new PdfPTable(REPORT_HEADERS.length);
             table.setWidthPercentage(100);
