@@ -350,18 +350,28 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
      */
     private void writeDownload(FacesContext context, HttpServletResponse response,
             String contentType, String fileName, byte[] content, String errorPrefix) {
+        boolean streamingStarted = false;
         try {
             response.reset();
             response.setContentType(contentType);
             response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
             response.setContentLength(content.length);
             try (OutputStream out = response.getOutputStream()) {
+                streamingStarted = true;
                 out.write(content);
                 out.flush();
             }
             context.responseComplete();
         } catch (Exception e) {
-            JsfUtil.addErrorMessage(errorPrefix + e.getMessage());
+            if (streamingStarted) {
+                // The servlet stream is already open and may hold a partial file.
+                // Letting JSF render the page now would append markup to that
+                // download, so end the response instead - a FacesMessage has
+                // nowhere to appear either way.
+                context.responseComplete();
+            } else {
+                JsfUtil.addErrorMessage(errorPrefix + e.getMessage());
+            }
         }
     }
 
