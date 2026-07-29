@@ -4421,12 +4421,12 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
             String[] headers = new String[]{
                 "S. No.", "BHT No", "MRN No", "Consultant", "Surgery", "Service Dept.",
-                "Service", "Service Group", "Start Time", "End Time", "Duration",
+                "Billed Dept.", "Service", "Service Group", "Start Time", "End Time", "Duration",
                 "Base Price", "Discount", "Sponsor Discount", "Sponsor Net.",
                 "Patient Amt", "Adjusted Amt", "Creator", "Checked By", "Checked At"
             };
             float[] widths = new float[]{
-                0.6f, 1.1f, 1.1f, 2.0f, 1.8f, 1.8f, 2.3f, 1.8f, 1.5f, 1.5f,
+                0.6f, 1.1f, 1.1f, 2.0f, 1.8f, 1.8f, 1.8f, 2.3f, 1.8f, 1.5f, 1.5f,
                 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.1f, 1.5f, 1.5f, 1.5f
             };
 
@@ -4454,6 +4454,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 table.addCell(textCell(row.getConsultantName(), bodyFont));
                 table.addCell(textCell(row.getSurgeryName(), bodyFont));
                 table.addCell(textCell(row.getServiceDepartmentName(), bodyFont));
+                table.addCell(textCell(row.getCreatingLocation(), bodyFont));
                 table.addCell(textCell(row.getServiceName(), bodyFont));
                 table.addCell(textCell(row.getServiceGroupName(), bodyFont));
                 table.addCell(textCell(formatDate(row.getStartTime(), dateTimeFormat), bodyFont));
