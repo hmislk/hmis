@@ -52,26 +52,26 @@
                             timeInput="true" 
                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                         </p:datePicker>
-                        <p:commandButton 
-                            id="btnSearch1" 
-                            ajax="false" 
-                            value="Search All" 
-                            class="w-100 ui-button-warning mt-3" 
-                            icon="fas fa-search"
+                        <p:commandButton
+                            id="btnSearch1"
+                            ajax="false"
+                            value="Search All"
+                            class="w-100 ui-button-secondary mt-3"
+                            icon="fas fa-list"
                             action="#{searchController.createInwardBHTForIssueTableAll}" />
-                        <p:commandButton 
-                            id="btnSearch2" 
-                            ajax="false" 
-                            value="Search Not Issued" 
-                            class="w-100  ui-button-warning my-2" 
-                            icon="fas fa-search"
+                        <p:commandButton
+                            id="btnSearch2"
+                            ajax="false"
+                            value="Search Not Issued"
+                            class="w-100  ui-button-warning my-2"
+                            icon="fas fa-clock"
                             action="#{searchController.createInwardBHTForNotIssueTable}" />
-                        <p:commandButton 
-                            id="btnSearch3" 
-                            class="w-100 ui-button-warning mb-2" 
-                            icon="fas fa-search"
-                            ajax="false" 
-                            value="Search Isssued Only" 
+                        <p:commandButton
+                            id="btnSearch3"
+                            class="w-100 ui-button-success mb-2"
+                            icon="fas fa-check-circle"
+                            ajax="false"
+                            value="Search Issued Only"
                             action="#{searchController.createInwardBHTForIssueOnlyTable}" />
                         <p:spacer height="10"/>
 
