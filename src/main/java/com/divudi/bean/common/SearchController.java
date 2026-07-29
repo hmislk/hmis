@@ -85,6 +85,8 @@ import com.divudi.core.data.dto.OpdBillItemDTO;
 import com.divudi.core.data.dto.OpdSaleSummaryDTO;
 import com.divudi.core.data.dto.PharmacyCashierPreBillSearchDTO;
 import com.divudi.core.data.dto.PharmacyAdjustmentBillItemDTO;
+import com.divudi.core.data.dto.PharmacyBhtIssueRequestDTO;
+import com.divudi.core.data.dto.PharmacyBhtIssuedBillDTO;
 import com.divudi.core.data.dto.PharmacyItemPurchaseDTO;
 import com.divudi.core.data.dto.PharmacyPreBillSearchDTO;
 import com.divudi.core.data.dto.PharmacyTransferRequestIssueDTO;
@@ -312,6 +314,10 @@ public class SearchController implements Serializable {
     private List<BillListReportDTO> billListReportDtos;
     // DTO list for pharmacy pre-bill search for return items and cash
     private List<PharmacyPreBillSearchDTO> preBillSearchDtos;
+    // DTO list for the pharmacy BHT issue-request list page (issue #22517).
+    // Kept separate from `bills` because `bills` is a shared List<Bill> field
+    // consumed by many other pages/flows.
+    private List<PharmacyBhtIssueRequestDTO> bhtIssueRequestRows;
     // DTO list for cashier pharmacy pre-bill search
     private List<PharmacyCashierPreBillSearchDTO> cashierPreBillSearchDtos;
     // Map to store return bills grouped by parent bill ID for nested datatable display
@@ -5501,6 +5507,21 @@ public class SearchController implements Serializable {
             } else {
                 bills.removeAll(bs);
             }
+        }
+
+        // View-layer DTO mapping for issue #22517 — built in plain Java from
+        // the already-filtered entity list above (not a JPQL projection),
+        // since `bills` must stay List<Bill> for checkBillComponentBatch and
+        // the downstream action listeners. See PharmacyBhtIssueRequestDTO.
+        bhtIssueRequestRows = new ArrayList<>();
+        for (Bill b : bills) {
+            PharmacyBhtIssueRequestDTO dto = new PharmacyBhtIssueRequestDTO(b);
+            List<PharmacyBhtIssuedBillDTO> issuedDtos = new ArrayList<>();
+            for (Bill issued : b.getListOfBill()) {
+                issuedDtos.add(new PharmacyBhtIssuedBillDTO(issued));
+            }
+            dto.setListOfBill(issuedDtos);
+            bhtIssueRequestRows.add(dto);
         }
 
     }
@@ -23305,6 +23326,14 @@ public class SearchController implements Serializable {
 
     public void setBills(List<Bill> bills) {
         this.bills = bills;
+    }
+
+    public List<PharmacyBhtIssueRequestDTO> getBhtIssueRequestRows() {
+        return bhtIssueRequestRows;
+    }
+
+    public void setBhtIssueRequestRows(List<PharmacyBhtIssueRequestDTO> bhtIssueRequestRows) {
+        this.bhtIssueRequestRows = bhtIssueRequestRows;
     }
 
     public List<Bill> getFilteredBills() {
