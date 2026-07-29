@@ -63,6 +63,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.clinical.ClinicalFindingValueType;
 import com.divudi.core.data.dto.PatientEncounterDto;
+import com.divudi.core.entity.Area;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
@@ -1122,6 +1123,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public void searchAdmissions() {
         searchAdmissions(null, null);
     }
+    
+    private Area patientArea;
 
     /**
      * @param currentRoomInstitutionFilter when non-null, restricts to admissions whose
@@ -1161,6 +1164,11 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (bhtNumberFilter != null) {
             j += "  and c.bhtNo like :bht ";
             m.put("bht", "%" + bhtNumberFilter + "%");
+        }
+        
+        if(patientArea != null){
+            j += " and c.patient.person.area = :area ";
+            m.put("area",  patientArea);
         }
 
         if (patientNumberFilter != null) {
@@ -1641,6 +1649,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         admissionStatusForSearch = null;
         admissionTypeForSearch = null;
         parentAdmission = null;
+        patientArea = null;
     }
 
     public String navigateToListAdmissions() {
@@ -3618,6 +3627,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setPatientForiegner(boolean patientForiegner) {
         this.patientForiegner = patientForiegner;
+    }
+
+    public Area getPatientArea() {
+        return patientArea;
+    }
+
+    public void setPatientArea(Area patientArea) {
+        this.patientArea = patientArea;
     }
 
     /**
