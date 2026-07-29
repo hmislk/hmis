@@ -117,6 +117,14 @@ public class InwardPharmacyEncounterReportController implements Serializable {
     private double returnBillsToPatientEncounterNetTotal;
     private List<InpatientPharmacyBillItemDTO> returnBillItemsToPatientEncounter;
 
+    // 4) Unaccepted Issues list (issue #22515) - ISSUE_MEDICINE_ON_REQUEST_INWARD
+    // bills for this patientEncounter with no matching
+    // ACCEPT_ISSUED_MEDICINE_INWARD backward reference yet, i.e. pharmacy
+    // has issued but the ward hasn't accepted receipt. Same NOT EXISTS shape
+    // proven in NursingDischargeController.fetchUnacceptedIssues().
+    private List<Bill> unacceptedIssueBillsToPatientEncounter;
+    private double unacceptedIssueBillsToPatientEncounterNetTotal;
+
     /**
      * Replaces "BHT Issue Requests" + "View Pharmacy Requests". Lists all
      * InwardPharmacyRequest bills for this patientEncounter, each carrying
@@ -682,6 +690,57 @@ public class InwardPharmacyEncounterReportController implements Serializable {
     }
 
     /**
+     * Worklist for pharmacy issues awaiting ward acceptance (issue #22515).
+     * Lists ISSUE_MEDICINE_ON_REQUEST_INWARD bills for this patientEncounter
+     * that have no matching ACCEPT_ISSUED_MEDICINE_INWARD backward reference
+     * yet - previously this state only surfaced as a discharge blocker on
+     * the Nursing Discharge page (NursingDischargeController.fetchUnacceptedIssues()),
+     * too late for pharmacy/ward staff to act on proactively.
+     */
+    public String navigateToInpatientPharmacyUnacceptedIssuesList() {
+        if (patientEncounter == null) {
+            JsfUtil.addErrorMessage("No encounter");
+            return null;
+        }
+        unacceptedIssueBillsToPatientEncounter = new ArrayList<>();
+        unacceptedIssueBillsToPatientEncounterNetTotal = 0.0;
+        try {
+            unacceptedIssueBillsToPatientEncounter = fetchUnacceptedIssueBills();
+            for (Bill b : unacceptedIssueBillsToPatientEncounter) {
+                unacceptedIssueBillsToPatientEncounterNetTotal += b.getNetTotal();
+            }
+        } catch (Exception e) {
+            Logger.getLogger(InwardPharmacyEncounterReportController.class.getName())
+                    .log(Level.SEVERE, "Error loading unaccepted pharmacy issue bills", e);
+            JsfUtil.addErrorMessage("Error loading unaccepted issue data");
+            return null;
+        }
+        return "/inward/reports/inpatient_pharmacy_unaccepted_issues_list?faces-redirect=true";
+    }
+
+    private List<Bill> fetchUnacceptedIssueBills() {
+        String jpql = "SELECT b FROM Bill b "
+                + "WHERE b.patientEncounter = :pe "
+                + "AND b.billTypeAtomic = :bta "
+                + "AND b.cancelled = false "
+                + "AND NOT EXISTS ("
+                + "  SELECT r FROM Bill r "
+                + "  WHERE r.backwardReferenceBill = b "
+                + "  AND r.billTypeAtomic = :acceptBta "
+                + "  AND r.cancelled = false"
+                + ") "
+                + "ORDER BY b.createdAt DESC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("pe", patientEncounter);
+        params.put("bta", BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        params.put("acceptBta", BillTypeAtomic.ACCEPT_ISSUED_MEDICINE_INWARD);
+
+        List<Bill> result = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return result != null ? result : new ArrayList<>();
+    }
+
+    /**
      * Back-nav for the ward-wide Pharmacy Requests page (issue #22428) - there
      * is no single admission to return to, so this goes back to the Nursing
      * Dashboard instead of {@link #navigateToAdmissionProfile()}.
@@ -963,5 +1022,21 @@ public class InwardPharmacyEncounterReportController implements Serializable {
 
     public void setReturnBillItemsToPatientEncounter(List<InpatientPharmacyBillItemDTO> returnBillItemsToPatientEncounter) {
         this.returnBillItemsToPatientEncounter = returnBillItemsToPatientEncounter;
+    }
+
+    public List<Bill> getUnacceptedIssueBillsToPatientEncounter() {
+        return unacceptedIssueBillsToPatientEncounter;
+    }
+
+    public void setUnacceptedIssueBillsToPatientEncounter(List<Bill> unacceptedIssueBillsToPatientEncounter) {
+        this.unacceptedIssueBillsToPatientEncounter = unacceptedIssueBillsToPatientEncounter;
+    }
+
+    public double getUnacceptedIssueBillsToPatientEncounterNetTotal() {
+        return unacceptedIssueBillsToPatientEncounterNetTotal;
+    }
+
+    public void setUnacceptedIssueBillsToPatientEncounterNetTotal(double unacceptedIssueBillsToPatientEncounterNetTotal) {
+        this.unacceptedIssueBillsToPatientEncounterNetTotal = unacceptedIssueBillsToPatientEncounterNetTotal;
     }
 }
