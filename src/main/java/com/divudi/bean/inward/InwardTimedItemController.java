@@ -806,6 +806,11 @@ public class InwardTimedItemController implements Serializable {
      * {@code InwardBeanController.calServiceBillItemsTotalByInwardChargeTypeBulk}),
      * so it must never be left holding a stale duration. Package-locked items
      * are skipped — their price is fixed by the package.
+     * <p>
+     * The discount comes from the BillItem, which is the side the inward
+     * discount routines clear when no price matrix applies; reading it from the
+     * PatientItem would re-apply a discount that had just been removed. The
+     * PatientItem is mirrored back so the breakdown screens still agree.
      */
     private void syncTimedServiceCharge(PatientItem patientItem) {
         if (patientItem == null || patientItem.getBillItem() == null) {
@@ -815,12 +820,17 @@ public class InwardTimedItemController implements Serializable {
         if (bi.isFromPackage()) {
             return;
         }
+        double discount = bi.getDiscount();
         bi.setGrossValue(patientItem.getServiceValue());
-        bi.setDiscount(patientItem.getDiscount());
-        bi.setNetValue(patientItem.getServiceValue() + bi.getMarginValue() - patientItem.getDiscount());
+        bi.setNetValue(patientItem.getServiceValue() + bi.getMarginValue() - discount);
         bi.setFromTime(patientItem.getFromTime());
         bi.setToTime(patientItem.getToTime());
         getBillItemFacade().edit(bi);
+
+        if (patientItem.getDiscount() != discount) {
+            patientItem.setDiscount(discount);
+            getPatientItemFacade().edit(patientItem);
+        }
 
         Bill b = bi.getBill();
         if (b != null) {

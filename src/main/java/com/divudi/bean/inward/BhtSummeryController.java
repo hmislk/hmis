@@ -2719,15 +2719,20 @@ public class BhtSummeryController implements Serializable {
             if (pi.getFromTime() != null && dischargeTime.before(pi.getFromTime())) {
                 continue;
             }
-            TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) pi.getItem());
-            if (timedItemFee == null) {
-                // No fee configured for this item — leave it alone rather than
-                // failing the whole discharge over one unpriceable service.
+            // getTimedItemFee never returns null — it hands back an empty fee
+            // with durationHours = 0, which would price the service at zero.
+            // Check for a real fee row instead, and skip rather than wipe the
+            // charge of a service nobody has configured a price for.
+            if (getInwardBean().getAllTimedItemFees((TimedItem) pi.getItem()).isEmpty()) {
                 continue;
             }
             pi.setToTime(dischargeTime);
-            double count = getInwardBean().calCount(timedItemFee, pi.getFromTime(), pi.getToTime());
-            pi.setServiceValue(count * timedItemFee.getFee());
+            // Priced through calTotalTimedChargeForItem, the same path the
+            // manual stop uses, so tiered fee blocks and foreigner rates give
+            // the same amount whether a service is stopped by hand or here.
+            pi.setServiceValue(getInwardBean().calTotalTimedChargeForItem(
+                    (TimedItem) pi.getItem(), pi.getFromTime(), pi.getToTime(),
+                    getPatientEncounter().isForiegner()));
             getPatientItemFacade().edit(pi);
             syncTimedServiceCharge(pi);
             closed++;
@@ -2743,6 +2748,13 @@ public class BhtSummeryController implements Serializable {
      * Pushes a recalculated timed-service charge onto its BillItem and Bill, so
      * the inward totals (which sum the BillItem side) never read a stale
      * duration. Package-locked items keep their fixed price.
+     * <p>
+     * The discount is read from the BillItem, not the PatientItem. The BillItem
+     * is the side the discount routines clear when no price matrix applies, and
+     * the bulk clear cannot reach the PatientItem (it filters on
+     * {@code billItem is null}). Taking the discount from the PatientItem would
+     * silently re-apply one that had just been removed. The PatientItem is
+     * mirrored back so the breakdown screens still agree with the bill.
      */
     private void syncTimedServiceCharge(PatientItem patientItem) {
         if (patientItem == null || patientItem.getBillItem() == null) {
@@ -2752,12 +2764,17 @@ public class BhtSummeryController implements Serializable {
         if (bi.isFromPackage()) {
             return;
         }
+        double discount = bi.getDiscount();
         bi.setGrossValue(patientItem.getServiceValue());
-        bi.setDiscount(patientItem.getDiscount());
-        bi.setNetValue(patientItem.getServiceValue() + bi.getMarginValue() - patientItem.getDiscount());
+        bi.setNetValue(patientItem.getServiceValue() + bi.getMarginValue() - discount);
         bi.setFromTime(patientItem.getFromTime());
         bi.setToTime(patientItem.getToTime());
         getBillItemFacade().edit(bi);
+
+        if (patientItem.getDiscount() != discount) {
+            patientItem.setDiscount(discount);
+            getPatientItemFacade().edit(patientItem);
+        }
 
         Bill b = bi.getBill();
         if (b != null) {
