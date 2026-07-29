@@ -36,15 +36,8 @@ jobs:
         run: |
           grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
 
-      - name: Build with Maven
+      - name: Verify build compiles
         run: mvn clean package -DskipTests
-
-      - name: Archive Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: target/*.war
-          overwrite: true
 
       # - name: Run Tests
       #   run: mvn test
@@ -54,16 +47,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: ./
-
-      - name: Deploy to Payara
+      # Instead of building on the runner and rsyncing a ~130MB WAR to the server
+      # (which was taking 25-30 minutes over that link), pull the source and build
+      # directly on the target server, then swap the WAR in place locally there.
+      - name: Deploy to Payara (build from source on target server)
         env:
           SERVER_IP: ${{ secrets.RUHUNU_LOCAL_SERVER_IP }}
           SERVER_USER: ${{ secrets.RUHUNU_LOCAL_SERVER_USER }}
@@ -74,56 +61,65 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
-          # Variables
-          WAR_NAME="ruhunuLocal.war"
+          CONTEXT_PATH="rhLocal"
+
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP bash -s -- "$PAYARA_ADMIN_PASS" <<'REMOTE_SCRIPT'
+          set -e
+
+          PAYARA_ADMIN_PASS="$1"
+          SRC_DIR="/home/rhadmin/app/source"
           WAR_DIR="/home/rhadmin/app/latest"
           APP_NAME="ruhunuLocal"
           CONTEXT_PATH="rhLocal"
+          WAR_NAME="ruhunuLocal.war"
+          BRANCH="rh-local-staging"
 
-          # Ensure deployment directory exists
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            mkdir -p $WAR_DIR
-            chown -R rhadmin:rhadmin $WAR_DIR
-            cd $WAR_DIR
+          mkdir -p "$WAR_DIR"
+          chown -R rhadmin:rhadmin "$WAR_DIR"
 
-            # Remove old backup if it exists
-            if [ -f $WAR_NAME.old ]; then
-              rm $WAR_NAME.old
-            fi
+          if [ ! -d "$SRC_DIR/.git" ]; then
+            git clone https://github.com/hmislk/hmis.git "$SRC_DIR"
+          fi
 
-            # If the current WAR file exists, back it up
-            if [ -f $WAR_NAME ]; then
-              mv $WAR_NAME $WAR_NAME.old
-            fi
-          "
- 
-          # Copy new WAR file to the server
-          rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:$WAR_DIR/$WAR_NAME
+          cd "$SRC_DIR"
+          git fetch origin "$BRANCH"
+          git checkout "$BRANCH"
+          git reset --hard "origin/$BRANCH"
+          git clean -fdx
 
-          # Set the WAR file permission
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            chown rhadmin:rhadmin $WAR_DIR/$WAR_NAME
-          "
+          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunu</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunuaudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
 
-          # Deploy the WAR using asadmin
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
-            /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
-            /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $CONTEXT_PATH $WAR_DIR/$WAR_NAME
-            rm -f /tmp/payara-admin-pass.txt
-          "
+          mvn clean package -DskipTests
 
-          # Validate if the application is running
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
-            if /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
-              echo 'Application is running.'
-            else
-              echo 'Application failed to start.'
-            fi
-            rm -f /tmp/payara-admin-pass.txt
-          "
- 
+          NEW_WAR=$(ls target/*.war | head -n1)
+          if [ -z "$NEW_WAR" ]; then
+            echo "Build did not produce a WAR file. Aborting deploy."
+            exit 1
+          fi
+
+          # Only touch the running deployment once we know the build succeeded.
+          if [ -f "$WAR_DIR/$WAR_NAME.old" ]; then
+            rm "$WAR_DIR/$WAR_NAME.old"
+          fi
+          if [ -f "$WAR_DIR/$WAR_NAME" ]; then
+            mv "$WAR_DIR/$WAR_NAME" "$WAR_DIR/$WAR_NAME.old"
+          fi
+          cp "$NEW_WAR" "$WAR_DIR/$WAR_NAME"
+          chown rhadmin:rhadmin "$WAR_DIR/$WAR_NAME"
+
+          echo "AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS" > /tmp/payara-admin-pass.txt
+          /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy "$APP_NAME" || true
+          /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot "$CONTEXT_PATH" "$WAR_DIR/$WAR_NAME"
+
+          if /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q "$APP_NAME"; then
+            echo "Application is running."
+          else
+            echo "Application failed to start."
+          fi
+          rm -f /tmp/payara-admin-pass.txt
+          REMOTE_SCRIPT
+
           # Check if the application is reachable
           for i in {1..5}; do
             RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://$SERVER_IP:8010/$CONTEXT_PATH/faces/index1.xhtml)
