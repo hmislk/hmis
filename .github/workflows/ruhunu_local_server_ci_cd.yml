@@ -5,6 +5,10 @@ on:
     branches:
       - rh-local-staging
 
+concurrency:
+  group: ruhunu-local-staging-deploy
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -63,10 +67,18 @@ jobs:
 
           CONTEXT_PATH="rhLocal"
 
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP bash -s -- "$PAYARA_ADMIN_PASS" <<'REMOTE_SCRIPT'
+          # ssh flattens trailing args into one space-joined string for the remote
+          # shell to re-tokenize, so a password containing a space or shell
+          # metacharacter would corrupt the remote argv. Base64-encode it instead.
+          PAYARA_ADMIN_PASS_B64=$(printf '%s' "$PAYARA_ADMIN_PASS" | base64 -w0)
+
+          # -l makes this a login shell so it sources the same profile (and PATH,
+          # e.g. for mvn) that an interactive SSH session would get.
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP bash -ls -- "$PAYARA_ADMIN_PASS_B64" "${{ github.sha }}" <<'REMOTE_SCRIPT'
           set -e
 
-          PAYARA_ADMIN_PASS="$1"
+          PAYARA_ADMIN_PASS=$(printf '%s' "$1" | base64 -d)
+          COMMIT_SHA="$2"
           SRC_DIR="/home/rhadmin/app/source"
           WAR_DIR="/home/rhadmin/app/latest"
           APP_NAME="ruhunuLocal"
@@ -83,8 +95,9 @@ jobs:
 
           cd "$SRC_DIR"
           git fetch origin "$BRANCH"
-          git checkout "$BRANCH"
-          git reset --hard "origin/$BRANCH"
+          # Pin to the exact commit the build job already compile-checked, not
+          # whatever the branch tip happens to be by the time this runs.
+          git checkout "$COMMIT_SHA"
           git clean -fdx
 
           sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunu</jta-data-source>|' src/main/resources/META-INF/persistence.xml
@@ -93,8 +106,9 @@ jobs:
           mvn clean package -DskipTests
 
           NEW_WAR=$(ls target/*.war | head -n1)
-          if [ -z "$NEW_WAR" ]; then
-            echo "Build did not produce a WAR file. Aborting deploy."
+          NEW_WAR_SIZE=$(stat -c%s "$NEW_WAR" 2>/dev/null || echo 0)
+          if [ -z "$NEW_WAR" ] || [ "$NEW_WAR_SIZE" -lt 1048576 ]; then
+            echo "Build did not produce a valid WAR file. Aborting deploy."
             exit 1
           fi
 
@@ -108,16 +122,20 @@ jobs:
           cp "$NEW_WAR" "$WAR_DIR/$WAR_NAME"
           chown rhadmin:rhadmin "$WAR_DIR/$WAR_NAME"
 
-          echo "AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS" > /tmp/payara-admin-pass.txt
-          /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy "$APP_NAME" || true
-          /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot "$CONTEXT_PATH" "$WAR_DIR/$WAR_NAME"
+          PASS_FILE=$(mktemp /tmp/payara-admin-pass.XXXXXX)
+          trap 'rm -f "$PASS_FILE"' EXIT
+          echo "AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS" > "$PASS_FILE"
+          chmod 600 "$PASS_FILE"
 
-          if /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q "$APP_NAME"; then
+          /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile "$PASS_FILE" undeploy "$APP_NAME" || true
+          /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile "$PASS_FILE" deploy --force=true --contextroot "$CONTEXT_PATH" "$WAR_DIR/$WAR_NAME"
+
+          if /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile "$PASS_FILE" list-applications | grep -q "$APP_NAME"; then
             echo "Application is running."
           else
             echo "Application failed to start."
+            exit 1
           fi
-          rm -f /tmp/payara-admin-pass.txt
           REMOTE_SCRIPT
 
           # Check if the application is reachable
