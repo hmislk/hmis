@@ -869,15 +869,15 @@ public class PharmacyService {
      * supplier returns and stock-taking adjustments.
      *
      * These NEVER contribute to consumption, the average, the target, the order
-     * quantity or any displayed figure. They exist only so the Ordering
-     * Requirement Report can reconstruct the historical balance and count
-     * stock-out days - a past balance cannot be known without every movement
-     * that changed it.
+     * quantity or the decision. The Ordering Requirement Report uses them for
+     * two things only: sourcing the most recent purchase rate behind Estimated
+     * Cost, and completing the set of known stock-moving types so the
+     * unclassified-movement guard does not flag them.
      *
      * Rate adjustments (PHARMACY_PURCHASE_RATE_ADJUSTMENT and friends) are
      * excluded on purpose: they carry a non-zero qty that is the stock quantity
-     * being re-rated, not a delta, so including them corrupts the timeline.
-     * PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT is excluded for the same reason.
+     * being re-rated, not a delta. PHARMACY_STOCK_EXPIRY_DATE_AJUSTMENT is
+     * excluded for the same reason.
      */
     public List<BillTypeAtomic> getOrderingInboundBillTypes() {
         return Arrays.asList(
@@ -906,7 +906,8 @@ public class PharmacyService {
 
     /**
      * Every bill type that moves department stock - the union of the outward and
-     * inbound lists. Drives the balance timeline used for stock-out counting.
+     * inbound lists. Used by the unclassified-movement guard to decide whether a
+     * stock-touching row is one this report already knows about.
      */
     public List<BillTypeAtomic> getOrderingStockMovingBillTypes() {
         List<BillTypeAtomic> all = new ArrayList<>(getOrderingOutwardBillTypes());

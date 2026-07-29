@@ -113,6 +113,7 @@ public enum Privileges {
     InwardFinalBillSetConfirmed("Inward Final Bill Set As Confirmed"),
     InwardSaveProvisionalFinalBill("Inward Save Provisional Final Bill"),
     InwardReport("Inward Report"),
+    InwardPostDischargeReports("Inward Post-Discharge Reports"),
     InwardLaboratory("Inward Laboratory"),
     InwardLaboratoryBarcodeGeneration("Inward Laboratory Barcode Generation"),
     InwardLaboratorySampleManagement("Inward Laboratory Sample Management"),
@@ -1281,6 +1282,7 @@ public enum Privileges {
             case InwardImagesView:
             case InwardDiagnosisCardView:
             case InwardEventHistoryView:
+            case InwardPostDischargeReports:
                 return "Inward";
 
             case AdminInactivePatients:
