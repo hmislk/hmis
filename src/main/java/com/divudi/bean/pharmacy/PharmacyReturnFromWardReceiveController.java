@@ -5,6 +5,7 @@ import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.Privileges;
+import com.divudi.core.data.dto.PharmacyReturnFromWardPendingReturnDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.BillItem;
@@ -28,6 +29,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 import org.primefaces.event.RowEditEvent;
 
 /**
@@ -71,14 +73,16 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
     private BillService billService;
 
     private Bill returnedBill;
+    private Long returnedBillId;
     private Bill receivedBill;
-    private List<Bill> pendingReturnBills;
+    private List<PharmacyReturnFromWardPendingReturnDTO> pendingReturnBills;
     private boolean printPreview;
     private boolean settling;
     private boolean completed;
 
     public void makeNull() {
         returnedBill = null;
+        returnedBillId = null;
         receivedBill = null;
         printPreview = false;
         completed = false;
@@ -91,7 +95,18 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
     }
 
     public void loadPendingReturnBills() {
-        String jpql = "SELECT b FROM Bill b WHERE b.billType = :bt AND b.billTypeAtomic = :bta "
+        // DTO projection avoids loading full Bill entities (and their lazy
+        // associations) for what is a read-only listing (#21471).
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyReturnFromWardPendingReturnDTO("
+                + "b.id, b.deptId, COALESCE(fromDept.name, ''), COALESCE(createrPerson.name, ''), "
+                + "toStaff.id, toStaffPerson.title, COALESCE(toStaffPerson.name, ''), b.createdAt) "
+                + "FROM Bill b "
+                + "LEFT JOIN b.fromDepartment fromDept "
+                + "LEFT JOIN b.creater creater "
+                + "LEFT JOIN creater.webUserPerson createrPerson "
+                + "LEFT JOIN b.toStaff toStaff "
+                + "LEFT JOIN toStaff.person toStaffPerson "
+                + "WHERE b.billType = :bt AND b.billTypeAtomic = :bta "
                 + "AND b.toDepartment = :dept "
                 + "AND b.cancelled = false "
                 + "AND (b.fullyIssued = false OR b.fullyIssued IS NULL) "
@@ -101,21 +116,51 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
         params.put("bt", BillType.PharmacyIssue);
         params.put("bta", BillTypeAtomic.RETURN_MEDICINE_INWARD);
         params.put("dept", sessionController.getDepartment());
-        List<Bill> candidates = billFacade.findByJpql(jpql, params);
+        List<PharmacyReturnFromWardPendingReturnDTO> candidates
+                = (List<PharmacyReturnFromWardPendingReturnDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         // Defense for pre-#21510 data: returns fully accepted before this change
         // were never stamped with fullyIssued/completed, so the flag filter above
         // alone would resurface them. Drop anything already fully accepted.
         pendingReturnBills = new ArrayList<>();
-        for (Bill b : candidates) {
-            if (!isFullyAccepted(b)) {
-                pendingReturnBills.add(b);
+        for (PharmacyReturnFromWardPendingReturnDTO dto : candidates) {
+            if (!isFullyAcceptedByBillId(dto.getId())) {
+                pendingReturnBills.add(dto);
             }
         }
     }
 
+    /**
+     * Bill-item-only variant of {@link #isFullyAccepted(Bill)} for the
+     * pending-list filter above, so listing candidates do not need a full
+     * {@link Bill} entity fetch just to check remaining quantities.
+     */
+    private boolean isFullyAcceptedByBillId(Long billId) {
+        if (billId == null) {
+            return false;
+        }
+        String jpql = "SELECT bi FROM BillItem bi WHERE bi.bill.id = :billId";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", billId);
+        List<BillItem> items = billItemFacade.findByJpql(jpql, params);
+        if (items == null || items.isEmpty()) {
+            return false;
+        }
+        for (BillItem item : items) {
+            if (getRemainingQuantityForReturnItem(item) > 0.001) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public String navigateToReceive() {
-        if (returnedBill == null || returnedBill.getId() == null) {
+        if (returnedBillId == null) {
+            JsfUtil.addErrorMessage("No return selected.");
+            return null;
+        }
+        returnedBill = billFacade.find(returnedBillId);
+        if (returnedBill == null) {
             JsfUtil.addErrorMessage("No return selected.");
             return null;
         }
@@ -440,6 +485,14 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
         this.returnedBill = returnedBill;
     }
 
+    public Long getReturnedBillId() {
+        return returnedBillId;
+    }
+
+    public void setReturnedBillId(Long returnedBillId) {
+        this.returnedBillId = returnedBillId;
+    }
+
     public Bill getReceivedBill() {
         if (receivedBill == null) {
             receivedBill = new BilledBill();
@@ -451,14 +504,14 @@ public class PharmacyReturnFromWardReceiveController implements Serializable {
         this.receivedBill = receivedBill;
     }
 
-    public List<Bill> getPendingReturnBills() {
+    public List<PharmacyReturnFromWardPendingReturnDTO> getPendingReturnBills() {
         if (pendingReturnBills == null) {
             pendingReturnBills = new ArrayList<>();
         }
         return pendingReturnBills;
     }
 
-    public void setPendingReturnBills(List<Bill> pendingReturnBills) {
+    public void setPendingReturnBills(List<PharmacyReturnFromWardPendingReturnDTO> pendingReturnBills) {
         this.pendingReturnBills = pendingReturnBills;
     }
 
