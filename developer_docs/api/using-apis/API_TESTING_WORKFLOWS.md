@@ -16,17 +16,21 @@ discrepancy — not for creating bills.
 | Cash / Card / Cheque | `/drawer_entries` | `beforeBalance` → `afterBalance` |
 | PatientDeposit | `/patient_deposits` | `balanceBeforeTransaction` → `balanceAfterTransaction` (decreases) |
 | Credit (credit company) | none — no history tracking; verify manually | — |
-| Staff_Welfare | `/staff_welfare_histories` | `balanceBeforeTransaction` → `balanceAfterTransaction` |
+| Staff_Welfare | `/staff_welfare_histories` | `beforeBalance` → `afterBalance` |
 | Agent / collecting centre | `/agent_histories` | `balanceBeforeTransaction` → `balanceAfterTransaction`, check commission split |
 
 All require the `Finance` header.
 
 ## Verification Pattern
 
-1. Fetch the bill; assert `payments[]` is non-empty and `sum(p.paidValue) == bill.netTotal`
-   (compare floats with `abs(a - b) < 0.01`).
+1. Fetch the bill. For a **fully settled** bill, assert `payments[]` is non-empty and
+   `sum(p.paidValue) == bill.netTotal` (float tolerance `abs(a - b) < 0.01`). For a bill that
+   isn't fully settled (partial payment, credit, refunded), don't assert full equality — compare
+   `sum(p.paidValue)` against the bill's outstanding/paid-total field instead.
 2. For each payment, fetch the matching history endpoint filtered by `billId`.
-3. Find the history entry whose `transactionValue` matches the payment's `paidValue`.
+3. Find the history entry whose `transactionValue` matches the payment's `paidValue` — a bill
+   can have several payments on the same method, so match by value/timestamp, don't assume the
+   first row returned is the right one.
 4. Assert `afterBalance == beforeBalance + transactionValue` (drawer) or
    `balanceAfterTransaction == balanceBeforeTransaction - transactionValue` (deposit-style
    balances, which decrease on use).

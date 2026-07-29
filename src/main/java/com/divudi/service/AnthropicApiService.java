@@ -5992,7 +5992,7 @@ public class AnthropicApiService implements Serializable {
                 + "Reconstruct missing BillFinanceDetail (BFD) and BillItemFinanceDetail (BIFD) records "
                 + "on historical pharmacy bills. Always supply auditComment and approvedBy. "
                 + "Do NOT execute these without administrator approval.",
-                githubUrl(branch, "developer_docs/api/using-apis/API_PHARMACEUTICAL_MANAGEMENT.md"),
+                githubUrl(branch, "developer_docs/pharmacy/f15-bfd-backfill-guide.md"),
                 new String[][]{
                     {"POST", "/pharmacy/backfill_bfd",      "Backfill missing BFD records for historical pharmacy adjustment bills"},
                     {"POST", "/pharmacy/backfill_grn_bifd", "Backfill missing BIFD/BFD records for historical Pharmacy GRN bills"},
