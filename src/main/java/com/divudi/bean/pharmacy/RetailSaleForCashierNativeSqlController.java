@@ -425,6 +425,13 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             recalculateDiscountsForAll();
             calTotal();
 
+            // Warn, do not reject, when a Multiple Payment Methods split does not add up to
+            // the net total (#22488). No money is taken on this page - the cashier collects
+            // and records the real payments later - so an off split is a data-entry problem
+            // to flag, not grounds to block a completed sale. Deliberately warn-only:
+            // rejecting would also break operators who settle slightly-off splits knowingly.
+            warnIfMultiplePaymentTotalDoesNotMatch();
+
             // Back-fill the credit counterparties from the entered payment components before the
             // bill is built, so a Credit / Staff bill is not persisted without one.
             syncStaffSelectionFromPaymentDetails(paymentMethod);
@@ -2158,6 +2165,42 @@ public class RetailSaleForCashierNativeSqlController implements Serializable, Co
             return getPreBill().getNetTotal() - multiplePaymentMethodTotalValue;
         }
         return getPreBill().getTotal();
+    }
+
+    /**
+     * Flags a Multiple Payment Methods settle whose entered components do not add up to the
+     * bill's net total (#22488). Nothing is rejected: this page takes no money, so the split
+     * is provisional until the cashier records the real payments, and blocking a completed
+     * sale over it would be worse than the mis-keyed figure it catches.
+     *
+     * Uses the same 1.0 tolerance the printed balance is clamped with, so ordinary rounding
+     * stays silent and only a genuine mis-key warns.
+     */
+    private void warnIfMultiplePaymentTotalDoesNotMatch() {
+        if (paymentMethod != PaymentMethod.MultiplePaymentMethods) {
+            return;
+        }
+        if (getPaymentMethodData().getPaymentMethodMultiple() == null
+                || getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails() == null) {
+            return;
+        }
+        double shortfall = calculatRemainForMultiplePaymentTotal();
+        if (Math.abs(shortfall) <= 1.0) {
+            return;
+        }
+        double netTotal = getPreBill().getNetTotal();
+        double entered = netTotal - shortfall;
+        if (shortfall > 0) {
+            JsfUtil.addWarningMessage(String.format(
+                    "Payment components total %.2f but the bill net total is %.2f — %.2f short."
+                    + " The bill was settled; correct the payment at the cashier.",
+                    entered, netTotal, shortfall));
+        } else {
+            JsfUtil.addWarningMessage(String.format(
+                    "Payment components total %.2f but the bill net total is %.2f — %.2f over."
+                    + " The bill was settled; correct the payment at the cashier.",
+                    entered, netTotal, -shortfall));
+        }
     }
 
     @Override
