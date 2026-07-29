@@ -22,6 +22,7 @@ import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.pharmacy.PharmacyOrderingRequirementService;
+import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
@@ -226,15 +227,18 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
-        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition",
-                "attachment; filename=Ordering_Requirement_Report.xlsx");
 
-        try (XSSFWorkbook workbook = new XSSFWorkbook(); OutputStream out = response.getOutputStream()) {
+        // Build the whole workbook in memory first. Writing straight to the
+        // response stream would commit headers before generation finished, so a
+        // POI failure part-way through would hand the user a truncated .xlsx and
+        // leave addErrorMessage with nowhere to render.
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+        try (XSSFWorkbook workbook = new XSSFWorkbook()) {
 
             XSSFSheet sheet = workbook.createSheet("Ordering Requirement");
             int rowIndex = 0;
-            int totalColumns = 8;
+            int totalColumns = 10;
 
             Font boldFont = workbook.createFont();
             boldFont.setBold(true);
@@ -297,9 +301,9 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
 
             Row headerRow = sheet.createRow(rowIndex++);
             String[] headers = {
-                "Drug Name", "Current Balance", "Avg Monthly Consumption",
-                "Stock Cover (Months)", "Target Stock", "Qty to Order",
-                "Est. Cost (Rs.)", "Decision"
+                "Drug Name", "Current Balance", "Consumption (Period)",
+                "Avg Monthly Consumption", "Stock Cover (Months)", "Target Stock",
+                "Qty to Order", "Est. Cost (Rs.)", "Decision", "Last Supplier"
             };
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
@@ -311,23 +315,63 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
                 Row dataRow = sheet.createRow(rowIndex++);
                 createCell(dataRow, 0, r.getItemName(), dataStyle);
                 createCell(dataRow, 1, r.getCurrentBalance(), numberStyle);
-                createCell(dataRow, 2, r.getAvgMonthlyConsumption(), numberStyle);
-                createCell(dataRow, 3, r.getStockCoverDisplay(), dataStyle);
-                createCell(dataRow, 4, r.getTargetStock(), numberStyle);
-                createCell(dataRow, 5, r.getQuantityToOrder(), numberStyle);
-                createCell(dataRow, 6, r.getEstimatedCost(), numberStyle);
-                createCell(dataRow, 7, r.getDecision(), dataStyle);
+                createCell(dataRow, 2, r.getConsumption(), numberStyle);
+                createCell(dataRow, 3, r.getAvgMonthlyConsumption(), numberStyle);
+                createCell(dataRow, 4, r.getStockCoverDisplay(), dataStyle);
+                createCell(dataRow, 5, r.getTargetStock(), numberStyle);
+                createCell(dataRow, 6, r.getQuantityToOrder(), numberStyle);
+                createCell(dataRow, 7, r.getEstimatedCost(), numberStyle);
+                createCell(dataRow, 8, r.getDecision(), dataStyle);
+                createCell(dataRow, 9, r.getLastSupplier(), dataStyle);
             }
 
             for (int i = 0; i < totalColumns; i++) {
                 sheet.autoSizeColumn(i);
             }
 
-            workbook.write(out);
-            out.flush();
-            context.responseComplete();
+            workbook.write(buffer);
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Could not create the Excel file: " + e.getMessage());
+            return;
+        }
+
+        writeDownload(context, response,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "Ordering_Requirement_Report.xlsx", buffer.toByteArray(),
+                "Could not send the Excel file: ");
+    }
+
+    /**
+     * Commits a fully generated binary payload as a download.
+     *
+     * Kept separate so nothing touches the response until the bytes exist - the
+     * point of buffering is lost if headers are set while generation can still
+     * fail.
+     */
+    private void writeDownload(FacesContext context, HttpServletResponse response,
+            String contentType, String fileName, byte[] content, String errorPrefix) {
+        boolean streamingStarted = false;
+        try {
+            response.reset();
+            response.setContentType(contentType);
+            response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+            response.setContentLength(content.length);
+            try (OutputStream out = response.getOutputStream()) {
+                streamingStarted = true;
+                out.write(content);
+                out.flush();
+            }
+            context.responseComplete();
+        } catch (Exception e) {
+            if (streamingStarted) {
+                // The servlet stream is already open and may hold a partial file.
+                // Letting JSF render the page now would append markup to that
+                // download, so end the response instead - a FacesMessage has
+                // nowhere to appear either way.
+                context.responseComplete();
+            } else {
+                JsfUtil.addErrorMessage(errorPrefix + e.getMessage());
+            }
         }
     }
 
@@ -345,13 +389,14 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
 
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
-        response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition",
-                "attachment; filename=Ordering_Requirement_Report.pdf");
+
+        // Same reason as the Excel export: generate fully in memory so an iText
+        // failure cannot leave a half-written PDF on the wire.
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
         Document document = new Document(PageSize.A4.rotate(), 20, 20, 20, 20);
-        try (OutputStream out = response.getOutputStream()) {
-            PdfWriter.getInstance(document, out);
+        try {
+            PdfWriter.getInstance(document, buffer);
             document.open();
 
             com.itextpdf.text.Font titleFont =
@@ -375,14 +420,14 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
             document.add(filterPara);
             document.add(new Paragraph(" ", smallFont));
 
-            PdfPTable table = new PdfPTable(8);
+            PdfPTable table = new PdfPTable(10);
             table.setWidthPercentage(100);
-            table.setWidths(new float[]{26, 11, 13, 11, 11, 11, 11, 12});
+            table.setWidths(new float[]{20, 9, 10, 10, 8, 9, 9, 9, 8, 15});
 
             String[] headers = {
-                "Drug Name", "Current Balance", "Avg Monthly Consumption",
-                "Stock Cover", "Target Stock", "Qty to Order",
-                "Est. Cost (Rs.)", "Decision"
+                "Drug Name", "Current Balance", "Consumption (Period)",
+                "Avg Monthly Consumption", "Stock Cover", "Target Stock",
+                "Qty to Order", "Est. Cost (Rs.)", "Decision", "Last Supplier"
             };
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
@@ -393,6 +438,7 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
             for (OrderingRequirementRowDto r : rows) {
                 table.addCell(new PdfPCell(new Phrase(r.getItemName(), smallFont)));
                 addNumericCell(table, r.getCurrentBalance(), smallFont);
+                addNumericCell(table, r.getConsumption(), smallFont);
                 addNumericCell(table, r.getAvgMonthlyConsumption(), smallFont);
                 PdfPCell coverCell = new PdfPCell(new Phrase(r.getStockCoverDisplay(), smallFont));
                 coverCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -401,15 +447,22 @@ public class PharmacyOrderingAnalyticsController implements Serializable, Contro
                 addNumericCell(table, r.getQuantityToOrder(), smallFont);
                 addNumericCell(table, r.getEstimatedCost(), smallFont);
                 table.addCell(new PdfPCell(new Phrase(r.getDecision(), smallFont)));
+                table.addCell(new PdfPCell(new Phrase(r.getLastSupplier(), smallFont)));
             }
 
             document.add(table);
             document.close();
-            out.flush();
-            context.responseComplete();
         } catch (Exception e) {
+            if (document.isOpen()) {
+                document.close();
+            }
             JsfUtil.addErrorMessage("Could not create the PDF file: " + e.getMessage());
+            return;
         }
+
+        writeDownload(context, response, "application/pdf",
+                "Ordering_Requirement_Report.pdf", buffer.toByteArray(),
+                "Could not send the PDF file: ");
     }
 
     private void addNumericCell(PdfPTable table, double value, com.itextpdf.text.Font font) {

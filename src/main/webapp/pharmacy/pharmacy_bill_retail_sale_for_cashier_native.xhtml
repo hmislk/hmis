@@ -62,7 +62,7 @@
                                             ajax="false"
                                             class="ui-button-help mx-1"
                                             action="#{tokenController.navigateToManagePharmacyTokens()}"
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', true)}" />
+                                            rendered="#{configOptionController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" />
                                     </div>
                                     <div class="col-4 text-end">
                                         <p:commandButton
@@ -921,7 +921,7 @@
                                         items="#{retailSaleForCashierNativeSqlController.printBillItems}" />
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{configOptionController.getBooleanValueByKey('Pharmacy Retail Sale Bill Paper is POS paper with header', true)}">
-                                    <phi:saleBill_Header_Inward_native
+                                    <phi:saleBill_Header_native
                                         bill="#{retailSaleForCashierNativeSqlController.printBill}"
                                         items="#{retailSaleForCashierNativeSqlController.printBillItems}" />
                                 </h:panelGroup>
