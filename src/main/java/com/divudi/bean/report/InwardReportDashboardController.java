@@ -216,7 +216,9 @@ public class InwardReportDashboardController implements Serializable{
 
     private void setNursingDischargeRooms() {
         String sql = "SELECT COUNT(pr) FROM PatientRoom pr WHERE pr.retired=false AND pr.discharged=false "
-                 + " AND pr.patientEncounter.clinicalDischargeDateTime IS NOT NULL";
+                 + " AND pr.patientEncounter IS NOT NULL "
+                 + " AND pr.patientEncounter.clinicalDischargeDateTime IS NOT NULL "
+                 + " AND (pr.patientEncounter.nursingDischarged = true OR pr.patientEncounter.nursingDischarged IS NOT NULL)";
         nursingDischargeRooms = getPatientRoomFacade().findLongByJpql(sql);
     }
     
@@ -240,7 +242,7 @@ public class InwardReportDashboardController implements Serializable{
         bedOccupancySummary.add(new BedOccupancySummaryDTO("Vacant Rooms", vacantSlice));
         bedOccupancySummary.add(new BedOccupancySummaryDTO("Blocked Rooms", blockedSlice));
         bedOccupancySummary.add(new BedOccupancySummaryDTO("Unavailable Rooms", underConstructionSlice));
-        bedOccupancySummary.add(new BedOccupancySummaryDTO("Nursing Discharge", nursingDischargeSlice));
+        bedOccupancySummary.add(new BedOccupancySummaryDTO("Marked for Discharge", nursingDischargeSlice));
         
         List<Number> rooms = new ArrayList<>();
         for (BedOccupancySummaryDTO dto : bedOccupancySummary) {
@@ -254,7 +256,7 @@ public class InwardReportDashboardController implements Serializable{
         bgColors.add("rgb(144, 238, 144)");  // Green (Vacant)
         bgColors.add("rgb(255, 205, 86)");   // Orange (Blocked)
         bgColors.add("rgb(201, 203, 207)");  // Gray (Unavailable)
-        bgColors.add("rgb(255, 99, 132)");   // Pink/Red (Nursing Discharge)
+        bgColors.add("rgb(255, 99, 132)");   // Pink/Red (Marked for Discharge)
         dataSet.setBackgroundColor(bgColors);
         
         ChartData data = new ChartData();
