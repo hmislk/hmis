@@ -26,6 +26,9 @@ Use this index to jump to the most relevant guidance while working on HMIS. Cont
 - [VM Restart Guide](deployment/vm-restart-guide.md)
 - [CI/CD Pipeline Overview](deployment/ci-cd-pipeline-overview.md)
 
+## APIs
+- [API Documentation Index](api/README.md) — split into [using-apis/](api/using-apis/) (calling an existing endpoint) and [building-apis/](api/building-apis/) (implementing a new one)
+
 ## Development Process
 - [Branch Management Workflow](git/branch-management.md)
 - [Commit Conventions](git/commit-conventions.md)
