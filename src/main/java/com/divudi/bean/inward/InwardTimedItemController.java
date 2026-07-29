@@ -14,6 +14,8 @@ import com.divudi.bean.common.WebUserController;
 
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.core.util.JsfUtil;
@@ -102,6 +104,7 @@ public class InwardTimedItemController implements Serializable {
     private Institution institution;
     private Institution site;
     private Department department;
+    private Department fromDepartment;
 
     public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
@@ -391,15 +394,43 @@ public class InwardTimedItemController implements Serializable {
             JsfUtil.addErrorMessage("This item is included in the admission's package and cannot be removed.");
             return;
         }
+        if (patientItem != null && isLockedForChanges(patientItem.getPatientEncounter())) {
+            return;
+        }
         if (patientItem != null) {
             patientItem.setRetirer(getSessionController().getLoggedUser());
             patientItem.setRetiredAt(new Date());
             patientItem.setRetired(true);
             getPatientItemFacade().edit(patientItem);
+            retireTimedServiceBill(patientItem);
 
             createPatientItems();
 
             JsfUtil.addSuccessMessage("Removed successfully.");
+        }
+    }
+
+    /**
+     * Retires the BillItem and Bill behind a removed timed service. Without
+     * this the charge would survive the removal, since the inward totals are
+     * summed from the BillItem side.
+     */
+    private void retireTimedServiceBill(PatientItem patientItem) {
+        BillItem bi = patientItem.getBillItem();
+        if (bi == null || bi.isFromPackage()) {
+            return;
+        }
+        bi.setRetired(true);
+        bi.setRetiredAt(new Date());
+        bi.setRetirer(getSessionController().getLoggedUser());
+        getBillItemFacade().edit(bi);
+
+        Bill b = bi.getBill();
+        if (b != null) {
+            b.setRetired(true);
+            b.setRetiredAt(new Date());
+            b.setRetirer(getSessionController().getLoggedUser());
+            getBillFacade().edit(b);
         }
     }
 
@@ -571,6 +602,7 @@ public class InwardTimedItemController implements Serializable {
         timedEncounterComponents = null;
         batchBill = null;
         bill = null;
+        fromDepartment = null;
 
     }
 
@@ -611,12 +643,61 @@ public class InwardTimedItemController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Service");
             return true;
         }
+        if (isLockedForChanges(getCurrent().getPatientEncounter())) {
+            return true;
+        }
         if (getCurrent().getPatientEncounter().isNursingDischarged()
                 && !webUserController.hasPrivilege("InwardAddChargesAfterNursingDischarge")) {
             JsfUtil.addErrorMessage("Cannot add charges: nursing discharge has been confirmed for this patient.");
             return true;
         }
         return false;
+    }
+
+    /**
+     * A timed service and its bill stay mutable for the whole stay — the charge
+     * keeps growing while the service runs — but become immutable once the
+     * patient is discharged or the final payment is settled.
+     */
+    private boolean isLockedForChanges(PatientEncounter pe) {
+        if (pe == null) {
+            return false;
+        }
+        if (pe.isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("Final payment has been settled for this admission. Timed services can no longer be changed.");
+            return true;
+        }
+        if (pe.isDischarged()) {
+            JsfUtil.addErrorMessage("This patient has been discharged. Timed services can no longer be changed.");
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Department the service was physically delivered in. Defaults to the
+     * service item's own department and can be overridden by the user before
+     * adding, since the same service may be given in a different ward or unit.
+     */
+    public Department getFromDepartment() {
+        if (fromDepartment == null && current != null && current.getItem() != null) {
+            fromDepartment = current.getItem().getDepartment();
+        }
+        return fromDepartment;
+    }
+
+    public void setFromDepartment(Department fromDepartment) {
+        this.fromDepartment = fromDepartment;
+    }
+
+    /**
+     * Resets the delivering department to the newly selected service's own
+     * department, so the default follows the item rather than sticking to
+     * whatever was chosen for the previous service.
+     */
+    public void serviceSelectListener() {
+        fromDepartment = current != null && current.getItem() != null
+                ? current.getItem().getDepartment() : null;
     }
 
     public void save() {
@@ -635,7 +716,10 @@ public class InwardTimedItemController implements Serializable {
 
         getCurrent().setCreater(getSessionController().getLoggedUser());
         getCurrent().setCreatedAt(Calendar.getInstance().getTime());
+        getCurrent().setPatient(getCurrent().getPatientEncounter().getPatient());
+
         if (getCurrent().getId() == null) {
+            createBillForTimedService(getCurrent());
             getPatientItemFacade().create(getCurrent());
         }
 
@@ -644,6 +728,7 @@ public class InwardTimedItemController implements Serializable {
         current = new PatientItem();
         current.setPatientEncounter(tmp);
         current.setItem(null);
+        fromDepartment = null;
 
         createPatientItems();
 
@@ -651,9 +736,106 @@ public class InwardTimedItemController implements Serializable {
 
     }
 
+    /**
+     * Creates the Bill and BillItem that carry a newly added timed service.
+     * <p>
+     * One bill per service, so a bill never mixes items from two departments
+     * and each service can be traced to where it was delivered:
+     * {@code fromDepartment} is where the service was given (defaulting to the
+     * item's department), {@code toDepartment} is the department that entered
+     * it. The BillItem holds the charge; the PatientItem keeps holding the
+     * timing. Both are kept in step by {@link #syncTimedServiceCharge}.
+     */
+    private void createBillForTimedService(PatientItem patientItem) {
+        PatientEncounter pe = patientItem.getPatientEncounter();
+        Department deliveringDepartment = getFromDepartment();
+        if (deliveringDepartment == null) {
+            deliveringDepartment = getSessionController().getDepartment();
+        }
+
+        BilledBill newBill = new BilledBill();
+        newBill.setBillType(BillType.InwardBill);
+        newBill.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BILL);
+        newBill.setPatient(pe.getPatient());
+        newBill.setPatientEncounter(pe);
+        newBill.setPaymentScheme(pe.getPaymentScheme());
+        newBill.setPaymentMethod(pe.getPaymentMethod());
+        newBill.setDepartment(getSessionController().getDepartment());
+        newBill.setInstitution(getSessionController().getInstitution());
+        newBill.setFromDepartment(deliveringDepartment);
+        newBill.setFromInstitution(deliveringDepartment.getInstitution());
+        newBill.setToDepartment(getSessionController().getDepartment());
+        newBill.setToInstitution(getSessionController().getInstitution());
+        newBill.setBillDate(new Date());
+        newBill.setBillTime(new Date());
+        newBill.setCreatedAt(new Date());
+        newBill.setCreater(getSessionController().getLoggedUser());
+        newBill.setTotal(patientItem.getServiceValue());
+        newBill.setNetTotal(patientItem.getServiceValue());
+        newBill.setDeptId(getBillNumberBean().departmentBillNumberGenerator(
+                newBill.getDepartment(), BillType.InwardBill, BillClassType.BilledBill, BillNumberSuffix.INWSER));
+        newBill.setInsId(getBillNumberBean().institutionBillNumberGenerator(
+                newBill.getInstitution(), BillType.InwardBill, BillClassType.BilledBill, BillNumberSuffix.INWSER));
+        getBillFacade().create(newBill);
+
+        BillItem newBillItem = new BillItem();
+        newBillItem.setBill(newBill);
+        newBillItem.setItem(patientItem.getItem());
+        newBillItem.setQty(1.0);
+        newBillItem.setInwardChargeType(patientItem.getItem().getInwardChargeType());
+        newBillItem.setPatientEncounter(pe);
+        newBillItem.setGrossValue(patientItem.getServiceValue());
+        newBillItem.setNetValue(patientItem.getServiceValue());
+        newBillItem.setFromTime(patientItem.getFromTime());
+        newBillItem.setToTime(patientItem.getToTime());
+        newBillItem.setRequestedFromDepartment(deliveringDepartment);
+        newBillItem.setRequestedToDepartment(getSessionController().getDepartment());
+        newBillItem.setPeformedDepartment(deliveringDepartment);
+        newBillItem.setCreatedAt(new Date());
+        newBillItem.setCreater(getSessionController().getLoggedUser());
+        getBillItemFacade().create(newBillItem);
+
+        patientItem.setBill(newBill);
+        patientItem.setBillItem(newBillItem);
+    }
+
+    /**
+     * Pushes a recalculated timed-service charge onto its BillItem and Bill.
+     * <p>
+     * The BillItem is what the inward totals actually sum (see
+     * {@code InwardBeanController.calServiceBillItemsTotalByInwardChargeTypeBulk}),
+     * so it must never be left holding a stale duration. Package-locked items
+     * are skipped — their price is fixed by the package.
+     */
+    private void syncTimedServiceCharge(PatientItem patientItem) {
+        if (patientItem == null || patientItem.getBillItem() == null) {
+            return;
+        }
+        BillItem bi = patientItem.getBillItem();
+        if (bi.isFromPackage()) {
+            return;
+        }
+        bi.setGrossValue(patientItem.getServiceValue());
+        bi.setDiscount(patientItem.getDiscount());
+        bi.setNetValue(patientItem.getServiceValue() + bi.getMarginValue() - patientItem.getDiscount());
+        bi.setFromTime(patientItem.getFromTime());
+        bi.setToTime(patientItem.getToTime());
+        getBillItemFacade().edit(bi);
+
+        Bill b = bi.getBill();
+        if (b != null) {
+            b.setTotal(bi.getGrossValue());
+            b.setNetTotal(bi.getNetValue());
+            getBillFacade().edit(b);
+        }
+    }
+
     public void finalizeService(PatientItem pic) {
         if (pic != null && pic.getBillItem() != null && pic.getBillItem().isFromPackage()) {
             JsfUtil.addErrorMessage("This item is included in the admission's package and its charge cannot be changed.");
+            return;
+        }
+        if (pic != null && isLockedForChanges(pic.getPatientEncounter())) {
             return;
         }
         PatientItem temPi;
@@ -689,6 +871,7 @@ public class InwardTimedItemController implements Serializable {
         pic.setServiceValue(value);
 
         getPatientItemFacade().edit(pic);
+        syncTimedServiceCharge(pic);
 
         createPatientItems();
 

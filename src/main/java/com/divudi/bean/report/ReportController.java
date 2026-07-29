@@ -4253,7 +4253,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("per.name, ")
                 .append("COALESCE(procItem.name, biProcItem.name, (SELECT MAX(bfProcItem.name) FROM BillFee bf JOIN bf.patienEncounter bfProc JOIN bfProc.item bfProcItem WHERE bf.patientItem = pi AND bf.retired = false)), ")
                 .append("COALESCE(proc.name, biProc.name, (SELECT MAX(bfProc.name) FROM BillFee bf JOIN bf.patienEncounter bfProc WHERE bf.patientItem = pi AND bf.retired = false)), ")
-                .append("dept.name, ")
+                // Where the service was actually delivered, recorded on the bill
+                // since the bill-at-add change. Older rows have no bill, so they
+                // fall back to the service item's own department.
+                .append("COALESCE(billFromDept.name, dept.name), ")
                 .append("timedItem.name, ")
                 .append("cat.name, ")
                 .append("pi.fromTime, ")
@@ -4270,7 +4273,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("bill.createdAt, ")
                 .append("finalBill.createdAt, ")
                 .append("cc.id, ")
-                .append("COALESCE(bDept.name, rfcDept.name) ) ")
+                // Department that entered the charge; falls back to the bill's
+                // own department, then the patient's current room department.
+                .append("COALESCE(billToDept.name, bDept.name, rfcDept.name) ) ")
                 .append("FROM PatientItem pi ")
                 .append("JOIN pi.patientEncounter pe ")
                 .append("LEFT JOIN pe.patient pat ")
@@ -4301,6 +4306,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 .append("LEFT JOIN pe.currentPatientRoom room ")
                 .append("LEFT JOIN room.roomFacilityCharge rfc ")
                 .append("LEFT JOIN bill.department bDept ")
+                .append("LEFT JOIN bill.fromDepartment billFromDept ")
+                .append("LEFT JOIN bill.toDepartment billToDept ")
                 .append("LEFT JOIN rfc.department rfcDept ");
 
         jpql.append("WHERE pi.retired = :ret ")
@@ -4348,13 +4355,24 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 params.put("roomCategoryIds", roomCategoryIds);
             }
         }
+        // Both filters mirror the COALESCE used for their columns, so filtering
+        // never contradicts what the report shows: match the recorded
+        // department when there is one, otherwise the fallback that is
+        // displayed in its place.
+        //
+        // These compare the LEFT JOIN aliases rather than navigating
+        // bill.fromDepartment directly. A path expression through the optional
+        // bill would be resolved as an inner join and silently drop every row
+        // that has no bill — exactly the older rows the fallback exists for.
         if (serviceDepartment != null) {
-            jpql.append("AND timedItem.department = :serviceDepartment ");
+            jpql.append("AND (billFromDept = :serviceDepartment ")
+                    .append("OR (billFromDept IS NULL AND dept = :serviceDepartment)) ");
             params.put("serviceDepartment", serviceDepartment);
         }
         if (billedDepartment != null) {
-            jpql.append("AND (bill.department = :billedDepartment ")
-                    .append("OR (bill IS NULL AND finalBill.department = :billedDepartment)) ");
+            jpql.append("AND (billToDept = :billedDepartment ")
+                    .append("OR (billToDept IS NULL AND bDept = :billedDepartment) ")
+                    .append("OR (billToDept IS NULL AND bDept IS NULL AND rfcDept = :billedDepartment)) ");
             params.put("billedDepartment", billedDepartment);
         }
         if (serviceGroup != null && !serviceGroup.trim().isEmpty()) {

@@ -1432,8 +1432,9 @@ public class BhtSummeryController implements Serializable {
     }
 
     private double updatePatientItems(InwardChargeType inwardChargeType, double discountPercent) {
+        double disTot = updateTimedServiceBillItems(inwardChargeType, discountPercent);
+
         List<PatientItem> list = getInwardBean().fetchTimedPatientItemByInwardChargeType(inwardChargeType, getPatientEncounter());
-        double disTot = 0;
         if (list == null || list.isEmpty()) {
             return disTot;
         }
@@ -1449,8 +1450,44 @@ public class BhtSummeryController implements Serializable {
         return disTot;
     }
 
+    /**
+     * Discounts timed services that carry their charge on a BillItem.
+     * <p>
+     * A timed service added from the consume page now creates its own Bill and
+     * BillItem, and the inward total for it is summed from the BillItem side —
+     * so the discount has to land there. It cannot go through
+     * {@code updateServiceBillFees}, because a timed service has no BillFee and
+     * recomputing its net value from fees would zero the charge. The matching
+     * PatientItem is kept in step so the breakdown screens agree with the bill.
+     */
+    private double updateTimedServiceBillItems(InwardChargeType inwardChargeType, double discountPercent) {
+        List<BillItem> list = getInwardBean().fetchTimedServiceBillItemsByInwardChargeType(inwardChargeType, getPatientEncounter());
+        double disTot = 0;
+        if (list == null || list.isEmpty()) {
+            return disTot;
+        }
+
+        for (BillItem bi : list) {
+            double value = bi.getGrossValue() + bi.getMarginValue();
+            double dis = (value * discountPercent) / 100;
+            disTot += dis;
+            bi.setDiscount(dis);
+            bi.setNetValue(value - dis);
+            getBillItemFacade().edit(bi);
+
+            PatientItem pi = getInwardBean().fetchPatientItemByBillItem(bi);
+            if (pi != null) {
+                pi.setDiscount(dis);
+                getPatientItemFacade().edit(pi);
+            }
+        }
+
+        return disTot;
+    }
+
     private void updatePatientItemsWithOutMatrix(InwardChargeType inwardChargeType) {
         getInwardBean().bulkClearPatientItemsWithOutMatrix(inwardChargeType, getPatientEncounter());
+        getInwardBean().bulkClearTimedServiceBillItemsWithOutMatrix(inwardChargeType, getPatientEncounter());
     }
 
     private double updatePatientRoomCharge(InwardChargeType inwardChargeType) {
@@ -2658,16 +2695,76 @@ public class BhtSummeryController implements Serializable {
         }
     }
 
-    private boolean checkPatientItems() {
-        List<PatientItem> lst = createPatientItems();
-
-        for (PatientItem pi : lst) {
-            if (pi != null && pi.getToTime() == null) {
-                return true;
-            }
+    /**
+     * Closes off any timed service still running at discharge, stopping it at
+     * the discharge time and pricing it for that duration.
+     * <p>
+     * This used to be a hard block ("Please Finalize Patient Timed Service")
+     * that made staff go back and stop each service by hand. Stopping them at
+     * the discharge time is what that manual step amounted to anyway, and doing
+     * it here guarantees the charge is priced for the real length of stay
+     * instead of whatever stale value was last persisted.
+     */
+    private void finalizeRunningTimedServices(Date dischargeTime) {
+        List<PatientItem> running = getInwardBean().fetchRunningTimedPatientItems(getPatientEncounter());
+        if (running == null || running.isEmpty()) {
+            return;
         }
 
-        return false;
+        int closed = 0;
+        for (PatientItem pi : running) {
+            if (pi.getBillItem() != null && pi.getBillItem().isFromPackage()) {
+                continue;
+            }
+            if (pi.getFromTime() != null && dischargeTime.before(pi.getFromTime())) {
+                continue;
+            }
+            TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) pi.getItem());
+            if (timedItemFee == null) {
+                // No fee configured for this item — leave it alone rather than
+                // failing the whole discharge over one unpriceable service.
+                continue;
+            }
+            pi.setToTime(dischargeTime);
+            double count = getInwardBean().calCount(timedItemFee, pi.getFromTime(), pi.getToTime());
+            pi.setServiceValue(count * timedItemFee.getFee());
+            getPatientItemFacade().edit(pi);
+            syncTimedServiceCharge(pi);
+            closed++;
+        }
+
+        if (closed > 0) {
+            patientItems = null;
+            JsfUtil.addSuccessMessage(closed + " running timed service(s) were stopped at the discharge time.");
+        }
+    }
+
+    /**
+     * Pushes a recalculated timed-service charge onto its BillItem and Bill, so
+     * the inward totals (which sum the BillItem side) never read a stale
+     * duration. Package-locked items keep their fixed price.
+     */
+    private void syncTimedServiceCharge(PatientItem patientItem) {
+        if (patientItem == null || patientItem.getBillItem() == null) {
+            return;
+        }
+        BillItem bi = patientItem.getBillItem();
+        if (bi.isFromPackage()) {
+            return;
+        }
+        bi.setGrossValue(patientItem.getServiceValue());
+        bi.setDiscount(patientItem.getDiscount());
+        bi.setNetValue(patientItem.getServiceValue() + bi.getMarginValue() - patientItem.getDiscount());
+        bi.setFromTime(patientItem.getFromTime());
+        bi.setToTime(patientItem.getToTime());
+        getBillItemFacade().edit(bi);
+
+        Bill b = bi.getBill();
+        if (b != null) {
+            b.setTotal(bi.getGrossValue());
+            b.setNetTotal(bi.getNetValue());
+            getBillFacade().edit(b);
+        }
     }
 
     public void dischargeCancel() {
@@ -2753,10 +2850,7 @@ public class BhtSummeryController implements Serializable {
             return;
         }
 
-        if (checkPatientItems()) {
-            JsfUtil.addErrorMessage("Please Finalize Patient Timed Service");
-            return;
-        }
+        finalizeRunningTimedServices(date);
 
         if (!getPatientEncounter().isClinicallyDischarged()) {
             JsfUtil.addErrorMessage("Warning: Clinical discharge has not been confirmed for this patient.");
@@ -3625,6 +3719,7 @@ public class BhtSummeryController implements Serializable {
         patientItem.setServiceValue(count * timedItemFee.getFee());
 
         getPatientItemFacade().edit(patientItem);
+        syncTimedServiceCharge(patientItem);
 
         createPatientItems();
 
@@ -4446,11 +4541,18 @@ public class BhtSummeryController implements Serializable {
      */
     private void setGrossMarginVatBreakdown() {
         Map<InwardChargeType, double[]> serviceBreakdown = getInwardBean().calServiceBillItemsGrossMarginVatByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
+        // Timed services that predate the bill-at-add change still carry their
+        // charge on the PatientItem alone. They are part of the gross for their
+        // charge type, so they have to be added to the BillItem-side breakdown —
+        // otherwise a charge type holding both kinds would report only the
+        // BillItem half as gross while Total and Net show the full amount.
+        Map<InwardChargeType, Double> timedItemTotals = getInwardBean().getTimedItemFeeTotalByInwardChargeTypeBulk(getPatientEncounter(), childPatientEncouters);
 
         for (ChargeItemTotal cit : chargeItemTotals) {
             double[] values = serviceBreakdown.get(cit.getInwardChargeType());
+            Double timedTotal = timedItemTotals.get(cit.getInwardChargeType());
             if (values != null) {
-                cit.setGross(values[0]);
+                cit.setGross(values[0] + (timedTotal != null ? timedTotal : 0.0));
                 cit.setMargin(values[1]);
                 cit.setVat(values[2]);
             } else {
