@@ -722,11 +722,13 @@ public class InwardPharmacyEncounterReportController implements Serializable {
         String jpql = "SELECT b FROM Bill b "
                 + "WHERE b.patientEncounter = :pe "
                 + "AND b.billTypeAtomic = :bta "
+                + "AND b.retired = false "
                 + "AND b.cancelled = false "
                 + "AND NOT EXISTS ("
                 + "  SELECT r FROM Bill r "
                 + "  WHERE r.backwardReferenceBill = b "
                 + "  AND r.billTypeAtomic = :acceptBta "
+                + "  AND r.retired = false "
                 + "  AND r.cancelled = false"
                 + ") "
                 + "ORDER BY b.createdAt DESC";
