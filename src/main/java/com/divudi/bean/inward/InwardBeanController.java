@@ -252,6 +252,7 @@ public class InwardBeanController implements Serializable {
                 + " FROM PatientItem i where "
                 + " type(i.item)=:cls "
                 + " and i.retired=false "
+                + " and i.billItem is null "
                 + " and i.patientEncounter=:pe "
                 + " and i.item.inwardChargeType=:inw ";
         hm.put("pe", patientEncounter);
@@ -335,6 +336,7 @@ public class InwardBeanController implements Serializable {
                 + " FROM PatientItem i where "
                 + " type(i.item)=:cls "
                 + " and i.retired=false "
+                + " and i.billItem is null "
                 + " and i.patientEncounter IN :pe "
                 + " and i.item.inwardChargeType=:inw ";
         List<PatientEncounter> pts = new ArrayList<>();
@@ -352,6 +354,14 @@ public class InwardBeanController implements Serializable {
 
     /**
      * OPTIMIZED: Bulk version - fetches all timed item fee totals in ONE query
+     * <p>
+     * Only PatientItems with no BillItem are counted here. A timed service that
+     * already has a BillItem is charged through
+     * {@link #calServiceBillItemsTotalByInwardChargeTypeBulk}, which sums every
+     * BillItem on an InwardBill regardless of item type — counting it on both
+     * sides would double-charge the patient. The same {@code billItem is null}
+     * guard therefore applies to every PatientItem query that feeds a total or
+     * a discount.
      */
     public Map<InwardChargeType, Double> getTimedItemFeeTotalByInwardChargeTypeBulk(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
         HashMap hm = new HashMap();
@@ -359,6 +369,7 @@ public class InwardBeanController implements Serializable {
                 + " FROM PatientItem i WHERE "
                 + " type(i.item)=:cls "
                 + " AND i.retired=false "
+                + " AND i.billItem is null "
                 + " AND i.patientEncounter IN :pe "
                 + " GROUP BY i.item.inwardChargeType";
 
@@ -391,6 +402,7 @@ public class InwardBeanController implements Serializable {
                 + " FROM PatientItem i where "
                 + " type(i.item)=:cls "
                 + " and i.retired=false "
+                + " and i.billItem is null "
                 + " and i.patientEncounter=:pe "
                 + " and i.item.inwardChargeType=:inw ";
         hm.put("pe", patientEncounter);
@@ -818,6 +830,7 @@ public class InwardBeanController implements Serializable {
         String sql = "UPDATE PatientItem s SET s.discount = 0.0"
                 + " WHERE s.retired = false"
                 + " AND type(s.item) = :cls"
+                + " AND s.billItem is null"
                 + " AND s.patientEncounter = :pe"
                 + " AND s.item.inwardChargeType = :inw";
         HashMap hm = new HashMap();
