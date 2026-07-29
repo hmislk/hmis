@@ -756,18 +756,28 @@ public class InwardBeanController implements Serializable {
     }
 
     /**
-     * Timed services on an admission that are still running (no stop time).
-     * Used to close them off automatically at discharge.
+     * Timed services still running (no stop time) on an admission and on any
+     * child encounters attached to it. Used to close them off automatically at
+     * discharge.
+     * <p>
+     * Child encounters are included because a baby's charges are settled on the
+     * mother's final bill — the timed-service totals already sum both — so a
+     * baby's running service has to be stopped and repriced along with hers.
      */
-    public List<PatientItem> fetchRunningTimedPatientItems(PatientEncounter patientEncounter) {
+    public List<PatientItem> fetchRunningTimedPatientItems(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {
         String sql = "Select i From PatientItem i"
                 + " where i.retired=false"
                 + " and type(i.item)=:cls"
-                + " and i.patientEncounter=:pe"
+                + " and i.patientEncounter IN :pe"
                 + " and i.toTime is null";
+        List<PatientEncounter> pts = new ArrayList<>();
+        pts.add(patientEncounter);
+        if (cpts != null && !cpts.isEmpty()) {
+            pts.addAll(cpts);
+        }
         HashMap hm = new HashMap();
         hm.put("cls", TimedItem.class);
-        hm.put("pe", patientEncounter);
+        hm.put("pe", pts);
         return getPatientItemFacade().findByJpql(sql, hm);
     }
 
@@ -775,6 +785,14 @@ public class InwardBeanController implements Serializable {
      * Clears any previously applied discount on timed-service BillItems when no
      * price matrix applies. Mirrors {@link #bulkClearPatientItemsWithOutMatrix}
      * for the BillItem side.
+     * <p>
+     * The matching PatientItems are cleared too. Their discount is a mirror of
+     * the BillItem's, kept for the breakdown screens and for
+     * {@code InwardChargeTypeBreakdownController} /
+     * {@code InwardChargeTypeDetailController}, which subtract it to show a net
+     * figure. {@link #bulkClearPatientItemsWithOutMatrix} cannot reach them —
+     * it filters on {@code billItem is null} — so without this they would keep
+     * displaying a discount that has just been removed from the bill.
      */
     public void bulkClearTimedServiceBillItemsWithOutMatrix(InwardChargeType inwardChargeType, PatientEncounter patientEncounter) {
         String sql = "UPDATE BillItem s SET s.discount = 0.0, s.netValue = s.grossValue + s.marginValue"
@@ -790,6 +808,23 @@ public class InwardBeanController implements Serializable {
         hm.put("pe", patientEncounter);
         hm.put("inw", inwardChargeType);
         getBillItemFacade().updateByJpql(sql, hm);
+
+        // Deliberately not filtered on billItem.fromPackage. A package item's
+        // price is fixed and never discounted, so its mirrored discount is
+        // already zero and clearing it changes nothing — and avoiding that
+        // navigation keeps this a plain bulk update over PatientItem's own
+        // columns, matching bulkClearPatientItemsWithOutMatrix.
+        String piSql = "UPDATE PatientItem s SET s.discount = 0.0"
+                + " WHERE s.retired = false"
+                + " AND type(s.item) = :cls"
+                + " AND s.billItem is not null"
+                + " AND s.patientEncounter = :pe"
+                + " AND s.item.inwardChargeType = :inw";
+        HashMap piHm = new HashMap();
+        piHm.put("cls", TimedItem.class);
+        piHm.put("pe", patientEncounter);
+        piHm.put("inw", inwardChargeType);
+        getPatientItemFacade().updateByJpql(piSql, piHm);
     }
 
     public List<BillFee> createDoctorAndNurseFee(PatientEncounter patientEncounter, List<PatientEncounter> cpts) {

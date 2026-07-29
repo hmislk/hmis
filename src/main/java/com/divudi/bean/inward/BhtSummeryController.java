@@ -2706,7 +2706,10 @@ public class BhtSummeryController implements Serializable {
      * instead of whatever stale value was last persisted.
      */
     private void finalizeRunningTimedServices(Date dischargeTime) {
-        List<PatientItem> running = getInwardBean().fetchRunningTimedPatientItems(getPatientEncounter());
+        if (childPatientEncouters == null || childPatientEncouters.isEmpty()) {
+            childPatientEncouters = getInwardBean().fetchChildPatientEncounter(getPatientEncounter());
+        }
+        List<PatientItem> running = getInwardBean().fetchRunningTimedPatientItems(getPatientEncounter(), childPatientEncouters);
         if (running == null || running.isEmpty()) {
             return;
         }
@@ -2730,9 +2733,13 @@ public class BhtSummeryController implements Serializable {
             // Priced through calTotalTimedChargeForItem, the same path the
             // manual stop uses, so tiered fee blocks and foreigner rates give
             // the same amount whether a service is stopped by hand or here.
+            // The foreigner flag comes from the item's own encounter, which for
+            // a baby's service is the child encounter, not the mother's.
+            PatientEncounter owner = pi.getPatientEncounter() != null
+                    ? pi.getPatientEncounter() : getPatientEncounter();
             pi.setServiceValue(getInwardBean().calTotalTimedChargeForItem(
                     (TimedItem) pi.getItem(), pi.getFromTime(), pi.getToTime(),
-                    getPatientEncounter().isForiegner()));
+                    owner.isForiegner()));
             getPatientItemFacade().edit(pi);
             syncTimedServiceCharge(pi);
             closed++;
