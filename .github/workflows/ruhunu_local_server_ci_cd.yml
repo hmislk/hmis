@@ -5,6 +5,10 @@ on:
     branches:
       - rh-local-staging
 
+concurrency:
+  group: ruhunu-local-staging-deploy
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -36,15 +40,8 @@ jobs:
         run: |
           grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
 
-      - name: Build with Maven
+      - name: Verify build compiles
         run: mvn clean package -DskipTests
-
-      - name: Archive Build Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: target/*.war
-          overwrite: true
 
       # - name: Run Tests
       #   run: mvn test
@@ -54,16 +51,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: ./
-
-      - name: Deploy to Payara
+      # Instead of building on the runner and rsyncing a ~130MB WAR to the server
+      # (which was taking 25-30 minutes over that link), pull the source and build
+      # directly on the target server, then swap the WAR in place locally there.
+      - name: Deploy to Payara (build from source on target server)
         env:
           SERVER_IP: ${{ secrets.RUHUNU_LOCAL_SERVER_IP }}
           SERVER_USER: ${{ secrets.RUHUNU_LOCAL_SERVER_USER }}
@@ -74,56 +65,79 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > private_key.pem
           chmod 600 private_key.pem
 
-          # Variables
-          WAR_NAME="ruhunuLocal.war"
+          CONTEXT_PATH="rhLocal"
+
+          # ssh flattens trailing args into one space-joined string for the remote
+          # shell to re-tokenize, so a password containing a space or shell
+          # metacharacter would corrupt the remote argv. Base64-encode it instead.
+          PAYARA_ADMIN_PASS_B64=$(printf '%s' "$PAYARA_ADMIN_PASS" | base64 -w0)
+
+          # -l makes this a login shell so it sources the same profile (and PATH,
+          # e.g. for mvn) that an interactive SSH session would get.
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP bash -ls -- "$PAYARA_ADMIN_PASS_B64" "${{ github.sha }}" <<'REMOTE_SCRIPT'
+          set -e
+
+          PAYARA_ADMIN_PASS=$(printf '%s' "$1" | base64 -d)
+          COMMIT_SHA="$2"
+          SRC_DIR="/home/rhadmin/app/source"
           WAR_DIR="/home/rhadmin/app/latest"
           APP_NAME="ruhunuLocal"
           CONTEXT_PATH="rhLocal"
+          WAR_NAME="ruhunuLocal.war"
+          BRANCH="rh-local-staging"
 
-          # Ensure deployment directory exists
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            mkdir -p $WAR_DIR
-            chown -R rhadmin:rhadmin $WAR_DIR
-            cd $WAR_DIR
+          mkdir -p "$WAR_DIR"
+          chown -R rhadmin:rhadmin "$WAR_DIR"
 
-            # Remove old backup if it exists
-            if [ -f $WAR_NAME.old ]; then
-              rm $WAR_NAME.old
-            fi
+          if [ ! -d "$SRC_DIR/.git" ]; then
+            git clone https://github.com/hmislk/hmis.git "$SRC_DIR"
+          fi
 
-            # If the current WAR file exists, back it up
-            if [ -f $WAR_NAME ]; then
-              mv $WAR_NAME $WAR_NAME.old
-            fi
-          "
- 
-          # Copy new WAR file to the server
-          rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:$WAR_DIR/$WAR_NAME
+          cd "$SRC_DIR"
+          git fetch origin "$BRANCH"
+          # Pin to the exact commit the build job already compile-checked, not
+          # whatever the branch tip happens to be by the time this runs.
+          git checkout "$COMMIT_SHA"
+          git clean -fdx
 
-          # Set the WAR file permission
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            chown rhadmin:rhadmin $WAR_DIR/$WAR_NAME
-          "
+          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunu</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunuaudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
 
-          # Deploy the WAR using asadmin
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
-            /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
-            /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $CONTEXT_PATH $WAR_DIR/$WAR_NAME
-            rm -f /tmp/payara-admin-pass.txt
-          "
+          mvn clean package -DskipTests
 
-          # Validate if the application is running
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
-            if /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
-              echo 'Application is running.'
-            else
-              echo 'Application failed to start.'
-            fi
-            rm -f /tmp/payara-admin-pass.txt
-          "
- 
+          NEW_WAR=$(ls target/*.war | head -n1)
+          NEW_WAR_SIZE=$(stat -c%s "$NEW_WAR" 2>/dev/null || echo 0)
+          if [ -z "$NEW_WAR" ] || [ "$NEW_WAR_SIZE" -lt 1048576 ]; then
+            echo "Build did not produce a valid WAR file. Aborting deploy."
+            exit 1
+          fi
+
+          # Only touch the running deployment once we know the build succeeded.
+          if [ -f "$WAR_DIR/$WAR_NAME.old" ]; then
+            rm "$WAR_DIR/$WAR_NAME.old"
+          fi
+          if [ -f "$WAR_DIR/$WAR_NAME" ]; then
+            mv "$WAR_DIR/$WAR_NAME" "$WAR_DIR/$WAR_NAME.old"
+          fi
+          cp "$NEW_WAR" "$WAR_DIR/$WAR_NAME"
+          chown rhadmin:rhadmin "$WAR_DIR/$WAR_NAME"
+
+          PASS_FILE=$(mktemp /tmp/payara-admin-pass.XXXXXX)
+          trap 'rm -f "$PASS_FILE"' EXIT
+          echo "AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS" > "$PASS_FILE"
+          chmod 600 "$PASS_FILE"
+
+          /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile "$PASS_FILE" undeploy "$APP_NAME" || true
+          /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile "$PASS_FILE" deploy --force=true --contextroot "$CONTEXT_PATH" "$WAR_DIR/$WAR_NAME"
+
+          if /home/rhadmin/Payara_Server/bin/asadmin --user admin --passwordfile "$PASS_FILE" list-applications | grep -q "$APP_NAME"; then
+            echo "Application is running."
+          else
+            echo "Application failed to start."
+            exit 1
+          fi
+          REMOTE_SCRIPT
+
           # Check if the application is reachable
           for i in {1..5}; do
             RESPONSE_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://$SERVER_IP:8010/$CONTEXT_PATH/faces/index1.xhtml)

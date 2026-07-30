@@ -613,6 +613,23 @@ public class InwardSearch implements Serializable {
         return "/inward/inward_final_bill_list?faces-redirect=true";
     }
 
+    public String navigateToManageFinalBills() {
+        if (admission == null) {
+            JsfUtil.addErrorMessage("No Admission Selected");
+            return "";
+        }
+
+        finalBillVersions = null;
+        List<Bill> versions = fetchFinalBillVersions(admission);
+
+        if (versions.isEmpty()) {
+            JsfUtil.addErrorMessage("No Final Bill Created");
+            return "";
+        }
+
+        return "/inward/inward_final_bill_list?faces-redirect=true";
+    }
+
     /**
      * Lazily fetches and caches all final-bill versions for the currently
      * selected {@link #admission}. Callers that switch admissions must reset

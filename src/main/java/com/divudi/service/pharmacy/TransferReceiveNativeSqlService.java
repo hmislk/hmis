@@ -492,6 +492,15 @@ public class TransferReceiveNativeSqlService {
                             ? bill.getCreater().getId() : null);
         }
 
+        // The bill was persisted with billItems nulled because the items are inserted
+        // natively, so the in-memory entity claims it has none — and Bill.getBillItems()
+        // hands out an empty list rather than a lazy one. Anything that later merges this
+        // instance writes that empty collection into the shared cache, so every subsequent
+        // read of the bill shows a bill with no items. Issue #22511, same cause as #22506.
+        // Refreshing rebuilds the lazy collection from the rows just written, and also picks
+        // up the totals and reference links updated above.
+        em.refresh(bill);
+
         LOGGER.log(Level.INFO, "[TRNativeSettle] DONE items={0} ms={1}",
                 new Object[]{itemsToProcess.size(), System.currentTimeMillis() - t0});
 
