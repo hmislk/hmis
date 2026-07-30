@@ -48,7 +48,7 @@ public class RosterController implements Serializable {
             return null;
         }
 
-        HashMap hm = new HashMap();
+        HashMap<String, Object> hm = new HashMap<>();
         hm.put("q", '%' + qry.toUpperCase() + '%');
         String sql = "select c from Roster c "
                 + " where c.retired=false "
@@ -75,7 +75,24 @@ public class RosterController implements Serializable {
         items = null;
     }
 
+    private boolean validateRosterForm() {
+        if (getCurrent().getName() == null || getCurrent().getName().trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter a Name.");
+            return false;
+        }
+        
+        if (getCurrent().getDepartment() == null || getCurrent().getDepartment().getId() == null) {
+            JsfUtil.addErrorMessage("Please select a Department.");
+            return false;
+        }
+
+        return true;
+    }
+
     public void saveSelected() {
+        if (!validateRosterForm()) {
+            return;
+        }
 
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
