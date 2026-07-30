@@ -8325,7 +8325,7 @@ public class SearchController implements Serializable {
             }
         }
         billFees.removeAll(removeingBillFees);
-        calTotal();
+        calTotalSplittingHeldProfessionalFees();
 
     }
 
@@ -8413,7 +8413,7 @@ public class SearchController implements Serializable {
             }
         }
         billFees.removeAll(removeingBillFees);
-        calTotal();
+        calTotalSplittingHeldProfessionalFees();
 
     }
 
@@ -8473,7 +8473,7 @@ public class SearchController implements Serializable {
         temMap.put("feeType", FeeType.Staff);
 
         billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        calTotal();
+        calTotalSplittingHeldProfessionalFees();
     }
 
     double total;
@@ -8494,6 +8494,37 @@ public class SearchController implements Serializable {
 
         for (BillFee billFee : billFees) {
             total += billFee.getFeeValue();
+        }
+    }
+
+    double totalOnHold;
+
+    public double getTotalOnHold() {
+        return totalOnHold;
+    }
+
+    public void setTotalOnHold(double totalOnHold) {
+        this.totalOnHold = totalOnHold;
+    }
+
+    /**
+     * Totals for the inward professional-payment due lists, split so the
+     * payable figure is not inflated by fees that cannot currently be paid.
+     * A fee is held either individually or because its whole BHT is on hold —
+     * see {@link BillFee#isProfessionalPaymentHeld()}. (Issue #22483)
+     */
+    private void calTotalSplittingHeldProfessionalFees() {
+        total = 0;
+        totalOnHold = 0;
+        if (billFees == null) {
+            return;
+        }
+        for (BillFee billFee : billFees) {
+            if (billFee.isProfessionalPaymentHeld()) {
+                totalOnHold += billFee.getFeeValue();
+            } else {
+                total += billFee.getFeeValue();
+            }
         }
     }
 
@@ -8585,6 +8616,7 @@ public class SearchController implements Serializable {
         temMap.put("btp2", BillType.InwardProfessional);
 
         billFees = getBillFeeFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
+        calTotalSplittingHeldProfessionalFees();
 
     }
 
