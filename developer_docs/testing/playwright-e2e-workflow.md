@@ -1337,7 +1337,7 @@ just typed silently reverts, with no error unless you also check the
 Confirmed by injecting an `XMLHttpRequest.prototype.send` hook via
 `javascript_tool` to capture the real request body and diffing the parameter
 names against a known-good submission from the same form (see issue
-#22352's `ward_pharmacy_bht_issue_request_bill.xhtml` "Edit / Substitute
+`#22352`'s `ward_pharmacy_bht_issue_request_bill.xhtml` "Edit / Substitute
 Item" dialog). The working counterpart,
 `pharmacy_bill_retail_sale_native.xhtml`'s `substituteDlg`, also uses
 `appendTo="@(body)"` but avoids the problem entirely by using
