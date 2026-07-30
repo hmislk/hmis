@@ -97,7 +97,6 @@ public class PaysheetComponentController implements Serializable {
         } else {
             return false;
         }
-
     }
 
     public void saveSelected() {
@@ -112,7 +111,7 @@ public class PaysheetComponentController implements Serializable {
 
         if (getCurrent().getComponentType() == null 
                 || getCurrent().getComponentType().toString().trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Pls Select Compnent Type");
+            JsfUtil.addErrorMessage("Please Select a Component Type");
             return;
         }
 

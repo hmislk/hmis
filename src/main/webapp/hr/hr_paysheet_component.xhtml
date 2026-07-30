@@ -120,16 +120,56 @@
                 .psc-field .ui-inputtext,
                 .psc-field .ui-selectonemenu {
                     width: 100% !important;
+                    box-sizing: border-box !important;
+                }
+
+                .psc-field .ui-inputtext {
+                    height: 44px !important;
                     border-radius: 7px !important;
                     border: 1px solid #cbd5e0 !important;
                     font-size: 0.875rem !important;
-                    padding: 0.45rem 0.65rem !important;
+                    padding: 0 0.65rem !important;
+                }
+
+                .psc-field .ui-selectonemenu {
+                    height: 44px !important;
+                    border-radius: 7px !important;
+                    border: 1px solid #cbd5e0 !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    background: #ffffff !important;
+                }
+
+                .psc-field .ui-selectonemenu .ui-selectonemenu-label {
+                    font-size: 0.875rem !important;
+                    padding: 0 0.65rem !important;
+                    height: 100% !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    color: #2d3748 !important;
+                }
+
+                .psc-field .ui-selectonemenu .ui-selectonemenu-trigger {
+                    width: 2rem !important;
+                    height: 100% !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    border: none !important;
+                    background: transparent !important;
                 }
 
                 .psc-field .ui-inputtext:focus,
-                .psc-field .ui-selectonemenu:focus {
+                .psc-field .ui-selectonemenu:focus,
+                .psc-field .ui-selectonemenu.ui-state-focus {
                     border-color: #63b3ed !important;
-                    box-shadow: 0 0 0 3px rgba(99,179,237,0.2) !important;
+                    box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.2) !important;
+                    outline: none !important;
+                }
+
+                .ui-selectonemenu-panel .ui-selectonemenu-item {
+                    font-size: 0.9rem !important;
+                    padding: 0.45rem 0.75rem !important;
                 }
 
                 .psc-divider {
