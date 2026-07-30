@@ -21,6 +21,7 @@ import com.divudi.core.data.BillType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ProfessionalPaymentVoucherGroup;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.SearchKeyword;
@@ -351,6 +352,8 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
     private double refundAmount;
     private String txtSearch;
     private Bill bill;
+    private List<ProfessionalPaymentVoucherGroup> individualVoucherGroups;
+    private Bill individualVoucherGroupsBill;
     private BillLight billLight;
     private Long selectedBillId;
     private Bill printingBill;
@@ -3805,6 +3808,15 @@ public class BillSearch implements Serializable, ControllerWithMultiplePayments 
 
     public void setBill(Bill bill) {
         this.bill = bill;
+    }
+
+    public List<ProfessionalPaymentVoucherGroup> getIndividualVoucherGroups() {
+        if (individualVoucherGroups == null || individualVoucherGroupsBill != bill) {
+            individualVoucherGroups = professionalPaymentService
+                    .groupPaymentBillItemsByPatientOrBht(bill);
+            individualVoucherGroupsBill = bill;
+        }
+        return individualVoucherGroups;
     }
 
     public Long getSelectedBillId() {
