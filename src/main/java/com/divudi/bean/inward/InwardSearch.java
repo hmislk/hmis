@@ -64,6 +64,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import org.primefaces.PrimeFaces;
 
 /**
  *
@@ -579,6 +580,7 @@ public class InwardSearch implements Serializable {
         refundingItems = null;
         bills = null;
         tempbillItems = null;
+        sentEmailsForBill = null;
     }
 
     public WebUser getUser() {
@@ -771,17 +773,31 @@ public class InwardSearch implements Serializable {
      * the "Sent Emails" history on the view/print screen.
      */
     public void emailFinalBillVersion(Bill b) {
+        boolean sent = false;
+        try {
+            sent = emailFinalBillVersionInternal(b);
+        } finally {
+            // Tell the client whether the send succeeded so the dialog closes
+            // only on success (see the Send button's oncomplete), mirroring
+            // BhtSummeryController.addNewCreditCompany()'s creditCompanyAdded.
+            if (PrimeFaces.current().isAjaxRequest()) {
+                PrimeFaces.current().ajax().addCallbackParam("emailSent", sent);
+            }
+        }
+    }
+
+    private boolean emailFinalBillVersionInternal(Bill b) {
         if (b == null) {
             JsfUtil.addErrorMessage("No bill selected");
-            return;
+            return false;
         }
         if (emailRecipient == null || emailRecipient.trim().isEmpty()) {
             JsfUtil.addErrorMessage("No recipient Email");
-            return;
+            return false;
         }
         if (!CommonFunctions.isValidEmail(emailRecipient)) {
             JsfUtil.addErrorMessage("Recipient Email is NOT valid");
-            return;
+            return false;
         }
 
         AppEmail email = new AppEmail();
@@ -799,6 +815,7 @@ public class InwardSearch implements Serializable {
         email.setPending(true);
         emailFacade.create(email);
 
+        boolean success = false;
         try {
             byte[] pdfBytes = buildFinalBillPdf(b);
             EmailAttachment attachment = new EmailAttachment(
@@ -806,7 +823,7 @@ public class InwardSearch implements Serializable {
                     "application/pdf",
                     Base64.getEncoder().encodeToString(pdfBytes));
 
-            boolean success = emailManagerEjb.sendEmail(
+            success = emailManagerEjb.sendEmail(
                     Collections.singletonList(email.getReceipientEmail()),
                     email.getMessageBody(),
                     email.getMessageSubject(),
@@ -820,10 +837,12 @@ public class InwardSearch implements Serializable {
                 emailFacade.edit(email);
                 JsfUtil.addSuccessMessage("Email Sent Successfully");
             } else {
+                email.setPending(false);
                 emailFacade.edit(email);
                 JsfUtil.addErrorMessage("Sending Email Failed");
             }
         } catch (Exception ex) {
+            email.setPending(false);
             emailFacade.edit(email);
             JsfUtil.addErrorMessage("Sending Email Failed");
             java.util.logging.Logger.getLogger(InwardSearch.class.getName())
@@ -831,6 +850,7 @@ public class InwardSearch implements Serializable {
         }
 
         sentEmailsForBill = null;
+        return success;
     }
 
     private byte[] buildFinalBillPdf(Bill b) throws Exception {
@@ -1082,6 +1102,7 @@ public class InwardSearch implements Serializable {
         printPreview = false;
         tempbillItems = null;
         comment = null;
+        sentEmailsForBill = null;
     }
 
     private void cancelBillComponents(Bill can, BillItem bt) {

@@ -174,8 +174,8 @@
                                 icon="fa fa-envelope"
                                 class="ui-button-help"
                                 value="Send"
-                                update=":formFinalBillVersions"
-                                oncomplete="PF('wEmailDialog').hide()"
+                                update=":growl"
+                                oncomplete="if (args &amp;&amp; args.emailSent) { PF('wEmailDialog').hide(); }"
                                 actionListener="#{inwardSearch.emailFinalBillVersion(inwardSearch.bill)}" />
                         </h:panelGrid>
                     </p:dialog>
