@@ -75,6 +75,11 @@ public class GradeController implements Serializable {
 
     public void saveSelected() {
 
+        if(getCurrent().getName() == null || getCurrent().getName().isEmpty()){
+            JsfUtil.addErrorMessage("Grade Name Required To Save");
+            return;
+        }
+
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");

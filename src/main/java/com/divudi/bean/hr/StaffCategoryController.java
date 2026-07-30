@@ -79,6 +79,11 @@ public class StaffCategoryController implements Serializable {
 
     public void saveSelected() {
 
+        if(getCurrent().getName() == null || getCurrent().getName().isEmpty()){
+            JsfUtil.addErrorMessage("Category Name Required To Save");
+            return;
+        }
+
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");

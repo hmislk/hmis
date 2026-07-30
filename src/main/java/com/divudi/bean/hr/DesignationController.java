@@ -78,6 +78,16 @@ public class DesignationController implements Serializable {
 
     public void saveSelected() {
 
+        if(getCurrent().getName() == null || getCurrent().getName().isEmpty()){
+            JsfUtil.addErrorMessage("Designation Name Required To Save");
+            return;
+        }
+
+        if(getCurrent().getCode() == null || getCurrent().getCode().isEmpty()){
+            JsfUtil.addErrorMessage("Designation Code Required To Save");
+            return;
+        }
+
         if (getCurrent().getId() != null && getCurrent().getId() > 0) {
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");
